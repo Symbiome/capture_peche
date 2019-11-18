@@ -41,8 +41,8 @@ class Trip {
     #TripType type
 }
 
-Trip "0..*" -- "0..1" FisholaUser
-Trip "0..*" *-- "0..1" Catch
+Trip "0..*" -- "0..1 owner" FisholaUser
+Trip "1" *-- "0..*" Catch
 Trip "0..*" -- "1" Lake
 Trip "0..*" -- "1..* expectedSpecies" Species
 Trip "0..*" -- "1" Weather
