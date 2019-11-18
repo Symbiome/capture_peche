@@ -4,6 +4,8 @@
 /*/*.ipr
 /.idea
 /*/.idea
+/.vscode
+/*/.vscode
 /*.iws
 /*/*.iws
 /*.iml
@@ -19,4 +21,13 @@
 *~
 doc/mcd/output
 /*/node
+/node_modules
 /*/node_modules
+/*/dist
+
+# local env files
+/*/.env.local
+/*/.env.*.local
+
+# Log files
+/*/npm-debug.log*
