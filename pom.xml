@@ -23,6 +23,7 @@
 
     <modules>
         <module>fishola-rest</module>
+        <module>fishola-mobile</module>
     </modules>
 
     <dependencyManagement>
