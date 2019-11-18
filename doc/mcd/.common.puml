@@ -1,0 +1,9 @@
+right footer Fishola - Version 0.1
+
+skinparam class {
+	BackgroundColor<<AssociationAnnualisée>> PalePink
+	BorderColor<<AssociationAnnualisée>> SpringPink
+	BackgroundColor<<Association>> PaleGreen
+	BorderColor<<Association>> SpringGreen
+}
+hide enum methods

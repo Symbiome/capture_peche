@@ -1,0 +1,81 @@
+@startuml
+
+title __Fishola__\n
+
+enum Gender {
+    Female
+    Male
+    NonBinary
+}
+
+class FisholaUser {
+    #String firstName
+    #String lastName
+    #String email
+    #String password
+    #Gender gender
+    #int birthYear
+}
+
+class Lake {
+    #String name
+}
+
+class Species {
+    #String name
+    #boolean builtIn
+}
+
+enum TripType {
+    Border
+    Craft
+}
+
+class Trip {
+    #boolean live
+    #String name
+    #Date date
+    #Date startTime
+    #Date endTime
+    #String gps
+    #TripType type
+}
+
+Trip "0..*" -- "0..1" FisholaUser
+Trip "0..*" *-- "0..1" Catch
+Trip "0..*" -- "1" Lake
+Trip "0..*" -- "1..* expectedSpecies" Species
+Trip "0..*" -- "1" Weather
+Trip "0..*" -- "1..*" Method
+
+class Method {
+    #String name
+    #boolean builtIn
+}
+
+class ReleasedFishState {
+    #String name
+}
+
+class Weather {
+    #String name
+}
+
+class Catch {
+    #Date catchTime
+    #Blob picture
+    #double size
+    #double weight
+    #boolean kept
+    #String description
+}
+
+Catch "0..*" -- "1" Species
+Catch "0..*" -- "1" Method
+Catch "0..*" -- "0..1" ReleasedFishState
+
+
+!include .common.puml
+
+@enduml
+
