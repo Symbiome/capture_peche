@@ -5,14 +5,9 @@ import fr.inra.fishola.entities.tables.records.LakeRecord;
 import fr.inra.fishola.entities.tables.records.MethodRecord;
 import fr.inra.fishola.entities.tables.records.SpeciesRecord;
 import fr.inra.fishola.entities.tables.records.WeatherRecord;
-import org.jooq.DSLContext;
 import org.jooq.Result;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
 
 import javax.inject.Singleton;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -22,8 +17,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Map<UUID, String> listLakes() {
 
-        try (Connection conn = newConnection()) {
-            DSLContext context = DSL.using(conn, SQLDialect.POSTGRES);
+        return run(context -> {
             Result<LakeRecord> records = context.selectFrom(Tables.LAKE)
                     .orderBy(Tables.LAKE.NAME)
                     .fetch();
@@ -34,16 +28,13 @@ public class ReferentialDao extends AbstractFisholaDao {
             }
 
             return result;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to list lakes", e);
-        }
+        });
 
     }
 
     public Map<UUID, String> listWeathers() {
 
-        try (Connection conn = newConnection()) {
-            DSLContext context = DSL.using(conn, SQLDialect.POSTGRES);
+        return run(context -> {
             Result<WeatherRecord> records = context.selectFrom(Tables.WEATHER)
                     .orderBy(Tables.WEATHER.NAME)
                     .fetch();
@@ -54,16 +45,13 @@ public class ReferentialDao extends AbstractFisholaDao {
             }
 
             return result;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to list lakes", e);
-        }
+        });
 
     }
 
     public Map<UUID, String> listBuiltInMethods() {
 
-        try (Connection conn = newConnection()) {
-            DSLContext context = DSL.using(conn, SQLDialect.POSTGRES);
+        return run(context -> {
             Result<MethodRecord> records = context.selectFrom(Tables.METHOD)
                     .where(Tables.METHOD.BUILT_IN.equal(true))
                     .orderBy(Tables.METHOD.NAME)
@@ -75,15 +63,12 @@ public class ReferentialDao extends AbstractFisholaDao {
             }
 
             return result;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to list lakes", e);
-        }
+        });
     }
 
     public Map<UUID, String> listBuiltInSpecies() {
 
-        try (Connection conn = newConnection()) {
-            DSLContext context = DSL.using(conn, SQLDialect.POSTGRES);
+        return run(context -> {
             Result<SpeciesRecord> records = context.selectFrom(Tables.SPECIES)
                     .where(Tables.SPECIES.BUILT_IN.equal(true))
                     .orderBy(Tables.SPECIES.NAME)
@@ -95,9 +80,7 @@ public class ReferentialDao extends AbstractFisholaDao {
             }
 
             return result;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to list lakes", e);
-        }
+        });
     }
 
 }
