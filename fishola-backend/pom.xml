@@ -47,6 +47,16 @@
     </dependency>
 
     <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
@@ -182,7 +192,7 @@
               <inputSchema>public</inputSchema>
             </database>
             <target>
-              <packageName>fr.inra.fishola.rest.entities</packageName>
+              <packageName>fr.inra.fishola.entities</packageName>
               <directory>target/generated-sources/jooq</directory>
             </target>
           </generator>
