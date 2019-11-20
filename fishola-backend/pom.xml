@@ -77,7 +77,7 @@
         <artifactId>embedded-postgresql-maven-plugin</artifactId>
         <version>1.2.2</version>
         <configuration>
-          <pgServerVersion>12</pgServerVersion>
+          <pgServerVersion>11</pgServerVersion>
           <pgServerPort>5432</pgServerPort>
           <dbName>${localJdbcDatabaseName}</dbName>
           <userName>${localJdbcUser}</userName>

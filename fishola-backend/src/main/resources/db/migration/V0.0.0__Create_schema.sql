@@ -26,13 +26,13 @@ CREATE TABLE weather (
 CREATE TABLE species (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    buildt_in BOOLEAN NOT NULL
+    built_in BOOLEAN NOT NULL
 );
 
 CREATE TABLE method (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    buildt_in BOOLEAN NOT NULL
+    built_in BOOLEAN NOT NULL
 );
 
 CREATE TABLE released_fish_state (
