@@ -11,18 +11,21 @@
     <packaging>pom</packaging>
 
     <properties>
-        <quarkus.version>1.0.0.CR1</quarkus.version>
+        <quarkus.version>1.0.0.CR2</quarkus.version>
+        <jooqVersion>3.12.3</jooqVersion>
+        <flywayVersion>6.0.8</flywayVersion>
+        <postgresqlDriverVersion>42.2.8</postgresqlDriverVersion>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
-        <surefire-plugin.version>2.22.0</surefire-plugin.version>
+        <surefire-plugin.version>3.0.0-M4</surefire-plugin.version>
     </properties>
 
     <modules>
-        <module>fishola-rest</module>
+        <module>fishola-backend</module>
         <module>fishola-mobile</module>
     </modules>
 
@@ -54,6 +57,12 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>28.1-jre</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq</artifactId>
+                <version>${jooqVersion}</version>
             </dependency>
 
             <dependency>
