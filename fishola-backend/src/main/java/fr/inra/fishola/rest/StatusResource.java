@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-@Path("/status")
+@Path("/api/v1/status")
 @Produces(MediaType.APPLICATION_JSON)
 public class StatusResource {
 
@@ -110,4 +110,5 @@ public class StatusResource {
         Health result = compute();
         return result;
     }
+
 }
