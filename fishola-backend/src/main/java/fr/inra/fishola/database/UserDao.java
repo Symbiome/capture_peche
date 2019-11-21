@@ -54,4 +54,17 @@ public class UserDao extends AbstractFisholaDao {
 
     }
 
+    public String hashPassword(String password) {
+        String result = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        return result;
+    }
+
+    public void create(String firstName, String lastName, String email, String passwordHashed) {
+
+        run(context -> context.insertInto(FISHOLA_USER,
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD)
+                .values(firstName, lastName, email, passwordHashed)
+                .execute());
+
+    }
 }

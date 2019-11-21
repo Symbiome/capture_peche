@@ -6,10 +6,13 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.database.UserDao;
 import fr.inra.fishola.database.UserProfile;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -17,6 +20,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -32,9 +36,72 @@ public class SecurityResource {
         return Algorithm.HMAC512("v3ry 53cr37 k3y");
     }
 
+    @PUT
+    @Path("/register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response register(RegisterBean bean) {
+
+        if (bean == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (StringUtils.isEmpty(bean.firstName) || StringUtils.isEmpty(bean.lastName) || StringUtils.isEmpty(bean.email) || StringUtils.isEmpty(bean.password)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        String passwordHashed = userDao.hashPassword(bean.password);
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, 1);
+        Date expiresAt = calendar.getTime();
+        String token = JWT.create()
+                .withIssuer("fishola-backend")
+                .withSubject(bean.email)
+                .withIssuedAt(now)
+                .withExpiresAt(expiresAt)
+                .withJWTId(UUID.randomUUID().toString())
+                .withClaim("firstName", bean.firstName)
+                .withClaim("lastName", bean.lastName)
+                .withClaim("passwordHashed", passwordHashed)
+                .sign(algorithmHS);
+
+        String apiBaseUrl = "http://0.0.0.0:8080";
+        String verifyUrl = String.format("%s/api/v1/security/verify?t=%s", apiBaseUrl, token);
+
+        System.out.println("Verify URL is: " + verifyUrl);
+
+        return Response.ok(verifyUrl, MediaType.TEXT_PLAIN).build();
+    }
+
+    @GET
+    @Path("/verify")
+    public Response verifyAfterRegistration(@QueryParam("t") String token) {
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        DecodedJWT verify = JWT.require(algorithmHS)
+                .withIssuer("fishola-backend")
+                .build()
+                .verify(token);
+
+        String email = verify.getSubject();
+
+        userDao.create(
+                verify.getClaim("firstName").asString(),
+                verify.getClaim("lastName").asString(),
+                email,
+                verify.getClaim("passwordHashed").asString()
+        );
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/login")
-    public Response login(@QueryParam("email") String email, @QueryParam("password") String password) {
+    public Response login(@QueryParam("email") String email,
+                          @QueryParam("password") String password) {
 
         boolean authenticate = userDao.authenticate(email, password);
         if (authenticate) {
@@ -76,7 +143,10 @@ public class SecurityResource {
             if (cookie == null) {
                 throw new NotAuthenticatedException();
             }
-            DecodedJWT verify = JWT.require(algorithmHS).build().verify(cookie.getValue());
+            DecodedJWT verify = JWT.require(algorithmHS)
+                    .withIssuer("fishola-backend")
+                    .build()
+                    .verify(cookie.getValue());
             String email = verify.getSubject();
             UserProfile result = userDao.loadUser(email).orElseThrow(NotAuthenticatedException::new);
             return result;
