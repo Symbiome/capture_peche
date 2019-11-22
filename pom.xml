@@ -77,6 +77,24 @@
             </dependency>
 
             <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>3.8.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>at.favre.lib</groupId>
+                <artifactId>bcrypt</artifactId>
+                <version>0.8.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.9</version>
+            </dependency>
+
+            <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-junit5</artifactId>
                 <version>${quarkus.version}</version>
