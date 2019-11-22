@@ -55,7 +55,8 @@ public class UserDao extends AbstractFisholaDao {
     }
 
     public String hashPassword(String password) {
-        String result = BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        int cost = config.getPasswordHashCost();
+        String result = BCrypt.withDefaults().hashToString(cost, password.toCharArray());
         return result;
     }
 

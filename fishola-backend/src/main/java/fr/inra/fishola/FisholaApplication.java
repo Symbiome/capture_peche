@@ -5,17 +5,17 @@ import org.flywaydb.core.Flyway;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class FisholaApplication {
 
+    @Inject
+    protected FisholaConfiguration config;
+
     void onStart(@Observes StartupEvent ev) {
 
-        String url = "jdbc:postgresql://172.17.0.2/fishola";
-        String user = "postgres";
-        String password = null;
-
-        Flyway flyway = Flyway.configure().dataSource(url, user, password).load();
+        Flyway flyway = Flyway.configure().dataSource(config.getJdbcUrl(), config.getJdbcUser(), config.getJdbcPassword()).load();
 
         flyway.migrate();
 

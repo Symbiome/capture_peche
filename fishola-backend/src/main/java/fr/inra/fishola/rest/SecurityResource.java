@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.UserDao;
 import fr.inra.fishola.database.UserProfile;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +32,13 @@ public class SecurityResource {
     @Inject
     protected UserDao userDao;
 
+    @Inject
+    protected FisholaConfiguration config;
+
     protected Algorithm getJwtSecretAlgorithm() {
-        // TODO AThimel 21/11/2019 Real key
-        return Algorithm.HMAC512("v3ry 53cr37 k3y");
+        String jwtSecret = config.getJwtSecret();
+        Algorithm result = Algorithm.HMAC512(jwtSecret);
+        return result;
     }
 
     @PUT
@@ -68,7 +73,7 @@ public class SecurityResource {
                 .withClaim("passwordHashed", passwordHashed)
                 .sign(algorithmHS);
 
-        String apiBaseUrl = "http://0.0.0.0:8080";
+        String apiBaseUrl = config.getBackendBaseUrl();
         String verifyUrl = String.format("%s/api/v1/security/verify?t=%s", apiBaseUrl, token);
 
         System.out.println("Verify URL is: " + verifyUrl);
