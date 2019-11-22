@@ -206,6 +206,10 @@
                 -->
               <inputSchema>public</inputSchema>
             </database>
+            <generate>
+<!--              <pojos>true</pojos>-->
+              <daos>true</daos>
+            </generate>
             <target>
               <packageName>fr.inra.fishola.entities</packageName>
               <directory>target/generated-sources/jooq</directory>

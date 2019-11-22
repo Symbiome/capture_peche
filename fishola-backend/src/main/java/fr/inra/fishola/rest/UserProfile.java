@@ -1,4 +1,4 @@
-package fr.inra.fishola.database;
+package fr.inra.fishola.rest;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inra.fishola.entities.enums.Gender;

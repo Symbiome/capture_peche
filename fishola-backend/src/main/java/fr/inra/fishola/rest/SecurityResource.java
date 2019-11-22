@@ -2,12 +2,15 @@ package fr.inra.fishola.rest;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.UserDao;
-import fr.inra.fishola.database.UserProfile;
+import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataAccessException;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -23,6 +26,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/security")
@@ -51,6 +55,11 @@ public class SecurityResource {
         }
 
         if (StringUtils.isEmpty(bean.firstName) || StringUtils.isEmpty(bean.lastName) || StringUtils.isEmpty(bean.email) || StringUtils.isEmpty(bean.password)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // On vérifie qu'il n'y a pas déjà un compte avec cet email
+        if (loadUser(bean.email).isPresent()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -85,22 +94,30 @@ public class SecurityResource {
     @Path("/verify")
     public Response verifyAfterRegistration(@QueryParam("t") String token) {
 
-        Algorithm algorithmHS = getJwtSecretAlgorithm();
-        DecodedJWT verify = JWT.require(algorithmHS)
-                .withIssuer("fishola-backend")
-                .build()
-                .verify(token);
+        try {
+            Algorithm algorithmHS = getJwtSecretAlgorithm();
+            DecodedJWT verify = JWT.require(algorithmHS)
+                    .withIssuer("fishola-backend")
+                    .build()
+                    .verify(token);
 
-        String email = verify.getSubject();
+            String email = verify.getSubject();
 
-        userDao.create(
-                verify.getClaim("firstName").asString(),
-                verify.getClaim("lastName").asString(),
-                email,
-                verify.getClaim("passwordHashed").asString()
-        );
+            userDao.create(
+                    verify.getClaim("firstName").asString(),
+                    verify.getClaim("lastName").asString(),
+                    email,
+                    verify.getClaim("passwordHashed").asString()
+            );
 
-        return Response.ok().build();
+            // TODO: 22/11/2019 Réponse adaptée
+            return Response.ok().build();
+        } catch (TokenExpiredException | InvalidClaimException tee) {
+            throw new NotAuthenticatedException();
+        } catch (DataAccessException dae) {
+            // TODO: 22/11/2019 Réponse adaptée
+            return Response.ok().build();
+        }
     }
 
     @GET
@@ -138,6 +155,23 @@ public class SecurityResource {
 
     }
 
+    protected UserProfile toUserProfile(FisholaUser input) {
+        ImmutableUserProfile result = ImmutableUserProfile.builder()
+                .email(input.getEmail())
+                .firstName(input.getFirstName())
+                .lastName(Optional.ofNullable(input.getLastName()))
+                .birthYear(Optional.ofNullable(input.getBirthYear()))
+                .gender(Optional.ofNullable(input.getGender()))
+                .build();
+        return result;
+    }
+
+    protected Optional<UserProfile> loadUser(String email) {
+        Optional<FisholaUser> user = userDao.findByEmail(email);
+        Optional<UserProfile> result = user.map(this::toUserProfile);
+        return result;
+    }
+
     @GET
     @Path("/profile")
     public UserProfile getProfile(@CookieParam("token") Cookie cookie) {
@@ -153,7 +187,7 @@ public class SecurityResource {
                     .build()
                     .verify(cookie.getValue());
             String email = verify.getSubject();
-            UserProfile result = userDao.loadUser(email).orElseThrow(NotAuthenticatedException::new);
+            UserProfile result = loadUser(email).orElseThrow(NotAuthenticatedException::new);
             return result;
         } catch (JWTVerificationException ve) {
             ve.printStackTrace();
