@@ -20,21 +20,15 @@ public abstract class AbstractFisholaDao {
     protected FisholaConfiguration config;
 
     public interface JooqContext<T> {
-
         T execute(DSLContext context);
-
     }
 
     public interface JooqConfiguration<T> {
-
         T execute(Configuration configuration);
-
     }
 
     public interface JooqDao<D, T> {
-
         T execute(D dao);
-
     }
 
     protected Connection newConnection() throws SQLException {
