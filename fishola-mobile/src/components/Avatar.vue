@@ -1,0 +1,69 @@
+<template>
+  <div class="avatar color0">
+    <span>{{initials}}</span>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
+@Component
+export default class Picture extends Vue {
+
+  initials = '..';
+
+  mounted() {
+
+    function httpCall(method: string, url:string, data:any, callback:(result:any)=>any) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.withCredentials = true;
+        if (callback) {
+            xhr.onload = function() {
+              let responseText = this['responseText'];
+              // console.log("responseText: " + responseText);
+              let parsed = JSON.parse(responseText);
+              callback(parsed);
+          };
+        }
+        if (data != null) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(data));
+        }
+        else xhr.send();
+    }
+
+    httpCall('GET', "http://0.0.0.0:8080/api/v1/security/profile", null, this.profileLoaded);
+
+  }
+
+  profileLoaded(result:any) {
+    this.initials = result.initials;
+  }
+
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="less">
+
+  @import "../less/main";
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 0px solid;
+    line-height: 16px;
+    font-size: 14px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar.color0 {
+    color: @white;
+    background: @avatar-background;
+  }
+
+</style>
