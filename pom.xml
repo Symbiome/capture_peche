@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <quarkus.version>1.0.0.CR2</quarkus.version>
+        <quarkus.version>1.0.0.Final</quarkus.version>
         <jooqVersion>3.12.3</jooqVersion>
         <flywayVersion>6.0.8</flywayVersion>
         <postgresqlDriverVersion>42.2.8</postgresqlDriverVersion>
