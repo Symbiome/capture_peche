@@ -5,6 +5,7 @@
 </template>
 
 <script lang="ts">
+import UserProfile from '@/pojos/UserProfile';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
@@ -45,7 +46,8 @@ export default class Picture extends Vue {
   }
 
   profileLoaded(result:any) {
-    this.initials = result.initials;
+    let profile = UserProfile.fromJson(result);
+    this.initials = profile.initials;
   }
 
 }
