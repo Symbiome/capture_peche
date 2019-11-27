@@ -1,31 +1,36 @@
 <template>
-  <div class="header">
+  <div class="my-trips-header">
     <div class="left">
-      <Title/>
+      <span>Mes sorties</span>
     </div>
     <div class="right">
-      <Avatar/>
-      <FeedbackAnchor/>
-      <Menu/>
+      <div>
+        <i class="far fa-calendar-alt"></i>
+        <i class="fas fa-sort-down"></i>
+      </div>
+      <div>
+        <span>{{count}}</span>
+        <i class="fas fa-candy-cane"></i>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import Title from '@/components/Title.vue';
-import Avatar from '@/components/Avatar.vue';
-import FeedbackAnchor from '@/components/FeedbackAnchor.vue';
-import Menu from '@/components/Menu.vue';
-
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 export default {
-  name: 'header',
+  props: {
+    count: {
+      type: String
+    }
+  },
+  name: 'my-trips-header',
   components: {
-    Title,
-    Avatar,
-    FeedbackAnchor,
-    Menu
+    // Title,
+    // Avatar,
+    // FeedbackAnchor,
+    // Menu
   }
 }
 
@@ -39,7 +44,7 @@ export default {
 
 @import "../less/main";
 
-.header {
+.my-trips-header {
 
   height: 50px;
   padding-left: 10px;
@@ -47,6 +52,7 @@ export default {
   padding-top: 10px;
   padding-bottom: 10px;
   line-height: 30px;
+  background-color: @terra-cotta;
 
   .left {
     width: 25%;

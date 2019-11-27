@@ -1,17 +1,19 @@
 <template>
-  <div class="home">
+  <div class="my-trips">
     <Header />
+    <MyTripsHeader count="5" />
   </div>
 </template>
 
 <script>
 import Header from '@/components/Header.vue'
+import MyTripsHeader from '@/components/MyTripsHeader.vue'
 
 export default {
-  name: 'home',
+  name: 'my-trips',
   components: {
     Header,
-    // HelloWorld
+    MyTripsHeader
   }
 }
 </script>
