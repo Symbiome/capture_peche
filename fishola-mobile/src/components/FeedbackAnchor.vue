@@ -1,6 +1,6 @@
 <template>
   <div class="feedback-anchor">
-    ?
+    <i class="far fa-question-circle"></i>
   </div>
 </template>
 

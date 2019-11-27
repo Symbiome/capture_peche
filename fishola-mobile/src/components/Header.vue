@@ -1,9 +1,13 @@
 <template>
   <div class="header">
-    <Title/>
-    <Avatar/>
-    <FeedbackAnchor/>
-    <Menu/>
+    <div class="left">
+      <Title/>
+    </div>
+    <div class="right">
+      <Avatar/>
+      <FeedbackAnchor/>
+      <Menu/>
+    </div>
   </div>
 </template>
 
@@ -36,7 +40,32 @@ export default {
 @import "../less/main";
 
 .header {
-  background-color: @pelorous;
-  color: @white;
+  height: 50px;
+  // background-color: @pelorous;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  line-height: 30px;
+  
+  * {
+    // background-color: @pelorous;
+    // color: @white;
+  }
+
+  .left {
+    width: 25%;
+    float: left;
+  }
+  .right {
+    width: 75%;
+    float: left;
+    text-align: right;
+
+    * {
+      display: inline;
+      padding: 5px;
+    }
+  }
 }
 </style>

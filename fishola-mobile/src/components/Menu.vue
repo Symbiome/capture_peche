@@ -1,6 +1,6 @@
 <template>
   <div class="menu">
-    Menu
+    <i class="fas fa-bars"></i>
   </div>
 </template>
 
