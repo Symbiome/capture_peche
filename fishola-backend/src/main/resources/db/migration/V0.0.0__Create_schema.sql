@@ -29,6 +29,15 @@ CREATE TABLE species (
     built_in BOOLEAN NOT NULL
 );
 
+CREATE TABLE species_by_lake (
+    lake UUID REFERENCES lake(id) NOT NULL,
+    species UUID REFERENCES species(id) NOT NULL,
+    alias TEXT
+);
+
+CREATE UNIQUE INDEX species_by_lake_unique_idx
+    ON species_by_lake(lake, species);
+
 CREATE TABLE method (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
@@ -63,7 +72,7 @@ CREATE TABLE trip_expected_species (
     species UUID REFERENCES species(id) NOT NULL
 );
 
-CREATE UNIQUE INDEX trip_expected_species_idx
+CREATE UNIQUE INDEX trip_expected_species_unique_idx
     ON trip_expected_species(trip, species);
 
 CREATE TABLE trip_methods (
@@ -71,7 +80,7 @@ CREATE TABLE trip_methods (
     method UUID REFERENCES method(id) NOT NULL
 );
 
-CREATE UNIQUE INDEX trip_methods_idx
+CREATE UNIQUE INDEX trip_methods_unique_idx
     ON trip_methods(trip, method);
 
 CREATE TABLE catch (

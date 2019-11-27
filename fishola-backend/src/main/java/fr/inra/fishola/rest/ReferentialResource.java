@@ -1,9 +1,12 @@
 package fr.inra.fishola.rest;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import fr.inra.fishola.database.ReferentialDao;
 import fr.inra.fishola.entities.tables.pojos.Lake;
 import fr.inra.fishola.entities.tables.pojos.Method;
 import fr.inra.fishola.entities.tables.pojos.Species;
+import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 
 import javax.inject.Inject;
@@ -11,7 +14,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/v1/referential")
 @Produces(MediaType.APPLICATION_JSON)
@@ -39,6 +46,24 @@ public class ReferentialResource {
     public List<Species> getSpecies() {
         List<Species> result = referentialDao.listBuiltInSpecies();
         return result;
+    }
+
+    @GET
+    @Path("/species-per-lake")
+    public Map<UUID, Collection<Species>> getSpeciesPerLake() {
+        Map<UUID, Species> rawSpeciesIndex = referentialDao.speciesIndex();
+
+        List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
+        Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLake);
+
+        Multimap<UUID, Species> result = Multimaps.transformValues(entitiesByLakeId, input -> {
+            Species rawSpecies = rawSpeciesIndex.get(input.getSpecies());
+            String nameOrAlias = Optional.ofNullable(input.getAlias()).orElse(rawSpecies.getName());
+            Species speciesWithAlias = new Species(rawSpecies.getId(), nameOrAlias, rawSpecies.getBuiltIn());
+            return speciesWithAlias;
+        });
+
+        return result.asMap();
     }
 
     @GET

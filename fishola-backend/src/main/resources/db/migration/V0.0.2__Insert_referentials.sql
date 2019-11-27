@@ -4,6 +4,13 @@ INSERT INTO lake (name) VALUES
     ('Lac du Bourget'),
     ('Lac d''Aiguebelette');
 
+INSERT INTO species (name, built_in) VALUES
+    ('Omble chevalier', true),
+    ('Corégone', true),
+    ('Brochet', true),
+    ('Perche', true),
+    ('Truite', true);
+
 INSERT INTO weather (name) VALUES
     ('Ensoleillé'),
     ('Couvert'),
@@ -19,10 +26,3 @@ INSERT INTO method (name, built_in) VALUES
     ('Pêche au leurre', true),
     ('Pêche au vif', true),
     ('Pêche au coup', true);
-
-INSERT INTO species (name, built_in) VALUES
-    ('Omble chevalier', true),
-    ('Corégone', true),
-    ('Brochet', true),
-    ('Perche', true),
-    ('Truite', true);

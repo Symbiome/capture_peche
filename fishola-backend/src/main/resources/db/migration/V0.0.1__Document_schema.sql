@@ -13,14 +13,19 @@ COMMENT ON TABLE lake IS 'Lacs';
 COMMENT ON COLUMN lake.id IS 'Identifiant technique';
 COMMENT ON COLUMN lake.name IS 'Nom du lac';
 
+COMMENT ON TABLE species IS 'Espèces';
+COMMENT ON COLUMN species.id IS 'Identifiant technique';
+COMMENT ON COLUMN species.name IS 'Nom de l''espèce';
+COMMENT ON COLUMN species.built_in IS 'Est-ce que la méthode a été créée par les admins ?';
+
+COMMENT ON TABLE species_by_lake IS 'Espèces par lac';
+COMMENT ON COLUMN species_by_lake.lake IS 'Lac concerné';
+COMMENT ON COLUMN species_by_lake.species IS 'Espèce concernée';
+COMMENT ON COLUMN species_by_lake.alias IS 'Alias éventuel sur l''espèce a une appelation différente sur ce lac';
+
 COMMENT ON TABLE weather IS 'Météos';
 COMMENT ON COLUMN weather.id IS 'Identifiant technique';
 COMMENT ON COLUMN weather.name IS 'Nom de la météo';
-
-COMMENT ON TABLE species IS 'Espèces';
-COMMENT ON COLUMN species.id IS 'Identifiant technique';
-COMMENT ON COLUMN species.name IS 'Nom de l''espèce''';
-COMMENT ON COLUMN species.built_in IS 'Est-ce que la méthode a été créée par les admins ?';
 
 COMMENT ON TABLE method IS 'Méthodes de pêche';
 COMMENT ON COLUMN method.id IS 'Identifiant technique';
