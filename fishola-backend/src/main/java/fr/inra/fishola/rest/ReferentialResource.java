@@ -4,9 +4,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inra.fishola.database.ReferentialDao;
 import fr.inra.fishola.entities.tables.pojos.Lake;
-import fr.inra.fishola.entities.tables.pojos.Method;
 import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
+import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 
 import javax.inject.Inject;
@@ -35,9 +35,9 @@ public class ReferentialResource {
     }
 
     @GET
-    @Path("/methods")
-    public List<Method> getMethods() {
-        List<Method> result = referentialDao.listBuiltInMethods();
+    @Path("/techniques")
+    public List<Technique> getMethods() {
+        List<Technique> result = referentialDao.listBuiltInMethods();
         return result;
     }
 

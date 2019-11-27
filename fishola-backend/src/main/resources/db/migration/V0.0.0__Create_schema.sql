@@ -38,7 +38,7 @@ CREATE TABLE species_by_lake (
 CREATE UNIQUE INDEX species_by_lake_unique_idx
     ON species_by_lake(lake, species);
 
-CREATE TABLE method (
+CREATE TABLE technique (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     built_in BOOLEAN NOT NULL
@@ -75,20 +75,20 @@ CREATE TABLE trip_expected_species (
 CREATE UNIQUE INDEX trip_expected_species_unique_idx
     ON trip_expected_species(trip, species);
 
-CREATE TABLE trip_methods (
+CREATE TABLE trip_techniques (
     trip UUID REFERENCES trip(id) NOT NULL,
-    method UUID REFERENCES method(id) NOT NULL
+    technique UUID REFERENCES technique(id) NOT NULL
 );
 
-CREATE UNIQUE INDEX trip_methods_unique_idx
-    ON trip_methods(trip, method);
+CREATE UNIQUE INDEX trip_techniques_unique_idx
+    ON trip_techniques(trip, technique);
 
 CREATE TABLE catch (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     trip UUID REFERENCES trip(id) NOT NULL,
     catch_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     species UUID REFERENCES species(id) NOT NULL,
-    method UUID REFERENCES method(id) NOT NULL,
+    technique UUID REFERENCES technique(id) NOT NULL,
     picture OID,
     size DOUBLE PRECISION,
     weight DOUBLE PRECISION,

@@ -27,10 +27,10 @@ COMMENT ON TABLE weather IS 'Météos';
 COMMENT ON COLUMN weather.id IS 'Identifiant technique';
 COMMENT ON COLUMN weather.name IS 'Nom de la météo';
 
-COMMENT ON TABLE method IS 'Méthodes de pêche';
-COMMENT ON COLUMN method.id IS 'Identifiant technique';
-COMMENT ON COLUMN method.name IS 'Nom de la méthode';
-COMMENT ON COLUMN method.built_in IS 'Est-ce que la méthode a été créée par les admins ?';
+COMMENT ON TABLE technique IS 'Techniques de pêche';
+COMMENT ON COLUMN technique.id IS 'Identifiant technique';
+COMMENT ON COLUMN technique.name IS 'Nom de la technique';
+COMMENT ON COLUMN technique.built_in IS 'Est-ce que la technique a été créée par les admins ?';
 
 COMMENT ON TABLE released_fish_state IS 'État dans lequel le poisson a été relâché';
 COMMENT ON COLUMN released_fish_state.id IS 'Identifiant technique';
@@ -56,16 +56,16 @@ COMMENT ON TABLE trip_expected_species IS 'Espèces recherchées pendant une sor
 COMMENT ON COLUMN trip_expected_species.trip IS 'Identifiant de la sortie';
 COMMENT ON COLUMN trip_expected_species.species IS 'Identifiant de l''espèce';
 
-COMMENT ON TABLE trip_methods IS 'Méthodes de pêche utilisées pendant une sortie';
-COMMENT ON COLUMN trip_methods.trip IS 'Identifiant de la sortie';
-COMMENT ON COLUMN trip_methods.method IS 'Identifiant de la méthode de pêche';
+COMMENT ON TABLE trip_techniques IS 'Techniques de pêche utilisées pendant une sortie';
+COMMENT ON COLUMN trip_techniques.trip IS 'Identifiant de la sortie';
+COMMENT ON COLUMN trip_techniques.technique IS 'Identifiant de la technique de pêche';
 
 COMMENT ON TABLE catch IS 'Captures';
 COMMENT ON COLUMN catch.id IS 'Identifiant technique';
 COMMENT ON COLUMN catch.trip IS 'Sortie concernée';
 COMMENT ON COLUMN catch.catch_time IS 'Heure de la capture';
 COMMENT ON COLUMN catch.species IS 'Espèce capturée';
-COMMENT ON COLUMN catch.method IS 'Méthode de pêche de la capture';
+COMMENT ON COLUMN catch.technique IS 'Technique de pêche de la capture';
 COMMENT ON COLUMN catch.picture IS 'Photo';
 COMMENT ON COLUMN catch.size IS 'Taille du poisson (cm)';
 COMMENT ON COLUMN catch.weight IS 'Poids du poisson (g)';

@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
-import fr.inra.fishola.entities.tables.daos.MethodDao;
 import fr.inra.fishola.entities.tables.daos.SpeciesDao;
+import fr.inra.fishola.entities.tables.daos.TechniqueDao;
 import fr.inra.fishola.entities.tables.daos.WeatherDao;
 import fr.inra.fishola.entities.tables.pojos.Lake;
-import fr.inra.fishola.entities.tables.pojos.Method;
 import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
+import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 import org.jooq.impl.DAOImpl;
 
@@ -31,8 +31,8 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<Method> listBuiltInMethods() {
-        List<Method> result = withDao(MethodDao.class, dao -> dao.fetchByBuiltIn(true));
+    public List<Technique> listBuiltInMethods() {
+        List<Technique> result = withDao(TechniqueDao.class, dao -> dao.fetchByBuiltIn(true));
         return result;
     }
 

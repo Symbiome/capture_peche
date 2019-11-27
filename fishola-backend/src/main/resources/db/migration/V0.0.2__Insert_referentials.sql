@@ -20,7 +20,7 @@ INSERT INTO weather (name) VALUES
     ('Pluvieux'),
     ('Brumeux');
 
-INSERT INTO method (name, built_in) VALUES
+INSERT INTO technique (name, built_in) VALUES
     ('Pêche à la traîne', true),
     ('Pêche à la sonde', true),
     ('Pêche au leurre', true),
