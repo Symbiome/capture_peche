@@ -13,7 +13,7 @@
     <properties>
         <quarkus.version>1.0.0.Final</quarkus.version>
         <jooqVersion>3.12.3</jooqVersion>
-        <flywayVersion>6.0.8</flywayVersion>
+        <flywayVersion>6.1.0</flywayVersion>
         <postgresqlDriverVersion>42.2.8</postgresqlDriverVersion>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
