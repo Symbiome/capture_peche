@@ -20,10 +20,17 @@ export default class Picture extends Vue {
         xhr.withCredentials = true;
         if (callback) {
             xhr.onload = function() {
-              let responseText = this['responseText'];
-              // console.log("responseText: " + responseText);
-              let parsed = JSON.parse(responseText);
-              callback(parsed);
+              // console.log(this);
+              if (this.status == 200) {
+                let responseText = this['responseText'];
+                // console.log("responseText: " + responseText);
+                let parsed = JSON.parse(responseText);
+                callback(parsed);
+              } else if (this.status == 401) {
+                console.error("Need to login");
+              } else {
+                console.error("C'est la merde noire");
+              }
           };
         }
         if (data != null) {
