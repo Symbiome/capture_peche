@@ -14,4 +14,14 @@ export default class Title extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+
+@font-face {
+    font-family: 'Bridamount';
+    src: url('/bridamount.ttf');
+}
+
+.header-title {
+  font-family: 'bridamount', 'Avenir', Helvetica, Arial, sans-serif;
+  font-size: 24px;
+}
 </style>
