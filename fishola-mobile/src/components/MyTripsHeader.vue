@@ -46,13 +46,15 @@ export default {
 
 .my-trips-header {
 
-  height: 50px;
+  height: 39px;
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 10px;
   padding-bottom: 10px;
-  line-height: 30px;
-  background-color: @terra-cotta;
+
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 19px;
 
   .left {
     width: 25%;

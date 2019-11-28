@@ -11,6 +11,11 @@
 body {
   background-color: @pelorous;
   margin: 0px;
+  height: 100%;
+}
+
+html {
+  height: 100%;
 }
 
 * {
@@ -18,7 +23,7 @@ body {
 }
 
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: @white;

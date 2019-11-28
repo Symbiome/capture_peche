@@ -17,7 +17,7 @@ export default class Title extends Vue {
 
 @font-face {
     font-family: 'Bridamount';
-    src: url('/bridamount.ttf');
+    src: url('/fonts/bridamount.ttf');
 }
 
 .header-title {
