@@ -12,7 +12,6 @@ import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
-import org.jooq.impl.DAOImpl;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -22,12 +21,12 @@ import java.util.UUID;
 public class ReferentialDao extends AbstractFisholaDao {
 
     public List<Lake> listLakes() {
-        List<Lake> result = withDao(LakeDao.class, DAOImpl::findAll);
+        List<Lake> result = withDao(LakeDao.class, LakeDao::findAll);
         return result;
     }
 
     public List<Weather> listWeathers() {
-        List<Weather> result = withDao(WeatherDao.class, DAOImpl::findAll);
+        List<Weather> result = withDao(WeatherDao.class, WeatherDao::findAll);
         return result;
     }
 
@@ -48,12 +47,11 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public List<SpeciesByLake> listSpeciesByLake() {
-        List<SpeciesByLake> result = withContext(context -> {
-            List<SpeciesByLake> dtos = context.selectFrom(Tables.SPECIES_BY_LAKE)
+        List<SpeciesByLake> result = withContext(context ->
+                context.selectFrom(Tables.SPECIES_BY_LAKE)
                     .fetch()
-                    .into(SpeciesByLake.class);
-            return dtos;
-        });
+                    .into(SpeciesByLake.class)
+        );
         return result;
     }
 
