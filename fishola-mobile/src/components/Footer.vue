@@ -1,13 +1,13 @@
 <template>
   <div class="footer">
     <div class="left">
-      <i class="fas fa-sign-out-alt"></i>
+      <i class="icon-logout"></i>
     </div>
     <div class="middle">
-      <i class="fas fa-tachometer-alt"></i>
+      <i class="icon-dashboard"></i>
     </div>
     <div class="right">
-      <i class="fas fa-home"></i>
+      <i class="icon-home"></i>
     </div>
   </div>
 </template>

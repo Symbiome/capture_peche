@@ -1,7 +1,7 @@
 <template>
   <div class="new-trip">
     <div class="center">
-      <button>+ Nouveau</button>
+      <button><i class="icon-plus"/> Nouveau</button>
     </div>
   </div>
 </template>
@@ -49,6 +49,10 @@ export default class Picture extends Vue {
     background-color: @terra-cotta;
 
     border: 0px;
+
+    i {
+      margin-right: 5px;
+    }
   }
 }
 

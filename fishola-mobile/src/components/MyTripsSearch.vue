@@ -1,6 +1,6 @@
 <template>
   <div class="my-trips-search">
-    <i class="fas fa-search icon-search"></i>
+    <i class="icon-search">icon-search</i>
     <input type="text" placeholder="Recherche" name="search_term"/>
   </div>
 </template>

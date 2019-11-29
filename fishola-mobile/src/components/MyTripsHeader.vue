@@ -5,12 +5,12 @@
     </div>
     <div class="right">
       <div>
-        <i class="far fa-calendar-alt"></i>
-        <i class="fas fa-sort-down"></i>
+        <i class="icon-calendar"></i>
+        <i class="icon-sort-down">icon-sort-down</i>
       </div>
       <div>
         <span>{{count}}</span>
-        <i class="fas fa-candy-cane"></i>
+        <i class="icon-fishing"></i>
       </div>
     </div>
   </div>
