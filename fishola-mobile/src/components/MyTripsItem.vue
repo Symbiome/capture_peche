@@ -47,7 +47,7 @@ export default {
 
     .left-icon {
       margin-right: 10px;
-      color: @gondola;
+      color: @gunmetal;
     }
     .right-icon {
       margin-left: 10px;
