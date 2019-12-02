@@ -1,83 +1,81 @@
+/*
+  Icon Font: Fishola-Icons
+*/
+
 @font-face {
-    font-family: 'Fishola-Icons';
-    src:
-      url('/fonts/Fishola-Icons.ttf?n18wp9') format('truetype'),
-      url('/fonts/Fishola-Icons.woff?n18wp9') format('woff'),
-      url('/fonts/Fishola-Icons.svg?n18wp9#Fishola-Icons') format('svg');
-    font-weight: normal;
-    font-style: normal;
-    font-display: block;
+  font-family: "Fishola-Icons";
+  src: url("/fonts/Fishola-Icons.eot");
+  src: url("/fonts/Fishola-Icons.eot?#iefix") format("embedded-opentype"),
+       url("/fonts/Fishola-Icons.woff") format("woff"),
+       url("/fonts/Fishola-Icons.ttf") format("truetype"),
+       url("/fonts/Fishola-Icons.svg#Fishola-Icons") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "Fishola-Icons";
+    src: url("/fonts/Fishola-Icons.svg#Fishola-Icons") format("svg");
   }
-  
-  i {
-    /* use !important to prevent issues with browser extensions that change fonts */
-    font-family: 'Fishola-Icons' !important;
-    speak: none;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-  
-    /* Better Font Rendering =========== */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  .icon-arrow:before {
-    content: "\e900";
-  }
-  .icon-calendar:before {
-    content: "\e901";
-  }
-  .icon-clock:before {
-    content: "\e902";
-  }
-  .icon-dashboard:before {
-    content: "\e903";
-  }
-  .icon-delete:before {
-    content: "\e904";
-  }
-  .icon-edit:before {
-    content: "\e905";
-  }
-  .icon-faq:before {
-    content: "\e906";
-  }
-  .icon-fish:before {
-    content: "\e907";
-  }
-  .icon-fishing:before {
-    content: "\e908";
-  }
-  .icon-home:before {
-    content: "\e909";
-  }
-  .icon-info:before {
-    content: "\e90a";
-  }
-  .icon-lake:before {
-    content: "\e90b";
-  }
-  .icon-logout:before {
-    content: "\e90c";
-  }
-  .icon-menu:before {
-    content: "\e90d";
-  }
-  .icon-plus:before {
-    content: "\e90e";
-  }
-  .icon-profile:before {
-    content: "\e90f";
-  }
-  .icon-send:before {
-    content: "\e910";
-  }
-  .icon-stop:before {
-    content: "\e911";
-  }
-  .icon-warning:before {
-    content: "\e912";
-  }
+}
+
+[data-icon]:before { content: attr(data-icon); }
+
+[data-icon]:before,
+.icon-arrow:before,
+.icon-calendar:before,
+.icon-chevron:before,
+.icon-clock:before,
+.icon-dashboard:before,
+.icon-delete:before,
+.icon-edit:before,
+.icon-faq:before,
+.icon-fish:before,
+.icon-fishing:before,
+.icon-home:before,
+.icon-info:before,
+.icon-lake:before,
+.icon-logout:before,
+.icon-magnifying-glass:before,
+.icon-menu:before,
+.icon-plus:before,
+.icon-profile:before,
+.icon-send:before,
+.icon-stop:before,
+.icon-warning:before {
+  display: inline-block;
+  font-family: "Fishola-Icons";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-decoration: inherit;
+  text-rendering: optimizeLegibility;
+  text-transform: none;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+}
+
+.icon-arrow:before { content: "\f100"; }
+.icon-calendar:before { content: "\f101"; }
+.icon-chevron:before { content: "\f102"; }
+.icon-clock:before { content: "\f103"; }
+.icon-dashboard:before { content: "\f104"; }
+.icon-delete:before { content: "\f105"; }
+.icon-edit:before { content: "\f106"; }
+.icon-faq:before { content: "\f107"; }
+.icon-fish:before { content: "\f108"; }
+.icon-fishing:before { content: "\f109"; }
+.icon-home:before { content: "\f10a"; }
+.icon-info:before { content: "\f10b"; }
+.icon-lake:before { content: "\f10c"; }
+.icon-logout:before { content: "\f10d"; }
+.icon-magnifying-glass:before { content: "\f10e"; }
+.icon-menu:before { content: "\f10f"; }
+.icon-plus:before { content: "\f110"; }
+.icon-profile:before { content: "\f111"; }
+.icon-send:before { content: "\f112"; }
+.icon-stop:before { content: "\f113"; }
+.icon-warning:before { content: "\f114"; }

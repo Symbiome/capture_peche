@@ -1,6 +1,6 @@
 <template>
   <div class="my-trips-search">
-    <i class="icon-search">icon-search</i>
+    <i class="icon-magnifying-glass"></i>
     <input type="text" placeholder="Recherche" name="search_term"/>
   </div>
 </template>
@@ -43,7 +43,7 @@ export default {
   margin: 20px;
   line-height: 40px;
 
-  .icon-search {
+  .icon-magnifying-glass {
     color: @pelorous;
     margin-right: 10px;
   }

@@ -20,6 +20,8 @@
 /*/.factorypath
 *~
 doc/mcd/output
+doc/icons/output
+doc/icons/.fontcustom-manifest.json
 /*/node
 /node_modules
 /*/node_modules

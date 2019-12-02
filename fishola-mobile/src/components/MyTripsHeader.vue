@@ -6,7 +6,7 @@
     <div class="right">
       <div>
         <i class="icon-calendar"></i>
-        <i class="icon-sort-down">icon-sort-down</i>
+        <i class="icon-chevron"></i>
       </div>
       <div>
         <span>{{count}}</span>
