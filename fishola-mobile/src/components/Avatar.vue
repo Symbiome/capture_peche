@@ -41,7 +41,8 @@ export default class Picture extends Vue {
         else xhr.send();
     }
 
-    httpCall('GET', "http://0.0.0.0:8080/api/v1/security/profile", null, this.profileLoaded);
+    let url = `http://${location.hostname}:8080/api/v1/security/profile`;
+    httpCall('GET', url, null, this.profileLoaded);
 
   }
 
@@ -71,7 +72,7 @@ export default class Picture extends Vue {
     justify-content: center;
   }
   .avatar.color0 {
-    color: @white;
+    color: @gunmetal;
     background: @avatar-background;
   }
 

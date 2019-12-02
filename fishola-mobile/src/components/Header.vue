@@ -4,9 +4,15 @@
       <Title/>
     </div>
     <div class="right">
-      <Avatar/>
-      <FeedbackAnchor/>
-      <Menu/>
+      <div class="header-item">
+        <Avatar/>
+      </div>
+      <div class="header-item">
+        <FeedbackAnchor/>
+      </div>
+      <div class="header-item">
+        <Menu/>
+      </div>
     </div>
   </div>
 </template>
@@ -41,11 +47,11 @@ export default {
 
 .header {
 
-  height: 50px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  height: 35px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  padding-bottom: 0px;
   line-height: 30px;
 
   .left {

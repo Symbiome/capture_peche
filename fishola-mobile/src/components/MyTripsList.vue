@@ -36,6 +36,7 @@ export default {
   color: @gunmetal;
   height: 100%;
   padding-top: 30px;
+  margin-top: 10px;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
 
