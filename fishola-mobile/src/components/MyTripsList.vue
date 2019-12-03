@@ -1,29 +1,26 @@
 <template>
   <div class="my-trips-list">
-    <MyTripsItem/>
-    <MyTripsItem/>
-    <MyTripsItem/>
-    <MyTripsItem/>
-    <MyTripsItem/>
+    <div v-for="t in trips" v-bind:key="t.id">
+      <MyTripsItem v-bind:trip="t"/>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 
 import MyTripsItem from '@/components/MyTripsItem.vue';
+import Trip from '@/pojos/Trip';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  name: 'my-trips-list',
+@Component({
   components: {
     MyTripsItem
   }
+})
+export default class MyTripsList extends Vue {
+  @Prop() trips!:Trip[];
 }
-
-// @Component
-// export default class Header extends Vue {
-// }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

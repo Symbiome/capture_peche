@@ -22,7 +22,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default {
   props: {
     count: {
-      type: String
+      type: Number
     }
   },
   name: 'my-trips-header',

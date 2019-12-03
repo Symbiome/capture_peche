@@ -5,21 +5,21 @@
       <input type="checkbox"/>
     </div>
     <div class="item-description">
-      <div class="name">Sortie du mercredi 6 novembre</div>
+      <div class="name">{{trip.name}}</div>
       <div class="left-part">
         <i class="icon-calendar left-icon"/>
-        Mercredi 6 novembre
+        {{trip.date}}
       </div>
       <div class="right-part">
-        4h49min
+        {{trip.duration}}
         <i class="icon-clock right-icon"/>
       </div>
       <div class="left-part">
         <i class="icon-lake left-icon"/>
-        Lac Léman
+        {{trip.lake}}
       </div>
       <div class="right-part">
-        4
+        {{trip.catchs.length}}
         <i class="icon-fish right-icon"/>
       </div>
     </div>
@@ -28,17 +28,19 @@
 
 <script lang="ts">
 
+import Trip from '@/pojos/Trip';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  name: 'my-trips-item',
-  components: {
-  }
-}
-
-// @Component
-// export default class Header extends Vue {
+// export default {
+//   name: 'my-trips-item',
+//   components: {
+//   }
 // }
+
+@Component
+export default class MyTripItem extends Vue {
+  @Prop() trip!: Trip
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
