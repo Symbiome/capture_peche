@@ -8,7 +8,7 @@
 
 <script lang="ts">
 
-import MyTripsItem from '@/components/MyTripsItem.vue';
+import MyTripsItem from '@/components/my-trips/MyTripsItem.vue';
 import Trip from '@/pojos/Trip';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -26,7 +26,7 @@ export default class MyTripsList extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 
-@import "../less/main";
+@import "../../less/main";
 
 .my-trips-list {
   background-color: @white-smoke;

@@ -18,15 +18,15 @@
 </template>
 
 <script lang="ts">
-import Title from '@/components/Title.vue';
-import Avatar from '@/components/Avatar.vue';
-import FeedbackAnchor from '@/components/FeedbackAnchor.vue';
-import Menu from '@/components/Menu.vue';
+import Title from '@/layout/Title.vue';
+import Avatar from '@/components/common/Avatar.vue';
+import FeedbackAnchor from '@/components/common/FeedbackAnchor.vue';
+import Menu from '@/layout/Menu.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 export default {
-  name: 'header',
+  name: 'fishola-header',
   components: {
     Title,
     Avatar,

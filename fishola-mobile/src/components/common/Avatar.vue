@@ -57,7 +57,7 @@ export default class Picture extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 
-  @import "../less/main";
+  @import "../../less/main";
 
   .avatar {
     width: 30px;

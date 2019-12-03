@@ -1,10 +1,10 @@
 <template>
   <div class="my-trips">
-    <Header />
+    <FisholaHeader />
     <MyTripsHeader v-bind:count="trips.length" />
     <MyTripsSearch/>
     <MyTripsList v-bind:trips="trips"/>
-    <Footer/>
+    <FisholaFooter/>
     <NewTripButton/>
   </div>
 </template>
@@ -12,23 +12,23 @@
 <script>
 import Trip from '@/pojos/Trip';
 
-import Header from '@/components/Header.vue'
-import MyTripsHeader from '@/components/MyTripsHeader.vue'
-import MyTripsSearch from '@/components/MyTripsSearch.vue'
-import MyTripsList from '@/components/MyTripsList.vue'
-import NewTripButton from '@/components/NewTripButton.vue'
-import Footer from '@/components/Footer.vue'
+import FisholaHeader from '@/layout/FisholaHeader.vue'
+import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
+import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
+import MyTripsList from '@/components/my-trips/MyTripsList.vue'
+import NewTripButton from '@/components/my-trips/NewTripButton.vue'
+import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    Header,
+    FisholaHeader,
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
     NewTripButton,
-    Footer
+    FisholaFooter
   }
 })
 export default class MyTrips extends Vue {
