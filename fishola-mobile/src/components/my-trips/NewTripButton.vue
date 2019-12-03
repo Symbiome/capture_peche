@@ -1,6 +1,6 @@
 <template>
   <div class="new-trip">
-    <div class="center">
+    <div>
       <button><i class="icon-plus"/> Nouveau</button>
     </div>
   </div>
@@ -28,11 +28,12 @@ export default class Picture extends Vue {
   position: absolute;
   bottom: 80px;
 
-  .center {
+  display: flex;
+  justify-content: center;
+
+  div {
     height: 40px;
-    width: 135px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 152px;
   }
 
   button {
@@ -42,8 +43,8 @@ export default class Picture extends Vue {
 
     font-style: normal;
     font-weight: bold;
-    font-size: 14px;
-    line-height: 19px;
+    font-size: 18px;
+    line-height: 25px;
 
     color: @white;
     background-color: @terra-cotta;
@@ -52,6 +53,7 @@ export default class Picture extends Vue {
 
     i {
       margin-right: 5px;
+      font-size: 20px;
     }
   }
 }

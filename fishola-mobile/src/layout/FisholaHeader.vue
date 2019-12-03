@@ -1,18 +1,12 @@
 <template>
   <div class="header">
-    <div class="left">
+    <div>
       <Title/>
     </div>
-    <div class="right">
-      <div class="header-item">
-        <Avatar/>
-      </div>
-      <div class="header-item">
-        <FeedbackAnchor/>
-      </div>
-      <div class="header-item">
-        <Menu/>
-      </div>
+    <div class="header-buttons">
+      <Avatar/>
+      <FeedbackAnchor/>
+      <Menu/>
     </div>
   </div>
 </template>
@@ -47,6 +41,9 @@ export default {
 
 .header {
 
+  display: flex;
+  justify-content: space-between;
+
   height: 35px;
   padding-left: 20px;
   padding-right: 20px;
@@ -54,18 +51,14 @@ export default {
   padding-bottom: 0px;
   line-height: 30px;
 
-  .left {
-    width: 25%;
-    float: left;
-  }
-  .right {
-    width: 75%;
-    float: left;
-    text-align: right;
+
+  .header-buttons {
+    display: flex;
+    flex-direction: row;
 
     * {
-      display: inline;
-      padding: 5px;
+      margin-left: 10px;
+      margin-right: 0px;
     }
   }
 }

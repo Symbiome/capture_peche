@@ -1,12 +1,12 @@
 <template>
   <div class="footer">
-    <div class="left">
+    <div class="footer-element">
       <i class="icon-logout"></i>
     </div>
-    <div class="middle">
+    <div class="footer-element">
       <i class="icon-dashboard"></i>
     </div>
-    <div class="right">
+    <div class="footer-element">
       <i class="icon-home"></i>
     </div>
   </div>
@@ -34,6 +34,10 @@ export default {
 
 .footer {
 
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
   height: 100px;
   width: 100%;
   background-color: @zircon;
@@ -43,23 +47,15 @@ export default {
   bottom: 0;
   right: 0;
 
-  .left {
-    width: 33%;
-    float: left;
+  .footer-element {
+    height: 40px;
+    width: 40px;
+    line-height: 40px;
     text-align: center;
-    line-height: 100px;
-  }
-  .middle {
-    width: 33%;
-    float: left;
-    text-align: center;
-    line-height: 100px;
-  }
-  .right {
-    width: 33%;
-    float: left;
-    text-align: center;
-    line-height: 100px;
+
+    i {
+      font-size: 19px;
+    }
   }
 }
 </style>

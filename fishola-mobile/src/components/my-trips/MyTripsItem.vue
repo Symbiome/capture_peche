@@ -1,26 +1,34 @@
 <template>
   <div class="my-trips-item">
     <div class="item-selection">
-      <br/>
       <input type="checkbox"/>
     </div>
     <div class="item-description">
-      <div class="name">{{trip.name}}</div>
-      <div class="left-part">
-        <i class="icon-calendar left-icon"/>
-        {{trip.date}}
+      <div class="item-row">
+        <div class="name">{{trip.name}}</div>
+        <div class="right-part">
+          <i v-if="trip.canBeModified" class="icon-warning"/>
+        </div>
       </div>
-      <div class="right-part">
-        {{trip.duration}}
-        <i class="icon-clock right-icon"/>
+      <div class="item-row">
+        <div class="left-part">
+          <i class="icon-calendar"/>
+          {{trip.date}}
+        </div>
+        <div class="right-part">
+          {{trip.duration}}
+          <i class="icon-clock"/>
+        </div>
       </div>
-      <div class="left-part">
-        <i class="icon-lake left-icon"/>
-        {{trip.lake}}
-      </div>
-      <div class="right-part">
-        {{trip.catchs.length}}
-        <i class="icon-fish right-icon"/>
+      <div class="item-row">
+        <div class="left-part">
+          <i class="icon-lake"/>
+          {{trip.lake}}
+        </div>
+        <div class="right-part">
+          {{trip.catchs.length}}
+          <i class="icon-fish"/>
+        </div>
       </div>
     </div>
   </div>
@@ -49,6 +57,10 @@ export default class MyTripItem extends Vue {
 @import "../../less/main";
 
 .my-trips-item {
+
+    display: flex;
+    align-items: center;
+
     margin: 0px;
     padding-left: 30px;
     padding-right: 30px;
@@ -57,53 +69,60 @@ export default class MyTripItem extends Vue {
 
     border-bottom: 1px solid @gainsboro;
 
-    font-size: 12px;
-    line-height: 16px;
-    color: @pale-sky;
     width: 100%;
-    height: 100px;
+    height: 110px;
 
     .item-selection {
-      width: 30px;
-      float: left;
-      height: 60px;
+      width: 16px;
+      height: 16px;
+      margin-right: 20px;
 
       input {
+        margin: 0px;
       }
     }
 
     .item-description {
-      width: calc(100% - 30px);
-      padding-left: 10px;
-      float: left;
-      line-height: 24px;
+      width: calc(100% - 46px);
 
-      .left-part {
-        width: 70%;
-        float: left;
-      }
-      .right-part {
-        width: 30%;
-        float: left;
-        text-align: right;
-      }
-    }
-
-    .name {
-      font-weight: bold;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 19px;
-      color: @gunmetal;
+
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+
+        color: @pale-sky;
+
+        .name {
+          font-weight: bold;
+          font-size: 14px;
+          color: @gunmetal;
+        }
+
+        .left-part {
+          i {
+            margin-right: 10px;
+            color: @pale-sky;
+          }
+        }
+
+        .right-part {
+          i {
+            margin-left: 10px;
+            color: @pelorous;
+          }
+
+          i.icon-warning {
+            color: @terra-cotta;
+          }
+
+        }
+      }
+
     }
 
-    .left-icon {
-      margin-right: 10px;
-      color: @pale-sky;
-    }
-    .right-icon {
-      margin-left: 10px;
-      color: @pelorous;
-    }
 }
 
 </style>

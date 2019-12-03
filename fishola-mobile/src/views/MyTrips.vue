@@ -44,8 +44,15 @@ export default class MyTrips extends Vue {
     this.trips.push(new Trip('0', 'Sortie du mardi 3 décembre', 'Lac du Bourget', 'Mardi 3 décembre'));
     this.trips.push(new Trip('1', 'Pêche d\'anniversaire', 'Lac Léman', 'Jeudi 21 novembre'));
     this.trips.push(new Trip('2', 'Avec Miguel', 'Lac d\'Annecy', 'Samedi 15 octobre'));
-    this.trips.push(new Trip('4', 'Sortie du lundi 2 septembre', 'Lac d\'Aiguebelette', 'Lundi 2 septembre'));
-    this.trips.push(new Trip('3', 'Entre filles', 'Lac du Bourget', 'Lundi 28 août'));
+    this.trips.push(new Trip('3', 'Sortie du lundi 2 septembre', 'Lac d\'Aiguebelette', 'Lundi 2 septembre'));
+    this.trips.push(new Trip('4', 'Entre filles', 'Lac du Bourget', 'Lundi 28 août'));
+
+    this.trips[0].canBeModified = true;
+    this.trips[0].duration = '2h02min';
+    this.trips[1].duration = '1h22min';
+    this.trips[2].duration = '3h17min';
+    this.trips[3].duration = '2h58min';
+    this.trips[4].duration = '2h49min';
   }
 }
 

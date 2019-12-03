@@ -1,14 +1,14 @@
 <template>
   <div class="my-trips-header">
-    <div class="left">
+    <div>
       <span>Mes sorties</span>
     </div>
-    <div class="right">
-      <div>
+    <div class="header-icons">
+      <div class="header-icons-group">
         <i class="icon-calendar"></i>
         <i class="icon-chevron"></i>
       </div>
-      <div>
+      <div class="header-icons-group">
         <span>{{count}}</span>
         <i class="icon-fishing"></i>
       </div>
@@ -46,6 +46,9 @@ export default {
 
 .my-trips-header {
 
+  display: flex;
+  justify-content: space-between;
+
   height: 39px;
   padding-left: 20px;
   padding-right: 20px;
@@ -56,18 +59,25 @@ export default {
   font-size: 14px;
   line-height: 19px;
 
-  .left {
-    width: 25%;
-    float: left;
-  }
-  .right {
-    width: 75%;
-    float: left;
-    text-align: right;
+  .header-icons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
-    * {
-      display: inline;
-      padding: 5px;
+    .header-icons-group {
+      display: flex;
+      margin-left: 20px;
+      margin-right: 0px;
+      align-items: center;
+
+      * {
+        margin-left: 5px;
+      }
+
+      .icon-chevron {
+        margin-top: 6px;
+        font-size: 7px;
+      }
     }
   }
 }
