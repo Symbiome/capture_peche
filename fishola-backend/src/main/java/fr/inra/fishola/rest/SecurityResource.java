@@ -148,11 +148,20 @@ public class SecurityResource {
             NewCookie cookie = new NewCookie("token", token);
 
             // FIXME AThimel 21/11/2019 Secure + HTTPOnly
-            return Response.ok().cookie(cookie).build();
+            Response result = Response.ok().cookie(cookie).build();
+            return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+    }
+
+    @GET
+    @Path("/logout")
+    public Response logout(@CookieParam("token") Cookie cookie) {
+        NewCookie dropCookie = new NewCookie("token", "");
+        Response result = Response.ok().cookie(dropCookie).build();
+        return result;
     }
 
     protected UserProfile toUserProfile(FisholaUser input) {

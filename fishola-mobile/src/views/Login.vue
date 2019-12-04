@@ -11,11 +11,11 @@
       <div class="login-form">
         <div class="form-group">
           <span>E-mail</span>
-          <input type="text"/>
+          <input type="text" name="email" v-model="email"/>
         </div>
         <div class="form-group">
           <span>Mot de passe</span>
-          <input type="password"/>
+          <input type="password" name="password" v-model="password"/>
         </div>
       </div>
       <div class="login-buttons">
@@ -25,7 +25,7 @@
           <label for="remember-me" id="remember-me-label">Se souvenir de moi</label>
           
         </div>
-        <div class="signin"><button>Connexion</button></div>
+        <div class="signin"><button v-on:click="signIn">Connexion</button></div>
         <div class="signup"><button>Créer un compte</button></div>
         <div class="forgotten-password">Mot de passe oublié ?</div>
       </div>
@@ -33,9 +33,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
+import router from '@/router'
+
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -46,11 +48,52 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class Login extends Vue {
 
+  email = '';
+  password = '';
+
   constructor() {
     super();
   }
 
   mounted() {
+    this.email = 'thimel@codelutin.com';
+  }
+
+  signIn() {
+
+    function httpCall(method: string, url:string, data:any, callback:()=>any) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.withCredentials = true;
+        if (callback) {
+            xhr.onload = function() {
+              // console.log(this);
+              if (this.status == 200) {
+                // let responseText = this['responseText'];
+                // console.log("responseText: " + responseText);
+                // let parsed = JSON.parse(responseText);
+                callback();
+              } else if (this.status == 401) {
+                console.error("Need to login");
+              } else {
+                console.error("C'est la merde noire, façon " + this.status);
+              }
+          };
+        }
+        if (data != null) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(data));
+        }
+        else xhr.send();
+    }
+
+    let url = `http://${location.hostname}:8080/api/v1/security/login?email=${this.email}&password=${this.password}`;
+    httpCall('GET', url, null, this.signedIn);
+
+  }
+
+  signedIn() {
+    router.push('trips');
   }
 
 }

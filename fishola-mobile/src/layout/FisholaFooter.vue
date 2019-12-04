@@ -14,14 +14,50 @@
 
 <script lang="ts">
 
+import router from '@/router'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class FisholaFooter extends Vue {
 
   logout() {
-    window.alert("logout");
+
+    function httpCall(method: string, url:string, data:any, callback:()=>any) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.withCredentials = true;
+        if (callback) {
+            xhr.onload = function() {
+              // console.log(this);
+              if (this.status == 200) {
+                // let responseText = this['responseText'];
+                // // console.log("responseText: " + responseText);
+                // let parsed = JSON.parse(responseText);
+                callback();
+              } else if (this.status == 401) {
+                console.error("Need to login");
+              } else {
+                console.error("C'est la merde noire");
+              }
+          };
+        }
+        if (data != null) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(data));
+        }
+        else xhr.send();
+    }
+
+    let url = `http://${location.hostname}:8080/api/v1/security/logout`;
+    httpCall('GET', url, null, this.logguedOut);
+
   }
+
+  logguedOut() {
+    router.push('/');
+  }
+
 }
 </script>
 
