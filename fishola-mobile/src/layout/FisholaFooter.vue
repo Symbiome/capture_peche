@@ -1,12 +1,12 @@
 <template>
   <div class="footer">
-    <div class="footer-element">
+    <div class="footer-element pastille unfilled">
       <i class="icon-logout"></i>
     </div>
-    <div class="footer-element">
+    <div class="footer-element pastille unfilled">
       <i class="icon-dashboard"></i>
     </div>
-    <div class="footer-element">
+    <div class="footer-element pastille filled">
       <i class="icon-home"></i>
     </div>
   </div>

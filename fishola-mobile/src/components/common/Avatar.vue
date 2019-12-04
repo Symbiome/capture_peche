@@ -1,5 +1,5 @@
 <template>
-  <div class="avatar color0">
+  <div class="pastille color0">
     <span>{{initials}}</span>
   </div>
 </template>
@@ -59,19 +59,7 @@ export default class Picture extends Vue {
 
   @import "../../less/main";
 
-  .avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 0px solid;
-    line-height: 16px;
-    font-size: 14px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .avatar.color0 {
+  .pastille.color0 {
     color: @gunmetal;
     background: @avatar-background;
   }

@@ -2,13 +2,36 @@
 @import "_font";
 @import "_icons";
 
+/* ========== Pastilles ========== */
 @avatar-background: #81ECEC;
 
+.pastille {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0px solid;
+  line-height: 16px;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pastille.filled {
+  color: @white;
+  background: @pelorous;
+}
+.pastille.unfilled {
+  color: @pelorous;
+  background: transparent;
+}
 
+
+
+/* ========== Checkboxes ========== */
 .pelorous-checkbox {
   display: none;
 }
-
 .pelorous-checkbox + label {
   background-color: transparent;
   border: 1px solid @pelorous;
@@ -20,19 +43,16 @@
   width: 16px;
   height: 16px;
 }
-
 .pelorous-checkbox + label:active,
 .pelorous-checkbox:checked + label:active {
   // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
 }
-
 .pelorous-checkbox:checked + label {
   background-color: @pelorous;
   border: 1px solid @pelorous;
   border-radius: 1px;
   // color: @white;
 }
-
 .pelorous-checkbox:checked + label:after {
   content: '\2714';
   font-size: 12px;

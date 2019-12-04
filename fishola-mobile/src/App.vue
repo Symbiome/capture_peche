@@ -9,7 +9,9 @@
 @import "less/main";
 
 body {
-  background-color: @pelorous;
+  background-image: url("/img/background.png");
+  // background-image: url("/img/background_transparent.png");
+  // background-color: @pelorous;
   margin: 0px;
   height: 100%;
 }
@@ -28,5 +30,16 @@ html {
   -moz-osx-font-smoothing: grayscale;
   color: @white;
 }
-
+// #app:after {
+//     content : "";
+//     display: block;
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+//     background-image: url("/img/background_transparent.png");
+//     width: 100%;
+//     height: 100%;
+//     opacity : 0.3;
+//     z-index: -1;
+// }
 </style>
