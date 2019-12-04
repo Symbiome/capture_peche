@@ -8,7 +8,7 @@
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
-          <i v-if="trip.canBeModified" class="icon-warning"/>
+          <i v-if="trip.canBeModified" class="icon-edit warning"/>
         </div>
       </div>
       <div class="item-row">
@@ -116,7 +116,7 @@ export default class MyTripItem extends Vue {
             color: @pelorous;
           }
 
-          i.icon-warning {
+          .warning {
             color: @terra-cotta;
           }
 
