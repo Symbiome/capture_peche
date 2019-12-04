@@ -41,7 +41,8 @@ export default class MyTripsList extends Vue {
 .my-trips-list {
   background-color: @white-smoke;
   color: @gunmetal;
-  height: 100%;
+  height: calc(100vh - 244px);
+  overflow: auto;
   padding-top: 30px;
   margin-top: 10px;
   border-top-left-radius: 30px;
@@ -54,9 +55,7 @@ export default class MyTripsList extends Vue {
 
     display: flex;
     flex-direction: column;
-
-        justify-content: space-between;
-
+    justify-content: space-between;
 
     .top {
       height: calc(100% - 176px);
