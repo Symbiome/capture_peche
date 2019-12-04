@@ -1,18 +1,18 @@
 <template>
   <div class="new-trip">
     <div>
-      <button><i class="icon-plus"/> Nouveau</button>
+      <button v-if="count == 0"><i class="icon-fishing"/> Commencer</button>
+      <button v-if="count != 0"><i class="icon-plus"/> Nouveau</button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import UserProfile from '@/pojos/UserProfile';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
-export default class Picture extends Vue {
-
+export default class NexTripButton extends Vue {
+  @Prop() count!: Number
 }
 </script>
 
@@ -33,7 +33,6 @@ export default class Picture extends Vue {
 
   div {
     height: 40px;
-    width: 152px;
   }
 
   button {
@@ -50,6 +49,8 @@ export default class Picture extends Vue {
     background-color: @terra-cotta;
 
     border: 0px;
+    padding-left: 20px;
+    padding-right: 20px;
 
     i {
       margin-right: 5px;
