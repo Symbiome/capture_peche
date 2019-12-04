@@ -10,6 +10,8 @@
 
 body {
   background-image: url("/img/background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
   // background-image: url("/img/background_transparent.png");
   // background-color: @pelorous;
   margin: 0px;

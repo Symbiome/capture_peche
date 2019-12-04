@@ -1,8 +1,8 @@
 <template>
   <div class="footer">
-    <div class="footer-element pastille unfilled">
+    <a class="footer-element pastille unfilled" v-on:click="logout">
       <i class="icon-logout"></i>
-    </div>
+    </a>
     <div class="footer-element pastille unfilled">
       <i class="icon-dashboard"></i>
     </div>
@@ -16,15 +16,13 @@
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  name: 'fishola-footer',
-  components: {
+@Component
+export default class FisholaFooter extends Vue {
+
+  logout() {
+    window.alert("logout");
   }
 }
-
-// @Component
-// export default class Header extends Vue {
-// }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

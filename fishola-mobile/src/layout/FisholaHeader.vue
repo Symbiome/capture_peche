@@ -1,12 +1,12 @@
 <template>
   <div class="header">
     <div>
-      <Title/>
+      <Title v-if="title"/>
     </div>
     <div class="header-buttons">
-      <Avatar/>
+      <Avatar v-if="avatar"/>
       <FeedbackAnchor/>
-      <Menu/>
+      <Menu v-if="menu"/>
     </div>
   </div>
 </template>
@@ -19,19 +19,19 @@ import Menu from '@/layout/Menu.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  name: 'fishola-header',
+@Component({
   components: {
     Title,
     Avatar,
     FeedbackAnchor,
     Menu
   }
+})
+export default class FisholaHeader extends Vue {
+  @Prop({ default: true }) title!: Boolean;
+  @Prop({ default: true }) avatar!: Boolean;
+  @Prop({ default: true }) menu!: Boolean;
 }
-
-// @Component
-// export default class Header extends Vue {
-// }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

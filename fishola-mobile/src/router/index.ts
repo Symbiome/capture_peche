@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+
+import Login from '../views/Login.vue'
 import MyTrips from '../views/MyTrips.vue'
 
 Vue.use(VueRouter)
@@ -7,7 +9,12 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'home',
+    name: 'login',
+    component: Login
+  },
+  {
+    path: '/trips',
+    name: 'trips',
     component: MyTrips
   },
   {
