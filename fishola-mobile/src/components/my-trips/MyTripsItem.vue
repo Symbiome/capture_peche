@@ -1,7 +1,8 @@
 <template>
   <div class="my-trips-item">
     <div class="item-selection">
-      <input type="checkbox"/>
+      <input type="checkbox" v-bind:id="'checkbox-' + trip.id" class="pelorous-checkbox" />
+      <label v-bind:for="'checkbox-' + trip.id"></label>
     </div>
     <div class="item-description">
       <div class="item-row">
@@ -80,6 +81,7 @@ export default class MyTripItem extends Vue {
       input {
         margin: 0px;
       }
+
     }
 
     .item-description {
