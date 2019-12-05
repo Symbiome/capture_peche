@@ -87,8 +87,9 @@ export default class Login extends Vue {
         else xhr.send();
     }
 
-    let url = `http://${location.hostname}:8080/api/v1/security/login?email=${this.email}&password=${this.password}`;
+    // let url = `http://${location.hostname}:8080/api/v1/security/login?email=${this.email}&password=${this.password}`;
     // let url = `http://172.19.0.3:8080/api/v1/security/login?email=${this.email}&password=${this.password}`;
+    let url = `https://fishola-backend.demo.codelutin.com/api/v1/security/login?email=${this.email}&password=${this.password}`;
     httpCall('GET', url, null, this.signedIn);
 
   }

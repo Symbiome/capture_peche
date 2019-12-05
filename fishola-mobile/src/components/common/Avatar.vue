@@ -41,8 +41,9 @@ export default class Picture extends Vue {
         else xhr.send();
     }
 
-    let url = `http://${location.hostname}:8080/api/v1/security/profile`;
+    // let url = `http://${location.hostname}:8080/api/v1/security/profile`;
     // let url = `http://172.19.0.3:8080/api/v1/security/profile`;
+    let url = `https://fishola-backend.demo.codelutin.com/api/v1/security/profile`;
     httpCall('GET', url, null, this.profileLoaded);
 
   }
