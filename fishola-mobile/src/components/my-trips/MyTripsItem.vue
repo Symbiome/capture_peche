@@ -38,6 +38,7 @@
 <script lang="ts">
 
 import Trip from '@/pojos/Trip';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 // export default {
