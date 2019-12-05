@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 public class FisholaConfiguration {
 
     public String getJdbcUrl() {
-        return "jdbc:postgresql://172.17.0.2/fishola";
+        return "jdbc:postgresql://docker_pg/fishola";
     }
 
     public String getJdbcUser() {

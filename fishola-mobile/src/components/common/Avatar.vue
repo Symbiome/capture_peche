@@ -42,6 +42,7 @@ export default class Picture extends Vue {
     }
 
     let url = `http://${location.hostname}:8080/api/v1/security/profile`;
+    // let url = `http://172.19.0.3:8080/api/v1/security/profile`;
     httpCall('GET', url, null, this.profileLoaded);
 
   }

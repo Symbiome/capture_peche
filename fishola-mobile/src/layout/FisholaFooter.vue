@@ -50,6 +50,7 @@ export default class FisholaFooter extends Vue {
     }
 
     let url = `http://${location.hostname}:8080/api/v1/security/logout`;
+    // let url = `http://172.19.0.3:8080/api/v1/security/logout`;
     httpCall('GET', url, null, this.logguedOut);
 
   }
