@@ -1,5 +1,7 @@
 <template>
   <div class="login">
+    <Toaster v-if="toasterError" 
+             v-bind:errorMessage="toasterError"/>
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
@@ -27,7 +29,7 @@
         </div>
         <div class="signin"><button v-on:click="signIn">Connexion</button></div>
         <div class="signup"><button v-on:click="signUp">Créer un compte</button></div>
-        <div class="forgotten-password">Mot de passe oublié ?</div>
+        <div class="forgotten-password"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
       </div>
     </div>
   </div>
@@ -37,6 +39,7 @@
 
 import Constants from '@/services/Constants';
 
+import Toaster from '@/components/common/Toaster.vue'
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -45,6 +48,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
+    Toaster,
     FisholaHeader
   }
 })
@@ -52,6 +56,7 @@ export default class Login extends Vue {
 
   email = '';
   password = '';
+  toasterError = null;
 
   constructor() {
     super();
@@ -59,6 +64,7 @@ export default class Login extends Vue {
 
   mounted() {
     this.email = 'thimel@codelutin.com';
+    this.toasterError = "AZERTY";
   }
 
   signIn() {
@@ -101,6 +107,11 @@ export default class Login extends Vue {
 
   signUp() {
     router.push('register');
+  }
+
+  forgottenPassword() {
+    // window.alert("NYI");
+    this.toasterError = "AZERTY";
   }
 
 }

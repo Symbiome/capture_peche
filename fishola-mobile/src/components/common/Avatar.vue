@@ -11,7 +11,7 @@ import UserProfile from '@/pojos/UserProfile';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
-export default class Picture extends Vue {
+export default class Avatar extends Vue {
 
   initials = '..';
 

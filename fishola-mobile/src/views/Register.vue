@@ -31,7 +31,7 @@
       </div>
       <div class="register-buttons">
         <div class="back"><button v-on:click="cancel">Retour</button></div>
-        <div class="register"><button>S'enregistrer</button></div>
+        <div class="register"><button v-on:click="register">S'enregistrer</button></div>
       </div>
     </div>
   </div>
@@ -63,46 +63,14 @@ export default class Register extends Vue {
   }
 
   mounted() {
-    // this.email = 'thimel@codelutin.com';
   }
-
-  signIn() {
-
-    // function httpCall(method: string, url:string, data:any, callback:()=>any) {
-    //     var xhr = new XMLHttpRequest();
-    //     xhr.open(method, url, true);
-    //     xhr.withCredentials = true;
-    //     if (callback) {
-    //         xhr.onload = function() {
-    //           // console.log(this);
-    //           if (this.status == 200) {
-    //             // let responseText = this['responseText'];
-    //             // console.log("responseText: " + responseText);
-    //             // let parsed = JSON.parse(responseText);
-    //             callback();
-    //           } else if (this.status == 401) {
-    //             console.error("Need to login");
-    //           } else {
-    //             console.error("C'est la merde noire, façon " + this.status);
-    //           }
-    //       };
-    //     }
-    //     if (data != null) {
-    //         xhr.setRequestHeader('Content-Type', 'application/json');
-    //         xhr.send(JSON.stringify(data));
-    //     }
-    //     else xhr.send();
-    // }
-
-    // let apiUrl = Constants.apiUrl("/v1/security/login");
-    // let url = `${apiUrl}?email=${this.email}&password=${this.password}`;
-    // httpCall('GET', url, null, this.signedIn);
-
-  }
-
 
   cancel() {
     router.push('/');
+  }
+
+  register() {
+    window.alert("NYI");
   }
 
 }
