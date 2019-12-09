@@ -1,6 +1,8 @@
 <template>
-  <div class="toaster error">
-    <div><i class="icon-warning"/>{{errorMessage}}</div>
+  <div class="toaster" v-bind:class="visibility">
+      <div class="toaster-box error">
+        <div><i class="icon-warning"/>{{errorMessage}}</div>
+      </div>
   </div>
 </template>
 
@@ -11,11 +13,41 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component
 export default class Toaster extends Vue {
 
-  @Prop() errorMessage!: string;
+  errorMessage?: string = '';
+  visibility?:string = 'toaster-hidden';
 
   mounted() {
-    console.log(this.errorMessage);
+    // console.log("errorMessage: ", this.errorMessage);
+    // this.visibility = "toaster-visible";
+
+    this.$root.$on('toaster-error', (art1:string) => {
+      this.newError(art1);
+    });
   }
+
+    newError(text:string) {
+        this.errorMessage = text;
+        this.visibility = "toaster-visible";
+        setTimeout(this.resetToaster, 3000);
+    }
+
+  resetToaster() {
+    this.visibility = "toaster-disappears";
+    // this.errorMessage = '';
+  }
+
+    // @Watch('errorMessage')
+    // onPropertyChanged(value: string, oldValue: string) {
+    //     console.log("new Value: " + value);
+    //     if (value) {
+    //         this.visibility = "toaster-visible";
+    //         setTimeout(this.resetToaster, 3000);
+    //     } else if (!value) {
+    //         this.visibility = "toaster-hidden";
+    //     } else {
+    //         console.error("Don't know");
+    //     }
+    // }
 
 }
 </script>
@@ -25,39 +57,75 @@ export default class Toaster extends Vue {
 
   @import "../../less/main";
 
+.toaster-hidden {
+    top: -50px;
+}
+
+.toaster-disappears {
+    animation-duration: 0.5s;
+    animation-name: disappear;
+
+    top: -50px;
+
+    @keyframes disappear {
+        from {top: 0px;}
+        to {top: -50px;}
+    }
+
+}
+
+.toaster-visible {
+    animation-duration: 0.5s;
+    animation-name: appear;
+
+    top: 0px;
+
+    @keyframes appear {
+        from {top: -50px;}
+        to {top: 0px;}
+    }
+
+}
+
+
   .toaster {
     position:absolute;
-    top: 0;
-    left: 0;
+    left: 0px;
     width: 100%;
     height: 50px;
     z-index: 999;
-
-    // @keyframes example {
-    //   from {background-color: red;}
-    //   to {background-color: yellow;}
-    // }
 
     display: flex;
     justify-content: center;
     align-items: center;
 
-    div {
+    .toaster-box {
+        width: 100%;
+        height: 100%;
 
-      font-size: 10px;
-      line-height: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
 
-      i {
-        margin-right: 6px;
-        font-size: 12px;
-      }
 
+        div {
+
+            font-size: 10px;
+            line-height: 12px;
+
+            i {
+                margin-right: 6px;
+                font-size: 12px;
+            }
+
+        }
     }
-  }
 
-  .toaster.error {
-    color: @white;
-    background: @cardinal;
+    .toaster-box.error {
+        color: @white;
+        background: @cardinal;
+    }
+
   }
 
 </style>

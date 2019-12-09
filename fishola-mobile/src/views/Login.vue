@@ -1,7 +1,6 @@
 <template>
   <div class="login">
-    <Toaster v-if="toasterError" 
-             v-bind:errorMessage="toasterError"/>
+    <Toaster/>
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
@@ -56,7 +55,6 @@ export default class Login extends Vue {
 
   email = '';
   password = '';
-  toasterError = null;
 
   constructor() {
     super();
@@ -64,7 +62,6 @@ export default class Login extends Vue {
 
   mounted() {
     this.email = 'thimel@codelutin.com';
-    this.toasterError = "AZERTY";
   }
 
   signIn() {
@@ -110,8 +107,7 @@ export default class Login extends Vue {
   }
 
   forgottenPassword() {
-    // window.alert("NYI");
-    this.toasterError = "AZERTY";
+    this.$root.$emit('toaster-error', 'Rôôô quel dommage !?');
   }
 
 }
