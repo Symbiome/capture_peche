@@ -1,8 +1,26 @@
 <template>
   <div id="app">
+    <Toaster/>
     <router-view/>
   </div>
 </template>
+
+<script lang="ts">
+
+import Toaster from '@/components/common/Toaster.vue'
+
+import { Component, Prop, Vue } from 'vue-property-decorator';
+
+@Component({
+  components: {
+    Toaster
+  }
+})
+export default class App extends Vue {
+
+}
+
+</script>
 
 <style lang="less">
 

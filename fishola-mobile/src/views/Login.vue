@@ -1,6 +1,5 @@
 <template>
   <div class="login">
-    <Toaster/>
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
@@ -38,7 +37,6 @@
 
 import Constants from '@/services/Constants';
 
-import Toaster from '@/components/common/Toaster.vue'
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -47,7 +45,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    Toaster,
     FisholaHeader
   }
 })
