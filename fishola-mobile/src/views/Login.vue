@@ -11,11 +11,11 @@
       <div class="login-form">
         <div class="form-group">
           <span>E-mail</span>
-          <input type="text" name="email" v-model="email"/>
+          <input type="text" name="email" v-model="email" placeholder="Renseignez votre E-mail"/>
         </div>
         <div class="form-group">
           <span>Mot de passe</span>
-          <input type="password" name="password" v-model="password"/>
+          <input type="password" name="password" v-model="password" placeholder="Renseignez votre mot de passe"/>
         </div>
       </div>
       <div class="login-buttons">
@@ -26,7 +26,7 @@
           
         </div>
         <div class="signin"><button v-on:click="signIn">Connexion</button></div>
-        <div class="signup"><button>Créer un compte</button></div>
+        <div class="signup"><button v-on:click="signUp">Créer un compte</button></div>
         <div class="forgotten-password">Mot de passe oublié ?</div>
       </div>
     </div>
@@ -99,6 +99,10 @@ export default class Login extends Vue {
     router.push('trips');
   }
 
+  signUp() {
+    router.push('register');
+  }
+
 }
 
 </script>
@@ -166,6 +170,13 @@ export default class Login extends Vue {
         color: @white;
         padding-left: 10px;
         padding-right: 10px;
+        margin-top: 5px;
+      }
+
+      input::placeholder {
+        font-style: italic;
+        font-weight: normal;
+        font-size: 12px;
       }
 
       input:focus {
