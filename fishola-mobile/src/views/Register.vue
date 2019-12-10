@@ -10,23 +10,28 @@
 
         <div class="form-group">
           <span>Nom</span>
-          <input type="text" name="lastName" v-model="bean.lastName" placeholder="Renseignez votre nom"/>
+          <input type="text" name="lastName" v-model="bean.lastName" placeholder="Renseignez votre nom" v-bind:class="validationErrors['lastName']?'field-error':''"/>
+          <div class="field-error" v-if="validationErrors['lastName']">{{validationErrors['lastName']}}</div>
         </div>
         <div class="form-group">
           <span>Prénom</span>
-          <input type="text" name="firstName" v-model="bean.firstName" placeholder="Renseignez votre prénom"/>
+          <input type="text" name="firstName" v-model="bean.firstName" placeholder="Renseignez votre prénom" v-bind:class="validationErrors['firstName']?'field-error':''"/>
+          <div class="field-error" v-if="validationErrors['firstName']">{{validationErrors['firstName']}}</div>
         </div>
         <div class="form-group">
           <span>E-mail</span>
-          <input type="text" name="email" v-model="bean.email" placeholder="Renseignez votre E-mail"/>
+          <input type="text" name="email" v-model="bean.email" placeholder="Renseignez votre E-mail" v-bind:class="validationErrors['email']?'field-error':''"/>
+          <div class="field-error" v-if="validationErrors['email']">{{validationErrors['email']}}</div>
         </div>
         <div class="form-group">
           <span>Mot de passe</span>
-          <input type="password" name="password" v-model="bean.password" placeholder="Choisissez un mot de passe"/>
+          <input type="password" name="password" v-model="bean.password" placeholder="Choisissez un mot de passe" v-bind:class="validationErrors['password']?'field-error':''"/>
+          <div class="field-error" v-if="validationErrors['password']">{{validationErrors['password']}}</div>
         </div>
         <div class="form-group">
           <span>Confirmation de mot de passe</span>
-          <input type="password" name="passwordConfirm" v-model="passwordConfirm" placeholder="Confirmez votre mot de passe"/>
+          <input type="password" name="passwordConfirm" v-model="passwordConfirm" placeholder="Confirmez votre mot de passe" v-bind:class="validationErrors['passwordConfirm']?'field-error':''"/>
+          <div class="field-error" v-if="validationErrors['passwordConfirm']">{{validationErrors['passwordConfirm']}}</div>
         </div>
       </div>
       <div class="register-buttons">
@@ -56,7 +61,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class Register extends Vue {
 
   bean:UserRegister = new UserRegister();
-  passwordConfirm = '';
+  passwordConfirm:string = '';
+  validationErrors:any = {};
 
   constructor() {
     super();
@@ -70,9 +76,54 @@ export default class Register extends Vue {
   }
 
   register() {
-    window.alert("NYI");
+
+    function httpCall(method: string, url:string, data:any, successCallback:()=>any, errorCallback:(validationErrors:any)=>any) {
+      var xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      xhr.withCredentials = true;
+      xhr.onload = function() {
+        // console.log(this);
+        if (this.status == 200) {
+          successCallback();
+        } else if (this.status == 400) {
+          let responseText = this['responseText'] || '{}';
+          console.log("responseText: " + responseText);
+          let parsed = JSON.parse(responseText);
+          errorCallback(parsed);
+        } else {
+          console.error("C'est la merde noire, façon " + this.status);
+        }
+      };
+      if (data != null) {
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(data));
+      } else {
+        xhr.send();
+      }
+    }
+
+    if (this.passwordConfirm == this.bean.password) {
+
+      this.validationErrors = {};
+
+      let apiUrl = Constants.apiUrl("/v1/security/register");
+      httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors);
+    } else {
+      this.validationErrors["passwordConfirm"] = "Les mots de passe ne correspondent pas";
+    }
+
+
   }
 
+  registrationOk() {
+    this.$root.$emit('toaster-success', 'Compte enregistré. Vous devez valider votre e-mail', 10000);
+    router.push('/');
+  }
+
+  setValidationErrors(validationErrors:any) {
+    this.validationErrors = validationErrors;
+    this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
+  }
 }
 
 </script>
@@ -135,6 +186,10 @@ export default class Register extends Vue {
       font-size: 12px;
       line-height: 16px;
 
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+
       span {
         font-weight: 300;
         color: @black;
@@ -151,6 +206,11 @@ export default class Register extends Vue {
         padding-left: 10px;
         padding-right: 10px;
         margin-top: 5px;
+        width: 100%;
+      }
+
+      input.field-error {
+        border: 1px solid @cardinal;
       }
 
       input:focus {
@@ -163,11 +223,14 @@ export default class Register extends Vue {
         font-size: 12px;
       }
 
+      div.field-error {
+        background-color: @cardinal;
+        color: @white;
+        font-size: 10px;
+        line-height: 14px;
+      }
     }
 
-    span, input {
-      width: 100%;
-    }
   }
 
   .register-buttons {

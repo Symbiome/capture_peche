@@ -27,6 +27,8 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,19 +51,42 @@ public class SecurityResource {
     @PUT
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response register(RegisterBean bean) {
 
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        if (StringUtils.isEmpty(bean.firstName) || StringUtils.isEmpty(bean.lastName) || StringUtils.isEmpty(bean.email) || StringUtils.isEmpty(bean.password)) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+        Map<String, String> validationErrors = new HashMap<>();
+
+        if (StringUtils.isEmpty(bean.firstName)) {
+            validationErrors.put("firstName", "Le prénom est obligatoire");
         }
 
-        // On vérifie qu'il n'y a pas déjà un compte avec cet email
-        if (loadUser(bean.email).isPresent()) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+        if (StringUtils.isEmpty(bean.lastName)) {
+            validationErrors.put("lastName", "Le nom est obligatoire");
+        }
+
+        if (StringUtils.isEmpty(bean.email)) {
+            validationErrors.put("email", "L'e-mail est obligatoire");
+        } else if (loadUser(bean.email).isPresent()) {
+            // On vérifie qu'il n'y a pas déjà un compte avec cet email
+            validationErrors.put("email", "E-mail déjà utilisé");
+        }
+
+        if (StringUtils.isEmpty(bean.password)) {
+            validationErrors.put("password", "Le mot de passe est obligatoire");
+        } else if (bean.password.length() < 6) {
+            validationErrors.put("password", "Le mot de passe doit comporter au moins 6 caractères");
+        }
+
+        if (!validationErrors.isEmpty()) {
+            Response response = Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(validationErrors)
+                    .build();
+            return response;
         }
 
         String passwordHashed = userDao.hashPassword(bean.password);
@@ -88,7 +113,7 @@ public class SecurityResource {
 
         System.out.println("Verify URL is: " + verifyUrl);
 
-        return Response.ok(verifyUrl, MediaType.TEXT_PLAIN).build();
+        return Response.ok().build();
     }
 
     @GET
