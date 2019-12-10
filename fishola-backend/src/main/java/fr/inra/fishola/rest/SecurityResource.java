@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -120,13 +121,15 @@ public class SecurityResource {
         }
     }
 
-    @GET
+    @POST
     @Path("/login")
-    public Response login(@QueryParam("email") String email,
-                          @QueryParam("password") String password) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response login(LoginBean bean) {
 
-        boolean authenticate = userDao.authenticate(email, password);
-        if (authenticate) {
+        Optional<Boolean> authenticate = userDao.authenticate(bean.email, bean.password);
+        if (authenticate.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else if (authenticate.get()) {
             Algorithm algorithmHS = getJwtSecretAlgorithm();
 
 //        iss issuer : qui a émis le token
@@ -138,10 +141,15 @@ public class SecurityResource {
 //        jti identifiant unique : uuid
 
             Date now = new Date();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 24);
+            Date expiresAt = calendar.getTime();
+
             String token = JWT.create()
                     .withIssuer("fishola-backend")
-                    .withSubject(email)
+                    .withSubject(bean.email)
                     .withIssuedAt(now)
+                    .withExpiresAt(expiresAt)
                     .withJWTId(UUID.randomUUID().toString())
                     .sign(algorithmHS);
 

@@ -29,12 +29,11 @@ public class UserDao extends AbstractFisholaDao {
         }
     }
 
-    public boolean authenticate(String email, String password) {
+    public Optional<Boolean> authenticate(String email, String password) {
         Optional<FisholaUser> user = findByEmail(email);
-        boolean result = user
+        Optional<Boolean> result = user
                 .map(FisholaUser::getPassword)
-                .map(userPassword -> verifyPassword(password, userPassword))
-                .orElse(false);
+                .map(userPassword -> verifyPassword(password, userPassword));
         return result;
     }
 

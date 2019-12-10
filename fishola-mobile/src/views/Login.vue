@@ -11,11 +11,13 @@
       <div class="login-form">
         <div class="form-group">
           <span>E-mail</span>
-          <input type="text" name="email" v-model="email" placeholder="Renseignez votre E-mail"/>
+          <input type="text" name="email" v-model="email" placeholder="Renseignez votre E-mail" v-bind:class="emailError?'field-error':''"/>
+          <div class="field-error" v-if="emailError">{{emailError}}</div>
         </div>
         <div class="form-group">
           <span>Mot de passe</span>
-          <input type="password" name="password" v-model="password" placeholder="Renseignez votre mot de passe"/>
+          <input type="password" name="password" v-model="password" placeholder="Renseignez votre mot de passe" v-bind:class="passwordError?'field-error':''"/>
+          <div class="field-error" v-if="passwordError">{{passwordError}}</div>
         </div>
       </div>
       <div class="login-buttons">
@@ -51,32 +53,35 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class Login extends Vue {
 
   email = '';
+  emailError = '';
   password = '';
+  passwordError = '';
 
   constructor() {
     super();
   }
 
   mounted() {
-    this.email = 'thimel@codelutin.com';
+    this.email = '';
+    this.emailError = '';
+    this.password = '';
+    this.passwordError = '';
   }
 
   signIn() {
 
-    function httpCall(method: string, url:string, data:any, callback:()=>any) {
+    function httpCall(method: string, url:string, data:any, callback:(status:any)=>any) {
         var xhr = new XMLHttpRequest();
         xhr.open(method, url, true);
         xhr.withCredentials = true;
         if (callback) {
             xhr.onload = function() {
               // console.log(this);
-              if (this.status == 200) {
+              if (this.status == 200 || this.status == 401 || this.status == 404) {
                 // let responseText = this['responseText'];
                 // console.log("responseText: " + responseText);
                 // let parsed = JSON.parse(responseText);
-                callback();
-              } else if (this.status == 401) {
-                console.error("Need to login");
+                callback(this.status);
               } else {
                 console.error("C'est la merde noire, façon " + this.status);
               }
@@ -89,14 +94,32 @@ export default class Login extends Vue {
         else xhr.send();
     }
 
+    this.emailError = '';
+    this.passwordError = '';
+
+    let loginBean =  {email: this.email, password: this.password};
+
     let apiUrl = Constants.apiUrl("/v1/security/login");
-    let url = `${apiUrl}?email=${this.email}&password=${this.password}`;
-    httpCall('GET', url, null, this.signedIn);
+    httpCall('POST', apiUrl, loginBean, this.signedIn);
 
   }
 
-  signedIn() {
-    router.push('trips');
+  signedIn(status:number) {
+    switch(status) {
+      case 200:
+        router.push('trips');
+        break;
+      case 401:
+        this.$root.$emit('toaster-error', 'E-mail ou mot de passe incorrect');
+        this.passwordError = 'Mot de passe erroné';
+        break;
+      case 404:
+        this.$root.$emit('toaster-error', 'E-mail ou mot de passe incorrect');
+        this.emailError = 'E-mail inconnu';
+        break;
+      default:
+        console.error("Unexpected status: " + status);
+    }
   }
 
   signUp() {
@@ -161,6 +184,10 @@ export default class Login extends Vue {
 
       color: @white;
 
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+
       span {
         font-weight: 300;
       }
@@ -175,6 +202,11 @@ export default class Login extends Vue {
         padding-left: 10px;
         padding-right: 10px;
         margin-top: 5px;
+        width: 100%;
+      }
+
+      input.field-error {
+        border: 1px solid @cardinal;
       }
 
       input::placeholder {
@@ -186,11 +218,15 @@ export default class Login extends Vue {
       input:focus {
         color: @white;
       }
+
+      div.field-error {
+        background-color: @cardinal;
+        color: @white;
+        font-size: 10px;
+        line-height: 14px;
+      }
     }
 
-    span, input {
-      width: 100%;
-    }
   }
 
   .login-buttons {
