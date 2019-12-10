@@ -1,7 +1,11 @@
 <template>
   <div class="toaster" v-bind:class="visibility">
-      <div class="toaster-box error">
-        <div><i class="icon-warning"/>{{errorMessage}}</div>
+      <div class="toaster-box" v-bind:class="level">
+        <div>
+          <i class="icon-warning" v-if="level == 'error'"/>
+          <i class="icon-success" v-if="level == 'success'"/>
+          {{message}}
+        </div>
       </div>
   </div>
 </template>
@@ -13,41 +17,39 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component
 export default class Toaster extends Vue {
 
-  errorMessage?: string = '';
-  visibility?:string = 'toaster-hidden';
+  visibility:string = 'toaster-hidden';
+  level:string = '';
+  message:string = '';
 
   mounted() {
-    // console.log("errorMessage: ", this.errorMessage);
-    // this.visibility = "toaster-visible";
-
-    this.$root.$on('toaster-error', (art1:string) => {
-      this.newError(art1);
+    this.$root.$on('toaster-error', (text:string, durationArg?:number) => {
+      let duration = durationArg || 2000;
+      this.newError(text, duration);
+    });
+    this.$root.$on('toaster-success', (text:string, durationArg?:number) => {
+      let duration = durationArg || 2000;
+      this.newSuccess(text, duration);
     });
   }
 
-    newError(text:string) {
-        this.errorMessage = text;
-        this.visibility = "toaster-visible";
-        setTimeout(this.resetToaster, 3000);
-    }
+  newError(text:string, duration:number) {
+    this.newMessage(text, 'error', duration);
+  }
+
+  newSuccess(text:string, duration:number) {
+    this.newMessage(text, 'success', duration);
+  }
+
+  newMessage(text:string, level:string, duration:number) {
+    this.message = text;
+    this.level = level;
+    this.visibility = "toaster-visible";
+    setTimeout(this.resetToaster, (2*500) + duration);
+  }
 
   resetToaster() {
     this.visibility = "toaster-disappears";
-    // this.errorMessage = '';
   }
-
-    // @Watch('errorMessage')
-    // onPropertyChanged(value: string, oldValue: string) {
-    //     console.log("new Value: " + value);
-    //     if (value) {
-    //         this.visibility = "toaster-visible";
-    //         setTimeout(this.resetToaster, 3000);
-    //     } else if (!value) {
-    //         this.visibility = "toaster-hidden";
-    //     } else {
-    //         console.error("Don't know");
-    //     }
-    // }
 
 }
 </script>
@@ -57,35 +59,33 @@ export default class Toaster extends Vue {
 
   @import "../../less/main";
 
-.toaster-hidden {
+  .toaster-hidden {
     top: -50px;
-}
+  }
 
-.toaster-disappears {
+  .toaster-disappears {
     animation-duration: 0.5s;
     animation-name: disappear;
 
     top: -50px;
 
     @keyframes disappear {
-        from {top: 0px;}
-        to {top: -50px;}
+      from {top: 0px;}
+      to {top: -50px;}
     }
+  }
 
-}
-
-.toaster-visible {
+  .toaster-visible {
     animation-duration: 0.5s;
     animation-name: appear;
 
     top: 0px;
 
     @keyframes appear {
-        from {top: -50px;}
-        to {top: 0px;}
+      from {top: -50px;}
+      to {top: 0px;}
     }
-
-}
+  }
 
 
   .toaster {
@@ -100,30 +100,32 @@ export default class Toaster extends Vue {
     align-items: center;
 
     .toaster-box {
-        width: 100%;
-        height: 100%;
+      width: 100%;
+      height: 100%;
 
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
+      div {
+        font-size: 10px;
+        line-height: 12px;
 
-        div {
-
-            font-size: 10px;
-            line-height: 12px;
-
-            i {
-                margin-right: 6px;
-                font-size: 12px;
-            }
-
+        i {
+          margin-right: 6px;
+          font-size: 12px;
         }
+      }
     }
 
     .toaster-box.error {
-        color: @white;
-        background: @cardinal;
+      color: @white;
+      background: @cardinal;
+    }
+
+    .toaster-box.success {
+      color: @white;
+      background: @lime-green;
     }
 
   }
