@@ -42,6 +42,9 @@ public class SecurityResource {
     @Inject
     protected FisholaConfiguration config;
 
+    @Inject
+    protected MailService mailService;
+
     protected Algorithm getJwtSecretAlgorithm() {
         String jwtSecret = config.getJwtSecret();
         Algorithm result = Algorithm.HMAC512(jwtSecret);
@@ -108,10 +111,18 @@ public class SecurityResource {
                 .withClaim("passwordHashed", passwordHashed)
                 .sign(algorithmHS);
 
-        String apiBaseUrl = config.getBackendBaseUrl();
-        String verifyUrl = String.format("%s/api/v1/security/verify?t=%s", apiBaseUrl, token);
+        String apiBaseUrl = config.getApiUrl("/api/v1/security/verify");
+        String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
-        System.out.println("Verify URL is: " + verifyUrl);
+        ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+                "/emails/email-validation.html",
+                "verifyLink", verifyUrl,
+                "firstName", bean.firstName);
+        FisholaMail mail = builder
+                .addTos(bean.email)
+                .subject("Fishola - Validation de votre e-mail")
+                .build();
+        mailService.sendMail(mail);
 
         return Response.ok().build();
     }

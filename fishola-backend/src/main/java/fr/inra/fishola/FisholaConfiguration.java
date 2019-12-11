@@ -1,6 +1,7 @@
 package fr.inra.fishola;
 
 import javax.inject.Singleton;
+import java.util.Properties;
 
 @Singleton
 public class FisholaConfiguration {
@@ -26,7 +27,24 @@ public class FisholaConfiguration {
     }
 
     public String getBackendBaseUrl() {
-        return "http://192.168.99.107:8080";
+        return "https://fishola-backend.demo.codelutin.com";
     }
 
+    public String getApiUrl(String path) {
+        return String.format("%s%s", getBackendBaseUrl(), path);
+    }
+
+    public String getMailFrom() {
+        return "fishola@codelutin.com";
+    }
+
+    public Properties getMailProperties() {
+        Properties prop = new Properties();
+        prop.put("mail.smtp.auth", false);
+        prop.put("mail.smtp.starttls.enable", "false");
+        prop.put("mail.smtp.host", "docker_mail");
+        prop.put("mail.smtp.port", "25");
+//        prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
+        return prop;
+    }
 }

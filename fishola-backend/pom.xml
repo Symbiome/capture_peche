@@ -13,9 +13,9 @@
 
   <properties>
     <localJdbcDatabaseName>fishola</localJdbcDatabaseName>
+    <localJdbcPassword>fishola</localJdbcPassword>
     <localJdbcUrl>jdbc:postgresql:${localJdbcDatabaseName}</localJdbcUrl>
     <localJdbcUser>fishola</localJdbcUser>
-    <localJdbcPassword>fishola</localJdbcPassword>
   </properties>
 
   <dependencies>
@@ -72,6 +72,16 @@
     </dependency>
 
     <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
@@ -91,13 +101,6 @@
         <groupId>com.github.slavaz</groupId>
         <artifactId>embedded-postgresql-maven-plugin</artifactId>
         <version>1.2.2</version>
-        <configuration>
-          <pgServerVersion>11</pgServerVersion>
-          <pgServerPort>5432</pgServerPort>
-          <dbName>${localJdbcDatabaseName}</dbName>
-          <userName>${localJdbcUser}</userName>
-          <password>${localJdbcPassword}</password>
-        </configuration>
         <executions>
           <execution>
             <id>start-pgsql</id>
@@ -114,6 +117,13 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <pgServerVersion>11</pgServerVersion>
+          <pgServerPort>5432</pgServerPort>
+          <dbName>${localJdbcDatabaseName}</dbName>
+          <userName>${localJdbcUser}</userName>
+          <password>${localJdbcPassword}</password>
+        </configuration>
       </plugin>
 
       <plugin>
