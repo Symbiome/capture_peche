@@ -117,7 +117,7 @@ public class SecurityResource {
         String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
-                "/emails/email-validation.html",
+                "emails/email-validation.html",
                 "verifyLink", verifyUrl,
                 "firstName", bean.firstName);
         FisholaMail mail = builder
