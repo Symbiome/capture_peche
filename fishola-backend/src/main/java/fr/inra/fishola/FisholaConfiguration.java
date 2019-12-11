@@ -30,7 +30,7 @@ public class FisholaConfiguration {
     }
 
     public String getBackendBaseUrl() {
-        return null; // "https://fishola-backend.demo.codelutin.com"
+        return null; // "https://fishola.demo.codelutin.com"
     }
 
     public String getBackendBaseUrl(HttpServletRequest httpServletRequest) {
