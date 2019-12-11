@@ -1,6 +1,9 @@
 package fr.inra.fishola;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Properties;
 
 @Singleton
@@ -27,11 +30,28 @@ public class FisholaConfiguration {
     }
 
     public String getBackendBaseUrl() {
-        return "https://fishola-backend.demo.codelutin.com";
+        return null; // "https://fishola-backend.demo.codelutin.com"
     }
 
-    public String getApiUrl(String path) {
-        return String.format("%s%s", getBackendBaseUrl(), path);
+    public String getBackendBaseUrl(HttpServletRequest httpServletRequest) {
+        String backendBaseUrl = getBackendBaseUrl();
+        if (StringUtils.isEmpty(backendBaseUrl)) {
+            String requestUrl = httpServletRequest.getRequestURL().toString();
+            System.out.println("getRequestURL:" + requestUrl);
+            String requestUri = httpServletRequest.getRequestURI();
+            System.out.println("getRequestURI:" + requestUri);
+            int index = requestUrl.indexOf(requestUri);
+            if (index != -1) {
+                backendBaseUrl = requestUrl.substring(0, index);
+            } else {
+                throw new FisholaTechnicalException("Unable to compute backendBaseUrl", null);
+            }
+        }
+        return backendBaseUrl;
+    }
+
+    public String getApiUrl(String path, HttpServletRequest httpServletRequest) {
+        return String.format("%s%s", getBackendBaseUrl(httpServletRequest), path);
     }
 
     public String getMailFrom() {

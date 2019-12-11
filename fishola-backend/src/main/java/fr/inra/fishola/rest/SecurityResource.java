@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataAccessException;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
@@ -21,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -55,7 +57,7 @@ public class SecurityResource {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response register(RegisterBean bean) {
+    public Response register(RegisterBean bean, @Context HttpServletRequest request) {
 
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -111,7 +113,7 @@ public class SecurityResource {
                 .withClaim("passwordHashed", passwordHashed)
                 .sign(algorithmHS);
 
-        String apiBaseUrl = config.getApiUrl("/api/v1/security/verify");
+        String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
         String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
