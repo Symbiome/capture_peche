@@ -21,7 +21,6 @@
                     v-bind:error="validationErrors['firstName']"
                     />
         <InputGroup name="email"
-                    type="email"
                     label="E-mail"
                     placeholder="Renseignez votre E-mail"
                     v-model="bean.email"
@@ -43,8 +42,16 @@
                     />
       </div>
       <div class="register-buttons">
-        <div class="back"><button v-on:click="cancel">Retour</button></div>
-        <div class="register"><button v-on:click="register">S'enregistrer</button></div>
+        <div class="back">
+          <button v-on:click="cancel">
+            Retour
+          </button>
+        </div>
+        <div class="register">
+          <button v-on:click="register">
+            S'enregistrer
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -72,7 +79,9 @@ export default class Register extends Vue {
 
   bean:UserRegister = new UserRegister();
   passwordConfirm:string = '';
-  validationErrors:any = {};
+  validationErrors:any = {
+    passwordConfirm : ''
+  };
 
   constructor() {
     super();
@@ -112,17 +121,21 @@ export default class Register extends Vue {
       }
     }
 
+    this.cleanValidationErros();
+
     if (this.passwordConfirm == this.bean.password) {
-
-      this.validationErrors = {};
-
       let apiUrl = Constants.apiUrl("/v1/security/register");
       httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors);
     } else {
-      this.validationErrors["passwordConfirm"] = "Les mots de passe ne correspondent pas";
+      this.validationErrors['passwordConfirm'] = 'Les mots de passe ne correspondent pas';
     }
+  }
 
-
+  cleanValidationErros() {
+    if (this.validationErrors) {
+      let keys = Object.keys(this.validationErrors);
+      keys.forEach(key => this.validationErrors[key] = '');
+    }
   }
 
   registrationOk() {

@@ -15,6 +15,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jooq.exception.DataAccessException;
 
 import javax.inject.Inject;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -79,6 +81,9 @@ public class SecurityResource {
 
         if (StringUtils.isEmpty(bean.email)) {
             validationErrors.put("email", "L'e-mail est obligatoire");
+        } else if (!isEmailInValidFormat(bean.email)) {
+            // On vérifie qu'il n'y a pas déjà un compte avec cet email
+            validationErrors.put("email", "Le format n'est pas correct");
         } else if (loadUser(bean.email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "E-mail déjà utilisé");
@@ -131,6 +136,19 @@ public class SecurityResource {
         mailService.sendMail(mail);
 
         return Response.ok().build();
+    }
+
+    protected boolean isEmailInValidFormat(String email) {
+        try {
+            InternetAddress internetAddress = new InternetAddress(email);
+            internetAddress.validate();
+            return true;
+        } catch (AddressException ex) {
+            if (log.isInfoEnabled()) {
+                log.info(String.format("'%s' does not seem to be a valid email address", email));
+            }
+            return false;
+        }
     }
 
     @GET
