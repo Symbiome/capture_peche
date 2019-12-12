@@ -215,16 +215,15 @@ export default class Login extends Vue {
       }
 
       input {
-        background: #000000;
-        opacity: 0.5;
-        border-radius: 4px;
-        height: 38px;
-        border: 1px solid rgba(0, 0, 0, 0.5);
-        color: @white;
         padding-left: 10px;
         padding-right: 10px;
         margin-top: 5px;
         width: 100%;
+        height: 38px;
+        border: 1px solid @transparent;
+        border-radius: 4px;
+        background-color: @black-alpha-50;
+        color: @white;
       }
 
       input.field-error {
