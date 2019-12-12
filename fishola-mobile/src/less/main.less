@@ -7,6 +7,10 @@
 
 @footer-height: 100px;
 
+button {
+  cursor: pointer;
+}
+
 /* ========== Pastilles ========== */
 @avatar-background: #81ECEC;
 
@@ -21,6 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 .pastille.filled {
   color: @white;
@@ -65,4 +70,42 @@
   top: -2px;
   left: 3px;
   color: @white;
+}
+
+
+
+/*========== Retour haptique ============ */
+
+@gradient-white: @white;
+@gradient-opposite: @terra-cotta;
+
+@keyframes gradient {
+  0% {
+    background: radial-gradient(circle at center, rgba( 255, 125 , 125, 0 ) 0%, @gradient-white 0%, @gradient-white 100%);
+  }
+  25% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.3 ) 24%, @gradient-white 25%, @gradient-white 100%);
+  }
+  50% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.5 ) 49%, @gradient-white 50%, @gradient-white 100%);
+  }
+  75% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.8 ) 74%, @gradient-white 75%, @gradient-white 100%);
+  }
+  100% {
+    color: @gradient-white;
+    background: radial-gradient(circle at center, @gradient-opposite 99%, @gradient-white 100%, @gradient-white 100%);
+  }
+}
+
+button:active {
+  animation: gradient 150ms;
+  background: @gradient-opposite;
+  color: @gradient-white;
+}
+
+.pastille:active {
+  animation: gradient 150ms;
+  background: @gradient-opposite;
+  color: @gradient-white;
 }
