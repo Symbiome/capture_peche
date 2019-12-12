@@ -10,14 +10,36 @@
       </div>
       <div class="login-form">
         <div class="form-group">
-          <span>E-mail</span>
-          <input type="text" name="email" v-model="email" placeholder="Renseignez votre E-mail" v-bind:class="emailError?'field-error':''"/>
-          <div class="field-error" v-if="emailError">{{emailError}}</div>
+          <label for="field-email">
+            E-mail
+          </label>
+          <input type="text"
+                 id="field-email"
+                 name="email" 
+                 v-model="email" 
+                 placeholder="Renseignez votre E-mail" 
+                 v-bind:class="emailError?'field-error':''" />
+          <div v-bind:class="emailError?'field-error':''" >
+            <span v-if="emailError">
+              {{emailError}}
+            </span>
+          </div>
         </div>
         <div class="form-group">
-          <span>Mot de passe</span>
-          <input type="password" name="password" v-model="password" placeholder="Renseignez votre mot de passe" v-bind:class="passwordError?'field-error':''"/>
-          <div class="field-error" v-if="passwordError">{{passwordError}}</div>
+          <label for="field-password">
+            Mot de passe
+          </label>
+          <input type="password" 
+                 id="field-password" 
+                 name="password" 
+                 v-model="password" 
+                 placeholder="Renseignez votre mot de passe" 
+                 v-bind:class="passwordError?'field-error':''"/>
+          <div v-bind:class="passwordError?'field-error':''">
+            <span v-if="passwordError">
+              {{passwordError}}
+            </span>
+          </div>
         </div>
       </div>
       <div class="login-buttons">
@@ -176,8 +198,8 @@ export default class Login extends Vue {
     text-align:left;
 
     .form-group {
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-top: 6px;
+      // margin-bottom: 10px;
 
       font-size: 12px;
       line-height: 16px;
@@ -188,7 +210,7 @@ export default class Login extends Vue {
       flex-direction: column;
       align-items: flex-start;
 
-      span {
+      label {
         font-weight: 300;
       }
 
@@ -197,7 +219,7 @@ export default class Login extends Vue {
         opacity: 0.5;
         border-radius: 4px;
         height: 38px;
-        border: 0px;
+        border: 1px solid rgba(0, 0, 0, 0.5);
         color: @white;
         padding-left: 10px;
         padding-right: 10px;
@@ -219,6 +241,9 @@ export default class Login extends Vue {
         color: @white;
       }
 
+      div {
+        height: 14px;
+      }
       div.field-error {
         background-color: @cardinal;
         color: @white;
