@@ -8,31 +8,39 @@
 
         <h1>Inscription</h1>
 
-        <div class="form-group">
-          <span>Nom</span>
-          <input type="text" name="lastName" v-model="bean.lastName" placeholder="Renseignez votre nom" v-bind:class="validationErrors['lastName']?'field-error':''"/>
-          <div class="field-error" v-if="validationErrors['lastName']">{{validationErrors['lastName']}}</div>
-        </div>
-        <div class="form-group">
-          <span>Prénom</span>
-          <input type="text" name="firstName" v-model="bean.firstName" placeholder="Renseignez votre prénom" v-bind:class="validationErrors['firstName']?'field-error':''"/>
-          <div class="field-error" v-if="validationErrors['firstName']">{{validationErrors['firstName']}}</div>
-        </div>
-        <div class="form-group">
-          <span>E-mail</span>
-          <input type="text" name="email" v-model="bean.email" placeholder="Renseignez votre E-mail" v-bind:class="validationErrors['email']?'field-error':''"/>
-          <div class="field-error" v-if="validationErrors['email']">{{validationErrors['email']}}</div>
-        </div>
-        <div class="form-group">
-          <span>Mot de passe</span>
-          <input type="password" name="password" v-model="bean.password" placeholder="Choisissez un mot de passe" v-bind:class="validationErrors['password']?'field-error':''"/>
-          <div class="field-error" v-if="validationErrors['password']">{{validationErrors['password']}}</div>
-        </div>
-        <div class="form-group">
-          <span>Confirmation de mot de passe</span>
-          <input type="password" name="passwordConfirm" v-model="passwordConfirm" placeholder="Confirmez votre mot de passe" v-bind:class="validationErrors['passwordConfirm']?'field-error':''"/>
-          <div class="field-error" v-if="validationErrors['passwordConfirm']">{{validationErrors['passwordConfirm']}}</div>
-        </div>
+        <InputGroup name="lastName"
+                    label="Nom"
+                    placeholder="Renseignez votre nom"
+                    v-model="bean.lastName"
+                    v-bind:error="validationErrors['lastName']"
+                    />
+        <InputGroup name="firstName"
+                    label="Prénom"
+                    placeholder="Renseignez votre prénom"
+                    v-model="bean.firstName"
+                    v-bind:error="validationErrors['firstName']"
+                    />
+        <InputGroup name="email"
+                    type="email"
+                    label="E-mail"
+                    placeholder="Renseignez votre E-mail"
+                    v-model="bean.email"
+                    v-bind:error="validationErrors['email']"
+                    />
+        <InputGroup name="password"
+                    type="password"
+                    label="Mot de passe"
+                    placeholder="Choisissez un mot de passe"
+                    v-model="bean.password"
+                    v-bind:error="validationErrors['password']"
+                    />
+        <InputGroup name="passwordConfirm"
+                    type="password"
+                    label="Confirmation du mot de passe"
+                    placeholder="Confirmez votre mot de passe"
+                    v-model="passwordConfirm"
+                    v-bind:error="validationErrors['passwordConfirm']"
+                    />
       </div>
       <div class="register-buttons">
         <div class="back"><button v-on:click="cancel">Retour</button></div>
@@ -48,6 +56,7 @@ import Constants from '@/services/Constants';
 import UserRegister from '@/pojos/UserRegister';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
+import InputGroup from '@/components/common/InputGroup.vue'
 import router from '@/router'
 
 
@@ -55,7 +64,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    FisholaHeader
+    FisholaHeader,
+    InputGroup
   }
 })
 export default class Register extends Vue {
@@ -129,7 +139,7 @@ export default class Register extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 
 @import "../less/main";
 
@@ -174,62 +184,23 @@ export default class Register extends Vue {
 
     display: flex;
     flex-direction: column;
-    // justify-content: space-between;
 
     text-align:left;
     overflow: auto;
 
-    .form-group {
-      // margin-top: 10px;
-      margin-bottom: 20px;
-
-      font-size: 12px;
-      line-height: 16px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-
-      span {
-        font-weight: 300;
-        color: @black;
-      }
-
-      input {
-        background: transparent;
-        // opacity: 0.5;
-        border-radius: 4px;
-        height: 38px;
-        border: 1px solid @pale-sky;
-        box-sizing: border-box;
-        color: @pale-sky;
-        padding-left: 10px;
-        padding-right: 10px;
-        margin-top: 5px;
-        width: 100%;
-      }
-
-      input.field-error {
-        border: 1px solid @cardinal;
-      }
-
-      input:focus {
-        color: @pale-sky;
-      }
-
-      input::placeholder {
-        font-style: italic;
-        font-weight: normal;
-        font-size: 12px;
-      }
-
-      div.field-error {
-        background-color: @cardinal;
-        color: @white;
-        font-size: 10px;
-        line-height: 14px;
-      }
+    .input-group label {
+      color: @black;
     }
+
+    .input-group input {
+      background: transparent;
+      border: 1px solid @pale-sky;
+      color: @pale-sky;
+    }
+
+    // .input-group input:focus {
+    //   color: @pale-sky;
+    // }
 
   }
 
@@ -238,7 +209,6 @@ export default class Register extends Vue {
     background-color: @zircon;
     padding-left: 30px;
     padding-right: 30px;
-// border: 1px solid red;
 
     display: flex;
     flex-direction: row;

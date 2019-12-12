@@ -1,14 +1,14 @@
 <template>
-  <div class="form-group">
+  <div class="input-group">
     <label v-bind:for="'field-' + name">
       {{label}}
     </label>
-    <input v-bind:type="type"
+    <input v-bind:name="name"
             v-bind:id="'field-' + name"
-            v-bind:name="name"
+            v-bind:type="type"
+            v-bind:placeholder="placeholder"
             v-bind:value="value"
             v-on:input="$emit('input', $event.target.value)"
-            v-bind:placeholder="placeholder"
             v-bind:class="error?'field-error':''" />
     <div v-bind:class="error?'field-error':''" >
       <span v-if="error">
@@ -26,12 +26,12 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
   }
 })
-export default class FisholaHeader extends Vue {
-  @Prop() label?: string;
-  @Prop({ default: 'text' }) type!: string;
+export default class InputGroup extends Vue {
   @Prop() name!: string;
-  @Prop() value!: string;
+  @Prop({ default: 'text' }) type!: string;
+  @Prop() label?: string;
   @Prop() placeholder?: string;
+  @Prop() value!: string;
   @Prop() error?: string;
 }
 </script>
@@ -41,13 +41,13 @@ export default class FisholaHeader extends Vue {
 
 @import "../../less/main";
 
-.form-group {
+.input-group {
   margin-top: 6px;
 
   font-size: 12px;
   line-height: 16px;
 
-  color: @white;
+  // color: @white;
 
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@ export default class FisholaHeader extends Vue {
   }
 
   input.field-error {
-    border: 1px solid @cardinal;
+    border: 1px solid @cardinal !important;
   }
 
   input::placeholder {
