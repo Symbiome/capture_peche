@@ -20,6 +20,19 @@
 
 <script lang="ts">
 
+/*
+Pour comprendre le fonctionnement de ce composant : https://vuejs.org/v2/guide/components.html#Using-v-model-on-Components
+
+Il faut savoir que :
+`v-model="searchText"`
+
+est équivalent à
+`v-bind:value="searchText" v-on:input="searchText = $event"`
+
+Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut `value` du présent composant.
+Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
+*/
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
