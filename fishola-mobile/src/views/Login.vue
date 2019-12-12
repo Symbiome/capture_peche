@@ -9,38 +9,19 @@
         <div class="logo">Fishola</div>
       </div>
       <div class="login-form">
-        <div class="form-group">
-          <label for="field-email">
-            E-mail
-          </label>
-          <input type="text"
-                 id="field-email"
-                 name="email" 
-                 v-model="email" 
-                 placeholder="Renseignez votre E-mail" 
-                 v-bind:class="emailError?'field-error':''" />
-          <div v-bind:class="emailError?'field-error':''" >
-            <span v-if="emailError">
-              {{emailError}}
-            </span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="field-password">
-            Mot de passe
-          </label>
-          <input type="password" 
-                 id="field-password" 
-                 name="password" 
-                 v-model="password" 
-                 placeholder="Renseignez votre mot de passe" 
-                 v-bind:class="passwordError?'field-error':''"/>
-          <div v-bind:class="passwordError?'field-error':''">
-            <span v-if="passwordError">
-              {{passwordError}}
-            </span>
-          </div>
-        </div>
+        <InputField label="E-mail"
+                    placeholder="Renseignez votre E-mail"
+                    name="email"
+                    v-model="email"
+                    v-bind:error="emailError"
+                    />
+        <InputField label="Mot de passe"
+                    type="password"
+                    placeholder="Renseignez votre mot de passe"
+                    name="password"
+                    v-model="password"
+                    v-bind:error="passwordError"
+                    />
       </div>
       <div class="login-buttons">
         <div class="remember">
@@ -61,6 +42,7 @@
 
 import Constants from '@/services/Constants';
 
+import InputField from '@/components/common/InputField.vue'
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -69,7 +51,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    FisholaHeader
+    FisholaHeader,
+    InputField
   }
 })
 export default class Login extends Vue {
@@ -196,60 +179,6 @@ export default class Login extends Vue {
     justify-content: space-between;
 
     text-align:left;
-
-    .form-group {
-      margin-top: 6px;
-      // margin-bottom: 10px;
-
-      font-size: 12px;
-      line-height: 16px;
-
-      color: @white;
-
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-
-      label {
-        font-weight: 300;
-      }
-
-      input {
-        padding-left: 10px;
-        padding-right: 10px;
-        margin-top: 5px;
-        width: 100%;
-        height: 38px;
-        border: 1px solid @transparent;
-        border-radius: 4px;
-        background-color: @black-alpha-50;
-        color: @white;
-      }
-
-      input.field-error {
-        border: 1px solid @cardinal;
-      }
-
-      input::placeholder {
-        font-style: italic;
-        font-weight: normal;
-        font-size: 12px;
-      }
-
-      input:focus {
-        color: @white;
-      }
-
-      div {
-        height: 14px;
-      }
-      div.field-error {
-        background-color: @cardinal;
-        color: @white;
-        font-size: 10px;
-        line-height: 14px;
-      }
-    }
 
   }
 
