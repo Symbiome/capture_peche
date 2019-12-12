@@ -10,6 +10,8 @@ import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.UserDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jooq.exception.DataAccessException;
 
 import javax.inject.Inject;
@@ -37,6 +39,8 @@ import java.util.UUID;
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource {
+
+    private static final Log log = LogFactory.getLog(SecurityResource.class);
 
     @Inject
     protected UserDao userDao;
@@ -141,6 +145,10 @@ public class SecurityResource {
                     .verify(token);
 
             String email = verify.getSubject();
+
+            if (log.isInfoEnabled()) {
+                log.info(String.format("Email verified, create account for %s", email));
+            }
 
             userDao.create(
                     verify.getClaim("firstName").asString(),

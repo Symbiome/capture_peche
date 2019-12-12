@@ -6,6 +6,8 @@ import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.ImmutableMap;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.FisholaTechnicalException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -23,6 +25,8 @@ import java.util.Properties;
 
 @RequestScoped
 public class MailService {
+
+    private static final Log log = LogFactory.getLog(MailService.class);
 
     @Inject
     protected FisholaConfiguration config;
@@ -84,6 +88,11 @@ public class MailService {
     }
 
     public void sendMail(FisholaMail mail) {
+
+        if (log.isInfoEnabled()) {
+            log.info(String.format("Will send an email to '%s': « %s »", mail.getTos(), mail.getSubject()));
+        }
+
         MimeMessage message = buildMimeMessage(mail);
         try {
             Transport.send(message);

@@ -1,6 +1,9 @@
 package fr.inra.fishola;
 
+import fr.inra.fishola.rest.SecurityResource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +11,8 @@ import java.util.Properties;
 
 @Singleton
 public class FisholaConfiguration {
+
+    private static final Log log = LogFactory.getLog(FisholaConfiguration.class);
 
     public String getJdbcUrl() {
         return "jdbc:postgresql://docker_pg/fishola";
@@ -37,12 +42,13 @@ public class FisholaConfiguration {
         String backendBaseUrl = getBackendBaseUrl();
         if (StringUtils.isEmpty(backendBaseUrl)) {
             String requestUrl = httpServletRequest.getRequestURL().toString();
-            System.out.println("getRequestURL:" + requestUrl);
             String requestUri = httpServletRequest.getRequestURI();
-            System.out.println("getRequestURI:" + requestUri);
             int index = requestUrl.indexOf(requestUri);
             if (index != -1) {
                 backendBaseUrl = requestUrl.substring(0, index);
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("No 'BackendBaseUrl' in conf, computed is: %s", backendBaseUrl));
+                }
             } else {
                 throw new FisholaTechnicalException("Unable to compute backendBaseUrl", null);
             }
