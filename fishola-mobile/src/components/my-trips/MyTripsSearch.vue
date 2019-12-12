@@ -18,10 +18,6 @@ export default {
   },
   name: 'my-trips-search',
   components: {
-    // Title,
-    // Avatar,
-    // FeedbackAnchor,
-    // Menu
   }
 }
 

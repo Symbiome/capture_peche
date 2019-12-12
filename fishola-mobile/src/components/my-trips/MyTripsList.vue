@@ -3,6 +3,7 @@
     <div v-for="t in trips" v-bind:key="t.id">
       <MyTripsItem v-bind:trip="t"/>
     </div>
+    <div v-if="trips.length > 0" class="bottom-spacer"></div>
     <div v-if="trips.length == 0" class="no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
@@ -41,24 +42,27 @@ export default class MyTripsList extends Vue {
 .my-trips-list {
   background-color: @white-smoke;
   color: @gunmetal;
-  height: calc(100vh - 244px);
+  max-height: calc(100vh - 144px - @footer-height);
   overflow: auto;
   padding-top: 30px;
   margin-top: 10px;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
 
+  .bottom-spacer {
+    height: 19px;
+  }
+
   .no-trips {
-    height: calc(100vh - 274px);
+    height: 100%;
     background-color: @white-smoke;
-    // border: 1px solid red;
 
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     .top {
-      height: calc(100% - 176px);
+      flex: auto;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -74,6 +78,7 @@ export default class MyTripsList extends Vue {
 
     .bottom {
       height: 176px;
+      min-height: 100px;
       display: flex;
       flex-direction: column;
       justify-content: center;

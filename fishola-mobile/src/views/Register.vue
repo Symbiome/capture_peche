@@ -1,9 +1,9 @@
 <template>
-  <div class="register">
+  <div class="register page-with-header">
     <FisholaHeader v-bind:title="true"
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
-    <div class="register-page">
+    <div class="page register-page">
       <div class="register-form">
 
         <h1>Inscription</h1>
@@ -160,8 +160,7 @@ export default class Register extends Vue {
   background-image: url("/img/background.png");
   background-repeat: no-repeat;
   background-size: cover;
-  background-position-y: -315px;
-  height: calc(100vh - 85px);
+  background-position-y: -415px;
 }
 
 .register-page {
@@ -172,7 +171,6 @@ export default class Register extends Vue {
 
   text-align:center;
 
-  height: 100%;
   background-color: @white-smoke;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;

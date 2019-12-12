@@ -49,17 +49,20 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: @white;
+  height: 100%;
 }
-// #app:after {
-//     content : "";
-//     display: block;
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     background-image: url("/img/background_transparent.png");
-//     width: 100%;
-//     height: 100%;
-//     opacity : 0.3;
-//     z-index: -1;
-// }
+
+
+.page-with-header {
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+
+  .page {
+    height: 100%;
+  }
+}
+
 </style>

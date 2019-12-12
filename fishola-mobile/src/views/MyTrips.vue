@@ -1,11 +1,13 @@
 <template>
-  <div class="my-trips">
+  <div class="my-trips page-with-header">
     <FisholaHeader />
-    <MyTripsHeader v-bind:count="trips.length" />
-    <MyTripsSearch/>
-    <MyTripsList v-bind:trips="trips"/>
-    <FisholaFooter/>
-    <NewTripButton v-bind:count="trips.length" v-bind:trips="trips"/>
+    <div class="page my-trips-page">
+      <MyTripsHeader v-bind:count="trips.length" />
+      <MyTripsSearch/>
+      <MyTripsList v-bind:trips="trips"/>
+      <FisholaFooter/>
+      <NewTripButton v-bind:count="trips.length" v-bind:trips="trips"/>
+    </div>
   </div>
 </template>
 
@@ -45,3 +47,21 @@ export default class MyTrips extends Vue {
 }
 
 </script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style lang="less">
+
+@import "../less/main";
+
+.my-trips-page {
+
+  display: flex;
+  flex-direction: column;
+
+  .my-trips-list {
+    flex: auto;
+  }
+
+}
+
+</style>

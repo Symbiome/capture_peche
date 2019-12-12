@@ -59,7 +59,7 @@ export default class NexTripButton extends Vue {
   height: 40px;
   width: 100%;
   position: absolute;
-  bottom: 80px;
+  bottom: calc(@footer-height - 20px);
 
   display: flex;
   justify-content: center;

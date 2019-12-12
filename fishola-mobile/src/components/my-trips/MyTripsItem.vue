@@ -13,22 +13,18 @@
       </div>
       <div class="item-row">
         <div class="left-part">
-          <i class="icon-calendar"/>
-          {{trip.date}}
+          <i class="icon-calendar"/>{{trip.date}}
         </div>
         <div class="right-part">
-          {{trip.duration}}
-          <i class="icon-clock"/>
+          {{trip.duration}}<i class="icon-clock"/>
         </div>
       </div>
       <div class="item-row">
         <div class="left-part">
-          <i class="icon-lake"/>
-          {{trip.lake}}
+          <i class="icon-lake"/>{{trip.lake}}
         </div>
         <div class="right-part">
-          {{trip.catchs.length}}
-          <i class="icon-fish"/>
+          {{trip.catchs.length}}<i class="icon-fish"/>
         </div>
       </div>
     </div>
@@ -40,12 +36,6 @@
 import Trip from '@/pojos/Trip';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-
-// export default {
-//   name: 'my-trips-item',
-//   components: {
-//   }
-// }
 
 @Component
 export default class MyTripItem extends Vue {
@@ -77,7 +67,6 @@ export default class MyTripItem extends Vue {
     .item-selection {
       width: 16px;
       height: 16px;
-      margin-right: 20px;
 
       input {
         margin: 0px;
@@ -86,7 +75,8 @@ export default class MyTripItem extends Vue {
     }
 
     .item-description {
-      width: calc(100% - 46px);
+      margin-left: 20px;
+      width: 100%;
 
       font-size: 12px;
       line-height: 19px;

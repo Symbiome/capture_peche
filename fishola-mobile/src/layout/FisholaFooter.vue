@@ -74,14 +74,10 @@ export default class FisholaFooter extends Vue {
   justify-content: space-around;
   align-items: center;
 
-  height: 100px;
+  height: @footer-height;
   width: 100%;
   background-color: @zircon;
   color: @pelorous;
-
-  position: absolute;
-  bottom: 0;
-  right: 0;
 
   .footer-element {
     height: 40px;

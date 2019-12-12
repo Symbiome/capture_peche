@@ -1,12 +1,12 @@
 <template>
-  <div class="login">
+  <div class="login page-with-header">
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
-    <div class="login-page">
+    <div class="page login-page">
       <div class="login-title">
         <div class="welcome">Bienvenue sur</div>
-        <div class="logo">Fishola</div>
+        <div class="logo" v-on:click="autoLogin">Fishola</div>
       </div>
       <div class="login-form">
         <InputGroup name="email"
@@ -136,6 +136,12 @@ export default class Login extends Vue {
     this.$root.$emit('toaster-error', 'Rôôô quel dommage !?');
   }
 
+  autoLogin() {
+    this.email = 'thimel@codelutin.com';
+    this.password = 'sispea';
+    this.signIn();
+  }
+
 }
 
 </script>
@@ -153,8 +159,6 @@ export default class Login extends Vue {
   
   text-align:center;
 
-  height: calc(100vh - 35px);
-  
   .login-title {
     height: 140px;
     display: flex;
