@@ -33,13 +33,13 @@
 
 <script lang="ts">
 
-import Trip from '@/pojos/Trip';
+import TripLight from '@/pojos/TripLight';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class MyTripItem extends Vue {
-  @Prop() trip!: Trip
+  @Prop() trip!: TripLight
 }
 </script>
 

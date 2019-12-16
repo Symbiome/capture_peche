@@ -20,7 +20,7 @@
 <script lang="ts">
 
 import MyTripsItem from '@/components/my-trips/MyTripsItem.vue';
-import Trip from '@/pojos/Trip';
+import TripLight from '@/pojos/TripLight';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -30,7 +30,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class MyTripsList extends Vue {
-  @Prop() trips!:Trip[];
+  @Prop() trips!:TripLight[];
 }
 </script>
 

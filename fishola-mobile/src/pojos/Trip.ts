@@ -3,16 +3,14 @@ import Catch from '@/pojos/Catch';
 
 export default class Trip {
 
+    id?:string;
+    name?:string;
+    lake?:string;
+    date?:string;
     duration?:string;
     catchs:Catch[];
-    canBeModified:boolean;
 
-    constructor(
-        public id:string,
-        public name:string,
-        public lake:string,
-        public date:string) {
-            this.canBeModified = false;
+    constructor() {
             this.catchs = [];
     }
 

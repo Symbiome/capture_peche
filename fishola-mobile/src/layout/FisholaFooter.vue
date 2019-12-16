@@ -1,13 +1,31 @@
 <template>
   <div class="footer">
-    <a class="footer-element pastille" v-on:click="logout">
+    <div class="footer-element pastille"
+         v-if="activeButtons['logout']"
+         v-on:click="logout">
       <i class="icon-logout"></i>
-    </a>
-    <div class="footer-element pastille" v-bind:class="selected=='dashboard'?'filled':'unfilled'" v-on:click="dashboard">
+    </div>
+    <div class="footer-element pastille"
+         v-if="activeButtons['back']"
+         v-on:click="goBack">
+      <i class="icon-arrow icon-back"></i>
+    </div>
+    <div class="footer-element pastille"
+         v-bind:class="selected=='dashboard'?'filled':'unfilled'"
+         v-if="activeButtons['dashboard']"
+         v-on:click="goDashboard">
       <i class="icon-dashboard"></i>
     </div>
-    <div class="footer-element pastille" v-bind:class="selected=='home'?'filled':'unfilled'" v-on:click="home">
+    <div class="footer-element pastille"
+         v-bind:class="selected=='home'?'filled':'unfilled'"
+         v-if="activeButtons['home']"
+         v-on:click="goHome">
       <i class="icon-home"></i>
+    </div>
+    <div class="footer-element pastille"
+         v-if="activeButtons['giveup']"
+         v-on:click="giveup">
+      Abandonner
     </div>
   </div>
 </template>
@@ -23,7 +41,21 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component
 export default class FisholaFooter extends Vue {
 
+  @Prop({default:'logout,dashboard,home'}) buttons!: string;
   @Prop() selected?: string;
+
+  activeButtons: any = {
+    back: false,
+    logout: false,
+    dashboard: false,
+    home: false,
+    giveup: false
+  };
+
+  mounted() {
+    let array = this.buttons.split(',');
+    array.forEach(key => this.activeButtons[key] = true);
+  }
 
   logout() {
 
@@ -62,12 +94,20 @@ export default class FisholaFooter extends Vue {
     router.push('/');
   }
 
-  dashboard() {
+  goBack() {
+    window.history.back();
+  }
+
+  goDashboard() {
     router.push('/dashboard');
   }
 
-  home() {
+  goHome() {
     router.push('/trips');
+  }
+
+  giveup() {
+    window.alert('GIVEUP');
   }
 
 }

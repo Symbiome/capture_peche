@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import MyTrips from '../views/MyTrips.vue'
+import NewTrip from '../views/NewTrip.vue'
 import Dashboard from '../views/Dashboard.vue'
 
 Vue.use(VueRouter)
@@ -23,6 +24,11 @@ const routes = [
     path: '/trips',
     name: 'trips',
     component: MyTrips
+  },
+  {
+    path: '/trips/new',
+    name: 'new-trip',
+    component: NewTrip
   },
   {
     path: '/dashboard',

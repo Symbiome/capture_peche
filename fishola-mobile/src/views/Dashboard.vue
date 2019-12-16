@@ -11,7 +11,8 @@
         <h2><i class="icon-fish" />Mes poissons</h2>
         <p>Quelques statistiques ...</p>
       </div>
-      <FisholaFooter selected="dashboard"/>
+      <FisholaFooter buttons="logout,dashboard,home"
+                     selected="dashboard" />
     </div>
   </div>
 </template>
