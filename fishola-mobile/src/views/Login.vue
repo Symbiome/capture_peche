@@ -6,7 +6,7 @@
     <div class="page login-page">
       <div class="login-title">
         <div class="welcome">Bienvenue sur</div>
-        <div class="logo" v-on:click="autoLogin">Fishola</div>
+        <img class="logo" v-on:click="autoLogin" src="img/logo/logo-FISHOLA-negatif.svg" alt="Fishola"/>
       </div>
       <div class="login-form">
         <InputGroup name="email"
@@ -170,8 +170,7 @@ export default class Login extends Vue {
       line-height: 33px;
     }
     .logo {
-      font-family: 'bridamount', 'Avenir', Helvetica, Arial, sans-serif;
-      font-size: 62px;
+      height: 100px;
     }
   }
 
