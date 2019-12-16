@@ -1,12 +1,12 @@
 <template>
   <div class="footer">
-    <a class="footer-element pastille unfilled" v-on:click="logout">
+    <a class="footer-element pastille" v-on:click="logout">
       <i class="icon-logout"></i>
     </a>
-    <div class="footer-element pastille unfilled">
+    <div class="footer-element pastille" v-bind:class="selected=='dashboard'?'filled':'unfilled'" v-on:click="dashboard">
       <i class="icon-dashboard"></i>
     </div>
-    <div class="footer-element pastille filled">
+    <div class="footer-element pastille" v-bind:class="selected=='home'?'filled':'unfilled'" v-on:click="home">
       <i class="icon-home"></i>
     </div>
   </div>
@@ -22,6 +22,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class FisholaFooter extends Vue {
+
+  @Prop() selected?: string;
 
   logout() {
 
@@ -58,6 +60,14 @@ export default class FisholaFooter extends Vue {
 
   logguedOut() {
     router.push('/');
+  }
+
+  dashboard() {
+    router.push('/dashboard');
+  }
+
+  home() {
+    router.push('/trips');
   }
 
 }

@@ -5,8 +5,8 @@
       <MyTripsHeader v-bind:count="trips.length" />
       <MyTripsSearch/>
       <MyTripsList v-bind:trips="trips"/>
-      <FisholaFooter/>
       <NewTripButton v-bind:count="trips.length" v-bind:trips="trips"/>
+      <FisholaFooter selected="home"/>
     </div>
   </div>
 </template>
