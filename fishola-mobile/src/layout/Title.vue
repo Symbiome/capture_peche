@@ -1,6 +1,10 @@
 <template>
   <div class="header-title">
+    <img src="img/logo/logo-ligne-negatif.svg" alt="Fishola" />
+    <!--
+    <img src="img/logo-FISHOLA-logo-negatif.svg" alt="Fishola" />
     <img src="img/logo-FISHOLA-nom-negatif.svg" alt="Fishola" />
+    -->
   </div>
 </template>
 
