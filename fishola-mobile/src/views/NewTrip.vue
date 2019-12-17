@@ -154,7 +154,7 @@ export default class NewTrip extends Vue {
               padding-left: 20px;
               padding-right: 20px;
               color: @white;
-              background-color: @summer-sky;
+              background-color: @terra-cotta;
             }
           }
         }
