@@ -9,7 +9,14 @@
       <div class="dashboard-content">
         <h1>Tableau de bord</h1>
         <h2><i class="icon-fish" />Mes poissons</h2>
-        <p>Quelques statistiques ...</p>
+        <div class="scroll">
+          <div class="item selected">Perche</div>
+          <div class="item">Brochet</div>
+          <div class="item">Truite</div>
+          <div class="item">Corégone</div>
+          <div class="item">Omble_chevalier</div>
+          <div class="item">Silure</div>
+        </div>
       </div>
       <FisholaFooter buttons="logout,dashboard,home"
                      selected="dashboard" />
@@ -60,7 +67,7 @@ export default class Dashboard extends Vue {
   overflow: auto;
 
   .dashboard-header {
-    height: 300px;
+    height: 250px;
 
     display: flex;
     flex-direction: column;
@@ -101,6 +108,8 @@ export default class Dashboard extends Vue {
     padding-right: 30px;
     padding-top: 30px;
 
+    color: @gunmetal;
+
     h1 {
       margin-top: 0px;
       margin-bottom: 30px;
@@ -120,7 +129,6 @@ export default class Dashboard extends Vue {
         margin-right: 10px;
       }
 
-      color: @gunmetal;
       font-style: normal;
       font-weight: normal;
       font-size: 22px;
@@ -129,12 +137,27 @@ export default class Dashboard extends Vue {
     }
 
     p { 
-      color: @gunmetal;
       font-style: normal;
       font-weight: normal;
       text-align: left;
     }
 
+    .scroll {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+
+      overflow:auto;
+
+      div.item {
+        margin-right: 20px;
+        color: @pale-sky;
+      }
+      div.item.selected {
+        color: @gunmetal;
+        border-bottom: 3px solid @pelorous;
+      }
+    }
   }
 
 }
