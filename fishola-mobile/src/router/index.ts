@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+import Dispatcher from '../views/Dispatcher.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import MyTrips from '../views/MyTrips.vue'
@@ -12,6 +13,11 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
+    name: 'dispatcher',
+    component: Dispatcher
+  },
+  {
+    path: '/login',
     name: 'login',
     component: Login
   },

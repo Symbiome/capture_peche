@@ -91,7 +91,7 @@ export default class FisholaFooter extends Vue {
   }
 
   logguedOut() {
-    router.push('/');
+    router.push('/login');
   }
 
   goBack() {

@@ -91,7 +91,7 @@ export default class Register extends Vue {
   }
 
   cancel() {
-    router.push('/');
+    router.push('/login');
   }
 
   register() {
@@ -140,7 +140,7 @@ export default class Register extends Vue {
 
   registrationOk() {
     this.$root.$emit('toaster-success', 'Compte enregistré. Vous devez valider votre e-mail', 10000);
-    router.push('/');
+    router.push('/login');
   }
 
   setValidationErrors(validationErrors:any) {

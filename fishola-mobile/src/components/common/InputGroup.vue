@@ -100,8 +100,8 @@ export default class InputGroup extends Vue {
     height: 14px;
   }
   div.field-error {
-    background-color: @cardinal;
-    color: @white;
+    background-color: transparent;
+    color: @cardinal;
     font-size: 10px;
     line-height: 14px;
   }

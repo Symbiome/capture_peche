@@ -147,7 +147,7 @@ export default class Login extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 
 @import "../less/main";
 
@@ -182,6 +182,13 @@ export default class Login extends Vue {
     flex-direction: column;
 
     text-align:left;
+
+    .input-group div.field-error {
+      background-color: @cardinal;
+      color: @white;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
 
   }
 
