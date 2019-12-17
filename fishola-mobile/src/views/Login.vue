@@ -25,12 +25,6 @@
                     />
       </div>
       <div class="login-buttons">
-        <div class="remember">
-          <input type="checkbox" id="remember-me" class="pelorous-checkbox" />
-          <label for="remember-me"></label>
-          <label for="remember-me" id="remember-me-label">Se souvenir de moi</label>
-          
-        </div>
         <div class="signin"><button v-on:click="signIn">Connexion</button></div>
         <div class="signup"><button v-on:click="signUp">Créer un compte</button></div>
         <div class="forgotten-password"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
@@ -193,30 +187,22 @@ export default class Login extends Vue {
   }
 
   .login-buttons {
-    height: 264px;
+    height: 237px;
     background-color: @white-smoke;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     color: @gunmetal;
-    padding-top: 10px;
+    padding-top: 30px;
 
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-
-    .remember {
-      font-size: 14px;
-      line-height: 19px;
-      
-      #remember-me-label {
-        margin-left: 8px;
-      }
-    }
+    justify-content: flex-start;
 
     .signin {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
+      margin-bottom: 20px;
 
       button {
 
@@ -242,6 +228,7 @@ export default class Login extends Vue {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
+      margin-bottom: 30px;
 
       button {
 
