@@ -5,8 +5,10 @@ import Dispatcher from '../views/Dispatcher.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import MyTrips from '../views/MyTrips.vue'
-import NewTrip from '../views/NewTrip.vue'
 import Dashboard from '../views/Dashboard.vue'
+
+import NewTrip from '../views/trip/NewTrip.vue'
+import EditTripMeta from '../views/trip/EditTripMeta.vue'
 
 Vue.use(VueRouter)
 
@@ -35,6 +37,12 @@ const routes = [
     path: '/trips/new',
     name: 'new-trip',
     component: NewTrip
+  },
+  {
+    path: '/trips/:id/meta',
+    name: 'edit-trip-meta',
+    component: EditTripMeta,
+    props: true
   },
   {
     path: '/dashboard',

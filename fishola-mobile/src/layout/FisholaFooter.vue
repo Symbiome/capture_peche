@@ -10,6 +10,14 @@
          v-on:click="goBack">
       <i class="icon-arrow icon-back"></i>
     </div>
+    <div class="footer-element steps"
+         v-if="steps.length > 0">
+      <div v-for="s in steps" 
+           v-bind:key="s.id"
+           v-bind:class="s.active?'step step-active':'step'">
+        <!-- {{s.active}} -->
+      </div>
+    </div>
     <div class="footer-element pastille"
          v-bind:class="selected=='dashboard'?'filled':'unfilled'"
          v-if="activeButtons['dashboard']"
@@ -25,7 +33,7 @@
     <div class="footer-element pastille"
          v-if="activeButtons['giveup']"
          v-on:click="giveup">
-      Abandonner
+      Abandon
     </div>
   </div>
 </template>
@@ -44,6 +52,8 @@ export default class FisholaFooter extends Vue {
   @Prop({default:'logout,dashboard,home'}) buttons!: string;
   @Prop() selected?: string;
 
+  steps:any[] = [];
+
   activeButtons: any = {
     back: false,
     logout: false,
@@ -54,7 +64,24 @@ export default class FisholaFooter extends Vue {
 
   mounted() {
     let array = this.buttons.split(',');
-    array.forEach(key => this.activeButtons[key] = true);
+    array.forEach(this.activeButton);
+  }
+
+  activeButton(key:string) {
+    if (key && key.indexOf('step-') == 0) {
+      let stepIndex = parseInt(key[5]);
+      let stepCount = parseInt(key[7]);
+      // this.steps = [];
+
+      for (let i=1; i<=stepCount; i++) {
+        this.steps.push({
+          id: i,
+          active: (i<=stepIndex)
+        });
+      }
+
+    }
+    this.activeButtons[key] = true;
   }
 
   logout() {
@@ -139,5 +166,30 @@ export default class FisholaFooter extends Vue {
       font-size: 19px;
     }
   }
+
+  .footer-element.steps {
+
+    width: 80px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    .step {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid @pelorous;
+
+      margin-left: 5px;
+      margin-right: 5px;
+
+    }
+
+    .step.step-active {
+      background-color: @pelorous;
+    }
+  }
+
 }
 </style>

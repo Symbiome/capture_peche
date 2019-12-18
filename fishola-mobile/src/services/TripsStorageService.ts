@@ -48,4 +48,13 @@ export default class TripsStorageService extends Dexie {
           .then(id => callback(id));
     }
 
+    static getTrip(id:any, callback:(trip:any)=>any) {
+        if (id == 'DIRTY') {
+            this.getInstance().onCreationTrip.get(id)
+            .then((aaa) => callback(aaa));
+        } else {
+            // TODO
+        }
+    }
+
 }

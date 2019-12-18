@@ -29,8 +29,7 @@
           </div>
         </div>
       </div>
-      <FisholaFooter buttons="back,giveup"
-                     selected="home"/>
+      <FisholaFooter buttons="back,giveup"/>
     </div>
   </div>
 </template>
@@ -44,6 +43,7 @@ import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import router from '../../router';
   
 @Component({
   components: {
@@ -60,13 +60,13 @@ export default class NewTrip extends Vue {
 
   newLiveTrip() {
     TripsStorageService.newLiveTrip((id:string) => {
-      console.log("Trip créé avec l'ID: " + id);
+      router.push({name:'edit-trip-meta', params: {id: id}});
     });
   }
 
   newAfterwardsTrip() {
     TripsStorageService.newAfterwardsTrip((id:string) => {
-      console.log("Trip créé avec l'ID: " + id);
+      router.push({name:'edit-trip-meta', params: {id: id}});
     });
   }
 }
@@ -76,7 +76,7 @@ export default class NewTrip extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 
-@import "../less/main";
+@import "../../less/main";
 
 .new-trip-page {
 
