@@ -177,6 +177,21 @@ export default class Login extends Vue {
 
     text-align:left;
 
+
+    .input-group label {
+      color: @white;
+    }
+
+    .input-group input {
+      background-color: @black-alpha-50;
+      border: 1px solid @transparent;
+      color: @white;
+
+      :focus {
+        color: @white;
+      }
+    }
+
     .input-group div.field-error {
       background-color: @cardinal;
       color: @white;

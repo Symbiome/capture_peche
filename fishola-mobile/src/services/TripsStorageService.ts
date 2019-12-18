@@ -15,8 +15,8 @@ export default class TripsStorageService extends Dexie {
         super("Fishola");
         console.log("Construction de la base Fishola ...");
         this.version(1).stores({
-            onCreationTrip: 'id, type',
-            trips: 'id, type',
+            onCreationTrip: 'id, mode',
+            trips: 'id, mode',
             //...other tables goes here...
         });
 

@@ -3,10 +3,23 @@
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader/>
-      <div class="edit-trip-meta-form">
+      <div class="edit-trip-meta-content">
         <h1>Information de pêche</h1>
-        <div v-if="tripType">Type de trip: {{tripType}}</div>
+        <div class="form">
+          <InputGroup name="name"
+                      label="Nom de la sortie"
+                      placeholder="Nommez votre sortie"
+                      v-model="name"
+                      v-bind:error="nameError" />
+          <InputGroup name="lake"
+                      label="Lac"
+                      v-model="lake" />
+          <InputGroup name="type"
+                      label="Situation"
+                      v-model="type" />
+        </div>
       </div>
+      <NewTripButton />
       <FisholaFooter buttons="back,step-1-4,giveup"/>
     </div>
   </div>
@@ -16,8 +29,11 @@
 import Trip from '@/pojos/Trip';
 import TripsStorageService from '@/services/TripsStorageService';
 
+import InputGroup from '@/components/common/InputGroup.vue'
+
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
+import NewTripButton from '@/components/my-trips/NewTripButton.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -26,6 +42,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    NewTripButton,
+    InputGroup,
     FisholaFooter
   }
 })
@@ -33,7 +51,11 @@ export default class EditTripMeta extends Vue {
   
   @Prop() id!:string;
 
-  tripType:string = '';
+  mode:string = '';
+  name:string = '';
+  nameError:string = '';
+  lake:string = '';
+  type:string = '';
 
   created() {
     TripsStorageService.getTrip(this.id, this.tripLoaded);
@@ -44,7 +66,7 @@ export default class EditTripMeta extends Vue {
 
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
-    this.tripType = someTrip.type;
+    this.mode = someTrip.mode;
   }
 
 }
@@ -67,7 +89,7 @@ export default class EditTripMeta extends Vue {
   overflow: auto;
 
 
-  .edit-trip-meta-form {
+  .edit-trip-meta-content {
 
     flex:auto;
 
@@ -97,6 +119,7 @@ export default class EditTripMeta extends Vue {
       color: @pelorous;
       text-align: center;
     }
+
   }
 
 }

@@ -68,6 +68,7 @@ export default class InputGroup extends Vue {
 
   label {
     font-weight: 300;
+    color: @black;
   }
 
   input {
@@ -76,10 +77,11 @@ export default class InputGroup extends Vue {
     margin-top: 5px;
     width: 100%;
     height: 38px;
-    border: 1px solid @transparent;
     border-radius: 4px;
-    background-color: @black-alpha-50;
-    color: @white;
+
+    background: transparent;
+    border: 1px solid @pale-sky;
+    color: @pale-sky;
   }
 
   input.field-error {
@@ -90,10 +92,6 @@ export default class InputGroup extends Vue {
     font-style: italic;
     font-weight: normal;
     font-size: 12px;
-  }
-
-  input:focus {
-    color: @white;
   }
 
   div {
