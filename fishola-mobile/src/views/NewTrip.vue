@@ -12,7 +12,7 @@
             <div class="right">
               <div class="title">En direct</div>
               <div class="detail">C’est parti, démarrez une sortie et renseignez vos captures en direct&nbsp;!</div>
-              <div class="action"><button><i class="icon-arrow" /></button></div>
+              <div class="action"><button v-on:click="newLiveTrip"><i class="icon-arrow" /></button></div>
             </div>
           </div>
         </div>
@@ -24,7 +24,7 @@
             <div class="right">
               <div class="title">À la maison</div>
               <div class="detail">Vous rentrez d’une sortie de pêche&nbsp;? Renseignez vos captures à posteriori</div>
-              <div class="action"><button><i class="icon-arrow" /></button></div>
+              <div class="action"><button v-on:click="newAfterwardsTrip"><i class="icon-arrow" /></button></div>
             </div>
           </div>
         </div>
@@ -37,6 +37,7 @@
 
 <script lang="ts">
 import Trip from '@/pojos/Trip';
+import TripsStorageService from '@/services/TripsStorageService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -57,7 +58,16 @@ export default class NewTrip extends Vue {
     super();
   }
 
-  mounted() {
+  newLiveTrip() {
+    TripsStorageService.newLiveTrip((id:string) => {
+      console.log("Trip créé avec l'ID: " + id);
+    });
+  }
+
+  newAfterwardsTrip() {
+    TripsStorageService.newAfterwardsTrip((id:string) => {
+      console.log("Trip créé avec l'ID: " + id);
+    });
   }
 }
 
