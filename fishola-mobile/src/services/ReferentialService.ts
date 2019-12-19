@@ -1,4 +1,5 @@
 import Lake from '@/pojos/Lake';
+import Species from '@/pojos/Species';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export default class ReferentialService extends AbstractFisholaService {
@@ -19,6 +20,13 @@ export default class ReferentialService extends AbstractFisholaService {
 
     static getLakes(callback:(lakes:Lake[])=>any) {
         this.getInstance().backendGet('/v1/referential/lakes', callback);
+    }
+
+    static getSpecies(lakeId:string, callback:(resul:Species[])=>any) {
+        this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
+            let species = map[lakeId];
+            callback(species);
+        });
     }
 
     static getTripTypes(callback:(result:any[])=>any) {

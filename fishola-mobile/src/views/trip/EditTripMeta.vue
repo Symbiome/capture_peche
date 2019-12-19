@@ -2,7 +2,7 @@
   <div class="edit-trip-meta page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
-      <SomeTripHeader/>
+      <SomeTripHeader v-bind:trip="trip"/>
       <div class="edit-trip-meta-content">
         <h1>Information de pêche</h1>
         <div class="form">
@@ -47,6 +47,7 @@ import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import router from '../../router';
   
 @Component({
   components: {
@@ -128,7 +129,7 @@ export default class EditTripMeta extends Vue {
   }
 
   tripSaved() {
-    window.alert("AAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaayyyyyyyyyyyyyyyyyyééééééééééééééééééééé");
+    router.push({name:'edit-trip-species', params: {id: this.id}});
   }
 
 }
