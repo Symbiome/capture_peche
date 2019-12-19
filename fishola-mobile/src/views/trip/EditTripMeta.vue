@@ -11,6 +11,12 @@
                       placeholder="Nommez votre sortie"
                       v-model="name"
                       v-bind:error="nameError" />
+          <ul>
+            <li v-for="l in lakes"
+                  v-bind:key="l.id">
+              {{l.name}}
+            </li>
+          </ul>
           <InputGroup name="lake"
                       label="Lac"
                       v-model="lake" />
@@ -28,8 +34,10 @@
 
 <script lang="ts">
 import Trip from '@/pojos/Trip';
+import Lake from '@/pojos/Lake';
 import Constants from '@/services/Constants';
-import TripsStorageService from '@/services/TripsStorageService';
+import TripsService from '@/services/TripsService';
+import ReferentialService from '@/services/ReferentialService';
 
 import InputGroup from '@/components/common/InputGroup.vue'
 
@@ -57,8 +65,11 @@ export default class EditTripMeta extends Vue {
   lake:string = '';
   type:string = '';
 
+  lakes:Lake[] = [];
+
   created() {
-    TripsStorageService.getTrip(this.id, this.tripLoaded);
+    TripsService.getTrip(this.id, this.tripLoaded);
+    ReferentialService.getLakes(this.lakesLoaded);
   }
 
   mounted() {
@@ -68,6 +79,10 @@ export default class EditTripMeta extends Vue {
     console.log("Trip chargé", someTrip);
     this.mode = someTrip.mode;
     this.name = someTrip.name;
+  }
+
+  lakesLoaded(result:Lake[]) {
+    result.forEach((lake) => this.lakes.push(lake));
   }
 
   next() {

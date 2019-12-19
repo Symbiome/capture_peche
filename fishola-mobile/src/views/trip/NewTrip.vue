@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import Trip from '@/pojos/Trip';
-import TripsStorageService from '@/services/TripsStorageService';
+import TripsService from '@/services/TripsService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -59,13 +59,13 @@ export default class NewTrip extends Vue {
   }
 
   newLiveTrip() {
-    TripsStorageService.newLiveTrip((id:string) => {
+    TripsService.newLiveTrip((id:string) => {
       router.push({name:'edit-trip-meta', params: {id: id}});
     });
   }
 
   newAfterwardsTrip() {
-    TripsStorageService.newAfterwardsTrip((id:string) => {
+    TripsService.newAfterwardsTrip((id:string) => {
       router.push({name:'edit-trip-meta', params: {id: id}});
     });
   }

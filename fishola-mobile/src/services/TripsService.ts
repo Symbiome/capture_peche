@@ -1,36 +1,20 @@
 import Dexie from 'dexie';
 import Trip from '@/pojos/Trip';
 import Constants from '@/services/Constants';
+import AbstractFisholaService from '@/services/AbstractFisholaService';
 
-export default class TripsStorageService extends Dexie {
+export default class TripsService extends AbstractFisholaService {
 
-    static instance?:TripsStorageService;
-
-    // Declare implicit table properties.
-    // (just to inform Typescript. Instanciated by Dexie in stores() method)
-    onCreationTrip: Dexie.Table<Trip, string>; // number = type of the primkey
-    trips: Dexie.Table<Trip, number>; // number = type of the primkey
-    //...other tables goes here...
+    static instance?:TripsService;
 
     constructor () {
-        super("Fishola");
-        console.log("Construction de la base Fishola ...");
-        this.version(1).stores({
-            onCreationTrip: 'id, mode',
-            trips: 'id, mode',
-            //...other tables goes here...
-        });
-
-        // The following line is needed if your typescript
-        // is compiled using babel instead of tsc:
-        this.onCreationTrip = this.table("onCreationTrip");
-        this.trips = this.table("trips");
+        super();
     }
 
-    static getInstance():TripsStorageService {
+    static getInstance():TripsService {
         if (!this.instance) {
             console.log("Pas encore d'instance partagée, on la créé");
-            this.instance = new TripsStorageService();
+            this.instance = new TripsService();
         }
         return this.instance;
     }
@@ -50,11 +34,11 @@ export default class TripsStorageService extends Dexie {
     }
 
     static newLiveTrip(callback:(id:string)=>any) {
-        TripsStorageService.newTrip('live', callback);
+        TripsService.newTrip('live', callback);
     }
 
     static newAfterwardsTrip(callback:(id:string)=>any) {
-        TripsStorageService.newTrip('afterwards', callback);
+        TripsService.newTrip('afterwards', callback);
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
