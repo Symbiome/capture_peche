@@ -100,11 +100,11 @@ export default class Login extends Vue {
     let loginBean =  {email: this.email, password: this.password};
 
     let apiUrl = Constants.apiUrl("/v1/security/login");
-    httpCall('POST', apiUrl, loginBean, this.signedIn);
+    httpCall('POST', apiUrl, loginBean, this.signInResult);
 
   }
 
-  signedIn(status:number) {
+  signInResult(status:number) {
     switch(status) {
       case 200:
         router.push('trips');

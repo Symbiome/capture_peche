@@ -49,6 +49,7 @@ import Constants from '@/services/Constants';
 
 import router from '@/router'
 
+import UserProfile from '@/pojos/UserProfile';
 import FooterButton from '@/layout/FooterButton.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -131,6 +132,7 @@ export default class FisholaFooter extends Vue {
   }
 
   logguedOut() {
+    UserProfile.unsetCurrent();
     router.push('/login');
   }
 

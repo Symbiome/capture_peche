@@ -15,7 +15,16 @@ export default class Avatar extends Vue {
 
   initials = '..';
 
-  mounted() {
+  created() {
+    let profile:UserProfile = UserProfile.getCurrent();
+    if (profile) {
+      this.initials = profile.initials;
+    } else {
+      this.loadProfile();
+    }
+  }
+
+  loadProfile() {
 
     function httpCall(method: string, url:string, data:any, callback:(result:any)=>any) {
         var xhr = new XMLHttpRequest();
@@ -50,6 +59,7 @@ export default class Avatar extends Vue {
 
   profileLoaded(result:any) {
     let profile = UserProfile.fromJson(result);
+    UserProfile.setCurrent(profile);
     this.initials = profile.initials;
   }
 

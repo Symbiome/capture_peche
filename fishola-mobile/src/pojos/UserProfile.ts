@@ -1,6 +1,8 @@
 
 export default class UserProfile {
 
+    static currentUser?:UserProfile;
+
     lastName?:string;
     gender?:string;
     birthYear?:number;
@@ -22,6 +24,18 @@ export default class UserProfile {
         result.birthYear = input.birthYear;
         console.log("Profile parsed: ", result);
         return result;
+    }
+
+    static getCurrent():UserProfile {
+        return this.currentUser!;
+    }
+
+    static setCurrent(newProfile:UserProfile) {
+        this.currentUser = newProfile;
+    }
+
+    static unsetCurrent() {
+        delete this.currentUser;
     }
 
 }
