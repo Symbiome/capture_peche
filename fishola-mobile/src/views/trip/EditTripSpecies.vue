@@ -8,14 +8,17 @@
         <div class="form">
           <div v-for="s in species" 
                v-bind:key="s.id"
-               class="species-item">
+               class="species-item"
+               v-bind:class="speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
             <div class="item-selection">
               <input type="checkbox" 
                      v-bind:id="'checkbox-' + s.id"
+                     v-bind:value="s.id"
+                     v-model="speciesIds"
                      class="pelorous-checkbox" />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
-            <div class="item-description">
+            <div class="item-description" v-on:click="toggle(s)">
               {{s.name}}
             </div>
           </div>
@@ -92,6 +95,16 @@ export default class EditTripSpecies extends Vue {
 
   speciesLoaded(result:Species[]) {
     result.forEach((s) => this.species.push(s));
+  }
+
+  toggle(s:Species) {
+    let speciesId = s.id;
+    let index = this.speciesIds.indexOf(speciesId);
+    if (index == -1) {
+      this.speciesIds.push(speciesId);
+    } else {
+      this.speciesIds.splice(index, 1);
+    }
   }
 
   next() {
