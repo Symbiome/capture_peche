@@ -1,5 +1,5 @@
 <template>
-  <div class="register page-with-header">
+  <div class="register page-with-header shifted-background">
     <FisholaHeader v-bind:title="true"
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
@@ -155,13 +155,6 @@ export default class Register extends Vue {
 <style lang="less">
 
 @import "../less/main";
-
-.register {
-  background-image: url("/img/background.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position-y: -415px;
-}
 
 .register-page {
 

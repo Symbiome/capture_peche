@@ -49,11 +49,12 @@ export default {
   display: flex;
   justify-content: space-between;
 
-  height: 39px;
+  height: 49px;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 10px;
   padding-bottom: 10px;
+  margin-bottom: 10px;
 
   font-weight: bold;
   font-size: 14px;

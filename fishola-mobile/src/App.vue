@@ -27,11 +27,6 @@ export default class App extends Vue {
 @import "less/main";
 
 body {
-  background-image: url("/img/background_transparent.png");
-  // background-image: url("/img/background.png");
-  background-repeat: no-repeat;
-  background-size: 100%;
-  background-position: center;
   background-color: @pelorous;
   margin: 0px;
   height: 100%;
@@ -64,6 +59,23 @@ html {
   .page {
     height: 100%;
   }
+}
+
+.full-background {
+  background-image: url("/img/background_transparent.png");
+  // background-image: url("/img/background.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  background-position: center;
+}
+
+.shifted-background {
+  background-image: url("/img/background.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  background-position: center;
+  background-position-y: -230px;
+
 }
 
 </style>

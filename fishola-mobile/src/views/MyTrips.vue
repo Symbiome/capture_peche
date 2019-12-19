@@ -1,5 +1,5 @@
 <template>
-  <div class="my-trips page-with-header">
+  <div class="my-trips page-with-header shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
       <MyTripsHeader v-bind:count="trips.length"

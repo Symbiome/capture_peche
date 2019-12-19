@@ -1,5 +1,5 @@
 <template>
-  <div class="edit-trip-meta page-with-header">
+  <div class="edit-trip-meta page-with-header shifted-background">
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader/>

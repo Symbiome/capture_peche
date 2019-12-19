@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard page-with-header">
+  <div class="dashboard page-with-header shifted-background">
     <FisholaHeader/>
     <div class="page dashboard-page">
       <div class="dashboard-header">

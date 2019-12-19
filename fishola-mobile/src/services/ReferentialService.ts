@@ -21,12 +21,12 @@ export default class ReferentialService extends AbstractFisholaService {
         this.getInstance().backendGet('/v1/referential/lakes', callback);
     }
 
-    static getTripTypes(callback:(lakes:Lake[])=>any) {
-        let result = [
+    static getTripTypes(callback:(result:any[])=>any) {
+        let types = [
             {id: 'Border', name: 'Pêche du bord'},
             {id: 'Craft', name: 'Depuis une embarcation'}
         ];
-        callback(result);
+        callback(types);
     }
 
 }

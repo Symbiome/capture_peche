@@ -1,5 +1,5 @@
 <template>
-  <div class="dispatcher">
+  <div class="dispatcher full-background">
     <div class="spinner">&nbsp;</div>
   </div>
 </template>
