@@ -1,7 +1,7 @@
 <template>
   <div class="footer-button">
     <div>
-      <button v-on:click="doAction">
+      <button v-on:click="$emit('clicked')">
         <i v-if="icon" v-bind:class="icon"/>
         {{text}}
       </button>
@@ -20,16 +20,13 @@ export default class FooterButton extends Vue {
   mounted() {
   }
 
-  doAction () {
-    this.$emit('clicked');
-  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 
-@import "../../less/main";
+@import "../less/main";
 
 .footer-button {
 

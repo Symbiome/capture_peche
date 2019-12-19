@@ -1,5 +1,10 @@
 <template>
   <div class="footer">
+    <FooterButton v-if="buttonIcon || buttonText"
+                  v-bind:icon="buttonIcon"
+                  v-bind:text="buttonText"
+                  v-on:clicked="$emit('buttonClicked')"/>
+
     <div class="footer-element pastille"
          v-if="activeButtons['logout']"
          v-on:click="logout">
@@ -44,13 +49,21 @@ import Constants from '@/services/Constants';
 
 import router from '@/router'
 
+import FooterButton from '@/layout/FooterButton.vue'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
+@Component({
+  components: {
+    FooterButton
+  }
+})
 export default class FisholaFooter extends Vue {
 
-  @Prop({default:'logout,dashboard,home'}) buttons!: string;
+  @Prop({default:'logout,dashboard,home'}) shortcuts!: string;
   @Prop() selected?: string;
+  @Prop() buttonIcon?: string;
+  @Prop() buttonText?: string;
 
   steps:any[] = [];
 
@@ -63,7 +76,7 @@ export default class FisholaFooter extends Vue {
   };
 
   mounted() {
-    let array = this.buttons.split(',');
+    let array = this.shortcuts.split(',');
     array.forEach(this.activeButton);
   }
 
@@ -134,7 +147,8 @@ export default class FisholaFooter extends Vue {
   }
 
   giveup() {
-    window.alert('GIVEUP');
+    // TODO Il faudrait supprimer les données en cours de création
+    router.push('/trips');
   }
 
 }

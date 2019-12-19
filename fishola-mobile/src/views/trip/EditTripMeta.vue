@@ -19,8 +19,9 @@
                       v-model="type" />
         </div>
       </div>
-      <FooterButton text="Suivant" v-on:clicked="next"/>
-      <FisholaFooter buttons="back,step-1-4,giveup"/>
+      <FisholaFooter button-text="Suivant"
+                     v-on:buttonClicked="next"
+                     shortcuts="back,step-1-4,giveup"/>
     </div>
   </div>
 </template>
@@ -33,7 +34,6 @@ import InputGroup from '@/components/common/InputGroup.vue'
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import FooterButton from '@/components/common/FooterButton.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -42,7 +42,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
     FisholaHeader,
     SomeTripHeader,
-    FooterButton,
     InputGroup,
     FisholaFooter
   }

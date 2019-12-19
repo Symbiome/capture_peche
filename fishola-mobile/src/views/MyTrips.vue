@@ -6,10 +6,10 @@
                      v-on:newMockTrip="newMockTrip"/>
       <MyTripsSearch/>
       <MyTripsList v-bind:trips="trips"/>
-      <FooterButton v-bind:icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
-                    v-bind:text="trips.length == 0 ? 'Commencer':'Nouveau'"
-                    v-on:clicked="newTrip"/>
-      <FisholaFooter buttons="logout,dashboard,home"
+      <FisholaFooter shortcuts="logout,dashboard,home"
+                     v-bind:button-icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
+                     v-bind:button-text="trips.length == 0 ? 'Commencer':'Nouveau'"
+                     v-on:buttonClicked="newTrip"
                      selected="home"/>
     </div>
   </div>
@@ -23,7 +23,6 @@ import FisholaHeader from '@/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
 import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
 import MyTripsList from '@/components/my-trips/MyTripsList.vue'
-import FooterButton from '@/components/common/FooterButton.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -34,7 +33,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
-    FooterButton,
     FisholaFooter
   }
 })
