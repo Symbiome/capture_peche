@@ -50,4 +50,16 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static saveTrip(trip:Trip, callback: () => void) {
+        if (trip.id == Constants.DIRTY_ID) {
+            this.getInstance().onCreationTrip.put(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
+        } else {
+            // TODO
+        }
+    }
+
 }

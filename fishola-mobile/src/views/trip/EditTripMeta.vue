@@ -61,6 +61,8 @@ export default class EditTripMeta extends Vue {
   
   @Prop() id!:string;
 
+  trip?:Trip;
+
   name:string = '';
   nameError:string = '';
   lakeId:string = '';
@@ -82,6 +84,7 @@ export default class EditTripMeta extends Vue {
 
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
+    this.trip = someTrip;
     this.name = someTrip.name;
     this.lakeId = someTrip.lakeId;
     this.type = someTrip.type;
@@ -116,8 +119,16 @@ export default class EditTripMeta extends Vue {
       this.typeError = 'Information obligatoire';
     }
     if (!hasError) {
-      window.alert("La suite, s'il vous plaît !");
+      this.trip!.name = this.name;
+      this.trip!.lakeId = this.lakeId;
+      this.trip!.type = this.type;
+
+      TripsService.saveTrip(this.trip!, this.tripSaved);
     }
+  }
+
+  tripSaved() {
+    window.alert("AAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaayyyyyyyyyyyyyyyyyyééééééééééééééééééééé");
   }
 
 }

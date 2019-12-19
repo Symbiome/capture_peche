@@ -6,7 +6,7 @@ export default class Trip {
     id?:string;
     type?:string;
     name?:string;
-    lake?:string;
+    lakeId?:string;
     date?:Date;
     duration?:string;
     catchs:Catch[];
