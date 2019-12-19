@@ -187,7 +187,11 @@ export default class Login extends Vue {
       border: 1px solid @transparent;
       color: @white;
 
-      :focus {
+      &:focus {
+        color: @white;
+      }
+
+      &::placeholder {
         color: @white;
       }
     }

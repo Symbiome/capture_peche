@@ -11,18 +11,18 @@
                       placeholder="Nommez votre sortie"
                       v-model="name"
                       v-bind:error="nameError" />
-          <ul>
-            <li v-for="l in lakes"
-                  v-bind:key="l.id">
-              {{l.name}}
-            </li>
-          </ul>
-          <FormInput name="lake"
+          <FormSelect name="lake"
                       label="Lac"
-                      v-model="lake" />
-          <FormInput name="type"
+                      placeholder="Sélectionnez le lac"
+                      v-bind:options="lakes"
+                      v-model="lakeId"
+                      v-bind:error="lakeIdError"/>
+          <FormSelect name="type"
                       label="Situation"
-                      v-model="type" />
+                      placeholder="Sélectionnez la situation"
+                      v-bind:options="types"
+                      v-model="type"
+                      v-bind:error="typeError" />
         </div>
       </div>
       <FisholaFooter button-text="Suivant"
@@ -40,6 +40,7 @@ import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
 import FormInput from '@/components/common/FormInput.vue'
+import FormSelect from '@/components/common/FormSelect.vue'
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -52,6 +53,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FisholaHeader,
     SomeTripHeader,
     FormInput,
+    FormSelect,
     FisholaFooter
   }
 })
@@ -59,17 +61,20 @@ export default class EditTripMeta extends Vue {
   
   @Prop() id!:string;
 
-  mode:string = '';
   name:string = '';
   nameError:string = '';
-  lake:string = '';
+  lakeId:string = '';
+  lakeIdError:string = '';
   type:string = '';
+  typeError:string = '';
 
   lakes:Lake[] = [];
+  types:any[] = [];
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
     ReferentialService.getLakes(this.lakesLoaded);
+    ReferentialService.getTripTypes(this.tripTypesLoaded);
   }
 
   mounted() {
@@ -77,16 +82,42 @@ export default class EditTripMeta extends Vue {
 
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
-    this.mode = someTrip.mode;
     this.name = someTrip.name;
+    this.lakeId = someTrip.lakeId;
+    this.type = someTrip.type;
   }
 
   lakesLoaded(result:Lake[]) {
     result.forEach((lake) => this.lakes.push(lake));
   }
 
+  tripTypesLoaded(result:any[]) {
+    result.forEach((type) => this.types.push(type));
+  }
+
   next() {
-    window.alert("La suite, s'il vous plaît !");
+    let hasError = false;
+    if (this.lakeId) {
+      this.lakeIdError = '';
+    } else {
+      hasError = true;
+      this.lakeIdError = 'Information obligatoire';
+    }
+    if (this.name) {
+      this.nameError = '';
+    } else {
+      hasError = true;
+      this.nameError = 'Information obligatoire';
+    }
+    if (this.type) {
+      this.typeError = '';
+    } else {
+      hasError = true;
+      this.typeError = 'Information obligatoire';
+    }
+    if (!hasError) {
+      window.alert("La suite, s'il vous plaît !");
+    }
   }
 
 }

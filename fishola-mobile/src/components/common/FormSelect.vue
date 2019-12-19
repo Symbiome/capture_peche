@@ -1,15 +1,25 @@
 <template>
-  <div class="form-input">
+  <div class="form-select">
     <label v-bind:for="'field-' + name">
       {{label}}
     </label>
-    <input v-bind:name="name"
+    <select v-bind:name="name"
             v-bind:id="'field-' + name"
-            v-bind:type="type"
-            v-bind:placeholder="placeholder"
+            v-bind:class="error?'field-error':''"
             v-bind:value="value"
             v-on:input="$emit('input', $event.target.value)"
-            v-bind:class="error?'field-error':''" />
+            >
+      <option value=""
+              v-if="!value"
+              class="placeholder">
+        {{placeholder}}
+      </option>
+      <option v-for="option in options"
+              v-bind:key="option.id"
+              v-bind:value="option.id">
+        {{ option.name }}
+      </option>
+    </select>
     <div v-bind:class="error?'field-error':''" >
       <span v-if="error">
         {{error}}
@@ -39,13 +49,13 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
   }
 })
-export default class FormInput extends Vue {
+export default class FormSelect extends Vue {
   @Prop() name!: string;
-  @Prop({ default: 'text' }) type!: string;
   @Prop() label?: string;
   @Prop() placeholder?: string;
   @Prop() value!: string;
   @Prop() error?: string;
+  @Prop() options?: any[];
 }
 </script>
 
@@ -54,7 +64,7 @@ export default class FormInput extends Vue {
 
 @import "../../less/main";
 
-.form-input {
+.form-select {
   margin-top: 6px;
 
   font-size: 12px;
@@ -71,7 +81,7 @@ export default class FormInput extends Vue {
     color: @black;
   }
 
-  input {
+  select {
     padding-left: 10px;
     padding-right: 10px;
     margin-top: 5px;
@@ -83,16 +93,12 @@ export default class FormInput extends Vue {
     border: 1px solid @pale-sky;
     color: @gunmetal;
 
-    &::placeholder {
-      font-style: italic;
-      font-weight: normal;
-      font-size: 12px;
-      color: @pale-sky;
-    }
+    // masque la flèche
+    appearance: none;
 
   }
 
-  input.field-error {
+  select.field-error {
     border: 1px solid @cardinal !important;
   }
 
