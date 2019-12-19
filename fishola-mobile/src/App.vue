@@ -57,7 +57,7 @@ html {
   height: 100%;
 
   .page {
-    height: 100%;
+    height: calc(100% - @header-height);
   }
 }
 

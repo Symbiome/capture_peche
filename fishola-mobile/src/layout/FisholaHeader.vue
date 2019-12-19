@@ -44,7 +44,7 @@ export default class FisholaHeader extends Vue {
   display: flex;
   justify-content: space-between;
 
-  height: 40px;
+  height: @header-height;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 10px;
