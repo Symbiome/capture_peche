@@ -7,7 +7,7 @@ export default class Trip {
     type?:string;
     name?:string;
     lake?:string;
-    date?:string;
+    date?:Date;
     duration?:string;
     catchs:Catch[];
 

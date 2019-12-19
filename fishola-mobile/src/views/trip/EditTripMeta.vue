@@ -28,6 +28,7 @@
 
 <script lang="ts">
 import Trip from '@/pojos/Trip';
+import Constants from '@/services/Constants';
 import TripsStorageService from '@/services/TripsStorageService';
 
 import InputGroup from '@/components/common/InputGroup.vue'
@@ -66,6 +67,7 @@ export default class EditTripMeta extends Vue {
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
     this.mode = someTrip.mode;
+    this.name = someTrip.name;
   }
 
   next() {

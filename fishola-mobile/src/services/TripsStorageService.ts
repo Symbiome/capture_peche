@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import Trip from '@/pojos/Trip';
+import Constants from '@/services/Constants';
 
 export default class TripsStorageService extends Dexie {
 
@@ -34,22 +35,30 @@ export default class TripsStorageService extends Dexie {
         return this.instance;
     }
 
-    static newLiveTrip(callback:(id:string)=>any) {
-        let newTrip:Trip = new Trip('live');
-        newTrip.id = 'DIRTY';
+    static newTrip(mode:string, callback:(id:string)=>any) {
+        var options = {weekday: "long", month: "long", day: "numeric"};
+        let now = new Date();
+        let name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
+
+        let newTrip:Trip = new Trip(mode);
+        newTrip.id = Constants.DIRTY_ID;
+        newTrip.name = name;
+        newTrip.date = now;
+
         this.getInstance().onCreationTrip.put(newTrip)
           .then(id => callback(id));
+    }
+
+    static newLiveTrip(callback:(id:string)=>any) {
+        TripsStorageService.newTrip('live', callback);
     }
 
     static newAfterwardsTrip(callback:(id:string)=>any) {
-        let newTrip:Trip = new Trip('afterwards');
-        newTrip.id = 'DIRTY';
-        this.getInstance().onCreationTrip.put(newTrip)
-          .then(id => callback(id));
+        TripsStorageService.newTrip('afterwards', callback);
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
-        if (id == 'DIRTY') {
+        if (id == Constants.DIRTY_ID) {
             this.getInstance().onCreationTrip.get(id)
             .then((aaa) => callback(aaa));
         } else {

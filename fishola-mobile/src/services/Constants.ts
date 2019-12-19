@@ -1,6 +1,8 @@
 
 export default class Constants {
 
+    static DIRTY_ID:string = 'DIRTY';
+
     static baseApiUrl():string {
         let result = process.env.VUE_APP_API_URL;
         if (!result) {
