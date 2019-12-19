@@ -60,6 +60,18 @@ html {
   }
 }
 
+.page-with-header-and-footer {
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+
+  .page {
+    height: calc(100% - @header-height - @footer-height);
+  }
+}
+
 .full-background {
   background-image: url("/img/background_transparent.png");
   // background-image: url("/img/background.png");

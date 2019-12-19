@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard page-with-header shifted-background">
+  <div class="dashboard page-with-header-and-footer shifted-background">
     <FisholaHeader/>
     <div class="page dashboard-page">
       <div class="dashboard-header">
@@ -12,13 +12,13 @@
           Mes poissons
         </div>
 
-        <h2><i class="icon-fish" />Moyenne des captures</h2>
+        <h2><i class="icon-fishing" />Moyenne des captures</h2>
         <span>12 captures en moyenne / sortie</span>
         <div class="placeholder">
           Moyenne des captures
         </div>
 
-        <h2><i class="icon-fish" />Top 5 tailles</h2>
+        <h2><i class="icon-size" />Top 5 tailles</h2>
         <div class="scroll">
           <div class="item selected">Perche</div>
           <div class="item">Brochet</div>
@@ -31,7 +31,7 @@
           Top 5 tailles
         </div>
 
-        <h2><i class="icon-fish" />Top 5 poids</h2>
+        <h2><i class="icon-weight" />Top 5 poids</h2>
         <div class="scroll">
           <div class="item selected">Perche</div>
           <div class="item">Brochet</div>
@@ -45,11 +45,9 @@
         </div>
 
       </div>
-      <div>
-        <FisholaFooter buttons="logout,dashboard,home"
-                      selected="dashboard" />
-      </div>
     </div>
+    <FisholaFooter buttons="logout,dashboard,home"
+                  selected="dashboard" />
   </div>
 </template>
 
@@ -123,12 +121,6 @@ export default class Dashboard extends Vue {
 
     overflow: auto;
 
-    // flex:auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-
     text-align:center;
 
     background-color: @white-smoke;
@@ -159,9 +151,9 @@ export default class Dashboard extends Vue {
       justify-content: center;
 
       color: @white;
-      background-color: @pelorous;
-      opacity: 40%;
-      border-radius: 10px;
+      background-color: @cyprus;
+      opacity: 0.8;
+      border-radius: 8px;
       
       height: 200px;
     }
@@ -170,6 +162,7 @@ export default class Dashboard extends Vue {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
+      margin-bottom: 10px;
 
       overflow:auto;
 

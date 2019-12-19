@@ -1,5 +1,5 @@
 <template>
-  <div class="edit-trip-meta page-with-header shifted-background">
+  <div class="edit-trip-meta page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader/>
@@ -25,10 +25,10 @@
                       v-bind:error="typeError" />
         </div>
       </div>
-      <FisholaFooter button-text="Suivant"
-                     v-on:buttonClicked="next"
-                     shortcuts="back,step-1-4,giveup"/>
     </div>
+    <FisholaFooter button-text="Suivant"
+                    v-on:buttonClicked="next"
+                    shortcuts="back,step-1-4,giveup"/>
   </div>
 </template>
 

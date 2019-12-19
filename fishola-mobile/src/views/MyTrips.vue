@@ -1,17 +1,17 @@
 <template>
-  <div class="my-trips page-with-header shifted-background">
+  <div class="my-trips page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
       <MyTripsHeader v-bind:count="trips.length"
                      v-on:newMockTrip="newMockTrip"/>
       <MyTripsSearch/>
       <MyTripsList v-bind:trips="trips"/>
-      <FisholaFooter shortcuts="logout,dashboard,home"
-                     v-bind:button-icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
-                     v-bind:button-text="trips.length == 0 ? 'Commencer':'Nouveau'"
-                     v-on:buttonClicked="newTrip"
-                     selected="home"/>
     </div>
+    <FisholaFooter shortcuts="logout,dashboard,home"
+                    v-bind:button-icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
+                    v-bind:button-text="trips.length == 0 ? 'Commencer':'Nouveau'"
+                    v-on:buttonClicked="newTrip"
+                    selected="home"/>
   </div>
 </template>
 

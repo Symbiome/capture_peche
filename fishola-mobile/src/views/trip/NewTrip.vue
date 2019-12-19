@@ -1,5 +1,5 @@
 <template>
-  <div class="new-trip page-with-header shifted-background">
+  <div class="new-trip page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="page new-trip-page">
       <SomeTripHeader/>
@@ -29,8 +29,8 @@
           </div>
         </div>
       </div>
-      <FisholaFooter shortcuts="back,giveup"/>
     </div>
+    <FisholaFooter shortcuts="back,giveup"/>
   </div>
 </template>
 
