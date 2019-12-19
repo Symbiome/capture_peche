@@ -6,7 +6,7 @@
       <div class="edit-trip-meta-content">
         <h1>Information de pêche</h1>
         <div class="form">
-          <InputGroup name="name"
+          <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"
                       v-model="name"
@@ -17,10 +17,10 @@
               {{l.name}}
             </li>
           </ul>
-          <InputGroup name="lake"
+          <FormInput name="lake"
                       label="Lac"
                       v-model="lake" />
-          <InputGroup name="type"
+          <FormInput name="type"
                       label="Situation"
                       v-model="type" />
         </div>
@@ -39,7 +39,7 @@ import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
-import InputGroup from '@/components/common/InputGroup.vue'
+import FormInput from '@/components/common/FormInput.vue'
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -51,7 +51,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
     FisholaHeader,
     SomeTripHeader,
-    InputGroup,
+    FormInput,
     FisholaFooter
   }
 })

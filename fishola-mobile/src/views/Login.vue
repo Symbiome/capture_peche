@@ -9,14 +9,14 @@
         <img class="logo" v-on:click="autoLogin" src="img/logo/logo-FISHOLA-negatif.svg" alt="Fishola"/>
       </div>
       <div class="login-form">
-        <InputGroup name="email"
+        <FormInput name="email"
                     type="email"
                     label="E-mail"
                     placeholder="Renseignez votre E-mail"
                     v-model="email"
                     v-bind:error="emailError"
                     />
-        <InputGroup name="password"
+        <FormInput name="password"
                     type="password"
                     label="Mot de passe"
                     placeholder="Renseignez votre mot de passe"
@@ -37,7 +37,7 @@
 
 import Constants from '@/services/Constants';
 
-import InputGroup from '@/components/common/InputGroup.vue'
+import FormInput from '@/components/common/FormInput.vue'
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -47,7 +47,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {
     FisholaHeader,
-    InputGroup
+    FormInput
   }
 })
 export default class Login extends Vue {
@@ -178,11 +178,11 @@ export default class Login extends Vue {
     text-align:left;
 
 
-    .input-group label {
+    .form-input label {
       color: @white;
     }
 
-    .input-group input {
+    .form-input input {
       background-color: @black-alpha-50;
       border: 1px solid @transparent;
       color: @white;
@@ -192,7 +192,7 @@ export default class Login extends Vue {
       }
     }
 
-    .input-group div.field-error {
+    .form-input div.field-error {
       background-color: @cardinal;
       color: @white;
       padding-left: 5px;

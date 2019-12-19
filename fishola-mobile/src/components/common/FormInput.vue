@@ -1,5 +1,5 @@
 <template>
-  <div class="input-group">
+  <div class="form-input">
     <label v-bind:for="'field-' + name">
       {{label}}
     </label>
@@ -39,7 +39,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
   }
 })
-export default class InputGroup extends Vue {
+export default class FormInput extends Vue {
   @Prop() name!: string;
   @Prop({ default: 'text' }) type!: string;
   @Prop() label?: string;
@@ -54,7 +54,7 @@ export default class InputGroup extends Vue {
 
 @import "../../less/main";
 
-.input-group {
+.form-input {
   margin-top: 6px;
 
   font-size: 12px;

@@ -8,32 +8,32 @@
 
         <h1>Inscription</h1>
 
-        <InputGroup name="lastName"
+        <FormInput name="lastName"
                     label="Nom"
                     placeholder="Renseignez votre nom"
                     v-model="bean.lastName"
                     v-bind:error="validationErrors['lastName']"
                     />
-        <InputGroup name="firstName"
+        <FormInput name="firstName"
                     label="Prénom"
                     placeholder="Renseignez votre prénom"
                     v-model="bean.firstName"
                     v-bind:error="validationErrors['firstName']"
                     />
-        <InputGroup name="email"
+        <FormInput name="email"
                     label="E-mail"
                     placeholder="Renseignez votre E-mail"
                     v-model="bean.email"
                     v-bind:error="validationErrors['email']"
                     />
-        <InputGroup name="password"
+        <FormInput name="password"
                     type="password"
                     label="Mot de passe"
                     placeholder="Choisissez un mot de passe"
                     v-model="bean.password"
                     v-bind:error="validationErrors['password']"
                     />
-        <InputGroup name="passwordConfirm"
+        <FormInput name="passwordConfirm"
                     type="password"
                     label="Confirmation du mot de passe"
                     placeholder="Confirmez votre mot de passe"
@@ -63,7 +63,7 @@ import Constants from '@/services/Constants';
 import UserRegister from '@/pojos/UserRegister';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
-import InputGroup from '@/components/common/InputGroup.vue'
+import FormInput from '@/components/common/FormInput.vue'
 import router from '@/router'
 
 
@@ -72,7 +72,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {
     FisholaHeader,
-    InputGroup
+    FormInput
   }
 })
 export default class Register extends Vue {
@@ -199,17 +199,17 @@ export default class Register extends Vue {
     text-align:left;
     overflow: auto;
 
-    .input-group label {
+    .form-input label {
       color: @black;
     }
 
-    .input-group input {
+    .form-input input {
       background: transparent;
       border: 1px solid @pale-sky;
       color: @pale-sky;
     }
 
-    // .input-group input:focus {
+    // .form-input input:focus {
     //   color: @pale-sky;
     // }
 
