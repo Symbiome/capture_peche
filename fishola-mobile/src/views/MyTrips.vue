@@ -2,10 +2,13 @@
   <div class="my-trips page-with-header">
     <FisholaHeader />
     <div class="page my-trips-page">
-      <MyTripsHeader v-bind:count="trips.length" />
+      <MyTripsHeader v-bind:count="trips.length"
+                     v-on:newMockTrip="newMockTrip"/>
       <MyTripsSearch/>
       <MyTripsList v-bind:trips="trips"/>
-      <NewTripButton v-bind:count="trips.length" v-bind:trips="trips"/>
+      <FooterButton v-bind:icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
+                    v-bind:text="trips.length == 0 ? 'Commencer':'Nouveau'"
+                    v-on:clicked="newTrip"/>
       <FisholaFooter buttons="logout,dashboard,home"
                      selected="home"/>
     </div>
@@ -13,13 +16,14 @@
 </template>
 
 <script>
-import Trip from '@/pojos/Trip';
+import router from '@/router'
+import TripLight from '@/pojos/TripLight';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
 import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
 import MyTripsList from '@/components/my-trips/MyTripsList.vue'
-import NewTripButton from '@/components/my-trips/NewTripButton.vue'
+import FooterButton from '@/components/common/FooterButton.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -30,7 +34,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
-    NewTripButton,
+    FooterButton,
     FisholaFooter
   }
 })
@@ -44,6 +48,40 @@ export default class MyTrips extends Vue {
   }
 
   mounted() {
+  }
+
+  newMockTrip() {
+
+    let tripsBacklog = [];
+    tripsBacklog.push(new TripLight('0', 'Sortie du mardi 3 décembre', 'Lac du Bourget', 'Mardi 3 décembre'));
+    tripsBacklog.push(new TripLight('1', 'Pêche d\'anniversaire', 'Lac Léman', 'Jeudi 21 novembre'));
+    tripsBacklog.push(new TripLight('2', 'Avec Miguel', 'Lac d\'Annecy', 'Samedi 15 octobre'));
+    tripsBacklog.push(new TripLight('3', 'Sortie du lundi 2 septembre', 'Lac d\'Aiguebelette', 'Lundi 2 septembre'));
+    tripsBacklog.push(new TripLight('4', 'Entre filles', 'Lac du Bourget', 'Lundi 28 août'));
+    tripsBacklog.push(new TripLight('5', 'Sortie du mardi 3 décembre', 'Lac du Bourget', 'Mardi 3 décembre'));
+    tripsBacklog.push(new TripLight('6', 'Pêche d\'anniversaire', 'Lac Léman', 'Jeudi 21 novembre'));
+    tripsBacklog.push(new TripLight('7', 'Avec Miguel', 'Lac d\'Annecy', 'Samedi 15 octobre'));
+    tripsBacklog.push(new TripLight('8', 'Sortie du lundi 2 septembre', 'Lac d\'Aiguebelette', 'Lundi 2 septembre'));
+    tripsBacklog.push(new TripLight('9', 'Entre filles', 'Lac du Bourget', 'Lundi 28 août'));
+
+    tripsBacklog[0].canBeModified = true;
+    tripsBacklog[0].duration = '2h02min';
+    tripsBacklog[1].duration = '1h22min';
+    tripsBacklog[2].duration = '3h17min';
+    tripsBacklog[3].duration = '2h58min';
+    tripsBacklog[4].duration = '2h49min';
+    tripsBacklog[5].duration = '2h02min';
+    tripsBacklog[6].duration = '1h22min';
+    tripsBacklog[7].duration = '3h17min';
+    tripsBacklog[8].duration = '2h58min';
+    tripsBacklog[9].duration = '2h49min';
+
+    this.trips.push(tripsBacklog[this.trips.length % tripsBacklog.length]);
+
+  }
+
+  newTrip() {
+    router.push('/trips/new');
   }
 }
 

@@ -1,7 +1,7 @@
 <template>
   <div class="my-trips-header">
     <div>
-      <span>Mes sorties</span>
+      <span v-on:click="$emit('newMockTrip')">Mes sorties</span>
     </div>
     <div class="header-icons">
       <div class="header-icons-group">

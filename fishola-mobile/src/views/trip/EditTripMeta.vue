@@ -19,7 +19,7 @@
                       v-model="type" />
         </div>
       </div>
-      <NewTripButton />
+      <FooterButton text="Suivant" v-on:clicked="next"/>
       <FisholaFooter buttons="back,step-1-4,giveup"/>
     </div>
   </div>
@@ -33,7 +33,7 @@ import InputGroup from '@/components/common/InputGroup.vue'
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import NewTripButton from '@/components/my-trips/NewTripButton.vue'
+import FooterButton from '@/components/common/FooterButton.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -42,7 +42,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   components: {
     FisholaHeader,
     SomeTripHeader,
-    NewTripButton,
+    FooterButton,
     InputGroup,
     FisholaFooter
   }
@@ -67,6 +67,10 @@ export default class EditTripMeta extends Vue {
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
     this.mode = someTrip.mode;
+  }
+
+  next() {
+    window.alert("La suite, s'il vous plaît !");
   }
 
 }
