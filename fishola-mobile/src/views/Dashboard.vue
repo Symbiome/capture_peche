@@ -3,12 +3,22 @@
     <FisholaHeader/>
     <div class="page dashboard-page">
       <div class="dashboard-header">
-        <div class="bars">Bar chart</div>
-        <div>X captures en moyenne par sortie</div>
+        <h1>Tableau de bord</h1>
       </div>
       <div class="dashboard-content">
-        <h1>Tableau de bord</h1>
+
         <h2><i class="icon-fish" />Mes poissons</h2>
+        <div class="placeholder">
+          Mes poissons
+        </div>
+
+        <h2><i class="icon-fish" />Moyenne des captures</h2>
+        <span>12 captures en moyenne / sortie</span>
+        <div class="placeholder">
+          Moyenne des captures
+        </div>
+
+        <h2><i class="icon-fish" />Top 5 tailles</h2>
         <div class="scroll">
           <div class="item selected">Perche</div>
           <div class="item">Brochet</div>
@@ -17,9 +27,28 @@
           <div class="item">Omble_chevalier</div>
           <div class="item">Silure</div>
         </div>
+        <div class="placeholder">
+          Top 5 tailles
+        </div>
+
+        <h2><i class="icon-fish" />Top 5 poids</h2>
+        <div class="scroll">
+          <div class="item selected">Perche</div>
+          <div class="item">Brochet</div>
+          <div class="item">Truite</div>
+          <div class="item">Corégone</div>
+          <div class="item">Omble_chevalier</div>
+          <div class="item">Silure</div>
+        </div>
+        <div class="placeholder">
+          Top 5 poids
+        </div>
+
       </div>
-      <FisholaFooter buttons="logout,dashboard,home"
-                     selected="dashboard" />
+      <div>
+        <FisholaFooter buttons="logout,dashboard,home"
+                      selected="dashboard" />
+      </div>
     </div>
   </div>
 </template>
@@ -64,46 +93,12 @@ export default class Dashboard extends Vue {
 
   text-align:center;
 
-  overflow: auto;
-
   .dashboard-header {
-    height: 250px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    text-align:center;
-
-    padding: 30px;
-
-    .bars {
-      height: 200px;
-      background-color: rgba(255, 255, 255, 0.7);
-      border-radius:8px;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      text-align:center;
-
-    }
-  }
-
-  .dashboard-content {
-
-    flex:auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-
-    text-align:center;
 
     background-color: @white-smoke;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
-    margin-top: 50px;
+    margin-top: 20px;
     padding-left: 30px;
     padding-right: 30px;
     padding-top: 30px;
@@ -122,6 +117,27 @@ export default class Dashboard extends Vue {
       text-align: center;
     }
 
+  }
+
+  .dashboard-content {
+
+    overflow: auto;
+
+    // flex:auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    text-align:center;
+
+    background-color: @white-smoke;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 30px;
+
+    color: @gunmetal;
+
     h2 {
 
       i {
@@ -136,10 +152,18 @@ export default class Dashboard extends Vue {
       text-align: left;
     }
 
-    p { 
-      font-style: normal;
-      font-weight: normal;
-      text-align: left;
+    .placeholder {
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      color: @white;
+      background-color: @pelorous;
+      opacity: 40%;
+      border-radius: 10px;
+      
+      height: 200px;
     }
 
     .scroll {

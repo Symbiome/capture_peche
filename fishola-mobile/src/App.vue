@@ -48,7 +48,6 @@ html {
   height: 100%;
 }
 
-
 .page-with-header {
 
   display: flex;
