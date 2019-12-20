@@ -22,6 +22,7 @@
                       v-model="type"
                       v-bind:error="typeError" />
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter button-text="Suivant"

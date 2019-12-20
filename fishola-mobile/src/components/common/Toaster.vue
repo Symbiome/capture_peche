@@ -2,7 +2,7 @@
   <div class="toaster" v-bind:class="visibility">
       <div class="toaster-box" v-bind:class="level">
         <div>
-          <i class="icon-warning" v-if="level == 'error'"/>
+          <i class="icon-error" v-if="level == 'error'"/>
           <i class="icon-warning" v-if="level == 'warning'"/>
           <i class="icon-success" v-if="level == 'success'"/>
           {{message}}
@@ -134,7 +134,7 @@ export default class Toaster extends Vue {
 
     .toaster-box.warning {
       color: @white;
-      background: @terra-cotta;
+      background: @carrot-orange;
     }
 
     .toaster-box.success {

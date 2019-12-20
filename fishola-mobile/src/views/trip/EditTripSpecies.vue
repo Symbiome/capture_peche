@@ -37,8 +37,9 @@
                       />
             </div>
           </div>
-          <span class="info">Utilisez “,” si vous recherchez plusieurs espèces</span>
+          <div class="info">Utilisez “,” si vous recherchez plusieurs espèces</div>
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter button-icon="icon-fishing"
@@ -136,7 +137,7 @@ export default class EditTripSpecies extends Vue {
   }
 
   tripSaved() {
-    this.$root.$emit('toaster-warning', 'To be continued...');
+    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 
 }
