@@ -66,6 +66,11 @@ export default class MyTripsList extends Vue {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
+
+      img {
+        width: 40%;
+      }
 
       span {
         font-size: 18px;

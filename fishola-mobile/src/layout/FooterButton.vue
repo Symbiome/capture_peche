@@ -30,22 +30,22 @@ export default class FooterButton extends Vue {
 
 .footer-button {
 
-  height: 40px;
+  height: 44px;
   width: 100%;
   position: absolute;
-  bottom: calc(@footer-height - 20px);
+  bottom: calc(@footer-height - 22px);
 
   display: flex;
   justify-content: center;
 
   div {
-    height: 40px;
+    height: 44px;
   }
 
   button {
     height: 100%;
     width: 100%;
-    border-radius: 50px;
+    border-radius: 22px;
 
     font-style: normal;
     font-weight: bold;

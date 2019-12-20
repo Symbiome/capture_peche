@@ -24,8 +24,9 @@ export default class TripsService extends AbstractFisholaService {
         let now = new Date();
         let name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
 
-        let newTrip:Trip = new Trip(mode);
+        let newTrip:Trip = new Trip();
         newTrip.id = Constants.DIRTY_ID;
+        newTrip.mode = mode;
         newTrip.name = name;
         newTrip.date = now;
 

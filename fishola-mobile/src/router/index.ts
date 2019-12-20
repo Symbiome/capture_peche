@@ -10,6 +10,7 @@ import Dashboard from '../views/Dashboard.vue'
 import NewTrip from '../views/trip/NewTrip.vue'
 import EditTripMeta from '../views/trip/EditTripMeta.vue'
 import EditTripSpecies from '../views/trip/EditTripSpecies.vue'
+import EditTrip from '../views/trip/EditTrip.vue'
 
 Vue.use(VueRouter)
 
@@ -49,6 +50,12 @@ const routes = [
     path: '/trips/:id/species',
     name: 'edit-trip-species',
     component: EditTripSpecies,
+    props: true
+  },
+  {
+    path: '/trips/:id',
+    name: 'edit-trip',
+    component: EditTrip,
     props: true
   },
   {

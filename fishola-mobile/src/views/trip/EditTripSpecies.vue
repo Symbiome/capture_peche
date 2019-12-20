@@ -74,7 +74,7 @@ export default class EditTripSpecies extends Vue {
   
   @Prop() id!:string;
 
-  trip?:Trip;
+  trip?:Trip = new Trip();
 
   speciesIds:string[] = [];
 
@@ -132,19 +132,22 @@ export default class EditTripSpecies extends Vue {
     } else {
       this.trip!.speciesIds = this.speciesIds;
 
+      if (this.trip!.id == Constants.DIRTY_ID && this.trip!.mode == 'live' && !this.trip!.startedAt) {
+        this.trip!.startedAt = new Date();
+      }
+
       TripsService.saveTrip(this.trip!, this.tripSaved);
     }
   }
 
   tripSaved() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    router.push({name:'edit-trip', params: {id: this.id}});
   }
 
 }
 
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 
 @import "../../less/main";

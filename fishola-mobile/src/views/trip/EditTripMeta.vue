@@ -61,7 +61,7 @@ export default class EditTripMeta extends Vue {
   
   @Prop() id!:string;
 
-  trip?:Trip;
+  trip?:Trip = new Trip();
 
   name:string = '';
   nameError:string = '';
