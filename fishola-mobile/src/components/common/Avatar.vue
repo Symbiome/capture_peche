@@ -1,5 +1,5 @@
 <template>
-  <div class="pastille color0">
+  <div class="pastille color0" v-on:click="$root.$emit('toaster-warning', 'Work in progress');">
     <span>{{initials}}</span>
   </div>
 </template>
