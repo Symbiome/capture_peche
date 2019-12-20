@@ -33,7 +33,8 @@
               Autre
               <input type="text" 
                      name="other"
-                     placeholder="Renseignez l'espèce" />
+                     placeholder="Renseignez l'espèce"
+                      />
             </div>
           </div>
           <span class="info">Utilisez “,” si vous recherchez plusieurs espèces</span>
@@ -109,12 +110,10 @@ export default class EditTripSpecies extends Vue {
 
   next() {
     let hasError = false;
-    // if (this.lakeId) {
-    //   this.lakeIdError = '';
-    // } else {
-    //   hasError = true;
-    //   this.lakeIdError = 'Information obligatoire';
-    // }
+    if (this.speciesIds.length == 0) {
+      hasError = true;
+      this.$root.$emit('toaster-error', 'Vous devez sélectionner au moins une espèce');
+    }
     // if (this.name) {
     //   this.nameError = '';
     // } else {
@@ -127,7 +126,9 @@ export default class EditTripSpecies extends Vue {
     //   hasError = true;
     //   this.typeError = 'Information obligatoire';
     // }
-    if (!hasError) {
+    if (hasError) {
+      //
+    } else {
       this.trip!.speciesIds = this.speciesIds;
 
       TripsService.saveTrip(this.trip!, this.tripSaved);
@@ -135,7 +136,7 @@ export default class EditTripSpecies extends Vue {
   }
 
   tripSaved() {
-    window.alert("To be continued ...");
+    this.$root.$emit('toaster-warning', 'To be continued...');
   }
 
 }

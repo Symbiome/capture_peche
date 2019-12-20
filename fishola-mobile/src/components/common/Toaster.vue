@@ -3,6 +3,7 @@
       <div class="toaster-box" v-bind:class="level">
         <div>
           <i class="icon-warning" v-if="level == 'error'"/>
+          <i class="icon-warning" v-if="level == 'warning'"/>
           <i class="icon-success" v-if="level == 'success'"/>
           {{message}}
         </div>
@@ -26,6 +27,10 @@ export default class Toaster extends Vue {
       let duration = durationArg || 2000;
       this.newError(text, duration);
     });
+    this.$root.$on('toaster-warning', (text:string, durationArg?:number) => {
+      let duration = durationArg || 2000;
+      this.newWarning(text, duration);
+    });
     this.$root.$on('toaster-success', (text:string, durationArg?:number) => {
       let duration = durationArg || 2000;
       this.newSuccess(text, duration);
@@ -34,6 +39,10 @@ export default class Toaster extends Vue {
 
   newError(text:string, duration:number) {
     this.newMessage(text, 'error', duration);
+  }
+
+  newWarning(text:string, duration:number) {
+    this.newMessage(text, 'warning', duration);
   }
 
   newSuccess(text:string, duration:number) {
@@ -108,8 +117,8 @@ export default class Toaster extends Vue {
       align-items: center;
 
       div {
-        font-size: 10px;
-        line-height: 12px;
+        font-size: 12px;
+        line-height: 16px;
 
         i {
           margin-right: 6px;
@@ -121,6 +130,11 @@ export default class Toaster extends Vue {
     .toaster-box.error {
       color: @white;
       background: @cardinal;
+    }
+
+    .toaster-box.warning {
+      color: @white;
+      background: @terra-cotta;
     }
 
     .toaster-box.success {

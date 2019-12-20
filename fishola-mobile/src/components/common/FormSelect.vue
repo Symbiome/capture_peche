@@ -9,11 +9,7 @@
             v-bind:value="value"
             v-on:input="$emit('input', $event.target.value)"
             >
-      <option value=""
-              v-if="!value"
-              class="placeholder">
-        {{placeholder}}
-      </option>
+      <option value="" v-if="!value"></option>
       <option v-for="option in options"
               v-bind:key="option.id"
               v-bind:value="option.id">
@@ -52,7 +48,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class FormSelect extends Vue {
   @Prop() name!: string;
   @Prop() label?: string;
-  @Prop() placeholder?: string;
   @Prop() value!: string;
   @Prop() error?: string;
   @Prop() options?: any[];
@@ -92,10 +87,6 @@ export default class FormSelect extends Vue {
     background: transparent;
     border: 1px solid @pale-sky;
     color: @gunmetal;
-
-    // masque la flèche
-    appearance: none;
-
   }
 
   select.field-error {

@@ -13,13 +13,11 @@
                       v-bind:error="nameError" />
           <FormSelect name="lake"
                       label="Lac"
-                      placeholder="Sélectionnez le lac"
                       v-bind:options="lakes"
                       v-model="lakeId"
                       v-bind:error="lakeIdError"/>
           <FormSelect name="type"
                       label="Situation"
-                      placeholder="Sélectionnez la situation"
                       v-bind:options="types"
                       v-model="type"
                       v-bind:error="typeError" />
@@ -119,7 +117,9 @@ export default class EditTripMeta extends Vue {
       hasError = true;
       this.typeError = 'Information obligatoire';
     }
-    if (!hasError) {
+    if (hasError) {
+      this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
+    } else {
       this.trip!.name = this.name;
       this.trip!.lakeId = this.lakeId;
       this.trip!.type = this.type;

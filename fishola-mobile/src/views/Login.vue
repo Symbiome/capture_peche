@@ -127,7 +127,7 @@ export default class Login extends Vue {
   }
 
   forgottenPassword() {
-    this.$root.$emit('toaster-error', 'Rôôô quel dommage !?');
+    this.$root.$emit('toaster-warning', 'Fonctionnalité non disponible');
   }
 
   autoLogin() {
