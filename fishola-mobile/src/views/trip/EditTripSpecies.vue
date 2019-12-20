@@ -200,7 +200,7 @@ export default class EditTripSpecies extends Vue {
       border-top: 1px solid @gainsboro;
 
       &.selected {
-        background-color: @white-smoke2;
+        background-color: @solitude;
       }
 
       &:first-child {
