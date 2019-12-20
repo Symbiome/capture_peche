@@ -133,7 +133,15 @@ public class SecurityResource {
                 .addTos(bean.email)
                 .subject("Fishola - Validation de votre e-mail")
                 .build();
+        // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
         mailService.sendMail(mail);
+
+        // FIXME AThimel 20/12/2019 Pour les besoins de la démo, on active d'office les comptes
+        try {
+            verifyAfterRegistration(token);
+        } catch (Exception eee) {
+            log.error("Unable to verify token", eee);
+        }
 
         return Response.ok().build();
     }
