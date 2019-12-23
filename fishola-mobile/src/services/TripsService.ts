@@ -66,6 +66,11 @@ export default class TripsService extends AbstractFisholaService {
         this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
     }
 
+    static cancelCreations() {
+        this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
+        this.getInstance().onCreationTrip.delete(Constants.RUNNING_ID);
+    }
+
     static finishTripCreation(trip:Trip, callback: (id:string) => void) {
         if (trip.id == Constants.DIRTY_ID) {
             if (trip.mode == 'live') {

@@ -46,6 +46,7 @@
 <script lang="ts">
 
 import Constants from '@/services/Constants';
+import TripsService from '@/services/TripsService';
 
 import router from '@/router'
 
@@ -157,7 +158,7 @@ export default class FisholaFooter extends Vue {
 
   giveup() {
     if (confirm("Voulez-vous vraiment abandonner cette sortie ?")) {
-      // TODO Il faudrait supprimer les données en cours de création
+      TripsService.cancelCreations();
       router.push('/trips');
     }
   }
