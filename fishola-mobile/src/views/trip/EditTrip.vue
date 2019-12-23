@@ -108,7 +108,11 @@ export default class EditTrip extends Vue {
     this.trip!.finishedAt = new Date();
     this.computeDuration();
     this.liveRunning = false;
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    TripsService.saveTrip(this.trip!, this.tripSaved);
+  }
+
+  tripSaved() {
+    router.push({name:'edit-trip-summary', params: {id: this.id}});
   }
 
   newCatch() {

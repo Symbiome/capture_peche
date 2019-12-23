@@ -11,6 +11,7 @@ import NewTrip from '../views/trip/NewTrip.vue'
 import EditTripMeta from '../views/trip/EditTripMeta.vue'
 import EditTripSpecies from '../views/trip/EditTripSpecies.vue'
 import EditTrip from '../views/trip/EditTrip.vue'
+import EditTripSummary from '../views/trip/EditTripSummary.vue'
 
 Vue.use(VueRouter)
 
@@ -56,6 +57,12 @@ const routes = [
     path: '/trips/:id',
     name: 'edit-trip',
     component: EditTrip,
+    props: true
+  },
+  {
+    path: '/trips/:id/summary',
+    name: 'edit-trip-summary',
+    component: EditTripSummary,
     props: true
   },
   {

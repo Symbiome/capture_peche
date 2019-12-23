@@ -1,4 +1,5 @@
 import Lake from '@/pojos/Lake';
+import Weather from '@/pojos/Weather';
 import Species from '@/pojos/Species';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
@@ -20,6 +21,10 @@ export default class ReferentialService extends AbstractFisholaService {
 
     static getLakes(callback:(lakes:Lake[])=>any) {
         this.getInstance().backendGet('/v1/referential/lakes', callback);
+    }
+
+    static getWeathers(callback:(weathers:Weather[])=>any) {
+        this.getInstance().backendGet('/v1/referential/weathers', callback);
     }
 
     static getSpecies(lakeId:string, callback:(resul:Species[])=>any) {
