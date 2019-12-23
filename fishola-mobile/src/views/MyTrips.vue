@@ -15,9 +15,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import router from '@/router'
 import TripLight from '@/pojos/TripLight';
+
+import TripsService from '@/services/TripsService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
@@ -38,19 +40,25 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class MyTrips extends Vue {
   
-  trips = [];
+  trips:TripLight[] = [];
 
   constructor() {
     super();
     this.trips = [];
   }
 
-  mounted() {
+  created() {
+    TripsService.listTrips(this.tripsLoaded);
+  }
+
+  tripsLoaded(ts:TripLight[]) {
+    this.trips.slice();
+    this.trips = ts;
   }
 
   newMockTrip() {
 
-    let tripsBacklog = [];
+    let tripsBacklog:TripLight[] = [];
     tripsBacklog.push(new TripLight('0', 'Sortie du mardi 3 décembre', 'Lac du Bourget', 'Mardi 3 décembre'));
     tripsBacklog.push(new TripLight('1', 'Pêche d\'anniversaire', 'Lac Léman', 'Jeudi 21 novembre'));
     tripsBacklog.push(new TripLight('2', 'Avec Miguel', 'Lac d\'Annecy', 'Samedi 15 octobre'));

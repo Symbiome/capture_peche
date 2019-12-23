@@ -1,6 +1,8 @@
 import Trip from '@/pojos/Trip';
+import TripLight from '@/pojos/TripLight';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import ReferentialService from '@/services/ReferentialService';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -50,6 +52,33 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static toTripLight(input:Trip, lakesIndex:any):TripLight {
+        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
+        let date = input.date!.toLocaleDateString('fr-FR', dayOptions);
+        let lake:string = lakesIndex[input.lakeId!];
+        let result = new TripLight(input.id!, input.name!, lake, date);
+        result.duration = Trip.computeDuration(input);
+        return result;
+    }
+
+    static listTrips(callback:(trips:TripLight[])=>any) {
+
+        ReferentialService.getLakes(lakes => {
+
+            let lakesIndex:any = {};
+            lakes.forEach(lake => {
+                lakesIndex[lake.id] = lake.name;
+            });
+            this.getInstance().trips.toArray((trips) => {
+                let result:TripLight[] = [];
+                trips.forEach(trip => {
+                    result.push(this.toTripLight(trip, lakesIndex));
+                });
+                callback(result);
+            });
+        });
+    }
+
     static saveTrip(trip:Trip, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
             this.getInstance().onCreationTrip.put(trip)
@@ -84,6 +113,21 @@ export default class TripsService extends AbstractFisholaService {
             });
         } else {
             TripsService.saveTrip(trip, () => {callback(trip.id!);});
+        }
+    }
+
+    static sendTrip(trip:Trip, callback: () => void) {
+        if (trip.id == Constants.RUNNING_ID) {
+            trip.id = '' + new Date().getTime();
+            trip.dirty = true;
+            this.getInstance().trips.put(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                this.cancelCreations();
+                callback();
+            });
+        } else {
+            // TODO
         }
     }
 

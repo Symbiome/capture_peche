@@ -156,11 +156,11 @@ export default class TripSummary extends Vue {
   }
 
   send() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    TripsService.sendTrip(this.trip!, this.tripSaved);
   }
 
   tripSaved() {
-    router.push({name:'edit-trip-species', params: {id: this.id}});
+    router.push('/trips');
   }
 
 }
