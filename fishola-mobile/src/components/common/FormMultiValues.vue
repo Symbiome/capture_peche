@@ -81,6 +81,7 @@ export default class FormMultiValues extends Vue {
       font-size: 12px;
       line-height: 16px;
       color: @gunmetal;
+      text-align: left;
     }
   }
 

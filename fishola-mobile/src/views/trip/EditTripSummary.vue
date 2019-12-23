@@ -13,7 +13,7 @@
                       v-bind:error="nameError" />
           <FormSelect name="lake"
                       label="Lac"
-                      v-bind:options="lakes"
+                      v-bind:options="allLakes"
                       v-model="lakeId"
                       v-bind:error="lakeIdError"/>
           <FormInput name="date"
@@ -27,14 +27,14 @@
                       v-model="finishedAt"/>
           <FormSelect name="weather"
                       label="Météo"
-                      v-bind:options="weathers"
+                      v-bind:options="allWeathers"
                       v-model="weatherId"
                       v-bind:error="weatherIdError"/>
           <FormMultiValues name="species"
-                           label="Espèce recherchée"
+                           v-bind:label="speciesLabel"
                            v-bind:values="species"/>
           <FormMultiValues name="technics"
-                           label="Technique utilisée"
+                           v-bind:label="technicsLabel"
                            v-bind:values="technics"/>
           <FormMultiValues name="type"
                            label="Situation"
@@ -54,6 +54,7 @@
 import Trip from '@/pojos/Trip';
 import Lake from '@/pojos/Lake';
 import Weather from '@/pojos/Weather';
+import Species from '@/pojos/Species';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
@@ -96,16 +97,18 @@ export default class EditTripSummary extends Vue {
   weatherIdError:string = '';
 
   species:string[] = [];
+  speciesLabel:string = 'Espèce recherchée';
   technics:string[] = [];
+  technicsLabel:string = 'Technique utilisée';
   types:string[] = [];
 
-  lakes:Lake[] = [];
-  weathers:Weather[] = [];
+  allLakes:Lake[] = [];
+  allSpecies:Species[] = [];
+  allWeathers:Weather[] = [];
+  allTripTypes:any[] = [];
 
   created() {
-    TripsService.getTrip(this.id, this.tripLoaded);
-    ReferentialService.getLakes(this.lakesLoaded);
-    ReferentialService.getWeathers(this.weathersLoaded);
+    ReferentialService.getLakesWeathersTripTypesAndSpecies(this.referentialsLoaded);
   }
 
   mounted() {
@@ -122,16 +125,30 @@ export default class EditTripSummary extends Vue {
     this.startedAt = someTrip.startedAt.toLocaleTimeString('fr-FR', hourOptions);
     this.finishedAt = someTrip.finishedAt.toLocaleTimeString('fr-FR', hourOptions);
 
-    this.species = someTrip.speciesIds;
-    this.types.push(someTrip.type);
+    someTrip.speciesIds.forEach((speciesId:string) => {
+      this.allSpecies.forEach((s) => {
+        if (s.id == speciesId) {
+          this.species.push(s.name);
+        }
+      });
+    });
+    if (this.species.length > 1) {
+      this.speciesLabel = 'Espèces recherchées';
+    }
+
+    this.allTripTypes.forEach((tt) => {
+      if (tt.id == someTrip.type) {
+        this.types.push(tt.name);
+      }
+    });
   }
 
-  lakesLoaded(result:Lake[]) {
-    result.forEach((lake) => this.lakes.push(lake));
-  }
-
-  weathersLoaded(result:Weather[]) {
-    result.forEach((wearther) => this.weathers.push(wearther));
+  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Species[]) {
+    lakes.forEach((lake) => this.allLakes.push(lake));
+    weathers.forEach((weather) => this.allWeathers.push(weather));
+    tripTypes.forEach((type) => this.allTripTypes.push(type));
+    species.forEach((s) => this.allSpecies.push(s));
+    TripsService.getTrip(this.id, this.tripLoaded);
   }
 
   send() {
