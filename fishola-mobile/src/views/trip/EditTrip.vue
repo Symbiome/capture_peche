@@ -10,8 +10,7 @@
           <span>Aucune capture</span>
         </div>
         <div class="edit-trip-end">
-          <button v-if="liveRunning"
-                  v-on:click="finish">
+          <button v-on:click="finish">
             <i class="icon-stop"/>
             Fin de pêche
           </button>

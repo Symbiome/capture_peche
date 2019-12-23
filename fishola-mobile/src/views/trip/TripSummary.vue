@@ -122,8 +122,12 @@ export default class TripSummary extends Vue {
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
     this.date = someTrip.date.toLocaleDateString('fr-FR', dayOptions);
     var hourOptions = {hour: "numeric", minute:"numeric"};
-    this.startedAt = someTrip.startedAt.toLocaleTimeString('fr-FR', hourOptions);
-    this.finishedAt = someTrip.finishedAt.toLocaleTimeString('fr-FR', hourOptions);
+    if (someTrip.startedAt) {
+      this.startedAt = someTrip.startedAt.toLocaleTimeString('fr-FR', hourOptions);
+    }
+    if (someTrip.finishedAt) {
+      this.finishedAt = someTrip.finishedAt.toLocaleTimeString('fr-FR', hourOptions);
+    }
 
     someTrip.speciesIds.forEach((speciesId:string) => {
       this.allSpecies.forEach((s) => {
