@@ -57,7 +57,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class EditTripMeta extends Vue {
+export default class TripMeta extends Vue {
   
   @Prop() id!:string;
 
@@ -130,7 +130,7 @@ export default class EditTripMeta extends Vue {
   }
 
   tripSaved() {
-    router.push({name:'edit-trip-species', params: {id: this.id}});
+    router.push({name:'trip-species', params: {id: this.id}});
   }
 
 }

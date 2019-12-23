@@ -60,13 +60,13 @@ export default class NewTrip extends Vue {
 
   newLiveTrip() {
     TripsService.newLiveTrip((id:string) => {
-      router.push({name:'edit-trip-meta', params: {id: id}});
+      router.push({name:'trip-meta', params: {id: id}});
     });
   }
 
   newAfterwardsTrip() {
     TripsService.newAfterwardsTrip((id:string) => {
-      router.push({name:'edit-trip-meta', params: {id: id}});
+      router.push({name:'trip-meta', params: {id: id}});
     });
   }
 }

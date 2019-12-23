@@ -78,7 +78,7 @@ export default class EditTrip extends Vue {
   }
 
   editSpecies() {
-    router.push({name:'edit-trip-species', params: {id: this.id}});
+    router.push({name:'trip-species', params: {id: this.id}});
   }
 
   computeDuration() {
@@ -112,7 +112,7 @@ export default class EditTrip extends Vue {
   }
 
   tripSaved() {
-    router.push({name:'edit-trip-summary', params: {id: this.id}});
+    router.push({name:'trip-summary', params: {id: this.id}});
   }
 
   newCatch() {

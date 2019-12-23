@@ -8,10 +8,10 @@ import MyTrips from '../views/MyTrips.vue'
 import Dashboard from '../views/Dashboard.vue'
 
 import NewTrip from '../views/trip/NewTrip.vue'
-import EditTripMeta from '../views/trip/EditTripMeta.vue'
-import EditTripSpecies from '../views/trip/EditTripSpecies.vue'
+import TripMeta from '../views/trip/TripMeta.vue'
+import TripSpecies from '../views/trip/TripSpecies.vue'
 import EditTrip from '../views/trip/EditTrip.vue'
-import EditTripSummary from '../views/trip/EditTripSummary.vue'
+import TripSummary from '../views/trip/TripSummary.vue'
 
 Vue.use(VueRouter)
 
@@ -43,26 +43,26 @@ const routes = [
   },
   {
     path: '/trips/:id/meta',
-    name: 'edit-trip-meta',
-    component: EditTripMeta,
+    name: 'trip-meta',
+    component: TripMeta,
     props: true
   },
   {
     path: '/trips/:id/species',
-    name: 'edit-trip-species',
-    component: EditTripSpecies,
+    name: 'trip-species',
+    component: TripSpecies,
     props: true
   },
   {
     path: '/trips/:id',
-    name: 'edit-trip',
+    name: 'trip',
     component: EditTrip,
     props: true
   },
   {
     path: '/trips/:id/summary',
-    name: 'edit-trip-summary',
-    component: EditTripSummary,
+    name: 'trip-summary',
+    component: TripSummary,
     props: true
   },
   {

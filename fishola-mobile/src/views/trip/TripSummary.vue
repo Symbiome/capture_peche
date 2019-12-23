@@ -80,7 +80,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class EditTripSummary extends Vue {
+export default class TripSummary extends Vue {
 
   @Prop() id!:string;
 

@@ -1,4 +1,3 @@
-import Dexie from 'dexie';
 import Trip from '@/pojos/Trip';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
