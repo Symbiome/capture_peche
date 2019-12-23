@@ -132,16 +132,13 @@ export default class EditTripSpecies extends Vue {
     } else {
       this.trip!.speciesIds = this.speciesIds;
 
-      if (this.trip!.id == Constants.DIRTY_ID && this.trip!.mode == 'live' && !this.trip!.startedAt) {
-        this.trip!.startedAt = new Date();
-      }
+      TripsService.finishTripCreation(this.trip!, this.tripSaved);
 
-      TripsService.saveTrip(this.trip!, this.tripSaved);
     }
   }
 
-  tripSaved() {
-    router.push({name:'edit-trip', params: {id: this.id}});
+  tripSaved(savedId:string) {
+    router.push({name:'edit-trip', params: {id: savedId}});
   }
 
 }

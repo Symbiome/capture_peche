@@ -43,7 +43,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
-        if (id == Constants.DIRTY_ID) {
+        if (id == Constants.DIRTY_ID || id == Constants.RUNNING_ID) {
             this.getInstance().onCreationTrip.get(id)
             .then((aaa) => callback(aaa));
         } else {
@@ -52,7 +52,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static saveTrip(trip:Trip, callback: () => void) {
-        if (trip.id == Constants.DIRTY_ID) {
+        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
             this.getInstance().onCreationTrip.put(trip)
             .then((aaa) => {
                 console.log(aaa);
@@ -60,6 +60,26 @@ export default class TripsService extends AbstractFisholaService {
             });
         } else {
             // TODO
+        }
+    }
+
+    static deleteDirtyTrip() {
+        this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
+    }
+
+    static finishTripCreation(trip:Trip, callback: (id:string) => void) {
+        if (trip.id == Constants.DIRTY_ID) {
+            if (trip.mode == 'live') {
+                trip.startedAt = new Date();
+            }
+
+            trip.id = Constants.RUNNING_ID;
+            TripsService.saveTrip(trip, () => {
+                this.deleteDirtyTrip();
+                callback(trip.id!);
+            });
+        } else {
+            TripsService.saveTrip(trip, () => {callback(trip.id!);});
         }
     }
 

@@ -21,7 +21,9 @@
     <FisholaFooter button-icon="icon-fish"
                     button-text="Capture"
                     v-on:buttonClicked="newCatch"
-                    shortcuts="back,step-3-4,giveup"/>
+                    shortcuts="back,step-3-4,giveup"
+                    back-event="onBackButton"
+                    v-on:onBackButton="editSpecies"/>
   </div>
 </template>
 
@@ -73,6 +75,10 @@ export default class EditTrip extends Vue {
         setInterval(this.computeDuration, 1000);
       }
     }
+  }
+
+  editSpecies() {
+    router.push({name:'edit-trip-species', params: {id: this.id}});
   }
 
   computeDuration() {

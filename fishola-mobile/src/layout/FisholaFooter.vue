@@ -65,6 +65,7 @@ export default class FisholaFooter extends Vue {
   @Prop() selected?: string;
   @Prop() buttonIcon?: string;
   @Prop() buttonText?: string;
+  @Prop() backEvent?: string;
 
   steps:any[] = [];
 
@@ -137,7 +138,11 @@ export default class FisholaFooter extends Vue {
   }
 
   goBack() {
-    window.history.back();
+    if (this.backEvent) {
+      this.$emit(this.backEvent);
+    } else {
+      window.history.back();
+    }
   }
 
   goDashboard() {

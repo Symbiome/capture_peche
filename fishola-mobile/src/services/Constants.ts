@@ -2,6 +2,7 @@
 export default class Constants {
 
     static DIRTY_ID:string = 'DIRTY';
+    static RUNNING_ID:string = 'RUNNING';
 
     static baseApiUrl():string {
         let result = process.env.VUE_APP_API_URL;
