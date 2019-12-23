@@ -127,8 +127,10 @@ export default class FisholaFooter extends Vue {
         else xhr.send();
     }
 
-    let apiUrl = Constants.apiUrl("/v1/security/logout");
-    httpCall('GET', apiUrl, null, this.logguedOut);
+    if (confirm("Voulez-vous vous déconnecter ?")) {
+      let apiUrl = Constants.apiUrl("/v1/security/logout");
+      httpCall('GET', apiUrl, null, this.logguedOut);
+    }
 
   }
 
@@ -154,8 +156,10 @@ export default class FisholaFooter extends Vue {
   }
 
   giveup() {
-    // TODO Il faudrait supprimer les données en cours de création
-    router.push('/trips');
+    if (confirm("Voulez-vous vraiment abandonner cette sortie ?")) {
+      // TODO Il faudrait supprimer les données en cours de création
+      router.push('/trips');
+    }
   }
 
 }
