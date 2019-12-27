@@ -74,9 +74,7 @@ export default class TripMeta extends Vue {
   types:any[] = [];
 
   created() {
-    TripsService.getTrip(this.id, this.tripLoaded);
-    ReferentialService.getLakes(this.lakesLoaded);
-    ReferentialService.getTripTypes(this.tripTypesLoaded);
+    ReferentialService.getLakesAndTripTypes(this.referentialsLoaded);
   }
 
   mounted() {
@@ -90,12 +88,10 @@ export default class TripMeta extends Vue {
     this.type = someTrip.type;
   }
 
-  lakesLoaded(result:Lake[]) {
-    result.forEach((lake) => this.lakes.push(lake));
-  }
-
-  tripTypesLoaded(result:any[]) {
-    result.forEach((type) => this.types.push(type));
+  referentialsLoaded(ls:Lake[], tts:any[]) {
+    ls.forEach((lake) => this.lakes.push(lake));
+    tts.forEach((type) => this.types.push(type));
+    TripsService.getTrip(this.id, this.tripLoaded);
   }
 
   next() {

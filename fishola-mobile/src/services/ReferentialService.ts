@@ -59,4 +59,13 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
+    static getLakesAndTripTypes(callback:(ls:Lake[],tts:any[])=>any) {
+        // FIXME AThimel 23/12/2019 Utiliser des promises
+        ReferentialService.getLakes((lakes:Lake[]) => {
+            ReferentialService.getTripTypes((tripTypes:any[]) => {
+                callback(lakes, tripTypes);
+            });
+        });
+    }
+
 }
