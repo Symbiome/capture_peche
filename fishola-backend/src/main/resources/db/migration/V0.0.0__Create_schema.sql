@@ -49,13 +49,16 @@ CREATE TABLE released_fish_state (
     name TEXT NOT NULL UNIQUE
 );
 
+CREATE TYPE trip_mode
+    AS ENUM('live', 'afterwards');
+
 CREATE TYPE trip_type
     AS ENUM('Border', 'Craft');
 
 CREATE TABLE trip (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     owner UUID REFERENCES fishola_user(id),
-    live BOOLEAN NOT NULL,
+    mode trip_mode NOT NULL,
     name TEXT NOT NULL,
     day DATE NOT NULL,
     start_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,

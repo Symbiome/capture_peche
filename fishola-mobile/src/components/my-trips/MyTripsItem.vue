@@ -4,7 +4,7 @@
       <input type="checkbox" v-bind:id="'checkbox-' + trip.id" class="pelorous-checkbox" />
       <label v-bind:for="'checkbox-' + trip.id"></label>
     </div>
-    <div class="item-description">
+    <div class="item-description" v-on:click="openTrip">
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
@@ -21,10 +21,10 @@
       </div>
       <div class="item-row">
         <div class="left-part">
-          <i class="icon-lake"/>{{trip.lake}}
+          <i class="icon-lake"/>{{trip.lakeName}}
         </div>
         <div class="right-part">
-          {{trip.catchs.length}}<i class="icon-fish"/>
+          {{trip.catchs}}<i class="icon-fish"/>
         </div>
       </div>
     </div>
@@ -36,10 +36,15 @@
 import TripLight from '@/pojos/TripLight';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import router from '../../router';
 
 @Component
 export default class MyTripItem extends Vue {
-  @Prop() trip!: TripLight
+  @Prop() trip!: TripLight;
+
+  openTrip() {
+    router.push({name:'trip', params: {id: this.trip.id}});
+  }
 }
 </script>
 

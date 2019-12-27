@@ -9,6 +9,8 @@
 
 import Toaster from '@/components/common/Toaster.vue'
 
+import TripsService from '@/services/TripsService';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
@@ -17,7 +19,16 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class App extends Vue {
+    created() {
+      let syncDelay = 10000;
+      console.log(`setInterval(${syncDelay/1000}s) pour surveiller les trips à synchro`);
+      setInterval(this.checkOutOfSyncTrips, syncDelay);
+    }
 
+    checkOutOfSyncTrips() {
+      console.log("Y'a-t'il des trips à synchronizer ?");
+      TripsService.syncTrips();
+    }
 }
 
 </script>

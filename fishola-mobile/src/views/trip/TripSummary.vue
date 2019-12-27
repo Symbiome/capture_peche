@@ -103,7 +103,7 @@ export default class TripSummary extends Vue {
   types:string[] = [];
 
   allLakes:Lake[] = [];
-  allSpecies:Species[] = [];
+  allSpecies:Map<string, Species[]> = new Map();
   allWeathers:Weather[] = [];
   allTripTypes:any[] = [];
 
@@ -129,8 +129,9 @@ export default class TripSummary extends Vue {
       this.finishedAt = someTrip.finishedAt.toLocaleTimeString('fr-FR', hourOptions);
     }
 
+    let speciesPerLake = this.allSpecies.get(someTrip.lakeId);
     someTrip.speciesIds.forEach((speciesId:string) => {
-      this.allSpecies.forEach((s) => {
+      speciesPerLake!.forEach((s) => {
         if (s.id == speciesId) {
           this.species.push(s.name);
         }
@@ -147,11 +148,11 @@ export default class TripSummary extends Vue {
     });
   }
 
-  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Species[]) {
+  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, Species[]>) {
     lakes.forEach((lake) => this.allLakes.push(lake));
     weathers.forEach((weather) => this.allWeathers.push(weather));
     tripTypes.forEach((type) => this.allTripTypes.push(type));
-    species.forEach((s) => this.allSpecies.push(s));
+    this.allSpecies = species;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 

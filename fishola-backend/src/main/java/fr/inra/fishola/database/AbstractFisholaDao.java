@@ -31,6 +31,10 @@ public abstract class AbstractFisholaDao {
         T execute(D dao);
     }
 
+    public interface JooqDaoNoResult<D> {
+        void execute(D dao);
+    }
+
     protected Connection newConnection() throws SQLException {
         Connection conn = DriverManager.getConnection(config.getJdbcUrl(), config.getJdbcUser(), config.getJdbcPassword());
         return conn;
@@ -63,6 +67,17 @@ public abstract class AbstractFisholaDao {
             D dao = constructor.newInstance(configuration);
             R result = work.execute(dao);
             return result;
+        } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
+            throw new RuntimeException("Unable to treat jOOQ dao work", eee);
+        }
+    }
+
+    protected <D> void withDaoNoResult(Class<D> daoClass, JooqDaoNoResult<D> work) {
+        try(Connection connection = newConnection()) {
+            Configuration configuration = new DefaultConfiguration().set(connection).set(SQLDialect.POSTGRES);
+            Constructor<D> constructor = daoClass.getConstructor(Configuration.class);
+            D dao = constructor.newInstance(configuration);
+            work.execute(dao);
         } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
             throw new RuntimeException("Unable to treat jOOQ dao work", eee);
         }

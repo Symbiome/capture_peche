@@ -48,15 +48,17 @@ export default class TripsService extends AbstractFisholaService {
             this.getInstance().onCreationTrip.get(id)
             .then((aaa) => callback(aaa));
         } else {
-            // TODO
+            this.getInstance().trips.get(id)
+            .then((aaa) => callback(aaa));
         }
     }
 
     static toTripLight(input:Trip, lakesIndex:any):TripLight {
         var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
         let date = input.date!.toLocaleDateString('fr-FR', dayOptions);
-        let lake:string = lakesIndex[input.lakeId!];
-        let result = new TripLight(input.id!, input.name!, lake, date);
+        let lakeName:string = lakesIndex[input.lakeId!];
+        let result = new TripLight(input.id!, input.name!, lakeName, date);
+        result.catchs = input.catchs.length;
         result.duration = Trip.computeDuration(input);
         return result;
     }
@@ -120,15 +122,32 @@ export default class TripsService extends AbstractFisholaService {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
             trip.dirty = true;
-            this.getInstance().trips.put(trip)
-            .then((aaa) => {
-                console.log(aaa);
-                this.cancelCreations();
-                callback();
-            });
+            this.getInstance().trips
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    this.cancelCreations();
+                    callback();
+                });
         } else {
             // TODO
         }
+    }
+
+    static syncTrips() {
+        this.getInstance().trips
+            .filter(t => t.dirty === true)
+            .each((dirtyTrip:Trip) => this.syncTrip(dirtyTrip));
+    }
+
+    static syncTrip(trip:Trip) {
+
+        console.log("Dirty trip, pas bien", trip);
+        this.getInstance().backendPut('/v1/trips', trip, (r) => {
+            console.log("Okay :)", r);
+        }, (eee) => {
+            console.log("Pas Okay :)", eee);
+        });
     }
 
 }

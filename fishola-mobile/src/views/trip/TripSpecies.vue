@@ -79,24 +79,26 @@ export default class TripSpecies extends Vue {
   speciesIds:string[] = [];
 
   species:Species[] = [];
+  speciesIndex:Map<string, Species[]> = new Map();
 
 
   created() {
-    TripsService.getTrip(this.id, this.tripLoaded);
+    ReferentialService.getSpeciesIndex(this.speciesLoaded);
   }
 
   mounted() {
   }
 
+  speciesLoaded(map:Map<string, Species[]>) {
+    this.speciesIndex = map;
+    TripsService.getTrip(this.id, this.tripLoaded);
+  }
+
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
+    this.species = this.speciesIndex.get(this.trip!.lakeId!)!;
     this.speciesIds = someTrip.speciesIds;
-    ReferentialService.getSpecies(this.trip!.lakeId!, this.speciesLoaded);
-  }
-
-  speciesLoaded(result:Species[]) {
-    result.forEach((s) => this.species.push(s));
   }
 
   toggle(s:Species) {

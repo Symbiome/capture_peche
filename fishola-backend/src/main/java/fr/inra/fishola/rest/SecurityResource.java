@@ -62,7 +62,6 @@ public class SecurityResource {
     @PUT
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response register(RegisterBean bean, @Context HttpServletRequest request) {
 
         if (bean == null) {

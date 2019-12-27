@@ -27,8 +27,15 @@ export default class ReferentialService extends AbstractFisholaService {
         this.getInstance().backendGet('/v1/referential/species', callback);
     }
 
-    static getWeathers(callback:(weathers:Weather[])=>any) {
-        this.getInstance().backendGet('/v1/referential/weathers', callback);
+    static getSpeciesIndex(callback:(resul:Map<string, Species[]>)=>any) {
+        this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
+            let someMap = new Map<string, Species[]>();
+            let lakeIds:string[] = Object.keys(map);
+            lakeIds.forEach(lakeId => {
+                someMap.set(lakeId, map[lakeId]);
+            })
+            callback(someMap);
+        });
     }
 
     static getSpecies(lakeId:string, callback:(resul:Species[])=>any) {
@@ -36,6 +43,10 @@ export default class ReferentialService extends AbstractFisholaService {
             let species = map[lakeId];
             callback(species);
         });
+    }
+
+    static getWeathers(callback:(weathers:Weather[])=>any) {
+        this.getInstance().backendGet('/v1/referential/weathers', callback);
     }
 
     static getTripTypes(callback:(result:any[])=>any) {
@@ -46,11 +57,11 @@ export default class ReferentialService extends AbstractFisholaService {
         callback(types);
     }
 
-    static getLakesWeathersTripTypesAndSpecies(callback:(ls:Lake[],ws:Weather[],tts:any[],ss:Species[])=>any) {
+    static getLakesWeathersTripTypesAndSpecies(callback:(ls:Lake[],ws:Weather[],tts:any[],ss:Map<string, Species[]>)=>any) {
         // FIXME AThimel 23/12/2019 Utiliser des promises
         ReferentialService.getLakes((lakes:Lake[]) => {
             ReferentialService.getWeathers((weathers:Weather[]) => {
-                ReferentialService.getAllSpecies((species:Species[]) => {
+                ReferentialService.getSpeciesIndex((species:Map<string, Species[]>) => {
                     ReferentialService.getTripTypes((tripTypes:any[]) => {
                         callback(lakes, weathers, tripTypes, species);
                     });

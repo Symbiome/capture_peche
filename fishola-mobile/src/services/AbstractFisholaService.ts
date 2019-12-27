@@ -43,5 +43,29 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.send();
     }
 
+    backendPut(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+        let apiUrl = Constants.apiUrl(uri);
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', apiUrl, true);
+        xhr.withCredentials = true;
+        xhr.onload = function() {
+          if (this.status == 200) {
+            let responseText = this['responseText'];
+            let parsed = JSON.parse(responseText);
+            callback(parsed);
+          } else if (errorCallback) {
+            errorCallback(this.status);
+          }
+        };
+        if (data != null) {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.setRequestHeader('Cookie', 'token=azertyuiop');
+          xhr.withCredentials = true;
+          xhr.send(JSON.stringify(data));
+        } else {
+          xhr.send();
+        }
+    }
+
 }
 
