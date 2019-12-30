@@ -38,6 +38,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
+
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource {
@@ -224,7 +227,17 @@ public class SecurityResource {
                     .withJWTId(UUID.randomUUID().toString())
                     .sign(algorithmHS);
 
-            NewCookie cookie = new NewCookie("token", token);
+            NewCookie cookie = new NewCookie(
+                    "token",
+                    token,
+                    "/api",
+                    null,
+                    DEFAULT_VERSION,
+                    null,
+                    DEFAULT_MAX_AGE,
+                    null,
+                    false,
+                    false);
 
             // FIXME AThimel 21/11/2019 Secure + HTTPOnly
             Response result = Response.ok().cookie(cookie).build();
