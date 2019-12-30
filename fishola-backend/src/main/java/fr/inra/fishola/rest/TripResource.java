@@ -1,13 +1,6 @@
 package fr.inra.fishola.rest;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.TripDao;
-import fr.inra.fishola.database.UserDao;
-import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 
 import javax.inject.Inject;
@@ -23,7 +16,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/trips")
@@ -32,10 +24,7 @@ import java.util.UUID;
 public class TripResource {
 
     @Inject
-    protected FisholaConfiguration config;
-
-    @Inject
-    protected UserDao userDao;
+    protected AuthenticationService authenticationService;
 
     @Inject
     protected TripDao tripDao;
@@ -56,52 +45,25 @@ public class TripResource {
         return result;
     }
 
-    protected Algorithm getJwtSecretAlgorithm() {
-        String jwtSecret = config.getJwtSecret();
-        Algorithm result = Algorithm.HMAC512(jwtSecret);
-        return result;
-    }
-
     @PUT
     @Path("/")
-    public void createTrip(@CookieParam("token") Cookie cookie, TripBean trip) {
+    public void createTrip(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
-        UUID userId = getUserId(cookie);
-//        UUID userId = null;
+        UUID userId = authenticationService.getUserId(cookie);
 
         System.out.println(trip);
-        Trip pojo = new Trip();
-        pojo.setDay(new java.sql.Date(trip.date.getTime()));
-        pojo.setStartTime(Timestamp.from(trip.startedAt.toInstant()));
-        pojo.setEndTime(Timestamp.from(trip.finishedAt.toInstant()));
-        pojo.setLake(trip.lakeId);
-        pojo.setName(trip.name);
-        pojo.setType(trip.type);
-        pojo.setMode(trip.mode);
-        pojo.setOwner(userId);
 
-        tripDao.create(pojo);
+        Trip entity = new Trip();
+        entity.setDay(new java.sql.Date(trip.date.getTime()));
+        entity.setStartTime(Timestamp.from(trip.startedAt.toInstant()));
+        entity.setEndTime(Timestamp.from(trip.finishedAt.toInstant()));
+        entity.setLake(trip.lakeId);
+        entity.setName(trip.name);
+        entity.setType(trip.type);
+        entity.setMode(trip.mode);
+        entity.setOwner(userId);
+
+        tripDao.create(entity);
     }
 
-    protected UUID getUserId(@CookieParam("token") Cookie cookie) throws NotAuthenticatedException {
-        Algorithm algorithmHS = getJwtSecretAlgorithm();
-
-        try {
-            if (cookie == null) {
-                throw new NotAuthenticatedException();
-            }
-            DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
-                    .build()
-                    .verify(cookie.getValue());
-            String email = verify.getSubject();
-
-            Optional<FisholaUser> user = userDao.findByEmail(email);
-            UUID result = user.map(FisholaUser::getId).orElseThrow(NotAuthenticatedException::new);
-            return result;
-        } catch (JWTVerificationException ve) {
-            ve.printStackTrace();
-            throw new NotAuthenticatedException();
-        }
-    }
 }

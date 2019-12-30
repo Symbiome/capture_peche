@@ -3,7 +3,6 @@ package fr.inra.fishola.rest;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
@@ -54,13 +53,10 @@ public class SecurityResource {
     protected FisholaConfiguration config;
 
     @Inject
-    protected MailService mailService;
+    protected AuthenticationService authenticationService;
 
-    protected Algorithm getJwtSecretAlgorithm() {
-        String jwtSecret = config.getJwtSecret();
-        Algorithm result = Algorithm.HMAC512(jwtSecret);
-        return result;
-    }
+    @Inject
+    protected MailService mailService;
 
     @PUT
     @Path("/register")
@@ -86,7 +82,7 @@ public class SecurityResource {
         } else if (!isEmailInValidFormat(bean.email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "Le format n'est pas correct");
-        } else if (loadUser(bean.email).isPresent()) {
+        } else if (userDao.findByEmail(bean.email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "E-mail déjà utilisé");
         }
@@ -107,7 +103,7 @@ public class SecurityResource {
 
         String passwordHashed = userDao.hashPassword(bean.password);
 
-        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
 
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -166,7 +162,7 @@ public class SecurityResource {
     public Response verifyAfterRegistration(@QueryParam("t") String token) {
 
         try {
-            Algorithm algorithmHS = getJwtSecretAlgorithm();
+            Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
                     .withIssuer("fishola-backend")
                     .build()
@@ -204,7 +200,6 @@ public class SecurityResource {
         if (authenticate.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else if (authenticate.get()) {
-            Algorithm algorithmHS = getJwtSecretAlgorithm();
 
 //        iss issuer : qui a émis le token
 //        sub subject : identifiant unique métier
@@ -219,6 +214,7 @@ public class SecurityResource {
             calendar.add(Calendar.HOUR, 24);
             Date expiresAt = calendar.getTime();
 
+            Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
             String token = JWT.create()
                     .withIssuer("fishola-backend")
                     .withSubject(bean.email)
@@ -228,7 +224,7 @@ public class SecurityResource {
                     .sign(algorithmHS);
 
             NewCookie cookie = new NewCookie(
-                    "token",
+                    AuthenticationService.AUTHENTICATION_COOKIE_NAME,
                     token,
                     "/api",
                     null,
@@ -250,8 +246,8 @@ public class SecurityResource {
 
     @GET
     @Path("/logout")
-    public Response logout(@CookieParam("token") Cookie cookie) {
-        NewCookie dropCookie = new NewCookie("token", "");
+    public Response logout(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        NewCookie dropCookie = new NewCookie(AuthenticationService.AUTHENTICATION_COOKIE_NAME, "");
         Response result = Response.ok().cookie(dropCookie).build();
         return result;
     }
@@ -267,34 +263,12 @@ public class SecurityResource {
         return result;
     }
 
-    protected Optional<UserProfile> loadUser(String email) {
-        Optional<FisholaUser> user = userDao.findByEmail(email);
-        Optional<UserProfile> result = user.map(this::toUserProfile);
-        return result;
-    }
-
     @GET
     @Path("/profile")
-    public UserProfile getProfile(@CookieParam("token") Cookie cookie) {
-
-        Algorithm algorithmHS = getJwtSecretAlgorithm();
-
-        try {
-            if (cookie == null) {
-                throw new NotAuthenticatedException();
-            }
-            DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
-                    .build()
-                    .verify(cookie.getValue());
-            String email = verify.getSubject();
-            UserProfile result = loadUser(email).orElseThrow(NotAuthenticatedException::new);
-            return result;
-        } catch (JWTVerificationException ve) {
-            ve.printStackTrace();
-            throw new NotAuthenticatedException();
-        }
-
+    public UserProfile getProfile(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        FisholaUser user = authenticationService.getUser(cookie);
+        UserProfile result = toUserProfile(user);
+        return result;
     }
 
 }
