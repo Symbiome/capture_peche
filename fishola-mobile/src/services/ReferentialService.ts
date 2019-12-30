@@ -23,11 +23,21 @@ export default class ReferentialService extends AbstractFisholaService {
         this.getInstance().backendGet('/v1/referential/lakes', callback);
     }
 
+    static getLakesIndex(callback:(lakes:Map<string, Lake>)=>any) {
+        ReferentialService.getLakes((lakes:Lake[]) => {
+            let result = new Map<string, Lake>();
+            lakes.forEach((lake:Lake) => {
+                result.set(lake.id, lake);
+            })
+            callback(result);
+        });
+    }
+
     static getAllSpecies(callback:(resul:Species[])=>any) {
         this.getInstance().backendGet('/v1/referential/species', callback);
     }
 
-    static getSpeciesIndex(callback:(resul:Map<string, Species[]>)=>any) {
+    static getSpeciesIndex(callback:(result:Map<string, Species[]>)=>any) {
         this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
             let someMap = new Map<string, Species[]>();
             let lakeIds:string[] = Object.keys(map);

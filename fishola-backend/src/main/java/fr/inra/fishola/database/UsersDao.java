@@ -10,7 +10,7 @@ import java.util.Optional;
 import static fr.inra.fishola.entities.Tables.FISHOLA_USER;
 
 @Singleton
-public class UserDao extends AbstractFisholaDao {
+public class UsersDao extends AbstractFisholaDao {
 
     public String hashPassword(String password) {
         int cost = config.getPasswordHashCost();

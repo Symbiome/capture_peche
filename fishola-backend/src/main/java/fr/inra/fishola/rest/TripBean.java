@@ -20,6 +20,7 @@ public class TripBean {
     public Date startedAt;
     public Date finishedAt;
     public List<CatchBean> catchs;
+    public UUID weatherId;
 
     public class CatchBean {
     }

@@ -20,7 +20,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class App extends Vue {
     created() {
-      let syncDelay = 10000;
+      this.checkOutOfSyncTrips();
+      let syncDelay = 30000;
       console.log(`setInterval(${syncDelay/1000}s) pour surveiller les trips à synchro`);
       setInterval(this.checkOutOfSyncTrips, syncDelay);
     }

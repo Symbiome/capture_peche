@@ -1,3 +1,4 @@
+import Lake from '@/pojos/Lake';
 import Trip from '@/pojos/Trip';
 import TripLight from '@/pojos/TripLight';
 import Constants from '@/services/Constants';
@@ -53,29 +54,65 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static toTripLight(input:Trip, lakesIndex:any):TripLight {
+    static toTripLight(input:Trip, lakesIndex:Map<string, Lake>):TripLight {
         var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
         let date = input.date!.toLocaleDateString('fr-FR', dayOptions);
-        let lakeName:string = lakesIndex[input.lakeId!];
+        let lakeName:string = lakesIndex.get(input.lakeId!)!.name;
         let result = new TripLight(input.id!, input.name!, lakeName, date);
-        result.catchs = input.catchs.length;
+        result.catchsCount = input.catchs.length;
         result.duration = Trip.computeDuration(input);
         return result;
     }
 
+    // FIXME Fait doublon avec la méthode computeDuration sur Trip
+    static computeDuration(startedAt:Date, finishedAt?:Date):string {
+        if (startedAt) {
+            let end = finishedAt || new Date();
+            let seconds = Math.floor((end.getTime()-startedAt.getTime())/1000);
+            let minutes = Math.floor(seconds/60);
+            let hours = Math.floor(minutes/60);
+            let result = '';
+            if (hours > 0) {
+                result += hours + 'h ';
+                minutes -= hours * 60;
+            }
+            if (minutes > 0) {
+                result += minutes + 'min ';
+                seconds -= hours * 60*60 + minutes * 60;
+            }
+            result += seconds + 's';
+            return result;
+        }
+        return '';
+    }
+
     static listTrips(callback:(trips:TripLight[])=>any) {
+        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
 
-        ReferentialService.getLakes(lakes => {
+        ReferentialService.getLakesIndex((lakesIndex:Map<string, Lake>) => {
 
-            let lakesIndex:any = {};
-            lakes.forEach(lake => {
-                lakesIndex[lake.id] = lake.name;
-            });
+            let result:TripLight[] = [];
+
             this.getInstance().trips.toArray((trips) => {
-                let result:TripLight[] = [];
                 trips.forEach(trip => {
-                    result.push(this.toTripLight(trip, lakesIndex));
+                    if (trip.dirty) {
+                        result.push(this.toTripLight(trip, lakesIndex));
+                    }
                 });
+
+            });
+
+            this.getInstance().backendGet('/v1/trips', (trips:TripLight[]) => {
+                console.log("Sorties récupérées depuis le back :", trips);
+                trips.forEach((trip) => {
+                    trip.lakeName = lakesIndex.get(trip.lakeId!)!.name;
+                    let realDate = new Date(trip.date);
+                    trip.date = realDate.toLocaleDateString('fr-FR', dayOptions);
+                    if (trip.startedAt && trip.finishedAt) {
+                        trip.duration = TripsService.computeDuration(new Date(trip.startedAt), new Date(trip.finishedAt!));
+                    }
+                    result.push(trip);
+                })
                 callback(result);
             });
         });
@@ -137,16 +174,21 @@ export default class TripsService extends AbstractFisholaService {
     static syncTrips() {
         this.getInstance().trips
             .filter(t => t.dirty === true)
-            .each((dirtyTrip:Trip) => this.syncTrip(dirtyTrip));
+            .each((dirtyTrip:Trip) => this.syncTrip(dirtyTrip, (result:boolean) => {
+                console.log(result);
+                if (result) {
+                    this.getInstance().trips.delete(dirtyTrip.id!);
+                }
+            }));
     }
 
-    static syncTrip(trip:Trip) {
-
-        console.log("Dirty trip, pas bien", trip);
+    static syncTrip(trip:Trip, callback: (success:boolean) => void) {
+        console.log("On essaye de sauvegarder la sortie", trip);
         this.getInstance().backendPut('/v1/trips', trip, (r) => {
-            console.log("Okay :)", r);
+            callback(true);
         }, (eee) => {
-            console.log("Pas Okay :)", eee);
+            console.log("Pas Okay :'(", eee);
+            callback(false);
         });
     }
 

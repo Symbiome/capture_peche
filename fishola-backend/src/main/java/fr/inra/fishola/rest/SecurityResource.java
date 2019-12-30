@@ -6,7 +6,7 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.database.UserDao;
+import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -47,7 +47,7 @@ public class SecurityResource {
     private static final Log log = LogFactory.getLog(SecurityResource.class);
 
     @Inject
-    protected UserDao userDao;
+    protected UsersDao usersDao;
 
     @Inject
     protected FisholaConfiguration config;
@@ -82,7 +82,7 @@ public class SecurityResource {
         } else if (!isEmailInValidFormat(bean.email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "Le format n'est pas correct");
-        } else if (userDao.findByEmail(bean.email).isPresent()) {
+        } else if (usersDao.findByEmail(bean.email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "E-mail déjà utilisé");
         }
@@ -101,7 +101,7 @@ public class SecurityResource {
             return response;
         }
 
-        String passwordHashed = userDao.hashPassword(bean.password);
+        String passwordHashed = usersDao.hashPassword(bean.password);
 
         Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
 
@@ -174,7 +174,7 @@ public class SecurityResource {
                 log.info(String.format("Email verified, create account for %s", email));
             }
 
-            userDao.create(
+            usersDao.create(
                     verify.getClaim("firstName").asString(),
                     verify.getClaim("lastName").asString(),
                     email,
@@ -196,7 +196,7 @@ public class SecurityResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response login(LoginBean bean) {
 
-        Optional<Boolean> authenticate = userDao.authenticate(bean.email, bean.password);
+        Optional<Boolean> authenticate = usersDao.authenticate(bean.email, bean.password);
         if (authenticate.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else if (authenticate.get()) {

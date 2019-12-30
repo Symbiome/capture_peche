@@ -4,21 +4,27 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableTripLight.class)
 public interface TripLight {
 
-    int catchs();
+    int catchsCount();
 
     boolean canBeModified();
 
-    String id();
+    UUID id();
 
     String name();
 
-    String lakeName();
+    UUID lakeId();
 
     Date date();
+
+    Optional<Date> startedAt();
+
+    Optional<Date> finishedAt();
 
 }

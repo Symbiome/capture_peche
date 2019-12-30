@@ -1,8 +1,12 @@
-export default class Trip {
+export default class TripLight {
 
     duration?:string;
-    catchs:number;
+    catchsCount:number;
     canBeModified:boolean;
+    lakeId?:string;
+
+    startedAt?:Date;
+    finishedAt?:Date;
 
     constructor(
         public id:string,
@@ -10,7 +14,7 @@ export default class Trip {
         public lakeName:string,
         public date:string) {
             this.canBeModified = false;
-            this.catchs = 0;
+            this.catchsCount = 0;
     }
 
 }

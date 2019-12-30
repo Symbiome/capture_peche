@@ -24,7 +24,7 @@
           <i class="icon-lake"/>{{trip.lakeName}}
         </div>
         <div class="right-part">
-          {{trip.catchs}}<i class="icon-fish"/>
+          {{trip.catchsCount}}<i class="icon-fish"/>
         </div>
       </div>
     </div>

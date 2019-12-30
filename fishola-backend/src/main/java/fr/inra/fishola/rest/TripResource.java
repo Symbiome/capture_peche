@@ -1,6 +1,6 @@
 package fr.inra.fishola.rest;
 
-import fr.inra.fishola.database.TripDao;
+import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 
 import javax.inject.Inject;
@@ -13,10 +13,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -27,21 +26,27 @@ public class TripResource {
     protected AuthenticationService authenticationService;
 
     @Inject
-    protected TripDao tripDao;
+    protected TripsDao tripsDao;
 
     @GET
     @Path("/")
-    public List<TripLight> getMyTrips() {
-        ImmutableTripLight aTrip = ImmutableTripLight.builder()
-                .catchs(12)
-                .date(new Date())
-                .id(UUID.randomUUID().toString())
-                .lakeName("Toto")
-                .name("azerty")
-                .canBeModified(false)
-                .build();
-        LinkedList<TripLight> result = new LinkedList<>();
-        result.add(aTrip);
+    public List<TripLight> getMyTrips(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+
+        UUID userId = authenticationService.getUserId(cookie);
+
+        List<Trip> entities = tripsDao.listMyTrips(userId);
+        List<TripLight> result = entities.stream()
+                .map(trip -> ImmutableTripLight.builder()
+                        .catchsCount(0)
+                        .date(trip.getDay())
+                        .id(trip.getId())
+                        .lakeId(trip.getLake())
+                        .name(trip.getName())
+                        .startedAt(trip.getStartTime())
+                        .finishedAt(trip.getEndTime())
+                        .canBeModified(true)
+                        .build())
+                .collect(Collectors.toList());
         return result;
     }
 
@@ -49,9 +54,9 @@ public class TripResource {
     @Path("/")
     public void createTrip(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
-        UUID userId = authenticationService.getUserId(cookie);
+        // TODO: 30/12/2019 Détection des doublons
 
-        System.out.println(trip);
+        UUID userId = authenticationService.getUserId(cookie);
 
         Trip entity = new Trip();
         entity.setDay(new java.sql.Date(trip.date.getTime()));
@@ -62,8 +67,9 @@ public class TripResource {
         entity.setType(trip.type);
         entity.setMode(trip.mode);
         entity.setOwner(userId);
+        entity.setWeather(trip.weatherId);
 
-        tripDao.create(entity);
+        tripsDao.create(entity);
     }
 
 }

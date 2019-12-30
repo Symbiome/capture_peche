@@ -6,7 +6,7 @@
     <div class="page login-page">
       <div class="login-title">
         <div class="welcome">Bienvenue sur</div>
-        <img class="logo" v-on:click="autoLogin" src="img/logo/logo-FISHOLA-negatif.svg" alt="Fishola"/>
+        <img class="logo" v-on:click="autoLogin" src="img/logo-big.svg" alt="Fishola"/>
       </div>
       <div class="login-form">
         <FormInput name="email"

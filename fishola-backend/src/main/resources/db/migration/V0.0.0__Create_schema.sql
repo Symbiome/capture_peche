@@ -64,8 +64,8 @@ CREATE TABLE trip (
     start_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     end_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     type trip_type NOT NULL,
-    latitude DOUBLE PRECISION NOT NULL,
-    longitude DOUBLE PRECISION NOT NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     lake UUID REFERENCES lake(id) NOT NULL,
     weather UUID REFERENCES weather(id) NOT NULL
 );

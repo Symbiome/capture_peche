@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.database.UserDao;
+import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,7 +23,7 @@ public class AuthenticationService {
     protected FisholaConfiguration config;
 
     @Inject
-    protected UserDao userDao;
+    protected UsersDao usersDao;
 
     public Algorithm getJwtSecretAlgorithm() {
         String jwtSecret = config.getJwtSecret();
@@ -44,7 +44,7 @@ public class AuthenticationService {
                     .verify(cookie.getValue());
             String email = verify.getSubject();
 
-            Optional<FisholaUser> user = userDao.findByEmail(email);
+            Optional<FisholaUser> user = usersDao.findByEmail(email);
             FisholaUser result = user.orElseThrow(NotAuthenticatedException::new);
             return result;
         } catch (JWTVerificationException ve) {

@@ -8,7 +8,7 @@ export default abstract class AbstractFisholaService extends Dexie {
     // Declare implicit table properties.
     // (just to inform Typescript. Instanciated by Dexie in stores() method)
     onCreationTrip: Dexie.Table<Trip, string>; // number = type of the primkey
-    trips: Dexie.Table<Trip, number>; // number = type of the primkey
+    trips: Dexie.Table<Trip, string>; // number = type of the primkey
     //...other tables goes here...
 
     constructor () {
@@ -53,13 +53,14 @@ export default abstract class AbstractFisholaService extends Dexie {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
             callback(parsed);
+          } else if (this.status == 204) {
+            callback(null);
           } else if (errorCallback) {
             errorCallback(this.status);
           }
         };
         if (data != null) {
           xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.setRequestHeader('Cookie', 'token=azertyuiop');
           xhr.withCredentials = true;
           xhr.send(JSON.stringify(data));
         } else {

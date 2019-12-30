@@ -9,12 +9,12 @@
           <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"
-                      v-model="name"
+                      v-model="trip.name"
                       v-bind:error="nameError" />
           <FormSelect name="lake"
                       label="Lac"
                       v-bind:options="allLakes"
-                      v-model="lakeId"
+                      v-model="trip.lakeId"
                       v-bind:error="lakeIdError"/>
           <FormInput name="date"
                       label="Date"
@@ -28,7 +28,7 @@
           <FormSelect name="weather"
                       label="Météo"
                       v-bind:options="allWeathers"
-                      v-model="weatherId"
+                      v-model="trip.weatherId"
                       v-bind:error="weatherIdError"/>
           <FormMultiValues name="species"
                            v-bind:label="speciesLabel"
@@ -86,14 +86,12 @@ export default class TripSummary extends Vue {
 
   trip?:Trip = new Trip();
 
-  name:string = '';
-  nameError:string = '';
-  lakeId:string = '';
-  lakeIdError:string = '';
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
-  weatherId:string = '';
+
+  nameError:string = '';
+  lakeIdError:string = '';
   weatherIdError:string = '';
 
   species:string[] = [];
@@ -117,8 +115,6 @@ export default class TripSummary extends Vue {
   tripLoaded(someTrip:any) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
-    this.name = someTrip.name;
-    this.lakeId = someTrip.lakeId;
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
     this.date = someTrip.date.toLocaleDateString('fr-FR', dayOptions);
     var hourOptions = {hour: "numeric", minute:"numeric"};
