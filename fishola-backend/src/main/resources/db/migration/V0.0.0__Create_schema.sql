@@ -57,12 +57,13 @@ CREATE TYPE trip_type
 
 CREATE TABLE trip (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     owner UUID REFERENCES fishola_user(id),
     mode trip_mode NOT NULL,
     name TEXT NOT NULL,
     day DATE NOT NULL,
-    start_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    end_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    start_time TIME WITHOUT TIME ZONE NOT NULL,
+    end_time TIME WITHOUT TIME ZONE NOT NULL,
     type trip_type NOT NULL,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,

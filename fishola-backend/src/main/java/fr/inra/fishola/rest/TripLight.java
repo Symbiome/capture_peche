@@ -3,6 +3,8 @@ package fr.inra.fishola.rest;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +15,7 @@ public interface TripLight {
 
     int catchsCount();
 
-    boolean canBeModified();
+    Optional<Date> modifiableUntil();
 
     UUID id();
 
@@ -21,10 +23,10 @@ public interface TripLight {
 
     UUID lakeId();
 
-    Date date();
+    LocalDate date();
 
-    Optional<Date> startedAt();
+    Optional<LocalTime> startedAt();
 
-    Optional<Date> finishedAt();
+    Optional<LocalTime> finishedAt();
 
 }

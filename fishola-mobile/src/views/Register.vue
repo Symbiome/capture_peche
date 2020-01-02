@@ -96,7 +96,8 @@ export default class Register extends Vue {
 
   register() {
 
-    function httpCall(method: string, url:string, data:any, successCallback:()=>any, errorCallback:(validationErrors:any)=>any) {
+    function httpCall(method: string, url:string, data:any, successCallback:()=>any, validationErrorCallback:(validationErrors:any)=>any, errorCallback:(status:number)=>any) {
+console.log("register");
       var xhr = new XMLHttpRequest();
       xhr.open(method, url, true);
       xhr.withCredentials = true;
@@ -108,9 +109,10 @@ export default class Register extends Vue {
           let responseText = this['responseText'] || '{}';
           console.log("responseText: " + responseText);
           let parsed = JSON.parse(responseText);
-          errorCallback(parsed);
+          validationErrorCallback(parsed);
         } else {
-          console.error("C'est la merde noire, façon " + this.status);
+          console.error("C'est la merde noire, façon " + this.status, this['responseText']);
+          errorCallback(this.status);
         }
       };
       if (data != null) {
@@ -125,7 +127,7 @@ export default class Register extends Vue {
 
     if (this.passwordConfirm == this.bean.password) {
       let apiUrl = Constants.apiUrl("/v1/security/register");
-      httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors);
+      httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
     } else {
       this.validationErrors['passwordConfirm'] = 'Les mots de passe ne correspondent pas';
     }
@@ -146,6 +148,10 @@ export default class Register extends Vue {
   setValidationErrors(validationErrors:any) {
     this.validationErrors = validationErrors;
     this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
+  }
+
+  technicalError(status:number) {
+    this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
   }
 }
 

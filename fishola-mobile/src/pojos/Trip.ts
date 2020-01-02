@@ -1,5 +1,6 @@
 
 import Catch from '@/pojos/Catch';
+import Helpers from '@/pojos/Helpers';
 
 export default class Trip {
 
@@ -25,23 +26,10 @@ export default class Trip {
         let startedAt = input.startedAt;
         if (startedAt) {
             let end = input.finishedAt || new Date();
-            let seconds = Math.floor((end.getTime()-startedAt.getTime())/1000);
-            let minutes = Math.floor(seconds/60);
-            let hours = Math.floor(minutes/60);
-            let result = '';
-            if (hours > 0) {
-                result += hours + 'h ';
-                minutes -= hours * 60;
-            }
-            if (minutes > 0) {
-                result += minutes + 'min ';
-                seconds -= hours * 60*60 + minutes * 60;
-            }
-            result += seconds + 's';
+            let result = Helpers.computeDuration(startedAt, end);
             return result;
         }
         return '';
     }
-
 
 }

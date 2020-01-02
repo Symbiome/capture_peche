@@ -22,12 +22,12 @@ export default class App extends Vue {
     created() {
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;
-      console.log(`setInterval(${syncDelay/1000}s) pour surveiller les trips à synchro`);
+      console.log(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
       setInterval(this.checkOutOfSyncTrips, syncDelay);
     }
 
     checkOutOfSyncTrips() {
-      console.log("Y'a-t'il des trips à synchronizer ?");
+      console.log("Y'a-t'il des sorties à synchronizer ?");
       TripsService.syncTrips();
     }
 }

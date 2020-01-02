@@ -4,6 +4,7 @@ import TripLight from '@/pojos/TripLight';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/pojos/Helpers';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -54,41 +55,52 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static toTripLight(input:Trip, lakesIndex:Map<string, Lake>):TripLight {
-        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
-        let date = input.date!.toLocaleDateString('fr-FR', dayOptions);
+    static storedTripToLight(input:Trip, lakesIndex:Map<string, Lake>):TripLight {
         let lakeName:string = lakesIndex.get(input.lakeId!)!.name;
-        let result = new TripLight(input.id!, input.name!, lakeName, date);
-        result.catchsCount = input.catchs.length;
-        result.duration = Trip.computeDuration(input);
+        let duration = Trip.computeDuration(input);
+        let modifiableUntil = input.date!;
+
+        let result:TripLight = {
+            id: input.id!,
+            name: input.name!,
+            lakeName: lakeName,
+            date: input.date!,
+            catchsCount: input.catchs.length,
+            duration: duration,
+            modifiableUntil: modifiableUntil
+        };
         return result;
     }
 
-    // FIXME Fait doublon avec la méthode computeDuration sur Trip
-    static computeDuration(startedAt:Date, finishedAt?:Date):string {
-        if (startedAt) {
-            let end = finishedAt || new Date();
-            let seconds = Math.floor((end.getTime()-startedAt.getTime())/1000);
-            let minutes = Math.floor(seconds/60);
-            let hours = Math.floor(minutes/60);
-            let result = '';
-            if (hours > 0) {
-                result += hours + 'h ';
-                minutes -= hours * 60;
-            }
-            if (minutes > 0) {
-                result += minutes + 'min ';
-                seconds -= hours * 60*60 + minutes * 60;
-            }
-            result += seconds + 's';
-            return result;
+    static backendTripToLight(input:any, lakesIndex:Map<string, Lake>):TripLight {
+        let lakeName = lakesIndex.get(input.lakeId!)!.name;
+        let realDate = new Date(input.date);
+
+        let startedAt = new Date(realDate);
+        startedAt.setHours(input.startedAt[0], input.startedAt[1], input.startedAt[2]);
+        let finishedAt = new Date(realDate);
+        finishedAt.setHours(input.finishedAt[0], input.finishedAt[1], input.finishedAt[2]);
+        // Cas particulier d'une pêche qui se termine après minuit
+        if (finishedAt.getTime() < startedAt.getTime()) {
+            finishedAt.setDate(finishedAt.getDate() + 1);
         }
-        return '';
+        let duration = Helpers.computeDuration(startedAt, finishedAt);
+
+        let result:TripLight = {
+            id: input.id,
+            name: input.name,
+            lakeName: lakeName,
+            date: realDate,
+            catchsCount: input.catchsCount,
+            duration: duration
+        };
+        if (input.modifiableUntil) {
+            result.modifiableUntil = new Date(input.modifiableUntil);
+        }
+        return result;
     }
 
     static listTrips(callback:(trips:TripLight[])=>any) {
-        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
-
         ReferentialService.getLakesIndex((lakesIndex:Map<string, Lake>) => {
 
             let result:TripLight[] = [];
@@ -96,22 +108,16 @@ export default class TripsService extends AbstractFisholaService {
             this.getInstance().trips.toArray((trips) => {
                 trips.forEach(trip => {
                     if (trip.dirty) {
-                        result.push(this.toTripLight(trip, lakesIndex));
+                        result.push(this.storedTripToLight(trip, lakesIndex));
                     }
                 });
 
             });
 
-            this.getInstance().backendGet('/v1/trips', (trips:TripLight[]) => {
+            this.getInstance().backendGet('/v1/trips', (trips:any[]) => {
                 console.log("Sorties récupérées depuis le back :", trips);
                 trips.forEach((trip) => {
-                    trip.lakeName = lakesIndex.get(trip.lakeId!)!.name;
-                    let realDate = new Date(trip.date);
-                    trip.date = realDate.toLocaleDateString('fr-FR', dayOptions);
-                    if (trip.startedAt && trip.finishedAt) {
-                        trip.duration = TripsService.computeDuration(new Date(trip.startedAt), new Date(trip.finishedAt!));
-                    }
-                    result.push(trip);
+                    result.push(this.backendTripToLight(trip, lakesIndex));
                 })
                 callback(result);
             });

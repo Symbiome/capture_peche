@@ -8,12 +8,12 @@
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
-          <i v-if="trip.canBeModified" class="icon-edit warning"/>
+          <i v-if="trip.modifiableUntil" class="icon-edit warning"/>
         </div>
       </div>
       <div class="item-row">
         <div class="left-part">
-          <i class="icon-calendar"/>{{trip.date}}
+          <i class="icon-calendar"/>{{date}}
         </div>
         <div class="right-part">
           {{trip.duration}}<i class="icon-clock"/>
@@ -42,9 +42,17 @@ import router from '../../router';
 export default class MyTripItem extends Vue {
   @Prop() trip!: TripLight;
 
+  date:string = '';
+
+  created() {
+    var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
+    this.date = this.trip.date.toLocaleDateString('fr-FR', dayOptions);
+  }
+
   openTrip() {
     router.push({name:'trip', params: {id: this.trip.id}});
   }
+
 }
 </script>
 

@@ -4,7 +4,7 @@
       <MyTripsItem v-bind:trip="t"/>
     </div>
     <div v-if="trips.length > 0" class="bottom-spacer"></div>
-    <div v-if="trips.length == 0" class="no-trips">
+    <div v-if="trips.length == 0 && !loading" class="no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
         <span>Aucune sortie de pêche</span>
@@ -13,6 +13,9 @@
         <span>Commencez votre <br/>première sortie !</span>
         <i class="icon-triangle"></i>
       </div>
+    </div>
+    <div v-if="loading" class="loading">
+      <div class="spinner">&nbsp;</div>
     </div>
   </div>
 </template>
@@ -31,6 +34,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class MyTripsList extends Vue {
   @Prop() trips!:TripLight[];
+  @Prop() loading!:boolean;
 }
 </script>
 
@@ -102,6 +106,30 @@ export default class MyTripsList extends Vue {
       }
     }
   }
+
+
+  .loading {
+
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+    .spinner {
+      height: 60px;
+      width: 60px;
+      border-radius: 50%;
+      border-top: 3px solid @pelorous;
+      border-left: 3px solid @pelorous;
+      animation:spin 2s linear infinite;
+    }
+
+  }
+
 }
 
 </style>

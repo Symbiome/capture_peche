@@ -1,6 +1,5 @@
 package fr.inra.fishola;
 
-import fr.inra.fishola.rest.SecurityResource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +35,11 @@ public class FisholaConfiguration {
 
     public String getBackendBaseUrl() {
         return null; // "https://fishola.demo.codelutin.com"
+    }
+
+    public int getTripModifiableHours() {
+//        return 7 * 24; // 7 jours
+        return 24; // 1 jour
     }
 
     public String getBackendBaseUrl(HttpServletRequest httpServletRequest) {

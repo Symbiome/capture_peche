@@ -1,20 +1,11 @@
-export default class TripLight {
+export default interface TripLight {
 
-    duration?:string;
+    id:string;
+    name:string;
+    date:Date;
+    duration:string;
     catchsCount:number;
-    canBeModified:boolean;
-    lakeId?:string;
-
-    startedAt?:Date;
-    finishedAt?:Date;
-
-    constructor(
-        public id:string,
-        public name:string,
-        public lakeName:string,
-        public date:string) {
-            this.canBeModified = false;
-            this.catchsCount = 0;
-    }
+    modifiableUntil?:Date;
+    lakeName:string;
 
 }
