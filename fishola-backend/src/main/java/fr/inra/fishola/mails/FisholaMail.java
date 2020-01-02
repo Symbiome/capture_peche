@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.mails;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
