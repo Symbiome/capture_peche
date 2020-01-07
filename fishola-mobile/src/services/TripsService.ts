@@ -114,9 +114,9 @@ export default class TripsService extends AbstractFisholaService {
 
             });
 
-            this.getInstance().backendGet('/v1/trips', (trips:any[]) => {
+            this.getInstance().backendGet('/v1/trips', (trips:any) => {
                 console.log("Sorties récupérées depuis le back :", trips);
-                trips.forEach((trip) => {
+                trips.elements.forEach((trip:any) => {
                     result.push(this.backendTripToLight(trip, lakesIndex));
                 })
                 callback(result);
