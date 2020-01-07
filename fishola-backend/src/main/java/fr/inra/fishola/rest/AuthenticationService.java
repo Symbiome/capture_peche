@@ -35,7 +35,7 @@ public class AuthenticationService {
 
         try {
             if (cookie == null) {
-                throw new NotAuthenticatedException();
+                throw new NotAuthenticatedException("Cookie manquant");
             }
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
@@ -45,11 +45,11 @@ public class AuthenticationService {
             String email = verify.getSubject();
 
             Optional<FisholaUser> user = usersDao.findByEmail(email);
-            FisholaUser result = user.orElseThrow(NotAuthenticatedException::new);
+            FisholaUser result = user.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
             return result;
         } catch (JWTVerificationException ve) {
             ve.printStackTrace();
-            throw new NotAuthenticatedException();
+            throw new NotAuthenticatedException("Token invalide");
         }
     }
 

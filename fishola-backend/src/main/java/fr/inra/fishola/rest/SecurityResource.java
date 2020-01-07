@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
+import fr.inra.fishola.FisholaTechnicalException;
 import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import fr.inra.fishola.mails.FisholaMail;
@@ -187,7 +188,7 @@ public class SecurityResource {
             // TODO: 22/11/2019 Réponse adaptée
             return Response.ok().build();
         } catch (TokenExpiredException | InvalidClaimException tee) {
-            throw new NotAuthenticatedException();
+            throw new FisholaTechnicalException("Unable to register", tee);
         } catch (DataAccessException dae) {
             // TODO: 22/11/2019 Réponse adaptée
             return Response.ok().build();

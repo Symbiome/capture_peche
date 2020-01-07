@@ -1,6 +1,7 @@
 package fr.inra.fishola.rest;
 
 import fr.inra.fishola.FisholaConfiguration;
+import fr.inra.fishola.FisholaTechnicalException;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import org.nuiton.util.pagination.PaginationParameter;
@@ -12,6 +13,7 @@ import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
@@ -110,6 +112,19 @@ public class TripResource {
 
         // TODO: 02/01/2020 Catchs
 
+    }
+
+
+    @GET
+    @Path("/{tripId}")
+    public Trip createTrip(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
+
+        UUID userId = authenticationService.getUserId(cookie);
+        Trip entity = tripsDao.getTrip(tripId);
+
+        AccessDeniedException.check(userId.equals(entity.getOwner()), "Vous ne pouvez consulter que les sorties vous appartenant");
+
+        return entity;
     }
 
 }

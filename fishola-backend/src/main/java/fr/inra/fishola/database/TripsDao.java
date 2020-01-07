@@ -55,4 +55,8 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public Trip getTrip(UUID tripId) {
+        return withDao(TripDao.class, dao -> dao.fetchOneById(tripId));
+    }
+
 }
