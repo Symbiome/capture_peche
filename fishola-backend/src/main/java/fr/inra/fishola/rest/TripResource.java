@@ -3,6 +3,8 @@ package fr.inra.fishola.rest;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -42,14 +44,16 @@ public class TripResource {
 
     @GET
     @Path("/")
-    public List<TripLight> getMyTrips(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+    public PaginationResult<TripLight> getMyTrips(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
 
         UUID userId = authenticationService.getUserId(cookie);
 
         List<Trip> entities = tripsDao.listMyTrips(userId);
-        List<TripLight> result = entities.stream()
+        List<TripLight> trips = entities.stream()
                 .map(this::toTripLight)
                 .collect(Collectors.toList());
+
+        PaginationResult<TripLight>  result = PaginationResult.fromFullList(trips, PaginationParameter.ALL);
         return result;
     }
 
