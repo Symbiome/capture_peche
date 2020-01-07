@@ -51,8 +51,61 @@ export default class TripsService extends AbstractFisholaService {
             .then((aaa) => callback(aaa));
         } else {
             this.getInstance().trips.get(id)
-            .then((aaa) => callback(aaa));
+            .then((aaa) => {
+                if (aaa) {
+                    callback(aaa);
+                } else {
+                    // Il faut charger le trip depuis le back
+                    let url:string = `/v1/trips/${id}`;
+                    this.getInstance().backendGet(url, (bbb:any) => {
+                        console.log("Sortie récupérée depuis le back :", bbb);
+                        callback(TripsService.backendTripToTrip(bbb));
+                    });
+                }
+            });
         }
+    }
+
+    static backendTripToTrip(input:any):Trip {
+        let realDate = new Date(input.day);
+
+        let result:Trip = {
+            id: input.id,
+            dirty: false,
+            mode: input.mode,
+            type: input.type,
+            name: input.name,
+            lakeId: input.lake,
+            // weatherId: input.weather,
+            date: realDate,
+            speciesIds: [],
+            catchs: [],
+        };
+
+        if (input.startTime) {
+            let startTimeArray = input.startTime.split(':');
+            let startedAt = new Date(realDate);
+            startedAt.setHours(startTimeArray[0], startTimeArray[1], startTimeArray[2]);
+            
+            result.startedAt = startedAt;
+
+            if (input.endTime) {
+                let endTimeArray = input.endTime.split(':');
+                let finishedAt = new Date(realDate);
+                finishedAt.setHours(endTimeArray[0], endTimeArray[1], endTimeArray[2]);
+                // Cas particulier d'une pêche qui se termine après minuit
+                if (finishedAt.getTime() < startedAt.getTime()) {
+                    finishedAt.setDate(finishedAt.getDate() + 1);
+                }
+
+                result.finishedAt = finishedAt;
+            }
+        }
+
+        // if (input.modifiableUntil) {
+        //     result.modifiableUntil = new Date(input.modifiableUntil);
+        // }
+        return result;
     }
 
     static storedTripToLight(input:Trip, lakesIndex:Map<string, Lake>):TripLight {
