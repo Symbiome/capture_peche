@@ -1,14 +1,8 @@
 package fr.inra.fishola.rest.security;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
-import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.exceptions.NotAuthenticatedException;
 import fr.inra.fishola.mails.FisholaMail;
 import fr.inra.fishola.mails.ImmutableFisholaMail;
@@ -36,8 +30,6 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -100,24 +92,13 @@ public class SecurityResource extends AbstractFisholaResource {
 
         String passwordHashed = usersDao.hashPassword(bean.password);
 
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, 1);
-        Date expiresAt = calendar.getTime();
+        Map<String, String> claims = new HashMap<>();
+        claims.put("email", bean.email);
+        claims.put("firstName", bean.firstName);
+        claims.put("lastName", bean.lastName);
+        claims.put("passwordHashed", passwordHashed);
 
-        Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
-
-        String token = JWT.create()
-                .withIssuer("fishola-backend")
-                .withSubject("register")
-                .withIssuedAt(now)
-                .withExpiresAt(expiresAt)
-                .withJWTId(UUID.randomUUID().toString())
-                .withClaim("email", bean.email)
-                .withClaim("firstName", bean.firstName)
-                .withClaim("lastName", bean.lastName)
-                .withClaim("passwordHashed", passwordHashed)
-                .sign(algorithmHS);
+        String token = jwtHelper.createCustomToken("register", 1, claims);
 
         String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
         String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
@@ -161,30 +142,23 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response verifyAfterRegistration(@QueryParam("t") String token) {
 
         try {
-            Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
-            DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
-                    .withSubject("register")
-                    .build()
-                    .verify(token);
+            Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
-            String email = verify.getSubject();
+            String email = claims.get("email");
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Email verified, create account for %s", email));
             }
 
             usersDao.create(
-                    verify.getClaim("firstName").asString(),
-                    verify.getClaim("lastName").asString(),
-                    verify.getClaim("email").asString(),
-                    verify.getClaim("passwordHashed").asString()
+                    claims.get("firstName"),
+                    claims.get("lastName"),
+                    email,
+                    claims.get("passwordHashed")
             );
 
             // TODO: 22/11/2019 Réponse adaptée
             return Response.ok().build();
-        } catch (TokenExpiredException | InvalidClaimException tee) {
-            throw new FisholaTechnicalException("Unable to register", tee);
         } catch (DataAccessException dae) {
             // TODO: 22/11/2019 Réponse adaptée
             return Response.ok().build();
