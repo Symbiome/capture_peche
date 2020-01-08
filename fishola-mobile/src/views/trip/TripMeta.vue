@@ -17,7 +17,7 @@
                       v-model="lakeId"
                       v-bind:error="lakeIdError"/>
           <FormSelect name="type"
-                      label="Situation"
+                      label="Type de pêche"
                       v-bind:options="types"
                       v-model="type"
                       v-bind:error="typeError" />

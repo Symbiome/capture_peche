@@ -37,7 +37,7 @@
                            v-bind:label="technicsLabel"
                            v-bind:values="technics"/>
           <FormMultiValues name="type"
-                           label="Situation"
+                           label="Type de pêche"
                            v-bind:values="types"/>
         </div>
         <div class="bottom-page-spacer"></div>
