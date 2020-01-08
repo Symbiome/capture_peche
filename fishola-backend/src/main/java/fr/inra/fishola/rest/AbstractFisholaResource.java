@@ -1,9 +1,16 @@
 package fr.inra.fishola.rest;
 
+import fr.inra.fishola.database.UsersDao;
+import fr.inra.fishola.exceptions.NotAuthenticatedException;
+
 import javax.inject.Inject;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.NewCookie;
 import java.util.Optional;
 import java.util.UUID;
+
+import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 public abstract class AbstractFisholaResource {
 
@@ -12,12 +19,45 @@ public abstract class AbstractFisholaResource {
     @Inject
     protected JwtHelper jwtHelper;
 
+    @Inject
+    protected UsersDao usersDao;
+
+    protected NewCookie createTokenCookie(String token) {
+        NewCookie result = newTokenCookie(token, DEFAULT_MAX_AGE);
+        return result;
+    }
+
+    protected NewCookie dropTokenCookie() {
+        NewCookie result = newTokenCookie("", 0);
+        return result;
+    }
+
+    private NewCookie newTokenCookie(String token, int maxAge) {
+        // FIXME AThimel 21/11/2019 Secure + HTTPOnly
+        NewCookie result = new NewCookie(
+                AUTHENTICATION_COOKIE_NAME,
+                token,
+                "/api",
+                null,
+                DEFAULT_VERSION,
+                null,
+                maxAge,
+                null,
+                false,
+                true);
+        return result;
+    }
+
     protected UUID getUserId(Cookie cookie) {
         String token = Optional.ofNullable(cookie)
                 .map(Cookie::getValue)
                 .orElse(null);
-        UUID result = jwtHelper.getUserId(token);
-        return result;
+        UUID userId = jwtHelper.tokenToUserID(token);
+        // Now we have to check that the userId is valid
+        if (!usersDao.isValidUserId(userId)) {
+            throw new NotAuthenticatedException("Utilisateur inconnu");
+        }
+        return userId;
     }
 
 }

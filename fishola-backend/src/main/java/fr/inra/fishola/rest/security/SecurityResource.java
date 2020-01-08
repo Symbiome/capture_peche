@@ -5,16 +5,15 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.common.base.Preconditions;
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.exceptions.FisholaTechnicalException;
-import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
+import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.exceptions.NotAuthenticatedException;
 import fr.inra.fishola.mails.FisholaMail;
 import fr.inra.fishola.mails.ImmutableFisholaMail;
 import fr.inra.fishola.mails.MailService;
 import fr.inra.fishola.rest.AbstractFisholaResource;
-import fr.inra.fishola.rest.JwtHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,9 +43,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
-
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource extends AbstractFisholaResource {
@@ -54,13 +50,7 @@ public class SecurityResource extends AbstractFisholaResource {
     private static final Log log = LogFactory.getLog(SecurityResource.class);
 
     @Inject
-    protected UsersDao usersDao;
-
-    @Inject
     protected FisholaConfiguration config;
-
-    @Inject
-    protected JwtHelper jwtHelper;
 
     @Inject
     protected MailService mailService;
@@ -110,18 +100,20 @@ public class SecurityResource extends AbstractFisholaResource {
 
         String passwordHashed = usersDao.hashPassword(bean.password);
 
-        Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
-
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 1);
         Date expiresAt = calendar.getTime();
+
+        Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
+
         String token = JWT.create()
                 .withIssuer("fishola-backend")
-                .withSubject(bean.email)
+                .withSubject("register")
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
                 .withJWTId(UUID.randomUUID().toString())
+                .withClaim("email", bean.email)
                 .withClaim("firstName", bean.firstName)
                 .withClaim("lastName", bean.lastName)
                 .withClaim("passwordHashed", passwordHashed)
@@ -172,6 +164,7 @@ public class SecurityResource extends AbstractFisholaResource {
             Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
                     .withIssuer("fishola-backend")
+                    .withSubject("register")
                     .build()
                     .verify(token);
 
@@ -184,7 +177,7 @@ public class SecurityResource extends AbstractFisholaResource {
             usersDao.create(
                     verify.getClaim("firstName").asString(),
                     verify.getClaim("lastName").asString(),
-                    email,
+                    verify.getClaim("email").asString(),
                     verify.getClaim("passwordHashed").asString()
             );
 
@@ -208,42 +201,14 @@ public class SecurityResource extends AbstractFisholaResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else if (authenticate.get()) {
 
-//        iss issuer : qui a émis le token
-//        sub subject : identifiant unique métier
-//        aud audience : fishola mobile ?
-//        exp date d'expritration
-//        nbf not before
-//        iat issued at
-//        jti identifiant unique : uuid
+            Optional<FisholaUser> byEmail = usersDao.findByEmail(bean.email);
+            Preconditions.checkState(byEmail.isPresent());
+            UUID userId = byEmail.get().getId();
 
-            Date now = new Date();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR, 24);
-            Date expiresAt = calendar.getTime();
+            String token = jwtHelper.createToken(userId);
 
-            Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
-            String token = JWT.create()
-                    .withIssuer("fishola-backend")
-                    .withSubject(bean.email)
-                    .withIssuedAt(now)
-                    .withExpiresAt(expiresAt)
-                    .withJWTId(UUID.randomUUID().toString())
-                    .sign(algorithmHS);
-
-            NewCookie cookie = new NewCookie(
-                    AUTHENTICATION_COOKIE_NAME,
-                    token,
-                    "/api",
-                    null,
-                    DEFAULT_VERSION,
-                    null,
-                    DEFAULT_MAX_AGE,
-                    null,
-                    false,
-                    false);
-
-            // FIXME AThimel 21/11/2019 Secure + HTTPOnly
-            Response result = Response.ok().cookie(cookie).build();
+            NewCookie loginCookie = createTokenCookie(token);
+            Response result = Response.ok().cookie(loginCookie).build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -254,8 +219,9 @@ public class SecurityResource extends AbstractFisholaResource {
     @GET
     @Path("/logout")
     public Response logout(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        NewCookie dropCookie = new NewCookie(AUTHENTICATION_COOKIE_NAME, "");
-        Response result = Response.ok().cookie(dropCookie).build();
+        // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
+        NewCookie logoutCookie = dropTokenCookie();
+        Response result = Response.ok().cookie(logoutCookie).build();
         return result;
     }
 

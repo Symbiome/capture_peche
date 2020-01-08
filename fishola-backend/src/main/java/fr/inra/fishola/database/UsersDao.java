@@ -44,6 +44,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
+    public boolean isValidUserId(UUID userId) {
+        boolean result = withDao(FisholaUserDao.class, dao -> dao.existsById(userId));
+        return result;
+    }
+
     public Optional<FisholaUser> findByEmail(String email) {
         FisholaUser user = withDao(FisholaUserDao.class, dao -> dao.fetchOneByEmail(email));
         Optional<FisholaUser> result = Optional.ofNullable(user);

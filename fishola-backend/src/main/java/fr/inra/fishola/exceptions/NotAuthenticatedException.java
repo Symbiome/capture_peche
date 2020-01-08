@@ -8,6 +8,10 @@ public class NotAuthenticatedException extends AbstractFisholaRuntimeException {
         super(message);
     }
 
+    public NotAuthenticatedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     @Override
     public Response.Status getStatus() {
         return Response.Status.UNAUTHORIZED;
