@@ -1,6 +1,6 @@
 package fr.inra.fishola.rest.mapper;
 
-import fr.inra.fishola.AbstractFisholaRuntimeException;
+import fr.inra.fishola.exceptions.AbstractFisholaRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.Response;

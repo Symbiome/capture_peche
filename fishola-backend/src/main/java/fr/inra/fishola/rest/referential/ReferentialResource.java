@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.referential;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;

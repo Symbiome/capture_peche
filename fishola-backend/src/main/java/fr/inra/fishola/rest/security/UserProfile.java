@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.security;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;

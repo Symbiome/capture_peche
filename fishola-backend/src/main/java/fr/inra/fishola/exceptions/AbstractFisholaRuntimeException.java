@@ -1,4 +1,4 @@
-package fr.inra.fishola;
+package fr.inra.fishola.exceptions;
 
 import javax.ws.rs.core.Response;
 

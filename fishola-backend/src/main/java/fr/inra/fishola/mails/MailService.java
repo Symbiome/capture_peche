@@ -5,7 +5,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.ImmutableMap;
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.FisholaTechnicalException;
+import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

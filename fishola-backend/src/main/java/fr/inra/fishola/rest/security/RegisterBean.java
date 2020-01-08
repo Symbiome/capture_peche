@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.security;
 
 public class RegisterBean {
 

@@ -1,6 +1,4 @@
-package fr.inra.fishola.rest;
-
-import fr.inra.fishola.AbstractFisholaRuntimeException;
+package fr.inra.fishola.exceptions;
 
 import javax.ws.rs.core.Response;
 

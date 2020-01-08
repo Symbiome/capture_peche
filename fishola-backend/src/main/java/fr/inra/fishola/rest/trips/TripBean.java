@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.trips;
 
 import fr.inra.fishola.entities.enums.TripMode;
 import fr.inra.fishola.entities.enums.TripType;

@@ -1,8 +1,10 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.trips;
 
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
+import fr.inra.fishola.exceptions.AccessDeniedException;
+import fr.inra.fishola.rest.security.AuthenticationService;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 

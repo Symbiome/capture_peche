@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.trips;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;

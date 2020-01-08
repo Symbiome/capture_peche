@@ -15,9 +15,9 @@ import java.io.IOException;
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
-    public class PaginationResultModule extends SimpleModule {
+    public class FisholaModule extends SimpleModule {
 
-        public PaginationResultModule() {
+        public FisholaModule() {
             addSerializer(PaginationResult.class, new JsonSerializer<>() {
                 @Override
                 public void serialize(PaginationResult value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -42,6 +42,6 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     }
 
     public void customize(ObjectMapper mapper) {
-        mapper.registerModule(new PaginationResultModule());
+        mapper.registerModule(new FisholaModule());
     }
 }

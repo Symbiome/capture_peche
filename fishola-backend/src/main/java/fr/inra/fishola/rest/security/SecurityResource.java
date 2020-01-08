@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest;
+package fr.inra.fishola.rest.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -6,7 +6,7 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.FisholaTechnicalException;
+import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import fr.inra.fishola.mails.FisholaMail;
