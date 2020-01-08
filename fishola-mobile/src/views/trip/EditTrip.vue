@@ -67,7 +67,7 @@ export default class EditTrip extends Vue {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
 
-    if (this.trip!.mode == 'live') {
+    if (this.trip!.mode == 'Live') {
       this.computeDuration();
       if (!this.trip!.finishedAt) {
         this.liveRunning = true;

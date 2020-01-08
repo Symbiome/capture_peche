@@ -41,7 +41,7 @@ COMMENT ON TYPE trip_type IS 'Types de sortie';
 COMMENT ON TABLE trip IS 'Sorties de pêche';
 COMMENT ON COLUMN trip.id IS 'Identifiant technique';
 COMMENT ON COLUMN trip.owner IS 'Utilisateur ayant fait la pêche. Peut être nul si l''utilisateur a utilisé son droit à l''oubli RGPD';
-COMMENT ON COLUMN trip.mode IS 'Sortie en mode ''live'' ou ''afterwards''';
+COMMENT ON COLUMN trip.mode IS 'Sortie en mode ''Live'' ou ''Afterwards''';
 COMMENT ON COLUMN trip.name IS 'Nom donné par l''utilisateur ou généré automatiquement';
 COMMENT ON COLUMN trip.day IS 'Jour';
 COMMENT ON COLUMN trip.start_time IS 'Heure de début';

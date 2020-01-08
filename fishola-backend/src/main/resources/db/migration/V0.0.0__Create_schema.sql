@@ -50,7 +50,7 @@ CREATE TABLE released_fish_state (
 );
 
 CREATE TYPE trip_mode
-    AS ENUM('live', 'afterwards');
+    AS ENUM('Live', 'Afterwards');
 
 CREATE TYPE trip_type
     AS ENUM('Border', 'Craft');

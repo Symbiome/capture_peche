@@ -38,11 +38,11 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static newLiveTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('live', callback);
+        TripsService.newTrip('Live', callback);
     }
 
     static newAfterwardsTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('afterwards', callback);
+        TripsService.newTrip('Afterwards', callback);
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
@@ -200,7 +200,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static finishTripCreation(trip:Trip, callback: (id:string) => void) {
         if (trip.id == Constants.DIRTY_ID) {
-            if (trip.mode == 'live') {
+            if (trip.mode == 'Live') {
                 trip.startedAt = new Date();
             }
 
