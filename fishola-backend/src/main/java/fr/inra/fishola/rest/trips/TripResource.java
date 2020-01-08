@@ -4,7 +4,7 @@ import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.exceptions.AccessDeniedException;
-import fr.inra.fishola.rest.security.AuthenticationService;
+import fr.inra.fishola.rest.AbstractFisholaResource;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -34,22 +34,19 @@ import java.util.stream.Collectors;
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TripResource {
+public class TripResource extends AbstractFisholaResource {
 
     @Inject
     protected FisholaConfiguration config;
-
-    @Inject
-    protected AuthenticationService authenticationService;
 
     @Inject
     protected TripsDao tripsDao;
 
     @GET
     @Path("/")
-    public PaginationResult<TripLight> getMyTrips(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
 
-        UUID userId = authenticationService.getUserId(cookie);
+        UUID userId = getUserId(cookie);
 
         List<Trip> entities = tripsDao.listMyTrips(userId);
         List<TripLight> trips = entities.stream()
@@ -88,11 +85,11 @@ public class TripResource {
 
     @PUT
     @Path("/")
-    public void createTrip(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
+    public void createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
         // TODO: 30/12/2019 Détection des doublons
 
-        UUID userId = authenticationService.getUserId(cookie);
+        UUID userId = getUserId(cookie);
 
         Trip entity = new Trip();
         entity.setCreatedOn(Timestamp.from(Instant.now()));
@@ -118,9 +115,9 @@ public class TripResource {
 
     @GET
     @Path("/{tripId}")
-    public Trip createTrip(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
+    public Trip createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
 
-        UUID userId = authenticationService.getUserId(cookie);
+        UUID userId = getUserId(cookie);
         Trip entity = tripsDao.getTrip(tripId);
 
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");

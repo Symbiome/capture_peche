@@ -8,6 +8,7 @@ import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
+import fr.inra.fishola.rest.AbstractFisholaResource;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -22,7 +23,7 @@ import java.util.UUID;
 
 @Path("/api/v1/referential")
 @Produces(MediaType.APPLICATION_JSON)
-public class ReferentialResource {
+public class ReferentialResource extends AbstractFisholaResource {
 
     @Inject
     protected ReferentialDao referentialDao;

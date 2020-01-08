@@ -6,6 +6,7 @@ import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 
 import javax.inject.Singleton;
 import java.util.Optional;
+import java.util.UUID;
 
 import static fr.inra.fishola.entities.Tables.FISHOLA_USER;
 
@@ -34,6 +35,12 @@ public class UsersDao extends AbstractFisholaDao {
         Optional<Boolean> result = user
                 .map(FisholaUser::getPassword)
                 .map(userPassword -> verifyPassword(password, userPassword));
+        return result;
+    }
+
+    public Optional<FisholaUser> findById(UUID userId) {
+        FisholaUser user = withDao(FisholaUserDao.class, dao -> dao.findById(userId));
+        Optional<FisholaUser> result = Optional.ofNullable(user);
         return result;
     }
 

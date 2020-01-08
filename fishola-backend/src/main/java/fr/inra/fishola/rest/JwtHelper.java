@@ -1,4 +1,4 @@
-package fr.inra.fishola.rest.security;
+package fr.inra.fishola.rest;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -8,17 +8,15 @@ import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 import fr.inra.fishola.exceptions.NotAuthenticatedException;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Cookie;
 import java.util.Optional;
 import java.util.UUID;
 
 @RequestScoped
-public class AuthenticationService {
-
-    public static final String AUTHENTICATION_COOKIE_NAME = "token";
+public class JwtHelper {
 
     @Inject
     protected FisholaConfiguration config;
@@ -32,17 +30,17 @@ public class AuthenticationService {
         return result;
     }
 
-    public FisholaUser getUser(Cookie cookie) throws NotAuthenticatedException {
+    private FisholaUser getUser(String token) throws NotAuthenticatedException {
 
         try {
-            if (cookie == null) {
+            if (StringUtils.isEmpty(token)) {
                 throw new NotAuthenticatedException("Cookie manquant");
             }
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
                     .withIssuer("fishola-backend")
                     .build()
-                    .verify(cookie.getValue());
+                    .verify(token);
             String email = verify.getSubject();
 
             Optional<FisholaUser> user = usersDao.findByEmail(email);
@@ -54,8 +52,8 @@ public class AuthenticationService {
         }
     }
 
-    public UUID getUserId(Cookie cookie) throws NotAuthenticatedException {
-        FisholaUser user = getUser(cookie);
+    public UUID getUserId(String token) throws NotAuthenticatedException {
+        FisholaUser user = getUser(token);
         UUID result = user.getId();
         return result;
     }

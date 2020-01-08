@@ -9,9 +9,12 @@ import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
+import fr.inra.fishola.exceptions.NotAuthenticatedException;
 import fr.inra.fishola.mails.FisholaMail;
 import fr.inra.fishola.mails.ImmutableFisholaMail;
 import fr.inra.fishola.mails.MailService;
+import fr.inra.fishola.rest.AbstractFisholaResource;
+import fr.inra.fishola.rest.JwtHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +49,7 @@ import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
-public class SecurityResource {
+public class SecurityResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(SecurityResource.class);
 
@@ -57,7 +60,7 @@ public class SecurityResource {
     protected FisholaConfiguration config;
 
     @Inject
-    protected AuthenticationService authenticationService;
+    protected JwtHelper jwtHelper;
 
     @Inject
     protected MailService mailService;
@@ -107,7 +110,7 @@ public class SecurityResource {
 
         String passwordHashed = usersDao.hashPassword(bean.password);
 
-        Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
+        Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
 
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -166,7 +169,7 @@ public class SecurityResource {
     public Response verifyAfterRegistration(@QueryParam("t") String token) {
 
         try {
-            Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
+            Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
                     .withIssuer("fishola-backend")
                     .build()
@@ -218,7 +221,7 @@ public class SecurityResource {
             calendar.add(Calendar.HOUR, 24);
             Date expiresAt = calendar.getTime();
 
-            Algorithm algorithmHS = authenticationService.getJwtSecretAlgorithm();
+            Algorithm algorithmHS = jwtHelper.getJwtSecretAlgorithm();
             String token = JWT.create()
                     .withIssuer("fishola-backend")
                     .withSubject(bean.email)
@@ -228,7 +231,7 @@ public class SecurityResource {
                     .sign(algorithmHS);
 
             NewCookie cookie = new NewCookie(
-                    AuthenticationService.AUTHENTICATION_COOKIE_NAME,
+                    AUTHENTICATION_COOKIE_NAME,
                     token,
                     "/api",
                     null,
@@ -250,8 +253,8 @@ public class SecurityResource {
 
     @GET
     @Path("/logout")
-    public Response logout(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        NewCookie dropCookie = new NewCookie(AuthenticationService.AUTHENTICATION_COOKIE_NAME, "");
+    public Response logout(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        NewCookie dropCookie = new NewCookie(AUTHENTICATION_COOKIE_NAME, "");
         Response result = Response.ok().cookie(dropCookie).build();
         return result;
     }
@@ -269,8 +272,10 @@ public class SecurityResource {
 
     @GET
     @Path("/profile")
-    public UserProfile getProfile(@CookieParam(AuthenticationService.AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        FisholaUser user = authenticationService.getUser(cookie);
+    public UserProfile getProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        UUID userId = getUserId(cookie);
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
         UserProfile result = toUserProfile(user);
         return result;
     }
