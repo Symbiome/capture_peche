@@ -34,12 +34,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(SecurityResource.class);
+
+    private static final String CLAIM_EMAIL = "email";
+    private static final String CLAIM_FIRST_NAME = "firstName";
+    private static final String CLAIM_LAST_NAME = "lastName";
+    private static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
 
     @Inject
     protected FisholaConfiguration config;
@@ -93,10 +99,10 @@ public class SecurityResource extends AbstractFisholaResource {
         String passwordHashed = usersDao.hashPassword(bean.password);
 
         Map<String, String> claims = new HashMap<>();
-        claims.put("email", bean.email);
-        claims.put("firstName", bean.firstName);
-        claims.put("lastName", bean.lastName);
-        claims.put("passwordHashed", passwordHashed);
+        claims.put(CLAIM_EMAIL, bean.email);
+        claims.put(CLAIM_FIRST_NAME, bean.firstName);
+        claims.put(CLAIM_LAST_NAME, bean.lastName);
+        claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
 
@@ -142,19 +148,25 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response verifyAfterRegistration(@QueryParam("t") String token) {
 
         try {
-            Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
+            final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
-            String email = claims.get("email");
+            Function<String, String> getClaimOrFail = claimName -> {
+                String result = claims.get(claimName);
+                Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: " + claimName);
+                return result;
+            };
+
+            String email = getClaimOrFail.apply(CLAIM_EMAIL);
 
             if (log.isInfoEnabled()) {
                 log.info(String.format("Email verified, create account for %s", email));
             }
 
             usersDao.create(
-                    claims.get("firstName"),
-                    claims.get("lastName"),
+                    getClaimOrFail.apply(CLAIM_FIRST_NAME),
+                    getClaimOrFail.apply(CLAIM_LAST_NAME),
                     email,
-                    claims.get("passwordHashed")
+                    getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
 
             // TODO: 22/11/2019 Réponse adaptée
