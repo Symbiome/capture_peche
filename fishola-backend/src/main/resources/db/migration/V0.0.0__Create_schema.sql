@@ -30,13 +30,13 @@ CREATE TABLE species (
 );
 
 CREATE TABLE species_by_lake (
-    lake UUID REFERENCES lake(id) NOT NULL,
-    species UUID REFERENCES species(id) NOT NULL,
+    lake_id UUID REFERENCES lake(id) NOT NULL,
+    species_id UUID REFERENCES species(id) NOT NULL,
     alias TEXT
 );
 
 CREATE UNIQUE INDEX species_by_lake_unique_idx
-    ON species_by_lake(lake, species);
+    ON species_by_lake(lake_id, species_id);
 
 CREATE TABLE technique (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
@@ -58,7 +58,7 @@ CREATE TYPE trip_type
 CREATE TABLE trip (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    owner UUID REFERENCES fishola_user(id),
+    owner_id UUID REFERENCES fishola_user(id),
     mode trip_mode NOT NULL,
     name TEXT NOT NULL,
     day DATE NOT NULL,
@@ -67,36 +67,36 @@ CREATE TABLE trip (
     type trip_type NOT NULL,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    lake UUID REFERENCES lake(id) NOT NULL,
-    weather UUID REFERENCES weather(id) NOT NULL
+    lake_id UUID REFERENCES lake(id) NOT NULL,
+    weather_id UUID REFERENCES weather(id) NOT NULL
 );
 
 CREATE TABLE trip_expected_species (
-    trip UUID REFERENCES trip(id) NOT NULL,
-    species UUID REFERENCES species(id) NOT NULL
+    trip_id UUID REFERENCES trip(id) NOT NULL,
+    species_id UUID REFERENCES species(id) NOT NULL
 );
 
 CREATE UNIQUE INDEX trip_expected_species_unique_idx
-    ON trip_expected_species(trip, species);
+    ON trip_expected_species(trip_id, species_id);
 
 CREATE TABLE trip_techniques (
-    trip UUID REFERENCES trip(id) NOT NULL,
-    technique UUID REFERENCES technique(id) NOT NULL
+    trip_id UUID REFERENCES trip(id) NOT NULL,
+    technique_id UUID REFERENCES technique(id) NOT NULL
 );
 
 CREATE UNIQUE INDEX trip_techniques_unique_idx
-    ON trip_techniques(trip, technique);
+    ON trip_techniques(trip_id, technique_id);
 
 CREATE TABLE catch (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
-    trip UUID REFERENCES trip(id) NOT NULL,
+    trip_id UUID REFERENCES trip(id) NOT NULL,
     catch_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    species UUID REFERENCES species(id) NOT NULL,
-    technique UUID REFERENCES technique(id) NOT NULL,
+    species_id UUID REFERENCES species(id) NOT NULL,
+    technique_id UUID REFERENCES technique(id) NOT NULL,
     picture OID,
     size DOUBLE PRECISION,
     weight DOUBLE PRECISION,
     kept BOOLEAN NOT NULL,
-    released_fish_state UUID REFERENCES released_fish_state(id),
+    released_fish_state_id UUID REFERENCES released_fish_state(id),
     description TEXT
 );

@@ -31,11 +31,11 @@ public class TripsDao extends AbstractFisholaDao {
     public int setSpecies(UUID tripId, List<UUID> speciesIds) {
         return withContext(context -> {
             context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES)
-                    .where(Tables.TRIP_EXPECTED_SPECIES.TRIP.eq(tripId))
+                    .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
                     .execute();
             int count = 0;
             for (UUID speciesId : speciesIds) {
-                count += context.insertInto(Tables.TRIP_EXPECTED_SPECIES, Tables.TRIP_EXPECTED_SPECIES.TRIP, Tables.TRIP_EXPECTED_SPECIES.SPECIES)
+                count += context.insertInto(Tables.TRIP_EXPECTED_SPECIES, Tables.TRIP_EXPECTED_SPECIES.TRIP_ID, Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID)
                         .values(tripId, speciesId)
                         .execute();
             }
@@ -46,7 +46,7 @@ public class TripsDao extends AbstractFisholaDao {
     public List<Trip> listMyTrips(UUID userId) {
         List<Trip> result = withContext(context -> {
             List<Trip> trips = context.selectFrom(Tables.TRIP)
-                    .where(Tables.TRIP.OWNER.eq(userId))
+                    .where(Tables.TRIP.OWNER_ID.eq(userId))
                     .orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
                     .fetch()
                     .into(Trip.class);

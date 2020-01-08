@@ -54,10 +54,10 @@ public class ReferentialResource {
         Map<UUID, Species> rawSpeciesIndex = referentialDao.speciesIndex();
 
         List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
-        Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLake);
+        Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
 
         Multimap<UUID, Species> result = Multimaps.transformValues(entitiesByLakeId, input -> {
-            Species rawSpecies = rawSpeciesIndex.get(input.getSpecies());
+            Species rawSpecies = rawSpeciesIndex.get(input.getSpeciesId());
             String nameOrAlias = Optional.ofNullable(input.getAlias()).orElse(rawSpecies.getName());
             Species speciesWithAlias = new Species(rawSpecies.getId(), nameOrAlias, rawSpecies.getBuiltIn());
             return speciesWithAlias;

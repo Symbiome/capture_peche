@@ -1,7 +1,6 @@
 package fr.inra.fishola.rest;
 
 import fr.inra.fishola.FisholaConfiguration;
-import fr.inra.fishola.FisholaTechnicalException;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import org.nuiton.util.pagination.PaginationParameter;
@@ -67,7 +66,7 @@ public class TripResource {
                 .catchsCount(0)
                 .date(trip.getDay().toLocalDate())
                 .id(trip.getId())
-                .lakeId(trip.getLake())
+                .lakeId(trip.getLakeId())
                 .name(trip.getName())
                 .startedAt(toLocalTime.apply(trip.getStartTime()))
                 .finishedAt(toLocalTime.apply(trip.getEndTime()));
@@ -98,12 +97,12 @@ public class TripResource {
         entity.setDay(new java.sql.Date(trip.date.getTime()));
         entity.setStartTime(Time.valueOf(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault())));
         entity.setEndTime(Time.valueOf(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault())));
-        entity.setLake(trip.lakeId);
+        entity.setLakeId(trip.lakeId);
         entity.setName(trip.name);
         entity.setType(trip.type);
         entity.setMode(trip.mode);
-        entity.setOwner(userId);
-        entity.setWeather(trip.weatherId);
+        entity.setOwnerId(userId);
+        entity.setWeatherId(trip.weatherId);
 
         UUID tripId = tripsDao.create(entity);
 
@@ -122,7 +121,7 @@ public class TripResource {
         UUID userId = authenticationService.getUserId(cookie);
         Trip entity = tripsDao.getTrip(tripId);
 
-        AccessDeniedException.check(userId.equals(entity.getOwner()), "Vous ne pouvez consulter que les sorties vous appartenant");
+        AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
         return entity;
     }
