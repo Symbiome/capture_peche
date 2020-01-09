@@ -124,19 +124,20 @@
             <goals>
               <goal>generate</goal>
             </goals>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
           </execution>
         </executions>
         <configuration>
           <jsonLibrary>jackson2</jsonLibrary>
           <classes>
             <class>fr.inra.fishola.rest.trips.TripBean</class>
+            <class>fr.inra.fishola.rest.trips.TripLight</class>
           </classes>
           <outputKind>module</outputKind>
           <outputFileType>implementationFile</outputFileType>
-          <mapClasses>asClasses</mapClasses>
-          <optionalProperties>all</optionalProperties>
-          <outputFile>${project.basedir}/../fishola-mobile/src/pojos/FisholaBackend.ts</outputFile>
+<!--          <mapClasses>asClasses</mapClasses>-->
+<!--          <optionalProperties>all</optionalProperties>-->
+          <outputFile>${project.basedir}/../fishola-mobile/src/pojos/BackendPojos.ts</outputFile>
           <noFileComment>true</noFileComment>
         </configuration>
       </plugin>
@@ -161,7 +162,7 @@
           </execution>
         </executions>
         <configuration>
-          <pgServerVersion>11</pgServerVersion>
+          <pgServerVersion>10.0</pgServerVersion>
           <pgServerPort>5432</pgServerPort>
           <dbName>${localJdbcDatabaseName}</dbName>
           <userName>${localJdbcUser}</userName>

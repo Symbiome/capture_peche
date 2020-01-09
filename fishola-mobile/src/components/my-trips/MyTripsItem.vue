@@ -8,7 +8,7 @@
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
-          <i v-if="trip.modifiableUntil" class="icon-edit warning"/>
+          <i v-if="trip.modifiable" class="icon-edit warning"/>
         </div>
       </div>
       <div class="item-row">
@@ -21,7 +21,7 @@
       </div>
       <div class="item-row">
         <div class="left-part">
-          <i class="icon-lake"/>{{trip.lakeName}}
+          <i class="icon-lake"/>{{lakeName}}
         </div>
         <div class="right-part">
           {{trip.catchsCount}}<i class="icon-fish"/>
@@ -33,7 +33,7 @@
 
 <script lang="ts">
 
-import TripLight from '@/pojos/TripLight';
+import {TripLight} from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
@@ -43,6 +43,7 @@ export default class MyTripItem extends Vue {
   @Prop() trip!: TripLight;
 
   date:string = '';
+  lakeName:string = '';
 
   created() {
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};

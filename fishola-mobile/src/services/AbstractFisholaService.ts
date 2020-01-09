@@ -7,7 +7,7 @@ export default abstract class AbstractFisholaService extends Dexie {
 
     // Declare implicit table properties.
     // (just to inform Typescript. Instanciated by Dexie in stores() method)
-    onCreationTrip: Dexie.Table<Trip, string>; // number = type of the primkey
+    onCreationTrip: Dexie.Table<any, string>; // number = type of the primkey
     trips: Dexie.Table<Trip, string>; // number = type of the primkey
     //...other tables goes here...
 

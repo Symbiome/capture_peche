@@ -17,7 +17,8 @@
 
 <script lang="ts">
 import router from '@/router'
-import TripLight from '@/pojos/TripLight';
+
+import {TripLight} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
 

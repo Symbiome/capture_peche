@@ -1,0 +1,12 @@
+
+import {TripType, TripMode} from '@/pojos/BackendPojos';
+
+export default interface TripMeta {
+
+    id: string;
+    name?: string;
+    lakeId?: string;
+    mode: TripMode;
+    type?: TripType;
+
+}

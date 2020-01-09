@@ -23,7 +23,8 @@
 <script lang="ts">
 
 import MyTripsItem from '@/components/my-trips/MyTripsItem.vue';
-import TripLight from '@/pojos/TripLight';
+
+import {TripLight} from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 

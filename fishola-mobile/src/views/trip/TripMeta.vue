@@ -9,17 +9,17 @@
           <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"
-                      v-model="name"
+                      v-model="trip.name"
                       v-bind:error="nameError" />
           <FormSelect name="lake"
                       label="Lac"
                       v-bind:options="lakes"
-                      v-model="lakeId"
+                      v-model="trip.lakeId"
                       v-bind:error="lakeIdError"/>
           <FormSelect name="type"
                       label="Type de pêche"
                       v-bind:options="types"
-                      v-model="type"
+                      v-model="trip.type"
                       v-bind:error="typeError" />
         </div>
         <div class="bottom-page-spacer"></div>
@@ -32,7 +32,9 @@
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
+
+import TripMeta from '@/pojos/TripMeta';
+
 import Lake from '@/pojos/Lake';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
@@ -57,17 +59,14 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripMeta extends Vue {
+export default class TripMetaVue extends Vue {
   
   @Prop() id!:string;
 
-  trip?:Trip = new Trip();
+  trip:TripMeta = { id:'', mode:'Live' };
 
-  name:string = '';
   nameError:string = '';
-  lakeId:string = '';
   lakeIdError:string = '';
-  type:string = '';
   typeError:string = '';
 
   lakes:Lake[] = [];
@@ -77,15 +76,9 @@ export default class TripMeta extends Vue {
     ReferentialService.getLakesAndTripTypes(this.referentialsLoaded);
   }
 
-  mounted() {
-  }
-
-  tripLoaded(someTrip:any) {
+  tripLoaded(someTrip:TripMeta) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
-    this.name = someTrip.name;
-    this.lakeId = someTrip.lakeId;
-    this.type = someTrip.type;
   }
 
   referentialsLoaded(ls:Lake[], tts:any[]) {
@@ -96,19 +89,19 @@ export default class TripMeta extends Vue {
 
   next() {
     let hasError = false;
-    if (this.lakeId) {
+    if (this.trip.lakeId) {
       this.lakeIdError = '';
     } else {
       hasError = true;
       this.lakeIdError = 'Information obligatoire';
     }
-    if (this.name) {
+    if (this.trip.name) {
       this.nameError = '';
     } else {
       hasError = true;
       this.nameError = 'Information obligatoire';
     }
-    if (this.type) {
+    if (this.trip.type) {
       this.typeError = '';
     } else {
       hasError = true;
@@ -117,11 +110,11 @@ export default class TripMeta extends Vue {
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
-      this.trip!.name = this.name;
-      this.trip!.lakeId = this.lakeId;
-      this.trip!.type = this.type;
+      // this.trip!.name = this.name;
+      // this.trip!.lakeId = this.lakeId;
+      // this.trip!.type = this.type;
 
-      TripsService.saveTrip(this.trip!, this.tripSaved);
+      TripsService.saveTripMeta(this.trip!, this.tripSaved);
     }
   }
 

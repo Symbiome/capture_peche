@@ -10,7 +10,6 @@ import java.util.UUID;
 public class TripBean {
 
     public String id;
-    public boolean dirty;
     public TripMode mode;
     public TripType type;
     public String name;
@@ -19,8 +18,8 @@ public class TripBean {
     public Date date;
     public Date startedAt;
     public Date finishedAt;
-    public List<CatchBean> catchs;
     public UUID weatherId;
+    public List<CatchBean> catchs;
 
     public class CatchBean {
     }
@@ -29,7 +28,6 @@ public class TripBean {
     public String toString() {
         return "TripBean{" +
                 "id='" + id + '\'' +
-                ", dirty=" + dirty +
                 ", mode='" + mode + '\'' +
                 ", type='" + type + '\'' +
                 ", name='" + name + '\'' +
