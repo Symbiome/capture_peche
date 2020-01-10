@@ -3,14 +3,15 @@ package fr.inra.fishola.rest.trips;
 import fr.inra.fishola.entities.enums.TripMode;
 import fr.inra.fishola.entities.enums.TripType;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class TripBean {
 
     public String id;
-    public boolean dirty;
     public TripMode mode;
     public TripType type;
     public String name;
@@ -19,8 +20,15 @@ public class TripBean {
     public Date date;
     public Date startedAt;
     public Date finishedAt;
-    public List<CatchBean> catchs;
     public UUID weatherId;
+    public List<CatchBean> catchs;
+
+    // Calculés
+    public Optional<LocalDateTime> modifiableUntil;
+
+    public void setDirty(boolean dirty) {
+        // On ignore, c'est pour que le front réussisse l'appel
+    }
 
     public class CatchBean {
     }
@@ -29,7 +37,6 @@ public class TripBean {
     public String toString() {
         return "TripBean{" +
                 "id='" + id + '\'' +
-                ", dirty=" + dirty +
                 ", mode='" + mode + '\'' +
                 ", type='" + type + '\'' +
                 ", name='" + name + '\'' +

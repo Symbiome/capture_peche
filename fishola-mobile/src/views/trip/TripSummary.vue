@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
+import TripSummary from '@/pojos/TripSummary';
 import Lake from '@/pojos/Lake';
 import Weather from '@/pojos/Weather';
 import Species from '@/pojos/Species';
@@ -80,11 +80,11 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripSummary extends Vue {
+export default class TripSummaryVue extends Vue {
 
   @Prop() id!:string;
 
-  trip?:Trip = new Trip();
+  trip?:TripSummary = { id:'', mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[] };
 
   date:string = '';
   startedAt:string = '';
@@ -112,7 +112,7 @@ export default class TripSummary extends Vue {
   mounted() {
   }
 
-  tripLoaded(someTrip:any) {
+  tripLoaded(someTrip:TripSummary) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};

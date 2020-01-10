@@ -20,15 +20,16 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
@@ -58,26 +59,29 @@ public class TripResource extends AbstractFisholaResource {
     }
 
     protected TripLight toTripLight(Trip trip) {
-        Function<Time, Optional<LocalTime>> toLocalTime = timestamp -> Optional.ofNullable(timestamp)
-                .map(Time::toLocalTime);
+
+        LocalDate date = trip.getDay().toLocalDate();
+        LocalDateTime startTime = LocalDateTime.of(date, trip.getStartTime().toLocalTime());
+        LocalDateTime endTime = LocalDateTime.of(date, trip.getEndTime().toLocalTime());
+        if (endTime.isBefore(startTime)) {
+            endTime = endTime.plusDays(1);
+        }
+        long durationInSeconds = Duration.between(startTime, endTime).toSeconds();
 
         ImmutableTripLight.Builder builder = ImmutableTripLight.builder()
                 .catchsCount(0)
-                .date(trip.getDay().toLocalDate())
+                .date(date)
                 .id(trip.getId())
                 .lakeId(trip.getLakeId())
                 .name(trip.getName())
-                .startedAt(toLocalTime.apply(trip.getStartTime()))
-                .finishedAt(toLocalTime.apply(trip.getEndTime()));
+                .durationInSeconds(durationInSeconds);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(trip.getCreatedOn());
         calendar.add(Calendar.HOUR, config.getTripModifiableHours());
         Date modifiableUntil = calendar.getTime();
         boolean canBeModified = modifiableUntil.after(new Date());
-        if (canBeModified) {
-            builder.modifiableUntil(modifiableUntil);
-        }
+        builder.modifiable(canBeModified);
 
         TripLight result = builder.build();
         return result;

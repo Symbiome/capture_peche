@@ -6,7 +6,7 @@
     </div>
     <div class="header-icons">
       <div class="header-icons-group">
-        <span v-if="trip">{{trip.catchs.length}}</span>
+        <span v-if="trip">{{catchs}}</span>
         <span v-if="!trip">0</span>
         <i class="icon-fish"></i>
       </div>
@@ -15,13 +15,26 @@
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
+import TripMeta from '@/pojos/TripMeta';
+import {TripBean} from '@/pojos/BackendPojos';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class SomeTripHeader extends Vue {
-  @Prop() trip?:Trip;
+  @Prop() trip?:TripMeta;
 
+  catchs:number = 0;
+
+  created() {
+    this.catchs = this.getCatchs(this.trip);
+  }
+
+  getCatchs(object:any) {
+    if (object && object.catchs) {
+      return object.catchs.length;
+    }
+    return 0;
+  }
 
 }
 </script>

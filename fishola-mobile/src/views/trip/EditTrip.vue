@@ -5,29 +5,28 @@
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="edit-trip-content">
         <h1 v-if="duration">{{duration}}</h1>
-        <div v-if="trip.catchs.length == 0" class="no-catch">
+        <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
           <img src="/img/illustration_fish_wire.svg"/>
           <span>Aucune capture</span>
         </div>
-        <div class="edit-trip-end">
-          <button v-on:click="finish">
-            <i class="icon-stop"/>
-            Fin de pêche
+        <div class="edit-trip-new-catch-button">
+          <button v-on:click="newCatch">
+            <i class="icon-fish"/>
+            Capture
           </button>
         </div>
       </div>
     </div>
-    <FisholaFooter button-icon="icon-fish"
-                    button-text="Capture"
-                    v-on:buttonClicked="newCatch"
-                    shortcuts="back,step-3-4,giveup"
-                    back-event="onBackButton"
-                    v-on:onBackButton="editSpecies"/>
+    <FisholaFooter button-text="Terminer"
+                   v-on:buttonClicked="finish"
+                   shortcuts="back,step-3-4,giveup"
+                   back-event="onBackButton"
+                   v-on:onBackButton="editSpecies"/>
   </div>
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
+import TripMain from '@/pojos/TripMain';
 import Species from '@/pojos/Species';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
@@ -51,7 +50,7 @@ export default class EditTrip extends Vue {
 
   @Prop() id!:string;
 
-  trip?:Trip = new Trip();
+  trip?:TripMain = { id:'', mode:'Live', startedAt: new Date(), catchs:[] };
 
   duration?:string = '';
   liveRunning:boolean = false;
@@ -63,13 +62,13 @@ export default class EditTrip extends Vue {
   mounted() {
   }
 
-  tripLoaded(someTrip:any) {
+  tripLoaded(someTrip:TripMain) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
 
-    if (this.trip!.mode == 'Live') {
+    if (this.trip.mode == 'Live') {
       this.computeDuration();
-      if (!this.trip!.finishedAt) {
+      if (!this.trip.finishedAt) {
         this.liveRunning = true;
         setInterval(this.computeDuration, 1000);
       }
@@ -107,7 +106,7 @@ export default class EditTrip extends Vue {
     this.trip!.finishedAt = new Date();
     this.computeDuration();
     this.liveRunning = false;
-    TripsService.saveTrip(this.trip!, this.tripSaved);
+    TripsService.saveTripMain(this.trip!, this.tripSaved);
   }
 
   tripSaved() {
@@ -189,7 +188,7 @@ export default class EditTrip extends Vue {
       }
     }
 
-    .edit-trip-end {
+    .edit-trip-new-catch-button {
       margin-top: 30px;
       margin-bottom: 50px;
 
@@ -204,10 +203,10 @@ export default class EditTrip extends Vue {
         font-size: 18px;
         line-height: 25px;
 
-        color: @white;
-        background-color: @summer-sky;
+        color: @pelorous;
+        background-color: transparent;
 
-        border: 0px;
+        border: 1px solid @pelorous;
         border-radius: 22px;
         padding-left: 20px;
         padding-right: 20px;
