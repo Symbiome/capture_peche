@@ -1,7 +1,7 @@
 import Lake from '@/pojos/Lake';
 import Trip from '@/pojos/Trip';
 import TripMeta from '@/pojos/TripMeta';
-import {TripLight} from '@/pojos/BackendPojos';
+import {TripLight, TripMode} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from '@/services/ReferentialService';
@@ -23,16 +23,18 @@ export default class TripsService extends AbstractFisholaService {
         return this.instance;
     }
 
-    static newTrip(mode:string, callback:(id:string)=>any) {
+    static newTrip(mode:TripMode, callback:(id:string)=>any) {
         var options = {weekday: "long", month: "long", day: "numeric"};
         let now = new Date();
         let name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
 
-        let newTrip:Trip = new Trip();
-        newTrip.id = Constants.DIRTY_ID;
-        newTrip.mode = mode;
-        newTrip.name = name;
-        newTrip.date = now;
+        let newTrip:TripMeta = {
+            id: Constants.DIRTY_ID,
+            mode: mode,
+            name: name,
+            date: now,
+            startedAt: now
+        }
 
         this.getInstance().onCreationTrip.put(newTrip)
           .then(id => callback(id));

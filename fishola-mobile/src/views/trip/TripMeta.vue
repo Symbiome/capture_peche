@@ -63,7 +63,7 @@ export default class TripMetaVue extends Vue {
   
   @Prop() id!:string;
 
-  trip:TripMeta = { id:'', mode:'Live' };
+  trip:TripMeta = { id:'', mode:'Live', date: new Date(), startedAt: new Date() };
 
   nameError:string = '';
   lakeIdError:string = '';
