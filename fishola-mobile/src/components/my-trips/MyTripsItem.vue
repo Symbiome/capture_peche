@@ -16,7 +16,7 @@
           <i class="icon-calendar"/>{{date}}
         </div>
         <div class="right-part">
-          {{trip.duration}}<i class="icon-clock"/>
+          {{duration}}<i class="icon-clock"/>
         </div>
       </div>
       <div class="item-row">
@@ -35,6 +35,10 @@
 
 import {TripLight} from '@/pojos/BackendPojos';
 
+import Lake from '@/pojos/Lake';
+import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/pojos/Helpers';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
@@ -44,10 +48,19 @@ export default class MyTripItem extends Vue {
 
   date:string = '';
   lakeName:string = '';
+  duration:string = '';
 
   created() {
+    ReferentialService.getLakesIndex(this.lakesIndexLoaded);
+
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
     this.date = this.trip.date.toLocaleDateString('fr-FR', dayOptions);
+
+    this.duration = Helpers.computeDurationFromSeconds(this.trip.durationInSeconds);
+  }
+
+  lakesIndexLoaded(lakes:Map<string, Lake>) {
+    this.lakeName = lakes.get(this.trip.lakeId)!.name;
   }
 
   openTrip() {

@@ -1,14 +1,10 @@
-import Lake from '@/pojos/Lake';
-import Trip from '@/pojos/Trip';
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
 import TripSummary from '@/pojos/TripSummary';
-import {TripLight, TripMode} from '@/pojos/BackendPojos';
+import {TripLight, TripMode, TripBean} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/pojos/Helpers';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -77,12 +73,11 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static backendTripToTrip(input:any):Trip {
+    static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.day);
 
-        let result:Trip = {
+        let result:any = {
             id: input.id,
-            dirty: false,
             mode: input.mode,
             type: input.type,
             name: input.name,
@@ -119,48 +114,26 @@ export default class TripsService extends AbstractFisholaService {
         return result;
     }
 
-    static storedTripToLight(input:Trip):TripLight {
+    static storedTripToLight(input:TripBean):TripLight {
+        let seconds:number = Math.floor((input.finishedAt.getTime() - input.startedAt.getTime())/1000);
+
         let result:TripLight = {
             id: input.id!,
             name: input.name!,
             date: input.date!,
             catchsCount: input.catchs ? input.catchs.length : 0,
-            durationInSeconds: 6666, // TODO
+            durationInSeconds: seconds,
             modifiable: true,
             lakeId: input.lakeId!
         };
         return result;
     }
 
-    // static backendTripToLight(input:any, lakesIndex:Map<string, Lake>):TripLight {
-    //     let lakeName = lakesIndex.get(input.lakeId!)!.name;
-    //     let realDate = new Date(input.date);
-
-    //     let startedAt = new Date(realDate);
-    //     startedAt.setHours(input.startedAt[0], input.startedAt[1], input.startedAt[2]);
-    //     let finishedAt = new Date(realDate);
-    //     finishedAt.setHours(input.finishedAt[0], input.finishedAt[1], input.finishedAt[2]);
-    //     // Cas particulier d'une pêche qui se termine après minuit
-    //     if (finishedAt.getTime() < startedAt.getTime()) {
-    //         finishedAt.setDate(finishedAt.getDate() + 1);
-    //     }
-    //     let duration = Helpers.computeDuration(startedAt, finishedAt);
-
-    //     let result:TripLight = {
-    //         id: input.id,
-    //         name: input.name,
-    //         lakeName: lakeName,
-    //         date: realDate,
-    //         catchsCount: input.catchsCount,
-    //         // durationInSeconds: duration,
-    //         durationInSeconds: 666,
-    //         modifiable: input.modifiable
-    //     };
-    //     if (input.modifiableUntil) {
-    //         result.modifiableUntil = new Date(input.modifiableUntil);
-    //     }
-    //     return result;
-    // }
+    static backendTripToLight(input:any):TripLight {
+        let realDate = new Date(input.date);
+        input.date = realDate;
+        return input;
+    }
 
     static listTrips(callback:(trips:TripLight[])=>any) {
 
@@ -168,9 +141,7 @@ export default class TripsService extends AbstractFisholaService {
 
         this.getInstance().trips.toArray((trips) => {
             trips.forEach(trip => {
-                if (trip.dirty) {
-                    result.push(this.storedTripToLight(trip));
-                }
+                result.push(this.storedTripToLight(trip));
             });
 
         });
@@ -179,7 +150,8 @@ export default class TripsService extends AbstractFisholaService {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
                 console.log(trip);
-                result.push(trip);
+                let tl:TripLight = TripsService.backendTripToLight(trip);
+                result.push(tl);
             })
             callback(result);
         });
@@ -266,8 +238,8 @@ export default class TripsService extends AbstractFisholaService {
 
     static syncTrips() {
         this.getInstance().trips
-            .filter(t => t.dirty === true)
-            .each((dirtyTrip:Trip) => this.syncTrip(dirtyTrip, (result:boolean) => {
+            // .filter(t => t.dirty === true)
+            .each((dirtyTrip:TripBean) => this.syncTrip(dirtyTrip, (result:boolean) => {
                 console.log(result);
                 if (result) {
                     this.getInstance().trips.delete(dirtyTrip.id!);
@@ -275,7 +247,7 @@ export default class TripsService extends AbstractFisholaService {
             }));
     }
 
-    static syncTrip(trip:Trip, callback: (success:boolean) => void) {
+    static syncTrip(trip:TripBean, callback: (success:boolean) => void) {
         console.log("On essaye de sauvegarder la sortie", trip);
         this.getInstance().backendPut('/v1/trips', trip, (r) => {
             callback(true);

@@ -35,7 +35,6 @@
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
 import TripsService from '@/services/TripsService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'

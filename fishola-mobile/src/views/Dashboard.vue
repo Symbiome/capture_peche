@@ -52,7 +52,6 @@
 </template>
 
 <script>
-import Trip from '@/pojos/Trip';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 
