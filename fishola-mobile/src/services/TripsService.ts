@@ -116,16 +116,13 @@ export default class TripsService extends AbstractFisholaService {
 
     static storedTripToLight(input:TripBean):TripLight {
         let seconds:number = Math.floor((input.finishedAt.getTime() - input.startedAt.getTime())/1000);
+        let catchsCount:number = input.catchs ? input.catchs.length : 0;
 
-        let result:TripLight = {
-            id: input.id!,
-            name: input.name!,
-            date: input.date!,
-            catchsCount: input.catchs ? input.catchs.length : 0,
-            durationInSeconds: seconds,
-            modifiable: true,
-            lakeId: input.lakeId!
-        };
+        let result:TripLight = <any> input;
+        result.modifiable = true;
+        result.durationInSeconds = seconds;
+        result.catchsCount = catchsCount;
+
         return result;
     }
 
