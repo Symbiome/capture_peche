@@ -26,6 +26,10 @@ public class TripBean {
     // Calculés
     public Optional<LocalDateTime> modifiableUntil;
 
+    public void setDirty(boolean dirty) {
+        // On ignore, c'est pour que le front réussisse l'appel
+    }
+
     public class CatchBean {
     }
 

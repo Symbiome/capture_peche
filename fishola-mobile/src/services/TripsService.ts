@@ -3,6 +3,7 @@ import Trip from '@/pojos/Trip';
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
+import TripSummary from '@/pojos/TripSummary';
 import {TripLight, TripMode} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
@@ -123,7 +124,7 @@ export default class TripsService extends AbstractFisholaService {
             id: input.id!,
             name: input.name!,
             date: input.date!,
-            catchsCount: input.catchs.length,
+            catchsCount: input.catchs ? input.catchs.length : 0,
             durationInSeconds: 6666, // TODO
             modifiable: true,
             lakeId: input.lakeId!
@@ -247,7 +248,7 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static sendTrip(trip:Trip, callback: () => void) {
+    static sendTrip(trip:any, callback: () => void) {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
             trip.dirty = true;

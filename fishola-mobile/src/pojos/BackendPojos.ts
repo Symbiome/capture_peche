@@ -13,6 +13,7 @@ export interface TripBean {
     finishedAt: Date;
     weatherId: string;
     catchs: CatchBean[];
+    modifiableUntil?: Date;
 }
 
 export interface TripLight {
