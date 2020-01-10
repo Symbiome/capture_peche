@@ -1,6 +1,7 @@
 import Lake from '@/pojos/Lake';
 import Trip from '@/pojos/Trip';
 import TripMeta from '@/pojos/TripMeta';
+import TripSpecies from '@/pojos/TripSpecies';
 import {TripLight, TripMode} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
@@ -51,7 +52,12 @@ export default class TripsService extends AbstractFisholaService {
     static getTrip(id:any, callback:(trip:any)=>any) {
         if (id == Constants.DIRTY_ID || id == Constants.RUNNING_ID) {
             this.getInstance().onCreationTrip.get(id)
-            .then((aaa) => callback(aaa));
+            .then((aaa) => {
+                if (!aaa.speciesIds) {
+                    aaa.speciesIds = [];
+                }
+                callback(aaa);
+            });
         } else {
             this.getInstance().trips.get(id)
             .then((aaa) => {
@@ -202,6 +208,19 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static saveTripSpecies(trip:TripSpecies, callback: () => void) {
+        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+            this.getInstance().onCreationTrip.put(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
+            callback();
+        } else {
+            // TODO
+        }
+    }
+
     static deleteDirtyTrip() {
         this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
     }
@@ -211,19 +230,19 @@ export default class TripsService extends AbstractFisholaService {
         this.getInstance().onCreationTrip.delete(Constants.RUNNING_ID);
     }
 
-    static finishTripCreation(trip:Trip, callback: (id:string) => void) {
+    static finishTripCreation(trip:TripSpecies, callback: (id:string) => void) {
         if (trip.id == Constants.DIRTY_ID) {
             if (trip.mode == 'Live') {
                 trip.startedAt = new Date();
             }
 
             trip.id = Constants.RUNNING_ID;
-            TripsService.saveTrip(trip, () => {
+            TripsService.saveTripSpecies(trip, () => {
                 this.deleteDirtyTrip();
                 callback(trip.id!);
             });
         } else {
-            TripsService.saveTrip(trip, () => {callback(trip.id!);});
+            TripsService.saveTripSpecies(trip, () => {callback(trip.id!);});
         }
     }
 

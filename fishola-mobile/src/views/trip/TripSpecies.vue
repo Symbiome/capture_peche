@@ -9,12 +9,12 @@
           <div v-for="s in species" 
                v-bind:key="s.id"
                class="species-item"
-               v-bind:class="speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
+               v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
             <div class="item-selection">
               <input type="checkbox" 
                      v-bind:id="'checkbox-' + s.id"
                      v-bind:value="s.id"
-                     v-model="speciesIds"
+                     v-model="trip.speciesIds"
                      class="pelorous-checkbox" />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import Trip from '@/pojos/Trip';
+import TripSpecies from '@/pojos/TripSpecies';
 import Species from '@/pojos/Species';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
@@ -70,13 +70,11 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripSpecies extends Vue {
+export default class TripSpeciesVue extends Vue {
   
   @Prop() id!:string;
 
-  trip?:Trip = new Trip();
-
-  speciesIds:string[] = [];
+  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: new Date() };
 
   species:Species[] = [];
   speciesIndex:Map<string, Species[]> = new Map();
@@ -94,26 +92,25 @@ export default class TripSpecies extends Vue {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  tripLoaded(someTrip:any) {
+  tripLoaded(someTrip:TripSpecies) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
-    this.species = this.speciesIndex.get(this.trip!.lakeId!)!;
-    this.speciesIds = someTrip.speciesIds;
+    this.species = this.speciesIndex.get(this.trip.lakeId)!;
   }
 
   toggle(s:Species) {
     let speciesId = s.id;
-    let index = this.speciesIds.indexOf(speciesId);
+    let index = this.trip.speciesIds.indexOf(speciesId);
     if (index == -1) {
-      this.speciesIds.push(speciesId);
+      this.trip.speciesIds.push(speciesId);
     } else {
-      this.speciesIds.splice(index, 1);
+      this.trip.speciesIds.splice(index, 1);
     }
   }
 
   next() {
     let hasError = false;
-    if (this.speciesIds.length == 0) {
+    if (this.trip.speciesIds.length == 0) {
       hasError = true;
       this.$root.$emit('toaster-error', 'Vous devez sélectionner au moins une espèce');
     }
@@ -132,10 +129,7 @@ export default class TripSpecies extends Vue {
     if (hasError) {
       //
     } else {
-      this.trip!.speciesIds = this.speciesIds;
-
-      TripsService.finishTripCreation(this.trip!, this.tripSaved);
-
+      TripsService.finishTripCreation(this.trip, this.tripSaved);
     }
   }
 
