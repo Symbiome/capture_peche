@@ -42,10 +42,9 @@
         <div class="bottom-page-spacer"></div>
       </div>
     </div>
-    <FisholaFooter button-icon="icon-fishing"
-                    button-text="Commencer"
-                    v-on:buttonClicked="next"
-                    shortcuts="back,step-2-4,giveup"/>
+    <FisholaFooter button-text="Commencer"
+                   v-on:buttonClicked="next"
+                   shortcuts="back,step-2-4,giveup"/>
   </div>
 </template>
 

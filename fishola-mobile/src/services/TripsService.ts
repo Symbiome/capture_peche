@@ -2,6 +2,7 @@ import Lake from '@/pojos/Lake';
 import Trip from '@/pojos/Trip';
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
+import TripMain from '@/pojos/TripMain';
 import {TripLight, TripMode} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
@@ -183,7 +184,7 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static saveTrip(trip:Trip, callback: () => void) {
+    static saveTripMain(trip:TripMain, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
             this.getInstance().onCreationTrip.put(trip)
             .then((aaa) => {
