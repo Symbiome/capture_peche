@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -46,15 +47,18 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/")
     public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        PaginationResult<TripLight>  result = getMyTrips(cookie, PaginationParameter.ALL);
+        return result;
+    }
+
+    @POST
+    @Path("/")
+    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, PaginationParameter page) {
 
         UUID userId = getUserId(cookie);
 
-        List<Trip> entities = tripsDao.listMyTrips(userId);
-        List<TripLight> trips = entities.stream()
-                .map(this::toTripLight)
-                .collect(Collectors.toList());
-
-        PaginationResult<TripLight>  result = PaginationResult.fromFullList(trips, PaginationParameter.ALL);
+        PaginationResult<Trip> entities = tripsDao.listMyTrips(userId, page);
+        PaginationResult<TripLight> result = entities.transform(this::toTripLight);
         return result;
     }
 

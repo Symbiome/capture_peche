@@ -4,8 +4,15 @@ import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.TripDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.entities.tables.records.TripRecord;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectSeekStep2;
+import org.nuiton.util.pagination.PaginationOrder;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Singleton;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,15 +50,31 @@ public class TripsDao extends AbstractFisholaDao {
         });
     }
 
-    public List<Trip> listMyTrips(UUID userId) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc) {
         List<Trip> result = withContext(context -> {
-            List<Trip> trips = context.selectFrom(Tables.TRIP)
-                    .where(Tables.TRIP.OWNER_ID.eq(userId))
-                    .orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
+            SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
+                    .where(Tables.TRIP.OWNER_ID.eq(userId));
+            SelectSeekStep2<TripRecord, Date, Timestamp> tripRecords =
+                    orderDesc
+                            ? builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
+                            : builder.orderBy(Tables.TRIP.DAY.asc(), Tables.TRIP.CREATED_ON.asc());
+            List<Trip> trips = tripRecords
                     .fetch()
                     .into(Trip.class);
             return trips;
         });
+        return result;
+    }
+
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page) {
+        // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
+        boolean orderDesc = true;
+        if (!page.getOrderClauses().isEmpty()) {
+            PaginationOrder order = page.getOrderClauses().get(0);
+            orderDesc = order.isDesc();
+        }
+        List<Trip> entities = listMyTrips(userId, orderDesc);
+        PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
         return result;
     }
 

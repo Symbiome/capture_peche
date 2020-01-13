@@ -132,7 +132,7 @@ export default class TripsService extends AbstractFisholaService {
         return input;
     }
 
-    static listTrips(callback:(trips:TripLight[])=>any) {
+    static listTrips(sortDown:boolean, callback:(trips:TripLight[], count:number)=>any) {
 
         let result:TripLight[] = [];
 
@@ -143,14 +143,20 @@ export default class TripsService extends AbstractFisholaService {
 
         });
 
-        this.getInstance().backendGet('/v1/trips', (trips:any) => {
+        let page = {
+            pageNumber: 0,
+            pageSize: -1,
+            orderClauses: [{clause:"whatever", desc:sortDown}]
+        };
+
+        this.getInstance().backendPost('/v1/trips', page, (trips:any) => {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
                 console.log(trip);
                 let tl:TripLight = TripsService.backendTripToLight(trip);
                 result.push(tl);
             })
-            callback(result);
+            callback(result, trips.count);
         });
     }
 

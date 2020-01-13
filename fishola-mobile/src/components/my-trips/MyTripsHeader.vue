@@ -1,12 +1,13 @@
 <template>
   <div class="my-trips-header">
     <div>
-      <span v-on:click="$emit('newMockTrip')">Mes sorties</span>
+      <span>Mes sorties</span>
     </div>
     <div class="header-icons">
-      <div class="header-icons-group">
+      <div class="header-icons-group" v-on:click="$emit('reverseSortOrder')">
         <i class="icon-calendar"></i>
-        <i class="icon-chevron"></i>
+        <i class="icon-chevron" v-if="sortDown"></i>
+        <i class="icon-chevron icon-chevron-up" v-if="!sortDown"></i>
       </div>
       <div class="header-icons-group">
         <span>{{count}}</span>
@@ -19,24 +20,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  props: {
-    count: {
-      type: Number
-    }
-  },
-  name: 'my-trips-header',
-  components: {
-    // Title,
-    // Avatar,
-    // FeedbackAnchor,
-    // Menu
-  }
+@Component
+export default class MyTripsHeader extends Vue {
+  @Prop() count!:number;
+  @Prop() sortDown!:boolean;
 }
-
-// @Component
-// export default class Header extends Vue {
-// }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
