@@ -18,13 +18,19 @@
                       v-bind:error="lakeIdError"/>
           <FormInput name="date"
                       label="Date"
-                      v-model="date"/>
+                      type="date"
+                      v-model="date"
+                      v-bind:error="dateError"/>
           <FormInput name="startAt"
                       label="Heure de début"
-                      v-model="startedAt"/>
+                      type="time"
+                      v-model="startedAt"
+                      v-bind:error="startedAtError"/>
           <FormInput name="finishedat"
                       label="Heure de fin"
-                      v-model="finishedAt"/>
+                      type="time"
+                      v-model="finishedAt"
+                      v-bind:error="finishedAtError"/>
           <FormSelect name="weather"
                       label="Météo"
                       v-bind:options="allWeathers"
@@ -56,6 +62,7 @@ import Lake from '@/pojos/Lake';
 import Weather from '@/pojos/Weather';
 import Species from '@/pojos/Species';
 import Constants from '@/services/Constants';
+import Helpers from '@/pojos/Helpers';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
@@ -84,12 +91,15 @@ export default class TripSummaryVue extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripSummary = { id:'', mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[] };
+  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[] };
 
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
 
+  dateError:string = '';
+  startedAtError:string = '';
+  finishedAtError:string = '';
   nameError:string = '';
   lakeIdError:string = '';
   weatherIdError:string = '';
@@ -115,14 +125,14 @@ export default class TripSummaryVue extends Vue {
   tripLoaded(someTrip:TripSummary) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
-    var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
-    this.date = someTrip.date.toLocaleDateString('fr-FR', dayOptions);
-    var hourOptions = {hour: "numeric", minute:"numeric"};
+    if (someTrip.date) {
+      this.date = Helpers.formateToDate(someTrip.date);
+    }
     if (someTrip.startedAt) {
-      this.startedAt = someTrip.startedAt.toLocaleTimeString('fr-FR', hourOptions);
+      this.startedAt = Helpers.formateToTime(someTrip.startedAt);
     }
     if (someTrip.finishedAt) {
-      this.finishedAt = someTrip.finishedAt.toLocaleTimeString('fr-FR', hourOptions);
+      this.finishedAt = Helpers.formateToTime(someTrip.finishedAt);
     }
 
     let speciesPerLake = this.allSpecies.get(someTrip.lakeId);
@@ -153,7 +163,58 @@ export default class TripSummaryVue extends Vue {
   }
 
   send() {
-    TripsService.sendTrip(this.trip!, this.tripSaved);
+    let hasError = false;
+
+    if (this.trip!.name) {
+      this.nameError = '';
+    } else {
+      hasError = true;
+      this.nameError = 'Information obligatoire';
+    }
+
+    if (this.date) {
+      this.dateError = '';
+      let newDate = new Date(this.date);
+      this.trip!.date = newDate;
+
+      if (this.startedAt) {
+        this.startedAtError = '';
+
+        let startedAt = Helpers.parseDateTime(this.date, this.startedAt);
+        this.trip!.startedAt = startedAt;
+      } else {
+        this.startedAtError = "Vous devez renseignez l'heure de début";
+        hasError = true;
+      }
+
+
+      if (this.finishedAt) {
+        this.startedAtError = '';
+
+        let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
+        this.trip!.finishedAt = finishedAt;
+      } else {
+        this.finishedAtError = "Vous devez renseignez l'heure de fin";
+        hasError = true;
+      }
+
+    } else {
+      this.dateError = "Vous devez renseignez la date";
+      hasError = true;
+    }
+
+    if (this.trip!.weatherId) {
+      this.weatherIdError = '';
+    } else {
+      hasError = true;
+      this.weatherIdError = 'Information obligatoire';
+    }
+
+    if (hasError) {
+      this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
+    } else {
+      TripsService.sendTrip(this.trip!, this.tripSaved);
+    }
   }
 
   tripSaved() {
