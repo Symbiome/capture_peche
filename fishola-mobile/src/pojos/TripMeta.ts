@@ -8,8 +8,8 @@ export default interface TripMeta {
     lakeId?: string;
     mode: TripMode;
     type?: TripType;
-    date:Date;
-    startedAt: Date;
+    date?:Date;
+    startedAt?: Date;
     finishedAt?: Date;
 
 }

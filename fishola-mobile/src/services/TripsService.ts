@@ -74,29 +74,31 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static backendTripToTrip(input:any):TripBean {
-        let realDate = new Date(input.day);
+        let realDate = new Date(input.date);
+
+console.log("From the back", input);
 
         let result:any = {
             id: input.id,
             mode: input.mode,
             type: input.type,
             name: input.name,
-            lakeId: input.lake,
-            // weatherId: input.weather,
+            lakeId: input.lakeId,
+            weatherId: input.weatherId,
             date: realDate,
-            speciesIds: [],
+            speciesIds: input.speciesIds || [],
             catchs: [],
         };
 
-        if (input.startTime) {
-            let startTimeArray = input.startTime.split(':');
+        if (input.startedAt) {
+            let startTimeArray = input.startedAt.split(':');
             let startedAt = new Date(realDate);
             startedAt.setHours(startTimeArray[0], startTimeArray[1], startTimeArray[2]);
             
             result.startedAt = startedAt;
 
-            if (input.endTime) {
-                let endTimeArray = input.endTime.split(':');
+            if (input.finishedAt) {
+                let endTimeArray = input.finishedAt.split(':');
                 let finishedAt = new Date(realDate);
                 finishedAt.setHours(endTimeArray[0], endTimeArray[1], endTimeArray[2]);
                 // Cas particulier d'une pêche qui se termine après minuit

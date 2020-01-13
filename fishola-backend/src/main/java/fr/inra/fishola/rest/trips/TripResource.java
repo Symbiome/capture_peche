@@ -29,9 +29,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -123,14 +121,27 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/{tripId}")
-    public Trip createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
+    public TripBean getTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
 
         UUID userId = getUserId(cookie);
         Trip entity = tripsDao.getTrip(tripId);
 
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
-        return entity;
+        TripBean result = new TripBean();
+        result.id = entity.getId().toString();
+        result.name = entity.getName();
+        result.mode = entity.getMode();
+        result.type = entity.getType();
+        result.lakeId = entity.getLakeId();
+        result.date = entity.getDay();
+        result.startedAt = entity.getStartTime();
+        result.finishedAt = entity.getEndTime();
+        result.weatherId = entity.getWeatherId();
+
+        result.speciesIds = tripsDao.getTripSpecies(tripId);
+
+        return result;
     }
 
 }

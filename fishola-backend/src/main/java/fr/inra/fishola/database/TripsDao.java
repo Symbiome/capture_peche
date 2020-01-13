@@ -19,10 +19,6 @@ import java.util.UUID;
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
 
-//    public void create(Trip trip) {
-//        withDaoNoResult(TripDao.class, tripDao -> tripDao.insert(trip));
-//    }
-
     public UUID create(Trip trip) {
         return withContext(context -> {
             TripRecord record = context.newRecord(Tables.TRIP, trip);
@@ -79,7 +75,15 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Trip getTrip(UUID tripId) {
-        return withDao(TripDao.class, dao -> dao.fetchOneById(tripId));
+        Trip trip = withDao(TripDao.class, dao -> dao.fetchOneById(tripId));
+        return trip;
+    }
+
+    public List<UUID> getTripSpecies(UUID tripId) {
+        List<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
+                .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
+                .fetch(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID));
+        return speciesIds;
     }
 
 }

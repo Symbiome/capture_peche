@@ -103,9 +103,11 @@ export default class EditTrip extends Vue {
   }
 
   finish() {
-    this.trip!.finishedAt = new Date();
-    this.computeDuration();
-    this.liveRunning = false;
+    if (this.trip!.mode == 'Live') {
+      this.trip!.finishedAt = new Date();
+      this.computeDuration();
+      this.liveRunning = false;
+    }
     TripsService.saveTripMain(this.trip!, this.tripSaved);
   }
 

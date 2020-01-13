@@ -187,9 +187,8 @@ export default class TripSummaryVue extends Vue {
         hasError = true;
       }
 
-
       if (this.finishedAt) {
-        this.startedAtError = '';
+        this.finishedAtError = '';
 
         let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
         this.trip!.finishedAt = finishedAt;

@@ -21,6 +21,23 @@
                       v-bind:options="types"
                       v-model="trip.type"
                       v-bind:error="typeError" />
+          <div v-if="trip.mode == 'Afterwards'">
+            <FormInput name="date"
+                        label="Date"
+                        type="date"
+                        v-model="date"
+                        v-bind:error="dateError"/>
+            <FormInput name="startAt"
+                        label="Heure de début"
+                        type="time"
+                        v-model="startedAt"
+                        v-bind:error="startedAtError"/>
+            <FormInput name="finishedat"
+                        label="Heure de fin"
+                        type="time"
+                        v-model="finishedAt"
+                        v-bind:error="finishedAtError"/>
+          </div>
         </div>
         <div class="bottom-page-spacer"></div>
       </div>
@@ -37,6 +54,7 @@ import TripMeta from '@/pojos/TripMeta';
 
 import Lake from '@/pojos/Lake';
 import Constants from '@/services/Constants';
+import Helpers from '@/pojos/Helpers';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
@@ -65,6 +83,13 @@ export default class TripMetaVue extends Vue {
 
   trip:TripMeta = { id:'', mode:'Live', date: new Date(), startedAt: new Date() };
 
+  date:string = '';
+  startedAt:string = '';
+  finishedAt:string = '';
+
+  dateError:string = '';
+  startedAtError:string = '';
+  finishedAtError:string = '';
   nameError:string = '';
   lakeIdError:string = '';
   typeError:string = '';
@@ -79,6 +104,18 @@ export default class TripMetaVue extends Vue {
   tripLoaded(someTrip:TripMeta) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
+    if (someTrip.mode == 'Afterwards') {
+      if (someTrip.date) {
+        this.date = Helpers.formateToDate(someTrip.date);
+      }
+      if (someTrip.startedAt) {
+        this.startedAt = Helpers.formateToTime(someTrip.startedAt);
+      }
+      if (someTrip.finishedAt) {
+        this.finishedAt = Helpers.formateToTime(someTrip.finishedAt);
+      }
+    }
+
   }
 
   referentialsLoaded(ls:Lake[], tts:any[]) {
@@ -107,6 +144,39 @@ export default class TripMetaVue extends Vue {
       hasError = true;
       this.typeError = 'Information obligatoire';
     }
+
+    if (this.trip!.mode == 'Afterwards') {
+      if (this.date) {
+        this.dateError = '';
+        let newDate = new Date(this.date);
+        this.trip!.date = newDate;
+
+        if (this.startedAt) {
+          this.startedAtError = '';
+
+          let startedAt = Helpers.parseDateTime(this.date, this.startedAt);
+          this.trip!.startedAt = startedAt;
+        } else {
+          this.startedAtError = "Vous devez renseignez l'heure de début";
+          hasError = true;
+        }
+
+        if (this.finishedAt) {
+          this.finishedAtError = '';
+
+          let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
+          this.trip!.finishedAt = finishedAt;
+        } else {
+          this.finishedAtError = "Vous devez renseignez l'heure de fin";
+          hasError = true;
+        }
+
+      } else {
+        this.dateError = "Vous devez renseignez la date";
+        hasError = true;
+      }
+    }
+
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
