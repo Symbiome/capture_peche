@@ -44,7 +44,7 @@ export default class MyTrips extends Vue {
   
   trips:TripLight[] = [];
   loading:boolean = true;
-  sortDown:boolean = false;
+  sortDown:boolean = true;
   count:number = 0;
 
   constructor() {
