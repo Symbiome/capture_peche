@@ -1,5 +1,6 @@
 package fr.inra.fishola.rest.trips;
 
+import com.google.common.base.Preconditions;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
@@ -29,6 +30,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/trips")
@@ -118,6 +120,18 @@ public class TripResource extends AbstractFisholaResource {
 
     }
 
+    @POST
+    @Path("/{tripId}")
+    public void updateTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId, TripBean trip) {
+
+        UUID userId = getUserId(cookie);
+
+        Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
+        Preconditions.checkState(existingTrip != null && existingTrip.getOwnerId().equals(userId));
+
+        // TODO: 13/01/2020 Implement ...
+    }
+
 
     @GET
     @Path("/{tripId}")
@@ -129,6 +143,7 @@ public class TripResource extends AbstractFisholaResource {
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
         TripBean result = new TripBean();
+        result.createdOn = Optional.of(entity.getCreatedOn());
         result.id = entity.getId().toString();
         result.name = entity.getName();
         result.mode = entity.getMode();

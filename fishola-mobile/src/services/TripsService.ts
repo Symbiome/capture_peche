@@ -57,9 +57,10 @@ export default class TripsService extends AbstractFisholaService {
                 callback(aaa);
             });
         } else {
-            this.getInstance().trips.get(id)
+            this.getInstance().dirtyTrips.get(id)
             .then((aaa) => {
                 if (aaa) {
+                    console.log("Sortie trouvée dans les dirtyTrips :", aaa);
                     callback(aaa);
                 } else {
                     // Il faut charger le trip depuis le back
@@ -75,8 +76,6 @@ export default class TripsService extends AbstractFisholaService {
 
     static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.date);
-
-console.log("From the back", input);
 
         let result:any = {
             id: input.id,
@@ -138,7 +137,7 @@ console.log("From the back", input);
 
         let result:TripLight[] = [];
 
-        this.getInstance().trips.toArray((trips) => {
+        this.getInstance().dirtyTrips.toArray((trips) => {
             trips.forEach(trip => {
                 result.push(this.storedTripToLight(trip));
             });
@@ -170,7 +169,12 @@ console.log("From the back", input);
                 callback();
             });
         } else {
-            // TODO
+            let tripBean:TripBean = <TripBean>trip;
+            this.getInstance().dirtyTrips.put(tripBean)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
         }
     }
 
@@ -183,7 +187,12 @@ console.log("From the back", input);
             });
             callback();
         } else {
-            // TODO
+            let tripBean:TripBean = <TripBean>trip;
+            this.getInstance().dirtyTrips.put(tripBean)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
         }
     }
 
@@ -196,7 +205,12 @@ console.log("From the back", input);
             });
             callback();
         } else {
-            // TODO
+            let tripBean:TripBean = <TripBean>trip;
+            this.getInstance().dirtyTrips.put(tripBean)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
         }
     }
 
@@ -229,7 +243,7 @@ console.log("From the back", input);
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
             trip.dirty = true;
-            this.getInstance().trips
+            this.getInstance().dirtyTrips
                 .put(trip)
                 .then((aaa) => {
                     console.log(aaa);
@@ -242,24 +256,33 @@ console.log("From the back", input);
     }
 
     static syncTrips() {
-        this.getInstance().trips
+        this.getInstance().dirtyTrips
             // .filter(t => t.dirty === true)
             .each((dirtyTrip:TripBean) => this.syncTrip(dirtyTrip, (result:boolean) => {
                 console.log(result);
                 if (result) {
-                    this.getInstance().trips.delete(dirtyTrip.id!);
+                    this.getInstance().dirtyTrips.delete(dirtyTrip.id!);
                 }
             }));
     }
 
     static syncTrip(trip:TripBean, callback: (success:boolean) => void) {
         console.log("On essaye de sauvegarder la sortie", trip);
-        this.getInstance().backendPut('/v1/trips', trip, (r) => {
-            callback(true);
-        }, (eee) => {
-            console.log("Pas Okay :'(", eee);
-            callback(false);
-        });
+        if (trip.createdOn) {
+            this.getInstance().backendPost(`/v1/trips/${trip.id}`, trip, (r) => {
+                callback(true);
+            }, (eee) => {
+                console.log("Pas Okay :'(", eee);
+                callback(false);
+            });
+        } else {
+            this.getInstance().backendPut('/v1/trips', trip, (r) => {
+                callback(true);
+            }, (eee) => {
+                console.log("Pas Okay :'(", eee);
+                callback(false);
+            });
+        }
     }
 
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
 public class TripBean {
 
     public String id;
+    public Optional<Date> createdOn = Optional.empty();
     public TripMode mode;
     public TripType type;
     public String name;
@@ -37,6 +38,7 @@ public class TripBean {
     public String toString() {
         return "TripBean{" +
                 "id='" + id + '\'' +
+                ", createdOn='" + createdOn + '\'' +
                 ", mode='" + mode + '\'' +
                 ", type='" + type + '\'' +
                 ", name='" + name + '\'' +

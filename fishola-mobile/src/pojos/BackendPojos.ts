@@ -3,6 +3,7 @@
 
 export interface TripBean {
     id: string;
+    createdOn?: Date;
     mode: TripMode;
     type: TripType;
     name: string;
