@@ -58,7 +58,7 @@ export default {
 
   font-weight: bold;
   font-size: 14px;
-  line-height: 19px;
+  line-height: 29px;
 
   .header-icons {
     display: flex;
