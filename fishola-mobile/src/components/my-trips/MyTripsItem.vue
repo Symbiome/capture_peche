@@ -64,7 +64,7 @@ export default class MyTripItem extends Vue {
   }
 
   openTrip() {
-    router.push({name:'trip', params: {id: this.trip.id}});
+    router.push({name:'trip-summary', params: {id: this.trip.id}});
   }
 
 }

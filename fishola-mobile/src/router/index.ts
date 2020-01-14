@@ -10,7 +10,7 @@ import Dashboard from '../views/Dashboard.vue'
 import NewTrip from '../views/trip/NewTrip.vue'
 import TripMeta from '../views/trip/TripMeta.vue'
 import TripSpecies from '../views/trip/TripSpecies.vue'
-import EditTrip from '../views/trip/EditTrip.vue'
+import TripCatchs from '../views/trip/TripCatchs.vue'
 import TripSummary from '../views/trip/TripSummary.vue'
 
 Vue.use(VueRouter)
@@ -54,9 +54,9 @@ const routes = [
     props: true
   },
   {
-    path: '/trips/:id',
-    name: 'trip',
-    component: EditTrip,
+    path: '/trips/:id/catchs',
+    name: 'trip-catchs',
+    component: TripCatchs,
     props: true
   },
   {

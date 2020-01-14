@@ -133,7 +133,7 @@ export default class TripSpeciesVue extends Vue {
   }
 
   tripSaved(savedId:string) {
-    router.push({name:'trip', params: {id: savedId}});
+    router.push({name:'trip-catchs', params: {id: savedId}});
   }
 
 }

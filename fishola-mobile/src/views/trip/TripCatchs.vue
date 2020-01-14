@@ -46,7 +46,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class EditTrip extends Vue {
+export default class TripCatchs extends Vue {
 
   @Prop() id!:string;
 
