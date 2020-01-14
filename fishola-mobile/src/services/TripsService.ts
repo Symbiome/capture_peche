@@ -23,16 +23,19 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static newTrip(mode:TripMode, callback:(id:string)=>any) {
-        var options = {weekday: "long", month: "long", day: "numeric"};
-        let now = new Date();
-        let name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
 
         let newTrip:TripMeta = {
             id: Constants.DIRTY_ID,
             mode: mode,
-            name: name,
-            date: now,
-            startedAt: now
+        }
+
+        if (mode == 'Live') {
+            var options = {weekday: "long", month: "long", day: "numeric"};
+            let now = new Date();
+
+            newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
+            newTrip.date = now;
+            newTrip.startedAt = now;
         }
 
         this.getInstance().onCreationTrip.put(newTrip)
@@ -185,7 +188,6 @@ export default class TripsService extends AbstractFisholaService {
                 console.log(aaa);
                 callback();
             });
-            callback();
         } else {
             let tripBean:TripBean = <TripBean>trip;
             this.getInstance().dirtyTrips.put(tripBean)
