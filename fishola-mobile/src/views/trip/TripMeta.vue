@@ -130,19 +130,19 @@ export default class TripMetaVue extends Vue {
       this.lakeIdError = '';
     } else {
       hasError = true;
-      this.lakeIdError = 'Information obligatoire';
+      this.lakeIdError = 'Vous devez sélectionner le lac';
     }
     if (this.trip.name) {
       this.nameError = '';
     } else {
       hasError = true;
-      this.nameError = 'Information obligatoire';
+      this.nameError = 'Vous devez nommer la sortie';
     }
     if (this.trip.type) {
       this.typeError = '';
     } else {
       hasError = true;
-      this.typeError = 'Information obligatoire';
+      this.typeError = 'Vous devez spécifier le type de pêche';
     }
 
     if (this.trip!.mode == 'Afterwards') {
@@ -157,7 +157,7 @@ export default class TripMetaVue extends Vue {
           let startedAt = Helpers.parseDateTime(this.date, this.startedAt);
           this.trip!.startedAt = startedAt;
         } else {
-          this.startedAtError = "Vous devez renseignez l'heure de début";
+          this.startedAtError = "Vous devez renseigner l'heure de début";
           hasError = true;
         }
 
@@ -167,12 +167,12 @@ export default class TripMetaVue extends Vue {
           let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
           this.trip!.finishedAt = finishedAt;
         } else {
-          this.finishedAtError = "Vous devez renseignez l'heure de fin";
+          this.finishedAtError = "Vous devez renseigner l'heure de fin";
           hasError = true;
         }
 
       } else {
-        this.dateError = "Vous devez renseignez la date";
+        this.dateError = "Vous devez renseigner la date";
         hasError = true;
       }
     }

@@ -169,7 +169,7 @@ export default class TripSummaryVue extends Vue {
       this.nameError = '';
     } else {
       hasError = true;
-      this.nameError = 'Information obligatoire';
+      this.nameError = 'Vous devez nommer la sortie';
     }
 
     if (this.date) {
@@ -183,7 +183,7 @@ export default class TripSummaryVue extends Vue {
         let startedAt = Helpers.parseDateTime(this.date, this.startedAt);
         this.trip!.startedAt = startedAt;
       } else {
-        this.startedAtError = "Vous devez renseignez l'heure de début";
+        this.startedAtError = "Vous devez renseigner l'heure de début";
         hasError = true;
       }
 
@@ -193,12 +193,12 @@ export default class TripSummaryVue extends Vue {
         let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
         this.trip!.finishedAt = finishedAt;
       } else {
-        this.finishedAtError = "Vous devez renseignez l'heure de fin";
+        this.finishedAtError = "Vous devez renseigner l'heure de fin";
         hasError = true;
       }
 
     } else {
-      this.dateError = "Vous devez renseignez la date";
+      this.dateError = "Vous devez renseigner la date";
       hasError = true;
     }
 
@@ -206,7 +206,7 @@ export default class TripSummaryVue extends Vue {
       this.weatherIdError = '';
     } else {
       hasError = true;
-      this.weatherIdError = 'Information obligatoire';
+      this.weatherIdError = 'Vous devez préciser la météo';
     }
 
     if (hasError) {
