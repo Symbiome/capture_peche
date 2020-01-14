@@ -1,7 +1,6 @@
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
-import TripSummary from '@/pojos/TripSummary';
 import {TripLight, TripMode, TripBean} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
@@ -205,7 +204,6 @@ export default class TripsService extends AbstractFisholaService {
                 console.log(aaa);
                 callback();
             });
-            callback();
         } else {
             let tripBean:TripBean = <TripBean>trip;
             this.getInstance().dirtyTrips.put(tripBean)
