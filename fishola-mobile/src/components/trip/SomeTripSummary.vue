@@ -99,6 +99,14 @@ export default class SomeTripSummary extends Vue {
   mounted() {
   }
 
+  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, Species[]>) {
+    lakes.forEach((lake) => this.allLakes.push(lake));
+    weathers.forEach((weather) => this.allWeathers.push(weather));
+    tripTypes.forEach((type) => this.allTripTypes.push(type));
+    this.allSpecies = species;
+    this.tripLoaded(this.trip);
+  }
+
   tripLoaded(someTrip:TripSummary) {
 
     if (someTrip.date) {
@@ -128,14 +136,6 @@ export default class SomeTripSummary extends Vue {
         this.types.push(tt.name);
       }
     });
-  }
-
-  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, Species[]>) {
-    lakes.forEach((lake) => this.allLakes.push(lake));
-    weathers.forEach((weather) => this.allWeathers.push(weather));
-    tripTypes.forEach((type) => this.allTripTypes.push(type));
-    this.allSpecies = species;
-    this.tripLoaded(this.trip);
   }
 
   emitUpdatedTrip() {

@@ -40,6 +40,11 @@
          v-on:click="giveup">
       Abandon
     </div>
+    <div class="footer-element pastille"
+         v-if="activeButtons['delete']"
+         v-on:click="doDelete">
+      <i class="icon-delete"></i>
+    </div>
   </div>
 </template>
 
@@ -161,6 +166,10 @@ export default class FisholaFooter extends Vue {
       TripsService.cancelCreations();
       router.push('/trips');
     }
+  }
+
+  doDelete() {
+    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 
 }

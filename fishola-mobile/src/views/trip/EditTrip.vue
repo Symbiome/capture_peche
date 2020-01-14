@@ -1,10 +1,18 @@
 <template>
-  <div class="edit-trip-summary page-with-header-and-footer shifted-background">
+  <div class="edit-trip page-with-header-and-footer shifted-background">
     <FisholaHeader />
-    <div class="edit-trip-summary-page page">
+    <div class="edit-trip-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-summary-content">
-        <h1>Fin de pêche</h1>
+      <div class="edit-trip-content">
+        <h1>{{duration}}</h1>
+        <div v-if="modifiable"
+             class="edit-trip-modifiable-until">
+          <i class="icon-edit"/>
+          <div>Vous avez encore 7 jours<br/>pour modifier cette sortie</div>
+        </div>
+        <div class="edit-trip-catchs">
+          Liste des captures ...
+        </div>
         <SomeTripSummary ref="summary"
                          v-if="trip"
                          v-bind:trip="trip"
@@ -12,17 +20,18 @@
         <div class="bottom-page-spacer"></div>
       </div>
     </div>
-    <FisholaFooter button-text="Envoyer"
-                    button-icon="icon-send"
-                    v-on:buttonClicked="sendClicked"
-                    shortcuts="back,step-4-4,giveup"/>
+    <FisholaFooter button-text="Modifier"
+                    button-icon="icon-edit"
+                    v-on:buttonClicked="saveClicked"
+                    shortcuts="back,delete"/>
   </div>
 </template>
 
 <script lang="ts">
-import TripSummary from '@/pojos/TripSummary';
+import {TripBean} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
+import Helpers from '@/pojos/Helpers';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -40,11 +49,26 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripSummaryVue extends Vue {
+export default class EditTrip extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[] };
+  trip?:TripBean = {
+    id: '',
+    mode: 'Live',
+    type: 'Craft',
+    name: '',
+    lakeId: '',
+    speciesIds: [],
+    date: new Date(),
+    startedAt: new Date(),
+    finishedAt: new Date(),
+    weatherId: '',
+    catchs: []
+  };
+
+  duration:string = '';
+  modifiable:boolean = true;
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -53,11 +77,12 @@ export default class TripSummaryVue extends Vue {
   mounted() {
   }
 
-  tripLoaded(someTrip:TripSummary) {
+  tripLoaded(someTrip:TripBean) {
     this.trip = someTrip;
+    this.duration = Helpers.computeDuration(this.trip.startedAt, this.trip.finishedAt);
   }
 
-  sendClicked() {
+  saveClicked() {
       // On demande au composant enfant de fournir le modèle mis à jour
       let summaryComponent:any = this.$refs.summary;
       summaryComponent.emitUpdatedTrip();
@@ -81,7 +106,7 @@ export default class TripSummaryVue extends Vue {
 
 @import "../../less/main";
 
-.edit-trip-summary-page {
+.edit-trip-page {
 
   display: flex;
   flex-direction: column;
@@ -92,7 +117,7 @@ export default class TripSummaryVue extends Vue {
   overflow: auto;
 
 
-  .edit-trip-summary-content {
+  .edit-trip-content {
 
     flex:auto;
 
@@ -119,10 +144,44 @@ export default class TripSummaryVue extends Vue {
       font-weight: normal;
       font-size: 22px;
       line-height: 30px;
-      color: @pelorous;
+      color: @gunmetal;
       text-align: center;
     }
 
+    .edit-trip-catchs {
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      color: @white;
+      background-color: @cyprus;
+      opacity: 0.8;
+      border-radius: 8px;
+
+      height: 200px;
+      margin-bottom: 20px;
+    }
+
+    .edit-trip-modifiable-until {
+
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      color: @terra-cotta;
+      margin-bottom: 30px;
+
+      i {
+        font-size: 20px;
+      }
+      div {
+        margin-left: 10px;
+        text-align: left;
+      }
+
+    }
   }
 
 }

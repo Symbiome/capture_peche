@@ -1,15 +1,15 @@
 <template>
-  <div class="edit-trip page-with-header-and-footer shifted-background">
+  <div class="edit-trip-catchs page-with-header-and-footer shifted-background">
     <FisholaHeader />
-    <div class="edit-trip-page page">
+    <div class="edit-trip-catchs-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-content">
+      <div class="edit-trip-catchs-content">
         <h1 v-if="duration">{{duration}}</h1>
         <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
           <img src="/img/illustration_fish_wire.svg"/>
           <span>Aucune capture</span>
         </div>
-        <div class="edit-trip-new-catch-button">
+        <div class="edit-trip-catchs-new-catch-button">
           <button v-on:click="newCatch">
             <i class="icon-fish"/>
             Capture
@@ -128,7 +128,7 @@ export default class TripCatchs extends Vue {
 
 @import "../../less/main";
 
-.edit-trip-page {
+.edit-trip-catchs-page {
 
   display: flex;
   flex-direction: column;
@@ -139,7 +139,7 @@ export default class TripCatchs extends Vue {
   overflow: auto;
 
 
-  .edit-trip-content {
+  .edit-trip-catchs-content {
 
     flex:auto;
 
@@ -190,7 +190,7 @@ export default class TripCatchs extends Vue {
       }
     }
 
-    .edit-trip-new-catch-button {
+    .edit-trip-catchs-new-catch-button {
       margin-top: 30px;
       margin-bottom: 50px;
 

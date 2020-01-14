@@ -12,6 +12,7 @@ import TripMeta from '../views/trip/TripMeta.vue'
 import TripSpecies from '../views/trip/TripSpecies.vue'
 import TripCatchs from '../views/trip/TripCatchs.vue'
 import TripSummary from '../views/trip/TripSummary.vue'
+import EditTrip from '../views/trip/EditTrip.vue'
 
 Vue.use(VueRouter)
 
@@ -63,6 +64,12 @@ const routes = [
     path: '/trips/:id/summary',
     name: 'trip-summary',
     component: TripSummary,
+    props: true
+  },
+  {
+    path: '/trips/:id',
+    name: 'trip',
+    component: EditTrip,
     props: true
   },
   {
