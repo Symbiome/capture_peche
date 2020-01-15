@@ -12,7 +12,7 @@ import java.util.UUID;
 public class TripBean {
 
     public String id;
-    public Optional<Date> createdOn = Optional.empty();
+    public Optional<LocalDateTime> createdOn = Optional.empty();
     public TripMode mode;
     public TripType type;
     public String name;

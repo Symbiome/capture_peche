@@ -88,12 +88,19 @@ public class TripResource extends AbstractFisholaResource {
     }
 
     protected boolean isStillModifiable(Trip trip) {
+        Optional<Date> modifiableUntil = getModifiableUntil(trip);
+        boolean stillModifiable = modifiableUntil.isPresent();
+        return stillModifiable;
+    }
+
+    protected Optional<Date> getModifiableUntil(Trip trip) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(trip.getCreatedOn());
         calendar.add(Calendar.HOUR, config.getTripModifiableHours());
         Date modifiableUntil = calendar.getTime();
         boolean canBeModified = modifiableUntil.after(new Date());
-        return canBeModified;
+        Optional<Date> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
+        return result;
     }
 
     @PUT
@@ -167,7 +174,9 @@ public class TripResource extends AbstractFisholaResource {
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
         TripBean result = new TripBean();
-        result.createdOn = Optional.of(entity.getCreatedOn());
+        result.createdOn = Optional.ofNullable(entity.getCreatedOn())
+                .map(Date::toInstant)
+                .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
         result.id = entity.getId().toString();
         result.name = entity.getName();
         result.mode = entity.getMode();
@@ -179,6 +188,10 @@ public class TripResource extends AbstractFisholaResource {
         result.weatherId = entity.getWeatherId();
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
+
+        result.modifiableUntil = getModifiableUntil(entity)
+                .map(Date::toInstant)
+                .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
 
         return result;
     }

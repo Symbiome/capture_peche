@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,giveup"/>
+    <FisholaFooter shortcuts="back,spacer,giveup"/>
   </div>
 </template>
 

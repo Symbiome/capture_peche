@@ -76,9 +76,21 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static parseLocalDateTime(someLocalDateTime:number[]):Date {
+        let result:Date = new Date(
+            someLocalDateTime[0],
+            someLocalDateTime[1] - 1,
+            someLocalDateTime[2],
+            someLocalDateTime[3],
+            someLocalDateTime[4],
+            someLocalDateTime[5],
+        );
+        return result;
+    }
+
     static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.date);
-        let realCreatedOn = new Date(input.createdOn);
+        let realCreatedOn = TripsService.parseLocalDateTime(input.createdOn);
 
         let result:any = {
             id: input.id,
@@ -113,9 +125,9 @@ export default class TripsService extends AbstractFisholaService {
             }
         }
 
-        // if (input.modifiableUntil) {
-        //     result.modifiableUntil = new Date(input.modifiableUntil);
-        // }
+        if (input.modifiableUntil) {
+            result.modifiableUntil = TripsService.parseLocalDateTime(input.modifiableUntil);
+        }
         return result;
     }
 

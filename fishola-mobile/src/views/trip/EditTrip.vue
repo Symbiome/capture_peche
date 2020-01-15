@@ -8,7 +8,10 @@
         <div v-if="modifiable"
              class="edit-trip-modifiable-until">
           <i class="icon-edit"/>
-          <div>Vous avez encore 7 jours<br/>pour modifier cette sortie</div>
+          <div>
+            Vous avez encore {{modifiableDuration}}<br/>
+            pour modifier cette sortie
+          </div>
         </div>
         <div class="edit-trip-catchs">
           Liste des captures ...
@@ -23,7 +26,7 @@
     <FisholaFooter button-text="Modifier"
                     button-icon="icon-edit"
                     v-on:buttonClicked="saveClicked"
-                    shortcuts="back,delete"/>
+                    shortcuts="back,spacer,delete"/>
   </div>
 </template>
 
@@ -55,6 +58,7 @@ export default class EditTrip extends Vue {
 
   // Ce flag permet de ne créer le composant SomeTripSummary que lorsque les données sont prêtes
   ready:boolean = false;
+
   trip:TripBean = {
     id: '',
     mode: 'Live',
@@ -70,7 +74,8 @@ export default class EditTrip extends Vue {
   };
 
   duration:string = '';
-  modifiable:boolean = true;
+  modifiable:boolean = false;
+  modifiableDuration:string = '';
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -81,6 +86,10 @@ export default class EditTrip extends Vue {
 
   tripLoaded(someTrip:TripBean) {
     this.trip = someTrip;
+    if (this.trip.modifiableUntil) {
+      this.modifiable = true;
+      this.modifiableDuration = Helpers.computeDurationTrunced(new Date(), this.trip.modifiableUntil);
+    }
     this.ready = true;
     this.duration = Helpers.computeDuration(this.trip.startedAt, this.trip.finishedAt);
   }

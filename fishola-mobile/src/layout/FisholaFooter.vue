@@ -24,6 +24,10 @@
       </div>
     </div>
     <div class="footer-element pastille"
+         v-if="activeButtons['spacer']">
+         <!-- spacer -->
+    </div>
+    <div class="footer-element pastille"
          v-bind:class="selected=='dashboard'?'filled':'unfilled'"
          v-if="activeButtons['dashboard']"
          v-on:click="goDashboard">
@@ -78,6 +82,7 @@ export default class FisholaFooter extends Vue {
   activeButtons: any = {
     back: false,
     logout: false,
+    spacer: false,
     dashboard: false,
     home: false,
     giveup: false
