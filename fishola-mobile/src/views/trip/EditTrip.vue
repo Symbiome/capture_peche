@@ -24,10 +24,13 @@
         <div class="bottom-page-spacer"></div>
       </div>
     </div>
-    <FisholaFooter button-text="Modifier"
-                    button-icon="icon-edit"
-                    v-on:buttonClicked="saveClicked"
-                    shortcuts="back,spacer,delete"/>
+    <FisholaFooter v-if="modifiable"
+                   button-text="Modifier"
+                   button-icon="icon-edit"
+                   v-on:buttonClicked="saveClicked"
+                   shortcuts="back,spacer,delete"/>
+    <FisholaFooter v-if="!modifiable"
+                   shortcuts="back,spacer,delete"/>
   </div>
 </template>
 

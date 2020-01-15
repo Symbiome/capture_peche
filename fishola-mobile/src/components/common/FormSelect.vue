@@ -1,25 +1,32 @@
 <template>
-  <div class="form-select">
-    <label v-bind:for="'field-' + name">
-      {{label}}
-    </label>
-    <select v-bind:name="name"
-            v-bind:id="'field-' + name"
-            v-bind:class="error?'field-error':''"
-            v-bind:value="value"
-            v-on:input="$emit('input', $event.target.value)"
-            >
-      <option value="" v-if="!value"></option>
-      <option v-for="option in options"
-              v-bind:key="option.id"
-              v-bind:value="option.id">
-        {{ option.name }}
-      </option>
-    </select>
-    <div v-bind:class="error?'field-error':''" >
-      <span v-if="error">
-        {{error}}
-      </span>
+  <div>
+    <FormMultiValues v-if="readonly"
+                    v-bind:name="name"
+                    v-bind:label="label"
+                    v-bind:values="readonlyValues"
+                    v-bind:readonly="true"/>
+    <div class="form-select" v-if="!readonly">
+      <label v-bind:for="'field-' + name">
+        {{label}}
+      </label>
+      <select v-bind:name="name"
+              v-bind:id="'field-' + name"
+              v-bind:class="error?'field-error':''"
+              v-bind:value="value"
+              v-on:input="$emit('input', $event.target.value)"
+              >
+        <option value="" v-if="!value"></option>
+        <option v-for="option in options"
+                v-bind:key="option.id"
+                v-bind:value="option.id">
+          {{ option.name }}
+        </option>
+      </select>
+      <div v-bind:class="error?'field-error':''" >
+        <span v-if="error">
+          {{error}}
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -39,10 +46,13 @@ Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut 
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
+import FormMultiValues from '@/components/common/FormMultiValues.vue'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
+    FormMultiValues
   }
 })
 export default class FormSelect extends Vue {
@@ -52,6 +62,18 @@ export default class FormSelect extends Vue {
   @Prop() error?: string;
   @Prop() options?: any[];
   @Prop() readonly!: boolean;
+
+  readonlyValues:string[] = [];
+
+  created() {
+    if (this.options) {
+      this.options.forEach((option) => {
+        if (option.id == this.value) {
+          this.readonlyValues.push(option.name);
+        }
+      });
+    }
+  }
 }
 </script>
 

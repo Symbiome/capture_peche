@@ -1,19 +1,26 @@
 <template>
-  <div class="form-input">
-    <label v-bind:for="'field-' + name">
-      {{label}}
-    </label>
-    <input v-bind:name="name"
-            v-bind:id="'field-' + name"
-            v-bind:type="type"
-            v-bind:placeholder="placeholder"
-            v-bind:value="value"
-            v-on:input="$emit('input', $event.target.value)"
-            v-bind:class="error?'field-error':''" />
-    <div v-bind:class="error?'field-error':''" >
-      <span v-if="error">
-        {{error}}
-      </span>
+  <div>
+    <FormMultiValues v-if="readonly"
+                    v-bind:name="name"
+                    v-bind:label="label"
+                    v-bind:values="readonlyValues"
+                    v-bind:readonly="true"/>
+    <div v-if="!readonly" class="form-input">
+      <label v-bind:for="'field-' + name">
+        {{label}}
+      </label>
+      <input v-bind:name="name"
+              v-bind:id="'field-' + name"
+              v-bind:type="type"
+              v-bind:placeholder="placeholder"
+              v-bind:value="value"
+              v-on:input="$emit('input', $event.target.value)"
+              v-bind:class="error?'field-error':''" />
+      <div v-bind:class="error?'field-error':''" >
+        <span v-if="error">
+          {{error}}
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -35,8 +42,11 @@ Si modification, on émet un message au parent qui l'intercepte et met à jour s
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+import FormMultiValues from '@/components/common/FormMultiValues.vue'
+
 @Component({
   components: {
+    FormMultiValues
   }
 })
 export default class FormInput extends Vue {
@@ -46,6 +56,15 @@ export default class FormInput extends Vue {
   @Prop() placeholder?: string;
   @Prop() value!: string;
   @Prop() error?: string;
+  @Prop() readonly!: boolean;
+
+  readonlyValues:string[] = [];
+
+  created() {
+    if (this.value) {
+      this.readonlyValues.push(this.value);
+    }
+  }
 }
 </script>
 

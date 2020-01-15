@@ -63,7 +63,13 @@ export default class Helpers {
         return result;
     }
 
-    static formateToDate(date:Date):string {
+    static formatToLongDate(date:Date):string {
+        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
+        let result = date.toLocaleDateString('fr-FR', dayOptions);
+        return result;
+    }
+
+    static formatToDate(date:Date):string {
         let year = date.getFullYear();
         let month = date.getMonth()+1;
         let day = date.getDate();
@@ -71,7 +77,7 @@ export default class Helpers {
         return result;
     }
 
-    static formateToTime(time:Date):string {
+    static formatToTime(time:Date):string {
         let hours = time.getHours();
         let minutes = time.getMinutes();
         let result = (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
@@ -83,6 +89,27 @@ export default class Helpers {
         let hour = parseInt(time.substring(0, 2));
         let minute = parseInt(time.substring(3));
         result.setHours(hour, minute);
+        return result;
+    }
+
+    static parseLocalDate(someLocalDateTime:number[]):Date {
+        let result:Date = new Date(
+            someLocalDateTime[0],
+            someLocalDateTime[1] - 1,
+            someLocalDateTime[2],
+        );
+        return result;
+    }
+
+    static parseLocalDateTime(someLocalDateTime:number[]):Date {
+        let result:Date = new Date(
+            someLocalDateTime[0],
+            someLocalDateTime[1] - 1,
+            someLocalDateTime[2],
+            someLocalDateTime[3],
+            someLocalDateTime[4],
+            someLocalDateTime[5],
+        );
         return result;
     }
 

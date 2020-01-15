@@ -2,6 +2,7 @@ import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
 import {TripLight, TripMode, TripBean} from '@/pojos/BackendPojos';
+import Helpers from '@/pojos/Helpers';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
@@ -76,21 +77,9 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static parseLocalDateTime(someLocalDateTime:number[]):Date {
-        let result:Date = new Date(
-            someLocalDateTime[0],
-            someLocalDateTime[1] - 1,
-            someLocalDateTime[2],
-            someLocalDateTime[3],
-            someLocalDateTime[4],
-            someLocalDateTime[5],
-        );
-        return result;
-    }
-
     static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.date);
-        let realCreatedOn = TripsService.parseLocalDateTime(input.createdOn);
+        let realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
 
         let result:any = {
             id: input.id,
@@ -126,7 +115,7 @@ export default class TripsService extends AbstractFisholaService {
         }
 
         if (input.modifiableUntil) {
-            result.modifiableUntil = TripsService.parseLocalDateTime(input.modifiableUntil);
+            result.modifiableUntil = Helpers.parseLocalDateTime(input.modifiableUntil);
         }
         return result;
     }
@@ -144,7 +133,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static backendTripToLight(input:any):TripLight {
-        let realDate = new Date(input.date);
+        let realDate = Helpers.parseLocalDate(input.date);
         input.date = realDate;
         return input;
     }

@@ -106,13 +106,13 @@ export default class TripMetaVue extends Vue {
     this.trip = someTrip;
     if (someTrip.mode == 'Afterwards') {
       if (someTrip.date) {
-        this.date = Helpers.formateToDate(someTrip.date);
+        this.date = Helpers.formatToDate(someTrip.date);
       }
       if (someTrip.startedAt) {
-        this.startedAt = Helpers.formateToTime(someTrip.startedAt);
+        this.startedAt = Helpers.formatToTime(someTrip.startedAt);
       }
       if (someTrip.finishedAt) {
-        this.finishedAt = Helpers.formateToTime(someTrip.finishedAt);
+        this.finishedAt = Helpers.formatToTime(someTrip.finishedAt);
       }
     }
 

@@ -11,31 +11,31 @@
                 v-bind:options="allLakes"
                 v-model="trip.lakeId"
                 v-bind:error="lakeIdError"
-                      v-bind:readonly="readonly"/>
+                v-bind:readonly="readonly"/>
     <FormInput name="date"
                 label="Date"
                 type="date"
                 v-model="date"
                 v-bind:error="dateError"
-                      v-bind:readonly="readonly"/>
+                v-bind:readonly="readonly"/>
     <FormInput name="startAt"
                 label="Heure de début"
                 type="time"
                 v-model="startedAt"
                 v-bind:error="startedAtError"
-                      v-bind:readonly="readonly"/>
+                v-bind:readonly="readonly"/>
     <FormInput name="finishedat"
                 label="Heure de fin"
                 type="time"
                 v-model="finishedAt"
                 v-bind:error="finishedAtError"
-                      v-bind:readonly="readonly"/>
+                v-bind:readonly="readonly"/>
     <FormSelect name="weather"
                 label="Météo"
                 v-bind:options="allWeathers"
                 v-model="trip.weatherId"
                 v-bind:error="weatherIdError"
-                      v-bind:readonly="readonly"/>
+                v-bind:readonly="readonly"/>
     <FormMultiValues name="species"
                       v-bind:label="speciesLabel"
                       v-bind:values="species"
@@ -72,7 +72,7 @@ import router from '../../router';
   components: {
     FormInput,
     FormSelect,
-    FormMultiValues,
+    FormMultiValues
   }
 })
 export default class SomeTripSummary extends Vue {
@@ -124,13 +124,17 @@ export default class SomeTripSummary extends Vue {
   tripLoaded(someTrip:TripSummary) {
 
     if (someTrip.date) {
-      this.date = Helpers.formateToDate(someTrip.date);
+      if (this.readonly) {
+        this.date = Helpers.formatToLongDate(someTrip.date);
+      } else {
+        this.date = Helpers.formatToDate(someTrip.date);
+      }
     }
     if (someTrip.startedAt) {
-      this.startedAt = Helpers.formateToTime(someTrip.startedAt);
+      this.startedAt = Helpers.formatToTime(someTrip.startedAt);
     }
     if (someTrip.finishedAt) {
-      this.finishedAt = Helpers.formateToTime(someTrip.finishedAt);
+      this.finishedAt = Helpers.formatToTime(someTrip.finishedAt);
     }
 
     let speciesPerLake = this.allSpecies.get(someTrip.lakeId);
