@@ -86,4 +86,8 @@ public class TripsDao extends AbstractFisholaDao {
         return speciesIds;
     }
 
+    public void updateTrip(Trip existingTrip) {
+        withDaoNoResult(TripDao.class, dao -> dao.update(existingTrip));
+    }
+
 }

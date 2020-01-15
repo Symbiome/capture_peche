@@ -80,15 +80,20 @@ public class TripResource extends AbstractFisholaResource {
                 .name(trip.getName())
                 .durationInSeconds(durationInSeconds);
 
+        boolean stillModifiable = isStillModifiable(trip);
+        builder.modifiable(stillModifiable);
+
+        TripLight result = builder.build();
+        return result;
+    }
+
+    protected boolean isStillModifiable(Trip trip) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(trip.getCreatedOn());
         calendar.add(Calendar.HOUR, config.getTripModifiableHours());
         Date modifiableUntil = calendar.getTime();
         boolean canBeModified = modifiableUntil.after(new Date());
-        builder.modifiable(canBeModified);
-
-        TripLight result = builder.build();
-        return result;
+        return canBeModified;
     }
 
     @PUT
@@ -127,9 +132,28 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
-        Preconditions.checkState(existingTrip != null && existingTrip.getOwnerId().equals(userId));
+        Preconditions.checkState(existingTrip != null);
+        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
+
+        AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
 
         // TODO: 13/01/2020 Implement ...
+
+        existingTrip.setDay(new java.sql.Date(trip.date.getTime()));
+        existingTrip.setStartTime(Time.valueOf(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault())));
+        existingTrip.setEndTime(Time.valueOf(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault())));
+        existingTrip.setLakeId(trip.lakeId);
+        existingTrip.setName(trip.name);
+        existingTrip.setType(trip.type);
+        existingTrip.setMode(trip.mode);
+        existingTrip.setOwnerId(userId);
+        existingTrip.setWeatherId(trip.weatherId);
+
+        tripsDao.updateTrip(existingTrip);
+
+        tripsDao.setSpecies(tripId, trip.speciesIds);
+
+        // TODO: 02/01/2020 Catchs
     }
 
 

@@ -78,9 +78,11 @@ export default class TripsService extends AbstractFisholaService {
 
     static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.date);
+        let realCreatedOn = new Date(input.createdOn);
 
         let result:any = {
             id: input.id,
+            createdOn: realCreatedOn,
             mode: input.mode,
             type: input.type,
             name: input.name,
@@ -139,9 +141,13 @@ export default class TripsService extends AbstractFisholaService {
 
         let result:TripLight[] = [];
 
+        let dirtyTripsIds:string[] = [];
+
         this.getInstance().dirtyTrips.toArray((trips) => {
             trips.forEach(trip => {
-                result.push(this.storedTripToLight(trip));
+                let tripLight:TripLight = TripsService.storedTripToLight(trip);
+                dirtyTripsIds.push(tripLight.id);
+                result.push(tripLight);
             });
 
         });
@@ -156,8 +162,10 @@ export default class TripsService extends AbstractFisholaService {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
                 console.log(trip);
-                let tl:TripLight = TripsService.backendTripToLight(trip);
-                result.push(tl);
+                if (dirtyTripsIds.indexOf(trip.id) == -1) {
+                    let tl:TripLight = TripsService.backendTripToLight(trip);
+                    result.push(tl);
+                }
             })
             callback(result, trips.count);
         });
@@ -251,7 +259,13 @@ export default class TripsService extends AbstractFisholaService {
                     callback();
                 });
         } else {
-            // TODO
+
+            this.getInstance().dirtyTrips
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         }
     }
 
