@@ -4,7 +4,7 @@
       <label>
         {{label}}
       </label>
-      <a v-on:click="clicked">Modifier</a>
+      <a v-if="!readonly" v-on:click="clicked">Modifier</a>
     </div>
     <ul>
       <li v-for="v in values" v-bind:key="v">{{v}}</li>
@@ -24,6 +24,7 @@ export default class FormMultiValues extends Vue {
   @Prop() name!: string;
   @Prop() label?: string;
   @Prop() values?: string[];
+  @Prop() readonly!: boolean;
 
   clicked() {
     this.$root.$emit('toaster-warning', 'Work in progress');

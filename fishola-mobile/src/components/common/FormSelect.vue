@@ -51,6 +51,7 @@ export default class FormSelect extends Vue {
   @Prop() value?: string;
   @Prop() error?: string;
   @Prop() options?: any[];
+  @Prop() readonly!: boolean;
 }
 </script>
 

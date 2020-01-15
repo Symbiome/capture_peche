@@ -19,6 +19,7 @@
         <SomeTripSummary ref="summary"
                          v-if="ready"
                          v-bind:trip="trip"
+                         v-bind:readonly="!modifiable"
                          v-on:trip-modified="onUpdatedTrip"/>
         <div class="bottom-page-spacer"></div>
       </div>

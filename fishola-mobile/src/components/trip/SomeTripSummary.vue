@@ -4,41 +4,50 @@
                 label="Nom de la sortie"
                 placeholder="Nommez votre sortie"
                 v-model="trip.name"
-                v-bind:error="nameError" />
+                v-bind:error="nameError"
+                v-bind:readonly="readonly"/>
     <FormSelect name="lake"
                 label="Lac"
                 v-bind:options="allLakes"
                 v-model="trip.lakeId"
-                v-bind:error="lakeIdError"/>
+                v-bind:error="lakeIdError"
+                      v-bind:readonly="readonly"/>
     <FormInput name="date"
                 label="Date"
                 type="date"
                 v-model="date"
-                v-bind:error="dateError"/>
+                v-bind:error="dateError"
+                      v-bind:readonly="readonly"/>
     <FormInput name="startAt"
                 label="Heure de début"
                 type="time"
                 v-model="startedAt"
-                v-bind:error="startedAtError"/>
+                v-bind:error="startedAtError"
+                      v-bind:readonly="readonly"/>
     <FormInput name="finishedat"
                 label="Heure de fin"
                 type="time"
                 v-model="finishedAt"
-                v-bind:error="finishedAtError"/>
+                v-bind:error="finishedAtError"
+                      v-bind:readonly="readonly"/>
     <FormSelect name="weather"
                 label="Météo"
                 v-bind:options="allWeathers"
                 v-model="trip.weatherId"
-                v-bind:error="weatherIdError"/>
+                v-bind:error="weatherIdError"
+                      v-bind:readonly="readonly"/>
     <FormMultiValues name="species"
                       v-bind:label="speciesLabel"
-                      v-bind:values="species"/>
+                      v-bind:values="species"
+                      v-bind:readonly="readonly"/>
     <FormMultiValues name="technics"
                       v-bind:label="technicsLabel"
-                      v-bind:values="technics"/>
+                      v-bind:values="technics"
+                      v-bind:readonly="readonly"/>
     <FormMultiValues name="type"
                       label="Type de pêche"
-                      v-bind:values="types"/>
+                      v-bind:values="types"
+                      v-bind:readonly="readonly"/>
   </div>
 </template>
 
@@ -69,6 +78,7 @@ import router from '../../router';
 export default class SomeTripSummary extends Vue {
 
   @Prop() trip!:TripSummary;
+  @Prop() readonly!:boolean;
 
   // On est obligés de gérer un flag de ce genre, sinon les FormSelect
   // sont créés à vide et ne sélectionnent pas les bonnes valeurs
