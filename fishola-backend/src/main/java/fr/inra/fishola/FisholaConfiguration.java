@@ -40,8 +40,8 @@ public class FisholaConfiguration {
 
     public int getTripModifiableHours() {
 //        return 7 * 24; // 7 jours
-//        return 24; // 1 jour
-        return 5; // 5 heures
+        return 24; // 1 jour
+//        return 5; // 5 heures
     }
 
     public String getBackendBaseUrl(HttpServletRequest httpServletRequest) {
