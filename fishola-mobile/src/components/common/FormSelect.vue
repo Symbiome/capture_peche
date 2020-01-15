@@ -48,7 +48,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class FormSelect extends Vue {
   @Prop() name!: string;
   @Prop() label?: string;
-  @Prop() value!: string;
+  @Prop() value?: string;
   @Prop() error?: string;
   @Prop() options?: any[];
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="form">
+  <div class="form" v-if="ready">
     <FormInput name="name"
                 label="Nom de la sortie"
                 placeholder="Nommez votre sortie"
@@ -70,6 +70,10 @@ export default class SomeTripSummary extends Vue {
 
   @Prop() trip!:TripSummary;
 
+  // On est obligés de gérer un flag de ce genre, sinon les FormSelect
+  // sont créés à vide et ne sélectionnent pas les bonnes valeurs
+  ready:boolean = false;
+
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
@@ -136,6 +140,8 @@ export default class SomeTripSummary extends Vue {
         this.types.push(tt.name);
       }
     });
+
+    this.ready = true;
   }
 
   emitUpdatedTrip() {

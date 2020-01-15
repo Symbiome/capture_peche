@@ -14,7 +14,7 @@
           Liste des captures ...
         </div>
         <SomeTripSummary ref="summary"
-                         v-if="trip"
+                         v-if="ready"
                          v-bind:trip="trip"
                          v-on:trip-modified="onUpdatedTrip"/>
         <div class="bottom-page-spacer"></div>
@@ -53,7 +53,9 @@ export default class EditTrip extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripBean = {
+  // Ce flag permet de ne créer le composant SomeTripSummary que lorsque les données sont prêtes
+  ready:boolean = false;
+  trip:TripBean = {
     id: '',
     mode: 'Live',
     type: 'Craft',
@@ -79,6 +81,7 @@ export default class EditTrip extends Vue {
 
   tripLoaded(someTrip:TripBean) {
     this.trip = someTrip;
+    this.ready = true;
     this.duration = Helpers.computeDuration(this.trip.startedAt, this.trip.finishedAt);
   }
 
