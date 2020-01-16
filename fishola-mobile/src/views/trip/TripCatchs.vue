@@ -7,8 +7,9 @@
         <h1 v-if="duration">{{duration}}</h1>
         <div class="pane-content">
           <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
-            <img src="/img/illustration_fish_wire.svg"/>
-            <span>Aucune capture</span>
+            <div class="new-catch-square-button" v-on:click="newCatch">
+              <i class="pastille icon-plus"/>
+            </div>
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
@@ -131,33 +132,51 @@ export default class TripCatchs extends Vue {
 
 .edit-trip-catchs-page {
 
-  text-align:center;
-
   .pane {
 
     h1 {
       color: @gunmetal;
     }
 
-    .no-catch {
-      flex: auto;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    .pane-content {
+      text-align:center;
 
-      img {
-        width: 200px;
+      .no-catch {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        .new-catch-square-button {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+
+          background-image: url("/img/illustration_fish_wire.svg");
+          background-repeat: no-repeat;
+          background-size: 67%;
+          background-position: center;
+
+          border: 1px dashed @pale-sky;
+          border-radius: 8px;
+          height: 295px;
+          width: 295px;
+
+          cursor: pointer;
+
+          .pastille {
+            width: 70px;
+            height: 70px;
+            line-height: 30px;
+            font-size: 30px;
+            color: @white;
+            background: @pale-sky;
+          }
+        }
+
       }
 
-      span {
-        font-weight: 300;
-        font-size: 20px;
-        line-height: 27px;
-        color: @pale-sky;
-        text-align: center;
-        margin-top: 30px;
-      }
     }
 
     .edit-trip-catchs-new-catch-button {
