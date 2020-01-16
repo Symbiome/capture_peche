@@ -168,7 +168,8 @@ export default class TripsService extends AbstractFisholaService {
                     result.push(tl);
                 }
             })
-            callback(result, trips.count);
+            let count:number = dirtyTripsIds.length + trips.count;
+            callback(result, count);
         });
     }
 
