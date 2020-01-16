@@ -3,9 +3,9 @@
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-meta-content">
+      <div class="pane">
         <h1>Information de pêche</h1>
-        <div class="form">
+        <div class="pane-content">
           <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"
@@ -38,8 +38,8 @@
                         v-model="finishedAt"
                         v-bind:error="finishedAtError"/>
           </div>
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter button-text="Suivant"
@@ -202,48 +202,6 @@ export default class TripMetaVue extends Vue {
 @import "../../less/main";
 
 .edit-trip-meta-page {
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  text-align:center;
-
-  overflow: auto;
-
-
-  .edit-trip-meta-content {
-
-    flex:auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-
-    text-align:center;
-
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 30px;
-
-    color: @gunmetal;
-
-    h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
-      color: @pelorous;
-      text-align: center;
-    }
-
-  }
 
 }
 

@@ -3,13 +3,15 @@
     <FisholaHeader />
     <div class="edit-trip-summary-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-summary-content">
+      <div class="pane">
         <h1>Fin de pêche</h1>
-        <SomeTripSummary ref="summary"
-                         v-if="trip"
-                         v-bind:trip="trip"
-                         v-on:trip-modified="onUpdatedTrip"/>
-        <div class="bottom-page-spacer"></div>
+        <div class="pane-content">
+          <SomeTripSummary ref="summary"
+                          v-if="trip"
+                          v-bind:trip="trip"
+                          v-on:trip-modified="onUpdatedTrip"/>
+          <div class="bottom-page-spacer"></div>
+        </div>
       </div>
     </div>
     <FisholaFooter button-text="Envoyer"
@@ -82,48 +84,6 @@ export default class TripSummaryVue extends Vue {
 @import "../../less/main";
 
 .edit-trip-summary-page {
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  text-align:center;
-
-  overflow: auto;
-
-
-  .edit-trip-summary-content {
-
-    flex:auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-
-    text-align:center;
-
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 30px;
-
-    color: @gunmetal;
-
-    h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
-      color: @pelorous;
-      text-align: center;
-    }
-
-  }
 
 }
 

@@ -3,9 +3,9 @@
     <FisholaHeader />
     <div class="edit-trip-species-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-species-content">
+      <div class="pane">
         <h1>Espèce recherchée</h1>
-        <div class="form">
+        <div class="pane-content">
           <div v-for="s in species" 
                v-bind:key="s.id"
                class="species-item"
@@ -38,8 +38,8 @@
             </div>
           </div>
           <div class="info">Utilisez “,” si vous recherchez plusieurs espèces</div>
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter button-text="Commencer"
@@ -146,119 +146,84 @@ export default class TripSpeciesVue extends Vue {
 
 .edit-trip-species-page {
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  .pane-content {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
 
-  text-align:center;
+  .species-item {
+    height: 56px;
 
-  overflow: auto;
-
-
-  .edit-trip-species-content {
-
-    flex:auto;
+    padding-left: 40px;
 
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
 
-    text-align:center;
+    border-top: 1px solid @gainsboro;
 
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    padding-top: 30px;
-
-    color: @gunmetal;
-
-    h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
-      color: @pelorous;
-      text-align: center;
+    &.selected {
+      background-color: @solitude;
     }
 
-    .species-item {
-      height: 56px;
+    &:first-child {
+      border-top: 0px;
+    }
 
-      padding-left: 30px;
-      padding-right: 30px;
+    .item-selection {
+      width: 16px;
+      height: 16px;
+
+      input {
+        margin: 0px;
+      }
+
+    }
+
+    .item-description {
+      margin-left: 18px;
+      width: 100%;
+
+      font-size: 12px;
+      line-height: 19px;
+
+      text-align: left;
 
       display: flex;
       flex-direction: row;
       align-items: center;
 
-      border-top: 1px solid @gainsboro;
+      input {
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-top: 5px;
+        margin-left: 20px;
+        height: 38px;
+        border-radius: 4px;
 
-      &.selected {
-        background-color: @solitude;
-      }
+        background: transparent;
+        border: 1px solid @pale-sky;
+        color: @gunmetal;
 
-      &:first-child {
-        border-top: 0px;
-      }
-
-      .item-selection {
-        width: 16px;
-        height: 16px;
-
-        input {
-          margin: 0px;
+        &::placeholder {
+          font-style: italic;
+          font-weight: normal;
+          font-size: 12px;
+          color: @pale-sky;
         }
 
       }
 
-      .item-description {
-        margin-left: 18px;
-        width: 100%;
-
-        font-size: 12px;
-        line-height: 19px;
-
-        text-align: left;
-
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-
-        input {
-          padding-left: 10px;
-          padding-right: 10px;
-          margin-top: 5px;
-          margin-left: 20px;
-          height: 38px;
-          border-radius: 4px;
-
-          background: transparent;
-          border: 1px solid @pale-sky;
-          color: @gunmetal;
-
-          &::placeholder {
-            font-style: italic;
-            font-weight: normal;
-            font-size: 12px;
-            color: @pale-sky;
-          }
-
-        }
-
-      }
     }
+  }
 
-    .info {
-      font-style: italic;
-      font-weight: 300;
-      font-size: 10px;
-      line-height: 14px;
-      color: @pale-sky;
-    }
-
+  .info {
+    font-style: italic;
+    font-weight: 300;
+    font-size: 10px;
+    line-height: 14px;
+    color: @pale-sky;
+    text-align: center;
   }
 
 }

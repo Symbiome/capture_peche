@@ -80,6 +80,11 @@ html {
   height: 100%;
 
   .page {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
     height: calc(100% - @header-height - @footer-height);
   }
 }
@@ -98,6 +103,56 @@ html {
   background-size: 100%;
   background-position: center;
   background-position-y: -230px;
+
+}
+
+.secondary-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  line-height: 20px;
+  height: @secondary-header-height;
+}
+
+.pane {
+
+  flex:auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  background-color: @white-smoke;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  padding-top: 0px;
+  margin-top: 10px;
+
+  height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
+
+  color: @gunmetal;
+
+  h1 {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    height: 30px;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 22px;
+    line-height: 30px;
+    color: @pelorous;
+    text-align: center;
+  }
+
+  .pane-content {
+
+    overflow: auto;
+
+    padding-left: 30px;
+    padding-right: 30px;
+
+  }
 
 }
 

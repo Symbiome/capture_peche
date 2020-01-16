@@ -1,5 +1,5 @@
 <template>
-  <div class="some-trip-header">
+  <div class="some-trip-header secondary-header">
     <div>
       <span v-if="trip">{{trip.name}}</span>
       <span v-if="!trip">Nouvelle sortie</span>
@@ -49,16 +49,9 @@ export default class SomeTripHeader extends Vue {
   display: flex;
   justify-content: space-between;
 
-  height: 49px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
 
   font-weight: bold;
   font-size: 14px;
-  line-height: 29px;
 
   .header-icons {
     display: flex;

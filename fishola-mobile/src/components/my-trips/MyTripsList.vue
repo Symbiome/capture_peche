@@ -1,9 +1,11 @@
 <template>
-  <div class="my-trips-list">
-    <div v-for="t in trips" v-bind:key="t.id">
-      <MyTripsItem v-bind:trip="t"/>
+  <div class="pane my-trips-list">
+    <div v-if="trips.length > 0" class="pane-content">
+      <div v-for="t in trips" v-bind:key="t.id">
+        <MyTripsItem v-bind:trip="t"/>
+      </div>
+      <div class="bottom-page-spacer"></div>
     </div>
-    <div v-if="trips.length > 0" class="bottom-spacer"></div>
     <div v-if="trips.length == 0 && !loading" class="no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
@@ -45,17 +47,12 @@ export default class MyTripsList extends Vue {
 @import "../../less/main";
 
 .my-trips-list {
-  background-color: @white-smoke;
-  color: @gunmetal;
-  max-height: calc(100vh - 144px - @footer-height);
-  overflow: auto;
-  padding-top: 30px;
-  margin-top: 10px;
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
 
-  .bottom-spacer {
-    height: 19px;
+  .pane-content {
+    padding-left: 0px;
+    padding-right: 0px;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
   }
 
   .no-trips {

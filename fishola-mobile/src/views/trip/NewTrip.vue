@@ -3,7 +3,7 @@
     <FisholaHeader />
     <div class="page new-trip-page">
       <SomeTripHeader/>
-      <div class="new-trip-options">
+      <div class="pane">
         <div class="new-trip-option">
           <div class="item">
             <div class="left">
@@ -79,11 +79,7 @@ export default class NewTrip extends Vue {
 
 .new-trip-page {
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  .new-trip-options {
+  .pane {
     flex:auto;
 
     display: flex;
@@ -91,9 +87,6 @@ export default class NewTrip extends Vue {
     justify-content: center;
     align-items: center;
 
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
     padding-top: 30px;
     padding-bottom: 30px;
 

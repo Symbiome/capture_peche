@@ -3,17 +3,19 @@
     <FisholaHeader />
     <div class="edit-trip-catchs-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-catchs-content">
+      <div class="pane">
         <h1 v-if="duration">{{duration}}</h1>
-        <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
-          <img src="/img/illustration_fish_wire.svg"/>
-          <span>Aucune capture</span>
-        </div>
-        <div class="edit-trip-catchs-new-catch-button">
-          <button v-on:click="newCatch">
-            <i class="icon-fish"/>
-            Capture
-          </button>
+        <div class="pane-content">
+          <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
+            <img src="/img/illustration_fish_wire.svg"/>
+            <span>Aucune capture</span>
+          </div>
+          <div class="edit-trip-catchs-new-catch-button">
+            <button v-on:click="newCatch">
+              <i class="icon-fish"/>
+              Capture
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -130,44 +132,13 @@ export default class TripCatchs extends Vue {
 
 .edit-trip-catchs-page {
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
   text-align:center;
 
-  overflow: auto;
-
-
-  .edit-trip-catchs-content {
-
-    flex:auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    text-align:center;
-
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    padding-top: 30px;
-
-    color: @gunmetal;
+  .pane {
 
     h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
       color: @gunmetal;
-      text-align: center;
     }
-
 
     .no-catch {
       flex: auto;

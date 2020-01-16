@@ -32,9 +32,10 @@ export default {
 @import "../../less/main";
 
 .my-trips-search {
-  height: 50px;
+  height: 60px;
   padding-left: 20px;
   padding-right: 20px;
+  padding-top: 10px;
   padding-bottom: 10px;
 
   div {

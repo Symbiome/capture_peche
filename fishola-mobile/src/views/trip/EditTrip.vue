@@ -3,25 +3,27 @@
     <FisholaHeader />
     <div class="edit-trip-page page">
       <SomeTripHeader v-bind:trip="trip"/>
-      <div class="edit-trip-content">
+      <div class="pane">
         <h1>{{duration}}</h1>
-        <div v-if="modifiable"
-             class="edit-trip-modifiable-until">
-          <i class="icon-edit"/>
-          <div>
-            Vous avez encore {{modifiableDuration}}<br/>
-            pour modifier cette sortie
+        <div class="pane-content">
+          <div v-if="modifiable"
+              class="edit-trip-modifiable-until">
+            <i class="icon-edit"/>
+            <div>
+              Vous avez encore {{modifiableDuration}}<br/>
+              pour modifier cette sortie
+            </div>
           </div>
+          <div class="edit-trip-catchs">
+            Liste des captures ...
+          </div>
+          <SomeTripSummary ref="summary"
+                          v-if="ready"
+                          v-bind:trip="trip"
+                          v-bind:readonly="!modifiable"
+                          v-on:trip-modified="onUpdatedTrip"/>
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="edit-trip-catchs">
-          Liste des captures ...
-        </div>
-        <SomeTripSummary ref="summary"
-                         v-if="ready"
-                         v-bind:trip="trip"
-                         v-bind:readonly="!modifiable"
-                         v-on:trip-modified="onUpdatedTrip"/>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter v-if="modifiable"
@@ -124,80 +126,45 @@ export default class EditTrip extends Vue {
 
 .edit-trip-page {
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  h1 {
+    color: @gunmetal;
+  }
 
-  text-align:center;
+  .edit-trip-catchs {
 
-  overflow: auto;
-
-
-  .edit-trip-content {
-
-    flex:auto;
+    text-align: center;
 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
 
-    text-align:center;
+    color: @white;
+    background-color: @cyprus;
+    opacity: 0.8;
+    border-radius: 8px;
 
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 30px;
+    height: 200px;
+    margin-bottom: 20px;
+  }
 
-    color: @gunmetal;
+  .edit-trip-modifiable-until {
 
-    h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
-      color: @gunmetal;
-      text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    color: @terra-cotta;
+    margin-bottom: 30px;
+
+    i {
+      font-size: 20px;
+    }
+    div {
+      margin-left: 10px;
+      text-align: left;
     }
 
-    .edit-trip-catchs {
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
-      color: @white;
-      background-color: @cyprus;
-      opacity: 0.8;
-      border-radius: 8px;
-
-      height: 200px;
-      margin-bottom: 20px;
-    }
-
-    .edit-trip-modifiable-until {
-
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-
-      color: @terra-cotta;
-      margin-bottom: 30px;
-
-      i {
-        font-size: 20px;
-      }
-      div {
-        margin-left: 10px;
-        text-align: left;
-      }
-
-    }
   }
 
 }
