@@ -18,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/referential")
@@ -37,8 +36,8 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @GET
     @Path("/techniques")
-    public List<Technique> getMethods() {
-        List<Technique> result = referentialDao.listBuiltInMethods();
+    public List<Technique> getTechniques() {
+        List<Technique> result = referentialDao.listBuiltInTechniques();
         return result;
     }
 
@@ -51,16 +50,16 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @GET
     @Path("/species-per-lake")
-    public Map<UUID, Collection<Species>> getSpeciesPerLake() {
+    public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerLake() {
         Map<UUID, Species> rawSpeciesIndex = referentialDao.speciesIndex();
 
         List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
         Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
 
-        Multimap<UUID, Species> result = Multimaps.transformValues(entitiesByLakeId, input -> {
+        Multimap<UUID, SpeciesWithAlias> result = Multimaps.transformValues(entitiesByLakeId, input -> {
             Species rawSpecies = rawSpeciesIndex.get(input.getSpeciesId());
-            String nameOrAlias = Optional.ofNullable(input.getAlias()).orElse(rawSpecies.getName());
-            Species speciesWithAlias = new Species(rawSpecies.getId(), nameOrAlias, rawSpecies.getBuiltIn());
+            String alias = input.getAlias();
+            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias);
             return speciesWithAlias;
         });
 

@@ -19,7 +19,8 @@
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
             <div class="item-description" v-on:click="toggle(s)">
-              {{s.name}}
+              {{s.alias ? s.alias : s.name}}
+              <span v-if="s.alias" class="real-name">({{s.name}})</span>
             </div>
           </div>
           <div class="species-item">
@@ -50,7 +51,7 @@
 
 <script lang="ts">
 import TripSpecies from '@/pojos/TripSpecies';
-import Species from '@/pojos/Species';
+import {SpeciesWithAlias} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
@@ -75,18 +76,18 @@ export default class TripSpeciesVue extends Vue {
 
   trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: new Date() };
 
-  species:Species[] = [];
-  speciesIndex:Map<string, Species[]> = new Map();
+  species:SpeciesWithAlias[] = [];
+  speciesIndex:Map<string, SpeciesWithAlias[]> = new Map();
 
 
   created() {
-    ReferentialService.getSpeciesIndex(this.speciesLoaded);
+    ReferentialService.getSpeciesPerLake(this.speciesLoaded);
   }
 
   mounted() {
   }
 
-  speciesLoaded(map:Map<string, Species[]>) {
+  speciesLoaded(map:Map<string, SpeciesWithAlias[]>) {
     this.speciesIndex = map;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
@@ -97,7 +98,7 @@ export default class TripSpeciesVue extends Vue {
     this.species = this.speciesIndex.get(this.trip.lakeId)!;
   }
 
-  toggle(s:Species) {
+  toggle(s:SpeciesWithAlias) {
     let speciesId = s.id;
     let index = this.trip.speciesIds.indexOf(speciesId);
     if (index == -1) {
@@ -212,6 +213,12 @@ export default class TripSpeciesVue extends Vue {
           color: @pale-sky;
         }
 
+      }
+
+      .real-name {
+        font-style: italic;
+        color: @pale-sky;
+        margin-left: 5px;
       }
 
     }

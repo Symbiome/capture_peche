@@ -53,9 +53,7 @@
 
 <script lang="ts">
 import TripSummary from '@/pojos/TripSummary';
-import Lake from '@/pojos/Lake';
-import Weather from '@/pojos/Weather';
-import Species from '@/pojos/Species';
+import {Lake, Weather, SpeciesWithAlias} from '@/pojos/BackendPojos';
 
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
@@ -102,7 +100,7 @@ export default class SomeTripSummary extends Vue {
   types:string[] = [];
 
   allLakes:Lake[] = [];
-  allSpecies:Map<string, Species[]> = new Map();
+  allSpecies:Map<string, SpeciesWithAlias[]> = new Map();
   allWeathers:Weather[] = [];
   allTripTypes:any[] = [];
 
@@ -113,7 +111,7 @@ export default class SomeTripSummary extends Vue {
   mounted() {
   }
 
-  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, Species[]>) {
+  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, SpeciesWithAlias[]>) {
     lakes.forEach((lake) => this.allLakes.push(lake));
     weathers.forEach((weather) => this.allWeathers.push(weather));
     tripTypes.forEach((type) => this.allTripTypes.push(type));
@@ -141,7 +139,8 @@ export default class SomeTripSummary extends Vue {
     someTrip.speciesIds.forEach((speciesId:string) => {
       speciesPerLake!.forEach((s) => {
         if (s.id == speciesId) {
-          this.species.push(s.name);
+          let speciesDisplayValue = s.alias ? `${s.alias} (${s.name})` : s.name;
+          this.species.push(speciesDisplayValue);
         }
       });
     });

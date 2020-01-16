@@ -27,7 +27,39 @@ export interface TripLight {
     modifiable: boolean;
 }
 
+export interface SpeciesWithAlias {
+    id: string;
+    name: string;
+    builtIn: boolean;
+    alias?: string;
+}
+
+export interface Lake extends Serializable {
+    id: string;
+    name: string;
+}
+
+export interface Species extends Serializable {
+    id: string;
+    name: string;
+    builtIn: boolean;
+}
+
+export interface Technique extends Serializable {
+    id: string;
+    name: string;
+    builtIn: boolean;
+}
+
+export interface Weather extends Serializable {
+    id: string;
+    name: string;
+}
+
 export interface CatchBean {
+}
+
+export interface Serializable {
 }
 
 export type TripMode = "Live" | "Afterwards";

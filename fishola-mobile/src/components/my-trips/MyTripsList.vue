@@ -6,7 +6,7 @@
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
-    <div v-if="trips.length == 0 && !loading" class="no-trips">
+    <div v-if="trips.length == 0 && !loading" class="pane-content no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
         <span>Aucune sortie de pêche</span>
@@ -57,7 +57,6 @@ export default class MyTripsList extends Vue {
 
   .no-trips {
     height: 100%;
-    background-color: @white-smoke;
 
     display: flex;
     flex-direction: column;

@@ -52,7 +52,7 @@
 
 import TripMeta from '@/pojos/TripMeta';
 
-import Lake from '@/pojos/Lake';
+import {Lake} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
 import TripsService from '@/services/TripsService';

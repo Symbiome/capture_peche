@@ -33,9 +33,8 @@
 
 <script lang="ts">
 
-import {TripLight} from '@/pojos/BackendPojos';
+import {TripLight, Lake} from '@/pojos/BackendPojos';
 
-import Lake from '@/pojos/Lake';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 

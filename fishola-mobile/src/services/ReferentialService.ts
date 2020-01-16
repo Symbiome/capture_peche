@@ -1,6 +1,4 @@
-import Lake from '@/pojos/Lake';
-import Weather from '@/pojos/Weather';
-import Species from '@/pojos/Species';
+import {Lake, Weather, SpeciesWithAlias} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export default class ReferentialService extends AbstractFisholaService {
@@ -33,13 +31,13 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getAllSpecies(callback:(resul:Species[])=>any) {
-        this.getInstance().backendGet('/v1/referential/species', callback);
-    }
+    // static getAllSpecies(callback:(result:Species[])=>any) {
+    //     this.getInstance().backendGet('/v1/referential/species', callback);
+    // }
 
-    static getSpeciesIndex(callback:(result:Map<string, Species[]>)=>any) {
+    static getSpeciesPerLake(callback:(result:Map<string, SpeciesWithAlias[]>)=>any) {
         this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
-            let someMap = new Map<string, Species[]>();
+            let someMap = new Map<string, SpeciesWithAlias[]>();
             let lakeIds:string[] = Object.keys(map);
             lakeIds.forEach(lakeId => {
                 someMap.set(lakeId, map[lakeId]);
@@ -48,7 +46,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getSpecies(lakeId:string, callback:(resul:Species[])=>any) {
+    static getSpecies(lakeId:string, callback:(result:SpeciesWithAlias[])=>any) {
         this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
             let species = map[lakeId];
             callback(species);
@@ -67,11 +65,11 @@ export default class ReferentialService extends AbstractFisholaService {
         callback(types);
     }
 
-    static getLakesWeathersTripTypesAndSpecies(callback:(ls:Lake[],ws:Weather[],tts:any[],ss:Map<string, Species[]>)=>any) {
+    static getLakesWeathersTripTypesAndSpecies(callback:(ls:Lake[],ws:Weather[],tts:any[],ss:Map<string, SpeciesWithAlias[]>)=>any) {
         // FIXME AThimel 23/12/2019 Utiliser des promises
         ReferentialService.getLakes((lakes:Lake[]) => {
             ReferentialService.getWeathers((weathers:Weather[]) => {
-                ReferentialService.getSpeciesIndex((species:Map<string, Species[]>) => {
+                ReferentialService.getSpeciesPerLake((species:Map<string, SpeciesWithAlias[]>) => {
                     ReferentialService.getTripTypes((tripTypes:any[]) => {
                         callback(lakes, weathers, tripTypes, species);
                     });

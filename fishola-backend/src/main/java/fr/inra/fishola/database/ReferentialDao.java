@@ -30,7 +30,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<Technique> listBuiltInMethods() {
+    public List<Technique> listBuiltInTechniques() {
         List<Technique> result = withDao(TechniqueDao.class, dao -> dao.fetchByBuiltIn(true));
         return result;
     }

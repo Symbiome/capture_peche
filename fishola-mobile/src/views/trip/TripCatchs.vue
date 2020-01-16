@@ -29,7 +29,6 @@
 
 <script lang="ts">
 import TripMain from '@/pojos/TripMain';
-import Species from '@/pojos/Species';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';

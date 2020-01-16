@@ -132,6 +132,11 @@
           <classes>
             <class>fr.inra.fishola.rest.trips.TripBean</class>
             <class>fr.inra.fishola.rest.trips.TripLight</class>
+            <class>fr.inra.fishola.rest.referential.SpeciesWithAlias</class>
+            <class>fr.inra.fishola.entities.tables.pojos.Lake</class>
+            <class>fr.inra.fishola.entities.tables.pojos.Species</class>
+            <class>fr.inra.fishola.entities.tables.pojos.Technique</class>
+            <class>fr.inra.fishola.entities.tables.pojos.Weather</class>
           </classes>
           <outputKind>module</outputKind>
           <outputFileType>implementationFile</outputFileType>
