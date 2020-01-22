@@ -12,6 +12,7 @@
   </parent>
 
   <artifactId>fishola-backend</artifactId>
+  <name>Fishola :: Backend</name>
 
   <properties>
     <localJdbcDatabaseName>fishola</localJdbcDatabaseName>
@@ -290,10 +291,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <inherited>true</inherited>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>

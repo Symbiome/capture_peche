@@ -12,6 +12,7 @@
   </parent>
 
   <artifactId>fishola-mobile</artifactId>
+  <name>Fishola :: Mobile</name>
   <packaging>pom</packaging>
 
   <properties>

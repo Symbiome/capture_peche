@@ -5,24 +5,43 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>org.nuiton</groupId>
+    <artifactId>pom</artifactId>
+    <version>11</version>
+  </parent>
+
   <groupId>fr.inra</groupId>
   <artifactId>fishola</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <name>Fishola</name>
+  <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
+  <url>${projectUrl}</url>
+  <inceptionYear>2019</inceptionYear>
+
   <packaging>pom</packaging>
 
   <properties>
+    <gitlabGroupId>inra</gitlabGroupId>
+    <projectId>fishola</projectId>
+
     <quarkus.version>1.1.1.Final</quarkus.version>
     <jooqVersion>3.12.3</jooqVersion>
     <flywayVersion>6.1.4</flywayVersion>
     <postgresqlDriverVersion>42.2.9</postgresqlDriverVersion>
 
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <surefire-plugin.version>3.0.0-M4</surefire-plugin.version>
+    <javaVersion>13</javaVersion>
+
+    <maven.test.skip>true</maven.test.skip>
   </properties>
+
+  <scm>
+    <url>https://gitlab.nuiton.org/inra/fishola</url>
+    <connection>scm:git:git@gitlab.nuiton.org:inra/fishola.git</connection>
+    <developerConnection>scm:git:git@gitlab.nuiton.org:inra/fishola.git</developerConnection>
+  </scm>
 
   <modules>
     <module>fishola-backend</module>
@@ -138,78 +157,30 @@
 
   <build>
 
-    <pluginManagement>
-      <plugins>
-
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
-          <inherited>true</inherited>
-          <configuration>
-            <release>13</release>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.1.0</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.0.0-M1</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>3.0.0-M1</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.8.2</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.2.0</version>
-        </plugin>
-
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.1.0</version>
-        </plugin>
-
-      </plugins>
-    </pluginManagement>
+    <pluginManagement/>
 
     <plugins>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M2</version>
-        <executions>
-          <execution>
-            <id>enforce-maven</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>3.5.3</version>
-                </requireMavenVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-enforcer-plugin</artifactId>-->
+<!--        <version>${enforcerPluginVersion}</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>enforce-maven</id>-->
+<!--            <goals>-->
+<!--              <goal>enforce</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <rules>-->
+<!--                <requireMavenVersion>-->
+<!--                  <version>3.5.3</version>-->
+<!--                </requireMavenVersion>-->
+<!--              </rules>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
     </plugins>
 
