@@ -20,6 +20,11 @@
   <url>${projectUrl}</url>
   <inceptionYear>2019</inceptionYear>
 
+  <organization>
+    <name>INRAE</name>
+    <url>https://www.inrae.fr/</url>
+  </organization>
+
   <packaging>pom</packaging>
 
   <properties>
