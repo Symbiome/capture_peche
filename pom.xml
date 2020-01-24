@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.3</version>
+    <version>11.4</version>
   </parent>
 
   <groupId>fr.inra</groupId>
@@ -28,8 +28,8 @@
   <packaging>pom</packaging>
 
   <properties>
-    <gitlabGroupId>inrae</gitlabGroupId>
-    <projectId>fishola</projectId>
+    <gitlabGroupName>inrae</gitlabGroupName>
+    <gitlabProjectName>fishola</gitlabProjectName>
 
     <quarkus.version>1.1.1.Final</quarkus.version>
     <jooqVersion>3.12.3</jooqVersion>
