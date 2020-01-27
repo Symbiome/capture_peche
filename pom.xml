@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.4</version>
+    <version>11.5</version>
   </parent>
 
   <groupId>fr.inra</groupId>
@@ -31,9 +31,9 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkus.version>1.1.1.Final</quarkus.version>
+    <quarkus.version>1.2.0.Final</quarkus.version>
     <jooqVersion>3.12.3</jooqVersion>
-    <flywayVersion>6.1.4</flywayVersion>
+    <flywayVersion>6.2.0</flywayVersion>
     <postgresqlDriverVersion>42.2.9</postgresqlDriverVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -157,7 +157,7 @@
       <dependency>
         <groupId>io.rest-assured</groupId>
         <artifactId>rest-assured</artifactId>
-        <version>4.1.2</version>
+        <version>4.2.0</version>
         <scope>test</scope>
       </dependency>
 
