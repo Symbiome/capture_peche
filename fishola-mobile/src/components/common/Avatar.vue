@@ -24,7 +24,7 @@ export default class Avatar extends Vue {
     } else {
       ProfileService.getProfile(this.profileLoaded, () => {
         this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-        router.push('login');
+        router.push('/login');
       });
     }
   }
