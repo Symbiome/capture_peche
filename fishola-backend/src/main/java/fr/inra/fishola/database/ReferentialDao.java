@@ -4,10 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
+import fr.inra.fishola.entities.tables.daos.ReleasedFishStateDao;
 import fr.inra.fishola.entities.tables.daos.SpeciesDao;
 import fr.inra.fishola.entities.tables.daos.TechniqueDao;
 import fr.inra.fishola.entities.tables.daos.WeatherDao;
 import fr.inra.fishola.entities.tables.pojos.Lake;
+import fr.inra.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
@@ -52,6 +54,11 @@ public class ReferentialDao extends AbstractFisholaDao {
                     .fetch()
                     .into(SpeciesByLake.class)
         );
+        return result;
+    }
+
+    public List<ReleasedFishState> listReleasedFishStates() {
+        List<ReleasedFishState> result = withDao(ReleasedFishStateDao.class, ReleasedFishStateDao::findAll);
         return result;
     }
 

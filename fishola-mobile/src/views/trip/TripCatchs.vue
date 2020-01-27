@@ -118,7 +118,7 @@ export default class TripCatchs extends Vue {
   }
 
   newCatch() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    router.push({name:'catch', params: {tripId: this.id, catchId:'NEW'}});
   }
 
 }

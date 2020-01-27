@@ -26,3 +26,10 @@ INSERT INTO technique (name, built_in) VALUES
     ('Pêche au leurre', true),
     ('Pêche au vif', true),
     ('Pêche au coup', true);
+
+INSERT INTO released_fish_state (name) VALUES
+    ('Comme neuf'),
+    ('Frais comme un gardon'),
+    ('Légèrement blessé'),
+    ('Blessé'),
+    ('Mort');

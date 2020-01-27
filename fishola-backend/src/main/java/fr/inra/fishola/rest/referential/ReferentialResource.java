@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inra.fishola.database.ReferentialDao;
 import fr.inra.fishola.entities.tables.pojos.Lake;
+import fr.inra.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inra.fishola.entities.tables.pojos.Species;
 import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
@@ -45,6 +46,13 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/species")
     public List<Species> getSpecies() {
         List<Species> result = referentialDao.listBuiltInSpecies();
+        return result;
+    }
+
+    @GET
+    @Path("/released-fish-states")
+    public List<ReleasedFishState> getReleasedFishState() {
+        List<ReleasedFishState> result = referentialDao.listReleasedFishStates();
         return result;
     }
 

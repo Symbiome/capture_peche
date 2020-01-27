@@ -14,6 +14,8 @@ import TripCatchs from '../views/trip/TripCatchs.vue'
 import TripSummary from '../views/trip/TripSummary.vue'
 import EditTrip from '../views/trip/EditTrip.vue'
 
+import EditCatch from '../views/trip/EditCatch.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -58,6 +60,12 @@ const routes = [
     path: '/trips/:id/catchs',
     name: 'trip-catchs',
     component: TripCatchs,
+    props: true
+  },
+  {
+    path: '/trips/:tripId/catchs/:catchId',
+    name: 'catch',
+    component: EditCatch,
     props: true
   },
   {

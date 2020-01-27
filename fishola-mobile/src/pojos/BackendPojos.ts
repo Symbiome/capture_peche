@@ -39,6 +39,11 @@ export interface Lake extends Serializable {
     name: string;
 }
 
+export interface ReleasedFishState extends Serializable {
+    id: string;
+    name: string;
+}
+
 export interface Species extends Serializable {
     id: string;
     name: string;

@@ -1,4 +1,4 @@
-import {Lake, Weather, SpeciesWithAlias} from '@/pojos/BackendPojos';
+import {Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export default class ReferentialService extends AbstractFisholaService {
@@ -57,6 +57,14 @@ export default class ReferentialService extends AbstractFisholaService {
         this.getInstance().backendGet('/v1/referential/weathers', callback);
     }
 
+    static getTechniques(callback:(techniques:Technique[])=>any) {
+        this.getInstance().backendGet('/v1/referential/techniques', callback);
+    }
+
+    static getReleasedFishStates(callback:(states:ReleasedFishState[])=>any) {
+        this.getInstance().backendGet('/v1/referential/released-fish-states', callback);
+    }
+
     static getTripTypes(callback:(result:any[])=>any) {
         let types = [
             {id: 'Border', name: 'Pêche du bord'},
@@ -83,6 +91,17 @@ export default class ReferentialService extends AbstractFisholaService {
         ReferentialService.getLakes((lakes:Lake[]) => {
             ReferentialService.getTripTypes((tripTypes:any[]) => {
                 callback(lakes, tripTypes);
+            });
+        });
+    }
+
+    static getSpeciesTechniquesAndReleasedFishStates(lakeId:string, callback:(species:SpeciesWithAlias[],techniques:Technique[],states:ReleasedFishState[])=>any) {
+        // FIXME AThimel 23/12/2019 Utiliser des promises
+        ReferentialService.getSpecies(lakeId, (species:SpeciesWithAlias[]) => {
+            ReferentialService.getTechniques((techniques:Technique[]) => {
+                ReferentialService.getReleasedFishStates((states:ReleasedFishState[]) => {
+                    callback(species, techniques, states);
+                });
             });
         });
     }
