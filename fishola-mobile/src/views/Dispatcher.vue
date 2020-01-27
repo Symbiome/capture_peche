@@ -10,6 +10,7 @@ import Constants from '@/services/Constants';
 
 import router from '@/router'
 
+import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -28,35 +29,14 @@ export default class Dispatcher extends Vue {
 
   checkForActiveSession() {
 
-    function httpCall(method: string, url:string, data:any, callback:(status:any)=>any) {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.withCredentials = true;
-        if (callback) {
-            xhr.onload = function() {
-              callback(this.status);
-          };
-        }
-        if (data != null) {
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(data));
-        }
-        else xhr.send();
-    }
-
-    let apiUrl = Constants.apiUrl("/v1/security/profile");
-    httpCall('GET', apiUrl, null, this.done);
-
-  }
-
-  done(status:number) {
-    switch(status) {
-      case 200:
+    ProfileService.getProfile(() => {
+        this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
         router.push('trips');
-        break;
-      default:
+      }, () => {
+        this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
         router.push('login');
-    }
+    });
+
   }
 
 }
