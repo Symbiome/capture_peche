@@ -1,6 +1,6 @@
 INSERT INTO lake (name) VALUES
     ('Lac d''Annecy'),
-    ('Lac Léman'),
+    ('Léman'),
     ('Lac du Bourget'),
     ('Lac d''Aiguebelette');
 
