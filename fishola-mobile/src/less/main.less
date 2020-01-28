@@ -86,6 +86,42 @@ button {
 }
 
 
+/* ========== Checkboxes ========== */
+.pelorous-radio {
+  display: none;
+}
+.pelorous-radio + label {
+  background-color: transparent;
+  border: 1px solid @pelorous;
+  // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+  // padding: 9px;
+  border-radius: 8px;
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+// .pelorous-radio + label:active,
+// .pelorous-radio:checked + label:active {
+//   box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+// }
+.pelorous-radio:checked + label {
+  background-color: @pelorous;
+  border: 1px solid @pelorous;
+  border-radius: 8px;
+  // color: @white;
+}
+.pelorous-radio:checked + label:after {
+  content: '\f102';
+  font-family: 'Fishola-Icons';
+  font-size: 10px;
+  position: absolute;
+  top: -1px;
+  left: 3px;
+  color: @white;
+}
+
+
 
 /*========== Retour haptique ============ */
 

@@ -25,11 +25,12 @@
                      v-model="weight"
                      v-bind:error="weightError"
                      v-bind:readonly="readonly"/>
-          <FormMultiValues name="keep"
-                           label="Conservez-vous ce poisson ?"
-                           v-bind:values="['Oui','Non']"
-                           readonly="true"/>
+          <FormYesNo name="keep"
+                     label="Conservez-vous ce poisson ?"
+                     v-model="keep"
+                     v-bind:readonly="readonly"/>
           <FormSelect name="releaseState"
+                      v-if="keep === false"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
                       v-model="releasedStateId"
@@ -70,6 +71,7 @@ import Helpers from '@/pojos/Helpers';
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 import FormInput from '@/components/common/FormInput.vue'
+import FormYesNo from '@/components/common/FormYesNo.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
@@ -81,6 +83,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     FormInput,
+    FormYesNo,
     FormTextarea,
     FormMultiValues,
     FormSelect,
@@ -99,6 +102,7 @@ export default class EditCatch extends Vue {
   weight:string = '';
   releasedStateId:string = '';
   description:string = '';
+  keep?:boolean = true;
 
   speciesIdError:string = '';
   techniqueIdError:string = '';
