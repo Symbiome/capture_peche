@@ -6,7 +6,7 @@
         <h1>Capture</h1>
         <div class="pane-content">
           <FormSelect name="species"
-                      label="Espèce"
+                      label="Éspèce"
                       v-bind:options="allSpecies"
                       v-model="speciesId"
                       v-bind:error="speciesIdError"
@@ -43,10 +43,18 @@
                       v-bind:error="techniqueIdError"
                       v-bind:readonly="readonly"/>
           <FormTextarea name="description"
-                        label="Description (optionnel)"
+                        label="Description (optionnelle)"
                         placeholder="Écrivez une description"
                         v-model="description"
                         v-bind:readonly="readonly"/>
+          <FormInput name="caughtAt"
+                     label="Heure (optionnelle)"
+                     type="time"
+                     v-model="caughtAt"
+                     v-bind:readonly="readonly"/>
+          <FormToggle label="Prélèvement (optionnel)"
+                      v-model="withSample"
+                      v-bind:readonly="readonly"/>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -70,6 +78,7 @@ import Helpers from '@/pojos/Helpers';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
+import FormToggle from '@/components/common/FormToggle.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import FormYesNo from '@/components/common/FormYesNo.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
@@ -87,6 +96,7 @@ import router from '../../router';
     FormTextarea,
     FormMultiValues,
     FormSelect,
+    FormToggle,
     FisholaFooter
   }
 })
@@ -103,6 +113,8 @@ export default class EditCatch extends Vue {
   releasedStateId:string = '';
   description:string = '';
   keep?:boolean = true;
+  caughtAt:string = '';
+  withSample:boolean = false;
 
   speciesIdError:string = '';
   techniqueIdError:string = '';
