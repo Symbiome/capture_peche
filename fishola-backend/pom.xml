@@ -133,6 +133,7 @@
         <configuration>
           <jsonLibrary>jackson2</jsonLibrary>
           <classes>
+            <class>fr.inra.fishola.rest.trips.CatchBean</class>
             <class>fr.inra.fishola.rest.trips.TripBean</class>
             <class>fr.inra.fishola.rest.trips.TripLight</class>
             <class>fr.inra.fishola.rest.referential.SpeciesWithAlias</class>

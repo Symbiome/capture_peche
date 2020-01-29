@@ -108,11 +108,11 @@ export default class FormYesNo extends Vue {
     flex-direction: row;
     align-items: flex-start;
     justify-content: center;
-    height: 38px;
+    height: 21px;
     color: @gunmetal;
 
     .choice {
-      height: 38px;
+      height: 21px;
       margin-right: 20px;
 
       display: flex;

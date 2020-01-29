@@ -31,9 +31,6 @@ public class TripBean {
         // On ignore, c'est pour que le front réussisse l'appel
     }
 
-    public class CatchBean {
-    }
-
     @Override
     public String toString() {
         return "TripBean{" +

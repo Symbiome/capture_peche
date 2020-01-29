@@ -8,44 +8,45 @@
           <FormSelect name="species"
                       label="Éspèce"
                       v-bind:options="allSpecies"
-                      v-model="speciesId"
+                      v-model="aCatch.speciesId"
                       v-bind:error="speciesIdError"
                       v-bind:readonly="readonly"/>
           <FormInput name="size"
                      label="Taille (en cm)"
                      type="number"
                      placeholder="Entrez une taille (en cm)"
-                     v-model="size"
+                     v-model="aCatch.size"
                      v-bind:error="sizeError"
                      v-bind:readonly="readonly"/>
           <FormInput name="weight"
                      label="Poids (en g, optionnel)"
                      type="number"
                      placeholder="Entrez un poids (en g)"
-                     v-model="weight"
+                     v-model="aCatch.weight"
                      v-bind:error="weightError"
                      v-bind:readonly="readonly"/>
           <FormYesNo name="keep"
                      label="Conservez-vous ce poisson ?"
-                     v-model="keep"
+                     v-model="aCatch.keep"
+                     v-bind:error="keepError"
                      v-bind:readonly="readonly"/>
           <FormSelect name="releaseState"
-                      v-if="keep === false"
+                      v-if="aCatch.keep === false"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
-                      v-model="releasedStateId"
+                      v-model="aCatch.releasedStateId"
                       v-bind:error="releasedStateIdError"
                       v-bind:readonly="readonly"/>
           <FormSelect name="technique"
                       label="Technique de pêche"
                       v-bind:options="allTechniques"
-                      v-model="techniqueId"
+                      v-model="aCatch.techniqueId"
                       v-bind:error="techniqueIdError"
                       v-bind:readonly="readonly"/>
           <FormTextarea name="description"
                         label="Description (optionnelle)"
                         placeholder="Écrivez une description"
-                        v-model="description"
+                        v-model="aCatch.description"
                         v-bind:readonly="readonly"/>
           <FormInput name="caughtAt"
                      label="Heure (optionnelle)"
@@ -53,7 +54,7 @@
                      v-model="caughtAt"
                      v-bind:readonly="readonly"/>
           <FormToggle label="Prélèvement (optionnel)"
-                      v-model="withSample"
+                      v-model="aCatch.withSample"
                       v-bind:readonly="readonly"/>
           <div class="bottom-page-spacer"></div>
         </div>
@@ -71,6 +72,7 @@
 
 <script lang="ts">
 import {TripBean, Technique, SpeciesWithAlias, ReleasedFishState} from '@/pojos/BackendPojos';
+import CatchSummary from '@/pojos/CatchSummary';
 
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
@@ -105,22 +107,16 @@ export default class EditCatch extends Vue {
   @Prop() tripId!:string;
   @Prop() catchId!:string;
 
-  // TODO AThimel 27/01/2020 Utiliser plutôt le bean
-  speciesId:string = '';
-  techniqueId:string = '';
-  size:string = '';
-  weight:string = '';
-  releasedStateId:string = '';
-  description:string = '';
-  keep?:boolean = true;
+  aCatch: CatchSummary = {id: '', withSample: false};
+
   caughtAt:string = '';
-  withSample:boolean = false;
 
   speciesIdError:string = '';
-  techniqueIdError:string = '';
   sizeError:string = '';
   weightError:string = '';
+  keepError:string = '';
   releasedStateIdError:string = '';
+  techniqueIdError:string = '';
 
   readonly:boolean = false;
 
@@ -131,14 +127,20 @@ export default class EditCatch extends Vue {
   allReleasedFishStates:ReleasedFishState[] = [];
 
   created() {
-    TripsService.getTrip(this.tripId, this.tripLoaded);
+    TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
   }
 
   mounted() {
   }
 
-  tripLoaded(someTrip:TripBean) {
+  tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
+    this.aCatch = someCatch;
+
+    if (someCatch.caughtAt) {
+      this.caughtAt = Helpers.formatToTime(someCatch.caughtAt);
+    }
+
     ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId, this.speciesAndTechniquesLoaded);
   }
 
@@ -149,10 +151,61 @@ export default class EditCatch extends Vue {
   }
 
   validateClicked() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
-      // // On demande au composant enfant de fournir le modèle mis à jour
-      // let summaryComponent:any = this.$refs.summary;
-      // summaryComponent.emitUpdatedTrip();
+    let hasError:boolean = false;
+    if (this.aCatch.speciesId) {
+      this.speciesIdError = '';
+    } else {
+      hasError = true;
+      this.speciesIdError = 'Éspèce obligatoire';
+    }
+
+    if (!this.aCatch.size) {
+      hasError = true;
+      this.sizeError = 'Taille nobligatoire';
+    } else if (this.aCatch.size > 0) {
+      this.sizeError = '';
+    } else {
+      hasError = true;
+      this.sizeError = 'La taille doit être strictement positive';
+    }
+
+    if (!this.aCatch.weight || this.aCatch.weight > 0) {
+      this.weightError = '';
+    } else {
+      hasError = true;
+      this.weightError = 'Le poids ne peut pas être négatif';
+    }
+
+    if (this.aCatch.keep === true || this.aCatch.keep === false) {
+      this.keepError = '';
+    } else {
+      hasError = true;
+      this.keepError = 'Information obligatoire';
+    }
+
+    if (this.aCatch.keep === false)  {
+      if (this.aCatch.releasedStateId) {
+        this.releasedStateIdError = '';
+      } else {
+        hasError = true;
+        this.releasedStateIdError = 'État du poisson relâché obligatoire';
+      }
+    } else {
+        this.releasedStateIdError = '';
+    }
+
+    if (this.aCatch.techniqueId) {
+      this.techniqueIdError = '';
+    } else {
+      hasError = true;
+      this.techniqueIdError = 'Technique de pêche obligatoire';
+    }
+
+    if (hasError) {
+      this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
+    } else {
+      this.$root.$emit('toaster-warning', 'Work in progress');
+    }
   }
 
   onUpdatedTrip(trip:TripBean) {

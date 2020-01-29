@@ -118,7 +118,7 @@ export default class TripCatchs extends Vue {
   }
 
   newCatch() {
-    router.push({name:'catch', params: {tripId: this.id, catchId:'NEW'}});
+    router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
   }
 
 }

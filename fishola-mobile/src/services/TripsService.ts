@@ -1,10 +1,11 @@
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
-import {TripLight, TripMode, TripBean} from '@/pojos/BackendPojos';
+import {TripLight, TripMode, TripBean, CatchBean} from '@/pojos/BackendPojos';
 import Helpers from '@/pojos/Helpers';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import CatchSummary from '@/pojos/CatchSummary';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -299,6 +300,23 @@ export default class TripsService extends AbstractFisholaService {
                 callback(false);
             });
         }
+    }
+
+    static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
+        TripsService.getTrip(tripId, (trip:TripBean) => {
+            let result:CatchSummary = {id:catchId, withSample:false};
+            if (trip.catchs) {
+                trip.catchs.forEach((someCatch:CatchBean) => {
+                    if (catchId == someCatch.id) {
+                        result = someCatch;
+                    }
+                });
+            }
+            if (trip.mode == 'Live' && result.id == Constants.NEW_CATCH_ID) {
+                result.caughtAt = new Date();
+            }
+            callback(trip, result);
+        });
     }
 
 }

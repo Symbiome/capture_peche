@@ -1,6 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export interface CatchBean {
+    id: string;
+    speciesId: string;
+    size?: number;
+    weight?: number;
+    keep: boolean;
+    releasedStateId?: string;
+    techniqueId: string;
+    description?: string;
+    caughtAt: Date;
+    withSample: boolean;
+}
+
 export interface TripBean {
     id: string;
     createdOn?: Date;
@@ -59,9 +72,6 @@ export interface Technique extends Serializable {
 export interface Weather extends Serializable {
     id: string;
     name: string;
-}
-
-export interface CatchBean {
 }
 
 export interface Serializable {
