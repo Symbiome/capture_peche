@@ -12,8 +12,8 @@
                 <i class="pastille icon-plus"/>
               </div>
             </div>
-            <div v-for="c in trip.catchs" v-bind:key="c.id">
-              {{c.id}}
+            <div v-for="c in trip.catchs" v-bind:key="c.id" class="preview-wraper">
+              <CatchPreview v-bind:tripId="id" v-bind:catchId="c.id"/>
             </div>
           </div>
           <div class="edit-trip-catchs-new-catch-button">
@@ -41,6 +41,7 @@ import ReferentialService from '@/services/ReferentialService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
+import CatchPreview from '@/components/trip/CatchPreview.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -50,6 +51,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    CatchPreview,
     FisholaFooter
   }
 })
@@ -146,40 +148,52 @@ export default class TripCatchs extends Vue {
     .pane-content {
       text-align:center;
 
-      .no-catch {
+      .catchs-list {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        flex-direction: row;
         align-items: center;
+        overflow: auto;
 
-        .new-catch-square-button {
+        .preview-wraper {
+          margin-left: 5px;
+          margin-right: 5px;
+        }
+
+        .no-catch {
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
 
-          background-image: url("/img/illustration_fish_wire.svg");
-          background-repeat: no-repeat;
-          background-size: 67%;
-          background-position: center;
+          .new-catch-square-button {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
 
-          border: 1px dashed @pale-sky;
-          border-radius: 8px;
-          height: 295px;
-          width: 295px;
+            background-image: url("/img/illustration_fish_wire.svg");
+            background-repeat: no-repeat;
+            background-size: 67%;
+            background-position: center;
 
-          cursor: pointer;
+            border: 1px dashed @pale-sky;
+            border-radius: 8px;
+            height: 295px;
+            width: 295px;
 
-          .pastille {
-            width: 70px;
-            height: 70px;
-            line-height: 30px;
-            font-size: 30px;
-            color: @white;
-            background: @pale-sky;
+            cursor: pointer;
+
+            .pastille {
+              width: 70px;
+              height: 70px;
+              line-height: 30px;
+              font-size: 30px;
+              color: @white;
+              background: @pale-sky;
+            }
           }
-        }
 
+        }
       }
 
     }
