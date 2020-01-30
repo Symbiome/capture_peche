@@ -225,6 +225,23 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static saveTrip(trip:TripBean, callback: () => void) {
+        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+            this.getInstance().onCreationTrip.put(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
+        } else {
+            let tripBean:TripBean = <TripBean>trip;
+            this.getInstance().dirtyTrips.put(tripBean)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
+        }
+    }
+
     static deleteDirtyTrip() {
         this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
     }
@@ -316,6 +333,29 @@ export default class TripsService extends AbstractFisholaService {
                 result.caughtAt = new Date();
             }
             callback(trip, result);
+        });
+    }
+
+    static saveCatch(tripId:any, aCatch:CatchBean, callback:() => void) {
+        TripsService.getTrip(tripId, (trip:TripBean) => {
+            if (!trip.catchs) {
+                trip.catchs = [];
+            }
+            let found = false;
+            for (let i:number = 0; i<trip.catchs.length; i++) {
+                let someCatch = trip.catchs[i];
+                if (aCatch.id == someCatch.id) {
+                    found = true;
+                    trip.catchs[i] = aCatch;
+                }
+            }
+            if (!found) {
+                if (aCatch.id == Constants.NEW_CATCH_ID) {
+                    aCatch.id = new Date().getTime().toString();
+                }
+                trip.catchs.push(aCatch);
+            }
+            TripsService.saveTrip(trip, callback)
         });
     }
 

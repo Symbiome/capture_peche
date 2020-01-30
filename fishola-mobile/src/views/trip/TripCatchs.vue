@@ -6,9 +6,14 @@
       <div class="pane">
         <h1 v-if="duration">{{duration}}</h1>
         <div class="pane-content">
-          <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
-            <div class="new-catch-square-button" v-on:click="newCatch">
-              <i class="pastille icon-plus"/>
+          <div class="catchs-list">
+            <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
+              <div class="new-catch-square-button" v-on:click="newCatch">
+                <i class="pastille icon-plus"/>
+              </div>
+            </div>
+            <div v-for="c in trip.catchs" v-bind:key="c.id">
+              {{c.id}}
             </div>
           </div>
           <div class="edit-trip-catchs-new-catch-button">

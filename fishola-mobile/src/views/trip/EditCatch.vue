@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import {TripBean, Technique, SpeciesWithAlias, ReleasedFishState} from '@/pojos/BackendPojos';
+import {TripBean, CatchBean, Technique, SpeciesWithAlias, ReleasedFishState} from '@/pojos/BackendPojos';
 import CatchSummary from '@/pojos/CatchSummary';
 
 import TripsService from '@/services/TripsService';
@@ -204,18 +204,13 @@ export default class EditCatch extends Vue {
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
-      this.$root.$emit('toaster-warning', 'Work in progress');
+      TripsService.saveCatch(this.tripId, this.aCatch, this.catchSaved);
     }
   }
 
-  onUpdatedTrip(trip:TripBean) {
-      // On reçoit le modèle mis à jour, on le sauvegarde
-      // TripsService.sendTrip(trip, this.tripSaved);
+  catchSaved() {
+    router.push({name:'trip-catchs', params: {id: this.tripId}});
   }
-
-  // tripSaved() {
-  //   router.push('/trips');
-  // }
 
 }
 
