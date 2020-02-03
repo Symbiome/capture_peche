@@ -2,10 +2,14 @@ package fr.inra.fishola.rest.trips;
 
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.FisholaConfiguration;
+import fr.inra.fishola.database.CatchsDao;
 import fr.inra.fishola.database.TripsDao;
+import fr.inra.fishola.entities.tables.pojos.Catch;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.exceptions.AccessDeniedException;
 import fr.inra.fishola.rest.AbstractFisholaResource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -38,11 +42,16 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class TripResource extends AbstractFisholaResource {
 
+    private static final Log log = LogFactory.getLog(TripResource.class);
+
     @Inject
     protected FisholaConfiguration config;
 
     @Inject
     protected TripsDao tripsDao;
+
+    @Inject
+    protected CatchsDao catchsDao;
 
     @GET
     @Path("/")
@@ -64,6 +73,9 @@ public class TripResource extends AbstractFisholaResource {
 
     protected TripLight toTripLight(Trip trip) {
 
+        UUID tripId = trip.getId();
+        int catchsCount = catchsDao.countCatchs(tripId);
+
         LocalDate date = trip.getDay().toLocalDate();
         LocalDateTime startTime = LocalDateTime.of(date, trip.getStartTime().toLocalTime());
         LocalDateTime endTime = LocalDateTime.of(date, trip.getEndTime().toLocalTime());
@@ -73,9 +85,9 @@ public class TripResource extends AbstractFisholaResource {
         long durationInSeconds = Duration.between(startTime, endTime).toSeconds();
 
         ImmutableTripLight.Builder builder = ImmutableTripLight.builder()
-                .catchsCount(0)
+                .catchsCount(catchsCount)
                 .date(date)
-                .id(trip.getId())
+                .id(tripId)
                 .lakeId(trip.getLakeId())
                 .name(trip.getName())
                 .durationInSeconds(durationInSeconds);
@@ -108,6 +120,7 @@ public class TripResource extends AbstractFisholaResource {
     public void createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
         // TODO: 30/12/2019 Détection des doublons
+        // TODO: 03/02/2020 Transaction !
 
         UUID userId = getUserId(cookie);
 
@@ -124,11 +137,37 @@ public class TripResource extends AbstractFisholaResource {
         entity.setWeatherId(trip.weatherId);
 
         UUID tripId = tripsDao.create(entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Trip créé avec l'ID :" + tripId);
+        }
 
         int created = tripsDao.setSpecies(tripId, trip.speciesIds);
-        System.out.println("Espèces recherchées: " + created);
+        if (log.isDebugEnabled()) {
+            log.debug(created + " espèce(s) recherchée(s)");
+        }
 
         // TODO: 02/01/2020 Catchs
+        for (CatchBean aCatch : trip.catchs) {
+            Catch catchPojo = new Catch();
+            catchPojo.setTripId(tripId);
+            catchPojo.setCreatedOn(Timestamp.from(Instant.now()));
+            aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))));
+            catchPojo.setSpeciesId(aCatch.speciesId);
+            catchPojo.setTechniqueId(aCatch.techniqueId);
+            catchPojo.setSize(aCatch.size);
+            aCatch.weight.ifPresent(catchPojo::setWeight);
+            catchPojo.setKept(aCatch.keep);
+            if (!aCatch.keep) {
+                Preconditions.checkState(aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
+                catchPojo.setReleasedFishStateId(aCatch.releasedStateId.get());
+            }
+            aCatch.description.ifPresent(catchPojo::setDescription);
+
+            UUID catchId = catchsDao.create(catchPojo);
+            if (log.isDebugEnabled()) {
+                log.debug("Catch créé avec l'ID :" + catchId);
+            }
+        }
 
     }
 

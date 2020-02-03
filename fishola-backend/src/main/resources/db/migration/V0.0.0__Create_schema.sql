@@ -89,13 +89,14 @@ CREATE UNIQUE INDEX trip_techniques_unique_idx
 
 CREATE TABLE catch (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     trip_id UUID REFERENCES trip(id) NOT NULL,
-    catch_time TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    catch_time TIME WITHOUT TIME ZONE,
     species_id UUID REFERENCES species(id) NOT NULL,
     technique_id UUID REFERENCES technique(id) NOT NULL,
     picture OID,
-    size DOUBLE PRECISION,
-    weight DOUBLE PRECISION,
+    size INT NOT NULL,
+    weight INT,
     kept BOOLEAN NOT NULL,
     released_fish_state_id UUID REFERENCES released_fish_state(id),
     description TEXT

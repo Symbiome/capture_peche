@@ -4,13 +4,13 @@
 export interface CatchBean {
     id: string;
     speciesId: string;
-    size?: number;
+    size: number;
     weight?: number;
     keep: boolean;
     releasedStateId?: string;
     techniqueId: string;
     description?: string;
-    caughtAt: Date;
+    caughtAt?: Date;
     withSample: boolean;
 }
 

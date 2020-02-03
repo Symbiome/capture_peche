@@ -39,6 +39,7 @@
 
 <script lang="ts">
 import TripMain from '@/pojos/TripMain';
+import CatchSummary from '@/pojos/CatchSummary';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
@@ -132,7 +133,7 @@ export default class TripCatchs extends Vue {
     router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
   }
 
-  openCatch(aCatch:CatchBean) {
+  openCatch(aCatch:CatchSummary) {
     router.push({name:'catch', params: {tripId: this.id, catchId:aCatch.id}});
   }
 

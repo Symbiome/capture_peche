@@ -28,6 +28,7 @@
 
 <script lang="ts">
 import CatchSummary from '@/pojos/CatchSummary';
+import {SpeciesWithAlias, TripBean} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';

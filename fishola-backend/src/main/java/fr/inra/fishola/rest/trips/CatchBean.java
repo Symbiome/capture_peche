@@ -8,13 +8,13 @@ public class CatchBean {
 
     public String id;
     public UUID speciesId;
-    public Optional<Integer> size;
-    public Optional<Integer> weight;
+    public int size;
+    public Optional<Integer> weight = Optional.empty();
     public boolean keep;
-    public Optional<UUID> releasedStateId;
+    public Optional<UUID> releasedStateId = Optional.empty();
     public UUID techniqueId;
-    public Optional<String> description;
-    public Date caughtAt;
+    public Optional<String> description = Optional.empty();
+    public Optional<Date> caughtAt = Optional.empty();
     public boolean withSample;
 
 }
