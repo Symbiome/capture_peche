@@ -12,8 +12,12 @@
                 <i class="pastille icon-plus"/>
               </div>
             </div>
-            <div v-for="c in trip.catchs" v-bind:key="c.id" class="preview-wraper">
-              <CatchPreview v-bind:tripId="id" v-bind:catchId="c.id"/>
+            <div v-for="c in trip.catchs"
+                 v-bind:key="c.id"
+                 class="preview-wraper"
+                 v-on:click="openCatch(c)">
+              <CatchPreview v-bind:tripId="id"
+                            v-bind:catchId="c.id"/>
             </div>
           </div>
           <div class="edit-trip-catchs-new-catch-button">
@@ -126,6 +130,10 @@ export default class TripCatchs extends Vue {
 
   newCatch() {
     router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
+  }
+
+  openCatch(aCatch:CatchBean) {
+    router.push({name:'catch', params: {tripId: this.id, catchId:aCatch.id}});
   }
 
 }
