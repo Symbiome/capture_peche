@@ -34,8 +34,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -232,6 +234,25 @@ public class TripResource extends AbstractFisholaResource {
                 .map(Date::toInstant)
                 .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
 
+        List<Catch> catchs = catchsDao.listCatchs(tripId);
+        result.catchs = catchs.stream()
+                .map(this::toCatchBean)
+                .collect(Collectors.toList());
+
+        return result;
+    }
+
+    private CatchBean toCatchBean(Catch aCatch) {
+        CatchBean result = new CatchBean();
+        result.id = aCatch.getId().toString();
+        result.speciesId = aCatch.getSpeciesId();
+        result.size = aCatch.getSize();
+        result.weight = Optional.ofNullable(aCatch.getWeight());
+        result.keep = aCatch.getKept();
+        result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
+        result.techniqueId = aCatch.getTechniqueId();
+        result.description = Optional.ofNullable(aCatch.getDescription());
+        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime());
         return result;
     }
 

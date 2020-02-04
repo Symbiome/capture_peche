@@ -15,7 +15,10 @@
             </div>
           </div>
           <div class="edit-trip-catchs">
-            Liste des captures ...
+            <CatchPreviewList v-if="ready"
+                              v-bind:lakeId="trip.lakeId"
+                              v-bind:catchs="trip.catchs"
+                              v-on:openCatchFromId="openCatch($event)"/>
           </div>
           <SomeTripSummary ref="summary"
                           v-if="ready"
@@ -45,6 +48,7 @@ import Helpers from '@/pojos/Helpers';
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import SomeTripSummary from '@/components/trip/SomeTripSummary.vue'
+import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -55,6 +59,7 @@ import router from '../../router';
     FisholaHeader,
     SomeTripHeader,
     SomeTripSummary,
+    CatchPreviewList,
     FisholaFooter
   }
 })
@@ -115,6 +120,10 @@ export default class EditTrip extends Vue {
     router.push('/trips');
   }
 
+  openCatch(catchId:string) {
+    router.push({name:'catch', params: {tripId: this.id, catchId:catchId}});
+  }
+
 }
 
 </script>
@@ -132,16 +141,10 @@ export default class EditTrip extends Vue {
 
   .edit-trip-catchs {
 
-    text-align: center;
-
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    color: @white;
-    background-color: @cyprus;
-    opacity: 0.8;
-    border-radius: 8px;
+    flex-direction: row;
+    align-items: center;
+    overflow: auto;
 
     height: 200px;
     margin-bottom: 20px;

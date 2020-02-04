@@ -78,9 +78,42 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static backendCatchToCatchBean(realDate:Date, input:any):CatchBean {
+
+        let result:any = {
+            id: input.id,
+            speciesId: input.speciesId,
+            size: input.size,
+            weight: input.weight,
+            keep: input.keep,
+            releasedStateId: input.releasedStateId,
+            techniqueId: input.techniqueId,
+            description: input.description,
+            withSample: input.withSample
+        };
+
+        if (input.caughtAt) {
+            let timeArray = input.caughtAt.split(':');
+            let caughtAt = new Date(realDate);
+            caughtAt.setHours(timeArray[0], timeArray[1], timeArray[2]);
+
+            result.caughtAt = caughtAt;
+        }
+
+        return result;
+    }
+
     static backendTripToTrip(input:any):TripBean {
         let realDate = new Date(input.date);
         let realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
+
+        let catchs:CatchBean[] = [];
+        if (input.catchs) {
+            input.catchs.forEach((aCatch:any) => {
+                let aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(realDate, aCatch);
+                catchs.push(aCatchBean);
+            });
+        }
 
         let result:any = {
             id: input.id,
@@ -92,7 +125,7 @@ export default class TripsService extends AbstractFisholaService {
             weatherId: input.weatherId,
             date: realDate,
             speciesIds: input.speciesIds || [],
-            catchs: [],
+            catchs: catchs,
         };
 
         if (input.startedAt) {

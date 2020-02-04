@@ -4,21 +4,17 @@
     <div class="edit-trip-catchs-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1 v-if="duration">{{duration}}</h1>
-        <div class="pane-content">
+        <h1>{{duration}}</h1>
+        <div class="pane-content-large">
           <div class="catchs-list">
             <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
               <div class="new-catch-square-button" v-on:click="newCatch">
                 <i class="pastille icon-plus"/>
               </div>
             </div>
-            <div v-for="c in trip.catchs"
-                 v-bind:key="c.id"
-                 class="preview-wraper"
-                 v-on:click="openCatch(c)">
-              <CatchPreview v-bind:tripId="id"
-                            v-bind:catchId="c.id"/>
-            </div>
+            <CatchPreviewList v-bind:lakeId="trip.lakeId"
+                              v-bind:catchs="trip.catchs"
+                              v-on:openCatchFromId="openCatch($event)"/>
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
@@ -46,7 +42,7 @@ import ReferentialService from '@/services/ReferentialService';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import CatchPreview from '@/components/trip/CatchPreview.vue'
+import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -56,7 +52,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
-    CatchPreview,
+    CatchPreviewList,
     FisholaFooter
   }
 })
@@ -133,8 +129,8 @@ export default class TripCatchs extends Vue {
     router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
   }
 
-  openCatch(aCatch:CatchSummary) {
-    router.push({name:'catch', params: {tripId: this.id, catchId:aCatch.id}});
+  openCatch(catchId:string) {
+    router.push({name:'catch', params: {tripId: this.id, catchId:catchId}});
   }
 
 }
@@ -154,7 +150,7 @@ export default class TripCatchs extends Vue {
       color: @gunmetal;
     }
 
-    .pane-content {
+    .pane-content-large {
       text-align:center;
 
       .catchs-list {
@@ -163,10 +159,9 @@ export default class TripCatchs extends Vue {
         align-items: center;
         overflow: auto;
 
-        .preview-wraper {
-          margin-left: 5px;
-          margin-right: 5px;
-        }
+        height: 305px;
+        padding-left: 30px;
+        padding-right: 30px;
 
         .no-catch {
           display: flex;

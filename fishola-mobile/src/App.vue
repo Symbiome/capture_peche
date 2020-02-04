@@ -154,6 +154,12 @@ html {
 
   }
 
+  .pane-content-large {
+
+    overflow: auto;
+
+  }
+
 }
 
 </style>

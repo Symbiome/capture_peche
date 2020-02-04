@@ -5,11 +5,12 @@
         <div class="meta-row">
           <i class="icon-size"/> {{aCatch.size}} cm<br/>
         </div>
-        <div class="meta-row">
+        <div class="meta-row" v-if="caughtAtLabel">
           <i class="icon-clock"/> {{caughtAtLabel}}<br/>
         </div>
         <div class="meta-row">
-          Lorem - ipsum
+          {{techniqueLabel}}
+          <span v-if="!aCatch.keep"> - relâché</span>
         </div>
       </div>
     </div>
@@ -20,7 +21,7 @@
       </div>
       <div class="bottom-right">
         Voir
-        <button><i class="icon-arrow"/></button>
+        <button v-on:click="$emit('openCatch');"><i class="icon-arrow"/></button>
       </div>
     </div>
   </div>
@@ -39,33 +40,31 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component
 export default class CatchPreview extends Vue {
 
-  @Prop() tripId!:string;
-  @Prop() catchId!:string;
+  @Prop() lakeId: string;
+  @Prop() aCatch: CatchSummary;
 
-  aCatch: CatchSummary = {id: '', withSample: false};
-
-  speciesLabel:string = '';
   caughtAtLabel:string = '';
+  techniqueLabel:string = '';
+  speciesLabel:string = '';
 
   created() {
-    TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
-  }
-
-  tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
-    let lakeId:string = someTrip.lakeId;
-    this.aCatch = someCatch;
-
-    if (someCatch.caughtAt) {
-      this.caughtAtLabel = Helpers.formatToTime(someCatch.caughtAt);
+    if (this.aCatch.caughtAt) {
+      this.caughtAtLabel = Helpers.formatToTime(this.aCatch.caughtAt);
     }
 
-    ReferentialService.getSpecies(lakeId, this.speciesLoaded);
+    ReferentialService.getSpeciesAndTechniques(this.lakeId, this.speciesLoaded);
+
   }
 
-  speciesLoaded(species:SpeciesWithAlias[]) {
+  speciesLoaded(species:SpeciesWithAlias[],techniques:Technique[]) {
     species.forEach(s => {
       if (this.aCatch.speciesId == s.id) {
         this.speciesLabel = s.name;
+      }
+    });
+    techniques.forEach(t => {
+      if (this.aCatch.techniqueId == t.id) {
+        this.techniqueLabel = t.name;
       }
     });
   }
@@ -81,12 +80,17 @@ export default class CatchPreview extends Vue {
 
 .catch-preview {
   width: 295px;
-  height: 295px;
-  border-radius: 8px;
+  height: 100%;
+  // border-radius: 8px;
+  padding: 5px;
   // border: 1px solid @gunmetal;
 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   .preview-top {
-    height: 245px;
+    flex: 1;
     background-color: @gainsboro;
 
     border-top-left-radius: 8px;
@@ -101,7 +105,7 @@ export default class CatchPreview extends Vue {
     }
 
     .meta {
-      width: 163px;
+      width: fit-content;
       height: 108px;
       background: @cyprus;
       opacity: 0.8;

@@ -106,4 +106,13 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
+    static getSpeciesAndTechniques(lakeId:string, callback:(species:SpeciesWithAlias[],techniques:Technique[])=>any) {
+        // FIXME AThimel 23/12/2019 Utiliser des promises
+        ReferentialService.getSpecies(lakeId, (species:SpeciesWithAlias[]) => {
+            ReferentialService.getTechniques((techniques:Technique[]) => {
+                callback(species, techniques);
+            });
+        });
+    }
+
 }
