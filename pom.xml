@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.5</version>
+    <version>11.7</version>
   </parent>
 
   <groupId>fr.inra</groupId>
