@@ -218,8 +218,13 @@ export default class EditCatch extends Vue {
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
-      TripsService.saveCatch(this.tripId, this.aCatch, this.catchSaved);
+      let aCatchBean:CatchBean = this.castToBean(this.aCatch);
+      TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
+  }
+
+  castToBean(input:any):CatchBean {
+    return input;
   }
 
   catchSaved() {
@@ -234,9 +239,5 @@ export default class EditCatch extends Vue {
 <style lang="less">
 
 @import "../../less/main";
-
-.edit-catch-page {
-
-}
 
 </style>

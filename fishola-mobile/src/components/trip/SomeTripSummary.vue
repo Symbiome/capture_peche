@@ -148,6 +148,8 @@ export default class SomeTripSummary extends Vue {
       this.speciesLabel = 'Espèces recherchées';
     }
 
+    this.technics.push('Work in progress');
+
     this.allTripTypes.forEach((tt) => {
       if (tt.id == someTrip.type) {
         this.types.push(tt.name);

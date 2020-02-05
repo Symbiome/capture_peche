@@ -15,11 +15,19 @@
               pour modifier cette sortie
             </div>
           </div>
-          <div class="edit-trip-catchs">
+          <div class="edit-trip-catchs"
+               v-if="modifiable || trip.catchs.length > 0">
             <CatchPreviewList v-if="ready"
+                              v-bind:modifiable="modifiable"
                               v-bind:lakeId="trip.lakeId"
                               v-bind:catchs="trip.catchs"
+                              v-on:newCatch="newCatch()"
                               v-on:openCatchFromId="openCatch($event)"/>
+          </div>
+          <div class="edit-trip-no-catch"
+               v-if="!modifiable && trip.catchs.length == 0">
+            <i class="icon-fish"/>
+            <span>Aucune capture</span>
           </div>
           <SomeTripSummary ref="summary"
                            v-if="ready"
@@ -45,6 +53,7 @@
 import {TripBean} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
+import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
 
 import FisholaHeader from '@/layout/FisholaHeader.vue'
@@ -122,6 +131,12 @@ export default class EditTrip extends Vue {
     router.push('/trips');
   }
 
+  newCatch() {
+    if (this.modifiable) {
+      router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
+    }
+  }
+
   openCatch(catchId:string) {
     router.push({name:'catch', params: {tripId: this.id, catchId:catchId}});
   }
@@ -141,6 +156,25 @@ export default class EditTrip extends Vue {
     color: @gunmetal;
   }
 
+  .edit-trip-no-catch {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    margin-bottom: 20px;
+
+    font-size: 12px;
+    line-height: 16px;
+    color: @pale-sky;
+
+    span {
+      margin-left: 5px;
+      font-style: italic;
+    }
+
+  }
+
   .edit-trip-catchs {
 
     display: flex;
@@ -151,8 +185,6 @@ export default class EditTrip extends Vue {
     height: 200px;
     margin-bottom: 20px;
 
-    padding-left: 30px;
-    padding-right: 30px;
   }
 
   .edit-trip-modifiable-until {

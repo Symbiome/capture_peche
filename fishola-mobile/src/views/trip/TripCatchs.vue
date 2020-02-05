@@ -7,13 +7,10 @@
         <h1>{{duration}}</h1>
         <div class="pane-content-large">
           <div class="catchs-list">
-            <div v-if="!trip.catchs || trip.catchs.length == 0" class="no-catch">
-              <div class="new-catch-square-button" v-on:click="newCatch">
-                <i class="pastille icon-plus"/>
-              </div>
-            </div>
-            <CatchPreviewList v-bind:lakeId="trip.lakeId"
+            <CatchPreviewList v-bind:modifiable="true"
+                              v-bind:lakeId="trip.lakeId"
                               v-bind:catchs="trip.catchs"
+                              v-on:newCatch="newCatch()"
                               v-on:openCatchFromId="openCatch($event)"/>
           </div>
           <div class="edit-trip-catchs-new-catch-button">
@@ -160,44 +157,7 @@ export default class TripCatchs extends Vue {
         overflow: auto;
 
         height: 305px;
-        padding-left: 30px;
-        padding-right: 30px;
 
-        .no-catch {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-
-          .new-catch-square-button {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-
-            background-image: url("/img/illustration_fish_wire.svg");
-            background-repeat: no-repeat;
-            background-size: 67%;
-            background-position: center;
-
-            border: 1px dashed @pale-sky;
-            border-radius: 8px;
-            height: 295px;
-            width: 295px;
-
-            cursor: pointer;
-
-            .pastille {
-              width: 70px;
-              height: 70px;
-              line-height: 30px;
-              font-size: 30px;
-              color: @white;
-              background: @pale-sky;
-            }
-          }
-
-        }
       }
 
     }

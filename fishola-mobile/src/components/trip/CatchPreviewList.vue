@@ -1,5 +1,12 @@
 <template>
   <div class="catch-preview-list">
+    <div class="new-catch" 
+         v-if="modifiable">
+      <div class="new-catch-square-button"
+           v-on:click="newCatch">
+        <i class="pastille icon-plus"/>
+      </div>
+    </div>
     <div v-for="c in reversedCatchs()"
           v-bind:key="c.id"
           class="preview-wrapper"
@@ -32,6 +39,7 @@ export default class CatchPreviewList extends Vue {
 
   @Prop() lakeId:string;
   @Prop() catchs:CatchSummary[];
+  @Prop() modifiable:boolean;
 
   created() {
   }
@@ -42,6 +50,10 @@ export default class CatchPreviewList extends Vue {
     } else {
       return this.catchs;
     }
+  }
+
+  newCatch() {
+    this.$emit('newCatch');
   }
 
   openCatch(aCatch:CatchSummary) {
@@ -60,6 +72,49 @@ export default class CatchPreviewList extends Vue {
 
   height: 100%;
   display: flex;
+
+  padding-left: 30px;
+  padding-right: 30px;
+
+  .new-catch {
+
+    height: 100%;
+
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    .new-catch-square-button {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      background-image: url("/img/illustration_fish_wire.svg");
+      background-repeat: no-repeat;
+      background-size: auto 75%;
+      background-position: center;
+
+      border: 1px dashed @pale-sky;
+      border-radius: 8px;
+      height: 100%;
+      width: 295px;
+
+      margin-left: 5px;
+      margin-right: 5px;
+
+      cursor: pointer;
+
+      .pastille {
+        width: 70px;
+        height: 70px;
+        line-height: 30px;
+        font-size: 30px;
+        color: @white;
+        background: @pale-sky;
+      }
+
+    }
+  }
 
   .preview-wrapper {
   }

@@ -7,7 +7,10 @@
       <a v-if="!readonly" v-on:click="clicked">Modifier</a>
     </div>
     <ul>
-      <li v-for="v in values" v-bind:key="v">{{v}}</li>
+      <li v-for="v in values"
+          v-bind:key="v"
+          v-bind:class="v == 'Work in progress' ? 'warning':''"
+          >{{v}}</li>
     </ul>
   </div>
 </template>
@@ -83,6 +86,10 @@ export default class FormMultiValues extends Vue {
       line-height: 16px;
       color: @gunmetal;
       text-align: left;
+
+      &.warning {
+        color: @carrot-orange;
+      }
     }
   }
 
