@@ -107,6 +107,7 @@ export default class EditCatch extends Vue {
   @Prop() tripId!:string;
   @Prop() catchId!:string;
 
+  tripDate?:Date;
   aCatch: CatchSummary = {id: '', withSample: false};
 
   caughtAt:string = '';
@@ -135,6 +136,7 @@ export default class EditCatch extends Vue {
 
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
+    this.tripDate = someTrip.date;
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
@@ -199,6 +201,13 @@ export default class EditCatch extends Vue {
     } else {
       hasError = true;
       this.techniqueIdError = 'Technique de pêche obligatoire';
+    }
+
+    if (this.caughtAt && this.caughtAt.length > 0) {
+      let newDate = Helpers.parseDateTime(this.tripDate || new Date(), this.caughtAt);
+      this.aCatch.caughtAt = newDate;
+    } else {
+      delete this.aCatch.caughtAt;
     }
 
     if (hasError) {

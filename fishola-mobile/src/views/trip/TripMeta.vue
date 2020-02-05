@@ -154,7 +154,7 @@ export default class TripMetaVue extends Vue {
         if (this.startedAt) {
           this.startedAtError = '';
 
-          let startedAt = Helpers.parseDateTime(this.date, this.startedAt);
+          let startedAt = Helpers.parseDateTime(newDate, this.startedAt);
           this.trip!.startedAt = startedAt;
         } else {
           this.startedAtError = "Vous devez renseigner l'heure de début";
@@ -164,7 +164,7 @@ export default class TripMetaVue extends Vue {
         if (this.finishedAt) {
           this.finishedAtError = '';
 
-          let finishedAt = Helpers.parseDateTime(this.date, this.finishedAt);
+          let finishedAt = Helpers.parseDateTime(newDate, this.finishedAt);
           this.trip!.finishedAt = finishedAt;
         } else {
           this.finishedAtError = "Vous devez renseigner l'heure de fin";

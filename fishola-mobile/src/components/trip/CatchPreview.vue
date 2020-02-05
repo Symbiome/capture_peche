@@ -21,7 +21,9 @@
       </div>
       <div class="bottom-right">
         Voir
-        <button v-on:click="$emit('openCatch');"><i class="icon-arrow"/></button>
+        <button v-on:click="$emit('openCatch');">
+          <i class="icon-arrow"/>
+        </button>
       </div>
     </div>
   </div>

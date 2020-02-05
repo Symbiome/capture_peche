@@ -84,7 +84,7 @@ export default class Helpers {
         return result;
     }
 
-    static parseDateTime(date:string, time:string):Date {
+    static parseDateTime(date:Date, time:string):Date {
         let result = new Date(date);
         let hour = parseInt(time.substring(0, 2));
         let minute = parseInt(time.substring(3));
