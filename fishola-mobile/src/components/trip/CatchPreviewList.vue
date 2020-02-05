@@ -1,6 +1,6 @@
 <template>
   <div class="catch-preview-list">
-    <div v-for="c in catchs"
+    <div v-for="c in reversedCatchs()"
           v-bind:key="c.id"
           class="preview-wrapper"
           v-on:click="openCatch(c)">
@@ -34,6 +34,14 @@ export default class CatchPreviewList extends Vue {
   @Prop() catchs:CatchSummary[];
 
   created() {
+  }
+
+  reversedCatchs() {
+    if (this.catchs) {
+      return this.catchs.slice().reverse();
+    } else {
+      return this.catchs;
+    }
   }
 
   openCatch(aCatch:CatchSummary) {

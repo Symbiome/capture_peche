@@ -6,7 +6,7 @@
     </div>
     <div class="header-icons">
       <div class="header-icons-group">
-        <span v-if="trip">{{catchs}}</span>
+        <span v-if="trip">{{catchsCount()}}</span>
         <span v-if="!trip">0</span>
         <i class="icon-fish"></i>
       </div>
@@ -21,19 +21,21 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class SomeTripHeader extends Vue {
-  @Prop() trip?:TripMeta;
-
-  catchs:number = 0;
+  @Prop() trip:TripMeta;
 
   created() {
-    this.catchs = this.getCatchs(this.trip);
   }
 
-  getCatchs(object:any) {
+  getCatchs(object:any):number {
     if (object && object.catchs) {
       return object.catchs.length;
     }
     return 0;
+  }
+
+  catchsCount():number {
+    let result:number = this.getCatchs(this.trip);
+    return result;
   }
 
 }

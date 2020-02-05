@@ -24,11 +24,21 @@ export default class App extends Vue {
       let syncDelay = 30000;
       console.log(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
       setInterval(this.checkOutOfSyncTrips, syncDelay);
+
+      this.$root.$on('ask-for-sync-check', this.checkOutOfSyncTrips);
+    }
+
+    beforeDestroy() {
+      this.$root.$off('ask-for-sync-check');
     }
 
     checkOutOfSyncTrips() {
       console.log("Y'a-t'il des sorties à synchronizer ?");
-      TripsService.syncTrips();
+      TripsService.syncTrips(this.outOfSyncTripsSaved);
+    }
+
+    outOfSyncTripsSaved() {
+      this.$root.$emit('trips-saved');
     }
 }
 

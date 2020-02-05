@@ -8,6 +8,7 @@ import fr.inra.fishola.entities.tables.pojos.Catch;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.exceptions.AccessDeniedException;
 import fr.inra.fishola.rest.AbstractFisholaResource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuiton.util.pagination.PaginationParameter;
@@ -148,8 +149,7 @@ public class TripResource extends AbstractFisholaResource {
             log.debug(created + " espèce(s) recherchée(s)");
         }
 
-        // TODO: 02/01/2020 Catchs
-        for (CatchBean aCatch : trip.catchs) {
+        for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
             Catch catchPojo = new Catch();
             catchPojo.setTripId(tripId);
             catchPojo.setCreatedOn(Timestamp.from(Instant.now()));

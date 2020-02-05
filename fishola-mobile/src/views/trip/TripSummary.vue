@@ -72,6 +72,7 @@ export default class TripSummaryVue extends Vue {
 
   tripSaved() {
     router.push('/trips');
+    this.$root.$emit('ask-for-sync-check');
   }
 
 }

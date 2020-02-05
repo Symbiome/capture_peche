@@ -56,6 +56,18 @@ export default class MyTrips extends Vue {
     TripsService.listTrips(this.sortDown, this.tripsLoaded);
   }
 
+  mounted() {
+    this.$root.$on('trips-saved', () => {
+      console.log("La liste des sorties a été mise à jour, on rafraichit ...");
+      TripsService.listTrips(this.sortDown, this.tripsLoaded);
+    });
+  }
+
+  beforeDestroy() {
+    // On fait en sortie de ne plus écouter les évènements si le composant n'est plus actif
+    this.$root.$off('trips-saved');
+  }
+
   tripsLoaded(ts:TripLight[], count:number) {
     this.trips.slice();
     this.trips = ts;

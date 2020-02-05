@@ -2,10 +2,11 @@
   <div class="edit-trip page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-if="ready"
+                      v-bind:trip="trip"/>
       <div class="pane">
         <h1>{{duration}}</h1>
-        <div class="pane-content">
+        <div class="pane-content-large">
           <div v-if="modifiable"
               class="edit-trip-modifiable-until">
             <i class="icon-edit"/>
@@ -21,10 +22,11 @@
                               v-on:openCatchFromId="openCatch($event)"/>
           </div>
           <SomeTripSummary ref="summary"
-                          v-if="ready"
-                          v-bind:trip="trip"
-                          v-bind:readonly="!modifiable"
-                          v-on:trip-modified="onUpdatedTrip"/>
+                           v-if="ready"
+                           v-bind:trip="trip"
+                           v-bind:readonly="!modifiable"
+                           v-on:trip-modified="onUpdatedTrip"
+                           class="summary-pane"/>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -148,6 +150,9 @@ export default class EditTrip extends Vue {
 
     height: 200px;
     margin-bottom: 20px;
+
+    padding-left: 30px;
+    padding-right: 30px;
   }
 
   .edit-trip-modifiable-until {
@@ -168,6 +173,11 @@ export default class EditTrip extends Vue {
       text-align: left;
     }
 
+  }
+
+  .summary-pane {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 
 }

@@ -322,15 +322,19 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static syncTrips() {
-        this.getInstance().dirtyTrips
-            // .filter(t => t.dirty === true)
-            .each((dirtyTrip:TripBean) => this.syncTrip(dirtyTrip, (result:boolean) => {
+    static syncTrips(dirtyTripsSavedCallback:()=>void) {
+        this.getInstance().dirtyTrips.toArray((dirtyTrips) => {
+
+            dirtyTrips
+            .forEach((dirtyTrip:TripBean) => this.syncTrip(dirtyTrip, (result:boolean) => {
                 console.log(result);
                 if (result) {
                     this.getInstance().dirtyTrips.delete(dirtyTrip.id!);
+                    dirtyTripsSavedCallback();
                 }
             }));
+        });
+
     }
 
     static syncTrip(trip:TripBean, callback: (success:boolean) => void) {
