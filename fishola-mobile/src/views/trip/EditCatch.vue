@@ -4,7 +4,7 @@
     <div class="edit-catch-page page">
       <div class="pane">
         <h1>Capture</h1>
-        <div class="pane-content">
+        <div class="pane-content" v-if="ready">
           <FormSelect name="species"
                       label="Éspèce"
                       v-bind:options="allSpecies"
@@ -107,6 +107,10 @@ export default class EditCatch extends Vue {
   @Prop() tripId!:string;
   @Prop() catchId!:string;
 
+  // On est obligés de gérer un flag de ce genre, sinon les FormSelect
+  // sont créés à vide et ne sélectionnent pas les bonnes valeurs
+  ready:boolean = false;
+
   tripDate?:Date;
   aCatch: CatchSummary = {id: '', withSample: false};
 
@@ -147,9 +151,10 @@ export default class EditCatch extends Vue {
   }
 
   speciesAndTechniquesLoaded(species:SpeciesWithAlias[], techniques:Technique[], states:ReleasedFishState[]) {
-    this.allSpecies = species;
-    this.allTechniques = techniques;
-    this.allReleasedFishStates= states;
+    species.forEach((s) => this.allSpecies.push(s));
+    techniques.forEach((t) => this.allTechniques.push(t));
+    states.forEach((s) => this.allReleasedFishStates.push(s));
+    this.ready = true;
   }
 
   validateClicked() {
