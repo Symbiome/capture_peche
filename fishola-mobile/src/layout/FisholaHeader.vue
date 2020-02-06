@@ -51,6 +51,7 @@ export default class FisholaHeader extends Vue {
   padding-bottom: 0px;
   line-height: 30px;
 
+  z-index: 10;
 
   .header-buttons {
     display: flex;

@@ -38,6 +38,8 @@ export default class FooterButton extends Vue {
   display: flex;
   justify-content: center;
 
+  z-index: 10;
+
   div {
     height: 44px;
   }

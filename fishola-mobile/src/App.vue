@@ -113,7 +113,6 @@ html {
   background-size: 100%;
   background-position: center;
   background-position-y: -230px;
-
 }
 
 .secondary-header {
@@ -143,6 +142,8 @@ html {
 
   color: @gunmetal;
 
+  z-index: 10;
+
   h1 {
     margin-top: 40px;
     margin-bottom: 40px;
@@ -170,6 +171,12 @@ html {
 
   }
 
+}
+
+.picture-background {
+  .pane {
+    margin-top: 95px;
+  }
 }
 
 </style>

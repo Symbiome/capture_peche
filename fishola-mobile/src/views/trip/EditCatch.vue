@@ -1,6 +1,8 @@
 <template>
-  <div class="edit-catch page-with-header-and-footer shifted-background">
+  <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
+    <PicturePreview v-on:take-picture="takePicture()"
+                    v-bind:pictureId="pictureId"/>
     <div class="edit-catch-page page">
       <div class="pane">
         <h1>Capture</h1>
@@ -85,6 +87,7 @@ import FormInput from '@/components/common/FormInput.vue'
 import FormYesNo from '@/components/common/FormYesNo.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
+import PicturePreview from '@/components/trip/PicturePreview.vue'
 import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -100,6 +103,7 @@ import Constants from '../../services/Constants';
     FormMultiValues,
     FormSelect,
     FormToggle,
+    PicturePreview,
     FisholaFooter
   }
 })
@@ -114,6 +118,8 @@ export default class EditCatch extends Vue {
 
   tripDate?:Date;
   aCatch: CatchSummary = {id: '', withSample: false};
+
+  pictureId:string = '';
 
   caughtAt:string = '';
 
@@ -167,6 +173,11 @@ export default class EditCatch extends Vue {
     techniques.forEach((t) => this.allTechniques.push(t));
     states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
+  }
+
+  takePicture() {
+    this.pictureId = 'azerty';
+    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 
   validateClicked() {
