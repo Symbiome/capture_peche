@@ -126,6 +126,7 @@ export default class EditCatch extends Vue {
 
   modifiable:boolean = true;
   inCreation:boolean = true;
+  inTripCreation:boolean = true;
   middleShortcut:string = '';
   rightShortcut:string = 'delete';
 
@@ -144,8 +145,9 @@ export default class EditCatch extends Vue {
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
-    this.middleShortcut = (someTrip.createdOn ? 'spacer':'step-3-4');
-    this.modifiable = (!someTrip.createdOn || !!someTrip.modifiableUntil);
+    this.inTripCreation = !someTrip.createdOn;
+    this.middleShortcut = (this.inTripCreation ? 'step-3-4':'spacer');
+    this.modifiable = (this.inTripCreation || !!someTrip.modifiableUntil);
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
@@ -238,7 +240,11 @@ export default class EditCatch extends Vue {
   }
 
   catchSaved() {
-    router.push({name:'trip-catchs', params: {id: this.tripId}});
+    if (this.inTripCreation) {
+      router.push({name:'trip-catchs', params: {id: this.tripId}});
+    } else {
+      router.push({name:'trip', params: {id: this.tripId}});
+    }
   }
 
 }
