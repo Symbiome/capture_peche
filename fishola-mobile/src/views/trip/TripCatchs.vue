@@ -156,7 +156,7 @@ export default class TripCatchs extends Vue {
         align-items: center;
         overflow: auto;
 
-        height: 305px;
+        height: calc(100vw - 80px);
 
       }
 

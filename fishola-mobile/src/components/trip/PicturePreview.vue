@@ -3,7 +3,7 @@
        v-on:click="$emit('take-picture')">
     <div v-if="!pictureId" class="no-picture">
       <img src="/img/camera.svg"/>
-      <span>Appuyer pour ajouter une photo</span>
+      <span>{{noPictureText}}</span>
     </div>
     <img v-if="pictureId" 
          class="picture" 
@@ -25,6 +25,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class PicturePreview extends Vue {
 
   @Prop() pictureId?:string;
+  @Prop({default:'Aucune photo'}) noPictureText?:string;
 
   created() {
   }
@@ -33,17 +34,14 @@ export default class PicturePreview extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 
 @import "../../less/main";
 
 .picture-preview {
 
-  height: 165px;
+  height: 100%;
   width: 100%;
-  position: absolute;
-  top: 0;
-  background-color: @gainsboro;
 
   img.picture {
     height: 100%;

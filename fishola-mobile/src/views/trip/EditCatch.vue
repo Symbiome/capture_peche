@@ -1,8 +1,11 @@
 <template>
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
-    <PicturePreview v-on:take-picture="takePicture()"
-                    v-bind:pictureId="pictureId"/>
+    <div class="catch-picture">
+      <PicturePreview v-bind:pictureId="pictureId"
+                      noPictureText="Appuyer pour ajouter une photo"
+                      v-on:take-picture="takePicture()" />
+    </div>
     <div class="edit-catch-page page">
       <div class="pane">
         <h1>Capture</h1>
@@ -266,5 +269,15 @@ export default class EditCatch extends Vue {
 <style lang="less">
 
 @import "../../less/main";
+
+.edit-catch {
+  .catch-picture {
+    height: 165px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    background-color: @gainsboro;
+  }
+}
 
 </style>

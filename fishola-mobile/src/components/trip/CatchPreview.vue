@@ -1,6 +1,6 @@
 <template>
   <div class="catch-preview">
-    <div class="preview-top no-picture">
+    <div class="preview-top">
       <div class="meta">
         <div class="meta-row">
           <i class="icon-size"/> {{aCatch.size}} cm<br/>
@@ -12,6 +12,11 @@
           {{techniqueLabel}}
           <span v-if="!aCatch.keep"> - relâché</span>
         </div>
+      </div>
+
+      <div class="preview-picture">
+        <PicturePreview v-bind:pictureId="pictureId"
+                        v-on:take-picture="takePicture()" />
       </div>
     </div>
     <div class="preview-bottom">
@@ -33,13 +38,19 @@
 import CatchSummary from '@/pojos/CatchSummary';
 import {SpeciesWithAlias, Technique, TripBean} from '@/pojos/BackendPojos';
 
+import PicturePreview from '@/components/trip/PicturePreview.vue';
+
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
+@Component({
+  components: {
+    PicturePreview
+  }
+})
 export default class CatchPreview extends Vue {
 
   @Prop() lakeId: string;
@@ -48,6 +59,8 @@ export default class CatchPreview extends Vue {
   caughtAtLabel:string = '';
   techniqueLabel:string = '';
   speciesLabel:string = '';
+
+  pictureId:string = '';
 
   created() {
     if (this.aCatch.caughtAt) {
@@ -76,16 +89,14 @@ export default class CatchPreview extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 
 @import "../../less/main";
 
 .catch-preview {
-  width: 295px;
+  width: calc(100vw - 80px);
   height: 100%;
-  // border-radius: 8px;
   padding: 5px;
-  // border: 1px solid @gunmetal;
 
   display: flex;
   flex-direction: column;
@@ -97,21 +108,20 @@ export default class CatchPreview extends Vue {
 
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    padding: 20px;
 
-    &.no-picture {
-
-      background-image: url("/img/camera.svg");
-      background-repeat: no-repeat;
-      background-position: center;
-    }
+    position:relative;
 
     .meta {
+      position: absolute;
+      z-index: 20;
       width: fit-content;
       height: 108px;
       background: @cyprus;
       opacity: 0.8;
       border-radius: 8px;
+
+      margin-top: 20px;
+      margin-left: 20px;
 
       padding: 20px;
       font-size: 12px;
@@ -127,6 +137,23 @@ export default class CatchPreview extends Vue {
         }
       }
     }
+
+
+    .preview-picture {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      height: 100%;
+      width: 100%;
+      z-index: 15;
+
+      img.picture {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+    }
+
+
   }
 
   .preview-bottom {

@@ -73,8 +73,8 @@ export default class CatchPreviewList extends Vue {
   height: 100%;
   display: flex;
 
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 35px;
+  padding-right: 35px;
 
   .new-catch {
 
@@ -97,7 +97,7 @@ export default class CatchPreviewList extends Vue {
       border: 1px dashed @pale-sky;
       border-radius: 8px;
       height: 100%;
-      width: 295px;
+      width: calc(100vw - 80px);
 
       margin-left: 5px;
       margin-right: 5px;
