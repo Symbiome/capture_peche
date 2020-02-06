@@ -60,6 +60,7 @@ html {
 
 * {
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 #app {
