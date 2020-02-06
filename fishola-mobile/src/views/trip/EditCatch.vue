@@ -10,63 +10,63 @@
                       v-bind:options="allSpecies"
                       v-model="aCatch.speciesId"
                       v-bind:error="speciesIdError"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="!modifiable"/>
           <FormInput name="size"
                      label="Taille (en cm)"
                      type="number"
                      placeholder="Entrez une taille (en cm)"
                      v-model="aCatch.size"
                      v-bind:error="sizeError"
-                     v-bind:readonly="readonly"/>
+                     v-bind:readonly="!modifiable"/>
           <FormInput name="weight"
                      label="Poids (en g, optionnel)"
                      type="number"
                      placeholder="Entrez un poids (en g)"
                      v-model="aCatch.weight"
                      v-bind:error="weightError"
-                     v-bind:readonly="readonly"/>
+                     v-bind:readonly="!modifiable"/>
           <FormYesNo name="keep"
                      label="Conservez-vous ce poisson ?"
                      v-model="aCatch.keep"
                      v-bind:error="keepError"
-                     v-bind:readonly="readonly"/>
+                     v-bind:readonly="!modifiable"/>
           <FormSelect name="releaseState"
                       v-if="aCatch.keep === false"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
                       v-model="aCatch.releasedStateId"
                       v-bind:error="releasedStateIdError"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="!modifiable"/>
           <FormSelect name="technique"
                       label="Technique de pêche"
                       v-bind:options="allTechniques"
                       v-model="aCatch.techniqueId"
                       v-bind:error="techniqueIdError"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="!modifiable"/>
           <FormTextarea name="description"
                         label="Description (optionnelle)"
                         placeholder="Écrivez une description"
                         v-model="aCatch.description"
-                        v-bind:readonly="readonly"/>
+                        v-bind:readonly="!modifiable"/>
           <FormInput name="caughtAt"
                      label="Heure (optionnelle)"
                      type="time"
                      v-model="caughtAt"
-                     v-bind:readonly="readonly"/>
+                     v-bind:readonly="!modifiable"/>
           <FormToggle label="Prélèvement (optionnel)"
                       v-model="aCatch.withSample"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="!modifiable"/>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
     </div>
-    <FisholaFooter v-if="modifiable"
-                   button-text="Valider"
+    <FisholaFooter v-if="modifiable && ready"
+                   v-bind:button-text="inCreation ? 'Valider' : 'Modifier'"
                    button-icon="icon-fish"
                    v-on:buttonClicked="validateClicked"
-                   shortcuts="back,step-3-4,delete"/>
+                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"/>
     <FisholaFooter v-if="!modifiable"
-                   shortcuts="back,step-3-4,delete"/>
+                   shortcuts="back,spacer,delete"/>
   </div>
 </template>
 
@@ -89,6 +89,7 @@ import FisholaFooter from '@/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
+import Constants from '../../services/Constants';
 
 @Component({
   components: {
@@ -123,9 +124,10 @@ export default class EditCatch extends Vue {
   releasedStateIdError:string = '';
   techniqueIdError:string = '';
 
-  readonly:boolean = false;
-
   modifiable:boolean = true;
+  inCreation:boolean = true;
+  middleShortcut:string = '';
+  rightShortcut:string = 'delete';
 
   allSpecies:SpeciesWithAlias[] = [];
   allTechniques:Technique[] = [];
@@ -133,6 +135,7 @@ export default class EditCatch extends Vue {
 
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
+    this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
   }
 
   mounted() {
@@ -141,10 +144,17 @@ export default class EditCatch extends Vue {
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
+    this.middleShortcut = (someTrip.createdOn ? 'spacer':'step-3-4');
+    this.modifiable = (!someTrip.createdOn || !!someTrip.modifiableUntil);
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.formatToTime(someCatch.caughtAt);
+
+      if (this.inCreation && someTrip.mode == 'Live') {
+        let millis:number = someCatch.caughtAt!.getTime() - someTrip.startedAt.getTime();
+        this.rightShortcut = 'timer-' + Math.floor(millis/1000);
+      }
     }
 
     ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId, this.speciesAndTechniquesLoaded);

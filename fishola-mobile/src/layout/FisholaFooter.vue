@@ -39,6 +39,10 @@
          v-on:click="goHome">
       <i class="icon-home"></i>
     </div>
+    <div class="footer-element"
+         v-if="timer">
+      {{timer}}
+    </div>
     <div class="footer-element pastille"
          v-if="activeButtons['giveup']"
          v-on:click="giveup">
@@ -63,6 +67,7 @@ import UserProfile from '@/pojos/UserProfile';
 import FooterButton from '@/layout/FooterButton.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import Helpers from '../pojos/Helpers';
 
 @Component({
   components: {
@@ -78,6 +83,7 @@ export default class FisholaFooter extends Vue {
   @Prop() backEvent?: string;
 
   steps:any[] = [];
+  timer:string = '';
 
   activeButtons: any = {
     back: false,
@@ -106,6 +112,10 @@ export default class FisholaFooter extends Vue {
         });
       }
 
+    }
+    if (key && key.indexOf('timer-') == 0) {
+      let seconds:number = parseInt(key.substring(6));
+      this.timer = Helpers.computeDurationFromSeconds(seconds);
     }
     this.activeButtons[key] = true;
   }
