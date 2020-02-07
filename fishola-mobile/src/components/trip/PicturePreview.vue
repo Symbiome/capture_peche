@@ -1,13 +1,13 @@
 <template>
   <div class="picture-preview"
        v-on:click="$emit('take-picture')">
-    <div v-if="!pictureId" class="no-picture">
+    <div v-if="!src" class="no-picture">
       <img src="/img/camera.svg"/>
       <span>{{noPictureText}}</span>
     </div>
-    <img v-if="pictureId" 
+    <img v-if="src"
          class="picture" 
-         src="/img/omble.png">
+         v-bind:src="src">
   </div>
 </template>
 
@@ -24,7 +24,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component
 export default class PicturePreview extends Vue {
 
-  @Prop() pictureId?:string;
+  @Prop() src:string = '';
   @Prop({default:'Aucune photo'}) noPictureText?:string;
 
   created() {

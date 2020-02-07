@@ -35,7 +35,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -120,7 +122,9 @@ public class TripResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/")
-    public void createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
+    public Map<String, UUID> createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
+
+        Map<String, UUID> result = new HashMap<>();
 
         // TODO: 30/12/2019 Détection des doublons
         // TODO: 03/02/2020 Transaction !
@@ -140,6 +144,7 @@ public class TripResource extends AbstractFisholaResource {
         entity.setWeatherId(trip.weatherId);
 
         UUID tripId = tripsDao.create(entity);
+        result.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
             log.debug("Trip créé avec l'ID :" + tripId);
         }
@@ -166,11 +171,13 @@ public class TripResource extends AbstractFisholaResource {
             aCatch.description.ifPresent(catchPojo::setDescription);
 
             UUID catchId = catchsDao.create(catchPojo);
+            result.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
                 log.debug("Catch créé avec l'ID :" + catchId);
             }
         }
 
+        return result;
     }
 
     @POST

@@ -15,7 +15,7 @@
       </div>
 
       <div class="preview-picture">
-        <PicturePreview v-bind:pictureId="pictureId"
+        <PicturePreview v-bind:src="pictureSrc"
                         v-on:take-picture="takePicture()" />
       </div>
     </div>
@@ -40,6 +40,7 @@ import {SpeciesWithAlias, Technique, TripBean} from '@/pojos/BackendPojos';
 
 import PicturePreview from '@/components/trip/PicturePreview.vue';
 
+import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
@@ -60,15 +61,21 @@ export default class CatchPreview extends Vue {
   techniqueLabel:string = '';
   speciesLabel:string = '';
 
-  pictureId:string = '';
+  pictureSrc:string = '';
 
   created() {
     if (this.aCatch.caughtAt) {
       this.caughtAtLabel = Helpers.formatToTime(this.aCatch.caughtAt);
     }
 
+    PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
+
     ReferentialService.getSpeciesAndTechniques(this.lakeId, this.speciesLoaded);
 
+  }
+
+  pictureLoaded(content?:string) {
+    this.pictureSrc = content;
   }
 
   speciesLoaded(species:SpeciesWithAlias[],techniques:Technique[]) {

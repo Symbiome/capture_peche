@@ -6,6 +6,7 @@
                      v-bind:sortDown="sortDown"
                      v-on:reverseSortOrder="reverseSortOrder"/>
       <MyTripsSearch/>
+      <img v-bind:src="imageContent"/>
       <MyTripsList v-bind:trips="trips" v-bind:loading="loading"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
@@ -47,6 +48,8 @@ export default class MyTrips extends Vue {
   sortDown:boolean = true;
   count:number = 0;
 
+  imageContent:string = '';
+
   constructor() {
     super();
     this.trips = [];
@@ -83,6 +86,7 @@ export default class MyTrips extends Vue {
   newTrip() {
     router.push('/trips/new');
   }
+
 }
 
 </script>

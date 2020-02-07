@@ -7,8 +7,9 @@ export default abstract class AbstractFisholaService extends Dexie {
 
     // Declare implicit table properties.
     // (just to inform Typescript. Instanciated by Dexie in stores() method)
-    onCreationTrip: Dexie.Table<any, string>; // number = type of the primkey
-    dirtyTrips: Dexie.Table<TripBean, string>; // number = type of the primkey
+    onCreationTrip: Dexie.Table<any, string>;
+    dirtyTrips: Dexie.Table<TripBean, string>;
+    pictures: Dexie.Table<any, string>;
     //...other tables goes here...
 
     constructor () {
@@ -19,11 +20,18 @@ export default abstract class AbstractFisholaService extends Dexie {
             dirtyTrips: 'id, mode',
             //...other tables goes here...
         });
+        this.version(2).stores({
+            onCreationTrip: 'id, mode',
+            dirtyTrips: 'id, mode',
+            pictures: 'id, content'
+            //...other tables goes here...
+        });
 
         // The following line is needed if your typescript
         // is compiled using babel instead of tsc:
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
+        this.pictures = this.table("pictures");
     }
 
     backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {

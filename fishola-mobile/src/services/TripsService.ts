@@ -5,6 +5,7 @@ import {TripLight, TripMode, TripBean, CatchBean} from '@/pojos/BackendPojos';
 import Helpers from '@/pojos/Helpers';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import PicturesService from '@/services/PicturesService';
 import CatchSummary from '@/pojos/CatchSummary';
 
 export default class TripsService extends AbstractFisholaService {
@@ -348,6 +349,7 @@ export default class TripsService extends AbstractFisholaService {
             });
         } else {
             this.getInstance().backendPut('/v1/trips', trip, (r) => {
+                PicturesService.checkForPicturesToSync(r);
                 callback(true);
             }, (eee) => {
                 console.log("Pas Okay :'(", eee);
@@ -373,7 +375,7 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static saveCatch(tripId:any, aCatch:CatchBean, callback:() => void) {
+    static saveCatch(tripId:any, aCatch:CatchBean, callback:(catchId:string) => void) {
         TripsService.getTrip(tripId, (trip:TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];
@@ -392,7 +394,9 @@ export default class TripsService extends AbstractFisholaService {
                 }
                 trip.catchs.push(aCatch);
             }
-            TripsService.saveTrip(trip, callback)
+            TripsService.saveTrip(trip, () => {
+                callback(aCatch.id);
+            });
         });
     }
 

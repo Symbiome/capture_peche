@@ -2,9 +2,17 @@
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
     <div class="catch-picture">
-      <PicturePreview v-bind:pictureId="pictureId"
+      <PicturePreview v-bind:src="pictureSrc"
                       noPictureText="Appuyer pour ajouter une photo"
-                      v-on:take-picture="takePicture()" />
+                      v-on:take-picture="takePicture" />
+      <input type="file"
+             capture="camera"
+             accept="image/*"
+             id="cameraInput"
+             name="cameraInput"
+             v-on:change="pictureTaken"
+             style="display:none;"
+             ref="fileInput">
     </div>
     <div class="edit-catch-page page">
       <div class="pane">
@@ -79,6 +87,7 @@
 import {TripBean, CatchBean, Technique, SpeciesWithAlias, ReleasedFishState} from '@/pojos/BackendPojos';
 import CatchSummary from '@/pojos/CatchSummary';
 
+import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
@@ -122,7 +131,7 @@ export default class EditCatch extends Vue {
   tripDate?:Date;
   aCatch: CatchSummary = {id: '', withSample: false};
 
-  pictureId:string = '';
+  pictureSrc:string = '';
 
   caughtAt:string = '';
 
@@ -179,8 +188,24 @@ export default class EditCatch extends Vue {
   }
 
   takePicture() {
-    this.pictureId = 'azerty';
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    let input:any = this.$refs.fileInput;
+    input.click();
+  }
+
+  readUploadedFile(file:any, callback: (fileContent:string) => void) {
+    var reader = new FileReader();
+    reader.onload = function readSuccess(loadEvt:any) {
+        let content:string = loadEvt.target.result;
+        callback(content);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  pictureTaken(evt:any) {
+    let file = evt.srcElement.files[0];
+    this.readUploadedFile(file, (content:string) => {
+      this.pictureSrc = content;
+    });
   }
 
   validateClicked() {
@@ -253,7 +278,16 @@ export default class EditCatch extends Vue {
     return input;
   }
 
-  catchSaved() {
+  catchSaved(catchId:string) {
+    console.log("Capture enregistrée", catchId);
+    if (this.pictureSrc) {
+      PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
+    } else {
+      this.leavePage();
+    }
+  }
+
+  leavePage() {
     if (this.inTripCreation) {
       router.push({name:'trip-catchs', params: {id: this.tripId}});
     } else {
