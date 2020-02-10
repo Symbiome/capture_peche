@@ -23,6 +23,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import java.sql.Time;
@@ -60,14 +61,12 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/")
-    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        PaginationResult<TripLight>  result = getMyTrips(cookie, PaginationParameter.ALL);
-        return result;
-    }
+    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie,
+                                                  @QueryParam("pageNumber") int pageNumber,
+                                                  @QueryParam("pageSize") int pageSize,
+                                                  @QueryParam("desc") boolean desc) {
 
-    @POST
-    @Path("/")
-    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, PaginationParameter page) {
+        PaginationParameter page = PaginationParameter.of(pageNumber, pageSize, "date", desc);
 
         UUID userId = getUserId(cookie);
 

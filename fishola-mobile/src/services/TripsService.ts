@@ -191,10 +191,10 @@ export default class TripsService extends AbstractFisholaService {
         let page = {
             pageNumber: 0,
             pageSize: -1,
-            orderClauses: [{clause:"whatever", desc:sortDown}]
+            desc: sortDown
         };
 
-        this.getInstance().backendPost('/v1/trips', page, (trips:any) => {
+        this.getInstance().backendGetWithArgs('/v1/trips', page, (trips:any) => {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
                 console.log(trip);
