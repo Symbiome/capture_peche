@@ -341,14 +341,14 @@ export default class TripsService extends AbstractFisholaService {
     static syncTrip(trip:TripBean, callback: (success:boolean) => void) {
         console.log("On essaye de sauvegarder la sortie", trip);
         if (trip.createdOn) {
-            this.getInstance().backendPost(`/v1/trips/${trip.id}`, trip, (r) => {
+            this.getInstance().backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
                 callback(true);
             }, (eee) => {
                 console.log("Pas Okay :'(", eee);
                 callback(false);
             });
         } else {
-            this.getInstance().backendPut('/v1/trips', trip, (r) => {
+            this.getInstance().backendPost('/v1/trips', trip, (r) => {
                 PicturesService.checkForPicturesToSync(r);
                 callback(true);
             }, (eee) => {

@@ -80,7 +80,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.open('PUT', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
-          if (this.status == 200) {
+          if (this.status == 200 || this.status == 201) {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
             callback(parsed);
@@ -92,7 +92,6 @@ export default abstract class AbstractFisholaService extends Dexie {
         };
         if (data != null) {
           xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.withCredentials = true;
           xhr.send(JSON.stringify(data));
         } else {
           xhr.send();
@@ -105,7 +104,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.open('POST', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
-          if (this.status == 200) {
+          if (this.status == 200 || this.status == 201) {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
             callback(parsed);
@@ -117,7 +116,6 @@ export default abstract class AbstractFisholaService extends Dexie {
         };
         if (data != null) {
           xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.withCredentials = true;
           xhr.send(JSON.stringify(data));
         } else {
           xhr.send();

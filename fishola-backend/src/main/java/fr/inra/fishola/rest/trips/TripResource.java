@@ -26,6 +26,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -119,9 +122,9 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    @PUT
+    @POST
     @Path("/")
-    public Map<String, UUID> createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
+    public Response createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
         Map<String, UUID> result = new HashMap<>();
 
@@ -145,7 +148,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         result.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug("Trip créé avec l'ID :" + tripId);
+            log.debug("Sortie créée avec l'ID : " + tripId);
         }
 
         int created = tripsDao.setSpecies(tripId, trip.speciesIds);
@@ -172,14 +175,20 @@ public class TripResource extends AbstractFisholaResource {
             UUID catchId = catchsDao.create(catchPojo);
             result.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
-                log.debug("Catch créé avec l'ID :" + catchId);
+                log.debug("Capture créée avec l'ID : " + catchId);
             }
         }
 
-        return result;
+        URI uri = UriBuilder.fromPath("/api/v1/trips/" + tripId).build();
+        if (log.isDebugEnabled()) {
+            log.debug("URI de la sortie : " + uri);
+        }
+
+        Response response = Response.created(uri).entity(result).build();
+        return response;
     }
 
-    @POST
+    @PUT
     @Path("/{tripId}")
     public void updateTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId, TripBean trip) {
 
