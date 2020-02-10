@@ -15,8 +15,7 @@
       </div>
 
       <div class="preview-picture">
-        <PicturePreview v-bind:src="pictureSrc"
-                        v-on:take-picture="takePicture()" />
+        <PicturePreview v-bind:src="pictureSrc"/>
       </div>
     </div>
     <div class="preview-bottom">
@@ -75,7 +74,7 @@ export default class CatchPreview extends Vue {
   }
 
   pictureLoaded(content?:string) {
-    this.pictureSrc = content;
+    this.pictureSrc = content ? content : '';
   }
 
   speciesLoaded(species:SpeciesWithAlias[],techniques:Technique[]) {
