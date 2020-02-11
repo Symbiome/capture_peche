@@ -63,6 +63,12 @@ export default class PicturesService extends AbstractFisholaService {
                     PicturesService.savePicture(newId, content, () => {
                         PicturesService.deletePicture(key);
                     });
+
+                    // TODO Athimel 11/02/2020 À mettre à un endroit adéquate
+                    console.log(`Tente de l'upload de l'image ${newId}`);
+                    this.getInstance().backendPutPlain(`/v1/pictures/${newId}`, content, () => {
+                        console.log("it's over");
+                    });
                 }
             })
         });

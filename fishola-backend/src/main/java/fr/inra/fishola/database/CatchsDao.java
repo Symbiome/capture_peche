@@ -2,11 +2,14 @@ package fr.inra.fishola.database;
 
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.CatchDao;
+import fr.inra.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inra.fishola.entities.tables.pojos.Catch;
+import fr.inra.fishola.entities.tables.pojos.CatchPicture;
 import fr.inra.fishola.entities.tables.records.CatchRecord;
 
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
@@ -40,6 +43,25 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public void update(Catch existingCatch) {
         withDaoNoResult(CatchDao.class, dao -> dao.update(existingCatch));
+    }
+
+    public Catch getCatch(UUID catchId) {
+        Catch aCatch = withDao(CatchDao.class, dao -> dao.fetchOneById(catchId));
+        return aCatch;
+    }
+
+    public void setPicture(UUID catchId, byte[] bytes) {
+        CatchPicture newCatchPicture = new CatchPicture(catchId, bytes);
+        withDaoNoResult(CatchPictureDao.class, dao -> {
+            dao.deleteById(catchId);
+            dao.insert(newCatchPicture);
+        });
+    }
+
+    public Optional<byte[]> getPicture(UUID catchId) {
+        CatchPicture picture = withDao(CatchPictureDao.class, dao -> dao.findById(catchId));
+        Optional<byte[]> result = Optional.ofNullable(picture).map(CatchPicture::getContent);
+        return result;
     }
 
 }

@@ -95,10 +95,14 @@ CREATE TABLE catch (
     catch_time TIME WITHOUT TIME ZONE,
     species_id UUID REFERENCES species(id) NOT NULL,
     technique_id UUID REFERENCES technique(id) NOT NULL,
-    picture OID,
     size INT NOT NULL,
     weight INT,
     kept BOOLEAN NOT NULL,
     released_fish_state_id UUID REFERENCES released_fish_state(id),
     description TEXT
+);
+
+CREATE TABLE catch_picture (
+    catch_id UUID REFERENCES catch(id) PRIMARY KEY,
+    content BYTEA NOT NULL
 );
