@@ -73,13 +73,14 @@
         </div>
       </div>
     </div>
-    <FisholaFooter v-if="modifiable && ready"
+    <FisholaFooter v-if="ready && modifiable"
                    v-bind:button-text="inCreation ? 'Valider' : 'Modifier'"
                    button-icon="icon-fish"
                    v-on:buttonClicked="validateClicked"
-                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"/>
-    <FisholaFooter v-if="!modifiable"
-                   shortcuts="back,spacer,delete"/>
+                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
+                   v-on:delete="deleteCatch"/>
+    <FisholaFooter v-if="ready && !modifiable"
+                   shortcuts="back,spacer,blank"/>
   </div>
 </template>
 
@@ -285,6 +286,10 @@ export default class EditCatch extends Vue {
     } else {
       this.leavePage();
     }
+  }
+
+  deleteCatch() {
+    TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
   }
 
   leavePage() {

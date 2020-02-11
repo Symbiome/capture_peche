@@ -39,13 +39,13 @@
         </div>
       </div>
     </div>
-    <FisholaFooter v-if="modifiable"
+    <FisholaFooter v-if="ready && modifiable"
                    button-text="Modifier"
                    button-icon="icon-edit"
                    v-on:buttonClicked="saveClicked"
                    shortcuts="back,spacer,delete"/>
-    <FisholaFooter v-if="!modifiable"
-                   shortcuts="back,spacer,delete"/>
+    <FisholaFooter v-if="ready && !modifiable"
+                   shortcuts="back,spacer,blank"/>
   </div>
 </template>
 

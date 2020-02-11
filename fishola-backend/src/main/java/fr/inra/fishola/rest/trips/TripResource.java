@@ -1,6 +1,9 @@
 package fr.inra.fishola.rest.trips;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.CatchsDao;
 import fr.inra.fishola.database.TripsDao;
@@ -9,6 +12,7 @@ import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.exceptions.AccessDeniedException;
 import fr.inra.fishola.rest.AbstractFisholaResource;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuiton.util.pagination.PaginationParameter;
@@ -40,9 +44,11 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -126,7 +132,7 @@ public class TripResource extends AbstractFisholaResource {
     @Path("/")
     public Response createTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, TripBean trip) {
 
-        Map<String, UUID> result = new HashMap<>();
+        Map<String, UUID> replacements = new HashMap<>();
 
         // TODO: 30/12/2019 Détection des doublons
         // TODO: 03/02/2020 Transaction !
@@ -146,9 +152,9 @@ public class TripResource extends AbstractFisholaResource {
         entity.setWeatherId(trip.weatherId);
 
         UUID tripId = tripsDao.create(entity);
-        result.put(trip.id, tripId);
+        replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug("Sortie créée avec l'ID : " + tripId);
+            log.debug("Sortie créée : " + tripId);
         }
 
         int created = tripsDao.setSpecies(tripId, trip.speciesIds);
@@ -157,25 +163,10 @@ public class TripResource extends AbstractFisholaResource {
         }
 
         for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
-            Catch catchPojo = new Catch();
-            catchPojo.setTripId(tripId);
-            catchPojo.setCreatedOn(Timestamp.from(Instant.now()));
-            aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))));
-            catchPojo.setSpeciesId(aCatch.speciesId);
-            catchPojo.setTechniqueId(aCatch.techniqueId);
-            catchPojo.setSize(aCatch.size);
-            aCatch.weight.ifPresent(catchPojo::setWeight);
-            catchPojo.setKept(aCatch.keep);
-            if (!aCatch.keep) {
-                Preconditions.checkState(aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
-                catchPojo.setReleasedFishStateId(aCatch.releasedStateId.get());
-            }
-            aCatch.description.ifPresent(catchPojo::setDescription);
-
-            UUID catchId = catchsDao.create(catchPojo);
-            result.put(aCatch.id, catchId);
+            UUID catchId = createCatch(tripId, aCatch);
+            replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
-                log.debug("Capture créée avec l'ID : " + catchId);
+                log.debug("Capture créée : " + catchId);
             }
         }
 
@@ -184,13 +175,15 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("URI de la sortie : " + uri);
         }
 
-        Response response = Response.created(uri).entity(result).build();
+        Response response = Response.created(uri).entity(replacements).build();
         return response;
     }
 
     @PUT
     @Path("/{tripId}")
-    public void updateTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId, TripBean trip) {
+    public Response updateTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId, TripBean trip) {
+
+        Map<String, UUID> replacements = new HashMap<>();
 
         UUID userId = getUserId(cookie);
 
@@ -216,9 +209,85 @@ public class TripResource extends AbstractFisholaResource {
 
         tripsDao.setSpecies(tripId, trip.speciesIds);
 
-        // TODO: 02/01/2020 Catchs
+        List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
+        ImmutableMap<UUID, Catch> existingCatchsIndex = Maps.uniqueIndex(existingCatchs, Catch::getId);
+
+        Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
+        for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
+
+            Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
+            if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
+                Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
+                updateCatch(existingCatch, aCatch);
+                updatedCatchsIds.add(parsedCatchId.get());
+                if (log.isDebugEnabled()) {
+                    log.debug("Capture mise à jour : " + parsedCatchId.get());
+                }
+            } else {
+                UUID catchId = createCatch(tripId, aCatch);
+                replacements.put(aCatch.id, catchId);
+                if (log.isDebugEnabled()) {
+                    log.debug("Capture créée : " + catchId);
+                }
+            }
+        }
+
+        Sets.SetView<UUID> toDeleteCatchsIds = Sets.difference(existingCatchsIndex.keySet(), updatedCatchsIds);
+        toDeleteCatchsIds.forEach(catchId -> {
+            catchsDao.delete(catchId);
+            if (log.isDebugEnabled()) {
+                log.debug("Capture supprimée : " + catchId);
+            }
+        });
+
+        Response response = Response.ok(replacements).build();
+        return response;
     }
 
+    protected UUID createCatch(UUID tripId, CatchBean aCatch) {
+        Catch catchPojo = new Catch();
+        catchPojo.setTripId(tripId);
+        catchPojo.setCreatedOn(Timestamp.from(Instant.now()));
+        aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))));
+        catchPojo.setSpeciesId(aCatch.speciesId);
+        catchPojo.setTechniqueId(aCatch.techniqueId);
+        catchPojo.setSize(aCatch.size);
+        aCatch.weight.ifPresent(catchPojo::setWeight);
+        catchPojo.setKept(aCatch.keep);
+        if (!aCatch.keep) {
+            Preconditions.checkState(aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
+            catchPojo.setReleasedFishStateId(aCatch.releasedStateId.get());
+        }
+        aCatch.description.ifPresent(catchPojo::setDescription);
+
+        UUID catchId = catchsDao.create(catchPojo);
+        return catchId;
+    }
+
+    protected void updateCatch(Catch existingCatch, CatchBean aCatch) {
+
+        existingCatch.setCatchTime(aCatch.caughtAt.map(caughtAt -> Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))).orElse(null));
+        existingCatch.setSpeciesId(aCatch.speciesId);
+        existingCatch.setTechniqueId(aCatch.techniqueId);
+        existingCatch.setSize(aCatch.size);
+        existingCatch.setWeight(aCatch.weight.orElse(null));
+        existingCatch.setKept(aCatch.keep);
+        Preconditions.checkState(aCatch.keep || aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
+        existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.get() : null);
+        existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
+
+        catchsDao.update(existingCatch);
+
+    }
+
+    protected Optional<UUID> tryToParseUUID(String input) {
+        try {
+            UUID uuid = UUID.fromString(input);
+            return Optional.of(uuid);
+        } catch (Exception eee) {
+            return Optional.empty();
+        }
+    }
 
     @GET
     @Path("/{tripId}")

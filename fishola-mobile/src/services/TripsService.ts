@@ -197,7 +197,6 @@ export default class TripsService extends AbstractFisholaService {
         this.getInstance().backendGetWithArgs('/v1/trips', page, (trips:any) => {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
-                console.log(trip);
                 if (dirtyTripsIds.indexOf(trip.id) == -1) {
                     let tl:TripLight = TripsService.backendTripToLight(trip);
                     result.push(tl);
@@ -396,6 +395,27 @@ export default class TripsService extends AbstractFisholaService {
             }
             TripsService.saveTrip(trip, () => {
                 callback(aCatch.id);
+            });
+        });
+    }
+
+    static deleteCatch(tripId:any, catchId:any, callback:() => void) {
+        TripsService.getTrip(tripId, (trip:TripBean) => {
+            if (!trip.catchs) {
+                trip.catchs = [];
+            }
+            let foundAtIndex:number = -1;
+            for (let i:number = 0; i<trip.catchs.length; i++) {
+                let someCatch = trip.catchs[i];
+                if (catchId == someCatch.id) {
+                    foundAtIndex = i;
+                }
+            }
+            if (foundAtIndex >= 0) {
+                trip.catchs.splice(foundAtIndex, 1);
+            }
+            TripsService.saveTrip(trip, () => {
+                callback();
             });
         });
     }

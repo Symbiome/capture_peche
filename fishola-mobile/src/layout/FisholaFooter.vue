@@ -53,6 +53,10 @@
          v-on:click="doDelete">
       <i class="icon-delete"></i>
     </div>
+    <div class="footer-element pastille"
+         v-if="activeButtons['blank']">
+         <!-- spacer -->
+    </div>
   </div>
 </template>
 
@@ -91,7 +95,9 @@ export default class FisholaFooter extends Vue {
     spacer: false,
     dashboard: false,
     home: false,
-    giveup: false
+    giveup: false,
+    delete: false,
+    blank: false
   };
 
   mounted() {
@@ -184,7 +190,7 @@ export default class FisholaFooter extends Vue {
   }
 
   doDelete() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    this.$emit('delete');
   }
 
 }

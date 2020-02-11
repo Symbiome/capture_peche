@@ -34,4 +34,12 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public void delete(UUID catchId) {
+        withDaoNoResult(CatchDao.class, dao -> dao.deleteById(catchId));
+    }
+
+    public void update(Catch existingCatch) {
+        withDaoNoResult(CatchDao.class, dao -> dao.update(existingCatch));
+    }
+
 }
