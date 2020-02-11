@@ -21,6 +21,7 @@ import org.nuiton.util.pagination.PaginationResult;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -154,12 +155,12 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug("Sortie créée : " + tripId);
+            log.debug("Création de la sortie : " + tripId);
         }
 
         int created = tripsDao.setSpecies(tripId, trip.speciesIds);
         if (log.isDebugEnabled()) {
-            log.debug(created + " espèce(s) recherchée(s)");
+            log.debug(created + " espèces recherchées : " + trip.speciesIds);
         }
 
         for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
@@ -207,6 +208,10 @@ public class TripResource extends AbstractFisholaResource {
 
         tripsDao.updateTrip(existingTrip);
 
+        if (log.isDebugEnabled()) {
+            log.debug("Sortie mise à jour : " + tripId);
+        }
+
         tripsDao.setSpecies(tripId, trip.speciesIds);
 
         List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
@@ -242,6 +247,30 @@ public class TripResource extends AbstractFisholaResource {
 
         Response response = Response.ok(replacements).build();
         return response;
+    }
+
+    @DELETE
+    @Path("/{tripId}")
+    public void deleteTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
+
+        UUID userId = getUserId(cookie);
+
+        Trip existingTrip = tripsDao.getTrip(tripId);
+        Preconditions.checkState(existingTrip != null);
+        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
+
+        boolean stillModifiable = isStillModifiable(existingTrip);
+        if (stillModifiable) {
+            tripsDao.delete(tripId);
+            if (log.isDebugEnabled()) {
+                log.debug("Sortie supprimée : " + tripId);
+            }
+        } else {
+            tripsDao.hide(tripId);
+            if (log.isDebugEnabled()) {
+                log.debug("Sortie masquée : " + tripId);
+            }
+        }
     }
 
     protected UUID createCatch(UUID tripId, CatchBean aCatch) {

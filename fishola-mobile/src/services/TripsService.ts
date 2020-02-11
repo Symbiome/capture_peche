@@ -341,6 +341,7 @@ export default class TripsService extends AbstractFisholaService {
         console.log("On essaye de sauvegarder la sortie", trip);
         if (trip.createdOn) {
             this.getInstance().backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
+                PicturesService.checkForPicturesToSync(r);
                 callback(true);
             }, (eee) => {
                 console.log("Pas Okay :'(", eee);
@@ -400,6 +401,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteCatch(tripId:any, catchId:any, callback:() => void) {
+        PicturesService.deletePicture(catchId);
         TripsService.getTrip(tripId, (trip:TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];
@@ -418,6 +420,11 @@ export default class TripsService extends AbstractFisholaService {
                 callback();
             });
         });
+    }
+
+    static deleteTrip(tripId:any, callback:() => void) {
+        this.getInstance().dirtyTrips.delete(tripId);
+        this.getInstance().backendDelete(`/v1/trips/${tripId}`, callback);
     }
 
 }

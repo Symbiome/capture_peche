@@ -190,7 +190,7 @@ export default class FisholaFooter extends Vue {
   }
 
   doDelete() {
-    this.$emit('delete');
+    this.$emit('deleteClicked');
   }
 
 }

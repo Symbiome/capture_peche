@@ -49,7 +49,7 @@ public class TripsDao extends AbstractFisholaDao {
     public List<Trip> listMyTrips(UUID userId, boolean orderDesc) {
         List<Trip> result = withContext(context -> {
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
-                    .where(Tables.TRIP.OWNER_ID.eq(userId));
+                    .where(Tables.TRIP.OWNER_ID.eq(userId), Tables.TRIP.HIDDEN.eq(false));
             SelectSeekStep2<TripRecord, Date, Timestamp> tripRecords =
                     orderDesc
                             ? builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
@@ -90,4 +90,18 @@ public class TripsDao extends AbstractFisholaDao {
         withDaoNoResult(TripDao.class, dao -> dao.update(existingTrip));
     }
 
+    public void delete(UUID tripId) {
+        withContextNoResult(context -> {
+            context.deleteFrom(Tables.CATCH).where(Tables.CATCH.TRIP_ID.eq(tripId)).execute();
+            context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute();
+            context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
+            context.deleteFrom(Tables.TRIP).where(Tables.TRIP.ID.eq(tripId)).execute();
+        });
+    }
+
+    public void hide(UUID tripId) {
+        withContext(context -> context.update(Tables.TRIP)
+                .set(Tables.TRIP.HIDDEN, true)
+                .where(Tables.TRIP.ID.eq(tripId)));
+    }
 }

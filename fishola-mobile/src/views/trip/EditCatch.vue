@@ -77,8 +77,8 @@
                    v-bind:button-text="inCreation ? 'Valider' : 'Modifier'"
                    button-icon="icon-fish"
                    v-on:buttonClicked="validateClicked"
-                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
-                   v-on:delete="deleteCatch"/>
+                   v-on:deleteClicked="deleteCatch"
+                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"/>
     <FisholaFooter v-if="ready && !modifiable"
                    shortcuts="back,spacer,blank"/>
   </div>

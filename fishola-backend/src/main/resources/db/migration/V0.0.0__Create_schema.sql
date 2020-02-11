@@ -68,7 +68,8 @@ CREATE TABLE trip (
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     lake_id UUID REFERENCES lake(id) NOT NULL,
-    weather_id UUID REFERENCES weather(id) NOT NULL
+    weather_id UUID REFERENCES weather(id) NOT NULL,
+    hidden BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE trip_expected_species (

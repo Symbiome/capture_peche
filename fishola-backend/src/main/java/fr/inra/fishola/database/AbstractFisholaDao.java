@@ -23,6 +23,10 @@ public abstract class AbstractFisholaDao {
         T execute(DSLContext context);
     }
 
+    public interface JooqContextNoResult<T> {
+        void execute(DSLContext context);
+    }
+
     public interface JooqConfiguration<T> {
         T execute(Configuration configuration);
     }
@@ -45,6 +49,15 @@ public abstract class AbstractFisholaDao {
             DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
             R result = work.execute(context);
             return result;
+        } catch (SQLException sqle) {
+            throw new RuntimeException("Unable to treat jOOQ context work", sqle);
+        }
+    }
+
+    protected <R> void withContextNoResult(JooqContextNoResult<R> work) {
+        try (Connection connection = newConnection()) {
+            DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
+            work.execute(context);
         } catch (SQLException sqle) {
             throw new RuntimeException("Unable to treat jOOQ context work", sqle);
         }

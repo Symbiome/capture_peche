@@ -43,6 +43,7 @@
                    button-text="Modifier"
                    button-icon="icon-edit"
                    v-on:buttonClicked="saveClicked"
+                   v-on:deleteClicked="deleteTrip"
                    shortcuts="back,spacer,delete"/>
     <FisholaFooter v-if="ready && !modifiable"
                    shortcuts="back,spacer,blank"/>
@@ -139,6 +140,14 @@ export default class EditTrip extends Vue {
 
   openCatch(catchId:string) {
     router.push({name:'catch', params: {tripId: this.id, catchId:catchId}});
+  }
+
+  deleteTrip() {
+    TripsService.deleteTrip(this.id, this.tripDeleted);
+  }
+
+  tripDeleted() {
+    router.push('/trips');
   }
 
 }
