@@ -178,7 +178,15 @@ export default class EditCatch extends Vue {
       }
     }
 
+    if (someCatch.hasPicture) {
+      PicturesService.getPicture(someCatch.id, this.pictureLoaded);
+    }
+
     ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId, this.speciesAndTechniquesLoaded);
+  }
+
+  pictureLoaded(content?:string) {
+    this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
   }
 
   speciesAndTechniquesLoaded(species:SpeciesWithAlias[], techniques:Technique[], states:ReleasedFishState[]) {

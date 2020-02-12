@@ -149,6 +149,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.mortennobel</groupId>
+        <artifactId>java-image-scaling</artifactId>
+        <version>0.8.6</version>
+      </dependency>
+
+      <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-junit5</artifactId>
         <version>${quarkus.version}</version>

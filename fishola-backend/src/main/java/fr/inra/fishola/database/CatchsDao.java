@@ -10,6 +10,7 @@ import fr.inra.fishola.entities.tables.records.CatchRecord;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Singleton
@@ -61,6 +62,17 @@ public class CatchsDao extends AbstractFisholaDao {
     public Optional<byte[]> getPicture(UUID catchId) {
         CatchPicture picture = withDao(CatchPictureDao.class, dao -> dao.findById(catchId));
         Optional<byte[]> result = Optional.ofNullable(picture).map(CatchPicture::getContent);
+        return result;
+    }
+
+    public Set<UUID> checkForPictures(Set<UUID> catchIds) {
+        Set<UUID> result = withContext(context -> {
+            Set<UUID> records = context.select(Tables.CATCH_PICTURE.CATCH_ID)
+                    .from(Tables.CATCH_PICTURE)
+                    .where(Tables.CATCH_PICTURE.CATCH_ID.in(catchIds))
+                    .fetchSet(Tables.CATCH_PICTURE.CATCH_ID);
+            return records;
+        });
         return result;
     }
 

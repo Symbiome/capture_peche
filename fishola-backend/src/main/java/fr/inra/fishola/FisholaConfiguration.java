@@ -7,6 +7,8 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Properties;
 
 @Singleton
@@ -79,4 +81,22 @@ public class FisholaConfiguration {
 //        prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
         return prop;
     }
+
+    public float getRawImageQuality() {
+        // Par défaut la qualité semble être de ~0.74.
+        // Pour une qualité équivalent mettre 0.98.
+        // .90 pourrait être un bon compromis.
+
+//        return .98f;
+        return .90f;
+    }
+
+    public File getPicturesPreviewFolder() {
+        File result = new File("/tmp/fishola-pictures");
+        if (result.mkdirs() && log.isInfoEnabled()) {
+            log.info("Création du dossier de stockage des previews : " + result.getAbsolutePath());
+        }
+        return result;
+    }
+
 }

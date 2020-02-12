@@ -68,6 +68,7 @@ export default class PicturesService extends AbstractFisholaService {
                     console.log(`Tente de l'upload de l'image ${newId}`);
                     this.getInstance().backendPutPlain(`/v1/pictures/${newId}`, content, () => {
                         console.log("it's over");
+                        PicturesService.deletePicture(newId);
                     });
                 }
             })

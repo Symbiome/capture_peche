@@ -17,4 +17,6 @@ public class CatchBean {
     public Optional<Date> caughtAt = Optional.empty();
     public boolean withSample;
 
+    public boolean hasPicture = false;
+
 }

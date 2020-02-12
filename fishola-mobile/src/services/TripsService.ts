@@ -90,7 +90,8 @@ export default class TripsService extends AbstractFisholaService {
             releasedStateId: input.releasedStateId,
             techniqueId: input.techniqueId,
             description: input.description,
-            withSample: input.withSample
+            withSample: input.withSample,
+            hasPicture: input.hasPicture
         };
 
         if (input.caughtAt) {
