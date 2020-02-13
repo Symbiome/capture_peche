@@ -34,7 +34,9 @@ export default class App extends Vue {
 
     checkOutOfSyncTrips() {
       console.log("Y'a-t'il des sorties à synchronizer ?");
-      TripsService.syncTrips().then(this.outOfSyncTripsSaved);
+      TripsService.syncTrips().then(this.outOfSyncTripsSaved, (e) => {
+        console.log("Apparement, il y a un pb de sync", e);
+      });
     }
 
     outOfSyncTripsSaved(someTripsSaved:boolean) {

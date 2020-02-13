@@ -362,7 +362,7 @@ export default class TripsService extends AbstractFisholaService {
                     resolve();
                 }, (eee) => {
                     console.log("Pas Okay :'(", eee);
-                    reject();
+                    reject(eee);
                 });
             } else {
                 this.getInstance().backendPost('/v1/trips', trip, (r) => {
@@ -370,7 +370,7 @@ export default class TripsService extends AbstractFisholaService {
                     resolve();
                 }, (eee) => {
                     console.log("Pas Okay :'(", eee);
-                    reject();
+                    reject(eee);
                 });
             }
         });
