@@ -34,11 +34,14 @@ export default class App extends Vue {
 
     checkOutOfSyncTrips() {
       console.log("Y'a-t'il des sorties à synchronizer ?");
-      TripsService.syncTrips(this.outOfSyncTripsSaved);
+      TripsService.syncTrips().then(this.outOfSyncTripsSaved);
     }
 
-    outOfSyncTripsSaved() {
-      this.$root.$emit('trips-saved');
+    outOfSyncTripsSaved(someTripsSaved:boolean) {
+      // PicturesService.syncPictures();
+      if (someTripsSaved) {
+        this.$root.$emit('trips-saved');
+      }
     }
 }
 

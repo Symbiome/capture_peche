@@ -24,7 +24,7 @@ export default class PicturesService extends AbstractFisholaService {
         }
 
         this.getInstance()
-            .pictures
+            .dirtyPictures
             .put(newPicture)
             .then(id => {
                 console.log('Image enregistrée');
@@ -34,14 +34,14 @@ export default class PicturesService extends AbstractFisholaService {
 
     static deletePicture(catchId:string) {
         this.getInstance()
-            .pictures
+            .dirtyPictures
             .delete(catchId);
     }
 
     static getPicture(catchId:string, callback:(content?:string)=>any) {
         
         this.getInstance()
-            .pictures
+            .dirtyPictures
             .get(catchId)
             .then((item:any) => {
                 callback(item.content);
@@ -52,8 +52,7 @@ export default class PicturesService extends AbstractFisholaService {
             });
     }
 
-    static checkForPicturesToSync(map:any) {
-        console.log(map);
+    static checkForPicturesToRename(map:any) {
         let keys:string[] = Object.keys(map);
         keys.forEach((key:string) => {
             PicturesService.getPicture(key, (content?) => {
@@ -64,15 +63,27 @@ export default class PicturesService extends AbstractFisholaService {
                         PicturesService.deletePicture(key);
                     });
 
-                    // TODO Athimel 11/02/2020 À mettre à un endroit adéquate
-                    console.log(`Tente de l'upload de l'image ${newId}`);
-                    this.getInstance().backendPutPlain(`/v1/pictures/${newId}`, content, () => {
-                        console.log("it's over");
-                        PicturesService.deletePicture(newId);
-                    });
                 }
             })
         });
+    }
+
+    static checkForPicturesToSync() {
+
+        this.getInstance()
+            .dirtyPictures
+            .toArray((allPictures) => {
+                console.log(allPictures);
+
+
+
+                    // // TODO Athimel 11/02/2020 À mettre à un endroit adéquate
+                    // console.log(`Tente de l'upload de l'image ${newId}`);
+                    // this.getInstance().backendPutPlain(`/v1/pictures/${newId}`, content, () => {
+                    //     console.log("it's over");
+                    //     PicturesService.deletePicture(newId);
+                    // });
+            });
     }
 
 }

@@ -133,6 +133,7 @@ export default class EditCatch extends Vue {
   aCatch: CatchSummary = {id: '', withSample: false};
 
   pictureSrc:string = '';
+  newPictureTaken:boolean = false;
 
   caughtAt:string = '';
 
@@ -214,6 +215,7 @@ export default class EditCatch extends Vue {
     let file = evt.srcElement.files[0];
     this.readUploadedFile(file, (content:string) => {
       this.pictureSrc = content;
+      this.newPictureTaken = true;
     });
   }
 
@@ -279,6 +281,7 @@ export default class EditCatch extends Vue {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
       let aCatchBean:CatchBean = this.castToBean(this.aCatch);
+      aCatchBean.hasPicture = this.pictureSrc != '';
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
   }
@@ -289,7 +292,7 @@ export default class EditCatch extends Vue {
 
   catchSaved(catchId:string) {
     console.log("Capture enregistrée", catchId);
-    if (this.pictureSrc) {
+    if (this.pictureSrc && this.newPictureTaken) {
       PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
     } else {
       this.leavePage();

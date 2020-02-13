@@ -323,40 +323,57 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static syncTrips(dirtyTripsSavedCallback:()=>void) {
-        this.getInstance().dirtyTrips.toArray((dirtyTrips) => {
+    static syncTrips():Promise<boolean> {
 
-            dirtyTrips
-            .forEach((dirtyTrip:TripBean) => this.syncTrip(dirtyTrip, (result:boolean) => {
-                console.log(result);
-                if (result) {
-                    this.getInstance().dirtyTrips.delete(dirtyTrip.id!);
-                    dirtyTripsSavedCallback();
-                }
-            }));
-        });
+        let result:Promise<boolean> = new Promise<boolean>((resolve, reject) => {
+            let someTripsSaved:boolean = false;
+            let allPromises:Promise<void>[] = [];
 
+            this.getInstance().dirtyTrips.toArray((dirtyTrips) => {
+                dirtyTrips
+                    .forEach((dirtyTrip:TripBean) => {
+                        let promise = this.syncTrip(dirtyTrip);
+                        promise.then(() => {
+                            this.getInstance().dirtyTrips.delete(dirtyTrip.id!);
+                            someTripsSaved = true;
+                            console.log("Trip saved !");
+                        }, () => {
+                            console.log("Arf, môrche pô :(");
+                        });
+                        allPromises.push(promise);
+                    });
+                
+                Promise.all(allPromises)
+                    .then(() => {
+                        resolve(someTripsSaved)
+                    }, reject);
+                });
+            });
+
+        return result;
     }
 
-    static syncTrip(trip:TripBean, callback: (success:boolean) => void) {
-        console.log("On essaye de sauvegarder la sortie", trip);
-        if (trip.createdOn) {
-            this.getInstance().backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
-                PicturesService.checkForPicturesToSync(r);
-                callback(true);
-            }, (eee) => {
-                console.log("Pas Okay :'(", eee);
-                callback(false);
-            });
-        } else {
-            this.getInstance().backendPost('/v1/trips', trip, (r) => {
-                PicturesService.checkForPicturesToSync(r);
-                callback(true);
-            }, (eee) => {
-                console.log("Pas Okay :'(", eee);
-                callback(false);
-            });
-        }
+    static syncTrip(trip:TripBean):Promise<void> {
+        return new Promise((resolve, reject) =>  {
+            console.log("On essaye de sauvegarder la sortie", trip);
+            if (trip.createdOn) {
+                this.getInstance().backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
+                    PicturesService.checkForPicturesToRename(r);
+                    resolve();
+                }, (eee) => {
+                    console.log("Pas Okay :'(", eee);
+                    reject();
+                });
+            } else {
+                this.getInstance().backendPost('/v1/trips', trip, (r) => {
+                    PicturesService.checkForPicturesToRename(r);
+                    resolve();
+                }, (eee) => {
+                    console.log("Pas Okay :'(", eee);
+                    reject();
+                });
+            }
+        });
     }
 
     static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
