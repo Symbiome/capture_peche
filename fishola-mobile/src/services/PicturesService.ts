@@ -27,7 +27,7 @@ export default class PicturesService extends AbstractFisholaService {
             .dirtyPictures
             .put(newPicture)
             .then(id => {
-                console.log('Image enregistrée');
+                console.log('Image enregistrée', id);
                 callback();
             });
     }
@@ -62,28 +62,58 @@ export default class PicturesService extends AbstractFisholaService {
                     PicturesService.savePicture(newId, content, () => {
                         PicturesService.deletePicture(key);
                     });
-
                 }
             })
         });
     }
 
-    static checkForPicturesToSync() {
+    static syncPictures() {
 
         this.getInstance()
             .dirtyPictures
-            .toArray((allPictures) => {
-                console.log(allPictures);
+            .toCollection()
+            .primaryKeys((pictureIds:string[]) => {
 
+                console.log("Liste des IDs de photos dans la base embarquée", pictureIds);
+                let allPromises:Promise<void>[] = [];
 
+                pictureIds
+                    .filter((pictureId) => pictureId.length == 36)
+                    .forEach((pictureId) => {
+                        let promise = this.syncPicture(pictureId);
+                        allPromises.push(promise);
+                        promise.then(() => {
+                            console.log("Photo synchronisée, on la supprime de la base embarquée", pictureId);
+                            PicturesService.deletePicture(pictureId);
+                        });
+                    });
 
-                    // // TODO Athimel 11/02/2020 À mettre à un endroit adéquate
-                    // console.log(`Tente de l'upload de l'image ${newId}`);
-                    // this.getInstance().backendPutPlain(`/v1/pictures/${newId}`, content, () => {
-                    //     console.log("it's over");
-                    //     PicturesService.deletePicture(newId);
-                    // });
+                if (allPromises.length > 0) {
+                    Promise
+                        .all(allPromises)
+                        .then(
+                            () => {
+                                console.log("Toutes les photos sont sauvegardées");
+                            },
+                            (eee) => {
+                                console.log("Problème de synchro des images", eee);
+                            });
+                }
+
             });
+    }
+
+    static syncPicture(pictureId:string):Promise<void> {
+        return new Promise((resolve, reject) =>  {
+            console.log("On essaye de sauvegarder la photo", pictureId);
+            PicturesService.getPicture(pictureId, (content?) => {
+                if (content) {
+                    this.getInstance().backendPutPlain(`/v1/pictures/${pictureId}`, content, resolve, reject);
+                } else {
+                    reject(`Unable to find picture content ${pictureId}`);
+                }
+            });
+        });
     }
 
 }

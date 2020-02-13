@@ -117,6 +117,11 @@ public class PictureResource extends AbstractFisholaResource {
             Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
             catchsDao.setPicture(catchId, jpegBytes);
 
+            File file = getPreviewFile(catchId);
+            if (file.exists() && !file.delete() && log.isErrorEnabled()) {
+                log.error("Impossible de supprimer la preview: " + file.getAbsolutePath());
+            }
+
         } catch (IOException ioe) {
            throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
         }
@@ -174,13 +179,7 @@ public class PictureResource extends AbstractFisholaResource {
         return response;
     }
 
-    @GET
-    @Path("/{catchId}/preview")
-    @Produces("image/jpeg")
-    public Response getPicturePreview(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId) {
-
-        Preconditions.checkArgument(catchId != null);
-
+    protected File getPreviewFile(UUID catchId) {
         File folder = config.getPicturesPreviewFolder();
         File subFolder = new File(folder, catchId.toString().substring(0, 2));
         if (subFolder.mkdirs() && log.isInfoEnabled()) {
@@ -188,7 +187,19 @@ public class PictureResource extends AbstractFisholaResource {
         }
 
         String fileName = String.format("%s.jpeg", catchId);
-        File file = new File(subFolder, fileName);
+        File result = new File(subFolder, fileName);
+
+        return result;
+    }
+
+    @GET
+    @Path("/{catchId}/preview")
+    @Produces("image/jpeg")
+    public Response getPicturePreview(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId) {
+
+        Preconditions.checkArgument(catchId != null);
+
+        File file = getPreviewFile(catchId);
 
         if (!file.exists()) {
 

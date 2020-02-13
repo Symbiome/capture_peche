@@ -308,7 +308,7 @@ export default class TripsService extends AbstractFisholaService {
             this.getInstance().dirtyTrips
                 .put(trip)
                 .then((aaa) => {
-                    console.log(aaa);
+                    console.log("Nouvelle sortie dans les dirtyTrips", aaa);
                     this.cancelCreations();
                     callback();
                 });
@@ -317,7 +317,7 @@ export default class TripsService extends AbstractFisholaService {
             this.getInstance().dirtyTrips
                 .put(trip)
                 .then((aaa) => {
-                    console.log(aaa);
+                    console.log("Mise à jour de la sortie dans les dirtyTrips", aaa);
                     callback();
                 });
         }

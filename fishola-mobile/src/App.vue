@@ -10,6 +10,7 @@
 import Toaster from '@/components/common/Toaster.vue'
 
 import TripsService from '@/services/TripsService';
+import PicturesService from '@/services/PicturesService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -33,17 +34,24 @@ export default class App extends Vue {
     }
 
     checkOutOfSyncTrips() {
-      console.log("Y'a-t'il des sorties à synchronizer ?");
-      TripsService.syncTrips().then(this.outOfSyncTripsSaved, (e) => {
+      console.log("SYNCHO : Recherche des sorties");
+      TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
         console.log("Apparement, il y a un pb de sync", e);
+        // Même en cas d'erreur on essaye de synchro les photos
+        this.checkOutOfSyncPictures();
       });
     }
 
-    outOfSyncTripsSaved(someTripsSaved:boolean) {
-      // PicturesService.syncPictures();
+    tripsSyncFinished(someTripsSaved:boolean) {
+      this.checkOutOfSyncPictures();
       if (someTripsSaved) {
         this.$root.$emit('trips-saved');
       }
+    }
+
+    checkOutOfSyncPictures() {
+      console.log("SYNCHO : Recherche des photos");
+      PicturesService.syncPictures();
     }
 }
 
