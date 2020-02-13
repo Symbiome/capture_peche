@@ -42,6 +42,7 @@ import PicturePreview from '@/components/trip/PicturePreview.vue';
 import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
+import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -67,14 +68,16 @@ export default class CatchPreview extends Vue {
       this.caughtAtLabel = Helpers.formatToTime(this.aCatch.caughtAt);
     }
 
-    PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
+    if (this.aCatch.hasPicture) {
+      PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
+    }
 
     ReferentialService.getSpeciesAndTechniques(this.lakeId, this.speciesLoaded);
 
   }
 
   pictureLoaded(content?:string) {
-    this.pictureSrc = content ? content : '';
+    this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
   }
 
   speciesLoaded(species:SpeciesWithAlias[],techniques:Technique[]) {

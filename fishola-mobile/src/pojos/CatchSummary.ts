@@ -10,5 +10,6 @@ export default interface CatchSummary {
     description?: string;
     caughtAt?: Date;
     withSample: boolean;
+    hasPicture?: boolean;
 
 }

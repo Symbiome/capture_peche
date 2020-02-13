@@ -12,6 +12,7 @@ export interface CatchBean {
     description?: string;
     caughtAt?: Date;
     withSample: boolean;
+    hasPicture: boolean;
 }
 
 export interface TripBean {

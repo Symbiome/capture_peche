@@ -9,7 +9,7 @@ export default abstract class AbstractFisholaService extends Dexie {
     // (just to inform Typescript. Instanciated by Dexie in stores() method)
     onCreationTrip: Dexie.Table<any, string>;
     dirtyTrips: Dexie.Table<TripBean, string>;
-    pictures: Dexie.Table<any, string>;
+    dirtyPictures: Dexie.Table<any, string>;
     //...other tables goes here...
 
     constructor () {
@@ -23,7 +23,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         this.version(2).stores({
             onCreationTrip: 'id, mode',
             dirtyTrips: 'id, mode',
-            pictures: 'id, content'
+            dirtyPictures: 'id, content, dirtySince'
             //...other tables goes here...
         });
 
@@ -31,7 +31,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         // is compiled using babel instead of tsc:
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
-        this.pictures = this.table("pictures");
+        this.dirtyPictures = this.table("dirtyPictures");
     }
 
     backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {

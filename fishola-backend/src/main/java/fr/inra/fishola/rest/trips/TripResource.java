@@ -348,16 +348,21 @@ public class TripResource extends AbstractFisholaResource {
                 .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
 
         List<Catch> catchs = catchsDao.listCatchs(tripId);
+        Set<UUID> catchIds = catchs.stream()
+                .map(Catch::getId)
+                .collect(Collectors.toSet());
+        Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
         result.catchs = catchs.stream()
-                .map(this::toCatchBean)
+                .map(aCatch -> toCatchBean(aCatch, catchsWithPictures))
                 .collect(Collectors.toList());
 
         return result;
     }
 
-    private CatchBean toCatchBean(Catch aCatch) {
+    private CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
         CatchBean result = new CatchBean();
-        result.id = aCatch.getId().toString();
+        UUID catchId = aCatch.getId();
+        result.id = catchId.toString();
         result.speciesId = aCatch.getSpeciesId();
         result.size = aCatch.getSize();
         result.weight = Optional.ofNullable(aCatch.getWeight());
@@ -366,6 +371,7 @@ public class TripResource extends AbstractFisholaResource {
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime());
+        result.hasPicture = catchsWithPictures.contains(catchId);
         return result;
     }
 
