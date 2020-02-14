@@ -81,7 +81,7 @@ export default class TripSpeciesVue extends Vue {
 
 
   created() {
-    ReferentialService.getSpeciesPerLake(this.speciesLoaded);
+    ReferentialService.getSpeciesPerLake().then(this.speciesLoaded);
   }
 
   mounted() {

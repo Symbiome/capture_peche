@@ -61,23 +61,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    // static getAllSpecies(callback:(result:Species[])=>any) {
-    //     this.backendGet('/v1/referential/species', callback);
-    // }
-
-    static getSpeciesPerLake(callback:(result:Map<string, SpeciesWithAlias[]>)=>any) {
-        this.backendGet('/v1/referential/species-per-lake', (map) => {
-            let someMap = new Map<string, SpeciesWithAlias[]>();
-            let lakeIds:string[] = Object.keys(map);
-            lakeIds.forEach(lakeId => {
-                someMap.set(lakeId, map[lakeId]);
-            })
-            callback(someMap);
-        });
-    }
-
-    static getSpeciesPerLakePromise():Promise<Map<string, SpeciesWithAlias[]>> {
-
+    static getSpeciesPerLake():Promise<Map<string, SpeciesWithAlias[]>> {
         return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
             this.backendGet(
                 '/v1/referential/species-per-lake',
@@ -93,14 +77,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getSpecies(lakeId:string, callback:(result:SpeciesWithAlias[])=>any) {
-        this.backendGet('/v1/referential/species-per-lake', (map) => {
-            let species = map[lakeId];
-            callback(species);
-        });
-    }
-
-    static getSpeciesPromise(lakeId:string):Promise<SpeciesWithAlias[]> {
+    static getSpecies(lakeId:string):Promise<SpeciesWithAlias[]> {
         return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
             this.backendGet(
                 '/v1/referential/species-per-lake',
@@ -112,11 +89,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getWeathers(callback:(weathers:Weather[])=>any) {
-        this.backendGet('/v1/referential/weathers', callback);
-    }
-
-    static getWeathersPromise():Promise<Weather[]> {
+    static getWeathers():Promise<Weather[]> {
         return new Promise<Weather[]>((resolve, reject) => {
             this.backendGet(
                 '/v1/referential/weathers',
@@ -125,11 +98,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getTechniques(callback:(techniques:Technique[])=>any) {
-        this.backendGet('/v1/referential/techniques', callback);
-    }
-
-    static getTechniquesPromise():Promise<Technique[]> {
+    static getTechniques():Promise<Technique[]> {
         return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
             this.backendGet(
                 '/v1/referential/techniques',
@@ -138,11 +107,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getReleasedFishStates(callback:(states:ReleasedFishState[])=>any) {
-        this.backendGet('/v1/referential/released-fish-states', callback);
-    }
-
-    static getReleasedFishStatesPromise():Promise<ReleasedFishState[]> {
+    static getReleasedFishStates():Promise<ReleasedFishState[]> {
         return new Promise<ReleasedFishState[]>((resolve, reject) => {
             this.backendGet(
                 '/v1/referential/released-fish-states',
@@ -151,15 +116,7 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getTripTypes(callback:(result:any[])=>any) {
-        let types = [
-            {id: 'Border', name: 'Pêche du bord'},
-            {id: 'Craft', name: 'Depuis une embarcation'}
-        ];
-        callback(types);
-    }
-
-    static getTripTypesPromise():Promise<any[]> {
+    static getTripTypes():Promise<any[]> {
         let types = [
             {id: 'Border', name: 'Pêche du bord'},
             {id: 'Craft', name: 'Depuis une embarcation'}
@@ -170,7 +127,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getLakesWeathersTripTypesAndSpecies():Promise<LakesWeathersTripTypesAndSpecies> {
         return new Promise<LakesWeathersTripTypesAndSpecies>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getLakesPromise(), ReferentialService.getWeathersPromise(), ReferentialService.getTripTypesPromise(), ReferentialService.getSpeciesPerLakePromise()])
+                .all([ReferentialService.getLakesPromise(), ReferentialService.getWeathers(), ReferentialService.getTripTypes(), ReferentialService.getSpeciesPerLake()])
                 .then(
                     (data:[Lake[], Weather[], any[], Map<string, SpeciesWithAlias[]>]) => {
                         let result:LakesWeathersTripTypesAndSpecies = new LakesWeathersTripTypesAndSpecies(data[0], data[1], data[2], data[3]);
@@ -183,7 +140,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getLakesAndTripTypes():Promise<LakesAndTripTypes> {
         return new Promise<LakesAndTripTypes>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getLakesPromise(), ReferentialService.getTripTypesPromise()])
+                .all([ReferentialService.getLakesPromise(), ReferentialService.getTripTypes()])
                 .then(
                     (data:[Lake[], any[]]) => {
                         let result:LakesAndTripTypes = new LakesAndTripTypes(data[0], data[1]);
@@ -196,7 +153,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getSpeciesTechniquesAndReleasedFishStates(lakeId:string):Promise<SpeciesTechniquesAndReleasedFishStates> {
         return new Promise<SpeciesTechniquesAndReleasedFishStates>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getSpeciesPromise(lakeId), ReferentialService.getTechniquesPromise(), ReferentialService.getReleasedFishStatesPromise()])
+                .all([ReferentialService.getSpecies(lakeId), ReferentialService.getTechniques(), ReferentialService.getReleasedFishStates()])
                 .then(
                     (data:[SpeciesWithAlias[], Technique[], ReleasedFishState[]]) => {
                         let result:SpeciesTechniquesAndReleasedFishStates = new SpeciesTechniquesAndReleasedFishStates(data[0], data[1], data[2]);
@@ -209,7 +166,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getSpeciesAndTechniques(lakeId:string):Promise<SpeciesWithAliasAndTechnique> {
         return new Promise<SpeciesWithAliasAndTechnique>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getSpeciesPromise(lakeId), ReferentialService.getTechniquesPromise()])
+                .all([ReferentialService.getSpecies(lakeId), ReferentialService.getTechniques()])
                 .then(
                     (data:[SpeciesWithAlias[], Technique[]]) => {
                         let result:SpeciesWithAliasAndTechnique = new SpeciesWithAliasAndTechnique(data[0], data[1]);
