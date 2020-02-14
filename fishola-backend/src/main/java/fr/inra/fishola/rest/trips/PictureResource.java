@@ -70,6 +70,7 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Catch existingCatch = catchsDao.getCatch(catchId);
+        Preconditions.checkArgument(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
         Preconditions.checkState(existingTrip != null);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));

@@ -3,22 +3,12 @@ import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export default class ReferentialService extends AbstractFisholaService {
 
-    static instance?:ReferentialService;
-
     constructor () {
         super();
     }
 
-    static getInstance():ReferentialService {
-        if (!this.instance) {
-            console.log("Pas encore d'instance partagée, on la créé");
-            this.instance = new ReferentialService();
-        }
-        return this.instance;
-    }
-
     static getLakes(callback:(lakes:Lake[])=>any) {
-        this.getInstance().backendGet('/v1/referential/lakes', callback);
+        this.backendGet('/v1/referential/lakes', callback);
     }
 
     static getLakesIndex(callback:(lakes:Map<string, Lake>)=>any) {
@@ -32,11 +22,11 @@ export default class ReferentialService extends AbstractFisholaService {
     }
 
     // static getAllSpecies(callback:(result:Species[])=>any) {
-    //     this.getInstance().backendGet('/v1/referential/species', callback);
+    //     this.backendGet('/v1/referential/species', callback);
     // }
 
     static getSpeciesPerLake(callback:(result:Map<string, SpeciesWithAlias[]>)=>any) {
-        this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
+        this.backendGet('/v1/referential/species-per-lake', (map) => {
             let someMap = new Map<string, SpeciesWithAlias[]>();
             let lakeIds:string[] = Object.keys(map);
             lakeIds.forEach(lakeId => {
@@ -47,22 +37,22 @@ export default class ReferentialService extends AbstractFisholaService {
     }
 
     static getSpecies(lakeId:string, callback:(result:SpeciesWithAlias[])=>any) {
-        this.getInstance().backendGet('/v1/referential/species-per-lake', (map) => {
+        this.backendGet('/v1/referential/species-per-lake', (map) => {
             let species = map[lakeId];
             callback(species);
         });
     }
 
     static getWeathers(callback:(weathers:Weather[])=>any) {
-        this.getInstance().backendGet('/v1/referential/weathers', callback);
+        this.backendGet('/v1/referential/weathers', callback);
     }
 
     static getTechniques(callback:(techniques:Technique[])=>any) {
-        this.getInstance().backendGet('/v1/referential/techniques', callback);
+        this.backendGet('/v1/referential/techniques', callback);
     }
 
     static getReleasedFishStates(callback:(states:ReleasedFishState[])=>any) {
-        this.getInstance().backendGet('/v1/referential/released-fish-states', callback);
+        this.backendGet('/v1/referential/released-fish-states', callback);
     }
 
     static getTripTypes(callback:(result:any[])=>any) {

@@ -1,40 +1,13 @@
-import Dexie from 'dexie';
-import {TripBean} from '@/pojos/BackendPojos';
-
 import Constants from '@/services/Constants';
+import FisholaDatabase from './FisholaDatabase';
 
-export default abstract class AbstractFisholaService extends Dexie {
+export default abstract class AbstractFisholaService {
 
-    // Declare implicit table properties.
-    // (just to inform Typescript. Instanciated by Dexie in stores() method)
-    onCreationTrip: Dexie.Table<any, string>;
-    dirtyTrips: Dexie.Table<TripBean, string>;
-    dirtyPictures: Dexie.Table<any, string>;
-    //...other tables goes here...
-
-    constructor () {
-        super("Fishola");
-        console.log("Construction de la base Fishola ...");
-        this.version(1).stores({
-            onCreationTrip: 'id, mode',
-            dirtyTrips: 'id, mode',
-            //...other tables goes here...
-        });
-        this.version(2).stores({
-            onCreationTrip: 'id, mode',
-            dirtyTrips: 'id, mode',
-            dirtyPictures: 'id, content, dirtySince'
-            //...other tables goes here...
-        });
-
-        // The following line is needed if your typescript
-        // is compiled using babel instead of tsc:
-        this.onCreationTrip = this.table("onCreationTrip");
-        this.dirtyTrips = this.table("dirtyTrips");
-        this.dirtyPictures = this.table("dirtyPictures");
+    static getDatabase():FisholaDatabase {
+      return FisholaDatabase.getInstance();
     }
 
-    backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('GET', apiUrl, true);
@@ -51,7 +24,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.send();
     }
 
-    backendGetWithArgs(uri:string, args:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendGetWithArgs(uri:string, args:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
 
@@ -74,7 +47,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.send();
     }
 
-    backendPut(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendPut(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('PUT', apiUrl, true);
@@ -98,7 +71,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         }
     }
 
-    backendDelete(uri:string, callback:()=>any, errorCallback?:(status:any) => any) {
+    static backendDelete(uri:string, callback:()=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('DELETE', apiUrl, true);
@@ -113,7 +86,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         xhr.send();
     }
 
-    backendPost(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendPost(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('POST', apiUrl, true);
@@ -137,7 +110,7 @@ export default abstract class AbstractFisholaService extends Dexie {
         }
     }
 
-    backendPutPlain(uri:string, data:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendPutPlain(uri:string, data:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
       let apiUrl = Constants.apiUrl(uri);
       var xhr = new XMLHttpRequest();
       xhr.open('PUT', apiUrl, true);

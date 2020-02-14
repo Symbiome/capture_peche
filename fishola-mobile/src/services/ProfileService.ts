@@ -3,23 +3,13 @@ import UserProfile from '@/pojos/UserProfile';
 
 export default class ProfileService extends AbstractFisholaService {
 
-    static instance?:ProfileService;
-
     constructor () {
         super();
     }
 
-    static getInstance():ProfileService {
-        if (!this.instance) {
-            console.log("Pas encore d'instance partagée, on la créé");
-            this.instance = new ProfileService();
-        }
-        return this.instance;
-    }
-
     static getProfile(callback:(profile:UserProfile)=>any, needLoginCallback:()=>any) {
         
-        this.getInstance().backendGet(
+        this.backendGet(
             "/v1/security/profile", 
             callback,
             (status:number) => {

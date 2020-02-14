@@ -40,8 +40,10 @@ export default class TripsService extends AbstractFisholaService {
             newTrip.startedAt = now;
         }
 
-        this.getInstance().onCreationTrip.put(newTrip)
-          .then(id => callback(id));
+        this.getDatabase()
+            .onCreationTrip
+            .put(newTrip)
+            .then(id => callback(id));
     }
 
     static newLiveTrip(callback:(id:string)=>any) {
@@ -54,28 +56,32 @@ export default class TripsService extends AbstractFisholaService {
 
     static getTrip(id:any, callback:(trip:any)=>any) {
         if (id == Constants.DIRTY_ID || id == Constants.RUNNING_ID) {
-            this.getInstance().onCreationTrip.get(id)
-            .then((aaa) => {
-                if (!aaa.speciesIds) {
-                    aaa.speciesIds = [];
-                }
-                callback(aaa);
-            });
-        } else {
-            this.getInstance().dirtyTrips.get(id)
-            .then((aaa) => {
-                if (aaa) {
-                    console.log("Sortie trouvée dans les dirtyTrips :", aaa);
+            this.getDatabase()
+                .onCreationTrip
+                .get(id)
+                .then((aaa) => {
+                    if (!aaa.speciesIds) {
+                        aaa.speciesIds = [];
+                    }
                     callback(aaa);
-                } else {
-                    // Il faut charger le trip depuis le back
-                    let url:string = `/v1/trips/${id}`;
-                    this.getInstance().backendGet(url, (bbb:any) => {
-                        console.log("Sortie récupérée depuis le back :", bbb);
-                        callback(TripsService.backendTripToTrip(bbb));
-                    });
-                }
-            });
+                });
+        } else {
+            this.getDatabase()
+                .dirtyTrips
+                .get(id)
+                .then((aaa) => {
+                    if (aaa) {
+                        console.log("Sortie trouvée dans les dirtyTrips :", aaa);
+                        callback(aaa);
+                    } else {
+                        // Il faut charger le trip depuis le back
+                        let url:string = `/v1/trips/${id}`;
+                        this.backendGet(url, (bbb:any) => {
+                            console.log("Sortie récupérée depuis le back :", bbb);
+                            callback(TripsService.backendTripToTrip(bbb));
+                        });
+                    }
+                });
         }
     }
 
@@ -180,12 +186,14 @@ export default class TripsService extends AbstractFisholaService {
 
         let dirtyTripsIds:string[] = [];
 
-        this.getInstance().dirtyTrips.toArray((trips) => {
-            trips.forEach(trip => {
-                let tripLight:TripLight = TripsService.storedTripToLight(trip);
-                dirtyTripsIds.push(tripLight.id);
-                result.push(tripLight);
-            });
+        this.getDatabase()
+            .dirtyTrips
+            .toArray((trips) => {
+                trips.forEach(trip => {
+                    let tripLight:TripLight = TripsService.storedTripToLight(trip);
+                    dirtyTripsIds.push(tripLight.id);
+                    result.push(tripLight);
+                });
 
         });
 
@@ -195,7 +203,7 @@ export default class TripsService extends AbstractFisholaService {
             desc: sortDown
         };
 
-        this.getInstance().backendGetWithArgs('/v1/trips', page, (trips:any) => {
+        this.backendGetWithArgs('/v1/trips', page, (trips:any) => {
             console.log("Sorties récupérées depuis le back :", trips);
             trips.elements.forEach((trip:TripLight) => {
                 if (dirtyTripsIds.indexOf(trip.id) == -1) {
@@ -210,79 +218,94 @@ export default class TripsService extends AbstractFisholaService {
 
     static saveTripMain(trip:TripMain, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
-            this.getInstance().onCreationTrip.put(trip)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .onCreationTrip
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         } else {
             let tripBean:TripBean = <TripBean>trip;
-            this.getInstance().dirtyTrips.put(tripBean)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .dirtyTrips
+                .put(tripBean)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         }
     }
 
     static saveTripMeta(trip:TripMeta, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
-            this.getInstance().onCreationTrip.put(trip)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .onCreationTrip
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         } else {
             let tripBean:TripBean = <TripBean>trip;
-            this.getInstance().dirtyTrips.put(tripBean)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .dirtyTrips
+                .put(tripBean)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         }
     }
 
     static saveTripSpecies(trip:TripSpecies, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
-            this.getInstance().onCreationTrip.put(trip)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .onCreationTrip
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         } else {
             let tripBean:TripBean = <TripBean>trip;
-            this.getInstance().dirtyTrips.put(tripBean)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .dirtyTrips
+                .put(tripBean)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         }
     }
 
     static saveTrip(trip:TripBean, callback: () => void) {
         if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
-            this.getInstance().onCreationTrip.put(trip)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .onCreationTrip
+                .put(trip)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         } else {
             let tripBean:TripBean = <TripBean>trip;
-            this.getInstance().dirtyTrips.put(tripBean)
-            .then((aaa) => {
-                console.log(aaa);
-                callback();
-            });
+            this.getDatabase()
+                .dirtyTrips.put(tripBean)
+                .then((aaa) => {
+                    console.log(aaa);
+                    callback();
+                });
         }
     }
 
     static deleteDirtyTrip() {
-        this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
+        this.getDatabase().onCreationTrip.delete(Constants.DIRTY_ID);
     }
 
     static cancelCreations() {
-        this.getInstance().onCreationTrip.delete(Constants.DIRTY_ID);
-        this.getInstance().onCreationTrip.delete(Constants.RUNNING_ID);
+        this.getDatabase().onCreationTrip.delete(Constants.DIRTY_ID);
+        this.getDatabase().onCreationTrip.delete(Constants.RUNNING_ID);
     }
 
     static finishTripCreation(trip:TripSpecies, callback: (id:string) => void) {
@@ -305,7 +328,8 @@ export default class TripsService extends AbstractFisholaService {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
             trip.dirty = true;
-            this.getInstance().dirtyTrips
+            this.getDatabase()
+                .dirtyTrips
                 .put(trip)
                 .then((aaa) => {
                     console.log("Nouvelle sortie dans les dirtyTrips", aaa);
@@ -314,7 +338,8 @@ export default class TripsService extends AbstractFisholaService {
                 });
         } else {
 
-            this.getInstance().dirtyTrips
+            this.getDatabase()
+                .dirtyTrips
                 .put(trip)
                 .then((aaa) => {
                     console.log("Mise à jour de la sortie dans les dirtyTrips", aaa);
@@ -329,25 +354,27 @@ export default class TripsService extends AbstractFisholaService {
             let someTripsSaved:boolean = false;
             let allPromises:Promise<void>[] = [];
 
-            this.getInstance().dirtyTrips.toArray((dirtyTrips) => {
-                dirtyTrips
-                    .forEach((dirtyTrip:TripBean) => {
-                        let promise = this.syncTrip(dirtyTrip);
-                        promise.then(() => {
-                            this.getInstance().dirtyTrips.delete(dirtyTrip.id!);
-                            someTripsSaved = true;
-                            console.log("Trip saved !");
-                        }, () => {
-                            console.log("Arf, môrche pô :(");
+            this.getDatabase()
+                .dirtyTrips
+                .toArray((dirtyTrips) => {
+                    dirtyTrips
+                        .forEach((dirtyTrip:TripBean) => {
+                            let promise = this.syncTrip(dirtyTrip);
+                            promise.then(() => {
+                                this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
+                                someTripsSaved = true;
+                                console.log("Trip saved !");
+                            }, () => {
+                                console.log("Arf, môrche pô :(");
+                            });
+                            allPromises.push(promise);
                         });
-                        allPromises.push(promise);
+
+                    Promise.all(allPromises)
+                        .then(() => {
+                            resolve(someTripsSaved)
+                        }, reject);
                     });
-                
-                Promise.all(allPromises)
-                    .then(() => {
-                        resolve(someTripsSaved)
-                    }, reject);
-                });
             });
 
         return result;
@@ -357,7 +384,7 @@ export default class TripsService extends AbstractFisholaService {
         return new Promise((resolve, reject) =>  {
             console.log("On essaye de sauvegarder la sortie", trip);
             if (trip.createdOn) {
-                this.getInstance().backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
+                this.backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
                     PicturesService.checkForPicturesToRename(r);
                     resolve();
                 }, (eee) => {
@@ -365,7 +392,7 @@ export default class TripsService extends AbstractFisholaService {
                     reject(eee);
                 });
             } else {
-                this.getInstance().backendPost('/v1/trips', trip, (r) => {
+                this.backendPost('/v1/trips', trip, (r) => {
                     PicturesService.checkForPicturesToRename(r);
                     resolve();
                 }, (eee) => {
@@ -441,8 +468,8 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteTrip(tripId:any, callback:() => void) {
-        this.getInstance().dirtyTrips.delete(tripId);
-        this.getInstance().backendDelete(`/v1/trips/${tripId}`, callback);
+        this.getDatabase().dirtyTrips.delete(tripId);
+        this.backendDelete(`/v1/trips/${tripId}`, callback);
     }
 
 }

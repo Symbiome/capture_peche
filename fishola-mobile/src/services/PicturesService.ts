@@ -2,28 +2,19 @@ import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export default class PicturesService extends AbstractFisholaService {
 
-    static instance?:PicturesService;
-
     constructor () {
         super();
     }
 
-    static getInstance():PicturesService {
-        if (!this.instance) {
-            console.log("Pas encore d'instance partagée, on la créé");
-            this.instance = new PicturesService();
-        }
-        return this.instance;
-    }
-
-    static savePicture(catchId:string, content:string, callback:()=>any) {
+    static savePicture(catchId:string, content:string, callback:()=>any, dirtySince?:number) {
 
         let newPicture = {
             id: catchId,
             content: content,
+            dirtySince: dirtySince || new Date().getTime()
         }
 
-        this.getInstance()
+        this.getDatabase()
             .dirtyPictures
             .put(newPicture)
             .then(id => {
@@ -33,18 +24,18 @@ export default class PicturesService extends AbstractFisholaService {
     }
 
     static deletePicture(catchId:string) {
-        this.getInstance()
+        this.getDatabase()
             .dirtyPictures
             .delete(catchId);
     }
 
-    static getPicture(catchId:string, callback:(content?:string)=>any) {
+    static getPictureFull(catchId:string, callback:(content?:string, dirtySince?:number)=>any) {
         
-        this.getInstance()
+        this.getDatabase()
             .dirtyPictures
             .get(catchId)
             .then((item:any) => {
-                callback(item.content);
+                callback(item.content, item.dirtySince);
             })
             .catch(() => {
                 console.log("Image non trouvée");
@@ -52,16 +43,22 @@ export default class PicturesService extends AbstractFisholaService {
             });
     }
 
+    static getPicture(catchId:string, callback:(content?:string)=>any) {
+        this.getPictureFull(catchId, (content?, dirtySince?) => {
+            callback(content);
+        });
+    }
+
     static checkForPicturesToRename(map:any) {
         let keys:string[] = Object.keys(map);
         keys.forEach((key:string) => {
-            PicturesService.getPicture(key, (content?) => {
+            PicturesService.getPictureFull(key, (content?, dirtySince?) => {
                 if (content) {
                     let newId = map[key];
                     console.log(`On change l'ID de l'image ${key} -> ${newId}`);
                     PicturesService.savePicture(newId, content, () => {
                         PicturesService.deletePicture(key);
-                    });
+                    }, dirtySince);
                 }
             })
         });
@@ -69,7 +66,7 @@ export default class PicturesService extends AbstractFisholaService {
 
     static syncPictures() {
 
-        this.getInstance()
+        this.getDatabase()
             .dirtyPictures
             .toCollection()
             .primaryKeys((pictureIds:string[]) => {
@@ -108,7 +105,7 @@ export default class PicturesService extends AbstractFisholaService {
             console.log("On essaye de sauvegarder la photo", pictureId);
             PicturesService.getPicture(pictureId, (content?) => {
                 if (content) {
-                    this.getInstance().backendPutPlain(`/v1/pictures/${pictureId}`, content, resolve, reject);
+                    this.backendPutPlain(`/v1/pictures/${pictureId}`, content, resolve, reject);
                 } else {
                     reject(`Unable to find picture content ${pictureId}`);
                 }
