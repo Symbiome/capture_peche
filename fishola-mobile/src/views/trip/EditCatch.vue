@@ -90,6 +90,7 @@ import CatchSummary from '@/pojos/CatchSummary';
 
 import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
+import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 
@@ -183,17 +184,17 @@ export default class EditCatch extends Vue {
       PicturesService.getPicture(someCatch.id, this.pictureLoaded);
     }
 
-    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId, this.speciesAndTechniquesLoaded);
+    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId).then(this.referentialLoaded);
   }
 
   pictureLoaded(content?:string) {
     this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
   }
 
-  speciesAndTechniquesLoaded(species:SpeciesWithAlias[], techniques:Technique[], states:ReleasedFishState[]) {
-    species.forEach((s) => this.allSpecies.push(s));
-    techniques.forEach((t) => this.allTechniques.push(t));
-    states.forEach((s) => this.allReleasedFishStates.push(s));
+  referentialLoaded(data:SpeciesTechniquesAndReleasedFishStates) {
+    data.species.forEach((s) => this.allSpecies.push(s));
+    data.techniques.forEach((t) => this.allTechniques.push(t));
+    data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
   }
 

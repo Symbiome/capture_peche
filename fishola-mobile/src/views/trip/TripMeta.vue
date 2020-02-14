@@ -56,6 +56,7 @@ import {Lake} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
 import TripsService from '@/services/TripsService';
+import {LakesAndTripTypes} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 
 import FormInput from '@/components/common/FormInput.vue'
@@ -98,7 +99,7 @@ export default class TripMetaVue extends Vue {
   types:any[] = [];
 
   created() {
-    ReferentialService.getLakesAndTripTypes(this.referentialsLoaded);
+    ReferentialService.getLakesAndTripTypes().then(this.referentialsLoaded);
   }
 
   tripLoaded(someTrip:TripMeta) {
@@ -118,9 +119,9 @@ export default class TripMetaVue extends Vue {
 
   }
 
-  referentialsLoaded(ls:Lake[], tts:any[]) {
-    ls.forEach((lake) => this.lakes.push(lake));
-    tts.forEach((type) => this.types.push(type));
+  referentialsLoaded(data:LakesAndTripTypes) {
+    data.lakes.forEach((lake:Lake) => this.lakes.push(lake));
+    data.tripTypes.forEach((type:any) => this.types.push(type));
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 

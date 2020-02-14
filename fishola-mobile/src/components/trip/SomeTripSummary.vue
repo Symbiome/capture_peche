@@ -57,6 +57,7 @@ import {Lake, Weather, SpeciesWithAlias} from '@/pojos/BackendPojos';
 
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
+import {LakesWeathersTripTypesAndSpecies} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 
 import FormInput from '@/components/common/FormInput.vue'
@@ -105,17 +106,17 @@ export default class SomeTripSummary extends Vue {
   allTripTypes:any[] = [];
 
   created() {
-    ReferentialService.getLakesWeathersTripTypesAndSpecies(this.referentialsLoaded);
+    ReferentialService.getLakesWeathersTripTypesAndSpecies().then(this.referentialsLoaded);
   }
 
   mounted() {
   }
 
-  referentialsLoaded(lakes:Lake[], weathers:Weather[], tripTypes:any[], species:Map<string, SpeciesWithAlias[]>) {
-    lakes.forEach((lake) => this.allLakes.push(lake));
-    weathers.forEach((weather) => this.allWeathers.push(weather));
-    tripTypes.forEach((type) => this.allTripTypes.push(type));
-    this.allSpecies = species;
+  referentialsLoaded(data:LakesWeathersTripTypesAndSpecies) {
+    data.lakes.forEach((lake) => this.allLakes.push(lake));
+    data.weathers.forEach((weather) => this.allWeathers.push(weather));
+    data.tripTypes.forEach((type) => this.allTripTypes.push(type));
+    this.allSpecies = data.species;
     this.tripLoaded(this.trip);
   }
 

@@ -41,6 +41,7 @@ import PicturePreview from '@/components/trip/PicturePreview.vue';
 
 import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
+import {SpeciesWithAliasAndTechnique} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
@@ -72,7 +73,7 @@ export default class CatchPreview extends Vue {
       PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
     }
 
-    ReferentialService.getSpeciesAndTechniques(this.lakeId, this.speciesLoaded);
+    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(this.referentialLoaded);
 
   }
 
@@ -80,13 +81,13 @@ export default class CatchPreview extends Vue {
     this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
   }
 
-  speciesLoaded(species:SpeciesWithAlias[],techniques:Technique[]) {
-    species.forEach(s => {
+  referentialLoaded(data:SpeciesWithAliasAndTechnique) {
+    data.species.forEach(s => {
       if (this.aCatch.speciesId == s.id) {
         this.speciesLabel = s.name;
       }
     });
-    techniques.forEach(t => {
+    data.techniques.forEach(t => {
       if (this.aCatch.techniqueId == t.id) {
         this.techniqueLabel = t.name;
       }
