@@ -103,7 +103,16 @@ export default class PicturesService extends AbstractFisholaService {
     static syncPicture(pictureId:string):Promise<void> {
         return new Promise((resolve, reject) =>  {
             console.log("On essaye de sauvegarder la photo", pictureId);
-            PicturesService.getPicture(pictureId, (content?) => {
+            PicturesService.getPictureFull(pictureId, (content?, dirtySince?) => {
+                if (dirtySince) {
+                    let dirtySinceInMillis = new Date().getTime() - dirtySince;
+                    if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
+                        console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${dirtySince}`);
+                        PicturesService.deletePicture(pictureId);
+                        reject("Photo non synchronisée depuis trop longtemps");
+                        return;
+                    }
+                }
                 if (content) {
                     this.backendPutPlain(`/v1/pictures/${pictureId}`, content, resolve, reject);
                 } else {
