@@ -39,12 +39,7 @@ export default class ReferentialService extends AbstractFisholaService {
     }
 
     static getLakes():Promise<Lake[]> {
-        return new Promise<Lake[]>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/lakes',
-                resolve,
-                reject);
-        });
+        return this.backendGetWithCache('/v1/referential/lakes');
     }
 
     static getLakesIndex():Promise<Map<string, Lake>> {
@@ -90,30 +85,15 @@ export default class ReferentialService extends AbstractFisholaService {
     }
 
     static getWeathers():Promise<Weather[]> {
-        return new Promise<Weather[]>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/weathers',
-                resolve,
-                reject);
-        });
+        return this.backendGetWithCache('/v1/referential/weathers');
     }
 
     static getTechniques():Promise<Technique[]> {
-        return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/techniques',
-                resolve,
-                reject);
-        });
+        return this.backendGetWithCache('/v1/referential/techniques');
     }
 
     static getReleasedFishStates():Promise<ReleasedFishState[]> {
-        return new Promise<ReleasedFishState[]>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/released-fish-states',
-                resolve,
-                reject);
-        });
+        return this.backendGetWithCache('/v1/referential/released-fish-states');
     }
 
     static getTripTypes():Promise<any[]> {

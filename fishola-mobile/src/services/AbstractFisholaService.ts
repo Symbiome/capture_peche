@@ -1,11 +1,19 @@
 import Constants from '@/services/Constants';
 import FisholaDatabase from './FisholaDatabase';
 
+class CacheEntry {
+  constructor(public since:number, public content:any) {
+
+  }
+}
+
 export default abstract class AbstractFisholaService {
 
     static getDatabase():FisholaDatabase {
       return FisholaDatabase.getInstance();
     }
+
+    static caches:Map<string, CacheEntry> = new Map();
 
     static backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
@@ -22,6 +30,44 @@ export default abstract class AbstractFisholaService {
           }
         };
         xhr.send();
+    }
+
+    static backendGetPromise(uri:string):Promise<any> {
+      return new Promise<any>((resolve, reject) => {
+        let apiUrl = Constants.apiUrl(uri);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', apiUrl, true);
+        xhr.withCredentials = true;
+        xhr.onload = function() {
+          if (this.status == 200) {
+            let responseText = this['responseText'];
+            let parsed = JSON.parse(responseText);
+            console.log("Résultat via 'backendGetPromise': ", parsed);
+            resolve(parsed);
+          } else {
+            reject(this.status);
+          }
+        };
+        xhr.send();
+      });
+    }
+
+    static backendGetWithCache(uri:string):Promise<any> {
+      let entry = this.caches.get(uri);
+      if (entry && ((new Date().getTime() - entry.since) < 60000)) {
+        console.log("On utilise le cache", uri);
+        return Promise.resolve(entry.content);
+      }
+
+      return new Promise<any>((resolve, reject) => {
+        this.backendGetPromise(uri).then((content:any) => {
+          this.caches.set(uri, {
+            since: new Date().getTime(),
+            content: content
+          });
+          resolve(content);
+        }, reject)
+      });
     }
 
     static backendGetWithArgs(uri:string, args:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
