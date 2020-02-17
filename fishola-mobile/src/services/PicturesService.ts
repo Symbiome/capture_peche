@@ -71,7 +71,10 @@ export default class PicturesService extends AbstractFisholaService {
             .toCollection()
             .primaryKeys((pictureIds:string[]) => {
 
-                console.log("Liste des IDs de photos dans la base embarquée", pictureIds);
+                if (pictureIds && pictureIds.length > 0) {
+                    console.log("Liste des IDs de photos dans la base embarquée", pictureIds);
+                }
+
                 let allPromises:Promise<void>[] = [];
 
                 pictureIds

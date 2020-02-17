@@ -76,10 +76,11 @@ export default class TripsService extends AbstractFisholaService {
                     } else {
                         // Il faut charger le trip depuis le back
                         let url:string = `/v1/trips/${id}`;
-                        this.backendGet(url, (bbb:any) => {
-                            console.log("Sortie récupérée depuis le back :", bbb);
-                            callback(TripsService.backendTripToTrip(bbb));
-                        });
+                        this.backendGet(url)
+                            .then((bbb:any) => {
+                                console.log("Sortie récupérée depuis le back :", bbb);
+                                callback(TripsService.backendTripToTrip(bbb));
+                            });
                     }
                 });
         }

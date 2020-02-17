@@ -8,19 +8,18 @@ export default class ProfileService extends AbstractFisholaService {
     }
 
     static getProfile(callback:(profile:UserProfile)=>any, needLoginCallback:()=>any) {
-        
-        this.backendGet(
-            "/v1/security/profile", 
-            callback,
-            (status:number) => {
-                if (status == 401) {
-                    console.error("Need to login");
-                    needLoginCallback();
-                } else {
-                    console.error("C'est la merde noire");
+        this.backendGet("/v1/security/profile")
+            .then(
+                callback,
+                (status:number) => {
+                    if (status == 401) {
+                        console.error("Need to login");
+                        needLoginCallback();
+                    } else {
+                        console.error("C'est la merde noire");
+                    }
                 }
-            }
-        );
+            );
 
     }
 

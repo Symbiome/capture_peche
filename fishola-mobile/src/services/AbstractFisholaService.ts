@@ -15,24 +15,7 @@ export default abstract class AbstractFisholaService {
 
     static caches:Map<string, CacheEntry> = new Map();
 
-    static backendGet(uri:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', apiUrl, true);
-        xhr.withCredentials = true;
-        xhr.onload = function() {
-          if (this.status == 200) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
-            callback(parsed);
-          } else if (errorCallback) {
-            errorCallback(this.status);
-          }
-        };
-        xhr.send();
-    }
-
-    static backendGetPromise(uri:string):Promise<any> {
+    static backendGet(uri:string):Promise<any> {
       return new Promise<any>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
@@ -59,14 +42,15 @@ export default abstract class AbstractFisholaService {
       }
 
       return new Promise<any>((resolve, reject) => {
-        this.backendGetPromise(uri).then((content:any) => {
-          this.caches.set(uri, {
-            since: new Date().getTime(),
-            content: content
-          });
-          resolve(content);
-        }, reject)
-      });
+        this.backendGet(uri)
+          .then(
+            (content:any) => {
+              let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
+              this.caches.set(uri, newEntry);
+              resolve(content);
+            },
+            reject)
+        });
     }
 
     static backendGetWithArgs(uri:string, args:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
