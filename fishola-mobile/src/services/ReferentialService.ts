@@ -58,26 +58,25 @@ export default class ReferentialService extends AbstractFisholaService {
 
     static getSpeciesPerLake():Promise<Map<string, SpeciesWithAlias[]>> {
         return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/species-per-lake',
-                (map) => {
-                    let someMap = new Map<string, SpeciesWithAlias[]>();
-                    let lakeIds:string[] = Object.keys(map);
-                    lakeIds.forEach(lakeId => {
-                        someMap.set(lakeId, map[lakeId]);
-                    });
-                    resolve(someMap);
-                },
-                reject);
+            this.backendGetWithCache('/v1/referential/species-per-lake')
+                .then(
+                    (map) => {
+                        let someMap = new Map<string, SpeciesWithAlias[]>();
+                        let lakeIds:string[] = Object.keys(map);
+                        lakeIds.forEach(lakeId => {
+                            someMap.set(lakeId, map[lakeId]);
+                        });
+                        resolve(someMap);
+                    },
+                    reject);
         });
     }
 
     static getSpecies(lakeId:string):Promise<SpeciesWithAlias[]> {
         return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
-            this.backendGet(
-                '/v1/referential/species-per-lake',
+            this.getSpeciesPerLake().then(
                 (map) => {
-                    let species = map[lakeId];
+                    let species = map.get(lakeId);
                     resolve(species);
                 },
                 reject);

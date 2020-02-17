@@ -42,7 +42,6 @@ export default abstract class AbstractFisholaService {
           if (this.status == 200) {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
-            console.log("Résultat via 'backendGetPromise': ", parsed);
             resolve(parsed);
           } else {
             reject(this.status);
@@ -54,7 +53,7 @@ export default abstract class AbstractFisholaService {
 
     static backendGetWithCache(uri:string):Promise<any> {
       let entry = this.caches.get(uri);
-      if (entry && ((new Date().getTime() - entry.since) < 60000)) {
+      if (entry && ((new Date().getTime() - entry.since) < (1000 * 60 * 60))) {
         console.log("On utilise le cache", uri);
         return Promise.resolve(entry.content);
       }
