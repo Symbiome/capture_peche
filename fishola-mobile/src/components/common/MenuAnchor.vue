@@ -1,5 +1,5 @@
 <template>
-  <div class="pastille filled" v-on:click="$root.$emit('toaster-warning', 'Work in progress');">
+  <div class="pastille filled" v-on:click="openMenu">
     <i class="icon-menu"></i>
   </div>
 </template>
@@ -9,6 +9,12 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class MenuAnchor extends Vue {
+
+  openMenu() {
+    console.log("openMenu");
+    this.$root.$emit('open-menu');
+  }
+
 }
 </script>
 

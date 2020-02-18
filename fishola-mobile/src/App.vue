@@ -1,13 +1,15 @@
 <template>
   <div id="app">
     <Toaster/>
+    <Menu/>
     <router-view/>
   </div>
 </template>
 
 <script lang="ts">
 
-import Toaster from '@/components/common/Toaster.vue'
+import Toaster from '@/components/layout/Toaster.vue'
+import Menu from '@/components/layout/Menu.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -16,7 +18,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    Toaster
+    Toaster,
+    Menu
   }
 })
 export default class App extends Vue {
