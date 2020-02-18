@@ -10,72 +10,56 @@
           <span>
             Profil (TODO)
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-home"/>
-          </div>
+          <i class="icon-profile"/>
         </div>
 
         <div class="item">
           <span>
             Accueil
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-home"/>
-          </div>
+          <i class="icon-home"/>
         </div>
 
         <div class="item">
           <span>
             Tableau de bord
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-dashboard"/>
-          </div>
+          <i class="icon-dashboard"/>
         </div>
 
         <div class="item">
           <span>
             Paramètres
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-dashboard"/>
-          </div>
+          <i class="icon-settings"/>
         </div>
 
         <div class="item">
           <span>
             Documentation
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-dashboard"/>
-          </div>
+          <i class="icon-file"/>
         </div>
 
         <div class="item">
           <span>
             Infos / Crédits
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-info"/>
-          </div>
+          <i class="icon-info"/>
         </div>
 
         <div class="item">
           <span>
             Des retours ?
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-faq"/>
-          </div>
+          <i class="icon-faq"/>
         </div>
 
         <div class="item">
           <span>
             Déconnexion
           </span>
-          <div class="pastille pastille-20">
-            <i class="icon-logout"/>
-          </div>
+          <i class="icon-logout"/>
         </div>
 
       </div>
@@ -195,6 +179,10 @@ export default class Menu extends Vue {
         width: fit-content;
 
         span {
+        }
+
+        i {
+          margin-left: 20px;
         }
 
       }
