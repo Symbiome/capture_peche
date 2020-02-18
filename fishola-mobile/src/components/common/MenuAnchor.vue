@@ -8,7 +8,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
-export default class Menu extends Vue {
+export default class MenuAnchor extends Vue {
 }
 </script>
 

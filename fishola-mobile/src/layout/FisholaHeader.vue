@@ -6,7 +6,7 @@
     <div class="header-buttons">
       <Avatar v-if="avatar"/>
       <FeedbackAnchor/>
-      <Menu v-if="menu"/>
+      <MenuAnchor v-if="menu"/>
     </div>
   </div>
 </template>
@@ -15,7 +15,7 @@
 import Title from '@/layout/Title.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import FeedbackAnchor from '@/components/common/FeedbackAnchor.vue';
-import Menu from '@/layout/Menu.vue';
+import MenuAnchor from '@/components/common/MenuAnchor.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -24,7 +24,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     Title,
     Avatar,
     FeedbackAnchor,
-    Menu
+    MenuAnchor
   }
 })
 export default class FisholaHeader extends Vue {
