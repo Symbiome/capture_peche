@@ -32,8 +32,8 @@
     <gitlabProjectName>fishola</gitlabProjectName>
 
     <quarkus.version>1.2.0.Final</quarkus.version>
-    <jooqVersion>3.12.4</jooqVersion>
-    <flywayVersion>6.2.2</flywayVersion>
+    <jooqVersion>3.13.0</jooqVersion>
+    <flywayVersion>6.2.3</flywayVersion>
     <postgresqlDriverVersion>42.2.10</postgresqlDriverVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -115,7 +115,7 @@
       <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.9.0</version>
+        <version>3.10.0</version>
       </dependency>
 
       <dependency>
