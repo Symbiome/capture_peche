@@ -62,9 +62,9 @@ import ReferentialService from '@/services/ReferentialService';
 import FormInput from '@/components/common/FormInput.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 
-import FisholaHeader from '@/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import FisholaFooter from '@/layout/FisholaFooter.vue'
+import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';

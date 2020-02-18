@@ -62,7 +62,7 @@
 import Constants from '@/services/Constants';
 import UserRegister from '@/pojos/UserRegister';
 
-import FisholaHeader from '@/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import router from '@/router'
 

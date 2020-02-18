@@ -68,10 +68,10 @@ import TripsService from '@/services/TripsService';
 import router from '@/router'
 
 import UserProfile from '@/pojos/UserProfile';
-import FooterButton from '@/layout/FooterButton.vue'
+import FooterButton from '@/components/layout/FooterButton.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Helpers from '../pojos/Helpers';
+import Helpers from '@/pojos/Helpers';
 
 @Component({
   components: {
@@ -199,7 +199,7 @@ export default class FisholaFooter extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 
-@import "../less/main";
+@import "../../less/main";
 
 .footer {
 

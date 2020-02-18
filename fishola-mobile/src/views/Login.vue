@@ -38,7 +38,7 @@
 import Constants from '@/services/Constants';
 
 import FormInput from '@/components/common/FormInput.vue'
-import FisholaHeader from '@/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import router from '@/router'
 
 

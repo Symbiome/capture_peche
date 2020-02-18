@@ -94,7 +94,7 @@ import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialServ
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 
-import FisholaHeader from '@/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormInput from '@/components/common/FormInput.vue'
@@ -102,7 +102,7 @@ import FormYesNo from '@/components/common/FormYesNo.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import PicturePreview from '@/components/trip/PicturePreview.vue'
-import FisholaFooter from '@/layout/FisholaFooter.vue'
+import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';

@@ -57,11 +57,11 @@ import TripsService from '@/services/TripsService';
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
 
-import FisholaHeader from '@/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import SomeTripSummary from '@/components/trip/SomeTripSummary.vue'
 import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
-import FisholaFooter from '@/layout/FisholaFooter.vue'
+import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';

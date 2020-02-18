@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import Title from '@/layout/Title.vue';
+import Title from '@/components/layout/Title.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import FeedbackAnchor from '@/components/common/FeedbackAnchor.vue';
 import MenuAnchor from '@/components/common/MenuAnchor.vue';
@@ -37,7 +37,7 @@ export default class FisholaHeader extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 
-@import "../less/main";
+@import "../../less/main";
 
 .header {
 
