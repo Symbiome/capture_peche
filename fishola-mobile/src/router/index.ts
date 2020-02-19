@@ -16,6 +16,9 @@ import EditTrip from '../views/trip/EditTrip.vue'
 
 import EditCatch from '../views/trip/EditCatch.vue'
 
+import Documentation from '../views/Documentation.vue'
+import Credits from '../views/Credits.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -84,6 +87,16 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: Dashboard
+  },
+  {
+    path: '/documentation',
+    name: 'documentation',
+    component: Documentation
+  },
+  {
+    path: '/credits',
+    name: 'credits',
+    component: Credits
   },
   {
     path: '/about',

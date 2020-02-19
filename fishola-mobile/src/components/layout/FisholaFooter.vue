@@ -34,6 +34,12 @@
       <i class="icon-dashboard"></i>
     </div>
     <div class="footer-element pastille"
+         v-bind:class="selected=='credits'?'filled':'unfilled'"
+         v-if="activeButtons['credits']"
+         v-on:click="goCredits">
+      <i class="icon-info"></i>
+    </div>
+    <div class="footer-element pastille"
          v-bind:class="selected=='home'?'filled':'unfilled'"
          v-if="activeButtons['home']"
          v-on:click="goHome">
@@ -52,6 +58,12 @@
          v-if="activeButtons['delete']"
          v-on:click="doDelete">
       <i class="icon-delete"></i>
+    </div>
+    <div class="footer-element pastille"
+         v-bind:class="selected=='documentation'?'filled':'unfilled'"
+         v-if="activeButtons['documentation']"
+         v-on:click="goDocumentation">
+      <i class="icon-files"></i>
     </div>
     <div class="footer-element pastille"
          v-if="activeButtons['blank']">
@@ -97,7 +109,9 @@ export default class FisholaFooter extends Vue {
     home: false,
     giveup: false,
     delete: false,
-    blank: false
+    blank: false,
+    credits: false,
+    documentation: false
   };
 
   mounted() {
@@ -146,6 +160,14 @@ export default class FisholaFooter extends Vue {
 
   goDashboard() {
     router.push('/dashboard');
+  }
+
+  goCredits() {
+    router.push('/credits');
+  }
+
+  goDocumentation() {
+    router.push('/documentation');
   }
 
   goHome() {

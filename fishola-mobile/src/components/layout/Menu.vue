@@ -34,14 +34,14 @@
           <i class="icon-settings"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goDocumentation">
           <span>
             Documentation
           </span>
           <i class="icon-files"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goCredits">
           <span>
             Infos / Crédits
           </span>
@@ -133,6 +133,16 @@ export default class Menu extends Vue {
   goDashboard() {
     this.closeMenu();
     router.push('/dashboard');
+  }
+
+  goDocumentation() {
+    this.closeMenu();
+    router.push('/documentation');
+  }
+
+  goCredits() {
+    this.closeMenu();
+    router.push('/credits');
   }
 
   logout() {

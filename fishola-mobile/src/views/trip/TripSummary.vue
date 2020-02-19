@@ -15,9 +15,9 @@
       </div>
     </div>
     <FisholaFooter button-text="Envoyer"
-                    button-icon="icon-send"
-                    v-on:buttonClicked="sendClicked"
-                    shortcuts="back,step-4-4,giveup"/>
+                   button-icon="icon-send"
+                   v-on:buttonClicked="sendClicked"
+                   shortcuts="back,step-4-4,giveup"/>
   </div>
 </template>
 

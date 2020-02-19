@@ -46,8 +46,8 @@
 
       </div>
     </div>
-    <FisholaFooter buttons="logout,dashboard,home"
-                  selected="dashboard" />
+    <FisholaFooter shortcuts="logout,dashboard,home"
+                   selected="dashboard" />
   </div>
 </template>
 
