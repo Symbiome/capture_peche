@@ -8,9 +8,9 @@
 
         <div class="item" v-on:click="wip">
           <span>
-            Profil (TODO)
+            {{fullName}}
           </span>
-          <i class="icon-profile"/>
+          <Avatar v-if="initials" v-bind:initials="initials"/>
         </div>
 
         <div class="item" v-on:click="goHome">
@@ -70,14 +70,39 @@
 
 import ProfileService from '@/services/ProfileService';
 
+import Avatar from '@/components/common/Avatar.vue';
+import UserProfile from '@/pojos/UserProfile';
+
 import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
+@Component({
+  components: {
+    Avatar
+  }
+})
 export default class Menu extends Vue {
 
   visibility:string = 'menu-hidden';
+
+  fullName:string = '';
+  initials:string = '';
+
+  created() {
+    ProfileService.getProfile()
+      .then(
+        this.profileLoaded,
+        () => {
+          this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+          router.push('/login');
+        });
+  }
+
+  profileLoaded(profile:UserProfile) {
+    this.fullName = profile.firstName + " " + profile.lastName;
+    this.initials = profile.initials;
+  }
 
   mounted() {
     this.$root.$on('open-menu', this.openMenu);
@@ -196,10 +221,6 @@ export default class Menu extends Vue {
       // justify-content: center;
       align-items: flex-end;
 
-      font-weight: bold;
-      font-size: 14px;
-      line-height: 19px;
-
       padding-right: 15px;
 
       .item {
@@ -214,10 +235,17 @@ export default class Menu extends Vue {
         width: fit-content;
 
         span {
+          margin-right: 20px;
+
+          font-size: 14px;
+          font-weight: bold;
+          line-height: 19px;
         }
 
         i {
-          margin-left: 20px;
+          font-size: 20px;
+          width: 30px;
+          text-align: center;
         }
 
       }

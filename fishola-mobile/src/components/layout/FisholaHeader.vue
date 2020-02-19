@@ -4,7 +4,7 @@
       <Title v-if="title"/>
     </div>
     <div class="header-buttons">
-      <Avatar v-if="avatar"/>
+      <Avatar v-if="avatar && initials" v-bind:initials="initials"/>
       <FeedbackAnchor/>
       <MenuAnchor v-if="menu"/>
     </div>
@@ -17,6 +17,11 @@ import Avatar from '@/components/common/Avatar.vue';
 import FeedbackAnchor from '@/components/common/FeedbackAnchor.vue';
 import MenuAnchor from '@/components/common/MenuAnchor.vue';
 
+import UserProfile from '@/pojos/UserProfile';
+import ProfileService from '@/services/ProfileService';
+
+import router from '../../router';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
@@ -28,9 +33,28 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class FisholaHeader extends Vue {
-  @Prop({ default: true }) title!: Boolean;
-  @Prop({ default: true }) avatar!: Boolean;
-  @Prop({ default: true }) menu!: Boolean;
+  @Prop({ default: true }) title: boolean;
+  @Prop({ default: true }) avatar: boolean;
+  @Prop({ default: true }) menu: boolean;
+
+  initials = '';
+
+  created() {
+    if (this.avatar) {
+      ProfileService.getProfile()
+        .then(
+          this.profileLoaded,
+          () => {
+            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+            router.push('/login');
+          });
+    }
+  }
+
+  profileLoaded(profile:UserProfile) {
+    this.initials = profile.initials;
+  }
+
 }
 </script>
 

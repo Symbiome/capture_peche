@@ -5,31 +5,12 @@
 </template>
 
 <script lang="ts">
-import Constants from '@/services/Constants';
-
-import UserProfile from '@/pojos/UserProfile';
-import ProfileService from '@/services/ProfileService';
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
 
 @Component
 export default class Avatar extends Vue {
 
-  initials = '..';
-
-  created() {
-    ProfileService.getProfile()
-        .then(
-          this.profileLoaded,
-          () => {
-            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-            router.push('/login');
-          });
-  }
-
-  profileLoaded(profile:UserProfile) {
-    this.initials = profile.initials;
-  }
+  @Prop() initials:string;
 
 }
 </script>
