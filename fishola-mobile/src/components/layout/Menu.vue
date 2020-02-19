@@ -13,14 +13,14 @@
           <i class="icon-profile"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goHome">
           <span>
             Accueil
           </span>
           <i class="icon-home"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goDashboard">
           <span>
             Tableau de bord
           </span>
@@ -55,7 +55,7 @@
           <i class="icon-faq"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="logout">
           <span>
             Déconnexion
           </span>
@@ -68,6 +68,9 @@
 
 <script lang="ts">
 
+import ProfileService from '@/services/ProfileService';
+
+import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -81,23 +84,41 @@ export default class Menu extends Vue {
   }
 
   openMenu() {
-    console.log("Ouverture du menu");
     this.visibility = "menu-visible";
   }
 
   closeMenu() {
-    console.log("Fermeture du menu");
     this.visibility = "menu-disappears";
   }
 
   beforeDestroy() {
-    console.log("Destroy menu");
     this.$root.$off('open-menu');
   }
 
   wip() {
     // this.closeMenu();
     this.$root.$emit('toaster-warning', 'Work in progress');
+  }
+
+  goHome() {
+    this.closeMenu();
+    router.push('/trips');
+  }
+
+  goDashboard() {
+    this.closeMenu();
+    router.push('/dashboard');
+  }
+
+  logout() {
+    if (confirm("Voulez-vous vous déconnecter ?")) {
+      this.closeMenu();
+      ProfileService.logout().then(this.logguedOut);
+    }
+  }
+
+  logguedOut() {
+    router.push('/login');
   }
 
 }
