@@ -68,6 +68,7 @@ body {
   background-color: @pelorous;
   margin: 0px;
   height: 100%;
+  overflow: hidden;
 }
 
 html {
