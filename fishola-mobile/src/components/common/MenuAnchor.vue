@@ -11,7 +11,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class MenuAnchor extends Vue {
 
   openMenu() {
-    console.log("openMenu");
     this.$root.$emit('open-menu');
   }
 

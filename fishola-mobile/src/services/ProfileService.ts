@@ -7,24 +7,28 @@ export default class ProfileService extends AbstractFisholaService {
         super();
     }
 
-    static getProfile(callback:(profile:UserProfile)=>any, needLoginCallback:()=>any) {
-        this.backendGet("/v1/security/profile")
-            .then(
-                callback,
-                (status:number) => {
-                    if (status == 401) {
-                        console.error("Need to login");
-                        needLoginCallback();
-                    } else {
-                        console.error("C'est la merde noire");
-                    }
-                }
-            );
+    static fetchProfile():Promise<UserProfile> {
+        return new Promise<UserProfile>((resolve, reject) => {
+            this.backendGet("/v1/security/profile")
+                .then(
+                    (fetched) => {
+                        UserProfile.setCurrent(fetched);
+                        resolve(fetched);
+                    },
+                    reject);
+        });
+    }
 
+    static getProfile():Promise<UserProfile> {
+        let profile:UserProfile = UserProfile.getCurrent();
+        if (profile) {
+            return Promise.resolve(profile);
+        } else {
+            return this.fetchProfile();
+        }
     }
 
     static logout():Promise<void> {
-  
         return new Promise<void>((resolve, reject) => {
             // XXX AThimel 19/02/2020 : Devrait être en POST
             this.backendGet("/v1/security/logout")
@@ -35,8 +39,6 @@ export default class ProfileService extends AbstractFisholaService {
                     },
                     reject);
         });
-
     }
-  
 
 }

@@ -29,13 +29,16 @@ export default class Dispatcher extends Vue {
 
   checkForActiveSession() {
 
-    ProfileService.getProfile(() => {
-        this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
-        router.push('trips');
-      }, () => {
-        // this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-        router.push('login');
-    });
+    ProfileService.getProfile()
+      .then(
+        (profile) => {
+          this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
+          router.push('trips');
+        },
+        (status) => {
+          router.push('/login');
+        }
+      );
 
   }
 

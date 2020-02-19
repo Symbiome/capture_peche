@@ -18,19 +18,16 @@ export default class Avatar extends Vue {
   initials = '..';
 
   created() {
-    let profile:UserProfile = UserProfile.getCurrent();
-    if (profile) {
-      this.initials = profile.initials;
-    } else {
-      ProfileService.getProfile(this.profileLoaded, () => {
-        this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-        router.push('/login');
-      });
-    }
+    ProfileService.getProfile()
+        .then(
+          this.profileLoaded,
+          () => {
+            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+            router.push('/login');
+          });
   }
 
   profileLoaded(profile:UserProfile) {
-    UserProfile.setCurrent(profile);
     this.initials = profile.initials;
   }
 
