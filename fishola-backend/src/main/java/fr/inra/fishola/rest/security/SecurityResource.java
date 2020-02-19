@@ -202,12 +202,13 @@ public class SecurityResource extends AbstractFisholaResource {
 
     }
 
+    // XXX AThimel 19/02/2020 : Devrait être en POST
     @GET
     @Path("/logout")
     public Response logout(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
         NewCookie logoutCookie = dropTokenCookie();
-        Response result = Response.ok().cookie(logoutCookie).build();
+        Response result = Response.noContent().cookie(logoutCookie).build();
         return result;
     }
 

@@ -23,4 +23,20 @@ export default class ProfileService extends AbstractFisholaService {
 
     }
 
+    static logout():Promise<void> {
+  
+        return new Promise<void>((resolve, reject) => {
+            // XXX AThimel 19/02/2020 : Devrait être en POST
+            this.backendGet("/v1/security/logout")
+                .then(
+                    () => {
+                        UserProfile.unsetCurrent();
+                        resolve();
+                    },
+                    reject);
+        });
+
+    }
+  
+
 }

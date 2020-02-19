@@ -26,6 +26,8 @@ export default abstract class AbstractFisholaService {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
             resolve(parsed);
+          } else if (this.status == 204) {
+            resolve();
           } else {
             reject(this.status);
           }
