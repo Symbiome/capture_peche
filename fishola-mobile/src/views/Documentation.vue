@@ -6,8 +6,8 @@
         <h1>Documentation</h1>
         <div class="pane-content">
 
-            <div class="documentation-row">
-                Ah !
+            <div class="documentation-row warning">
+                Work in progress
             </div>
 
         </div>
@@ -56,6 +56,11 @@ export default class Documentation extends Vue {
     padding-right: 0px;
   }
 
+  .warning {
+    width: 100%;
+    text-align: center;
+    color: @carrot-orange;
+  }
 }
 
 </style>

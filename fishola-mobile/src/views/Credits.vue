@@ -6,8 +6,8 @@
         <h1>Infos</h1>
         <div class="pane-content">
 
-            <div class="credits-row">
-                Ah !
+            <div class="credits-row warning">
+                Work in progress
             </div>
 
         </div>
@@ -50,7 +50,11 @@ export default class Credits extends Vue {
 @import "../less/main";
 
 .credits-page {
-
+  .warning {
+    width: 100%;
+    text-align: center;
+    color: @carrot-orange;
+  }
 }
 
 </style>
