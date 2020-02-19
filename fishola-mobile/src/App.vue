@@ -37,7 +37,7 @@ export default class App extends Vue {
     }
 
     checkOutOfSyncTrips() {
-      console.log("SYNCHO : Recherche des sorties");
+      // console.log("SYNCHO : Recherche des sorties");
       TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
         console.log("Apparement, il y a un pb de sync", e);
         // Même en cas d'erreur on essaye de synchro les photos
@@ -53,7 +53,7 @@ export default class App extends Vue {
     }
 
     checkOutOfSyncPictures() {
-      console.log("SYNCHO : Recherche des photos");
+      // console.log("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
     }
 }

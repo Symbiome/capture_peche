@@ -39,7 +39,7 @@ export default abstract class AbstractFisholaService {
     static backendGetWithCache(uri:string):Promise<any> {
       let entry = this.caches.get(uri);
       if (entry && ((new Date().getTime() - entry.since) < (1000 * 60 * 60))) {
-        console.log("On utilise le cache", uri);
+        // console.log("On utilise le cache", uri);
         return Promise.resolve(entry.content);
       }
 
