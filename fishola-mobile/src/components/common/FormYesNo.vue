@@ -1,26 +1,30 @@
 <template>
   <div>
-    <div class="form-yes-no">
+    <FormMultiValues v-if="readonly"
+                     v-bind:name="name"
+                     v-bind:label="label"
+                     v-bind:values="readonlyValues"
+                     v-bind:readonly="true"/>
+    <div class="form-yes-no" v-if="!readonly">
       <label>
         {{label}}
       </label>
       <div class="choices">
-          <label class="choice" 
-                 v-for="option in options" 
-                 v-bind:for="'field-' + name + '-' + option.id" 
-                 v-bind:key="option.id">
-            <input  v-if="!readonly"
-                    type="radio"
-                    v-bind:name="name"
-                    v-bind:value="option.id" 
-                    v-on:input="valueChanged($event)"
-                    v-bind:id="'field-' + name + '-' + option.id"
-                    class="pelorous-radio"
-                    v-bind:checked="value == option.id ? 'checked' : ''"
-                    />
-                    <label v-bind:for="'field-' + name + '-' + option.id" ></label>
-            <span v-if="!readonly || (value == option.id)">{{ option.name }}</span>
-          </label>
+        <label class="choice"
+               v-for="option in options"
+               v-bind:for="'field-' + name + '-' + option.id"
+               v-bind:key="option.id">
+          <input type="radio"
+                 v-bind:name="name"
+                 v-bind:value="option.id"
+                 v-on:input="valueChanged($event)"
+                 v-bind:id="'field-' + name + '-' + option.id"
+                 class="pelorous-radio"
+                 v-bind:checked="value == option.id ? 'checked' : ''"
+                 />
+            <label v-bind:for="'field-' + name + '-' + option.id" ></label>
+          <span v-if="!readonly || (value == option.id)">{{ option.name }}</span>
+        </label>
       </div>
       <div v-bind:class="error?'field-error':''" >
         <span v-if="error">
@@ -46,10 +50,13 @@ Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut 
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
+import FormMultiValues from '@/components/common/FormMultiValues.vue'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
+    FormMultiValues
   }
 })
 export default class FormYesNo extends Vue {
