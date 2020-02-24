@@ -4,7 +4,9 @@
       <Title v-if="title"/>
     </div>
     <div class="header-buttons">
-      <Avatar v-if="avatar && initials" v-bind:initials="initials"/>
+      <Avatar v-if="avatar && initials"
+              v-bind:initials="initials"
+              v-on:goProfile="goProfile"/>
       <FeedbackAnchor/>
       <MenuAnchor v-if="menu"/>
     </div>
@@ -53,6 +55,10 @@ export default class FisholaHeader extends Vue {
 
   profileLoaded(profile:UserProfile) {
     this.initials = profile.initials;
+  }
+
+  goProfile() {
+    router.push('/profile');
   }
 
 }

@@ -34,6 +34,12 @@
       <i class="icon-dashboard"></i>
     </div>
     <div class="footer-element pastille"
+         v-bind:class="selected=='settings'?'filled':'unfilled'"
+         v-if="activeButtons['settings']"
+         v-on:click="goSettings">
+      <i class="icon-settings"></i>
+    </div>
+    <div class="footer-element pastille"
          v-bind:class="selected=='credits'?'filled':'unfilled'"
          v-if="activeButtons['credits']"
          v-on:click="goCredits">
@@ -58,6 +64,12 @@
          v-if="activeButtons['delete']"
          v-on:click="doDelete">
       <i class="icon-delete"></i>
+    </div>
+    <div class="footer-element pastille"
+         v-bind:class="selected=='profile'?'filled':'unfilled'"
+         v-if="activeButtons['profile']"
+         v-on:click="goProfile">
+      <i class="icon-profile"></i>
     </div>
     <div class="footer-element pastille"
          v-bind:class="selected=='documentation'?'filled':'unfilled'"
@@ -111,7 +123,9 @@ export default class FisholaFooter extends Vue {
     delete: false,
     blank: false,
     credits: false,
-    documentation: false
+    documentation: false,
+    settings: false,
+    profile: false
   };
 
   mounted() {
@@ -172,6 +186,14 @@ export default class FisholaFooter extends Vue {
 
   goHome() {
     router.push('/trips');
+  }
+
+  goProfile() {
+    router.push('/profile');
+  }
+
+  goSettings() {
+    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 
   giveup() {

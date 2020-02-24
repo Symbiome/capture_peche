@@ -19,6 +19,8 @@ import EditCatch from '../views/trip/EditCatch.vue'
 import Documentation from '../views/Documentation.vue'
 import Credits from '../views/Credits.vue'
 
+import Profile from '../views/Profile.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -97,6 +99,11 @@ const routes = [
     path: '/credits',
     name: 'credits',
     component: Credits
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile
   },
   {
     path: '/about',

@@ -1,5 +1,5 @@
 <template>
-  <div class="pastille color0" v-on:click="$root.$emit('toaster-warning', 'Work in progress');">
+  <div class="pastille color0" v-on:click="goProfile">
     <span>{{initials}}</span>
   </div>
 </template>
@@ -12,6 +12,9 @@ export default class Avatar extends Vue {
 
   @Prop() initials:string;
 
+  goProfile() {
+    this.$emit('goProfile');
+  }
 }
 </script>
 

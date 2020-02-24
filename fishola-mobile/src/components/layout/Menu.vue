@@ -6,7 +6,7 @@
       </div>
       <div class="items">
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goProfile">
           <span>
             {{fullName}}
           </span>
@@ -128,6 +128,11 @@ export default class Menu extends Vue {
   goHome() {
     this.closeMenu();
     router.push('/trips');
+  }
+
+  goProfile() {
+    this.closeMenu();
+    router.push('/profile');
   }
 
   goDashboard() {
