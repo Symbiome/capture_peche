@@ -13,8 +13,13 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Preconditions;
+import fr.inra.fishola.entities.enums.Gender;
+import fr.inra.fishola.rest.security.ImmutableUserProfile;
+import fr.inra.fishola.rest.security.UserProfile;
 import io.quarkus.jackson.ObjectMapperCustomizer;
+import org.apache.commons.lang3.StringUtils;
 import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -23,12 +28,50 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
+    }
+
+    static int readInt(TreeNode node, String name) {
+        TreeNode subNode = node.get(name);
+        int result;
+        if (subNode instanceof IntNode) {
+            result = ((IntNode) subNode).intValue();
+        } else if (subNode instanceof TextNode) {
+            String resultString = ((TextNode) subNode).textValue();
+            result = Integer.parseInt(resultString);
+        } else {
+            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+        }
+        return result;
+    }
+
+    static Integer readInteger(TreeNode node, String name) {
+        TreeNode subNode = node.get(name);
+        if (subNode.isMissingNode()) {
+            return null;
+        }
+        int result;
+        if (subNode instanceof IntNode) {
+            result = ((IntNode) subNode).intValue();
+        } else if (subNode instanceof TextNode) {
+            String resultString = ((TextNode) subNode).textValue();
+            result = Integer.parseInt(resultString);
+        } else {
+            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+        }
+        return result;
+    }
+
+    static String readText(TreeNode node, String name) {
+        TreeNode subNode = node.get(name);
+        String result = ((TextNode) subNode).textValue();
+        return result;
     }
 
     public static class PaginationParameterDeserializer extends StdDeserializer<PaginationParameter> {
@@ -40,8 +83,6 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         @Override
         public PaginationParameter deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
             TreeNode node = jp.readValueAsTree();
-            TreeNode pageNumberNode = node.get("pageNumber");
-            TreeNode pageSizeNode = node.get("pageSize");
 
             TreeNode orderClausesNode = node.get("orderClauses");
             Preconditions.checkState(orderClausesNode.isArray());
@@ -55,11 +96,40 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
                 orders.add(order);
             }
 
-            int pageNumberValue = ((IntNode) pageNumberNode).intValue();
-            int pageSizeValue = ((IntNode) pageSizeNode).intValue();
+            int pageNumberValue = readInt(node, "pageNumber");
+            int pageSizeValue = readInt(node, "pageSize");
             PaginationParameter.PaginationParameterBuilder builder = PaginationParameter.builder(pageNumberValue, pageSizeValue);
             builder.addOrderClauses(orders);
             PaginationParameter result = builder.build();
+            return result;
+        }
+    }
+
+    public static class UserProfileDeserializer extends StdDeserializer<UserProfile> {
+
+        protected UserProfileDeserializer() {
+            super(PaginationParameter.class);
+        }
+
+        @Override
+        public UserProfile deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            TreeNode node = jp.readValueAsTree();
+
+            String firstName = readText(node, "firstName");
+            String email = readText(node, "email");
+            String lastName = readText(node, "lastName");
+            Integer birthYear = readInteger(node, "birthYear");
+            String genderString = readText(node, "gender");
+
+            ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder();
+
+            builder.firstName(firstName);
+            builder.email(email);
+            Optional.ofNullable(StringUtils.trimToNull(lastName)).ifPresent(builder::lastName);
+            Optional.ofNullable(birthYear).ifPresent(builder::birthYear);
+            Optional.ofNullable(StringUtils.trimToNull(genderString)).map(Gender::valueOf).ifPresent(builder::gender);
+
+            UserProfile result = builder.build();
             return result;
         }
     }
@@ -89,6 +159,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             });
 
             addDeserializer(PaginationParameter.class, new PaginationParameterDeserializer());
+            addDeserializer(UserProfile.class, new UserProfileDeserializer());
         }
 
     }

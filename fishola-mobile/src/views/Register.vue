@@ -97,7 +97,6 @@ export default class Register extends Vue {
   register() {
 
     function httpCall(method: string, url:string, data:any, successCallback:()=>any, validationErrorCallback:(validationErrors:any)=>any, errorCallback:(status:number)=>any) {
-console.log("register");
       var xhr = new XMLHttpRequest();
       xhr.open(method, url, true);
       xhr.withCredentials = true;

@@ -102,6 +102,32 @@ export default abstract class AbstractFisholaService {
         }
     }
 
+    static backendPutPromise(uri:string, data:any):Promise<any> {
+      return new Promise<any>((resolve, reject) => {
+        let apiUrl = Constants.apiUrl(uri);
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', apiUrl, true);
+        xhr.withCredentials = true;
+        xhr.onload = function() {
+          if (this.status == 200 || this.status == 201) {
+            let responseText = this['responseText'];
+            let parsed = JSON.parse(responseText);
+            resolve(parsed);
+          } else if (this.status == 204) {
+            resolve();
+          } else {
+            reject(this.status);
+          }
+        };
+        if (data != null) {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify(data));
+        } else {
+          xhr.send();
+        }
+      });
+    }
+
     static backendDelete(uri:string, callback:()=>any, errorCallback?:(status:any) => any) {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();

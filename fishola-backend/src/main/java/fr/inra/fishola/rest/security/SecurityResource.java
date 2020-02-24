@@ -233,4 +233,20 @@ public class SecurityResource extends AbstractFisholaResource {
         return result;
     }
 
+    @PUT
+    @Path("/profile")
+    public void saveProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserProfile profile) {
+        UUID userId = getUserId(cookie);
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+
+        user.setFirstName(profile.firstName());
+        user.setLastName(profile.lastName().orElse(null));
+        user.setEmail(profile.email());
+        user.setBirthYear(profile.birthYear().orElse(null));
+        user.setGender(profile.gender().orElse(null));
+
+        usersDao.updateUser(user);
+    }
+
 }

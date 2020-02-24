@@ -62,4 +62,8 @@ public class UsersDao extends AbstractFisholaDao {
                 .execute());
     }
 
+    public void updateUser(FisholaUser existingUser) {
+        withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
+    }
+
 }

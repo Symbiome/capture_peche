@@ -100,7 +100,7 @@ export default class Menu extends Vue {
   }
 
   profileLoaded(profile:UserProfile) {
-    this.fullName = profile.firstName + " " + profile.lastName;
+    this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
   }
 

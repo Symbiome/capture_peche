@@ -13,8 +13,12 @@ export default class UserProfile {
         public initials:string) {
     }
 
-    fullName() {
-        return this.firstName + " " + this.lastName;
+    static fullName(p:UserProfile) {
+        let result = p.firstName;
+        if (p.lastName) {
+            result += " " + p.lastName;
+        }
+        return result;
     }
 
     static fromJson(input:any) {
@@ -22,7 +26,6 @@ export default class UserProfile {
         result.lastName = input.lastName;
         result.gender = input.gender;
         result.birthYear = input.birthYear;
-        console.log("Profile parsed: ", result);
         return result;
     }
 
