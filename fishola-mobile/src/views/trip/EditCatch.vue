@@ -199,8 +199,10 @@ export default class EditCatch extends Vue {
   }
 
   takePicture() {
-    let input:any = this.$refs.fileInput;
-    input.click();
+    if (this.modifiable) {
+      let input:any = this.$refs.fileInput;
+      input.click();
+    }
   }
 
   readUploadedFile(file:any, callback: (fileContent:string) => void) {
