@@ -147,7 +147,7 @@ export default class TripSpeciesVue extends Vue {
 
 .edit-trip-species-page {
 
-  .pane-content {
+  .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
   }

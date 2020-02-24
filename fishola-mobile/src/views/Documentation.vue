@@ -6,23 +6,29 @@
         <h1>Documentation</h1>
         <div class="pane-content">
 
-            <div class="documentation-row warning">
-                Work in progress
+            <div class="documentation-row"
+                 v-for="doc in elements"
+                 v-bind:key="doc.id">
+              <span>{{doc.name}}</span>
+              <a v-bind:href="doc.url"><i class="icon-download"/></a>
             </div>
 
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="logout,credits,documentation"
+    <FisholaFooter shortcuts="back,credits,documentation"
                    selected="documentation" />
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+
+import DocumentationService from '@/services/DocumentationService';
+import {DocumentationLight} from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -34,12 +40,21 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class Documentation extends Vue {
   
+  elements:DocumentationLight[] = [];
+
   constructor() {
     super();
   }
 
   mounted() {
+    DocumentationService.getDocumentations()
+      .then(this.documentationsLoaded);
   }
+
+  documentationsLoaded(docs:DocumentationLight[]) {
+    docs.forEach((doc) => this.elements.push(doc));
+  }
+
 }
 
 </script>
@@ -51,11 +66,31 @@ export default class Documentation extends Vue {
 
 .documentation-page {
 
-  .pane-content {
+  .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
   }
 
+  .documentation-row {
+    padding-left: 40px;
+    padding-right: 40px;
+    height: 56px;
+    border-bottom: 1px solid @solitude;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    span {
+      font-size: 12px;
+      line-height: 16px;
+      color: @gunmetal;
+    }
+
+    a {
+      color: @pelorous;
+    }
+  }
   .warning {
     width: 100%;
     text-align: center;

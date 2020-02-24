@@ -75,6 +75,19 @@ export interface Weather extends Serializable {
     name: string;
 }
 
+export interface Editorial extends Serializable {
+    id: string;
+    name: string;
+    content: string;
+    link: string;
+}
+
+export interface DocumentationLight {
+    id: string;
+    name: string;
+    url: string;
+}
+
 export interface Serializable {
 }
 

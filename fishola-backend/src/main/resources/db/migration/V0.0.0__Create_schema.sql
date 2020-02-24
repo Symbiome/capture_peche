@@ -106,3 +106,22 @@ CREATE TABLE catch_picture (
     catch_id UUID REFERENCES catch(id) PRIMARY KEY,
     content BYTEA NOT NULL
 );
+
+CREATE TABLE editorial (
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    link TEXT
+);
+
+CREATE UNIQUE INDEX editorial_unique_idx
+    ON editorial(name);
+
+CREATE TABLE documentation (
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    content BYTEA
+);
+
+CREATE UNIQUE INDEX documentation_unique_idx
+    ON documentation(name);

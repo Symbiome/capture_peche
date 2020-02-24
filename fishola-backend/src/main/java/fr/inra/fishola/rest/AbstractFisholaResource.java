@@ -6,6 +6,7 @@ import fr.inra.fishola.exceptions.NotAuthenticatedException;
 import javax.inject.Inject;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.StreamingOutput;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,6 +59,13 @@ public abstract class AbstractFisholaResource {
             throw new NotAuthenticatedException("Utilisateur inconnu");
         }
         return userId;
+    }
+
+    protected StreamingOutput wrapAsStreamingOutput(byte[] array) {
+        return output -> {
+            output.write(array);
+            output.flush();
+        };
     }
 
 }

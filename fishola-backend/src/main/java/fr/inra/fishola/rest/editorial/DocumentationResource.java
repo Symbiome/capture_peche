@@ -1,0 +1,77 @@
+package fr.inra.fishola.rest.editorial;
+
+import fr.inra.fishola.FisholaConfiguration;
+import fr.inra.fishola.database.EditorialAndDocumentationDao;
+import fr.inra.fishola.entities.tables.pojos.Editorial;
+import fr.inra.fishola.rest.AbstractFisholaResource;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Path("/api/v1")
+@Produces(MediaType.APPLICATION_JSON)
+public class DocumentationResource extends AbstractFisholaResource {
+
+    @Inject
+    protected FisholaConfiguration config;
+
+    @Inject
+    protected EditorialAndDocumentationDao dao;
+
+    @GET
+    @Path("/documentations")
+    public List<DocumentationLight> getDocumentation(@Context HttpServletRequest request) {
+        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
+        List<DocumentationLight> result = docs.entrySet()
+                .stream()
+                .map(entry -> toDocumentationLight(entry, request))
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    protected DocumentationLight toDocumentationLight(Map.Entry<UUID, String> entry, HttpServletRequest request) {
+        String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
+        DocumentationLight result = ImmutableDocumentationLight.builder()
+                .id(entry.getKey())
+                .name(entry.getValue())
+                .url(url)
+                .build();
+        return result;
+    }
+
+    @GET
+    @Path("/documentation/{docId}")
+    public Response downloadDocumentation(@PathParam("docId") UUID docId) {
+        Optional<byte[]> bytes = dao.getDocumentation(docId);
+
+        Response response = bytes.map(this::wrapAsStreamingOutput)
+                .map(Response::ok)
+                .orElseGet(() -> Response.status(404))
+                .build();
+        return response;
+    }
+
+    @GET
+    @Path("/editorial/{name}")
+    public Response getEditorial(@PathParam("name") String name) {
+        Optional<Editorial> editorial = dao.findEditorial(name);
+        Response response = editorial.map(Response::ok)
+                .orElseGet(() -> Response.status(404))
+                .build();
+        return response;
+    }
+
+}

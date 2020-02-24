@@ -30,7 +30,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -257,13 +256,6 @@ public class PictureResource extends AbstractFisholaResource {
         Response result = builder.build();
 
         return result;
-    }
-
-    protected StreamingOutput wrapAsStreamingOutput(byte[] array) {
-        return output -> {
-            output.write(array);
-            output.flush();
-        };
     }
 
 }

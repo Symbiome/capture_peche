@@ -147,6 +147,8 @@
             <class>fr.inra.fishola.entities.tables.pojos.Species</class>
             <class>fr.inra.fishola.entities.tables.pojos.Technique</class>
             <class>fr.inra.fishola.entities.tables.pojos.Weather</class>
+            <class>fr.inra.fishola.entities.tables.pojos.Editorial</class>
+            <class>fr.inra.fishola.rest.editorial.DocumentationLight</class>
           </classes>
           <outputKind>module</outputKind>
           <outputFileType>implementationFile</outputFileType>
