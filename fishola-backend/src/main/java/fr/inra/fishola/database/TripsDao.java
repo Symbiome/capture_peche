@@ -4,6 +4,7 @@ import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.TripDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.entities.tables.records.TripRecord;
+import org.jooq.Condition;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectSeekStep2;
 import org.nuiton.util.pagination.PaginationOrder;
@@ -13,7 +14,9 @@ import org.nuiton.util.pagination.PaginationResult;
 import javax.inject.Singleton;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
@@ -46,10 +49,14 @@ public class TripsDao extends AbstractFisholaDao {
         });
     }
 
-    public List<Trip> listMyTrips(UUID userId, boolean orderDesc) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm) {
         List<Trip> result = withContext(context -> {
+            List<Condition> conditions = new LinkedList<>();
+            conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
+            conditions.add(Tables.TRIP.HIDDEN.eq(false));
+            searchTerm.ifPresent(term -> conditions.add(Tables.TRIP.NAME.likeIgnoreCase(term)));
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
-                    .where(Tables.TRIP.OWNER_ID.eq(userId), Tables.TRIP.HIDDEN.eq(false));
+                    .where(conditions);
             SelectSeekStep2<TripRecord, Date, Timestamp> tripRecords =
                     orderDesc
                             ? builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
@@ -62,14 +69,14 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page) {
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
         if (!page.getOrderClauses().isEmpty()) {
             PaginationOrder order = page.getOrderClauses().get(0);
             orderDesc = order.isDesc();
         }
-        List<Trip> entities = listMyTrips(userId, orderDesc);
+        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm);
         PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
         return result;
     }

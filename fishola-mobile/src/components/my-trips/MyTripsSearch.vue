@@ -2,25 +2,25 @@
   <div class="my-trips-search">
     <div class="">
       <i class="icon-magnifying-glass"></i>
-      <input type="text" placeholder="Recherche" name="search_term"/>
+      <input type="text"
+             placeholder="Recherche"
+             name="search_term"
+             v-bind:value="value"
+             v-on:input="$emit('input', $event.target.value)"/>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-export default {
-  props: {
-    count: {
-      type: String
-    }
-  },
-  name: 'my-trips-search',
-  components: {
-  }
-}
+@Component()
+export default class MyTripsSearch extends Vue {
 
+  @Prop() value!: string;
+
+}
 // @Component
 // export default class Header extends Vue {
 // }

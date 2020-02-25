@@ -5,7 +5,7 @@
       <MyTripsHeader v-bind:count="count"
                      v-bind:sortDown="sortDown"
                      v-on:reverseSortOrder="reverseSortOrder"/>
-      <MyTripsSearch/>
+      <MyTripsSearch v-model="term"/>
       <img v-bind:src="imageContent"/>
       <MyTripsList v-bind:trips="trips" v-bind:loading="loading"/>
     </div>
@@ -30,7 +30,7 @@ import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
 import MyTripsList from '@/components/my-trips/MyTripsList.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
@@ -46,7 +46,13 @@ export default class MyTrips extends Vue {
   trips:TripLight[] = [];
   loading:boolean = true;
   sortDown:boolean = true;
+  term:string = '';
   count:number = 0;
+
+  @Watch('term')
+  onTermChanged(value: string, oldValue: string) {
+    console.log("New value", value);
+  }
 
   imageContent:string = '';
 
