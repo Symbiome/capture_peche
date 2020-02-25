@@ -90,6 +90,20 @@ export default class Menu extends Vue {
   initials:string = '';
 
   created() {
+    this.$root.$on('profile-updated', this.loadProfile);
+    this.loadProfile();
+  }
+
+  mounted() {
+    this.$root.$on('open-menu', this.openMenu);
+  }
+
+  beforeDestroy() {
+    this.$root.$off('profile-updated');
+    this.$root.$off('open-menu');
+  }
+
+  loadProfile() {
     ProfileService.getProfile()
       .then(
         this.profileLoaded,
@@ -104,20 +118,12 @@ export default class Menu extends Vue {
     this.initials = profile.initials;
   }
 
-  mounted() {
-    this.$root.$on('open-menu', this.openMenu);
-  }
-
   openMenu() {
     this.visibility = "menu-visible";
   }
 
   closeMenu() {
     this.visibility = "menu-disappears";
-  }
-
-  beforeDestroy() {
-    this.$root.$off('open-menu');
   }
 
   wip() {

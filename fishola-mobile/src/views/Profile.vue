@@ -134,6 +134,7 @@ export default class Profile extends Vue {
       .then(
         () => {
           this.loadProfile();
+          this.$root.$emit('profile-updated');
           this.$root.$emit('toaster-success', 'Profil enregistré');
         },
         () => {
