@@ -2,7 +2,6 @@ package fr.inra.fishola.rest.mapper;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +11,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.entities.enums.Gender;
@@ -37,6 +38,20 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         mapper.registerModule(new FisholaModule());
     }
 
+    static boolean readBoolean(TreeNode node, String name) {
+        TreeNode subNode = node.get(name);
+        boolean result;
+        if (subNode instanceof BooleanNode) {
+            result = ((BooleanNode) subNode).booleanValue();
+        } else if (subNode instanceof TextNode) {
+            String resultString = ((TextNode) subNode).textValue();
+            result = Boolean.parseBoolean(resultString);
+        } else {
+            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+        }
+        return result;
+    }
+
     static int readInt(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         int result;
@@ -53,7 +68,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     static Integer readInteger(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
-        if (subNode.isMissingNode()) {
+        if ((subNode instanceof NullNode) || subNode.isMissingNode()) {
             return null;
         }
         int result;
@@ -70,6 +85,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     static String readText(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
+        if ((subNode instanceof NullNode) || subNode.isMissingNode()) {
+            return null;
+        }
         String result = ((TextNode) subNode).textValue();
         return result;
     }
@@ -81,7 +99,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         }
 
         @Override
-        public PaginationParameter deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public PaginationParameter deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             TreeNode node = jp.readValueAsTree();
 
             TreeNode orderClausesNode = node.get("orderClauses");
@@ -89,10 +107,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             List<PaginationOrder> orders = new LinkedList<>();
             for (JsonNode n : (ArrayNode) orderClausesNode) {
                 // TODO AThimel 13/01/2020 : Ça aurait été mieux de réutiliser le DeserializationContext
-                JsonNode clauseNode = n.get("clause");
-                JsonNode descNode = n.get("desc");
-
-                PaginationOrder order = new PaginationOrder(clauseNode.asText(), descNode.asBoolean());
+                String clause = readText(n, "clause");
+                boolean desc = readBoolean(n, "desc");
+                PaginationOrder order = new PaginationOrder(clause, desc);
                 orders.add(order);
             }
 
@@ -112,7 +129,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         }
 
         @Override
-        public UserProfile deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public UserProfile deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             TreeNode node = jp.readValueAsTree();
 
             String firstName = readText(node, "firstName");
