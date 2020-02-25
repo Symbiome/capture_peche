@@ -11,25 +11,24 @@
       <div class="pane">
         <h1>Profil</h1>
         <div class="pane-content">
-
           <FormInput name="lastName"
-                      label="Nom"
-                      placeholder="Renseignez votre nom"
-                      v-model="profile.lastName"
-                      v-bind:error="validationErrors['lastName']"
-                      />
+                     label="Nom"
+                     placeholder="Renseignez votre nom"
+                     v-model="profile.lastName"
+                     v-bind:error="validationErrors['lastName']"
+                     />
           <FormInput name="firstName"
-                      label="Prénom"
-                      placeholder="Renseignez votre prénom"
-                      v-model="profile.firstName"
-                      v-bind:error="validationErrors['firstName']"
-                      />
+                     label="Prénom"
+                     placeholder="Renseignez votre prénom"
+                     v-model="profile.firstName"
+                     v-bind:error="validationErrors['firstName']"
+                     />
           <FormInput name="email"
-                      label="E-mail"
-                      placeholder="Renseignez votre E-mail"
-                      v-model="profile.email"
-                      v-bind:error="validationErrors['email']"
-                      />
+                     label="E-mail"
+                     placeholder="Renseignez votre E-mail"
+                     v-model="profile.email"
+                     v-bind:error="validationErrors['email']"
+                     />
           <FormSelect name="birthYear"
                       label="Année de naissance (optionnelle)"
                       v-bind:options="years"

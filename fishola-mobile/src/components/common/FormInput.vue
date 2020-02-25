@@ -1,21 +1,21 @@
 <template>
   <div>
     <FormMultiValues v-if="readonly"
-                    v-bind:name="name"
-                    v-bind:label="label"
-                    v-bind:values="readonlyValues"
-                    v-bind:readonly="true"/>
+                     v-bind:name="name"
+                     v-bind:label="label"
+                     v-bind:values="readonlyValues"
+                     v-bind:readonly="true"/>
     <div v-if="!readonly" class="form-input">
       <label v-bind:for="'field-' + name">
         {{label}}
       </label>
       <input v-bind:name="name"
-              v-bind:id="'field-' + name"
-              v-bind:type="type"
-              v-bind:placeholder="placeholder"
-              v-bind:value="value"
-              v-on:input="$emit('input', $event.target.value)"
-              v-bind:class="error?'field-error':''" />
+             v-bind:id="'field-' + name"
+             v-bind:type="type"
+             v-bind:placeholder="placeholder"
+             v-bind:value="value"
+             v-on:input="$emit('input', $event.target.value)"
+             v-bind:class="error?'field-error':''" />
       <div v-bind:class="error?'field-error':''" >
         <span v-if="error">
           {{error}}
