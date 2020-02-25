@@ -15,7 +15,7 @@
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component()
+@Component
 export default class MyTripsSearch extends Vue {
 
   @Prop() value!: string;

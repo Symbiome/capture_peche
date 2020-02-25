@@ -52,6 +52,8 @@ export default class MyTrips extends Vue {
   @Watch('term')
   onTermChanged(value: string, oldValue: string) {
     console.log("New value", value);
+    let toto = Vue.lodash.debounce(this.refresh, 1000);
+    toto();
   }
 
   imageContent:string = '';
@@ -59,6 +61,10 @@ export default class MyTrips extends Vue {
   constructor() {
     super();
     this.trips = [];
+  }
+
+  refresh() {
+    console.log("Refreshing !", this.term);
   }
 
   created() {
