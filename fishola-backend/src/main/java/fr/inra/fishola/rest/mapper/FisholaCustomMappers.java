@@ -68,7 +68,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     static Integer readInteger(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
-        if ((subNode instanceof NullNode) || subNode.isMissingNode()) {
+        if (subNode == null || (subNode instanceof NullNode) || subNode.isMissingNode()) {
             return null;
         }
         int result;
@@ -76,6 +76,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             result = ((IntNode) subNode).intValue();
         } else if (subNode instanceof TextNode) {
             String resultString = ((TextNode) subNode).textValue();
+            if (StringUtils.isEmpty(resultString)) {
+                return null;
+            }
             result = Integer.parseInt(resultString);
         } else {
             throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
@@ -85,7 +88,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     static String readText(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
-        if ((subNode instanceof NullNode) || subNode.isMissingNode()) {
+        if (subNode == null || (subNode instanceof NullNode) || subNode.isMissingNode()) {
             return null;
         }
         String result = ((TextNode) subNode).textValue();

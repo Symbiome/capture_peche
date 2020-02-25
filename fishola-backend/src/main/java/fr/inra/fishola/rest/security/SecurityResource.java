@@ -235,7 +235,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/profile")
-    public void saveProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserProfile profile) {
+    public Response saveProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserProfile profile) {
         UUID userId = getUserId(cookie);
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
@@ -246,7 +246,47 @@ public class SecurityResource extends AbstractFisholaResource {
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
 
+        Map<String, String> validationErrors = validateProfile(user);
+
+        if (!validationErrors.isEmpty()) {
+            Response response = Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(validationErrors)
+                    .build();
+            return response;
+        }
+
         usersDao.updateUser(user);
+
+        return Response.noContent().build();
+    }
+
+    protected Map<String, String> validateProfile(FisholaUser bean) {
+
+        Map<String, String> result = new HashMap<>();
+
+        if (StringUtils.isEmpty(bean.getFirstName())) {
+            result.put("firstName", "Le prénom est obligatoire");
+        }
+
+        if (StringUtils.isEmpty(bean.getLastName())) {
+            result.put("lastName", "Le nom est obligatoire");
+        }
+
+        if (StringUtils.isEmpty(bean.getEmail())) {
+            result.put("email", "L'e-mail est obligatoire");
+        } else if (!isEmailInValidFormat(bean.getEmail())) {
+            // On vérifie qu'il n'y a pas déjà un compte avec cet email
+            result.put("email", "Le format n'est pas correct");
+        } else {
+            Optional<FisholaUser> existingUser = usersDao.findByEmail(bean.getEmail());
+            if (existingUser.isPresent() && !bean.getId().equals(existingUser.get().getId())) {
+                // On vérifie qu'il n'y a pas déjà un compte avec cet email
+                result.put("email", "E-mail déjà utilisé");
+            }
+        }
+
+        return result;
     }
 
 }

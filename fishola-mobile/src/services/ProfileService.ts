@@ -30,7 +30,7 @@ export default class ProfileService extends AbstractFisholaService {
 
     static saveProfile(profile:UserProfile):Promise<void> {
         return new Promise((resolve, reject) => {
-            this.backendPutPromise("/v1/security/profile", profile)
+            this.backendPut("/v1/security/profile", profile)
                 .then(
                     () => {
                         UserProfile.unsetCurrent();

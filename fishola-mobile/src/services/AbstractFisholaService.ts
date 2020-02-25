@@ -78,31 +78,24 @@ export default abstract class AbstractFisholaService {
         xhr.send();
     }
 
-    static backendPut(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
-        xhr.open('PUT', apiUrl, true);
-        xhr.withCredentials = true;
-        xhr.onload = function() {
-          if (this.status == 200 || this.status == 201) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
-            callback(parsed);
-          } else if (this.status == 204) {
-            callback(null);
-          } else if (errorCallback) {
-            errorCallback(this.status);
-          }
-        };
-        if (data != null) {
-          xhr.setRequestHeader('Content-Type', 'application/json');
-          xhr.send(JSON.stringify(data));
-        } else {
-          xhr.send();
+    static wrapResponseReject(xhr:XMLHttpRequest):any {
+      let result = {
+        status: xhr.status,
+        content: undefined
+      };
+      try {
+        let responseText = xhr.responseText;
+        if (responseText) {
+          let parsed = JSON.parse(responseText);
+          result.content = parsed;
         }
+      } catch (e) {
+        console.error(e);
+      }
+      return result;
     }
 
-    static backendPutPromise(uri:string, data:any):Promise<any> {
+    static backendPut(uri:string, data:any):Promise<any> {
       return new Promise<any>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
@@ -116,7 +109,8 @@ export default abstract class AbstractFisholaService {
           } else if (this.status == 204) {
             resolve();
           } else {
-            reject(this.status);
+            let result = AbstractFisholaService.wrapResponseReject(this);
+            reject(result);
           }
         };
         if (data != null) {
@@ -128,22 +122,26 @@ export default abstract class AbstractFisholaService {
       });
     }
 
-    static backendDelete(uri:string, callback:()=>any, errorCallback?:(status:any) => any) {
+    static backendDelete(uri:string):Promise<void> {
+      return new Promise<void>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('DELETE', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 204) {
-            callback();
-          } else if (errorCallback) {
-            errorCallback(this.status);
+            resolve();
+          } else {
+            let result = AbstractFisholaService.wrapResponseReject(this);
+            reject(result);
           }
         };
         xhr.send();
+      });
     }
 
-    static backendPost(uri:string, data:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
+    static backendPost(uri:string, data:any):Promise<any> {
+      return new Promise<any>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
         xhr.open('POST', apiUrl, true);
@@ -152,11 +150,12 @@ export default abstract class AbstractFisholaService {
           if (this.status == 200 || this.status == 201) {
             let responseText = this['responseText'];
             let parsed = JSON.parse(responseText);
-            callback(parsed);
+            resolve(parsed);
           } else if (this.status == 204) {
-            callback(null);
-          } else if (errorCallback) {
-            errorCallback(this.status);
+            resolve();
+          } else {
+            let result = AbstractFisholaService.wrapResponseReject(this);
+            reject(result);
           }
         };
         if (data != null) {
@@ -165,6 +164,7 @@ export default abstract class AbstractFisholaService {
         } else {
           xhr.send();
         }
+      });
     }
 
     static backendPutPlain(uri:string, data:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {

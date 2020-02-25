@@ -385,21 +385,23 @@ export default class TripsService extends AbstractFisholaService {
         return new Promise((resolve, reject) =>  {
             console.log("On essaye de sauvegarder la sortie", trip);
             if (trip.createdOn) {
-                this.backendPut(`/v1/trips/${trip.id}`, trip, (r) => {
-                    PicturesService.checkForPicturesToRename(r);
-                    resolve();
-                }, (eee) => {
-                    console.log("Pas Okay :'(", eee);
-                    reject(eee);
-                });
+                this.backendPut(`/v1/trips/${trip.id}`, trip)
+                    .then(
+                        (r) => {
+                            PicturesService.checkForPicturesToRename(r);
+                            resolve();
+                        },
+                        reject
+                        );
             } else {
-                this.backendPost('/v1/trips', trip, (r) => {
-                    PicturesService.checkForPicturesToRename(r);
-                    resolve();
-                }, (eee) => {
-                    console.log("Pas Okay :'(", eee);
-                    reject(eee);
-                });
+                this.backendPost('/v1/trips', trip)
+                    .then(
+                        (r) => {
+                            PicturesService.checkForPicturesToRename(r);
+                            resolve();
+                        },
+                        reject
+                        );
             }
         });
     }
@@ -470,7 +472,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static deleteTrip(tripId:any, callback:() => void) {
         this.getDatabase().dirtyTrips.delete(tripId);
-        this.backendDelete(`/v1/trips/${tripId}`, callback);
+        this.backendDelete(`/v1/trips/${tripId}`).then(callback);
     }
 
 }

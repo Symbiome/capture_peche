@@ -33,12 +33,12 @@
           <FormSelect name="birthYear"
                       label="Année de naissance (optionnelle)"
                       v-bind:options="years"
-                      v-model="profile.birthYear"
+                      v-model="birthYear"
                       />
           <FormSelect name="gender"
                       label="Sexe (optionnel)"
                       v-bind:options="genders"
-                      v-model="profile.gender"/>
+                      v-model="gender"/>
           <FormMultiValues name="password"
                            label="Mot de passe"
                            v-bind:values="['********']"/>
@@ -85,28 +85,29 @@ export default class Profile extends Vue {
   profile:UserProfile = {firstName:'', email:'', initials:''};
   fullName:string = '';
 
-  password:string = '';
-  passwordConfirm:string = '';
+  birthYear:string = 'EMPTY';
+  gender:string = 'EMPTY';
 
-  validationErrors:any = {
-    passwordConfirm : ''
-  };
+  validationErrors:any = {};
 
   genders:any[] = [
+      {id: 'EMPTY', name: ''},
       {id: 'Female', name: 'Femme'},
       {id: 'Male', name: 'Homme'},
       {id: 'NonBinary', name: 'Non binaire'}
   ];
 
-  years:any[] = [];
+  years:any[] = [
+    {id: 'EMPTY', name: ''}
+  ];
 
   constructor() {
     super();
   }
 
   mounted() {
-    let currentYear = 1900 + new Date().getYear();
-    let startYear = currentYear - 100;
+    let currentYear = new Date().getFullYear();
+    let startYear = currentYear - 110;
     let endYear = currentYear - 10;
     for (let i=startYear; i<=endYear; i++) {
       this.years.push({id: i, name: i});
@@ -127,9 +128,25 @@ export default class Profile extends Vue {
   profileLoaded(profile:UserProfile) {
     this.profile = profile;
     this.fullName = UserProfile.fullName(profile);
+    this.birthYear = profile.birthYear || 'EMPTY';
+    this.gender = profile.gender || 'EMPTY';
   }
 
   saveProfile() {
+    this.cleanValidationErros();
+
+    if (this.birthYear == 'EMPTY') {
+      delete this.profile.birthYear;
+    } else {
+      this.profile.birthYear = this.birthYear;
+    }
+
+    if (this.gender == 'EMPTY') {
+      delete this.profile.gender;
+    } else {
+      this.profile.gender = this.gender;
+    }
+
     ProfileService.saveProfile(this.profile)
       .then(
         () => {
@@ -137,10 +154,23 @@ export default class Profile extends Vue {
           this.$root.$emit('profile-updated');
           this.$root.$emit('toaster-success', 'Profil enregistré');
         },
-        () => {
-          this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
+        (response) => {
+          if (response.status == 400) {
+            this.validationErrors = response.content;
+            this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
+          } else {
+            console.error(response);
+            this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
+          }
         }
-      )
+      );
+  }
+
+  cleanValidationErros() {
+    if (this.validationErrors) {
+      let keys = Object.keys(this.validationErrors);
+      keys.forEach(key => this.validationErrors[key] = '');
+    }
   }
 
 }
