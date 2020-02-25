@@ -85,7 +85,7 @@ export default class Profile extends Vue {
   profile:UserProfile = {firstName:'', email:'', initials:''};
   fullName:string = '';
 
-  birthYear:number = 0;
+  birthYear:string = '0';
   gender:string = 'EMPTY';
 
   validationErrors:any = {};
@@ -98,7 +98,7 @@ export default class Profile extends Vue {
   ];
 
   years:any[] = [
-    {id: 0, name: ''}
+    {id: '0', name: ''}
   ];
 
   constructor() {
@@ -110,7 +110,7 @@ export default class Profile extends Vue {
     let startYear = currentYear - 110;
     let endYear = currentYear - 10;
     for (let i=startYear; i<=endYear; i++) {
-      this.years.push({id: i, name: i});
+      this.years.push({id: '' + i, name: i});
     }
     this.loadProfile();
   }
@@ -128,17 +128,17 @@ export default class Profile extends Vue {
   profileLoaded(profile:UserProfile) {
     this.profile = profile;
     this.fullName = UserProfile.fullName(profile);
-    this.birthYear = profile.birthYear || 0;
+    this.birthYear = '' + (profile.birthYear || 0);
     this.gender = profile.gender || 'EMPTY';
   }
 
   saveProfile() {
     this.cleanValidationErros();
 
-    if (this.birthYear == 0) {
+    if (this.birthYear == '0') {
       delete this.profile.birthYear;
     } else {
-      this.profile.birthYear = this.birthYear;
+      this.profile.birthYear = parseInt(this.birthYear);
     }
 
     if (this.gender == 'EMPTY') {
