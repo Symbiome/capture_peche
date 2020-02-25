@@ -193,7 +193,7 @@ export default class FisholaFooter extends Vue {
   }
 
   goSettings() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    router.push('/settings');
   }
 
   giveup() {

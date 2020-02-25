@@ -27,7 +27,7 @@
           <i class="icon-dashboard"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="goSettings">
           <span>
             Paramètres
           </span>
@@ -149,6 +149,11 @@ export default class Menu extends Vue {
   goDocumentation() {
     this.closeMenu();
     router.push('/documentation');
+  }
+
+  goSettings() {
+    this.closeMenu();
+    router.push('/settings');
   }
 
   goCredits() {
