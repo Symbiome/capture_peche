@@ -49,8 +49,6 @@ COMMENT ON COLUMN trip.day IS 'Jour';
 COMMENT ON COLUMN trip.start_time IS 'Heure de début';
 COMMENT ON COLUMN trip.end_time IS 'Heure de fin';
 COMMENT ON COLUMN trip.type IS 'Type de sortie';
-COMMENT ON COLUMN trip.latitude IS 'Latitude';
-COMMENT ON COLUMN trip.longitude IS 'Longitude';
 COMMENT ON COLUMN trip.lake_id IS 'Lac sur lequel se fait la sortie';
 COMMENT ON COLUMN trip.weather_id IS 'Météo de la sortie';
 COMMENT ON COLUMN trip.hidden IS 'Est-ce que la sortie est cachée (l''utilisateur a demandé sa suppression) ?';
@@ -74,6 +72,8 @@ COMMENT ON COLUMN catch.weight IS 'Poids du poisson (g)';
 COMMENT ON COLUMN catch.kept IS 'Est-ce que le poisson a été conservé ?';
 COMMENT ON COLUMN catch.released_fish_state_id IS 'Si il a été relâché, dans quel état ?';
 COMMENT ON COLUMN catch.description IS 'Description';
+COMMENT ON COLUMN catch.latitude IS 'Latitude';
+COMMENT ON COLUMN catch.longitude IS 'Longitude';
 
 COMMENT ON TABLE catch_picture IS 'Photos des captures';
 COMMENT ON COLUMN catch_picture.catch_id IS 'Identifiant technique de la capture';

@@ -12,6 +12,8 @@ export interface CatchBean {
     description?: string;
     caughtAt?: Date;
     withSample: boolean;
+    latitude?: number;
+    longitude?: number;
     hasPicture: boolean;
 }
 

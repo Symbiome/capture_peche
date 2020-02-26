@@ -69,8 +69,6 @@ CREATE TABLE trip (
     start_time TIME WITHOUT TIME ZONE NOT NULL,
     end_time TIME WITHOUT TIME ZONE NOT NULL,
     type trip_type NOT NULL,
-    latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION,
     lake_id UUID REFERENCES lake(id) NOT NULL,
     weather_id UUID REFERENCES weather(id) NOT NULL,
     hidden BOOLEAN NOT NULL DEFAULT false
@@ -103,7 +101,9 @@ CREATE TABLE catch (
     weight INT,
     kept BOOLEAN NOT NULL,
     released_fish_state_id UUID REFERENCES released_fish_state(id),
-    description TEXT
+    description TEXT,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION
 );
 
 CREATE TABLE catch_picture (

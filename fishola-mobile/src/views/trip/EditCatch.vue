@@ -95,6 +95,7 @@ import TripsService from '@/services/TripsService';
 import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
+import GeolocationService from '@/services/GeolocationService';
 
 import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
@@ -201,7 +202,21 @@ export default class EditCatch extends Vue {
       PicturesService.getPicture(someCatch.id, this.pictureLoaded);
     }
 
-    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId).then(this.referentialLoaded);
+    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId)
+      .then(this.referentialLoaded);
+
+    if (this.inCreation) {
+      GeolocationService.getPosition()
+        .then(
+          (position) => {
+            this.aCatch.latitude = position.coords.latitude;
+            this.aCatch.longitude = position.coords.longitude;
+          },
+          (e) => {
+            console.error("Merdu", e);
+          }
+        );
+    }
   }
 
   pictureLoaded(content?:string) {

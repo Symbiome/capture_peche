@@ -11,5 +11,7 @@ export default interface CatchSummary {
     caughtAt?: Date;
     withSample: boolean;
     hasPicture?: boolean;
+    latitude?:number;
+    longitude?:number;
 
 }

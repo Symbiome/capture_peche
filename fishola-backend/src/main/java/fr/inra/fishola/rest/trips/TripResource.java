@@ -295,6 +295,8 @@ public class TripResource extends AbstractFisholaResource {
             catchPojo.setReleasedFishStateId(aCatch.releasedStateId.get());
         }
         aCatch.description.ifPresent(catchPojo::setDescription);
+        aCatch.latitude.ifPresent(catchPojo::setLatitude);
+        aCatch.longitude.ifPresent(catchPojo::setLongitude);
 
         UUID catchId = catchsDao.create(catchPojo);
         return catchId;
@@ -378,6 +380,8 @@ public class TripResource extends AbstractFisholaResource {
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime());
+        result.latitude = Optional.ofNullable(aCatch.getLatitude());
+        result.longitude = Optional.ofNullable(aCatch.getLongitude());
         result.hasPicture = catchsWithPictures.contains(catchId);
         return result;
     }
