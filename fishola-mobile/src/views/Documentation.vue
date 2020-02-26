@@ -91,11 +91,6 @@ export default class Documentation extends Vue {
       color: @pelorous;
     }
   }
-  .warning {
-    width: 100%;
-    text-align: center;
-    color: @carrot-orange;
-  }
 }
 
 </style>

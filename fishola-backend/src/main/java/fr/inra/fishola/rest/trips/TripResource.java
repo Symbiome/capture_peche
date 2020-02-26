@@ -76,11 +76,8 @@ public class TripResource extends AbstractFisholaResource {
                                                   @QueryParam("pageSize") int pageSize,
                                                   @QueryParam("desc") boolean desc,
                                                   @QueryParam("term") String term) {
-
-        PaginationParameter page = PaginationParameter.of(pageNumber, pageSize, "date", desc);
-
         UUID userId = getUserId(cookie);
-
+        PaginationParameter page = PaginationParameter.of(pageNumber, pageSize, "date", desc);
         Optional<String> searchTerm = Optional.ofNullable(StringUtils.trimToNull(term));
         PaginationResult<Trip> entities = tripsDao.listMyTrips(userId, page, searchTerm);
         PaginationResult<TripLight> result = entities.transform(this::toTripLight);
