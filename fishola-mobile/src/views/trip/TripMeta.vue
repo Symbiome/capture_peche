@@ -6,6 +6,8 @@
       <div class="pane">
         <h1>Information de pêche</h1>
         <div class="pane-content">
+          {{hereIAm}}
+          {{hereIAmError}}
           <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"
@@ -87,6 +89,9 @@ export default class TripMetaVue extends Vue {
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
+  
+  hereIAm:string = '';
+  hereIAmError:string = '';
 
   dateError:string = '';
   startedAtError:string = '';
@@ -100,6 +105,71 @@ export default class TripMetaVue extends Vue {
 
   created() {
     ReferentialService.getLakesAndTripTypes().then(this.referentialsLoaded);
+
+    // if (navigator) {
+    //   console.log("navigator", navigator);
+    //   if (navigator.geolocation) {
+    //     console.log("navigator.geolocation", navigator.geolocation);
+    //     if (navigator.geolocation.getCurrentPosition) {
+    //       navigator.geolocation.getCurrentPosition(
+    //         (position, someError) => {
+    //           console.log("someError", someError);
+    //           this.hereIAmJson = JSON.strigify(position);
+    //           this.hereIAm = position;
+    //         },
+    //         (error) => {
+    //           console.log("error", error);
+    //         });
+    //     } else {
+    //       this.hereIAmJson = "navigator.geolocation.getCurrentPosition undefined";
+    //     }
+
+    //     // if (navigator.geolocation.watchPosition) {
+    //     //   navigator.geolocation.watchPosition((position) => {
+    //     //     this.hereIAmJson = JSON.strigify(position);
+    //     //     this.hereIAm = position;
+    //     //   });
+    //     // } else {
+    //     //   this.hereIAmJson = "navigator.geolocation.getCurrentPosition undefined";
+    //     // }
+    //   } else {
+    //     this.hereIAmJson = "navigator.geolocation undefined";
+    //     console.log("navigator", navigator);
+    //   }
+    // } else {
+    //   this.hereIAmJson = "navigator undefined";
+    // }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this.displayLocationInfo, this.handleLocationError);
+    }
+
+  }
+
+  displayLocationInfo(position:any) {
+    const lng = position.coords.longitude;
+    const lat = position.coords.latitude;
+
+    this.hereIAm  = `longitude: ${ lng } | latitude: ${ lat }`;
+    console.log(this.hereIAm);
+  }
+
+  handleLocationError(error:any) {
+    window.alert(error);
+    window.alert(error.code);
+    switch (error.code) {
+      case 3:
+        // ...deal with timeout
+        this.hereIAmError = "3: deal with timeout";
+        break;
+      case 2:
+        // ...device can't get data
+        this.hereIAmError = "2: device can't get data";
+        break;
+      case 1:
+        // ...user said no ☹️
+        this.hereIAmError = "1: user said no";
+    }
   }
 
   tripLoaded(someTrip:TripMeta) {
