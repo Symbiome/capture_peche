@@ -1,8 +1,8 @@
-INSERT INTO lake (name) VALUES
-    ('Lac d''Annecy'),
-    ('Léman'),
-    ('Lac du Bourget'),
-    ('Lac d''Aiguebelette');
+INSERT INTO lake (name, latitude, longitude) VALUES
+    ('Lac d''Annecy', 45.787, 6.147),
+    ('Léman', 46.426, 6.5499),
+    ('Lac du Bourget', 45.7249, 5.8684),
+    ('Lac d''Aiguebelette', 45.5508, 5.8015);
 
 INSERT INTO species (name, built_in) VALUES
     ('Omble chevalier', true),

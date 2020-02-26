@@ -12,6 +12,8 @@ COMMENT ON COLUMN fishola_user.birth_year IS 'Année de naissance';
 COMMENT ON TABLE lake IS 'Lacs';
 COMMENT ON COLUMN lake.id IS 'Identifiant technique';
 COMMENT ON COLUMN lake.name IS 'Nom du lac';
+COMMENT ON COLUMN lake.latitude IS 'Latitude du lac';
+COMMENT ON COLUMN lake.longitude IS 'Longitude du lac';
 
 COMMENT ON TABLE species IS 'Espèces';
 COMMENT ON COLUMN species.id IS 'Identifiant technique';

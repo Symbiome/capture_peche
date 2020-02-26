@@ -17,7 +17,9 @@ CREATE TABLE fishola_user (
 
 CREATE TABLE lake (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    latitude DOUBLE PRECISION NOT NULL,
+    longitude DOUBLE PRECISION NOT NULL
 );
 
 CREATE TABLE weather (

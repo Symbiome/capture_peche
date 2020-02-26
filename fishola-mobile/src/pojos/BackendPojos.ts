@@ -51,6 +51,8 @@ export interface SpeciesWithAlias {
 export interface Lake extends Serializable {
     id: string;
     name: string;
+    latitude: number;
+    longitude: number;
 }
 
 export interface ReleasedFishState extends Serializable {
