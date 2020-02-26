@@ -49,32 +49,36 @@ export default class MyTrips extends Vue {
   term:string = '';
   count:number = 0;
 
+  imageContent:string = '';
+
+  refreshTimer:any = undefined;
+
   @Watch('term')
   onTermChanged(value: string, oldValue: string) {
-    console.log("New value", value);
-    let toto = Vue.lodash.debounce(this.refresh, 1000);
-    toto();
+    if (this.refreshTimer) {
+      this.refreshTimer.cancel();
+    }
+    this.refreshTimer = Vue.lodash.debounce(this.loadTrips, 1000);
+    this.refreshTimer();
   }
-
-  imageContent:string = '';
 
   constructor() {
     super();
     this.trips = [];
   }
 
-  refresh() {
-    console.log("Refreshing !", this.term);
+  loadTrips() {
+    TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
   }
 
   created() {
-    TripsService.listTrips(this.sortDown, this.tripsLoaded);
+    this.loadTrips();
   }
 
   mounted() {
     this.$root.$on('trips-saved', () => {
       console.log("La liste des sorties a été mise à jour, on rafraichit ...");
-      TripsService.listTrips(this.sortDown, this.tripsLoaded);
+      this.loadTrips();
     });
   }
 
@@ -92,7 +96,7 @@ export default class MyTrips extends Vue {
 
   reverseSortOrder() {
     this.sortDown = !this.sortDown;
-    TripsService.listTrips(this.sortDown, this.tripsLoaded);
+    this.loadTrips();
   }
 
   newTrip() {

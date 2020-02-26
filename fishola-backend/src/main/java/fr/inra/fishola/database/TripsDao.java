@@ -54,7 +54,9 @@ public class TripsDao extends AbstractFisholaDao {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
             conditions.add(Tables.TRIP.HIDDEN.eq(false));
-            searchTerm.ifPresent(term -> conditions.add(Tables.TRIP.NAME.likeIgnoreCase(term)));
+            searchTerm.map(term -> String.format("%%%s%%", term))
+                    .map(Tables.TRIP.NAME::likeIgnoreCase)
+                    .ifPresent(conditions::add);
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
             SelectSeekStep2<TripRecord, Date, Timestamp> tripRecords =

@@ -181,7 +181,7 @@ export default class TripsService extends AbstractFisholaService {
         return input;
     }
 
-    static listTrips(sortDown:boolean, callback:(trips:TripLight[], count:number)=>any) {
+    static listTrips(sortDown:boolean, searchTerm:string, callback:(trips:TripLight[], count:number)=>any) {
 
         let result:TripLight[] = [];
 
@@ -201,7 +201,8 @@ export default class TripsService extends AbstractFisholaService {
         let page = {
             pageNumber: 0,
             pageSize: -1,
-            desc: sortDown
+            desc: sortDown,
+            term: searchTerm
         };
 
         this.backendGetWithArgs('/v1/trips', page, (trips:any) => {
