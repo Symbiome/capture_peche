@@ -7,13 +7,16 @@
                      v-on:reverseSortOrder="reverseSortOrder"/>
       <MyTripsSearch v-model="term"/>
       <img v-bind:src="imageContent"/>
-      <MyTripsList v-bind:trips="trips" v-bind:loading="loading"/>
+      <MyTripsList v-bind:trips="trips"
+                   v-bind:hasSearchTerm="!!currentSearchTerm"
+                   v-bind:noTripYet="totalCount == 0"
+                   v-bind:loading="loading"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
-                    v-bind:button-icon="trips.length == 0 ? 'icon-fishing':'icon-plus'"
-                    v-bind:button-text="trips.length == 0 ? 'Commencer':'Nouveau'"
-                    v-on:buttonClicked="newTrip"
-                    selected="home"/>
+                   v-bind:button-icon="totalCount == 0 ? 'icon-fishing':'icon-plus'"
+                   v-bind:button-text="totalCount == 0 ? 'Commencer':'Nouveau'"
+                   v-on:buttonClicked="newTrip"
+                   selected="home"/>
   </div>
 </template>
 
@@ -47,7 +50,9 @@ export default class MyTrips extends Vue {
   loading:boolean = true;
   sortDown:boolean = true;
   term:string = '';
+  currentSearchTerm:string = '';
   count:number = 0;
+  totalCount:number = -1;
 
   imageContent:string = '';
 
@@ -68,7 +73,9 @@ export default class MyTrips extends Vue {
   }
 
   loadTrips() {
+    this.currentSearchTerm = this.term;
     TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
+    this.loading = true;
   }
 
   created() {
@@ -92,6 +99,11 @@ export default class MyTrips extends Vue {
     this.trips = ts;
     this.loading = false;
     this.count = count;
+
+    // On considère que le premier appel renvoie toujours le total
+    if (this.totalCount == -1) {
+      this.totalCount = count;
+    }
   }
 
   reverseSortOrder() {

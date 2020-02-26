@@ -1,17 +1,18 @@
 <template>
   <div class="pane my-trips-list">
-    <div v-if="trips.length > 0" class="pane-content">
+    <div v-if="!loading && trips.length > 0" class="pane-content">
       <div v-for="t in trips" v-bind:key="t.id">
         <MyTripsItem v-bind:trip="t"/>
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
-    <div v-if="trips.length == 0 && !loading" class="pane-content no-trips">
+    <div v-if="!loading && trips.length == 0 && !loading" class="pane-content no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
-        <span>Aucune sortie de pêche</span>
+        <span v-if="hasSearchTerm">Aucune sortie de pêche trouvée</span>
+        <span v-if="!hasSearchTerm">Aucune sortie de pêche</span>
       </div>
-      <div class="bottom">
+      <div class="bottom" v-if="noTripYet">
         <span>Commencez votre <br/>première sortie !</span>
         <i class="icon-triangle"></i>
       </div>
@@ -38,6 +39,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class MyTripsList extends Vue {
   @Prop() trips!:TripLight[];
   @Prop() loading!:boolean;
+  @Prop() hasSearchTerm!:boolean;
+  @Prop() noTripYet!:boolean;
 }
 </script>
 

@@ -87,6 +87,14 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
+    @GET
+    @Path("/count")
+    public int countMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        UUID userId = getUserId(cookie);
+        int result = tripsDao.countMyTrips(userId);
+        return result;
+    }
+
     protected TripLight toTripLight(Trip trip) {
 
         UUID tripId = trip.getId();

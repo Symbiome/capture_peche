@@ -71,6 +71,19 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public int countMyTrips(UUID userId) {
+        int result = withContext(context -> {
+            List<Condition> conditions = new LinkedList<>();
+            conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
+            conditions.add(Tables.TRIP.HIDDEN.eq(false));
+            SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
+                    .where(conditions);
+            int count = context.fetchCount(Tables.TRIP, conditions);
+            return count;
+        });
+        return result;
+    }
+
     public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
