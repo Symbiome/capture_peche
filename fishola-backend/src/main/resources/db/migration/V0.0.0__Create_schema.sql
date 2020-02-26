@@ -10,7 +10,9 @@ CREATE TABLE fishola_user (
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     gender gender,
-    birth_year INT
+    birth_year INT,
+    prompt_weight BOOLEAN NOT NULL DEFAULT FALSE,
+    prompt_samples BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE lake (

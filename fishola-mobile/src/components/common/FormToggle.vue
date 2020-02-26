@@ -52,7 +52,6 @@ export default class FormToggle extends Vue {
   toggle() {
     if (!this.readonly) {
       this.$emit('input', !this.value);
-      this.$root.$emit('toaster-warning', 'Work in progress');
     }
   }
 

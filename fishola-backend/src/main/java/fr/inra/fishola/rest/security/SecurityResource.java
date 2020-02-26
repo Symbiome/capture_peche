@@ -289,4 +289,33 @@ public class SecurityResource extends AbstractFisholaResource {
         return result;
     }
 
+    @GET
+    @Path("/settings")
+    public UserSettings getSettings(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        UUID userId = getUserId(cookie);
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+
+        UserSettings result = ImmutableUserSettings.builder()
+                .promptWeight(user.getPromptWeight())
+                .promptSamples(user.getPromptSamples())
+                .build();
+        return result;
+    }
+
+    @PUT
+    @Path("/settings")
+    public Response saveSettings(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserSettings settings) {
+        UUID userId = getUserId(cookie);
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+
+        user.setPromptWeight(settings.promptWeight());
+        user.setPromptSamples(settings.promptSamples());
+
+        usersDao.updateUser(user);
+
+        return Response.noContent().build();
+    }
+
 }

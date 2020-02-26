@@ -88,6 +88,11 @@ export interface DocumentationLight {
     url: string;
 }
 
+export interface UserSettings {
+    promptWeight: boolean;
+    promptSamples: boolean;
+}
+
 export interface Serializable {
 }
 

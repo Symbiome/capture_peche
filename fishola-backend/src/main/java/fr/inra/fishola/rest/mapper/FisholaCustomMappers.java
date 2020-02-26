@@ -18,7 +18,9 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.entities.enums.Gender;
 import fr.inra.fishola.rest.security.ImmutableUserProfile;
+import fr.inra.fishola.rest.security.ImmutableUserSettings;
 import fr.inra.fishola.rest.security.UserProfile;
+import fr.inra.fishola.rest.security.UserSettings;
 import io.quarkus.jackson.ObjectMapperCustomizer;
 import org.apache.commons.lang3.StringUtils;
 import org.nuiton.util.pagination.PaginationOrder;
@@ -154,6 +156,27 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         }
     }
 
+    public static class UserSettingsDeserializer extends StdDeserializer<UserSettings> {
+
+        protected UserSettingsDeserializer() {
+            super(PaginationParameter.class);
+        }
+
+        @Override
+        public UserSettings deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+            TreeNode node = jp.readValueAsTree();
+
+            boolean promptSamples = readBoolean(node, "promptSamples");
+            boolean promptWeight = readBoolean(node, "promptWeight");
+
+            UserSettings result = ImmutableUserSettings.builder()
+                    .promptSamples(promptSamples)
+                    .promptWeight(promptWeight)
+                    .build();
+            return result;
+        }
+    }
+
     public static class FisholaModule extends SimpleModule {
 
         public FisholaModule() {
@@ -180,6 +203,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
             addDeserializer(PaginationParameter.class, new PaginationParameterDeserializer());
             addDeserializer(UserProfile.class, new UserProfileDeserializer());
+            addDeserializer(UserSettings.class, new UserSettingsDeserializer());
         }
 
     }

@@ -31,7 +31,8 @@
                      v-model="aCatch.size"
                      v-bind:error="sizeError"
                      v-bind:readonly="!modifiable"/>
-          <FormInput name="weight"
+          <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
+                     name="weight"
                      label="Poids (en g, optionnel)"
                      type="number"
                      placeholder="Entrez un poids (en g)"
@@ -66,7 +67,8 @@
                      type="time"
                      v-model="caughtAt"
                      v-bind:readonly="!modifiable"/>
-          <FormToggle label="Prélèvement (optionnel)"
+          <FormToggle v-if="aCatch.withSample || (settings && settings.promptSamples)"
+                      label="Prélèvement (optionnel)"
                       v-model="aCatch.withSample"
                       v-bind:readonly="!modifiable"/>
           <div class="bottom-page-spacer"></div>
@@ -93,6 +95,9 @@ import TripsService from '@/services/TripsService';
 import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
+
+import {UserSettings} from '@/pojos/BackendPojos';
+import ProfileService from '@/services/ProfileService';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
@@ -126,6 +131,8 @@ export default class EditCatch extends Vue {
   @Prop() tripId!:string;
   @Prop() catchId!:string;
 
+  settings:UserSettings | null = null;
+
   // On est obligés de gérer un flag de ce genre, sinon les FormSelect
   // sont créés à vide et ne sélectionnent pas les bonnes valeurs
   ready:boolean = false;
@@ -158,9 +165,19 @@ export default class EditCatch extends Vue {
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
+    this.loadSettings();
   }
 
   mounted() {
+  }
+
+  loadSettings() {
+    ProfileService.getSettings()
+      .then(this.settingsLoaded);
+  }
+
+  settingsLoaded(settings:UserSettings) {
+    this.settings = settings;
   }
 
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
