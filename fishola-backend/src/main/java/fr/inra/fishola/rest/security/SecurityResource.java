@@ -68,10 +68,6 @@ public class SecurityResource extends AbstractFisholaResource {
             validationErrors.put("firstName", "Le prénom est obligatoire");
         }
 
-        if (StringUtils.isEmpty(bean.lastName)) {
-            validationErrors.put("lastName", "Le nom est obligatoire");
-        }
-
         if (StringUtils.isEmpty(bean.email)) {
             validationErrors.put("email", "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(bean.email)) {
@@ -156,6 +152,12 @@ public class SecurityResource extends AbstractFisholaResource {
                 return result;
             };
 
+            Function<String, String> getClaimOrNull = claimName -> {
+                String value = claims.get(claimName);
+                String result = StringUtils.trimToNull(value);
+                return result;
+            };
+
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
 
             if (log.isInfoEnabled()) {
@@ -164,7 +166,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
             usersDao.create(
                     getClaimOrFail.apply(CLAIM_FIRST_NAME),
-                    getClaimOrFail.apply(CLAIM_LAST_NAME),
+                    getClaimOrNull.apply(CLAIM_LAST_NAME),
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
@@ -241,7 +243,7 @@ public class SecurityResource extends AbstractFisholaResource {
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
 
         user.setFirstName(profile.firstName());
-        user.setLastName(profile.lastName().orElse(null));
+        user.setLastName(profile.lastName().map(StringUtils::trimToNull).orElse(null));
         user.setEmail(profile.email());
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
@@ -267,10 +269,6 @@ public class SecurityResource extends AbstractFisholaResource {
 
         if (StringUtils.isEmpty(bean.getFirstName())) {
             result.put("firstName", "Le prénom est obligatoire");
-        }
-
-        if (StringUtils.isEmpty(bean.getLastName())) {
-            result.put("lastName", "Le nom est obligatoire");
         }
 
         if (StringUtils.isEmpty(bean.getEmail())) {

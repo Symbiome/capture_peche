@@ -11,17 +11,17 @@
       <div class="pane">
         <h1>Profil</h1>
         <div class="pane-content">
-          <FormInput name="lastName"
-                     label="Nom"
-                     placeholder="Renseignez votre nom"
-                     v-model="profile.lastName"
-                     v-bind:error="validationErrors['lastName']"
-                     />
           <FormInput name="firstName"
                      label="Prénom"
                      placeholder="Renseignez votre prénom"
                      v-model="profile.firstName"
                      v-bind:error="validationErrors['firstName']"
+                     />
+          <FormInput name="lastName"
+                     label="Nom (optionnel)"
+                     placeholder="Renseignez votre nom"
+                     v-model="profile.lastName"
+                     v-bind:error="validationErrors['lastName']"
                      />
           <FormInput name="email"
                      label="E-mail"
