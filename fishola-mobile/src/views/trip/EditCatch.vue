@@ -44,8 +44,9 @@
                      v-model="aCatch.keep"
                      v-bind:error="keepError"
                      v-bind:readonly="!modifiable"/>
+          <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
           <FormSelect name="releaseState"
-                      v-if="aCatch.keep === false"
+                      v-if="false"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
                       v-model="aCatch.releasedStateId"
@@ -287,16 +288,16 @@ export default class EditCatch extends Vue {
       this.keepError = 'Information obligatoire';
     }
 
-    if (this.aCatch.keep === false)  {
-      if (this.aCatch.releasedStateId) {
+    // if (this.aCatch.keep === false)  {
+    //   if (this.aCatch.releasedStateId) {
+    //     this.releasedStateIdError = '';
+    //   } else {
+    //     hasError = true;
+    //     this.releasedStateIdError = 'État du poisson relâché obligatoire';
+    //   }
+    // } else {
         this.releasedStateIdError = '';
-      } else {
-        hasError = true;
-        this.releasedStateIdError = 'État du poisson relâché obligatoire';
-      }
-    } else {
-        this.releasedStateIdError = '';
-    }
+    // }
 
     if (this.aCatch.techniqueId) {
       this.techniqueIdError = '';
