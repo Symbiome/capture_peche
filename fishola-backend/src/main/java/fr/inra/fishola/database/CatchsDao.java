@@ -39,7 +39,10 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public void delete(UUID catchId) {
-        withDaoNoResult(CatchDao.class, dao -> dao.deleteById(catchId));
+        withContextNoResult(context -> {
+            context.deleteFrom(Tables.CATCH_PICTURE).where(Tables.CATCH_PICTURE.CATCH_ID.eq(catchId)).execute();
+            context.deleteFrom(Tables.CATCH).where(Tables.CATCH.ID.eq(catchId)).execute();
+        });
     }
 
     public void update(Catch existingCatch) {
@@ -74,6 +77,13 @@ public class CatchsDao extends AbstractFisholaDao {
             return records;
         });
         return result;
+    }
+
+    public void deleteByTrip(UUID tripId) {
+        List<Catch> catchList = listCatchs(tripId);
+        catchList.stream()
+                .map(Catch::getId)
+                .forEach(this::delete);
     }
 
 }
