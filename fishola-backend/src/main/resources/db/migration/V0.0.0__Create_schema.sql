@@ -11,7 +11,7 @@ CREATE TABLE fishola_user (
     password TEXT NOT NULL,
     gender gender,
     birth_year INT,
-    prompt_weight BOOLEAN NOT NULL DEFAULT FALSE,
+    prompt_weight BOOLEAN NOT NULL DEFAULT TRUE,
     prompt_samples BOOLEAN NOT NULL DEFAULT FALSE
 );
 
