@@ -12,12 +12,14 @@ COMMENT ON COLUMN fishola_user.birth_year IS 'Année de naissance';
 COMMENT ON TABLE lake IS 'Lacs';
 COMMENT ON COLUMN lake.id IS 'Identifiant technique';
 COMMENT ON COLUMN lake.name IS 'Nom du lac';
+COMMENT ON COLUMN lake.export_as IS 'Valeur utilisée dans les exports';
 COMMENT ON COLUMN lake.latitude IS 'Latitude du lac';
 COMMENT ON COLUMN lake.longitude IS 'Longitude du lac';
 
 COMMENT ON TABLE species IS 'Espèces';
 COMMENT ON COLUMN species.id IS 'Identifiant technique';
 COMMENT ON COLUMN species.name IS 'Nom de l''espèce';
+COMMENT ON COLUMN species.export_as IS 'Valeur utilisée dans les exports';
 COMMENT ON COLUMN species.built_in IS 'Est-ce que la méthode a été créée par les admins ?';
 
 COMMENT ON TABLE species_by_lake IS 'Espèces par lac';
@@ -28,15 +30,18 @@ COMMENT ON COLUMN species_by_lake.alias IS 'Alias éventuel sur l''espèce a une
 COMMENT ON TABLE weather IS 'Météos';
 COMMENT ON COLUMN weather.id IS 'Identifiant technique';
 COMMENT ON COLUMN weather.name IS 'Nom de la météo';
+COMMENT ON COLUMN weather.export_as IS 'Valeur utilisée dans les exports';
 
 COMMENT ON TABLE technique IS 'Techniques de pêche';
 COMMENT ON COLUMN technique.id IS 'Identifiant technique';
 COMMENT ON COLUMN technique.name IS 'Nom de la technique';
+COMMENT ON COLUMN technique.export_as IS 'Valeur utilisée dans les exports';
 COMMENT ON COLUMN technique.built_in IS 'Est-ce que la technique a été créée par les admins ?';
 
 COMMENT ON TABLE released_fish_state IS 'État dans lequel le poisson a été relâché';
 COMMENT ON COLUMN released_fish_state.id IS 'Identifiant technique';
 COMMENT ON COLUMN released_fish_state.name IS 'Nom';
+COMMENT ON COLUMN released_fish_state.export_as IS 'Valeur utilisée dans les exports';
 
 COMMENT ON TYPE trip_type IS 'Types de sortie';
 

@@ -18,18 +18,21 @@ CREATE TABLE fishola_user (
 CREATE TABLE lake (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL
 );
 
 CREATE TABLE weather (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE species (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE,
     built_in BOOLEAN NOT NULL
 );
 
@@ -45,12 +48,14 @@ CREATE UNIQUE INDEX species_by_lake_unique_idx
 CREATE TABLE technique (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE,
     built_in BOOLEAN NOT NULL
 );
 
 CREATE TABLE released_fish_state (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE
 );
 
 CREATE TYPE trip_mode

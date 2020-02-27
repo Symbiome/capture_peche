@@ -53,6 +53,7 @@ export interface SpeciesWithAlias {
 export interface Lake extends Serializable {
     id: string;
     name: string;
+    exportAs: string;
     latitude: number;
     longitude: number;
 }
@@ -60,23 +61,27 @@ export interface Lake extends Serializable {
 export interface ReleasedFishState extends Serializable {
     id: string;
     name: string;
+    exportAs: string;
 }
 
 export interface Species extends Serializable {
     id: string;
     name: string;
+    exportAs: string;
     builtIn: boolean;
 }
 
 export interface Technique extends Serializable {
     id: string;
     name: string;
+    exportAs: string;
     builtIn: boolean;
 }
 
 export interface Weather extends Serializable {
     id: string;
     name: string;
+    exportAs: string;
 }
 
 export interface Editorial extends Serializable {
