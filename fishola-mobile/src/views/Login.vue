@@ -107,6 +107,7 @@ export default class Login extends Vue {
   signInResult(status:number) {
     switch(status) {
       case 200:
+        this.$root.$emit('profile-updated');
         router.push('trips');
         break;
       case 401:
