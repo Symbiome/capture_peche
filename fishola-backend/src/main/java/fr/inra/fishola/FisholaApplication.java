@@ -1,5 +1,6 @@
 package fr.inra.fishola;
 
+import io.agroal.api.AgroalDataSource;
 import io.quarkus.runtime.StartupEvent;
 import org.flywaydb.core.Flyway;
 
@@ -11,11 +12,11 @@ import javax.inject.Inject;
 public class FisholaApplication {
 
     @Inject
-    protected FisholaConfiguration config;
+    protected AgroalDataSource dataSource;
 
     void onStart(@Observes StartupEvent ev) {
 
-        Flyway flyway = Flyway.configure().dataSource(config.getJdbcUrl(), config.getJdbcUser(), config.getJdbcPassword()).load();
+        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
 
         flyway.migrate();
 

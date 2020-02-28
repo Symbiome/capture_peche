@@ -4,15 +4,18 @@ import fr.inra.fishola.database.UsersDao;
 import fr.inra.fishola.exceptions.NotAuthenticatedException;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.StreamingOutput;
 import java.util.Optional;
 import java.util.UUID;
 
+import static javax.transaction.Transactional.TxType.REQUIRED;
 import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
 import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
+@Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
 
     protected static final String AUTHENTICATION_COOKIE_NAME = "token";

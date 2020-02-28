@@ -80,8 +80,6 @@ public class TripsDao extends AbstractFisholaDao {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
             conditions.add(Tables.TRIP.HIDDEN.eq(false));
-            SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
-                    .where(conditions);
             int count = context.fetchCount(Tables.TRIP, conditions);
             return count;
         });

@@ -8,25 +8,12 @@ import org.apache.commons.logging.LogFactory;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Properties;
 
 @Singleton
 public class FisholaConfiguration {
 
     private static final Log log = LogFactory.getLog(FisholaConfiguration.class);
-
-    public String getJdbcUrl() {
-        return "jdbc:postgresql://docker_pg/fishola";
-    }
-
-    public String getJdbcUser() {
-        return  "postgres";
-    }
-
-    public String getJdbcPassword() {
-        return null;
-    }
 
     public int getPasswordHashCost() {
         return 12;

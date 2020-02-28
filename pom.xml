@@ -31,7 +31,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkus.version>1.2.0.Final</quarkus.version>
+    <quarkus.version>1.2.1.Final</quarkus.version>
     <jooqVersion>3.12.4</jooqVersion>
     <flywayVersion>6.2.3</flywayVersion>
     <postgresqlDriverVersion>42.2.10</postgresqlDriverVersion>
@@ -73,6 +73,23 @@
       <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-resteasy-jackson</artifactId>
+        <version>${quarkus.version}</version>
+      </dependency>
+      <!-- Transaction Manager extension -->
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-narayana-jta</artifactId>
+        <version>${quarkus.version}</version>
+      </dependency>
+      <!-- Transaction Manager extension -->
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-agroal</artifactId>
+        <version>${quarkus.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-jdbc-postgresql</artifactId>
         <version>${quarkus.version}</version>
       </dependency>
 

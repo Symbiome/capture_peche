@@ -1,6 +1,7 @@
 package fr.inra.fishola.database;
 
 import fr.inra.fishola.FisholaConfiguration;
+import io.agroal.api.AgroalDataSource;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -8,13 +9,17 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
+import static javax.transaction.Transactional.TxType.MANDATORY;
+
+@Transactional(MANDATORY)
 public abstract class AbstractFisholaDao {
+
+    @Inject
+    protected AgroalDataSource dataSource;
 
     @Inject
     protected FisholaConfiguration config;
@@ -39,59 +44,42 @@ public abstract class AbstractFisholaDao {
         void execute(D dao);
     }
 
-    protected Connection newConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(config.getJdbcUrl(), config.getJdbcUser(), config.getJdbcPassword());
-        return conn;
-    }
-
     protected <R> R withContext(JooqContext<R> work) {
-        try (Connection connection = newConnection()) {
-            DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
-            R result = work.execute(context);
-            return result;
-        } catch (SQLException sqle) {
-            throw new RuntimeException("Unable to treat jOOQ context work", sqle);
-        }
+        DSLContext context = DSL.using(dataSource, SQLDialect.POSTGRES);
+        R result = work.execute(context);
+        return result;
     }
 
     protected <R> void withContextNoResult(JooqContextNoResult<R> work) {
-        try (Connection connection = newConnection()) {
-            DSLContext context = DSL.using(connection, SQLDialect.POSTGRES);
-            work.execute(context);
-        } catch (SQLException sqle) {
-            throw new RuntimeException("Unable to treat jOOQ context work", sqle);
-        }
+        DSLContext context = DSL.using(dataSource, SQLDialect.POSTGRES);
+        work.execute(context);
     }
 
     protected <R> R withConfiguration(JooqConfiguration<R> work) {
-        try(Connection connection = newConnection()) {
-            Configuration configuration = new DefaultConfiguration().set(connection).set(SQLDialect.POSTGRES);
-            R result = work.execute(configuration);
-            return result;
-        } catch (SQLException sqle) {
-            throw new RuntimeException("Unable to treat jOOQ config work", sqle);
-        }
+        Configuration configuration = new DefaultConfiguration().set(dataSource).set(SQLDialect.POSTGRES);
+        R result = work.execute(configuration);
+        return result;
     }
 
     protected <R, D> R withDao(Class<D> daoClass, JooqDao<D, R> work) {
-        try(Connection connection = newConnection()) {
-            Configuration configuration = new DefaultConfiguration().set(connection).set(SQLDialect.POSTGRES);
+        try {
+            Configuration configuration = new DefaultConfiguration().set(dataSource).set(SQLDialect.POSTGRES);
             Constructor<D> constructor = daoClass.getConstructor(Configuration.class);
             D dao = constructor.newInstance(configuration);
             R result = work.execute(dao);
             return result;
-        } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
             throw new RuntimeException("Unable to treat jOOQ dao work", eee);
         }
     }
 
     protected <D> void withDaoNoResult(Class<D> daoClass, JooqDaoNoResult<D> work) {
-        try(Connection connection = newConnection()) {
-            Configuration configuration = new DefaultConfiguration().set(connection).set(SQLDialect.POSTGRES);
+        try {
+            Configuration configuration = new DefaultConfiguration().set(dataSource).set(SQLDialect.POSTGRES);
             Constructor<D> constructor = daoClass.getConstructor(Configuration.class);
             D dao = constructor.newInstance(configuration);
             work.execute(dao);
-        } catch (SQLException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException eee) {
             throw new RuntimeException("Unable to treat jOOQ dao work", eee);
         }
     }
