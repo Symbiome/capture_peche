@@ -11,6 +11,7 @@ import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -21,6 +22,9 @@ import java.util.UUID;
 
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
+
+    @Inject
+    protected CatchsDao catchsDao;
 
     public UUID create(Trip trip) {
         return withContext(context -> {
@@ -113,8 +117,8 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public void delete(UUID tripId) {
+        catchsDao.deleteByTrip(tripId);
         withContextNoResult(context -> {
-            context.deleteFrom(Tables.CATCH).where(Tables.CATCH.TRIP_ID.eq(tripId)).execute();
             context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute();
             context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
             context.deleteFrom(Tables.TRIP).where(Tables.TRIP.ID.eq(tripId)).execute();

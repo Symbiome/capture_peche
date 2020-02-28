@@ -44,8 +44,9 @@
                      v-model="aCatch.keep"
                      v-bind:error="keepError"
                      v-bind:readonly="!modifiable"/>
+          <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
           <FormSelect name="releaseState"
-                      v-if="aCatch.keep === false"
+                      v-if="false"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
                       v-model="aCatch.releasedStateId"
@@ -95,6 +96,7 @@ import TripsService from '@/services/TripsService';
 import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
+import GeolocationService from '@/services/GeolocationService';
 
 import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
@@ -201,7 +203,21 @@ export default class EditCatch extends Vue {
       PicturesService.getPicture(someCatch.id, this.pictureLoaded);
     }
 
-    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId).then(this.referentialLoaded);
+    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId)
+      .then(this.referentialLoaded);
+
+    if (this.inCreation) {
+      GeolocationService.getPosition()
+        .then(
+          (position) => {
+            this.aCatch.latitude = position.coords.latitude;
+            this.aCatch.longitude = position.coords.longitude;
+          },
+          (e) => {
+            console.error("Merdu", e);
+          }
+        );
+    }
   }
 
   pictureLoaded(content?:string) {
@@ -272,16 +288,16 @@ export default class EditCatch extends Vue {
       this.keepError = 'Information obligatoire';
     }
 
-    if (this.aCatch.keep === false)  {
-      if (this.aCatch.releasedStateId) {
+    // if (this.aCatch.keep === false)  {
+    //   if (this.aCatch.releasedStateId) {
+    //     this.releasedStateIdError = '';
+    //   } else {
+    //     hasError = true;
+    //     this.releasedStateIdError = 'État du poisson relâché obligatoire';
+    //   }
+    // } else {
         this.releasedStateIdError = '';
-      } else {
-        hasError = true;
-        this.releasedStateIdError = 'État du poisson relâché obligatoire';
-      }
-    } else {
-        this.releasedStateIdError = '';
-    }
+    // }
 
     if (this.aCatch.techniqueId) {
       this.techniqueIdError = '';

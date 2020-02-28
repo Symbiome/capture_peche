@@ -291,10 +291,11 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.weight.ifPresent(catchPojo::setWeight);
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
-            Preconditions.checkState(aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
-            catchPojo.setReleasedFishStateId(aCatch.releasedStateId.get());
+            aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
         }
         aCatch.description.ifPresent(catchPojo::setDescription);
+        aCatch.latitude.ifPresent(catchPojo::setLatitude);
+        aCatch.longitude.ifPresent(catchPojo::setLongitude);
 
         UUID catchId = catchsDao.create(catchPojo);
         return catchId;
@@ -308,8 +309,7 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setSize(aCatch.size);
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
-        Preconditions.checkState(aCatch.keep || aCatch.releasedStateId.isPresent(), "On ne garde pas le poisson, il faut préciser son état");
-        existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.get() : null);
+        existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
 
         catchsDao.update(existingCatch);
@@ -378,6 +378,8 @@ public class TripResource extends AbstractFisholaResource {
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime());
+        result.latitude = Optional.ofNullable(aCatch.getLatitude());
+        result.longitude = Optional.ofNullable(aCatch.getLongitude());
         result.hasPicture = catchsWithPictures.contains(catchId);
         return result;
     }

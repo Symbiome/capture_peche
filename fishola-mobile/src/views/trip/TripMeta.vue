@@ -58,6 +58,7 @@ import Helpers from '@/pojos/Helpers';
 import TripsService from '@/services/TripsService';
 import {LakesAndTripTypes} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
+import GeolocationService from '@/services/GeolocationService';
 
 import FormInput from '@/components/common/FormInput.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
@@ -87,6 +88,9 @@ export default class TripMetaVue extends Vue {
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
+  
+  hereIAm:string = '';
+  hereIAmError:string = '';
 
   dateError:string = '';
   startedAtError:string = '';
@@ -115,6 +119,22 @@ export default class TripMetaVue extends Vue {
       if (someTrip.finishedAt) {
         this.finishedAt = Helpers.formatToTime(someTrip.finishedAt);
       }
+    }
+
+    if (this.id == Constants.DIRTY_ID) {
+      GeolocationService.getClosestLake()
+        .then(
+          (lake) => {
+            console.log("Le lac le plus proche est ", lake);
+            this.trip.lakeId = lake.id;
+            // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
+            this.lakeIdError = lake.id;
+            this.lakeIdError = '';
+          },
+          (e) => {
+            console.error("Merdu", e);
+          }
+        );
     }
 
   }

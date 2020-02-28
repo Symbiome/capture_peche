@@ -16,6 +16,8 @@ public class CatchBean {
     public Optional<String> description = Optional.empty();
     public Optional<Date> caughtAt = Optional.empty();
     public boolean withSample;
+    public Optional<Double> latitude = Optional.empty();
+    public Optional<Double> longitude = Optional.empty();
 
     public boolean hasPicture = false;
 
