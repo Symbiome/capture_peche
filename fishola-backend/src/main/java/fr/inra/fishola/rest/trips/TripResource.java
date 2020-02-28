@@ -143,7 +143,6 @@ public class TripResource extends AbstractFisholaResource {
         Map<String, UUID> replacements = new HashMap<>();
 
         // TODO: 30/12/2019 Détection des doublons
-        // TODO: 03/02/2020 Transaction !
 
         UUID userId = getUserId(cookie);
 
