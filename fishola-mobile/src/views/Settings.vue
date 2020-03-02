@@ -2,7 +2,7 @@
   <div class="settings page-with-header-and-footer shifted-background">
     <FisholaHeader/>
     <div class="page settings-page">
-      <div class="pane">
+      <div class="pane pane-only">
         <h1>Paramètres</h1>
         <div class="pane-content">
           <div class="settings-row" v-if="settings">

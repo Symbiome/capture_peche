@@ -189,6 +189,10 @@ html {
 
   }
 
+  &.pane-only {
+    margin-top: 20px;
+  }
+
 }
 
 .picture-background {

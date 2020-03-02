@@ -2,7 +2,7 @@
   <div class="documentation page-with-header-and-footer shifted-background">
     <FisholaHeader/>
     <div class="page documentation-page">
-      <div class="pane">
+      <div class="pane pane-only">
         <h1>Documentation</h1>
         <div class="pane-content">
 

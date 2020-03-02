@@ -200,8 +200,6 @@ public class TripResource extends AbstractFisholaResource {
 
         AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
 
-        // TODO: 13/01/2020 Implement ...
-
         existingTrip.setDay(new java.sql.Date(trip.date.getTime()));
         existingTrip.setStartTime(Time.valueOf(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault())));
         existingTrip.setEndTime(Time.valueOf(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault())));

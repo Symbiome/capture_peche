@@ -2,7 +2,7 @@
   <div class="credits page-with-header-and-footer shifted-background">
     <FisholaHeader/>
     <div class="page credits-page">
-      <div class="pane">
+      <div class="pane pane-only">
         <h1>Infos</h1>
         <div class="pane-content">
 

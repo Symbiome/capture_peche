@@ -2,46 +2,46 @@
   <div class="dashboard page-with-header-and-footer shifted-background">
     <FisholaHeader/>
     <div class="page dashboard-page">
-      <div class="dashboard-header">
+      <div class="pane pane-only">
         <h1>Tableau de bord</h1>
-      </div>
-      <div class="dashboard-content">
 
-        <h2><i class="icon-fish" />Mes poissons</h2>
-        <div class="placeholder">
-          Mes poissons
-        </div>
+        <div class="pane-content">
+          <h2><i class="icon-fish" />Mes poissons</h2>
+          <div class="placeholder">
+            Mes poissons
+          </div>
 
-        <h2><i class="icon-fishing" />Moyenne des captures</h2>
-        <span>12 captures en moyenne / sortie</span>
-        <div class="placeholder">
-          Moyenne des captures
-        </div>
+          <h2><i class="icon-fishing" />Moyenne des captures</h2>
+          <span>12 captures en moyenne / sortie</span>
+          <div class="placeholder">
+            Moyenne des captures
+          </div>
 
-        <h2><i class="icon-size" />Top 5 tailles</h2>
-        <div class="scroll">
-          <div class="item selected">Perche</div>
-          <div class="item">Brochet</div>
-          <div class="item">Truite</div>
-          <div class="item">Corégone</div>
-          <div class="item">Omble_chevalier</div>
-          <div class="item">Silure</div>
-        </div>
-        <div class="placeholder">
-          Top 5 tailles
-        </div>
+          <h2><i class="icon-size" />Top 5 tailles</h2>
+          <div class="scroll">
+            <div class="item selected">Perche</div>
+            <div class="item">Brochet</div>
+            <div class="item">Truite</div>
+            <div class="item">Corégone</div>
+            <div class="item">Omble_chevalier</div>
+            <div class="item">Silure</div>
+          </div>
+          <div class="placeholder">
+            Top 5 tailles
+          </div>
 
-        <h2><i class="icon-weight" />Top 5 poids</h2>
-        <div class="scroll">
-          <div class="item selected">Perche</div>
-          <div class="item">Brochet</div>
-          <div class="item">Truite</div>
-          <div class="item">Corégone</div>
-          <div class="item">Omble_chevalier</div>
-          <div class="item">Silure</div>
-        </div>
-        <div class="placeholder">
-          Top 5 poids
+          <h2><i class="icon-weight" />Top 5 poids</h2>
+          <div class="scroll">
+            <div class="item selected">Perche</div>
+            <div class="item">Brochet</div>
+            <div class="item">Truite</div>
+            <div class="item">Corégone</div>
+            <div class="item">Omble_chevalier</div>
+            <div class="item">Silure</div>
+          </div>
+          <div class="placeholder">
+            Top 5 poids
+          </div>
         </div>
 
       </div>
@@ -90,33 +90,7 @@ export default class Dashboard extends Vue {
 
   text-align:center;
 
-  .dashboard-header {
-
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    margin-top: 20px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 30px;
-
-    color: @gunmetal;
-
-    h1 {
-      margin-top: 0px;
-      margin-bottom: 30px;
-      height: 30px;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
-      color: @pelorous;
-      text-align: center;
-    }
-
-  }
-
-  .dashboard-content {
+  .pane-content {
 
     overflow: auto;
 
