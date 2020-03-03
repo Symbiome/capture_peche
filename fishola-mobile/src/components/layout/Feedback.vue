@@ -34,7 +34,7 @@
     <FisholaFooter shortcuts="back,credits,feedback"
                    button-icon="icon-send"
                    button-text="Envoyer"
-                   v-on:buttonClicked="sendFeedback"
+                   v-on:buttonClicked="sendClicked"
                    back-event="onBackButton"
                    v-on:onBackButton="closeFeedback"
                    selected="feedback" />
@@ -51,8 +51,11 @@ import FormRadio from '@/components/common/FormRadio.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 
 import FeedbackBean from '@/pojos/FeedbackBean.ts'
+import UserProfile from '@/pojos/UserProfile.ts';
 
 import ProfileService from '@/services/ProfileService';
+
+import html2canvas from 'html2canvas';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -97,12 +100,7 @@ export default class Feedback extends Vue {
 
   loadProfile() {
     ProfileService.getProfile()
-      .then(
-        this.profileLoaded,
-        () => {
-          this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-          router.push('/login');
-        });
+      .then(this.profileLoaded, () => this.display = true);
   }
 
   profileLoaded(profile:UserProfile) {
@@ -114,9 +112,28 @@ export default class Feedback extends Vue {
     this.display = false;
   }
 
-  sendFeedback() {
-    console.log("Ok, now send it!");
+  sendClicked() {
+
     this.closeFeedback();
+
+    if (this.model.withPicture) {
+      html2canvas(document.querySelector("#root"))
+        .then((canvas:any) => {
+          let pngPicture = canvas.toDataURL("image/png")
+          this.model.picture = pngPicture;
+          this.sendFeedback();
+        });
+    } else {
+      this.sendFeedback();
+    }
+
+  }
+
+  sendFeedback() {
+    ProfileService.sendFeedback(this.model)
+      .then(() => {
+        this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');
+      });
   }
 
 }

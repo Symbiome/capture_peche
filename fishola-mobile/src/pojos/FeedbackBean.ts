@@ -4,5 +4,6 @@ export default interface FeedbackBean {
     email?: string;
     description?: string;
     withPicture: boolean;
+    picture?: string;
 
 }

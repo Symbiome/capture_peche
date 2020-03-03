@@ -3,7 +3,9 @@
     <Toaster/>
     <Menu/>
     <Feedback/>
-    <router-view/>
+    <div id="root">
+      <router-view/>
+    </div>
   </div>
 </template>
 
@@ -89,6 +91,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
   color: @white;
   height: 100%;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
 }
 
 .page-with-header {

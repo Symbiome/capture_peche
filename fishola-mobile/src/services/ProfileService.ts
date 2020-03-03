@@ -1,5 +1,6 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
+import FeedbackBean from '@/pojos/FeedbackBean';
 import {UserSettings} from '@/pojos/BackendPojos';
 
 export default class ProfileService extends AbstractFisholaService {
@@ -85,6 +86,13 @@ export default class ProfileService extends AbstractFisholaService {
                         resolve();
                     },
                     reject)
+        });
+    }
+
+    static sendFeedback(feedback:FeedbackBean):Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.backendPut("/v1/feedback", feedback)
+                .then(resolve, reject);
         });
     }
 

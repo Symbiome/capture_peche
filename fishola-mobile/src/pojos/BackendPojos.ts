@@ -102,6 +102,9 @@ export interface UserSettings {
     promptSamples: boolean;
 }
 
+export interface FeedbackBean {
+}
+
 export interface Serializable {
 }
 
