@@ -1,5 +1,5 @@
 <template>
-  <div class="pastille filled" v-on:click="$root.$emit('toaster-warning', 'Work in progress');">
+  <div class="pastille filled" v-on:click="openFeedback">
     <i class="icon-faq"></i>
   </div>
 </template>
@@ -9,6 +9,10 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class FeedbackAnchor extends Vue {
+
+  openFeedback() {
+    this.$root.$emit('open-feedback');
+  }
 }
 </script>
 

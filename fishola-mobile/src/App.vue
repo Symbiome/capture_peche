@@ -2,6 +2,7 @@
   <div id="app">
     <Toaster/>
     <Menu/>
+    <Feedback/>
     <router-view/>
   </div>
 </template>
@@ -10,6 +11,7 @@
 
 import Toaster from '@/components/layout/Toaster.vue'
 import Menu from '@/components/layout/Menu.vue'
+import Feedback from '@/components/layout/Feedback.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -19,7 +21,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {
     Toaster,
-    Menu
+    Menu,
+    Feedback
   }
 })
 export default class App extends Vue {

@@ -48,7 +48,7 @@
           <i class="icon-info"/>
         </div>
 
-        <div class="item" v-on:click="wip">
+        <div class="item" v-on:click="openFeedback">
           <span>
             Des retours ?
           </span>
@@ -123,12 +123,13 @@ export default class Menu extends Vue {
   }
 
   closeMenu() {
+    this.$root.$emit('close-feedback');
     this.visibility = "menu-disappears";
   }
 
-  wip() {
-    // this.closeMenu();
-    this.$root.$emit('toaster-warning', 'Work in progress');
+  openFeedback() {
+    this.closeMenu();
+    this.$root.$emit('open-feedback');
   }
 
   goHome() {

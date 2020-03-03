@@ -78,6 +78,12 @@
       <i class="icon-files"></i>
     </div>
     <div class="footer-element pastille"
+         v-bind:class="selected=='feedback'?'filled':'unfilled'"
+         v-if="activeButtons['feedback']"
+         v-on:click="openFeedback">
+      <i class="icon-faq"></i>
+    </div>
+    <div class="footer-element pastille"
          v-if="activeButtons['blank']">
          <!-- spacer -->
     </div>
@@ -125,7 +131,8 @@ export default class FisholaFooter extends Vue {
     credits: false,
     documentation: false,
     settings: false,
-    profile: false
+    profile: false,
+    feedback: false
   };
 
   mounted() {
@@ -178,6 +185,7 @@ export default class FisholaFooter extends Vue {
 
   goCredits() {
     router.push('/credits');
+    this.$root.$emit('close-feedback');
   }
 
   goDocumentation() {
@@ -194,6 +202,10 @@ export default class FisholaFooter extends Vue {
 
   goSettings() {
     router.push('/settings');
+  }
+
+  openFeedback() {
+    this.$root.$emit('open-feedback');
   }
 
   giveup() {

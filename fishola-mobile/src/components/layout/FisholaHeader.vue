@@ -58,6 +58,7 @@ export default class FisholaHeader extends Vue {
   }
 
   goProfile() {
+    this.$root.$emit('close-feedback');
     router.push('/profile');
   }
 
