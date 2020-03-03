@@ -4,10 +4,33 @@
       <div class="pane">
         <h1>Des retours ?</h1>
         <div class="pane-content">
-            Un retour ? Une remarque ? Une envie ?
+          <p>Si vous voyez une anomalie ou si vous avez simplement une remarque à faire, remplissez ce formulaire pour nous faire parvenir votre avis.</p>
+          <p>N'hésitez pas à en abuser !</p>
+
+          <FormRadio name="category"
+                     label="Catégorie"
+                     v-bind:options="categories"
+                     v-model="model.categoryId"/>
+          <FormInput name="email"
+                     label="E-mail (optionnel)"
+                     placeholder="Indiquez votre e-mail pour rester informé"
+                     v-model="model.email"/>
+          <FormTextarea name="description"
+                        label="Description"
+                        placeholder="Écrivez une description"
+                        v-model="model.description"/>
+          <div class="form-checkbox">
+            <input type="checkbox"
+                   id="feedback-with-picture"
+                   class="pelorous-checkbox"
+                   v-model="model.withPicture" />
+            <label for="feedback-with-picture"></label>
+            <label for="feedback-with-picture" class="real-label">Inclure une copie d'écran</label>
+          </div>
+
         </div>
       </div>
-    </div>           
+    </div>
     <FisholaFooter shortcuts="back,credits,feedback"
                    button-icon="icon-send"
                    button-text="Envoyer"
@@ -23,17 +46,36 @@
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
+import FormInput from '@/components/common/FormInput.vue'
+import FormRadio from '@/components/common/FormRadio.vue'
+import FormTextarea from '@/components/common/FormTextarea.vue'
+
+import FeedbackBean from '@/pojos/FeedbackBean.ts'
+
+import ProfileService from '@/services/ProfileService';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
     FisholaHeader,
-    FisholaFooter
+    FisholaFooter,
+    FormInput,
+    FormRadio,
+    FormTextarea
   }
 })
 export default class Feedback extends Vue {
 
   display = false;
+
+  model:FeedbackBean = {categoryId: 'BUG', withPicture: false};
+
+  categories:any[] = [
+    {id:'BUG', name:'Bug'},
+    {id:'ERGO', name:'Ergonomie'},
+    {id:'OTHER', name:'Autre'}
+  ];
 
   created() {
   }
@@ -49,6 +91,22 @@ export default class Feedback extends Vue {
   }
 
   openFeedback() {
+    this.model = { categoryId: 'BUG', withPicture: false };
+    this.loadProfile();
+  }
+
+  loadProfile() {
+    ProfileService.getProfile()
+      .then(
+        this.profileLoaded,
+        () => {
+          this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+          router.push('/login');
+        });
+  }
+
+  profileLoaded(profile:UserProfile) {
+    this.model.email = profile.email;
     this.display = true;
   }
 
@@ -88,6 +146,24 @@ export default class Feedback extends Vue {
 
     .pane {
       margin-top: 0px;
+
+      .pane-content {
+
+        p {
+          color: @gunmetal;
+          font-size: 12px;
+          line-height: 16px;
+          text-align: center;
+        }
+
+        .form-checkbox {
+          width: 100%;
+
+          .real-label {
+            margin-left: 10px;
+          }
+        }
+      }
     }
 
   }
