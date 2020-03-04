@@ -14,6 +14,7 @@
             <FormToggle v-model="settings.promptSamples" />
           </div>
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,settings,profile"

@@ -28,6 +28,7 @@
             </div>
 
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
