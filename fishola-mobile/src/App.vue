@@ -74,6 +74,8 @@ body {
   margin: 0px;
   height: 100%;
   overflow: hidden;
+  overflow-x: hidden;
+  width: 100vw;
 }
 
 html {
@@ -91,6 +93,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
   color: @white;
   height: 100%;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 #root {

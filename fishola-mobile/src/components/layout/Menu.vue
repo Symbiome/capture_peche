@@ -211,7 +211,8 @@ export default class Menu extends Vue {
 
   .menu {
     background-color: @pelorous;
-    position:absolute;
+    position: fixed;
+    top: 0px;
     width: 100vw;
     height: 100vh;
     z-index: 100;
