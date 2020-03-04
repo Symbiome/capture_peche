@@ -73,7 +73,7 @@ export default class FeedbackModal extends Vue {
 
   display = false;
 
-  model:Feedback = {category: 'BUG'};
+  model:Feedback = { category: 'BUG', id: 'FAKE' };
   withPicture:boolean = false;
 
   categories:any[] = [
@@ -96,7 +96,7 @@ export default class FeedbackModal extends Vue {
   }
 
   openFeedback() {
-    this.model = { category: 'BUG' };
+    this.model = { category: 'BUG', id: 'FAKE' };
     this.loadProfile();
   }
 
@@ -120,7 +120,7 @@ export default class FeedbackModal extends Vue {
     this.closeFeedback();
 
     if (this.withPicture) {
-      let rootElement = document.querySelector("#root");
+      let rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
       html2canvas(rootElement)
         .then((canvas:any) => {
           let pngPicture = canvas.toDataURL("image/png")
@@ -131,6 +131,10 @@ export default class FeedbackModal extends Vue {
       this.sendFeedback();
     }
 
+  }
+
+  castRootElement(whatever:any):HTMLElement {
+    return whatever;
   }
 
   addEnvInfo() {
