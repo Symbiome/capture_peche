@@ -1,7 +1,6 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
-import FeedbackBean from '@/pojos/FeedbackBean';
-import {UserSettings} from '@/pojos/BackendPojos';
+import {UserSettings, FeedbackBean} from '@/pojos/BackendPojos';
 
 export default class ProfileService extends AbstractFisholaService {
 

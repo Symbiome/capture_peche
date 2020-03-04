@@ -29,11 +29,11 @@ public class FeedbackResource {
     @Produces(MediaType.APPLICATION_JSON)
     public void newFeedback(FeedbackBean bean) {
 
-        log.info("Réception d'un feedback " + bean);
+        log.info("Réception d'un feedback immuable " + bean);
 
-        if (bean.withPicture && bean.picture.isPresent()) {
+        if (bean.screenshot().isPresent()) {
             // tokenize the data
-            String[] contentSplitted = bean.picture.get().split(",");
+            String[] contentSplitted = bean.screenshot().get().split(",");
             String base64Image = contentSplitted[1];
 
             byte[] bytes = Base64.getDecoder().decode(base64Image);

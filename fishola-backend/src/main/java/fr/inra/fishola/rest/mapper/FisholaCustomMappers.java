@@ -17,24 +17,34 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.entities.enums.Gender;
+import fr.inra.fishola.rest.feedback.FeedbackBean;
+import fr.inra.fishola.rest.feedback.ImmutableFeedbackBean;
 import fr.inra.fishola.rest.security.ImmutableUserProfile;
 import fr.inra.fishola.rest.security.ImmutableUserSettings;
 import fr.inra.fishola.rest.security.UserProfile;
 import fr.inra.fishola.rest.security.UserSettings;
 import io.quarkus.jackson.ObjectMapperCustomizer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
+
+    private static final Log log = LogFactory.getLog(FisholaCustomMappers.class);
 
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
@@ -68,7 +78,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
-    static Integer readInteger(TreeNode node, String name) {
+    static Integer readIntegerOrNull(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         if (subNode == null || (subNode instanceof NullNode) || subNode.isMissingNode()) {
             return null;
@@ -88,13 +98,67 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
-    static String readText(TreeNode node, String name) {
+    static Optional<Integer> readInteger(TreeNode node, String name) {
+        Integer value = readIntegerOrNull(node, name);
+        Optional<Integer> result = Optional.ofNullable(value);
+        return result;
+    }
+
+    static String readTextOrNull(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         if (subNode == null || (subNode instanceof NullNode) || subNode.isMissingNode()) {
             return null;
         }
-        String result = ((TextNode) subNode).textValue();
+        String value = ((TextNode) subNode).textValue();
+        String result = StringUtils.trimToNull(value);
         return result;
+    }
+
+    static Optional<String> readText(TreeNode node, String name) {
+        String value = readTextOrNull(node, name);
+        Optional<String> result = Optional.ofNullable(value);
+        return result;
+    }
+
+    public static class FeedbackBeanDeserializer extends StdDeserializer<FeedbackBean> {
+
+        protected FeedbackBeanDeserializer() {
+            super(FeedbackBean.class);
+        }
+
+        @Override
+        public FeedbackBean deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+            TreeNode node = jp.readValueAsTree();
+            ImmutableFeedbackBean.Builder builder = ImmutableFeedbackBean.builder();
+            String category = readTextOrNull(node, "category");
+            Preconditions.checkArgument(StringUtils.isNotEmpty(category), "La catégorie est obligatoire");
+            builder.category(category);
+            readText(node, "userId").ifPresent(builder::userId);
+            readText(node, "email").ifPresent(builder::email);
+            readText(node, "description").ifPresent(builder::description);
+            readText(node, "screenshot").ifPresent(builder::screenshot);
+            readText(node, "browser").ifPresent(builder::browser);
+            readText(node, "os").ifPresent(builder::os);
+            readText(node, "platform").ifPresent(builder::platform);
+            readText(node, "screenResolution").ifPresent(builder::screenResolution);
+            readText(node, "displaySize").ifPresent(builder::displaySize);
+            readText(node, "locale").ifPresent(builder::locale);
+            readText(node, "version").ifPresent(builder::version);
+            readText(node, "location").ifPresent(builder::location);
+            readText(node, "locationTitle").ifPresent(builder::locationTitle);
+            readText(node, "date").ifPresent(dateString -> {
+                DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
+                try {
+                    Date date = iso8601Format.parse(dateString);
+                    builder.date(date);
+                } catch (Exception eee) {
+                    log.error("Unable to read date", eee);
+                }
+            });
+            FeedbackBean result = builder.build();
+            return result;
+        }
     }
 
     public static class PaginationParameterDeserializer extends StdDeserializer<PaginationParameter> {
@@ -112,7 +176,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             List<PaginationOrder> orders = new LinkedList<>();
             for (JsonNode n : (ArrayNode) orderClausesNode) {
                 // TODO AThimel 13/01/2020 : Ça aurait été mieux de réutiliser le DeserializationContext
-                String clause = readText(n, "clause");
+                String clause = readTextOrNull(n, "clause");
                 boolean desc = readBoolean(n, "desc");
                 PaginationOrder order = new PaginationOrder(clause, desc);
                 orders.add(order);
@@ -137,19 +201,19 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         public UserProfile deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             TreeNode node = jp.readValueAsTree();
 
-            String firstName = readText(node, "firstName");
-            String email = readText(node, "email");
-            String lastName = readText(node, "lastName");
-            Integer birthYear = readInteger(node, "birthYear");
-            String genderString = readText(node, "gender");
+            String firstName = readTextOrNull(node, "firstName");
+            String email = readTextOrNull(node, "email");
+            Optional<String> lastName = readText(node, "lastName");
+            Optional<Integer> birthYear = readInteger(node, "birthYear");
+            Optional<String> genderString = readText(node, "gender");
 
             ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder();
 
             builder.firstName(firstName);
             builder.email(email);
-            Optional.ofNullable(StringUtils.trimToNull(lastName)).ifPresent(builder::lastName);
-            Optional.ofNullable(birthYear).ifPresent(builder::birthYear);
-            Optional.ofNullable(StringUtils.trimToNull(genderString)).map(Gender::valueOf).ifPresent(builder::gender);
+            lastName.ifPresent(builder::lastName);
+            birthYear.ifPresent(builder::birthYear);
+            genderString.map(Gender::valueOf).ifPresent(builder::gender);
 
             UserProfile result = builder.build();
             return result;
@@ -204,6 +268,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             addDeserializer(PaginationParameter.class, new PaginationParameterDeserializer());
             addDeserializer(UserProfile.class, new UserProfileDeserializer());
             addDeserializer(UserSettings.class, new UserSettingsDeserializer());
+            addDeserializer(FeedbackBean.class, new FeedbackBeanDeserializer());
         }
 
     }

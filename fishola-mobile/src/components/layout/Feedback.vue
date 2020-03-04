@@ -10,7 +10,7 @@
           <FormRadio name="category"
                      label="Catégorie"
                      v-bind:options="categories"
-                     v-model="model.categoryId"/>
+                     v-model="model.category"/>
           <FormInput name="email"
                      label="E-mail (optionnel)"
                      placeholder="Indiquez votre e-mail pour rester informé"
@@ -23,7 +23,7 @@
             <input type="checkbox"
                    id="feedback-with-picture"
                    class="pelorous-checkbox"
-                   v-model="model.withPicture" />
+                   v-model="withPicture" />
             <label for="feedback-with-picture"></label>
             <label for="feedback-with-picture" class="real-label">Inclure une copie d'écran</label>
           </div>
@@ -50,7 +50,7 @@ import FormInput from '@/components/common/FormInput.vue'
 import FormRadio from '@/components/common/FormRadio.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 
-import FeedbackBean from '@/pojos/FeedbackBean.ts'
+import {FeedbackBean} from '@/pojos/BackendPojos.ts';
 import UserProfile from '@/pojos/UserProfile.ts';
 
 import ProfileService from '@/services/ProfileService';
@@ -72,7 +72,8 @@ export default class Feedback extends Vue {
 
   display = false;
 
-  model:FeedbackBean = {categoryId: 'BUG', withPicture: false};
+  model:FeedbackBean = {category: 'BUG'};
+  withPicture:boolean = false;
 
   categories:any[] = [
     {id:'BUG', name:'Bug'},
@@ -94,7 +95,7 @@ export default class Feedback extends Vue {
   }
 
   openFeedback() {
-    this.model = { categoryId: 'BUG', withPicture: false };
+    this.model = { category: 'BUG' };
     this.loadProfile();
   }
 
@@ -105,6 +106,7 @@ export default class Feedback extends Vue {
 
   profileLoaded(profile:UserProfile) {
     this.model.email = profile.email;
+    this.model.userId = profile.email;
     this.display = true;
   }
 
@@ -116,11 +118,12 @@ export default class Feedback extends Vue {
 
     this.closeFeedback();
 
-    if (this.model.withPicture) {
-      html2canvas(document.querySelector("#root"))
+    if (this.withPicture) {
+      let rootElement = document.querySelector("#root");
+      html2canvas(rootElement)
         .then((canvas:any) => {
           let pngPicture = canvas.toDataURL("image/png")
-          this.model.picture = pngPicture;
+          this.model.screenshot = pngPicture;
           this.sendFeedback();
         });
     } else {
@@ -129,7 +132,48 @@ export default class Feedback extends Vue {
 
   }
 
+  addEnvInfo() {
+    this.model.browser = this.getBrowserNameAndVersion();
+    this.model.os = this.getOperatingSystemNameAndVersion();
+    this.model.platform = navigator.platform;
+    this.model.screenResolution = screen.width + "x" + screen.height;
+    this.model.displaySize = window.innerWidth + "x" + window.innerHeight;
+    this.model.locale = navigator.language;
+  }
+
+  getOperatingSystemNameAndVersion() {
+    let os;
+    let userAgent = navigator.userAgent;
+    if (userAgent.indexOf("Windows NT 10.0")!=-1) os="Windows 10";
+    if (userAgent.indexOf("Windows NT 6.3")!=-1) os="Windows 8.1";
+    if (userAgent.indexOf("Windows NT 6.2")!=-1) os="Windows 8";
+    if (userAgent.indexOf("Windows NT 6.1")!=-1) os="Windows 7";
+    if (userAgent.indexOf("Windows NT 6.0")!=-1) os="Windows Vista";
+    if (userAgent.indexOf("Windows NT 5.1")!=-1) os="Windows XP";
+    if (userAgent.indexOf("Windows NT 5.0")!=-1) os="Windows 2000";
+    if (userAgent.indexOf("Mac")!=-1) os="Mac/iOS";
+    if (userAgent.indexOf("X11")!=-1) os="UNIX";
+    if (userAgent.indexOf("Linux")!=-1) os="Linux";
+    return os;
+  }
+
+  getBrowserNameAndVersion() {
+    var ua = navigator.userAgent, tem,
+        M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d]+)/i) || [];
+    if(/trident/i.test(M[1])){
+      tem=  /\brv[ :]+(\d+(\.\d+)?)/g.exec(ua) || [];
+      return 'IE '+(tem[1] || '');
+    }
+    M= M[2]? [M[1], M[2]]:[navigator.appName, navigator.appVersion, '-?'];
+    if((tem= ua.match(/version\/([\d]+)/i))!= null) M[2]= tem[1];
+    return M.join(' ');
+  }
+
   sendFeedback() {
+    this.addEnvInfo();
+    this.model.date = new Date();
+    this.model.location = window.location.href;
+    this.model.locationTitle = window.document.title;
     ProfileService.sendFeedback(this.model)
       .then(() => {
         this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');

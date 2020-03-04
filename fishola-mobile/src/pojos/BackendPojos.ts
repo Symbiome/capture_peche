@@ -103,6 +103,21 @@ export interface UserSettings {
 }
 
 export interface FeedbackBean {
+    category: string;
+    userId?: string;
+    email?: string;
+    description?: string;
+    screenshot?: string;
+    browser?: string;
+    os?: string;
+    platform?: string;
+    screenResolution?: string;
+    displaySize?: string;
+    locale?: string;
+    version?: string;
+    date?: Date;
+    location?: string;
+    locationTitle?: string;
 }
 
 export interface Serializable {
