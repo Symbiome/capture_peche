@@ -20,10 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -43,7 +40,7 @@ public class FeedbackResource {
 
         log.info("Réception d'un feedback " + bean);
 
-        Optional<File> screenshotFile = Optional.empty();
+        Optional<byte[]> screenshotBytes = Optional.empty();
 
         if (bean.screenshot().isPresent()) {
             // tokenize the data
@@ -56,28 +53,23 @@ public class FeedbackResource {
                 BufferedImage image = ImageIO.read(bis);
                 bis.close();
 
-                File tempFile = File.createTempFile("feedback-", ".png");
-                FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+                byte[] pngBytes = ImageHelper.imageToBytes(image, "png", .6f);
 
-                ImageHelper.imageToStream(image, "png", .6f, fileOutputStream);
-
-                log.info("Capture créée dans " + tempFile.getAbsolutePath());
-
-                screenshotFile = Optional.of(tempFile);
+                screenshotBytes = Optional.of(pngBytes);
 
             } catch (IOException ioe) {
                 throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
             }
         }
 
-        FisholaMail fisholaMail = toFisholaMail(bean, screenshotFile);
+        FisholaMail fisholaMail = toFisholaMail(bean, screenshotBytes);
         mailService.sendMail(fisholaMail);
 
     }
 
-    protected FisholaMail toFisholaMail(Feedback feedback, Optional<File> screenshotFile) {
+    protected FisholaMail toFisholaMail(Feedback feedback, Optional<byte[]> screenshotBytes) {
         String description = feedback.description().orElse("Pas de description");
-        String screenshot = screenshotFile.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
+        String screenshot = screenshotBytes.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
                 .orElse("L'utilisation n'a pas fournit de capture d'écran");
 
         ImmutableMap<String, Object> args = ImmutableMap.of(
@@ -91,19 +83,14 @@ public class FeedbackResource {
                 args);
         builder.subject("Nouveau feedback : " + feedback.category());
         builder.addTos("thimel@codelutin.com");
-        if (screenshotFile.isPresent()) {
-            try {
-                File file = screenshotFile.get();
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
-                        .bytes(bytes)
-                        .name(String.format("feedback-%s.png", feedback.id().toString()))
-                        .type(com.google.common.net.MediaType.PNG)
-                        .build();
-                builder.addAttachments(attachment);
-            } catch (IOException ioe) {
-                log.error(ioe);
-            }
+        if (screenshotBytes.isPresent()) {
+            byte[] bytes = screenshotBytes.get();
+            FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
+                    .bytes(bytes)
+                    .name(String.format("feedback-%s.png", feedback.id().toString()))
+                    .type(com.google.common.net.MediaType.PNG)
+                    .build();
+            builder.addAttachments(attachment);
         }
         FisholaMail result = builder.build();
         return result;
