@@ -5,16 +5,19 @@
       <div class="pane pane-only">
         <h1>Paramètres</h1>
         <div class="pane-content">
+
           <div class="settings-row" v-if="settings">
             <span>Renseigner le poids des captures</span>
             <FormToggle v-model="settings.promptWeight" />
           </div>
+
           <div class="settings-row" v-if="settings">
             <span>Effectuer des prélèvements</span>
             <FormToggle v-model="settings.promptSamples" />
           </div>
+
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,settings,profile"

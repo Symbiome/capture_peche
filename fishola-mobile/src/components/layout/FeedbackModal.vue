@@ -28,8 +28,8 @@
             <label for="feedback-with-picture" class="real-label">Inclure une copie d'écran</label>
           </div>
 
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,credits,feedback"
@@ -211,10 +211,11 @@ export default class FeedbackModal extends Vue {
 
       .pane-content {
 
+        color: @gunmetal;
+        font-size: 12px;
+        line-height: 16px;
+
         p {
-          color: @gunmetal;
-          font-size: 12px;
-          line-height: 16px;
           text-align: center;
         }
 

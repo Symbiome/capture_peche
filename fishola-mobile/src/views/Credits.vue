@@ -6,29 +6,31 @@
         <h1>Infos</h1>
         <div class="pane-content">
 
-            <div class="credits-row">
-                <p v-for="p in paragraphs"
-                   v-bind:key="p"
-                   class="credits-p">
-                  {{p}}
-                </p>
-            </div>
-            <div v-if="link" class="credits-link">
-              <a v-bind:href="link" target="_blank">
-                Plus d'informations
-                <button>
-                  <i class="icon-arrow"/>
-                </button>
-              </a>
-            </div>
-            <div class="credits-logos">
-              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.png'/></a>
-              <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
-              <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.png'/></a>
-            </div>
+          <div class="credits-row">
+            <p v-for="p in paragraphs"
+               v-bind:key="p"
+               class="credits-p">
+              {{p}}
+            </p>
+          </div>
 
+          <div v-if="link" class="credits-link">
+            <a v-bind:href="link" target="_blank">
+              Plus d'informations
+              <button>
+                <i class="icon-arrow"/>
+              </button>
+            </a>
+          </div>
+
+          <div class="credits-logos">
+            <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
+            <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
+            <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.png'/></a>
+          </div>
+
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
@@ -121,8 +123,8 @@ export default class Credits extends Vue {
     margin-top: 30px;
     text-align: center;
     img {
-      max-width: 200px;
-      max-height: 70px;
+      width: 200px;
+      margin-bottom: 10px;
     }
   }
 }

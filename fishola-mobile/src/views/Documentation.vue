@@ -6,15 +6,17 @@
         <h1>Documentation</h1>
         <div class="pane-content">
 
-            <div class="documentation-row"
-                 v-for="doc in elements"
-                 v-bind:key="doc.id">
-              <span>{{doc.name}}</span>
-              <a v-bind:href="doc.url"><i class="icon-download"/></a>
-            </div>
+          <div class="documentation-row"
+               v-for="doc in elements"
+               v-bind:key="doc.id">
+            <span>{{doc.name}}</span>
+            <a v-bind:href="doc.url">
+              <i class="icon-download"/>
+            </a>
+          </div>
 
+          <div class="bottom-page-spacer"></div>
         </div>
-        <div class="bottom-page-spacer"></div>
       </div>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
