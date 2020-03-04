@@ -142,8 +142,8 @@ export default class FeedbackModal extends Vue {
   }
 
   getOperatingSystemNameAndVersion() {
-    let os;
     let userAgent = navigator.userAgent;
+    let os = userAgent;
     if (userAgent.indexOf("Windows NT 10.0")!=-1) os="Windows 10";
     if (userAgent.indexOf("Windows NT 6.3")!=-1) os="Windows 8.1";
     if (userAgent.indexOf("Windows NT 6.2")!=-1) os="Windows 8";
@@ -154,6 +154,7 @@ export default class FeedbackModal extends Vue {
     if (userAgent.indexOf("Mac")!=-1) os="Mac/iOS";
     if (userAgent.indexOf("X11")!=-1) os="UNIX";
     if (userAgent.indexOf("Linux")!=-1) os="Linux";
+    if (userAgent.indexOf("Android")!=-1) os="Android";
     return os;
   }
 
