@@ -165,7 +165,7 @@
             <class>fr.inra.fishola.entities.tables.pojos.Editorial</class>
             <class>fr.inra.fishola.rest.editorial.DocumentationLight</class>
             <class>fr.inra.fishola.rest.security.UserSettings</class>
-            <class>fr.inra.fishola.rest.feedback.FeedbackBean</class>
+            <class>fr.inra.fishola.rest.feedback.Feedback</class>
           </classes>
           <outputKind>module</outputKind>
           <outputFileType>implementationFile</outputFileType>

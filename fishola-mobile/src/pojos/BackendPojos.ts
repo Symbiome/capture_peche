@@ -102,7 +102,7 @@ export interface UserSettings {
     promptSamples: boolean;
 }
 
-export interface FeedbackBean {
+export interface Feedback {
     category: string;
     userId?: string;
     email?: string;

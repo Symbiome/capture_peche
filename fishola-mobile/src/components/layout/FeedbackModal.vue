@@ -50,7 +50,7 @@ import FormInput from '@/components/common/FormInput.vue'
 import FormRadio from '@/components/common/FormRadio.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
 
-import {FeedbackBean} from '@/pojos/BackendPojos.ts';
+import {Feedback} from '@/pojos/BackendPojos.ts';
 import UserProfile from '@/pojos/UserProfile.ts';
 
 import ProfileService from '@/services/ProfileService';
@@ -68,11 +68,11 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FormTextarea
   }
 })
-export default class Feedback extends Vue {
+export default class FeedbackModal extends Vue {
 
   display = false;
 
-  model:FeedbackBean = {category: 'BUG'};
+  model:Feedback = {category: 'BUG'};
   withPicture:boolean = false;
 
   categories:any[] = [
@@ -173,7 +173,6 @@ export default class Feedback extends Vue {
     this.addEnvInfo();
     this.model.date = new Date();
     this.model.location = window.location.href;
-    this.model.locationTitle = window.document.title;
     ProfileService.sendFeedback(this.model)
       .then(() => {
         this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');

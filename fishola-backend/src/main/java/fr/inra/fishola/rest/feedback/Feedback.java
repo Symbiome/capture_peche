@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.Optional;
 
 @Value.Immutable
-@JsonSerialize(as = ImmutableFeedbackBean.class)
-public interface FeedbackBean {
+@JsonSerialize(as = ImmutableFeedback.class)
+public interface Feedback {
 
     String category();
 

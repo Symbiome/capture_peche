@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouveau feedback : {{feedback.category}}</title>
+</head>
+<body>
+    <p>Bonjour,</p>
+
+    <p>Sur l'application Fishola, un utilisateur a fait un retour dans la catégorie '{{feedback.category}}' :</p>
+    <pre style="border: 1px solid black; background-color: #F2F2F2; padding: 20px;">{{description}}</pre>
+
+    <h2>Capture d'écran</h2>
+    <ul>
+        <li>{{screenshotFilePath}}</li>
+    </ul>
+
+    <h2>Informations concernant l'utilisateur</h2>
+    <ul>
+        <li>userId : {{feedback.userId}}</li>
+        <li>email : {{feedback.email}}</li>
+        <li>date : {{feedback.date}}</li>
+    </ul>
+
+    <h2>Informations sur l'application</h2>
+    <ul>
+        <li>version : {{feedback.version}}</li>
+        <li>location : {{feedback.location}}</li>
+        <li>displaySize : {{feedback.displaySize}}</li>
+    </ul>
+
+    <h2>Informations techniques</h2>
+    <ul>
+        <li>browser : {{feedback.browser}}</li>
+        <li>os : {{feedback.os}}</li>
+        <li>platform : {{feedback.platform}}</li>
+        <li>screenResolution : {{feedback.screenResolution}}</li>
+        <li>locale : {{feedback.locale}}</li>
+    </ul>
+
+</body>
+</html>

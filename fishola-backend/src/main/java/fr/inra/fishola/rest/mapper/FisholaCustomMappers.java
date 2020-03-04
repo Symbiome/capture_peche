@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Preconditions;
 import fr.inra.fishola.entities.enums.Gender;
-import fr.inra.fishola.rest.feedback.FeedbackBean;
-import fr.inra.fishola.rest.feedback.ImmutableFeedbackBean;
+import fr.inra.fishola.rest.feedback.Feedback;
+import fr.inra.fishola.rest.feedback.ImmutableFeedback;
 import fr.inra.fishola.rest.security.ImmutableUserProfile;
 import fr.inra.fishola.rest.security.ImmutableUserSettings;
 import fr.inra.fishola.rest.security.UserProfile;
@@ -120,16 +120,16 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
-    public static class FeedbackBeanDeserializer extends StdDeserializer<FeedbackBean> {
+    public static class FeedbackBeanDeserializer extends StdDeserializer<Feedback> {
 
         protected FeedbackBeanDeserializer() {
-            super(FeedbackBean.class);
+            super(Feedback.class);
         }
 
         @Override
-        public FeedbackBean deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        public Feedback deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             TreeNode node = jp.readValueAsTree();
-            ImmutableFeedbackBean.Builder builder = ImmutableFeedbackBean.builder();
+            ImmutableFeedback.Builder builder = ImmutableFeedback.builder();
             String category = readTextOrNull(node, "category");
             Preconditions.checkArgument(StringUtils.isNotEmpty(category), "La catégorie est obligatoire");
             builder.category(category);
@@ -156,7 +156,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
                     log.error("Unable to read date", eee);
                 }
             });
-            FeedbackBean result = builder.build();
+            Feedback result = builder.build();
             return result;
         }
     }
@@ -268,7 +268,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             addDeserializer(PaginationParameter.class, new PaginationParameterDeserializer());
             addDeserializer(UserProfile.class, new UserProfileDeserializer());
             addDeserializer(UserSettings.class, new UserSettingsDeserializer());
-            addDeserializer(FeedbackBean.class, new FeedbackBeanDeserializer());
+            addDeserializer(Feedback.class, new FeedbackBeanDeserializer());
         }
 
     }
