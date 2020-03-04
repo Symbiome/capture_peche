@@ -4,11 +4,14 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.MediaType;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -19,6 +22,7 @@ import javax.mail.Transport;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.Properties;
@@ -79,12 +83,33 @@ public class MailService {
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(mimeBodyPart);
 
+            for (FisholaMailAttachment attachment : fisholaMail.getAttachments()) {
+                MimeBodyPart attachmentPart = toAttachmentPart(attachment);
+                multipart.addBodyPart(attachmentPart);
+            }
+
             message.setContent(multipart);
 
         } catch (MessagingException me) {
             throw new FisholaTechnicalException("Unable to build MimeMessage", me);
         }
         return message;
+    }
+
+    protected MimeBodyPart toAttachmentPart(FisholaMailAttachment attachment) throws MessagingException {
+
+        byte[] attachmentBytes = attachment.getBytes();
+        MediaType attachmentType = attachment.getType();
+        String attachmentName = attachment.getName();
+
+        DataSource attachmentDataSource = new ByteArrayDataSource(attachmentBytes, attachmentType.toString());
+
+        MimeBodyPart attachmentPart = new MimeBodyPart();
+        attachmentPart.setDisposition("attachment");
+        attachmentPart.setFileName(attachmentName);
+        attachmentPart.setDataHandler(new DataHandler(attachmentDataSource));
+
+        return attachmentPart;
     }
 
     public void sendMail(FisholaMail mail) {

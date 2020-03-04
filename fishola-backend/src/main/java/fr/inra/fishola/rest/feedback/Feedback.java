@@ -5,10 +5,16 @@ import org.immutables.value.Value;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableFeedback.class)
 public interface Feedback {
+
+    @Value.Derived
+    default UUID id() {
+        return UUID.randomUUID();
+    };
 
     String category();
 

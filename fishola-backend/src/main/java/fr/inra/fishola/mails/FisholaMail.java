@@ -16,6 +16,11 @@ public interface FisholaMail {
 
     String getBody();
 
+    @Value.Default
+    default ImmutableSet<FisholaMailAttachment> getAttachments() {
+        return ImmutableSet.of();
+    }
+
     @Value.Check
     default void check() {
         Preconditions.checkArgument(!getTos().isEmpty(), "Il faut au moins un destinataire");

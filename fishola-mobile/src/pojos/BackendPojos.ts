@@ -103,6 +103,7 @@ export interface UserSettings {
 }
 
 export interface Feedback {
+    id: string;
     category: string;
     userId?: string;
     email?: string;

@@ -3,7 +3,9 @@ package fr.inra.fishola.rest.feedback;
 import com.google.common.collect.ImmutableMap;
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.mails.FisholaMail;
+import fr.inra.fishola.mails.FisholaMailAttachment;
 import fr.inra.fishola.mails.ImmutableFisholaMail;
+import fr.inra.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inra.fishola.mails.MailService;
 import fr.inra.fishola.rest.ImageHelper;
 import org.apache.commons.logging.Log;
@@ -21,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -38,7 +41,7 @@ public class FeedbackResource {
     @Produces(MediaType.APPLICATION_JSON)
     public void newFeedback(Feedback bean) {
 
-        log.info("Réception d'un feedback immuable " + bean);
+        log.info("Réception d'un feedback " + bean);
 
         Optional<File> screenshotFile = Optional.empty();
 
@@ -73,16 +76,35 @@ public class FeedbackResource {
     }
 
     protected FisholaMail toFisholaMail(Feedback feedback, Optional<File> screenshotFile) {
+        String description = feedback.description().orElse("Pas de description");
+        String screenshot = screenshotFile.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
+                .orElse("L'utilisation n'a pas fournit de capture d'écran");
+
         ImmutableMap<String, Object> args = ImmutableMap.of(
                 "feedback", feedback,
-                "description", feedback.description().orElse("Pas de description"),
-                "screenshotFilePath", screenshotFile.map(File::getAbsolutePath).orElse("L'utilisation n'a pas fournit de capture d'écran")
+                "descriptionText", description,
+                "screenshotText", screenshot
         );
+
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/new-feedback.html",
                 args);
         builder.subject("Nouveau feedback : " + feedback.category());
         builder.addTos("thimel@codelutin.com");
+        if (screenshotFile.isPresent()) {
+            try {
+                File file = screenshotFile.get();
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
+                        .bytes(bytes)
+                        .name(String.format("feedback-%s.png", feedback.id().toString()))
+                        .type(com.google.common.net.MediaType.PNG)
+                        .build();
+                builder.addAttachments(attachment);
+            } catch (IOException ioe) {
+                log.error(ioe);
+            }
+        }
         FisholaMail result = builder.build();
         return result;
     }
