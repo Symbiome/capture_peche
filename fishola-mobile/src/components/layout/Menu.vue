@@ -186,7 +186,7 @@ export default class Menu extends Vue {
   }
 
   .menu-disappears {
-    animation-duration: 0.5s;
+    animation-duration: 0.2s;
     animation-name: disappear;
 
     left: calc(100vw);
@@ -198,7 +198,7 @@ export default class Menu extends Vue {
   }
 
   .menu-visible {
-    animation-duration: 0.5s;
+    animation-duration: 0.2s;
     animation-name: appear;
 
     left: 0px;
