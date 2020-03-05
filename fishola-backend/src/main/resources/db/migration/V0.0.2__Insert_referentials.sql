@@ -5,11 +5,11 @@ INSERT INTO lake (name, latitude, longitude, export_as) VALUES
     ('Lac d''Aiguebelette', 45.5508, 5.8015, 'Aiguebelette');
 
 INSERT INTO species (name, built_in, export_as) VALUES
-    ('Omble chevalier', true, 'Omble chevalier'),
-    ('Corégone', true, 'Corégone'),
-    ('Brochet', true, 'Brochet'),
-    ('Perche', true, 'Perche'),
-    ('Truite', true, 'Truite');
+    ('Omble chevalier', true, 'omble chevalier'),
+    ('Corégone', true, 'coregone'),
+    ('Brochet', true, 'brochet'),
+    ('Perche', true, 'perche'),
+    ('Truite', true, 'truite');
 
 INSERT INTO weather (name, export_as) VALUES
     ('Ensoleillé', 'Ensoleillé'),

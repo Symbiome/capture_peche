@@ -33,3 +33,4 @@ doc/icons/.fontcustom-manifest.json
 
 # Log files
 /*/npm-debug.log*
+/**/.attach_pid*

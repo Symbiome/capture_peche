@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class TripBean {
@@ -17,7 +18,7 @@ public class TripBean {
     public TripType type;
     public String name;
     public UUID lakeId;
-    public List<UUID> speciesIds;
+    public Set<String> speciesIds;
     public Date date;
     public Date startedAt;
     public Date finishedAt;

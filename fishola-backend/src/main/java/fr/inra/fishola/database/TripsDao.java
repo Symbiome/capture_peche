@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Singleton
@@ -38,7 +39,7 @@ public class TripsDao extends AbstractFisholaDao {
         });
     }
 
-    public int setSpecies(UUID tripId, List<UUID> speciesIds) {
+    public int setSpecies(UUID tripId, Set<UUID> speciesIds) {
         return withContext(context -> {
             context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES)
                     .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
@@ -103,10 +104,10 @@ public class TripsDao extends AbstractFisholaDao {
         return trip;
     }
 
-    public List<UUID> getTripSpecies(UUID tripId) {
-        List<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
+    public Set<UUID> getTripSpecies(UUID tripId) {
+        Set<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
                 .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
-                .fetch(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID));
+                .fetchSet(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID));
         return speciesIds;
     }
 

@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.CatchsDao;
+import fr.inra.fishola.database.ReferentialDao;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Catch;
 import fr.inra.fishola.entities.tables.pojos.Trip;
@@ -62,6 +63,9 @@ public class TripResource extends AbstractFisholaResource {
 
     @Inject
     protected FisholaConfiguration config;
+
+    @Inject
+    protected ReferentialDao referentialDao;
 
     @Inject
     protected TripsDao tripsDao;
@@ -164,7 +168,9 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("Création de la sortie : " + tripId);
         }
 
-        int created = tripsDao.setSpecies(tripId, trip.speciesIds);
+        Set<UUID> filteredSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.speciesIds);
+
+        int created = tripsDao.setSpecies(tripId, filteredSpeciesIds);
         if (log.isDebugEnabled()) {
             log.debug(created + " espèces recherchées : " + trip.speciesIds);
         }
@@ -216,7 +222,9 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("Sortie mise à jour : " + tripId);
         }
 
-        tripsDao.setSpecies(tripId, trip.speciesIds);
+        Set<UUID> filteredSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.speciesIds);
+
+        tripsDao.setSpecies(tripId, filteredSpeciesIds);
 
         List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
         ImmutableMap<UUID, Catch> existingCatchsIndex = Maps.uniqueIndex(existingCatchs, Catch::getId);
@@ -345,7 +353,10 @@ public class TripResource extends AbstractFisholaResource {
         result.finishedAt = entity.getEndTime();
         result.weatherId = entity.getWeatherId();
 
-        result.speciesIds = tripsDao.getTripSpecies(tripId);
+        result.speciesIds = tripsDao.getTripSpecies(tripId)
+                .stream()
+                .map(UUID::toString)
+                .collect(Collectors.toSet());
 
         result.modifiableUntil = getModifiableUntil(entity)
                 .map(Date::toInstant)
