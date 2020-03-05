@@ -64,7 +64,7 @@ public class PictureResource extends AbstractFisholaResource {
         Catch existingCatch = catchsDao.getCatch(catchId);
         Preconditions.checkArgument(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
-        Preconditions.checkState(existingTrip != null);
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
         AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
@@ -155,7 +155,7 @@ public class PictureResource extends AbstractFisholaResource {
     @Produces("image/jpeg")
     public Response getPicturePreview(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId) {
 
-        Preconditions.checkArgument(catchId != null);
+        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
 
         File file = getPreviewFile(catchId);
 

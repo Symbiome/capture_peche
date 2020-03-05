@@ -190,7 +190,7 @@ public class SecurityResource extends AbstractFisholaResource {
         } else if (authenticate.get()) {
 
             Optional<FisholaUser> byEmail = usersDao.findByEmail(bean.email);
-            Preconditions.checkState(byEmail.isPresent());
+            Preconditions.checkState(byEmail.isPresent(), "Impossible de trouver l'utilisateur : " + bean.email);
             UUID userId = byEmail.get().getId();
 
             String token = jwtHelper.createToken(userId);

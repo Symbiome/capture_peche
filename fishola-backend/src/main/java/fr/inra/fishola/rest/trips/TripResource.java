@@ -195,7 +195,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
-        Preconditions.checkState(existingTrip != null);
+        Preconditions.checkState(existingTrip != null, "Impossible de mettre à jour une sortie qui n'existe pas : " + tripId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
         AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
@@ -260,7 +260,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Trip existingTrip = tripsDao.getTrip(tripId);
-        Preconditions.checkState(existingTrip != null);
+        Preconditions.checkState(existingTrip != null, "Impossible de supprimer une sortie qui n'existe pas : " + tripId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
         boolean stillModifiable = isStillModifiable(existingTrip);
