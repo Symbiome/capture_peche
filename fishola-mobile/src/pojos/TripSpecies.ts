@@ -6,5 +6,6 @@ export default interface TripSpecies {
     mode: string;
     startedAt: Date;
     speciesIds: string[];
+    otherSpecies: string;
 
 }

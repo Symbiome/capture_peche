@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
 import fr.inra.fishola.entities.tables.daos.ReleasedFishStateDao;
@@ -18,6 +17,8 @@ import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 import fr.inra.fishola.entities.tables.records.SpeciesRecord;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.inject.Singleton;
 import java.text.Normalizer;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ReferentialDao extends AbstractFisholaDao {
+
+    private static final Log log = LogFactory.getLog(ReferentialDao.class);
 
     public List<Lake> listLakes() {
         List<Lake> result = withDao(LakeDao.class, LakeDao::findAll);
@@ -75,26 +78,14 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Set<UUID> checkSpeciesOrCreateIfNecessary(Set<String> speciesIds) {
-        Set<String> existingSpeciesIds = listAllSpecies()
-                .stream()
-                .map(Species::getId)
-                .map(UUID::toString)
-                .collect(Collectors.toSet());
-        Set<UUID> result = new HashSet<>();
-        Sets.intersection(speciesIds, existingSpeciesIds)
-                .stream()
-                .map(UUID::fromString)
-                .forEach(result::add);
-        Set<String> speciesToCreate = Sets.difference(speciesIds, existingSpeciesIds)
-                .stream()
-                .flatMap(newSpecies -> Splitter.on(",")
+    public Set<UUID> checkSpeciesOrCreateIfNecessary(String speciesIds) {
+        List<String> speciesToCreate = Splitter.on(",")
                         .omitEmptyStrings()
                         .trimResults()
-                        .splitToStream(newSpecies))
-                .collect(Collectors.toSet());
+                        .splitToList(speciesIds);
+        Set<UUID> result = new HashSet<>();
         for (String speciesName : speciesToCreate) {
-            UUID uuid = createCustomSpecies(speciesName);
+            UUID uuid = findOrCreateCustomSpecies(speciesName);
             result.add(uuid);
         }
         return result;
@@ -143,13 +134,19 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    protected UUID createCustomSpecies(String name) {
+    protected UUID findOrCreateCustomSpecies(String name) {
 
         String exportAs = normalizeSpeciesExportAs(name);
 
         Species existingSpecies = withDao(SpeciesDao.class, dao -> dao.fetchOneByExportAs(exportAs));
         if (existingSpecies != null) {
-            return existingSpecies.getId();
+            UUID existingSpeciesId = existingSpecies.getId();
+
+            if (log.isDebugEnabled()) {
+                log.debug("Espèce trouvée avec pour exportAs=" + exportAs + " => " + existingSpeciesId);
+            }
+
+            return existingSpeciesId;
         }
 
         String speciesName = normalizeSpeciesName(name);
@@ -158,7 +155,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         species.setBuiltIn(false);
         species.setName(speciesName);
         species.setExportAs(exportAs);
-        return withContext(context -> {
+        UUID result = withContext(context -> {
             SpeciesRecord record = context.newRecord(Tables.SPECIES, species);
             SpeciesRecord recordInserted = context.insertInto(Tables.SPECIES)
                     .set(record)
@@ -167,6 +164,12 @@ public class ReferentialDao extends AbstractFisholaDao {
             UUID id = recordInserted.getId();
             return id;
         });
+
+        if (log.isDebugEnabled()) {
+            log.debug("Espèce créée pour exportAs=" + exportAs + " => " + result);
+        }
+
+        return result;
     }
 
 }

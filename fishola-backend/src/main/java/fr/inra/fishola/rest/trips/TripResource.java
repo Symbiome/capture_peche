@@ -168,11 +168,12 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("Création de la sortie : " + tripId);
         }
 
-        Set<UUID> filteredSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.speciesIds);
+        Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
+        Set<UUID> speciesIds = Sets.union(trip.speciesIds, otherSpeciesIds);
 
-        int created = tripsDao.setSpecies(tripId, filteredSpeciesIds);
+        int created = tripsDao.setSpecies(tripId, speciesIds);
         if (log.isDebugEnabled()) {
-            log.debug(created + " espèces recherchées : " + trip.speciesIds);
+            log.debug(created + " espèces recherchées : " + speciesIds);
         }
 
         for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
@@ -222,9 +223,10 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("Sortie mise à jour : " + tripId);
         }
 
-        Set<UUID> filteredSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.speciesIds);
+        Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
+        Set<UUID> speciesIds = Sets.union(trip.speciesIds, otherSpeciesIds);
 
-        tripsDao.setSpecies(tripId, filteredSpeciesIds);
+        tripsDao.setSpecies(tripId, speciesIds);
 
         List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
         ImmutableMap<UUID, Catch> existingCatchsIndex = Maps.uniqueIndex(existingCatchs, Catch::getId);
@@ -353,10 +355,7 @@ public class TripResource extends AbstractFisholaResource {
         result.finishedAt = entity.getEndTime();
         result.weatherId = entity.getWeatherId();
 
-        result.speciesIds = tripsDao.getTripSpecies(tripId)
-                .stream()
-                .map(UUID::toString)
-                .collect(Collectors.toSet());
+        result.speciesIds = tripsDao.getTripSpecies(tripId);
 
         result.modifiableUntil = getModifiableUntil(entity)
                 .map(Date::toInstant)

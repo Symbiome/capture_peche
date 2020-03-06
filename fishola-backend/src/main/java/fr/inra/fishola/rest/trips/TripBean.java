@@ -18,7 +18,8 @@ public class TripBean {
     public TripType type;
     public String name;
     public UUID lakeId;
-    public Set<String> speciesIds;
+    public Set<UUID> speciesIds;
+    public String otherSpecies;
     public Date date;
     public Date startedAt;
     public Date finishedAt;
@@ -36,16 +37,19 @@ public class TripBean {
     public String toString() {
         return "TripBean{" +
                 "id='" + id + '\'' +
-                ", createdOn='" + createdOn + '\'' +
-                ", mode='" + mode + '\'' +
-                ", type='" + type + '\'' +
+                ", createdOn=" + createdOn +
+                ", mode=" + mode +
+                ", type=" + type +
                 ", name='" + name + '\'' +
                 ", lakeId=" + lakeId +
                 ", speciesIds=" + speciesIds +
+                ", otherSpecies='" + otherSpecies + '\'' +
                 ", date=" + date +
                 ", startedAt=" + startedAt +
                 ", finishedAt=" + finishedAt +
+                ", weatherId=" + weatherId +
                 ", catchs=" + catchs +
+                ", modifiableUntil=" + modifiableUntil +
                 '}';
     }
 }

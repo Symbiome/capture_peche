@@ -12,6 +12,7 @@ export default interface TripSummary {
     finishedAt?: Date;
     modifiableUntil?: Date;
     speciesIds: string[];
+    otherSpecies: string;
     weatherId?: string;
 
 }

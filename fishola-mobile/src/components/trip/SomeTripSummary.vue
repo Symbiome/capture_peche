@@ -145,6 +145,9 @@ export default class SomeTripSummary extends Vue {
         }
       });
     });
+    if (someTrip.otherSpecies) {
+      this.species.push(someTrip.otherSpecies);
+    }
     if (this.species.length > 1) {
       this.speciesLabel = 'Espèces recherchées';
     }

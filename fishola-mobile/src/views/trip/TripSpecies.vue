@@ -27,15 +27,18 @@
             <div class="item-selection">
               <input type="checkbox" 
                      id="checkbox-other"
-                     class="pelorous-checkbox" />
+                     class="pelorous-checkbox"
+                     v-model="hasOtherSpecies" />
               <label for="checkbox-other"></label>
             </div>
             <div class="item-description">
-              Autre
+              <label for="checkbox-other">Autre</label>
               <input type="text" 
                      name="other"
                      placeholder="Renseignez l'espèce"
-                      />
+                     v-model="trip.otherSpecies"
+                     v-bind:disabled="!hasOtherSpecies"
+                     />
             </div>
           </div>
           <div class="info">Utilisez “,” si vous recherchez plusieurs espèces</div>
@@ -74,7 +77,9 @@ export default class TripSpeciesVue extends Vue {
   
   @Prop() id!:string;
 
-  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: new Date() };
+  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: new Date(), otherSpecies:'' };
+
+  hasOtherSpecies:boolean = false;
 
   species:SpeciesWithAlias[] = [];
   speciesIndex:Map<string, SpeciesWithAlias[]> = new Map();
@@ -96,6 +101,9 @@ export default class TripSpeciesVue extends Vue {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
     this.species = this.speciesIndex.get(this.trip.lakeId)!;
+    if (this.trip.otherSpecies) {
+      this.hasOtherSpecies = true;
+    }
   }
 
   toggle(s:SpeciesWithAlias) {
@@ -110,10 +118,20 @@ export default class TripSpeciesVue extends Vue {
 
   next() {
     let hasError = false;
-    if (this.trip.speciesIds.length == 0) {
+
+    if (this.hasOtherSpecies) {
+      if (!this.trip.otherSpecies) {
+        hasError = true;
+        this.$root.$emit('toaster-error', 'Vous devez saisir le nom de l\'espèce');
+      }
+    } else {
+      this.trip.otherSpecies = '';
+    }
+    if (this.trip.speciesIds.length == 0 && !this.hasOtherSpecies) {
       hasError = true;
       this.$root.$emit('toaster-error', 'Vous devez sélectionner au moins une espèce');
     }
+
     // if (this.name) {
     //   this.nameError = '';
     // } else {

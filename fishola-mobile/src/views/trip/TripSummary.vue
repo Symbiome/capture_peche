@@ -46,7 +46,7 @@ export default class TripSummaryVue extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[] };
+  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies: '' };
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);

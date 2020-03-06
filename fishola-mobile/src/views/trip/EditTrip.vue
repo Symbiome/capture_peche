@@ -93,7 +93,8 @@ export default class EditTrip extends Vue {
     startedAt: new Date(),
     finishedAt: new Date(),
     weatherId: '',
-    catchs: []
+    catchs: [],
+    otherSpecies: ''
   };
 
   duration:string = '';

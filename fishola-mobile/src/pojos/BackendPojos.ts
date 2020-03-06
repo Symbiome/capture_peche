@@ -25,6 +25,7 @@ export interface TripBean {
     name: string;
     lakeId: string;
     speciesIds: string[];
+    otherSpecies: string;
     date: Date;
     startedAt: Date;
     finishedAt: Date;
