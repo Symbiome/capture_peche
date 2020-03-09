@@ -3,6 +3,7 @@
     <div class="new-catch" 
          v-if="modifiable">
       <div class="new-catch-square-button"
+           id="new-catch-square-button"
            v-on:click="newCatch">
         <i class="pastille icon-plus"/>
       </div>
@@ -44,11 +45,29 @@ export default class CatchPreviewList extends Vue {
   created() {
   }
 
+  mounted() {
+    if (this.catchs && this.catchs.length > 0) {
+      this.scrollToFirstElement();
+    }
+  }
+
   reversedCatchs() {
     if (this.catchs) {
       return this.catchs.slice().reverse();
     } else {
       return this.catchs;
+    }
+  }
+
+  scrollToFirstElement() {
+    try {
+      let squareButton = document.getElementById('new-catch-square-button');
+      let scrollableElements = document.getElementsByClassName('catch-preview-list-scrollable');
+      if (squareButton && scrollableElements) {
+        scrollableElements[0].scrollLeft = squareButton.clientWidth + 2; // +2 pour la bordure
+      }
+    } catch (someError) {
+      console.error(someError);
     }
   }
 

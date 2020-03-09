@@ -15,7 +15,7 @@
               pour modifier cette sortie
             </div>
           </div>
-          <div class="edit-trip-catchs"
+          <div class="edit-trip-catchs catch-preview-list-scrollable"
                v-if="modifiable || trip.catchs.length > 0">
             <CatchPreviewList v-if="ready"
                               v-bind:modifiable="modifiable"

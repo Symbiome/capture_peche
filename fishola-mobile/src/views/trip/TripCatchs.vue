@@ -6,8 +6,9 @@
       <div class="pane">
         <h1>{{duration}}</h1>
         <div class="pane-content-large">
-          <div class="catchs-list">
-            <CatchPreviewList v-bind:modifiable="true"
+          <div class="catchs-list catch-preview-list-scrollable">
+            <CatchPreviewList v-if="ready"
+                              v-bind:modifiable="true"
                               v-bind:lakeId="trip.lakeId"
                               v-bind:catchs="trip.catchs"
                               v-on:newCatch="newCatch()"
@@ -62,6 +63,8 @@ export default class TripCatchs extends Vue {
   duration?:string = '';
   liveRunning:boolean = false;
 
+  ready:boolean = false;
+
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
@@ -80,6 +83,8 @@ export default class TripCatchs extends Vue {
         setInterval(this.computeDuration, 1000);
       }
     }
+
+    this.ready = true;
   }
 
   editSpecies() {
