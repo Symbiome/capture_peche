@@ -292,7 +292,8 @@ public class TripResource extends AbstractFisholaResource {
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(Timestamp.from(Instant.now()));
         aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))));
-        catchPojo.setSpeciesId(aCatch.speciesId);
+        UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
+        catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
         catchPojo.setSize(aCatch.size);
         aCatch.weight.ifPresent(catchPojo::setWeight);
@@ -311,7 +312,8 @@ public class TripResource extends AbstractFisholaResource {
     protected void updateCatch(Catch existingCatch, CatchBean aCatch) {
 
         existingCatch.setCatchTime(aCatch.caughtAt.map(caughtAt -> Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))).orElse(null));
-        existingCatch.setSpeciesId(aCatch.speciesId);
+        UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
+        existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
         existingCatch.setSize(aCatch.size);
         existingCatch.setWeight(aCatch.weight.orElse(null));
@@ -370,14 +372,32 @@ public class TripResource extends AbstractFisholaResource {
                 .map(aCatch -> toCatchBean(aCatch, catchsWithPictures))
                 .collect(Collectors.toList());
 
+//        Set<UUID> allSpeciesIds = new HashSet<>(result.speciesIds);
+//        result.catchs
+//                .stream()
+//                .map(c -> c.speciesId)
+//                .forEach(allSpeciesIds::add);
+//        result.customSpecies = referentialDao.customSpeciesIndex(allSpeciesIds);
+
         return result;
     }
 
-    private CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
+    protected UUID checkSpeciesOrCreateIfNecessary(Optional<UUID> speciesId, Optional<String> otherSpecies) {
+        Preconditions.checkArgument(speciesId.isPresent() || otherSpecies.isPresent(), "Il faut au moins une espèce");
+        if (speciesId.isPresent()) {
+            return speciesId.get();
+        }
+        Set<UUID> uuidSet = referentialDao.checkSpeciesOrCreateIfNecessary(otherSpecies.get());
+        Preconditions.checkArgument(uuidSet.size() == 1, "Il faut exactement 1 espèce : " + otherSpecies.get());
+        UUID result = uuidSet.iterator().next();
+        return result;
+    }
+
+    protected CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
         CatchBean result = new CatchBean();
         UUID catchId = aCatch.getId();
         result.id = catchId.toString();
-        result.speciesId = aCatch.getSpeciesId();
+        result.speciesId = Optional.of(aCatch.getSpeciesId());
         result.size = aCatch.getSize();
         result.weight = Optional.ofNullable(aCatch.getWeight());
         result.keep = aCatch.getKept();

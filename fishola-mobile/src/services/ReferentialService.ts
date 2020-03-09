@@ -72,9 +72,52 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
+    static getSpeciesCustom():Promise<SpeciesWithAlias[]> {
+        return this.backendGetWithCache('/v1/referential/species-custom');
+    }
+
+    static clearSpeciesCustomCache() {
+        this.clearCache('/v1/referential/species-custom');
+    }
+
+    static getSpeciesPerLakePlusCustom():Promise<Map<string, SpeciesWithAlias[]>> {
+        return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
+            Promise
+                .all([ReferentialService.getSpeciesPerLake(), ReferentialService.getSpeciesCustom()])
+                .then((data:[Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]) => {
+                    let result:Map<string, SpeciesWithAlias[]> = new Map<string, SpeciesWithAlias[]>();
+
+                    let custom:SpeciesWithAlias[] = data[1];
+
+                    let perLake = data[0];
+                    perLake.forEach((value, lakeId) => {
+                        let lakeSpecies:SpeciesWithAlias[] = [];
+                        value.forEach((s) => lakeSpecies.push(s));
+                        // Quel que soit le lac, on ajoute les espèces custom à la liste
+                        custom.forEach((s) => lakeSpecies.push(s));
+                        result.set(lakeId, lakeSpecies);
+                    });
+
+                    resolve(result);
+                },
+                reject);
+        });
+    }
+
     static getSpecies(lakeId:string):Promise<SpeciesWithAlias[]> {
         return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
             this.getSpeciesPerLake().then(
+                (map) => {
+                    let species = map.get(lakeId);
+                    resolve(species);
+                },
+                reject);
+        });
+    }
+
+    static getSpeciesPlusCustom(lakeId:string):Promise<SpeciesWithAlias[]> {
+        return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
+            this.getSpeciesPerLakePlusCustom().then(
                 (map) => {
                     let species = map.get(lakeId);
                     resolve(species);
@@ -106,7 +149,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getLakesWeathersTripTypesAndSpecies():Promise<LakesWeathersTripTypesAndSpecies> {
         return new Promise<LakesWeathersTripTypesAndSpecies>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getLakes(), ReferentialService.getWeathers(), ReferentialService.getTripTypes(), ReferentialService.getSpeciesPerLake()])
+                .all([ReferentialService.getLakes(), ReferentialService.getWeathers(), ReferentialService.getTripTypes(), ReferentialService.getSpeciesPerLakePlusCustom()])
                 .then(
                     (data:[Lake[], Weather[], any[], Map<string, SpeciesWithAlias[]>]) => {
                         let result:LakesWeathersTripTypesAndSpecies = new LakesWeathersTripTypesAndSpecies(data[0], data[1], data[2], data[3]);
@@ -132,7 +175,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getSpeciesTechniquesAndReleasedFishStates(lakeId:string):Promise<SpeciesTechniquesAndReleasedFishStates> {
         return new Promise<SpeciesTechniquesAndReleasedFishStates>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getSpecies(lakeId), ReferentialService.getTechniques(), ReferentialService.getReleasedFishStates()])
+                .all([ReferentialService.getSpeciesPlusCustom(lakeId), ReferentialService.getTechniques(), ReferentialService.getReleasedFishStates()])
                 .then(
                     (data:[SpeciesWithAlias[], Technique[], ReleasedFishState[]]) => {
                         let result:SpeciesTechniquesAndReleasedFishStates = new SpeciesTechniquesAndReleasedFishStates(data[0], data[1], data[2]);
@@ -145,7 +188,7 @@ export default class ReferentialService extends AbstractFisholaService {
     static getSpeciesAndTechniques(lakeId:string):Promise<SpeciesWithAliasAndTechnique> {
         return new Promise<SpeciesWithAliasAndTechnique>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getSpecies(lakeId), ReferentialService.getTechniques()])
+                .all([ReferentialService.getSpeciesPlusCustom(lakeId), ReferentialService.getTechniques()])
                 .then(
                     (data:[SpeciesWithAlias[], Technique[]]) => {
                         let result:SpeciesWithAliasAndTechnique = new SpeciesWithAliasAndTechnique(data[0], data[1]);

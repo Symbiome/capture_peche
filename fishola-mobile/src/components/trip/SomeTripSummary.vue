@@ -106,7 +106,8 @@ export default class SomeTripSummary extends Vue {
   allTripTypes:any[] = [];
 
   created() {
-    ReferentialService.getLakesWeathersTripTypesAndSpecies().then(this.referentialsLoaded);
+    ReferentialService.getLakesWeathersTripTypesAndSpecies()
+      .then(this.referentialsLoaded);
   }
 
   mounted() {

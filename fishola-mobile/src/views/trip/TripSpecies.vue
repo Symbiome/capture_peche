@@ -86,7 +86,8 @@ export default class TripSpeciesVue extends Vue {
 
 
   created() {
-    ReferentialService.getSpeciesPerLake().then(this.speciesLoaded);
+    ReferentialService.getSpeciesPerLakePlusCustom()
+      .then(this.speciesLoaded);
   }
 
   mounted() {
@@ -100,7 +101,13 @@ export default class TripSpeciesVue extends Vue {
   tripLoaded(someTrip:TripSpecies) {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
-    this.species = this.speciesIndex.get(this.trip.lakeId)!;
+    let lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
+    this.species = []
+    lakeAndCustomSpecies.forEach((s) => {
+      if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
+        this.species.push(s);
+      }
+    });
     if (this.trip.otherSpecies) {
       this.hasOtherSpecies = true;
     }

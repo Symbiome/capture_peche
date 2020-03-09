@@ -7,7 +7,7 @@
         <h1>Fin de pêche</h1>
         <div class="pane-content">
           <SomeTripSummary ref="summary"
-                          v-if="trip"
+                          v-if="trip.lakeId"
                           v-bind:trip="trip"
                           v-on:trip-modified="onUpdatedTrip"/>
           <div class="bottom-page-spacer"></div>

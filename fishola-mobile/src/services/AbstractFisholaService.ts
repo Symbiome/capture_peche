@@ -15,6 +15,10 @@ export default abstract class AbstractFisholaService {
 
     static caches:Map<string, CacheEntry> = new Map();
 
+    static clearCache(uri:string) {
+      this.caches.delete(uri);
+    }
+
     static backendGet(uri:string):Promise<any> {
       return new Promise<any>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);

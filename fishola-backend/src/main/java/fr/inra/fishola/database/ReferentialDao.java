@@ -3,6 +3,7 @@ package fr.inra.fishola.database;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
@@ -17,6 +18,7 @@ import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 import fr.inra.fishola.entities.tables.records.SpeciesRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -24,6 +26,7 @@ import javax.inject.Singleton;
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,14 +56,22 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<Species> listAllSpecies() {
-        List<Species> result = withDao(SpeciesDao.class, SpeciesDao::findAll);
-        return result;
-    }
-
     public ImmutableMap<UUID, Species> speciesIndex() {
         List<Species> species = listBuiltInSpecies();
         ImmutableMap<UUID, Species> result = Maps.uniqueIndex(species, Species::getId);
+        return result;
+    }
+
+    public List<Species> listCustomSpecies() {
+        List<Species> result = withDao(SpeciesDao.class, dao -> dao.fetchByBuiltIn(false));
+        return result;
+    }
+
+    public Map<UUID, Species> customSpeciesIndex(Set<UUID> filterSpeciesIds) {
+        // XXX AThimel 06/03/2020 Si jamais on a besoin de plus de perfs, on pourra filtrer directement dans la requête
+        List<Species> species = listCustomSpecies();
+        ImmutableMap<UUID, Species> allCustomSpecies = Maps.uniqueIndex(species, Species::getId);
+        Map<UUID, Species> result = Maps.filterKeys(allCustomSpecies, filterSpeciesIds::contains);
         return result;
     }
 
@@ -79,6 +90,9 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> checkSpeciesOrCreateIfNecessary(String speciesIds) {
+        if (StringUtils.isEmpty(StringUtils.trimToNull(speciesIds))) {
+            return ImmutableSet.of();
+        }
         List<String> speciesToCreate = Splitter.on(",")
                         .omitEmptyStrings()
                         .trimResults()

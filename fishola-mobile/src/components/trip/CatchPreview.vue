@@ -73,7 +73,8 @@ export default class CatchPreview extends Vue {
       PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
     }
 
-    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(this.referentialLoaded);
+    ReferentialService.getSpeciesAndTechniques(this.lakeId)
+      .then(this.referentialLoaded);
 
   }
 
@@ -82,6 +83,8 @@ export default class CatchPreview extends Vue {
   }
 
   referentialLoaded(data:SpeciesWithAliasAndTechnique) {
+    // Au cas où l'espèce ne soit pas encore sur le back, on prend la 'other' par défaut
+    this.speciesLabel = this.aCatch.otherSpecies || '';
     data.species.forEach(s => {
       if (this.aCatch.speciesId == s.id) {
         this.speciesLabel = s.name;

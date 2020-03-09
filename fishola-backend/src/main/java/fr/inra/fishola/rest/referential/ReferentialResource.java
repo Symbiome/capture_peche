@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/referential")
 @Produces(MediaType.APPLICATION_JSON)
@@ -50,9 +51,12 @@ public class ReferentialResource extends AbstractFisholaResource {
     }
 
     @GET
-    @Path("/released-fish-states")
-    public List<ReleasedFishState> getReleasedFishState() {
-        List<ReleasedFishState> result = referentialDao.listReleasedFishStates();
+    @Path("/species-custom")
+    public List<SpeciesWithAlias> getCustomSpecies() {
+        List<Species> species = referentialDao.listCustomSpecies();
+        List<SpeciesWithAlias> result = species.stream()
+                .map(s -> SpeciesWithAlias.of(s, null))
+                .collect(Collectors.toList());
         return result;
     }
 
@@ -72,6 +76,13 @@ public class ReferentialResource extends AbstractFisholaResource {
         });
 
         return result.asMap();
+    }
+
+    @GET
+    @Path("/released-fish-states")
+    public List<ReleasedFishState> getReleasedFishState() {
+        List<ReleasedFishState> result = referentialDao.listReleasedFishStates();
+        return result;
     }
 
     @GET

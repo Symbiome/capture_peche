@@ -19,11 +19,19 @@
         <h1>Capture</h1>
         <div class="pane-content" v-if="ready">
           <FormSelect name="species"
-                      label="Éspèce"
+                      label="Espèce"
                       v-bind:options="allSpecies"
                       v-model="aCatch.speciesId"
                       v-bind:error="speciesIdError"
                       v-bind:readonly="!modifiable"/>
+          <FormInput name="otherSpecies"
+                     label="Si autre"
+                     type="text"
+                     placeholder="Renseigner l’espèce"
+                     v-model="aCatch.otherSpecies"
+                     v-bind:error="otherSpeciesError"
+                     v-bind:readonly="!modifiable"
+                     v-if="aCatch.speciesId == '__other__'"/>
           <FormInput name="size"
                      label="Taille en cm"
                      type="number"
@@ -140,6 +148,8 @@ export default class EditCatch extends Vue {
   ready:boolean = false;
 
   tripDate?:Date;
+  tripSpeciesIds:string[] = [];
+  tripOtherSpecies:string = '';
   aCatch: CatchSummary = {id: '', withSample: false};
 
   pictureSrc:string = '';
@@ -148,6 +158,7 @@ export default class EditCatch extends Vue {
   caughtAt:string = '';
 
   speciesIdError:string = '';
+  otherSpeciesError:string = '';
   sizeError:string = '';
   weightError:string = '';
   keepError:string = '';
@@ -185,6 +196,11 @@ export default class EditCatch extends Vue {
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
+    this.tripSpeciesIds = someTrip.speciesIds;
+    this.tripOtherSpecies = someTrip.otherSpecies;
+    if (!someCatch.speciesId && someCatch.otherSpecies) {
+      someCatch.speciesId = '__other__';
+    }
     this.inTripCreation = !someTrip.createdOn;
     this.middleShortcut = (this.inTripCreation ? 'step-3-4':'spacer');
     this.modifiable = (this.inTripCreation || !!someTrip.modifiableUntil);
@@ -225,7 +241,28 @@ export default class EditCatch extends Vue {
   }
 
   referentialLoaded(data:SpeciesTechniquesAndReleasedFishStates) {
-    data.species.forEach((s) => this.allSpecies.push(s));
+    data.species.forEach((s) => {
+      if (s.builtIn // Espèce de base
+          || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
+          || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+        ) {
+        this.allSpecies.push(s);
+      }
+    });
+     // Espèce custom sélectionnée pour la sortie mais pas encore synchro
+    if (this.tripOtherSpecies) {
+      this.tripOtherSpecies
+        .split(',')
+        .forEach((name) => {
+          let customSpecies:SpeciesWithAlias = {
+            id: name,
+            name: name,
+            builtIn: false
+          };
+          this.allSpecies.push(customSpecies);
+      });
+    }
+    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
@@ -257,12 +294,35 @@ export default class EditCatch extends Vue {
 
   validateClicked() {
     let hasError:boolean = false;
-    if (this.aCatch.speciesId) {
+
+    if (this.aCatch.speciesId == '__other__') {
+
       this.speciesIdError = '';
+
+      if (this.aCatch.otherSpecies) {
+        if (this.aCatch.otherSpecies.indexOf(',') == -1) {
+          this.otherSpeciesError = '';
+        } else {
+          hasError = true;
+          this.otherSpeciesError = 'Vous ne pouvez pas spécifier plusieurs espèces ici';
+        }
+      } else {
+        hasError = true;
+        this.otherSpeciesError = 'Espèce obligatoire';
+      }
+
     } else {
-      hasError = true;
-      this.speciesIdError = 'Éspèce obligatoire';
-    }
+
+      this.otherSpeciesError = '';
+
+      if (this.aCatch.speciesId) {
+        this.speciesIdError = '';
+      } else {
+        hasError = true;
+        this.speciesIdError = 'Espèce obligatoire';
+      }
+
+    } 
 
     if (!this.aCatch.size) {
       hasError = true;
@@ -317,6 +377,9 @@ export default class EditCatch extends Vue {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
       let aCatchBean:CatchBean = this.castToBean(this.aCatch);
+      if (aCatchBean.speciesId == '__other__') {
+        aCatchBean.speciesId = '';
+      }
       aCatchBean.hasPicture = this.pictureSrc != '';
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }

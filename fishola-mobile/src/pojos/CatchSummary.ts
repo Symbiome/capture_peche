@@ -2,6 +2,7 @@ export default interface CatchSummary {
 
     id: string;
     speciesId?: string;
+    otherSpecies?: string;
     size?: number;
     weight?: number;
     keep?: boolean;

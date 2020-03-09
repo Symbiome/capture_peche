@@ -7,7 +7,8 @@ import java.util.UUID;
 public class CatchBean {
 
     public String id;
-    public UUID speciesId;
+    public Optional<UUID> speciesId = Optional.empty();
+    public Optional<String> otherSpecies = Optional.empty();
     public int size;
     public Optional<Integer> weight = Optional.empty();
     public boolean keep;

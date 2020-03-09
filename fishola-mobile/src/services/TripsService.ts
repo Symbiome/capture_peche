@@ -7,6 +7,7 @@ import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import PicturesService from '@/services/PicturesService';
 import CatchSummary from '@/pojos/CatchSummary';
+import ReferentialService from './ReferentialService';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -384,6 +385,23 @@ export default class TripsService extends AbstractFisholaService {
         return result;
     }
 
+    static hasOtherSpecies(trip:TripBean):boolean {
+        if (trip.otherSpecies) {
+            return true;
+        }
+        if (trip.catchs && trip.catchs.length > 0) {
+
+            for (let i:number = 0; i<trip.catchs.length; i++) {
+                let someCatch = trip.catchs[i];
+                if (someCatch.otherSpecies) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     static syncTrip(trip:TripBean):Promise<void> {
         return new Promise((resolve, reject) =>  {
             console.log("On essaye de sauvegarder la sortie", trip);
@@ -392,6 +410,9 @@ export default class TripsService extends AbstractFisholaService {
                     .then(
                         (r) => {
                             PicturesService.checkForPicturesToRename(r);
+                            if (this.hasOtherSpecies(trip)) {
+                                ReferentialService.clearSpeciesCustomCache();
+                            }
                             resolve();
                         },
                         reject
@@ -401,6 +422,9 @@ export default class TripsService extends AbstractFisholaService {
                     .then(
                         (r) => {
                             PicturesService.checkForPicturesToRename(r);
+                            if (this.hasOtherSpecies(trip)) {
+                                ReferentialService.clearSpeciesCustomCache();
+                            }
                             resolve();
                         },
                         reject
