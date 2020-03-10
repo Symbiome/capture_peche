@@ -294,9 +294,9 @@ export default class TripsService extends AbstractFisholaService {
                     callback();
                 });
         } else {
-            let tripBean:TripBean = <TripBean>trip;
             this.getDatabase()
-                .dirtyTrips.put(tripBean)
+                .dirtyTrips
+                .put(trip)
                 .then((aaa) => {
                     console.log(aaa);
                     callback();
@@ -342,12 +342,8 @@ export default class TripsService extends AbstractFisholaService {
                     callback();
                 });
         } else {
-
-            this.getDatabase()
-                .dirtyTrips
-                .put(trip)
-                .then((aaa) => {
-                    console.log("Mise à jour de la sortie dans les dirtyTrips", aaa);
+            this.saveTrip(trip, () => {
+                    console.log("Mise à jour de la sortie dans les dirtyTrips", trip.id);
                     callback();
                 });
         }

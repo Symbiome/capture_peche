@@ -39,15 +39,18 @@
     <FormMultiValues name="species"
                       v-bind:label="speciesLabel"
                       v-bind:values="species"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="readonly"
+                      v-on:clicked="$emit('goEditSpecies')"/>
     <FormMultiValues name="technics"
                       v-bind:label="technicsLabel"
                       v-bind:values="technics"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="readonly"
+                      v-on:clicked="$emit('goEditTechnics')"/>
     <FormMultiValues name="type"
                       label="Type de pêche"
                       v-bind:values="types"
-                      v-bind:readonly="readonly"/>
+                      v-bind:readonly="readonly"
+                      v-on:clicked="$emit('goEditType')"/>
   </div>
 </template>
 

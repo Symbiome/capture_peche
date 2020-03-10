@@ -46,7 +46,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Commencer"
+    <FisholaFooter v-bind:button-text="id == 'DIRTY' ? 'Commencer' : 'Enregistrer'"
                    v-on:buttonClicked="next"
                    shortcuts="back,step-2-4,giveup"/>
   </div>
@@ -158,8 +158,20 @@ export default class TripSpeciesVue extends Vue {
     }
   }
 
+  summaryNotYetSaved(tripAsAny:any) {
+    // Si on a pas encore d'identifiant de météo c'est qu'on est pas
+    // encore passé par la sauvegarde sur l'écran de résumé
+    return !tripAsAny.weatherId;
+  }
+
   tripSaved(savedId:string) {
-    router.push({name:'trip-catchs', params: {id: savedId}});
+    if (this.id == 'DIRTY' || this.summaryNotYetSaved(this.trip)) {
+      router.push({name:'trip-catchs', params: {id: savedId}});
+    } else if (this.id == 'RUNNING') {
+      router.push({name:'trip-summary', params: {id: savedId}});
+    } else {
+      router.push({name:'trip', params: {id: savedId}});
+    }
   }
 
 }

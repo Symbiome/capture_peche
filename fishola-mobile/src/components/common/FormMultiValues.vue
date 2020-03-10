@@ -30,7 +30,7 @@ export default class FormMultiValues extends Vue {
   @Prop() readonly!: boolean;
 
   clicked() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
+    this.$emit('clicked');
   }
 }
 </script>

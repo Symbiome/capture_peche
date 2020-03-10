@@ -115,7 +115,6 @@ import FormToggle from '@/components/common/FormToggle.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import FormYesNo from '@/components/common/FormYesNo.vue'
 import FormTextarea from '@/components/common/FormTextarea.vue'
-import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import PicturePreview from '@/components/trip/PicturePreview.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
@@ -129,7 +128,6 @@ import Constants from '../../services/Constants';
     FormInput,
     FormYesNo,
     FormTextarea,
-    FormMultiValues,
     FormSelect,
     FormToggle,
     PicturePreview,

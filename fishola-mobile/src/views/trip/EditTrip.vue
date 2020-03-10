@@ -34,6 +34,9 @@
                            v-bind:trip="trip"
                            v-bind:readonly="!modifiable"
                            v-on:trip-modified="onUpdatedTrip"
+                           v-on:goEditSpecies="goEditSpecies"
+                           v-on:goEditTechnics="goEditTechnics"
+                           v-on:goEditType="goEditType"
                            class="summary-pane"/>
           <div class="bottom-page-spacer"></div>
         </div>
@@ -42,7 +45,7 @@
     <FisholaFooter v-if="ready && modifiable"
                    button-text="Modifier"
                    button-icon="icon-edit"
-                   v-on:buttonClicked="saveClicked"
+                   v-on:buttonClicked="startSave"
                    v-on:deleteClicked="deleteTrip"
                    shortcuts="back,spacer,delete"/>
     <FisholaFooter v-if="ready && !modifiable"
@@ -66,6 +69,8 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
+export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechnics" | "EditType";
+
 @Component({
   components: {
     FisholaHeader,
@@ -78,6 +83,8 @@ import router from '../../router';
 export default class EditTrip extends Vue {
 
   @Prop() id!:string;
+
+  actionRequested:ActionType = "SaveTrip";
 
   // Ce flag permet de ne créer le composant SomeTripSummary que lorsque les données sont prêtes
   ready:boolean = false;
@@ -118,7 +125,7 @@ export default class EditTrip extends Vue {
     this.duration = Helpers.computeDuration(this.trip.startedAt, this.trip.finishedAt);
   }
 
-  saveClicked() {
+  startSave() {
       // On demande au composant enfant de fournir le modèle mis à jour
       let summaryComponent:any = this.$refs.summary;
       summaryComponent.emitUpdatedTrip();
@@ -126,11 +133,35 @@ export default class EditTrip extends Vue {
 
   onUpdatedTrip(trip:TripBean) {
       // On reçoit le modèle mis à jour, on le sauvegarde
-      TripsService.sendTrip(trip, this.tripSaved);
+      TripsService.saveTrip(trip, this.tripSaved);
+  }
+
+  goEditSpecies() {
+    this.actionRequested = "EditSpecies";
+    this.startSave();
+  }
+
+  goEditTechnics() {
+    this.actionRequested = "EditTechnics";
+    this.startSave();
+  }
+
+  goEditType() {
+    this.actionRequested = "EditType";
+    this.startSave();
   }
 
   tripSaved() {
-    router.push('/trips');
+    if (this.actionRequested == "SaveTrip") {
+      router.push('/trips');
+      this.$root.$emit('ask-for-sync-check');
+    } else if (this.actionRequested == "EditSpecies") {
+      router.push({name:'trip-species', params: {id: this.id}});
+    } else if (this.actionRequested == "EditTechnics") {
+      this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
+    } else if (this.actionRequested == "EditType") {
+      this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
+    }
   }
 
   newCatch() {

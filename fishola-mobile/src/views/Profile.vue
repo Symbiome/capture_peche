@@ -40,7 +40,8 @@
                       v-model="gender"/>
           <FormMultiValues name="password"
                            label="Mot de passe"
-                           v-bind:values="['********']"/>
+                           v-bind:values="['********']"
+                           v-on:clicked="$root.$emit('toaster-warning', 'Work in progress')"/>
         </div>
       </div>
     </div>
