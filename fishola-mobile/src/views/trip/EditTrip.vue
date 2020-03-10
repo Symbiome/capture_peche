@@ -159,7 +159,7 @@ export default class EditTrip extends Vue {
     } else if (this.actionRequested == "EditSpecies") {
       router.push({name:'trip-species', params: {id: this.id}});
     } else if (this.actionRequested == "EditTechniques") {
-      this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
+      router.push({name:'trip-techniques', params: {id: this.id}});
     } else if (this.actionRequested == "EditType") {
       this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
     }

@@ -232,11 +232,13 @@ export default class TripsService extends AbstractFisholaService {
             if (!tripBean.techniqueIds) {
                 tripBean.techniqueIds = [];
             }
-            trip.catchs.forEach((c) => {
-                if (tripBean.techniqueIds.indexOf(c.techniqueId) == -1) {
-                    tripBean.techniqueIds.push(c.techniqueId);
-                }
-            });
+            if (trip.catchs) {
+                trip.catchs.forEach((c) => {
+                    if (tripBean.techniqueIds.indexOf(c.techniqueId) == -1) {
+                        tripBean.techniqueIds.push(c.techniqueId);
+                    }
+                });
+            }
 
             this.getDatabase()
                 .onCreationTrip
