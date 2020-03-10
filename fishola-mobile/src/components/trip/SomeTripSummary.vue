@@ -36,6 +36,11 @@
                 v-model="trip.weatherId"
                 v-bind:error="weatherIdError"
                 v-bind:readonly="readonly"/>
+    <FormSelect name="type"
+                label="Type de pêche"
+                v-bind:options="allTripTypes"
+                v-model="trip.type"
+                v-bind:readonly="readonly"/>
     <FormMultiValues name="species"
                       v-bind:label="speciesLabel"
                       v-bind:values="species"
@@ -46,11 +51,7 @@
                       v-bind:values="techniques"
                       v-bind:readonly="readonly"
                       v-on:clicked="$emit('goEditTechniques')"/>
-    <FormMultiValues name="type"
-                      label="Type de pêche"
-                      v-bind:values="types"
-                      v-bind:readonly="readonly"
-                      v-on:clicked="$emit('goEditType')"/>
+
   </div>
 </template>
 

@@ -36,7 +36,6 @@
                            v-on:trip-modified="onUpdatedTrip"
                            v-on:goEditSpecies="goEditSpecies"
                            v-on:goEditTechniques="goEditTechniques"
-                           v-on:goEditType="goEditType"
                            class="summary-pane"/>
           <div class="bottom-page-spacer"></div>
         </div>
@@ -69,7 +68,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
-export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques" | "EditType";
+export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques";
 
 @Component({
   components: {
@@ -147,11 +146,6 @@ export default class EditTrip extends Vue {
     this.startSave();
   }
 
-  goEditType() {
-    this.actionRequested = "EditType";
-    this.startSave();
-  }
-
   tripSaved() {
     if (this.actionRequested == "SaveTrip") {
       router.push('/trips');
@@ -160,8 +154,6 @@ export default class EditTrip extends Vue {
       router.push({name:'trip-species', params: {id: this.id}});
     } else if (this.actionRequested == "EditTechniques") {
       router.push({name:'trip-techniques', params: {id: this.id}});
-    } else if (this.actionRequested == "EditType") {
-      this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
     }
   }
 
