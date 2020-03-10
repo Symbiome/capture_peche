@@ -32,6 +32,7 @@ export interface TripBean {
     finishedAt: Date;
     weatherId: string;
     catchs: CatchBean[];
+    techniqueIds: string[];
     modifiableUntil?: Date;
 }
 

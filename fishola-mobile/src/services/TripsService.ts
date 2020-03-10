@@ -137,6 +137,7 @@ export default class TripsService extends AbstractFisholaService {
             weatherId: input.weatherId,
             date: realDate,
             speciesIds: input.speciesIds || [],
+            techniqueIds: input.techniqueIds || [],
             catchs: catchs,
         };
 
@@ -221,24 +222,31 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static saveTripMain(trip:TripMain, callback: () => void) {
-        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+    static finishTrip(trip:TripMain, callback: () => void) {
+        if (trip.id == Constants.RUNNING_ID) {
+            if (trip.mode == 'Live') {
+                trip.finishedAt = new Date();
+            }
+
+            let tripBean:TripBean = <TripBean>trip;
+            if (!tripBean.techniqueIds) {
+                tripBean.techniqueIds = [];
+            }
+            trip.catchs.forEach((c) => {
+                if (tripBean.techniqueIds.indexOf(c.techniqueId) == -1) {
+                    tripBean.techniqueIds.push(c.techniqueId);
+                }
+            });
+
             this.getDatabase()
                 .onCreationTrip
-                .put(trip)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        } else {
-            let tripBean:TripBean = <TripBean>trip;
-            this.getDatabase()
-                .dirtyTrips
                 .put(tripBean)
                 .then((aaa) => {
                     console.log(aaa);
                     callback();
                 });
+        } else {
+            throw 'Ne doit être appelé que sur une sortie en cours de création. Id=' + trip.id;
         }
     }
 

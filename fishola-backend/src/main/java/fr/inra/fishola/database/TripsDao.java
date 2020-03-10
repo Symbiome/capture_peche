@@ -54,6 +54,21 @@ public class TripsDao extends AbstractFisholaDao {
         });
     }
 
+    public int setTechniques(UUID tripId, Set<UUID> techniqueIds) {
+        return withContext(context -> {
+            context.deleteFrom(Tables.TRIP_TECHNIQUES)
+                    .where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId))
+                    .execute();
+            int count = 0;
+            for (UUID techniqueId : techniqueIds) {
+                count += context.insertInto(Tables.TRIP_TECHNIQUES, Tables.TRIP_TECHNIQUES.TRIP_ID, Tables.TRIP_TECHNIQUES.TECHNIQUE_ID)
+                        .values(tripId, techniqueId)
+                        .execute();
+            }
+            return count;
+        });
+    }
+
     public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm) {
         List<Trip> result = withContext(context -> {
             List<Condition> conditions = new LinkedList<>();
@@ -109,6 +124,13 @@ public class TripsDao extends AbstractFisholaDao {
                 .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
                 .fetchSet(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID));
         return speciesIds;
+    }
+
+    public Set<UUID> getTripTechniques(UUID tripId) {
+        Set<UUID> techniqueIds = withContext(context -> context.selectFrom(Tables.TRIP_TECHNIQUES)
+                .where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId))
+                .fetchSet(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID));
+        return techniqueIds;
     }
 
     public void updateTrip(Trip existingTrip) {

@@ -11,7 +11,7 @@
                            v-bind:trip="trip"
                            v-on:trip-modified="onUpdatedTrip"
                            v-on:goEditSpecies="goEditSpecies"
-                           v-on:goEditTechnics="goEditTechnics"
+                           v-on:goEditTechniques="goEditTechniques"
                            v-on:goEditType="goEditType"
                            />
           <div class="bottom-page-spacer"></div>
@@ -38,7 +38,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
-export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechnics" | "EditType";
+export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques" | "EditType";
 
 @Component({
   components: {
@@ -52,7 +52,7 @@ export default class TripSummaryVue extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies: '' };
+  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
 
   actionRequested:ActionType = "SaveTrip";
 
@@ -87,8 +87,8 @@ export default class TripSummaryVue extends Vue {
     this.startSave();
   }
 
-  goEditTechnics() {
-    this.actionRequested = "EditTechnics";
+  goEditTechniques() {
+    this.actionRequested = "EditTechniques";
     this.startSave();
   }
 
@@ -103,7 +103,7 @@ export default class TripSummaryVue extends Vue {
       this.$root.$emit('ask-for-sync-check');
     } else if (this.actionRequested == "EditSpecies") {
       router.push({name:'trip-species', params: {id: this.trip!.id}});
-    } else if (this.actionRequested == "EditTechnics") {
+    } else if (this.actionRequested == "EditTechniques") {
       this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
     } else if (this.actionRequested == "EditType") {
       this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');

@@ -41,11 +41,11 @@
                       v-bind:values="species"
                       v-bind:readonly="readonly"
                       v-on:clicked="$emit('goEditSpecies')"/>
-    <FormMultiValues name="technics"
-                      v-bind:label="technicsLabel"
-                      v-bind:values="technics"
+    <FormMultiValues name="techniques"
+                      v-bind:label="techniquesLabel"
+                      v-bind:values="techniques"
                       v-bind:readonly="readonly"
-                      v-on:clicked="$emit('goEditTechnics')"/>
+                      v-on:clicked="$emit('goEditTechniques')"/>
     <FormMultiValues name="type"
                       label="Type de pêche"
                       v-bind:values="types"
@@ -56,11 +56,11 @@
 
 <script lang="ts">
 import TripSummary from '@/pojos/TripSummary';
-import {Lake, Weather, SpeciesWithAlias} from '@/pojos/BackendPojos';
+import {Lake, Weather, SpeciesWithAlias, Technique} from '@/pojos/BackendPojos';
 
 import Constants from '@/services/Constants';
 import Helpers from '@/pojos/Helpers';
-import {LakesWeathersTripTypesAndSpecies} from '@/services/ReferentialService';
+import {LakesWeathersTripTypesSpeciesAndTechniques} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 
 import FormInput from '@/components/common/FormInput.vue'
@@ -99,27 +99,29 @@ export default class SomeTripSummary extends Vue {
 
   species:string[] = [];
   speciesLabel:string = 'Espèce recherchée';
-  technics:string[] = [];
-  technicsLabel:string = 'Technique utilisée';
+  techniques:string[] = [];
+  techniquesLabel:string = 'Technique utilisée';
   types:string[] = [];
 
   allLakes:Lake[] = [];
   allSpecies:Map<string, SpeciesWithAlias[]> = new Map();
   allWeathers:Weather[] = [];
   allTripTypes:any[] = [];
+  allTechniques:Technique[] = [];
 
   created() {
-    ReferentialService.getLakesWeathersTripTypesAndSpecies()
+    ReferentialService.getLakesWeathersTripTypesSpeciesAndTechniques()
       .then(this.referentialsLoaded);
   }
 
   mounted() {
   }
 
-  referentialsLoaded(data:LakesWeathersTripTypesAndSpecies) {
+  referentialsLoaded(data:LakesWeathersTripTypesSpeciesAndTechniques) {
     data.lakes.forEach((lake) => this.allLakes.push(lake));
     data.weathers.forEach((weather) => this.allWeathers.push(weather));
     data.tripTypes.forEach((type) => this.allTripTypes.push(type));
+    data.techniques.forEach((technique) => this.allTechniques.push(technique));
     this.allSpecies = data.species;
     this.tripLoaded(this.trip);
   }
@@ -156,7 +158,18 @@ export default class SomeTripSummary extends Vue {
       this.speciesLabel = 'Espèces recherchées';
     }
 
-    this.technics.push('Work in progress');
+    if (someTrip.techniqueIds) {
+      this.allTechniques.forEach((technique:Technique) => {
+        someTrip.techniqueIds.forEach((techniqueId) => {
+          if (techniqueId == technique.id) {
+            this.techniques.push(technique.name);
+          }
+        });
+      });
+    }
+    if (this.techniques.length > 1) {
+      this.techniquesLabel = 'Techniques utilisées';
+    }
 
     this.allTripTypes.forEach((tt) => {
       if (tt.id == someTrip.type) {

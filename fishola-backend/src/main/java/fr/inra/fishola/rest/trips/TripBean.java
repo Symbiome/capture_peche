@@ -25,6 +25,7 @@ public class TripBean {
     public Date finishedAt;
     public UUID weatherId;
     public List<CatchBean> catchs;
+    public Set<UUID> techniqueIds;
 
     // Calculés
     public Optional<LocalDateTime> modifiableUntil;
@@ -49,6 +50,7 @@ public class TripBean {
                 ", finishedAt=" + finishedAt +
                 ", weatherId=" + weatherId +
                 ", catchs=" + catchs +
+                ", techniqueIds=" + techniqueIds +
                 ", modifiableUntil=" + modifiableUntil +
                 '}';
     }

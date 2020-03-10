@@ -116,11 +116,10 @@ export default class TripCatchs extends Vue {
 
   finish() {
     if (this.trip!.mode == 'Live') {
-      this.trip!.finishedAt = new Date();
       this.computeDuration();
       this.liveRunning = false;
     }
-    TripsService.saveTripMain(this.trip!, this.tripSaved);
+    TripsService.finishTrip(this.trip!, this.tripSaved);
   }
 
   tripSaved() {

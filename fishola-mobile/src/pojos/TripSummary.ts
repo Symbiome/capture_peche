@@ -14,5 +14,6 @@ export default interface TripSummary {
     speciesIds: string[];
     otherSpecies: string;
     weatherId?: string;
+    techniqueIds: string[];
 
 }

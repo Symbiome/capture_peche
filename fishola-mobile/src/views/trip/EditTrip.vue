@@ -35,7 +35,7 @@
                            v-bind:readonly="!modifiable"
                            v-on:trip-modified="onUpdatedTrip"
                            v-on:goEditSpecies="goEditSpecies"
-                           v-on:goEditTechnics="goEditTechnics"
+                           v-on:goEditTechniques="goEditTechniques"
                            v-on:goEditType="goEditType"
                            class="summary-pane"/>
           <div class="bottom-page-spacer"></div>
@@ -69,7 +69,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
-export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechnics" | "EditType";
+export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques" | "EditType";
 
 @Component({
   components: {
@@ -101,7 +101,8 @@ export default class EditTrip extends Vue {
     finishedAt: new Date(),
     weatherId: '',
     catchs: [],
-    otherSpecies: ''
+    otherSpecies: '',
+    techniqueIds:[]
   };
 
   duration:string = '';
@@ -141,8 +142,8 @@ export default class EditTrip extends Vue {
     this.startSave();
   }
 
-  goEditTechnics() {
-    this.actionRequested = "EditTechnics";
+  goEditTechniques() {
+    this.actionRequested = "EditTechniques";
     this.startSave();
   }
 
@@ -157,7 +158,7 @@ export default class EditTrip extends Vue {
       this.$root.$emit('ask-for-sync-check');
     } else if (this.actionRequested == "EditSpecies") {
       router.push({name:'trip-species', params: {id: this.id}});
-    } else if (this.actionRequested == "EditTechnics") {
+    } else if (this.actionRequested == "EditTechniques") {
       this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');
     } else if (this.actionRequested == "EditType") {
       this.$root.$emit('toaster-warning', 'Saved but ... Work in progress');

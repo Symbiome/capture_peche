@@ -173,7 +173,12 @@ public class TripResource extends AbstractFisholaResource {
 
         int created = tripsDao.setSpecies(tripId, speciesIds);
         if (log.isDebugEnabled()) {
-            log.debug(created + " espèces recherchées : " + speciesIds);
+            log.debug(created + " espèce(s) recherchée(s) : " + speciesIds);
+        }
+
+        int techniquesCreated = tripsDao.setTechniques(tripId, trip.techniqueIds);
+        if (log.isDebugEnabled()) {
+            log.debug(techniquesCreated + " technique(s) utilisée(s) : " + trip.techniqueIds);
         }
 
         for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
@@ -227,6 +232,8 @@ public class TripResource extends AbstractFisholaResource {
         Set<UUID> speciesIds = Sets.union(trip.speciesIds, otherSpeciesIds);
 
         tripsDao.setSpecies(tripId, speciesIds);
+
+        tripsDao.setTechniques(tripId, trip.techniqueIds);
 
         List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
         ImmutableMap<UUID, Catch> existingCatchsIndex = Maps.uniqueIndex(existingCatchs, Catch::getId);
@@ -358,6 +365,7 @@ public class TripResource extends AbstractFisholaResource {
         result.weatherId = entity.getWeatherId();
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
+        result.techniqueIds = tripsDao.getTripTechniques(tripId);
 
         result.modifiableUntil = getModifiableUntil(entity)
                 .map(Date::toInstant)

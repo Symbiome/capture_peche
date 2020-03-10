@@ -23,12 +23,13 @@ export class SpeciesTechniquesAndReleasedFishStates {
     }
 }
 
-export class LakesWeathersTripTypesAndSpecies {
+export class LakesWeathersTripTypesSpeciesAndTechniques {
     constructor (
         public lakes:Lake[],
         public weathers:Weather[],
         public tripTypes:any[],
-        public species:Map<string, SpeciesWithAlias[]>) {
+        public species:Map<string, SpeciesWithAlias[]>,
+        public techniques:Technique[]) {
     }
 }
 
@@ -146,13 +147,18 @@ export default class ReferentialService extends AbstractFisholaService {
         return Promise.resolve(types);
     }
 
-    static getLakesWeathersTripTypesAndSpecies():Promise<LakesWeathersTripTypesAndSpecies> {
-        return new Promise<LakesWeathersTripTypesAndSpecies>((resolve, reject) => {
+    static getLakesWeathersTripTypesSpeciesAndTechniques():Promise<LakesWeathersTripTypesSpeciesAndTechniques> {
+        return new Promise<LakesWeathersTripTypesSpeciesAndTechniques>((resolve, reject) => {
             Promise
-                .all([ReferentialService.getLakes(), ReferentialService.getWeathers(), ReferentialService.getTripTypes(), ReferentialService.getSpeciesPerLakePlusCustom()])
+                .all([
+                    ReferentialService.getLakes(),
+                    ReferentialService.getWeathers(),
+                    ReferentialService.getTripTypes(),
+                    ReferentialService.getSpeciesPerLakePlusCustom(),
+                    ReferentialService.getTechniques()])
                 .then(
-                    (data:[Lake[], Weather[], any[], Map<string, SpeciesWithAlias[]>]) => {
-                        let result:LakesWeathersTripTypesAndSpecies = new LakesWeathersTripTypesAndSpecies(data[0], data[1], data[2], data[3]);
+                    (data:[Lake[], Weather[], any[], Map<string, SpeciesWithAlias[]>, Technique[]]) => {
+                        let result:LakesWeathersTripTypesSpeciesAndTechniques = new LakesWeathersTripTypesSpeciesAndTechniques(data[0], data[1], data[2], data[3], data[4]);
                         resolve(result);
                     },
                     reject);
