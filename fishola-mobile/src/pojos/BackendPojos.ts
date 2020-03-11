@@ -124,6 +124,10 @@ export interface Feedback {
     locationTitle?: string;
 }
 
+export interface Dashboard {
+    caughtSpeciesDistribution: { [index: string]: number };
+}
+
 export interface Serializable {
 }
 

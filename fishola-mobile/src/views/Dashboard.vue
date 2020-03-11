@@ -7,8 +7,24 @@
 
         <div class="pane-content">
           <h2><i class="icon-fish" />Mes poissons</h2>
-          <div class="placeholder">
-            Mes poissons
+          <div class="distribution">
+            <div v-for="(f, index) in orderedCaughtSpeciesDistribution()"
+                 v-bind:key="f.species.id"
+                 class="distribution-row">
+              <div class="distribution-row-data">
+                <div class="species">
+                  {{f.species.name}}
+                </div>
+                <div class="percent">
+                  {{f.percent}} %
+                </div>
+              </div>
+              <div class="distribution-row-bar">
+                <div class="distribution-row-bar-filled"
+                     v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                     v-bind:style="'width: ' + f.percent + '%;'"></div>
+              </div>
+            </div>
           </div>
 
           <h2><i class="icon-fishing" />Moyenne des captures</h2>
@@ -51,13 +67,25 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
+import DashboardService from '@/services/DashboardService';
+import {Dashboard, SpeciesWithAlias} from '@/pojos/BackendPojos';
+import {DashboardAndSpecies} from '@/services/DashboardService';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
+
+export class DistributionEntry {
+    constructor (
+        public species:SpeciesWithAlias,
+        public percent:number
+        ) {
+    }
+}
 
 @Component({
   components: {
@@ -65,14 +93,39 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class Dashboard extends Vue {
-  
+export default class DashboardVue extends Vue {
+
+  caughtSpeciesDistribution:DistributionEntry[] = [];
+  speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
+
   constructor() {
     super();
   }
 
   mounted() {
+    DashboardService.loadDashboard()
+      .then(this.loaded);
   }
+
+  loaded(data:DashboardAndSpecies) {
+    console.log("LOADED!", data);
+    data.species.forEach((species) => {
+      this.speciesIndex[species.id] = species;
+    })
+    let distribution = data.dashboard.caughtSpeciesDistribution;
+    Object.keys(distribution)
+      .forEach((speciesId) => {
+        let species:SpeciesWithAlias = this.speciesIndex[speciesId];
+        let percent:number = Math.round(distribution[speciesId]);
+        let entry:DistributionEntry = new DistributionEntry(species, percent);
+        this.caughtSpeciesDistribution.push(entry);
+    });
+  }
+
+  orderedCaughtSpeciesDistribution() {
+    return Vue.lodash.orderBy(this.caughtSpeciesDistribution, 'species.name')
+  }
+
 }
 
 </script>
@@ -115,6 +168,61 @@ export default class Dashboard extends Vue {
       font-size: 22px;
       line-height: 30px;
       text-align: left;
+    }
+
+    .distribution {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .distribution-row {
+
+        margin-bottom: 10px;
+
+        .distribution-row-data {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+
+          font-size: 12px;
+          line-height: 16px;
+          height: 16px;
+
+          .species {
+            color: @gunmetal;
+          }
+
+          .percent {
+            font-weight: bold;
+            color: @pelorous;
+          }
+        }
+
+        .distribution-row-bar {
+          position: relative;
+          margin-top: 4px;
+          height: 14px;
+          border-radius: 7px;
+          background: @solitude;
+
+          .distribution-row-bar-filled {
+            position: absolute;
+            height: 14px;
+            border-radius: 7px;
+
+            &.even {
+              background: @pelorous;
+            }
+
+            &.odd {
+              background: @summer-sky;
+            }
+          }
+
+        }
+
+      }
+
     }
 
     .placeholder {

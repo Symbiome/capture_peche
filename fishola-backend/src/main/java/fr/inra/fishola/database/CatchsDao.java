@@ -86,4 +86,15 @@ public class CatchsDao extends AbstractFisholaDao {
                 .forEach(this::delete);
     }
 
+    public List<Catch> findAllByUserId(UUID userId) {
+        List<Catch> result = withContext(context -> {
+            List<Catch> catches = context.select()
+                    .from(Tables.CATCH.join(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID)))
+                    .where(Tables.TRIP.OWNER_ID.eq(userId))
+                    .fetchInto(Catch.class);
+            return catches;
+        });
+        return result;
+    }
+
 }
