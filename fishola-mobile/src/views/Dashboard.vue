@@ -28,9 +28,37 @@
           </div>
 
           <h2><i class="icon-fishing" />Moyenne des captures</h2>
-          <span>12 captures en moyenne / sortie</span>
-          <div class="placeholder">
-            Moyenne des captures
+          <div class="average-header">
+            <div class="count">{{averageCatchsPerTripRounded}}</div>
+            captures en moyenne / sortie
+          </div>
+          <div class="average">
+            <div v-for="(f, index) in latestTrips"
+                 v-bind:key="f.tripId"
+                 class="average-column"
+                 v-on:click="openTrip(f.tripId)">
+                 <div class="count">
+                  {{f.catchsCount}}
+                 </div>
+                 <div class="average-row-bar">
+                  <div class="average-row-bar-filled"
+                    v-if="f.catchsCount > 0"
+                    v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                    v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+                 </div>
+                 <div class="date">
+                  <div class="day">
+                    {{getDay(f.day)}}
+                  </div>
+                  <div class="month">
+                    {{getMonth(f.day)}}
+                  </div>
+                  <div class="year">
+                    {{getYear(f.day)}}
+                  </div>
+                 </div>
+            </div>
+            <div class="average-threshold" v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
           </div>
 
           <h2><i class="icon-size" />Top 5 tailles</h2>
@@ -74,10 +102,11 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import DashboardService from '@/services/DashboardService';
-import {Dashboard, SpeciesWithAlias} from '@/pojos/BackendPojos';
+import {Dashboard, SpeciesWithAlias, DashboardLastTrip} from '@/pojos/BackendPojos';
 import {DashboardAndSpecies} from '@/services/DashboardService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import router from '../router';
 
 export class DistributionEntry {
     constructor (
@@ -95,8 +124,14 @@ export class DistributionEntry {
 })
 export default class DashboardVue extends Vue {
 
-  caughtSpeciesDistribution:DistributionEntry[] = [];
   speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
+  months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
+  caughtSpeciesDistribution:DistributionEntry[] = [];
+  averageCatchsPerTripRounded:number = 0;
+  averageCatchsPerTrip:number = 0;
+  latestTrips:DashboardLastTrip[] = [];
+  maxCatchsCount:number = 100;
 
   constructor() {
     super();
@@ -111,7 +146,8 @@ export default class DashboardVue extends Vue {
     console.log("LOADED!", data);
     data.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
-    })
+    });
+
     let distribution = data.dashboard.caughtSpeciesDistribution;
     Object.keys(distribution)
       .forEach((speciesId) => {
@@ -120,10 +156,42 @@ export default class DashboardVue extends Vue {
         let entry:DistributionEntry = new DistributionEntry(species, percent);
         this.caughtSpeciesDistribution.push(entry);
     });
+
+    this.averageCatchsPerTrip = data.dashboard.averageCatchsPerTrip || 0;
+    this.averageCatchsPerTripRounded = Math.round(10 * this.averageCatchsPerTrip) / 10;
+
+    this.maxCatchsCount = 0;
+    data.dashboard.latestTripsCatchs.forEach((trip) => {
+      this.latestTrips.push(trip);
+      if (trip.catchsCount > this.maxCatchsCount) {
+        this.maxCatchsCount = trip.catchsCount;
+      }
+    });
+    if (this.maxCatchsCount == 0) {
+      this.maxCatchsCount = 100;
+    }
   }
 
   orderedCaughtSpeciesDistribution() {
-    return Vue.lodash.orderBy(this.caughtSpeciesDistribution, 'species.name')
+    return Vue.lodash.orderBy(this.caughtSpeciesDistribution, 'species.name');
+  }
+
+  openTrip(tripId:string) {
+    router.push({name:'trip', params: {id: tripId}});
+  }
+
+  getDay(date:number) {
+    return new Date(date).getDate();
+  }
+
+  getMonth(date:number) {
+    let month = new Date(date).getMonth();
+    let result = this.months[month];
+    return result;
+  }
+
+  getYear(date:number) {
+    return new Date(date).getFullYear();
   }
 
 }
@@ -221,6 +289,91 @@ export default class DashboardVue extends Vue {
 
         }
 
+      }
+
+    }
+
+    .average-header {
+      height: 30px;
+      line-height: 30px;
+      font-weight: bold;
+      font-size: 14px;
+      color: @terra-cotta;
+
+      display: flex;
+      flex-direction: row;
+
+      .count {
+        width: 30px;
+        border-radius: 15px;
+        background-color: @terra-cotta;
+        color: @white;
+        margin-right: 10px;
+      }
+    }
+
+    .average {
+      position: relative;
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+
+      .average-threshold {
+        position: absolute;
+        width: calc(100% + 60px);
+        left: -30px;
+        height: 0px;
+        // background-color: @terra-cotta;
+        border: 1px solid @terra-cotta;
+      }
+
+      .average-column {
+        display: flex;
+        flex-direction: column;
+        align-items:center;
+
+        .count {
+          font-weight: bold;
+          font-size: 12px;
+          color: @pelorous;
+        }
+
+        .average-row-bar {
+          position: relative;
+          margin-top: 5px;
+          margin-bottom: 5px;
+          height: 150px;
+          width: 14px;
+          border-radius: 7px;
+          background: @solitude;
+
+          .average-row-bar-filled {
+            position: absolute;
+            bottom: 0px;
+            width: 14px;
+            border-radius: 7px;
+
+            &.even {
+              background: @pelorous;
+            }
+
+            &.odd {
+              background: @summer-sky;
+            }
+
+          }
+        }
+
+        .date {
+          height: 50px;
+          font-size: 12px;
+          color: @gunmetal;
+          .day {
+            font-weight: bold;
+          }
+        }
       }
 
     }

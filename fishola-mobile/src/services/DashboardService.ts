@@ -20,7 +20,7 @@ export default class DashboardService extends AbstractFisholaService {
             Promise
             .all(
                 [
-                    this.backendGetWithCache('/v1/dashboard'), 
+                    this.backendGet('/v1/dashboard'),
                     ReferentialService.getAllSpecies()
                 ])
             .then((data:[Dashboard, SpeciesWithAlias[]]) => {

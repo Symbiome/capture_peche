@@ -126,9 +126,17 @@ export interface Feedback {
 
 export interface Dashboard {
     caughtSpeciesDistribution: { [index: string]: number };
+    latestTripsCatchs: DashboardLastTrip[];
+    averageCatchsPerTrip?: number;
 }
 
 export interface Serializable {
+}
+
+export interface DashboardLastTrip {
+    tripId: string;
+    day: Date;
+    catchsCount: number;
 }
 
 export type TripMode = "Live" | "Afterwards";
