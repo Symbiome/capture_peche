@@ -68,12 +68,13 @@ public class SecurityResource extends AbstractFisholaResource {
             validationErrors.put("firstName", "Le prénom est obligatoire");
         }
 
-        if (StringUtils.isEmpty(bean.email)) {
+        String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
+        if (StringUtils.isEmpty(email)) {
             validationErrors.put("email", "L'e-mail est obligatoire");
-        } else if (!isEmailInValidFormat(bean.email)) {
+        } else if (!isEmailInValidFormat(email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "Le format n'est pas correct");
-        } else if (usersDao.findByEmail(bean.email).isPresent()) {
+        } else if (usersDao.findByEmail(email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put("email", "E-mail déjà utilisé");
         }
@@ -95,7 +96,7 @@ public class SecurityResource extends AbstractFisholaResource {
         String passwordHashed = usersDao.hashPassword(bean.password);
 
         Map<String, String> claims = new HashMap<>();
-        claims.put(CLAIM_EMAIL, bean.email);
+        claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_FIRST_NAME, bean.firstName);
         claims.put(CLAIM_LAST_NAME, bean.lastName);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
@@ -110,7 +111,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 "verifyLink", verifyUrl,
                 "firstName", bean.firstName);
         FisholaMail mail = builder
-                .addTos(bean.email)
+                .addTos(email)
                 .subject("Fishola - Validation de votre e-mail")
                 .build();
         // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
@@ -244,7 +245,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         user.setFirstName(profile.firstName());
         user.setLastName(profile.lastName().map(StringUtils::trimToNull).orElse(null));
-        user.setEmail(profile.email());
+        user.setEmail(profile.email().toLowerCase());
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
 

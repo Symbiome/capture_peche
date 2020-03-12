@@ -30,7 +30,8 @@ public class UsersDao extends AbstractFisholaDao {
         }
     }
 
-    public Optional<Boolean> authenticate(String email, String password) {
+    public Optional<Boolean> authenticate(String rawEmail, String password) {
+        String email = rawEmail.toLowerCase();
         Optional<FisholaUser> user = findByEmail(email);
         Optional<Boolean> result = user
                 .map(FisholaUser::getPassword)
@@ -49,13 +50,15 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Optional<FisholaUser> findByEmail(String email) {
+    public Optional<FisholaUser> findByEmail(String rawEmail) {
+        String email = rawEmail.toLowerCase();
         FisholaUser user = withDao(FisholaUserDao.class, dao -> dao.fetchOneByEmail(email));
         Optional<FisholaUser> result = Optional.ofNullable(user);
         return result;
     }
 
-    public void create(String firstName, String lastName, String email, String passwordHashed) {
+    public void create(String firstName, String lastName, String rawEmail, String passwordHashed) {
+        String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
                 FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD)
                 .values(firstName, lastName, email, passwordHashed)
