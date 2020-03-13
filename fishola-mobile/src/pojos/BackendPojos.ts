@@ -16,6 +16,7 @@ export interface CatchBean {
     latitude?: number;
     longitude?: number;
     hasPicture: boolean;
+    tripId?: string;
 }
 
 export interface TripBean {

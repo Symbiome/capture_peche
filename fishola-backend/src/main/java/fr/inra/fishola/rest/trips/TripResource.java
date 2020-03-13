@@ -403,6 +403,7 @@ public class TripResource extends AbstractFisholaResource {
 
     protected CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
         CatchBean result = new CatchBean();
+        result.tripId = Optional.of(aCatch.getTripId());
         UUID catchId = aCatch.getId();
         result.id = catchId.toString();
         result.speciesId = Optional.of(aCatch.getSpeciesId());

@@ -21,5 +21,6 @@ public class CatchBean {
     public Optional<Double> longitude = Optional.empty();
 
     public boolean hasPicture = false;
+    public Optional<UUID> tripId = Optional.empty();
 
 }
