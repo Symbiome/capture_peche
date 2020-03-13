@@ -47,35 +47,40 @@ public class DashboardResource extends AbstractFisholaResource {
         List<Catch> allCatches = catchsDao.findAllByUserId(userId);
         int allCatchsCount = allCatches.size();
 
-        ImmutableListMultimap<UUID, Catch> allCatchsIndex = Multimaps.index(allCatches, Catch::getTripId);
+        Map<UUID, Double> caughtSpeciesDistribution = computeDistribution(allCatches);
+        builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
+        PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches);
+        builder.latestTripsCatchs(latestTrips.getElements());
+        int allTripsCount = (int) latestTrips.getCount();
+        if (allTripsCount > 0) {
+            double averageCatchsPerTrip = 1d * allCatchsCount / allTripsCount;
+            builder.averageCatchsPerTrip(averageCatchsPerTrip);
+        }
+
+        Dashboard result = builder.build();
+        return result;
+    }
+
+    protected Map<UUID, Double> computeDistribution(List<Catch> allCatches) {
+        int allCatchsCount = allCatches.size();
         ImmutableMultiset<UUID> caughtSpeciesDistributionSet = allCatches.stream()
                 .map(Catch::getSpeciesId)
                 .collect(ImmutableMultiset.toImmutableMultiset());
         Map<UUID, Integer> caughtSpeciesDistributionCount = caughtSpeciesDistributionSet.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount));
-        Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesDistributionCount, count -> count * 100d / allCatchsCount);
-        builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
+        Map<UUID, Double> result = Maps.transformValues(caughtSpeciesDistributionCount, count -> count * 100d / allCatchsCount);
+        return result;
+    }
 
+    protected PaginationResult<DashboardLastTrip> computeLatestTrips(UUID userId, List<Catch> allCatches) {
+        ImmutableListMultimap<UUID, Catch> allCatchsIndex = Multimaps.index(allCatches, Catch::getTripId);
         PaginationParameter page = PaginationParameter.builder(0, 9)
                 .addOrder("date", true)
                 .build();
-        PaginationResult<Trip> latestTrips = tripsDao.listMyTrips(userId, page, Optional.empty());
-        int allTripsCount = (int) latestTrips.getCount();
-
-        if (allTripsCount > 0) {
-            double averageCatchsPerTrip = 1d * allCatchsCount / allTripsCount;
-            builder.averageCatchsPerTrip(averageCatchsPerTrip);
-        }
-
-        List<DashboardLastTrip> latestTripsCatchs = latestTrips.getElements()
-                .stream()
-                .map(trip -> toDashboardLastTrip(trip, allCatchsIndex))
-                .collect(Collectors.toList());
-        builder.latestTripsCatchs(latestTripsCatchs);
-
-        Dashboard result = builder.build();
+        PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty());
+        PaginationResult<DashboardLastTrip> result = latestTripsEntities.transform(trip -> toDashboardLastTrip(trip, allCatchsIndex));
         return result;
     }
 
