@@ -5,63 +5,70 @@
       <div class="pane pane-only">
         <h1>Tableau de bord</h1>
 
-        <div class="pane-content">
-          <h2><i class="icon-fish" />Mes poissons</h2>
-          <div class="distribution">
-            <div v-for="(f, index) in orderedCaughtSpeciesDistribution()"
-                 v-bind:key="f.species.id"
-                 class="distribution-row">
-              <div class="distribution-row-data">
-                <div class="species">
-                  {{f.species.name}}
+        <div class="pane-content-large">
+
+          <div class="shrinked">
+            <h2><i class="icon-fish" />Mes poissons</h2>
+            <div class="distribution">
+              <div v-for="(f, index) in orderedCaughtSpeciesDistribution()"
+                  v-bind:key="f.species.id"
+                  class="distribution-row">
+                <div class="distribution-row-data">
+                  <div class="species">
+                    {{f.species.name}}
+                  </div>
+                  <div class="percent">
+                    {{f.percent}} %
+                  </div>
                 </div>
-                <div class="percent">
-                  {{f.percent}} %
+                <div class="distribution-row-bar">
+                  <div class="distribution-row-bar-filled"
+                      v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                      v-bind:style="'width: ' + f.percent + '%;'"></div>
                 </div>
-              </div>
-              <div class="distribution-row-bar">
-                <div class="distribution-row-bar-filled"
-                     v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                     v-bind:style="'width: ' + f.percent + '%;'"></div>
               </div>
             </div>
           </div>
 
-          <h2><i class="icon-fishing" />Moyenne des captures</h2>
-          <div class="average-header">
-            <div class="count">{{averageCatchsPerTripRounded}}</div>
-            captures en moyenne / sortie
-          </div>
-          <div class="average">
-            <div v-for="(f, index) in latestTrips"
-                 v-bind:key="f.tripId"
-                 class="average-column"
-                 v-on:click="openTrip(f.tripId)">
-                 <div class="count">
-                  {{f.catchsCount}}
-                 </div>
-                 <div class="average-row-bar">
-                  <div class="average-row-bar-filled"
-                    v-if="f.catchsCount > 0"
-                    v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                    v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
-                 </div>
-                 <div class="date">
-                  <div class="day">
-                    {{getDay(f.day)}}
-                  </div>
-                  <div class="month">
-                    {{getMonth(f.day)}}
-                  </div>
-                  <div class="year">
-                    {{getYear(f.day)}}
-                  </div>
-                 </div>
+          <div class="shrinked">
+            <h2><i class="icon-fishing" />Moyenne des captures</h2>
+            <div class="average-header">
+              <div class="count">{{averageCatchsPerTripRounded}}</div>
+              captures en moyenne / sortie
             </div>
-            <div class="average-threshold" v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
+            <div class="average">
+              <div v-for="(f, index) in latestTrips"
+                  v-bind:key="f.tripId"
+                  class="average-column"
+                  v-on:click="openTrip(f.tripId)">
+                  <div class="count">
+                    {{f.catchsCount}}
+                  </div>
+                  <div class="average-row-bar">
+                    <div class="average-row-bar-filled"
+                      v-if="f.catchsCount > 0"
+                      v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                      v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+                  </div>
+                  <div class="date">
+                    <div class="day">
+                      {{getDay(f.day)}}
+                    </div>
+                    <div class="month">
+                      {{getMonth(f.day)}}
+                    </div>
+                    <div class="year">
+                      {{getYear(f.day)}}
+                    </div>
+                  </div>
+              </div>
+              <div class="average-threshold" v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
+            </div>
           </div>
 
-          <h2><i class="icon-size" />Top 5 tailles</h2>
+          <div class="shrinked">
+            <h2><i class="icon-size" />Top 5 tailles</h2>
+          </div>
           <div class="scroll">
             <div class="item"
                  v-bind:class="((topSizeSelected && t == topSizeSelected) ? 'selected':'')"
@@ -71,14 +78,17 @@
               {{t.species.name}}
             </div>
           </div>
-          <div class="placeholder" v-if="topSizeSelected">
-            <div v-for="c in topSizeSelected.catchs"
-                 v-bind:key="'size-' + c.id">
-              {{c.id}}
-            </div>
+          <div class="dashboard-top-catchs catch-preview-list-scrollable"
+               v-if="topSizeSelected">
+            <CatchPreviewList v-bind:modifiable="false"
+                              lakeId=""
+                              v-bind:catchs="topSizeSelected.catchs"
+                              v-on:openCatchFromId="openCatch($event)"/>
           </div>
 
-          <h2><i class="icon-weight" />Top 5 poids</h2>
+          <div class="shrinked">
+            <h2><i class="icon-weight" />Top 5 poids</h2>
+          </div>
           <div class="scroll">
             <div class="item"
                  v-bind:class="((topWeightSelected && t == topWeightSelected) ? 'selected':'')"
@@ -88,11 +98,12 @@
               {{t.species.name}}
             </div>
           </div>
-          <div class="placeholder" v-if="topWeightSelected">
-            <div v-for="c in topWeightSelected.catchs"
-                 v-bind:key="'weight-' + c.id">
-              {{c.id}}
-            </div>
+          <div class="dashboard-top-catchs catch-preview-list-scrollable"
+               v-if="topWeightSelected">
+            <CatchPreviewList v-bind:modifiable="false"
+                              lakeId=""
+                              v-bind:catchs="topWeightSelected.catchs"
+                              v-on:openCatchFromId="openCatch($event)"/>
           </div>
 
         </div>
@@ -109,6 +120,8 @@
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+
+import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
 
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
@@ -137,7 +150,8 @@ export class TopEntry {
 @Component({
   components: {
     FisholaHeader,
-    FisholaFooter
+    FisholaFooter,
+    CatchPreviewList
   }
 })
 export default class DashboardVue extends Vue {
@@ -155,6 +169,9 @@ export default class DashboardVue extends Vue {
   topByWeight:TopEntry[] = [];
   topWeightSelected:TopEntry | null = null;
 
+  // On a besoin de maintenir un index de capture -> sortie
+  catchToTripId:{ [index: string]: string } = {};
+
   constructor() {
     super();
   }
@@ -165,7 +182,6 @@ export default class DashboardVue extends Vue {
   }
 
   loaded(data:DashboardAndSpecies) {
-    console.log("LOADED!", data);
     data.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
     });
@@ -212,6 +228,7 @@ export default class DashboardVue extends Vue {
       let catchs:CatchBean[] = [];
       let rawCatchs:any[] = rawTop[speciesId];
       rawCatchs.forEach((rawCatch:any) => {
+        this.catchToTripId[rawCatch.id] = rawCatch.tripId;
         let aCatch:CatchBean = TripsService.backendCatchToCatchBean(new Date(), rawCatch);
         catchs.push(aCatch);
       })
@@ -227,6 +244,10 @@ export default class DashboardVue extends Vue {
 
   selectTopWeight(top:TopEntry) {
     this.topWeightSelected = top;
+  }
+
+  openCatch(catchId:string) {
+    router.push({name:'catch', params: {tripId: this.catchToTripId[catchId], catchId:catchId}});
   }
 
   orderedCaughtSpeciesDistribution() {
@@ -268,18 +289,21 @@ export default class DashboardVue extends Vue {
 
   text-align:center;
 
-  .pane-content {
+  .pane-content-large {
 
     overflow: auto;
 
     text-align:center;
 
     background-color: @white-smoke;
-    padding-left: 30px;
-    padding-right: 30px;
     padding-top: 30px;
 
     color: @gunmetal;
+
+    .shrinked {
+      padding-left: 30px;
+      padding-right: 30px;
+    }
 
     h2 {
 
@@ -435,18 +459,16 @@ export default class DashboardVue extends Vue {
 
     }
 
-    .placeholder {
+    .dashboard-top-catchs {
 
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      flex-direction: row;
+      align-items: center;
+      overflow: auto;
 
-      color: @white;
-      background-color: @cyprus;
-      opacity: 0.8;
-      border-radius: 8px;
-      
       height: 200px;
+      margin-bottom: 20px;
+
     }
 
     .scroll {
@@ -454,6 +476,9 @@ export default class DashboardVue extends Vue {
       flex-direction: row;
       justify-content: flex-start;
       margin-bottom: 10px;
+
+      padding-left: 30px;
+      padding-right: 30px;
 
       overflow:auto;
 

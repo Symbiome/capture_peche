@@ -214,10 +214,11 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
-    static getSpeciesAndTechniques(lakeId:string):Promise<SpeciesWithAliasAndTechnique> {
+    static getSpeciesAndTechniques(lakeId?:string):Promise<SpeciesWithAliasAndTechnique> {
         return new Promise<SpeciesWithAliasAndTechnique>((resolve, reject) => {
+            let speciesPromise = lakeId ? ReferentialService.getSpeciesPlusCustom(lakeId) : ReferentialService.getAllSpecies();
             Promise
-                .all([ReferentialService.getSpeciesPlusCustom(lakeId), ReferentialService.getTechniques()])
+                .all([speciesPromise, ReferentialService.getTechniques()])
                 .then(
                     (data:[SpeciesWithAlias[], Technique[]]) => {
                         let result:SpeciesWithAliasAndTechnique = new SpeciesWithAliasAndTechnique(data[0], data[1]);
