@@ -3,13 +3,17 @@ package fr.inra.fishola.rest.dashboard;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Ordering;
 import fr.inra.fishola.database.CatchsDao;
 import fr.inra.fishola.database.TripsDao;
 import fr.inra.fishola.entities.tables.pojos.Catch;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.rest.AbstractFisholaResource;
+import fr.inra.fishola.rest.trips.CatchBean;
+import fr.inra.fishola.rest.trips.TripResource;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -20,10 +24,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/api/v1")
@@ -58,7 +66,48 @@ public class DashboardResource extends AbstractFisholaResource {
             builder.averageCatchsPerTrip(averageCatchsPerTrip);
         }
 
+        Set<UUID> catchIds = allCatches.stream()
+                .map(Catch::getId)
+                .collect(Collectors.toSet());
+        Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
+        Map<UUID, List<CatchBean>> topBySize = computeTopCatchs(allCatches, catchsWithPictures, Catch::getSize);
+        builder.topBySize(topBySize);
+
+        Map<UUID, List<CatchBean>> topByWeight = computeTopCatchs(allCatches, catchsWithPictures, Catch::getWeight);
+        builder.topByWeight(topByWeight);
+
         Dashboard result = builder.build();
+        return result;
+    }
+
+    protected List<CatchBean> toDashboardTopCatchs(Collection<Catch> catches,
+                                                      Ordering<Catch> ordering,
+                                                      Set<UUID> catchsWithPictures) {
+        List<CatchBean> result = ordering.immutableSortedCopy(catches)
+                .stream()
+                .limit(5)
+                .map(aCatch -> TripResource.toCatchBean(aCatch, catchsWithPictures))
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    protected Map<UUID, List<CatchBean>> computeTopCatchs(List<Catch> allCatches,
+                                                        Set<UUID> catchsWithPictures,
+                                                        Function<Catch, Integer> getter) {
+        Multimap<UUID, Catch> catchsBySpecies = Multimaps.index(allCatches, Catch::getSpeciesId);
+        // On commence par retirer les captures dont la valeur est nulle
+        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.apply(aCatch) != null);
+
+        Ordering<Catch> ordering = Ordering.natural()
+                .onResultOf(getter::apply)
+                .reverse();
+
+        Map<UUID, List<CatchBean>> result = new HashMap<>();
+        catchsBySpecies.asMap()
+                .forEach((key, value) -> {
+                    List<CatchBean> topCatchs = toDashboardTopCatchs(value, ordering, catchsWithPictures);
+                    result.put(key, topCatchs);
+                });
         return result;
     }
 

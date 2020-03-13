@@ -1,6 +1,7 @@
 package fr.inra.fishola.rest.dashboard;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inra.fishola.rest.trips.CatchBean;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -17,5 +18,9 @@ public interface Dashboard {
     List<DashboardLastTrip> latestTripsCatchs();
 
     Optional<Double> averageCatchsPerTrip();
+
+    Map<UUID, List<CatchBean>> topBySize();
+
+    Map<UUID, List<CatchBean>> topByWeight();
 
 }

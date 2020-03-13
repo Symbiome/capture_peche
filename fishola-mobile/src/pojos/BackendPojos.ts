@@ -129,6 +129,8 @@ export interface Dashboard {
     caughtSpeciesDistribution: { [index: string]: number };
     latestTripsCatchs: DashboardLastTrip[];
     averageCatchsPerTrip?: number;
+    topBySize: { [index: string]: CatchBean[] };
+    topByWeight: { [index: string]: CatchBean[] };
 }
 
 export interface Serializable {

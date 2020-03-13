@@ -401,7 +401,7 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    protected CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
+    public static CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
         CatchBean result = new CatchBean();
         result.tripId = Optional.of(aCatch.getTripId());
         UUID catchId = aCatch.getId();
