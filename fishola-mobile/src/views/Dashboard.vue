@@ -63,29 +63,38 @@
 
           <h2><i class="icon-size" />Top 5 tailles</h2>
           <div class="scroll">
-            <div class="item selected">Perche</div>
-            <div class="item">Brochet</div>
-            <div class="item">Truite</div>
-            <div class="item">Corégone</div>
-            <div class="item">Omble_chevalier</div>
-            <div class="item">Silure</div>
+            <div class="item"
+                 v-bind:class="((topSizeSelected && t == topSizeSelected) ? 'selected':'')"
+                 v-for="t in topBySize"
+                 v-bind:key="'size-' + t.species.id"
+                 v-on:click="selectTopSize(t)">
+              {{t.species.name}}
+            </div>
           </div>
-          <div class="placeholder">
-            Top 5 tailles
+          <div class="placeholder" v-if="topSizeSelected">
+            <div v-for="c in topSizeSelected.catchs"
+                 v-bind:key="'size-' + c.id">
+              {{c.id}}
+            </div>
           </div>
 
           <h2><i class="icon-weight" />Top 5 poids</h2>
           <div class="scroll">
-            <div class="item selected">Perche</div>
-            <div class="item">Brochet</div>
-            <div class="item">Truite</div>
-            <div class="item">Corégone</div>
-            <div class="item">Omble_chevalier</div>
-            <div class="item">Silure</div>
+            <div class="item"
+                 v-bind:class="((topWeightSelected && t == topWeightSelected) ? 'selected':'')"
+                 v-for="t in topByWeight"
+                 v-bind:key="'weight-' + t.species.id"
+                 v-on:click="selectTopWeight(t)">
+              {{t.species.name}}
+            </div>
           </div>
-          <div class="placeholder">
-            Top 5 poids
+          <div class="placeholder" v-if="topWeightSelected">
+            <div v-for="c in topWeightSelected.catchs"
+                 v-bind:key="'weight-' + c.id">
+              {{c.id}}
+            </div>
           </div>
+
         </div>
 
       </div>
@@ -102,7 +111,8 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import DashboardService from '@/services/DashboardService';
-import {Dashboard, SpeciesWithAlias, DashboardLastTrip} from '@/pojos/BackendPojos';
+import TripsService from '@/services/TripsService';
+import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean} from '@/pojos/BackendPojos';
 import {DashboardAndSpecies} from '@/services/DashboardService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -112,6 +122,14 @@ export class DistributionEntry {
     constructor (
         public species:SpeciesWithAlias,
         public percent:number
+        ) {
+    }
+}
+
+export class TopEntry {
+    constructor (
+        public species:SpeciesWithAlias,
+        public catchs:CatchBean[]
         ) {
     }
 }
@@ -132,6 +150,10 @@ export default class DashboardVue extends Vue {
   averageCatchsPerTrip:number = 0;
   latestTrips:DashboardLastTrip[] = [];
   maxCatchsCount:number = 100;
+  topBySize:TopEntry[] = [];
+  topSizeSelected:TopEntry | null = null;
+  topByWeight:TopEntry[] = [];
+  topWeightSelected:TopEntry | null = null;
 
   constructor() {
     super();
@@ -170,6 +192,41 @@ export default class DashboardVue extends Vue {
     if (this.maxCatchsCount == 0) {
       this.maxCatchsCount = 100;
     }
+
+    this.topBySize = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
+    this.topByWeight = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
+
+    if (this.topBySize && this.topBySize.length >= 1) {
+      this.selectTopSize(this.topBySize[0]);
+    }
+    if (this.topByWeight && this.topByWeight.length >= 1) {
+      this.selectTopWeight(this.topByWeight[0]);
+    }
+  }
+
+  parseTop(rawTop:{ [index: string]: CatchBean[] }):TopEntry[] {
+    let result:TopEntry[] = [];
+    let topSpecies:string[] = Object.keys(rawTop);
+    topSpecies.forEach((speciesId) => {
+      let species:SpeciesWithAlias = this.speciesIndex[speciesId];
+      let catchs:CatchBean[] = [];
+      let rawCatchs:any[] = rawTop[speciesId];
+      rawCatchs.forEach((rawCatch:any) => {
+        let aCatch:CatchBean = TripsService.backendCatchToCatchBean(new Date(), rawCatch);
+        catchs.push(aCatch);
+      })
+      let entry:TopEntry = new TopEntry(species, catchs);
+      result.push(entry);
+    });
+    return result;
+  }
+
+  selectTopSize(top:TopEntry) {
+    this.topSizeSelected = top;
+  }
+
+  selectTopWeight(top:TopEntry) {
+    this.topWeightSelected = top;
   }
 
   orderedCaughtSpeciesDistribution() {

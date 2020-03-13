@@ -90,6 +90,7 @@ export default class TripsService extends AbstractFisholaService {
     static backendCatchToCatchBean(realDate:Date, input:any):CatchBean {
 
         let result:any = {
+            tripId: input.tripId,
             id: input.id,
             speciesId: input.speciesId,
             size: input.size,
