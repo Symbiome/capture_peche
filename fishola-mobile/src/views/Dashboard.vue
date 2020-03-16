@@ -5,11 +5,18 @@
       <div class="pane pane-only">
         <h1>Tableau de bord</h1>
 
-        <div class="pane-content-large">
+        <div class="spinner-wrapper" v-if="!ready">
+          <div class="spinner"></div>
+        </div>
+
+        <div class="pane-content-large" v-if="ready">
 
           <div class="shrinked">
             <h2><i class="icon-fish" />Mes poissons</h2>
             <div class="distribution">
+              <div class="not-enough-data" v-if="caughtSpeciesDistribution.length == 0">
+                <span>Pas assez de données</span>
+              </div>
               <div v-for="(f, index) in orderedCaughtSpeciesDistribution()"
                   v-bind:key="f.species.id"
                   class="distribution-row">
@@ -32,42 +39,64 @@
 
           <div class="shrinked">
             <h2><i class="icon-fishing" />Moyenne des captures</h2>
-            <div class="average-header">
+            <div class="not-enough-data" v-if="latestTrips.length == 0">
+              <span>Pas assez de données</span>
+            </div>
+            <div class="average-header" v-if="latestTrips.length > 0">
               <div class="count">{{averageCatchsPerTripRounded}}</div>
               captures en moyenne / sortie
             </div>
             <div class="average">
               <div v-for="(f, index) in latestTrips"
-                  v-bind:key="f.tripId"
-                  class="average-column"
-                  v-on:click="openTrip(f.tripId)">
-                  <div class="count">
-                    {{f.catchsCount}}
+                   v-bind:key="f.tripId"
+                   class="average-column"
+                   v-on:click="openTrip(f.tripId)">
+                <div class="count">
+                  {{f.catchsCount}}
+                </div>
+                <div class="average-row-bar">
+                  <div class="average-row-bar-filled"
+                        v-if="f.catchsCount > 0"
+                        v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                        v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+                </div>
+                <div class="date">
+                  <div class="day">
+                    {{getDay(f.day)}}
                   </div>
-                  <div class="average-row-bar">
-                    <div class="average-row-bar-filled"
-                      v-if="f.catchsCount > 0"
-                      v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                      v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+                  <div class="month">
+                    {{getMonth(f.day)}}
                   </div>
-                  <div class="date">
-                    <div class="day">
-                      {{getDay(f.day)}}
-                    </div>
-                    <div class="month">
-                      {{getMonth(f.day)}}
-                    </div>
-                    <div class="year">
-                      {{getYear(f.day)}}
-                    </div>
+                  <div class="year">
+                    {{getYear(f.day)}}
                   </div>
+                </div>
               </div>
-              <div class="average-threshold" v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
+              <div v-for="(f, index) in emptylatestTrips"
+                   v-bind:key="'empty-' + index"
+                   class="average-column">
+                <div class="count">
+                  -
+                </div>
+                <div class="average-row-bar">
+                </div>
+                <div class="date">
+                  <div class="day">
+                    -
+                  </div>
+                </div>
+              </div>
+              <div class="average-threshold"  
+                   v-if="latestTrips.length > 0" 
+                   v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
             </div>
           </div>
 
           <div class="shrinked">
             <h2><i class="icon-size" />Top 5 tailles</h2>
+          </div>
+          <div class="not-enough-data" v-if="topBySize.length == 0">
+            <span>Pas assez de données</span>
           </div>
           <div class="scroll">
             <div class="item"
@@ -88,6 +117,9 @@
 
           <div class="shrinked">
             <h2><i class="icon-weight" />Top 5 poids</h2>
+          </div>
+          <div class="not-enough-data" v-if="topByWeight.length == 0">
+            <span>Pas assez de données</span>
           </div>
           <div class="scroll">
             <div class="item"
@@ -159,10 +191,13 @@ export default class DashboardVue extends Vue {
   speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
   months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
+  ready:boolean = false;
+
   caughtSpeciesDistribution:DistributionEntry[] = [];
   averageCatchsPerTripRounded:number = 0;
   averageCatchsPerTrip:number = 0;
   latestTrips:DashboardLastTrip[] = [];
+  emptylatestTrips:any[] = [];
   maxCatchsCount:number = 100;
   topBySize:TopEntry[] = [];
   topSizeSelected:TopEntry | null = null;
@@ -205,6 +240,9 @@ export default class DashboardVue extends Vue {
         this.maxCatchsCount = trip.catchsCount;
       }
     });
+    while ((this.latestTrips.length + this.emptylatestTrips.length) < 9) {
+      this.emptylatestTrips.push({});
+    }
     if (this.maxCatchsCount == 0) {
       this.maxCatchsCount = 100;
     }
@@ -218,6 +256,8 @@ export default class DashboardVue extends Vue {
     if (this.topByWeight && this.topByWeight.length >= 1) {
       this.selectTopWeight(this.topByWeight[0]);
     }
+
+    this.ready = true;
   }
 
   parseTop(rawTop:{ [index: string]: CatchBean[] }):TopEntry[] {
@@ -287,7 +327,41 @@ export default class DashboardVue extends Vue {
   flex-direction: column;
   justify-content: space-between;
 
-  text-align:center;
+  text-align: center;
+
+
+  @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+  .spinner-wrapper {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .spinner {
+      height: 60px;
+      width: 60px;
+      border-radius: 50%;
+      border-top: 3px solid @pelorous;
+      border-left: 3px solid @pelorous;
+      animation:spin 2s linear infinite;
+    }
+  }
+
+  .not-enough-data {
+    height: 50px;
+    span {
+      font-style: italic;
+      font-size: 18px;
+      line-height: 25px;
+      color: @pale-sky;
+      text-align: center;
+      margin-top: 30px;
+    }
+  }
 
   .pane-content-large {
 
