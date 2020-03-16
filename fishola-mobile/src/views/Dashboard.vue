@@ -110,9 +110,11 @@
           <div class="dashboard-top-catchs catch-preview-list-scrollable"
                v-if="topSizeSelected">
             <CatchPreviewList v-bind:modifiable="false"
+                              v-bind:reverse="false"
                               lakeId=""
                               v-bind:catchs="topSizeSelected.catchs"
-                              v-on:openCatchFromId="openCatch($event)"/>
+                              v-on:openCatchFromId="openCatch($event)"
+                              bottomMode="index"/>
           </div>
 
           <div class="shrinked">
@@ -133,9 +135,12 @@
           <div class="dashboard-top-catchs catch-preview-list-scrollable"
                v-if="topWeightSelected">
             <CatchPreviewList v-bind:modifiable="false"
+                              v-bind:reverse="false"
                               lakeId=""
                               v-bind:catchs="topWeightSelected.catchs"
-                              v-on:openCatchFromId="openCatch($event)"/>
+                              v-on:openCatchFromId="openCatch($event)"
+                              metaMode="weight"
+                              bottomMode="index"/>
           </div>
 
         </div>
@@ -562,7 +567,7 @@ export default class DashboardVue extends Vue {
       }
       div.item.selected {
         color: @gunmetal;
-        border-bottom: 3px solid @pelorous;
+        border-bottom: 2px solid @pelorous;
       }
     }
   }

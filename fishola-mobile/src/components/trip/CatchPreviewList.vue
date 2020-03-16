@@ -8,13 +8,15 @@
         <i class="pastille icon-plus"/>
       </div>
     </div>
-    <div v-for="c in reversedCatchs()"
+    <div v-for="(c, index) in reversedCatchs()"
           v-bind:key="c.id"
           class="preview-wrapper"
           v-on:click="openCatch(c)">
       <CatchPreview v-bind:lakeId="lakeId"
                     v-bind:aCatch="c"
-                    v-on:openCatch="openCatch(c)"/>
+                    v-on:openCatch="openCatch(c)"
+                    v-bind:metaMode="metaMode"
+                    v-bind:bottom="(bottomMode == 'species' ? 'species' : ('top-' + (index+1)))"/>
     </div>
   </div>
 </template>
@@ -41,6 +43,9 @@ export default class CatchPreviewList extends Vue {
   @Prop() lakeId:string;
   @Prop() catchs:CatchSummary[];
   @Prop() modifiable:boolean;
+  @Prop({default: true}) reverse:boolean;
+  @Prop({default: 'size'}) metaMode:string;
+  @Prop({default: 'species'}) bottomMode:string;
 
   created() {
   }
@@ -52,7 +57,7 @@ export default class CatchPreviewList extends Vue {
   }
 
   reversedCatchs() {
-    if (this.catchs) {
+    if (this.catchs && this.reverse) {
       return this.catchs.slice().reverse();
     } else {
       return this.catchs;
