@@ -16,6 +16,7 @@ export interface CatchBean {
     latitude?: number;
     longitude?: number;
     hasPicture: boolean;
+    tripId?: string;
 }
 
 export interface TripBean {
@@ -124,7 +125,21 @@ export interface Feedback {
     locationTitle?: string;
 }
 
+export interface Dashboard {
+    caughtSpeciesDistribution: { [index: string]: number };
+    latestTripsCatchs: DashboardLastTrip[];
+    averageCatchsPerTrip?: number;
+    topBySize: { [index: string]: CatchBean[] };
+    topByWeight: { [index: string]: CatchBean[] };
+}
+
 export interface Serializable {
+}
+
+export interface DashboardLastTrip {
+    tripId: string;
+    day: Date;
+    catchsCount: number;
 }
 
 export type TripMode = "Live" | "Afterwards";

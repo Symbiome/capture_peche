@@ -2,8 +2,11 @@
   <div class="catch-preview">
     <div class="preview-top">
       <div class="meta">
-        <div class="meta-row">
+        <div class="meta-row" v-if="metaMode == 'size'">
           <i class="icon-size"/> {{aCatch.size}} cm<br/>
+        </div>
+        <div class="meta-row" v-if="metaMode == 'weight'">
+          <i class="icon-weight"/> {{aCatch.weight}} g<br/>
         </div>
         <div class="meta-row" v-if="caughtAtLabel">
           <i class="icon-clock"/> {{caughtAtLabel}}<br/>
@@ -19,9 +22,12 @@
       </div>
     </div>
     <div class="preview-bottom">
-      <div class="bottom-left">
+      <div class="bottom-left" v-if="bottom == 'species'">
         <i class="icon-fish"/>
         {{speciesLabel}}
+      </div>
+      <div class="bottom-left" v-if="bottom != 'species'">
+        <Top v-bind:n="top"/>
       </div>
       <div class="bottom-right">
         Voir
@@ -38,6 +44,7 @@ import CatchSummary from '@/pojos/CatchSummary';
 import {SpeciesWithAlias, Technique, TripBean} from '@/pojos/BackendPojos';
 
 import PicturePreview from '@/components/trip/PicturePreview.vue';
+import Top from '@/components/common/Top.vue';
 
 import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
@@ -50,7 +57,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    PicturePreview
+    PicturePreview,
+    Top
   }
 })
 export default class CatchPreview extends Vue {
@@ -58,9 +66,13 @@ export default class CatchPreview extends Vue {
   @Prop() lakeId: string;
   @Prop() aCatch: CatchSummary;
 
+  @Prop({default: 'size'}) metaMode:string;
+  @Prop({default: 'species'}) bottom:string;
+
   caughtAtLabel:string = '';
   techniqueLabel:string = '';
   speciesLabel:string = '';
+  top:number = 0;
 
   pictureSrc:string = '';
 
@@ -76,6 +88,9 @@ export default class CatchPreview extends Vue {
     ReferentialService.getSpeciesAndTechniques(this.lakeId)
       .then(this.referentialLoaded);
 
+    if (this.bottom != 'species') {
+      this.top = parseInt(this.bottom.substring(4));
+    }
   }
 
   pictureLoaded(content?:string) {

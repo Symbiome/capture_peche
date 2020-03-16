@@ -45,8 +45,11 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @GET
     @Path("/species")
-    public List<Species> getSpecies() {
-        List<Species> result = referentialDao.listBuiltInSpecies();
+    public List<SpeciesWithAlias> getSpecies() {
+        List<Species> species = referentialDao.listBuiltInSpecies();
+        List<SpeciesWithAlias> result = species.stream()
+                .map(s -> SpeciesWithAlias.of(s, null))
+                .collect(Collectors.toList());
         return result;
     }
 

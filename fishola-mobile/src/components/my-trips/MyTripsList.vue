@@ -6,7 +6,7 @@
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
-    <div v-if="!loading && trips.length == 0 && !loading" class="pane-content no-trips">
+    <div v-if="!loading && trips.length == 0" class="pane-content no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
         <span v-if="hasSearchTerm">Aucune sortie de pêche trouvée</span>

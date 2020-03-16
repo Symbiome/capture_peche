@@ -48,7 +48,7 @@
                      v-bind:error="weightError"
                      v-bind:readonly="!modifiable"/>
           <FormYesNo name="keep"
-                     label="Conservez-vous ce poisson ?"
+                     v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
                      v-model="aCatch.keep"
                      v-bind:error="keepError"
                      v-bind:readonly="!modifiable"/>
@@ -72,7 +72,7 @@
                         v-model="aCatch.description"
                         v-bind:readonly="!modifiable"/>
           <FormInput name="caughtAt"
-                     label="Heure (optionnelle)"
+                     label="Heure de la capture (optionnelle)"
                      type="time"
                      v-model="caughtAt"
                      v-bind:readonly="!modifiable"/>
@@ -96,7 +96,7 @@
 </template>
 
 <script lang="ts">
-import {TripBean, CatchBean, Technique, SpeciesWithAlias, ReleasedFishState} from '@/pojos/BackendPojos';
+import {TripBean, CatchBean, Technique, SpeciesWithAlias, ReleasedFishState, TripMode} from '@/pojos/BackendPojos';
 import CatchSummary from '@/pojos/CatchSummary';
 
 import PicturesService from '@/services/PicturesService';
@@ -146,6 +146,7 @@ export default class EditCatch extends Vue {
   ready:boolean = false;
 
   tripDate?:Date;
+  tripMode:TripMode = 'Live';
   tripSpeciesIds:string[] = [];
   tripOtherSpecies:string = '';
   aCatch: CatchSummary = {id: '', withSample: false};
@@ -202,12 +203,13 @@ export default class EditCatch extends Vue {
     this.inTripCreation = !someTrip.createdOn;
     this.middleShortcut = (this.inTripCreation ? 'step-3-4':'spacer');
     this.modifiable = (this.inTripCreation || !!someTrip.modifiableUntil);
+    this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.formatToTime(someCatch.caughtAt);
 
-      if (this.inCreation && someTrip.mode == 'Live') {
+      if (this.inCreation && this.tripMode == 'Live') {
         let millis:number = someCatch.caughtAt!.getTime() - someTrip.startedAt.getTime();
         this.rightShortcut = 'timer-' + Math.floor(millis/1000);
       }
@@ -220,7 +222,7 @@ export default class EditCatch extends Vue {
     ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId)
       .then(this.referentialLoaded);
 
-    if (this.inCreation) {
+    if (this.inCreation && this.tripMode == 'Live') {
       GeolocationService.getPosition()
         .then(
           (position) => {
