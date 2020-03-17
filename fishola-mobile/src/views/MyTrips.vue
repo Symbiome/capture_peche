@@ -6,11 +6,11 @@
                      v-bind:sortDown="sortDown"
                      v-on:reverseSortOrder="reverseSortOrder"/>
       <MyTripsSearch v-model="term"/>
-      <img v-bind:src="imageContent"/>
       <MyTripsList v-bind:trips="trips"
                    v-bind:hasSearchTerm="!!currentSearchTerm"
                    v-bind:noTripYet="totalCount == 0"
-                   v-bind:loading="loading"/>
+                   v-bind:loading="loading"
+                   v-on:more-trips="loadNextPage"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    v-bind:button-icon="totalCount == 0 ? 'icon-fishing':'icon-plus'"
@@ -51,10 +51,9 @@ export default class MyTrips extends Vue {
   sortDown:boolean = true;
   term:string = '';
   currentSearchTerm:string = '';
+  currentPage:number = 0;
   count:number = 0;
   totalCount:number = -1;
-
-  imageContent:string = '';
 
   refreshTimer:any = undefined;
 
@@ -73,9 +72,16 @@ export default class MyTrips extends Vue {
   }
 
   loadTrips() {
+    this.currentPage = 0;
     this.currentSearchTerm = this.term;
     TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
     this.loading = true;
+  }
+
+  loadNextPage() {
+    if (this.trips.length < this.count) {
+      TripsService.listTrips(this.sortDown, this.currentSearchTerm, this.moreTripsLoaded, (this.currentPage + 1));
+    }
   }
 
   created() {
@@ -104,6 +110,11 @@ export default class MyTrips extends Vue {
     if (this.totalCount == -1) {
       this.totalCount = count;
     }
+  }
+
+  moreTripsLoaded(ts:TripLight[], count:number) {
+    this.currentPage++;
+    ts.forEach((t) => this.trips.push(t));
   }
 
   reverseSortOrder() {

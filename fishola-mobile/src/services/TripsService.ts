@@ -186,7 +186,7 @@ export default class TripsService extends AbstractFisholaService {
         return input;
     }
 
-    static listTrips(sortDown:boolean, searchTerm:string, callback:(trips:TripLight[], count:number)=>any) {
+    static listTrips(sortDown:boolean, searchTerm:string, callback:(trips:TripLight[], count:number)=>any, pageIndex?:number) {
 
         let result:TripLight[] = [];
 
@@ -204,8 +204,8 @@ export default class TripsService extends AbstractFisholaService {
         });
 
         let page = {
-            pageNumber: 0,
-            pageSize: -1,
+            pageNumber: pageIndex || 0,
+            pageSize: 10,
             desc: sortDown,
             term: searchTerm
         };

@@ -1,6 +1,9 @@
 <template>
   <div class="pane my-trips-list">
-    <div v-if="!loading && trips.length > 0" class="pane-content">
+    <div v-if="!loading && trips.length > 0"
+         class="pane-content"
+         v-on:scroll="scrolled"
+         id="scroll-container">
       <div v-for="t in trips" v-bind:key="t.id">
         <MyTripsItem v-bind:trip="t"/>
       </div>
@@ -41,6 +44,29 @@ export default class MyTripsList extends Vue {
   @Prop() loading!:boolean;
   @Prop() hasSearchTerm!:boolean;
   @Prop() noTripYet!:boolean;
+
+  moreTripsTimer:any = undefined;
+
+  mounted() {
+    // On fait en sorte qu'il n'y ait pas plus d'un appel par seconde
+    this.moreTripsTimer = Vue.lodash.throttle(this.askForMoreTrips, 1000);
+  }
+
+  scrolled() {
+    let elem = document.getElementById('scroll-container');
+    if (elem) {
+      let delta = elem.scrollHeight - elem.scrollTop - elem.offsetHeight;
+      // Quand on arrive à moins de 300px du bas on demande le chargement de la suite
+      if (delta < 300) {
+        this.moreTripsTimer();
+      }
+    }
+  }
+
+  askForMoreTrips() {
+    this.$emit('more-trips');
+  }
+
 }
 </script>
 
