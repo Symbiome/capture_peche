@@ -1,6 +1,6 @@
 <template>
   <div class="footer">
-    <FooterButton v-if="buttonIcon || buttonText"
+    <FooterButton v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
                   v-on:clicked="$emit('buttonClicked')"/>
@@ -115,6 +115,7 @@ export default class FisholaFooter extends Vue {
   @Prop() buttonIcon?: string;
   @Prop() buttonText?: string;
   @Prop() backEvent?: string;
+  @Prop({default: false}) hideButton: boolean;
 
   steps:any[] = [];
   timer:string = '';

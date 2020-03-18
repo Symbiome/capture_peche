@@ -509,4 +509,29 @@ export default class TripsService extends AbstractFisholaService {
         this.backendDelete(`/v1/trips/${tripId}`).then(callback);
     }
 
+    static getRunningTrip():Promise<TripMain> {
+        return new Promise<TripMain>((resolve, reject) => {
+            this.getDatabase()
+                .onCreationTrip
+                .get(Constants.RUNNING_ID)
+                .then((runningTrip) => {
+                    if (runningTrip) {
+                        resolve(runningTrip);
+                    } else {
+                        reject("Pas de running trip");
+                    }
+                });
+        }); 
+    }
+
+    static hasRunningTrip():Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            this.getRunningTrip()
+                .then(
+                    () => resolve(true), 
+                    () => resolve(false)
+                );
+        }); 
+    }
+
 }
