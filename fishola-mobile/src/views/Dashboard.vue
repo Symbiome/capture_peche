@@ -564,6 +564,7 @@ export default class DashboardVue extends Vue {
       div.item {
         margin-right: 20px;
         color: @pale-sky;
+        white-space: nowrap;
       }
       div.item.selected {
         color: @gunmetal;
