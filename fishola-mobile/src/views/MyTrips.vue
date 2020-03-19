@@ -149,7 +149,8 @@ export default class MyTrips extends Vue {
   flex-direction: column;
 
   .my-trips-list {
-    flex: auto;
+    flex-grow: 1;
+    overflow: auto;
   }
 
 }
