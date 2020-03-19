@@ -399,7 +399,9 @@ export default class EditCatch extends Vue {
   }
 
   deleteCatch() {
-    TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
+    if (confirm("Voulez-vous supprimer la capture ?")) {
+      TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
+    }
   }
 
   leavePage() {

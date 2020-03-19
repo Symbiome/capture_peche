@@ -168,7 +168,9 @@ export default class EditTrip extends Vue {
   }
 
   deleteTrip() {
-    TripsService.deleteTrip(this.id, this.tripDeleted);
+    if (confirm("Voulez-vous supprimer la sortie ?")) {
+      TripsService.deleteTrip(this.id, this.tripDeleted);
+    }
   }
 
   tripDeleted() {
