@@ -146,6 +146,7 @@
         </div>
 
       </div>
+      <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    selected="dashboard" />
@@ -154,11 +155,11 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue';
+import RunningOverlay from '@/components/layout/RunningOverlay.vue';
+import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
-
-import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
+import CatchPreviewList from '@/components/trip/CatchPreviewList.vue';
 
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
@@ -187,6 +188,7 @@ export class TopEntry {
 @Component({
   components: {
     FisholaHeader,
+    RunningOverlay,
     FisholaFooter,
     CatchPreviewList
   }
@@ -212,6 +214,8 @@ export default class DashboardVue extends Vue {
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId:{ [index: string]: string } = {};
 
+  hasRunningTrip:boolean = false;
+
   constructor() {
     super();
   }
@@ -219,6 +223,8 @@ export default class DashboardVue extends Vue {
   mounted() {
     DashboardService.loadDashboard()
       .then(this.loaded);
+    TripsService.hasRunningTrip()
+      .then((result:boolean) => this.hasRunningTrip = result);
   }
 
   loaded(data:DashboardAndSpecies) {

@@ -18,6 +18,7 @@
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
+      <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
                    selected="documentation" />
@@ -26,11 +27,12 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue';
+import RunningOverlay from '@/components/layout/RunningOverlay.vue';
+import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
 import DocumentationService from '@/services/DocumentationService';
+import TripsService from '@/services/TripsService';
 import {DocumentationLight} from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -38,12 +40,15 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {
     FisholaHeader,
+    RunningOverlay,
     FisholaFooter
   }
 })
 export default class Documentation extends Vue {
   
   elements:DocumentationLight[] = [];
+
+  hasRunningTrip:boolean = false;
 
   constructor() {
     super();
@@ -52,6 +57,8 @@ export default class Documentation extends Vue {
   mounted() {
     DocumentationService.getDocumentations()
       .then(this.documentationsLoaded);
+    TripsService.hasRunningTrip()
+      .then((result:boolean) => this.hasRunningTrip = result);
   }
 
   documentationsLoaded(docs:DocumentationLight[]) {

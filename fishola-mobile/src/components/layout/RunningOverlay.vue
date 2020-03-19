@@ -7,7 +7,7 @@
     </div>
     <div class="running-overlay-bar">
       <div class="left">
-        {{duration}}
+        {{label}}
       </div>
       <div class="right" v-on:click="finish">
         Fin <i class="icon icon-stop"/>
@@ -29,7 +29,7 @@ import TripMain from '@/pojos/TripMain';
 @Component
 export default class RunningOverlay extends Vue {
 
-  duration: string = 'Sortie à posteriori';
+  label: string = '';
   startedAt: Date = new Date();
 
   trip?:TripMain;
@@ -40,13 +40,14 @@ export default class RunningOverlay extends Vue {
   }
 
   tripLoaded(trip:TripMain) {
-    console.log(trip);
     this.trip = trip;
 
     if (trip.mode == 'Live') {
       this.startedAt = trip.startedAt;
       this.computeDuration();
       setInterval(this.computeDuration, 1000);
+    } else {
+      this.label = trip.name;
     }
 
   }
@@ -66,7 +67,7 @@ export default class RunningOverlay extends Vue {
       seconds -= hours * 60*60 + minutes * 60;
     }
     result += seconds + 's';
-    this.duration = result;
+    this.label = result;
   }
 
   goToRunningTrip() {
@@ -136,7 +137,7 @@ export default class RunningOverlay extends Vue {
   }
 
   .running-overlay-bar {
-    height: 85px;
+    height: 76px;
     background-color: @cyprus;
     font-size: 18px;
     line-height: 25px;

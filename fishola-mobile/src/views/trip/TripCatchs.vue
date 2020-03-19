@@ -58,7 +58,7 @@ export default class TripCatchs extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripMain = { id:'', mode:'Live', startedAt: new Date(), catchs:[] };
+  trip?:TripMain = { id:'', name:'', mode:'Live', startedAt: new Date(), catchs:[] };
 
   duration?:string = '';
   liveRunning:boolean = false;
