@@ -33,10 +33,15 @@ export default class RunningOverlay extends Vue {
   startedAt: Date = new Date();
 
   trip?:TripMain;
+  interval?:number;
 
   mounted() {
     TripsService.getRunningTrip()
       .then(this.tripLoaded);
+  }
+
+  beforeDestroy() {
+    clearInterval(this.interval);
   }
 
   tripLoaded(trip:TripMain) {
@@ -45,7 +50,7 @@ export default class RunningOverlay extends Vue {
     if (trip.mode == 'Live') {
       this.startedAt = trip.startedAt;
       this.computeDuration();
-      setInterval(this.computeDuration, 1000);
+      this.interval = setInterval(this.computeDuration, 1000);
     } else {
       this.label = trip.name;
     }

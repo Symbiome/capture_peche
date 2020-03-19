@@ -28,17 +28,21 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class App extends Vue {
+
+    interval?:number;
+
     created() {
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;
       console.log(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
-      setInterval(this.checkOutOfSyncTrips, syncDelay);
+      this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
       this.$root.$on('ask-for-sync-check', this.checkOutOfSyncTrips);
     }
 
     beforeDestroy() {
       this.$root.$off('ask-for-sync-check');
+      clearInterval(this.interval);
     }
 
     checkOutOfSyncTrips() {
