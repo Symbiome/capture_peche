@@ -11,8 +11,10 @@
                    v-bind:noTripYet="totalCount == 0"
                    v-bind:loading="loading"
                    v-on:more-trips="loadNextPage"/>
+      <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
+                   v-bind:hideButton="hasRunningTrip"
                    v-bind:button-icon="totalCount == 0 ? 'icon-fishing':'icon-plus'"
                    v-bind:button-text="totalCount == 0 ? 'Commencer':'Nouveau'"
                    v-on:buttonClicked="newTrip"
@@ -31,6 +33,7 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
 import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
 import MyTripsList from '@/components/my-trips/MyTripsList.vue'
+import RunningOverlay from '@/components/layout/RunningOverlay.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
@@ -41,6 +44,7 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
+    RunningOverlay,
     FisholaFooter
   }
 })
@@ -56,6 +60,8 @@ export default class MyTrips extends Vue {
   totalCount:number = -1;
 
   refreshTimer:any = undefined;
+
+  hasRunningTrip:boolean = false;
 
   @Watch('term')
   onTermChanged(value: string, oldValue: string) {
@@ -86,6 +92,8 @@ export default class MyTrips extends Vue {
 
   created() {
     this.loadTrips();
+    TripsService.hasRunningTrip()
+      .then((result:boolean) => this.hasRunningTrip = result);
   }
 
   mounted() {
@@ -141,7 +149,8 @@ export default class MyTrips extends Vue {
   flex-direction: column;
 
   .my-trips-list {
-    flex: auto;
+    flex-grow: 1;
+    overflow: auto;
   }
 
 }

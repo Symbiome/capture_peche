@@ -32,6 +32,7 @@
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
+      <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
                    selected="credits" />
@@ -40,18 +41,20 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FisholaHeader from '@/components/layout/FisholaHeader.vue';
+import RunningOverlay from '@/components/layout/RunningOverlay.vue';
+import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
 import {Editorial} from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
+import TripsService from '@/services/TripsService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
     FisholaHeader,
+    RunningOverlay,
     FisholaFooter
   }
 })
@@ -60,6 +63,8 @@ export default class Credits extends Vue {
   paragraphs:string[] = [];
   link = '';
 
+  hasRunningTrip:boolean = false;
+
   constructor() {
     super();
   }
@@ -67,6 +72,8 @@ export default class Credits extends Vue {
   mounted() {
     DocumentationService.getCredits()
       .then(this.creditsLoaded);
+    TripsService.hasRunningTrip()
+      .then((result:boolean) => this.hasRunningTrip = result);
   }
 
   creditsLoaded(editorial:Editorial) {

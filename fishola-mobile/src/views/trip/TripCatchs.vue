@@ -58,12 +58,14 @@ export default class TripCatchs extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripMain = { id:'', mode:'Live', startedAt: new Date(), catchs:[] };
+  trip?:TripMain = { id:'', name:'', mode:'Live', startedAt: new Date(), catchs:[] };
 
   duration?:string = '';
   liveRunning:boolean = false;
 
   ready:boolean = false;
+
+  interval?:number;
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -80,11 +82,15 @@ export default class TripCatchs extends Vue {
       this.computeDuration();
       if (!this.trip.finishedAt) {
         this.liveRunning = true;
-        setInterval(this.computeDuration, 1000);
+        this.interval = setInterval(this.computeDuration, 1000);
       }
     }
 
     this.ready = true;
+  }
+
+  beforeDestroy() {
+    clearInterval(this.interval);
   }
 
   editSpecies() {
