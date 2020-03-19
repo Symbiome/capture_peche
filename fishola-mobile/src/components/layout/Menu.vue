@@ -69,6 +69,7 @@
 <script lang="ts">
 
 import ProfileService from '@/services/ProfileService';
+import TripsService from '@/services/TripsService';
 
 import Avatar from '@/components/common/Avatar.vue';
 import UserProfile from '@/pojos/UserProfile';
@@ -165,7 +166,15 @@ export default class Menu extends Vue {
   logout() {
     if (confirm("Voulez-vous vous déconnecter ?")) {
       this.closeMenu();
-      ProfileService.logout().then(this.logguedOut);
+
+      TripsService.hasRunningTrip()
+        .then((result:boolean) => {
+          if (!result || confirm("Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?")) {
+            ProfileService.logout()
+              .then(this.logguedOut);
+          }
+        });
+
     }
   }
 

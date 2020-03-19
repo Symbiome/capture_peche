@@ -77,6 +77,7 @@ export default class PicturesService extends AbstractFisholaService {
 
                 let allPromises:Promise<void>[] = [];
 
+                // Pour chaque photo on créé une promise qui tente de la sauvegarder
                 pictureIds
                     .filter((pictureId) => pictureId.length == 36)
                     .forEach((pictureId) => {
@@ -85,6 +86,22 @@ export default class PicturesService extends AbstractFisholaService {
                         promise.then(() => {
                             console.log("Photo synchronisée, on la supprime de la base embarquée", pictureId);
                             PicturesService.deletePicture(pictureId);
+                        });
+                    });
+
+                // Pour les photos qui ne correspondent pas à une capture sur le serveur : on les supprime au bout de 7j
+                pictureIds
+                    .filter((pictureId) => pictureId.length != 36)
+                    .forEach((pictureId) => {
+                        PicturesService.getPictureFull(pictureId, (content?, dirtySince?) => {
+                            if (dirtySince) {
+                                let dirtySinceInMillis = new Date().getTime() - dirtySince;
+                                if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
+                                    console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${dirtySince}`);
+                                    PicturesService.deletePicture(pictureId);
+                                    return;
+                                }
+                            }
                         });
                     });
 

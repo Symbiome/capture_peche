@@ -164,7 +164,15 @@ export default class FisholaFooter extends Vue {
 
   logout() {
     if (confirm("Voulez-vous vous déconnecter ?")) {
-      ProfileService.logout().then(this.logguedOut);
+
+      TripsService.hasRunningTrip()
+        .then((result:boolean) => {
+          if (!result || confirm("Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?")) {
+            ProfileService.logout()
+              .then(this.logguedOut);
+          }
+        });
+
     }
   }
 

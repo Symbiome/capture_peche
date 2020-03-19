@@ -1,5 +1,6 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
+import TripsService from './TripsService';
 import {UserSettings, Feedback} from '@/pojos/BackendPojos';
 
 export default class ProfileService extends AbstractFisholaService {
@@ -50,6 +51,7 @@ export default class ProfileService extends AbstractFisholaService {
                 .then(
                     () => {
                         UserProfile.unsetCurrent();
+                        TripsService.cancelCreations();
                         resolve();
                     },
                     reject);
