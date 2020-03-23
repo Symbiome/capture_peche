@@ -81,7 +81,7 @@ export default class TripCatchs extends Vue {
 
     if (this.trip.mode == 'Live') {
       this.computeDuration();
-      if (!this.trip.finishedAt) {
+      if (this.id == Constants.RUNNING_ID) {
         this.liveRunning = true;
         this.interval = setInterval(this.computeDuration, 1000);
       }
@@ -100,7 +100,12 @@ export default class TripCatchs extends Vue {
 
   computeDuration() {
     if (this.trip! && this.trip!.startedAt) {
-      let seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt, this.trip!.finishedAt);
+      let seconds;
+      if (this.id == Constants.RUNNING_ID) {
+        seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt);
+      } else {
+        seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt, this.trip!.finishedAt);
+      }
       let minutes = Math.floor(seconds/60);
       let hours = Math.floor(minutes/60);
       let result = '';
