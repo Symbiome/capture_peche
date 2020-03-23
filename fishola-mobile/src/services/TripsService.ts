@@ -106,9 +106,10 @@ export default class TripsService extends AbstractFisholaService {
         };
 
         if (input.caughtAt) {
-            let timeArray = input.caughtAt.split(':');
-            let caughtAt = new Date(realDate);
-            caughtAt.setHours(timeArray[0], timeArray[1], timeArray[2]);
+            // let timeArray = input.caughtAt.split(':');
+            // let caughtAt = new Date(input.caughtAt);
+            // caughtAt.setHours(timeArray[0], timeArray[1], timeArray[2]);
+            let caughtAt = new Date(input.caughtAt);
 
             result.caughtAt = caughtAt;
         }
@@ -143,16 +144,18 @@ export default class TripsService extends AbstractFisholaService {
         };
 
         if (input.startedAt) {
-            let startTimeArray = input.startedAt.split(':');
-            let startedAt = new Date(realDate);
-            startedAt.setHours(startTimeArray[0], startTimeArray[1], startTimeArray[2]);
+            // let startTimeArray = input.startedAt.split(':');
+            // let startedAt = new Date(realDate);
+            // startedAt.setHours(startTimeArray[0], startTimeArray[1], startTimeArray[2]);
+            let startedAt = new Date(input.startedAt);
             
             result.startedAt = startedAt;
 
             if (input.finishedAt) {
-                let endTimeArray = input.finishedAt.split(':');
-                let finishedAt = new Date(realDate);
-                finishedAt.setHours(endTimeArray[0], endTimeArray[1], endTimeArray[2]);
+                // let endTimeArray = input.finishedAt.split(':');
+                // let finishedAt = new Date(realDate);
+                // finishedAt.setHours(endTimeArray[0], endTimeArray[1], endTimeArray[2]);
+                let finishedAt = new Date(input.finishedAt);
                 // Cas particulier d'une pêche qui se termine après minuit
                 if (finishedAt.getTime() < startedAt.getTime()) {
                     finishedAt.setDate(finishedAt.getDate() + 1);

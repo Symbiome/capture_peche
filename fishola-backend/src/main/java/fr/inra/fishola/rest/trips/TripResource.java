@@ -35,15 +35,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -101,9 +97,9 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = trip.getId();
         int catchsCount = catchsDao.countCatchs(tripId);
 
-        LocalDate date = trip.getDay().toLocalDate();
-        LocalDateTime startTime = LocalDateTime.of(date, trip.getStartTime().toLocalTime());
-        LocalDateTime endTime = LocalDateTime.of(date, trip.getEndTime().toLocalTime());
+        LocalDate date = trip.getDay();
+        LocalDateTime startTime = LocalDateTime.of(date, trip.getStartTime());
+        LocalDateTime endTime = LocalDateTime.of(date, trip.getEndTime());
         if (endTime.isBefore(startTime)) {
             endTime = endTime.plusDays(1);
         }
@@ -125,18 +121,15 @@ public class TripResource extends AbstractFisholaResource {
     }
 
     protected boolean isStillModifiable(Trip trip) {
-        Optional<Date> modifiableUntil = getModifiableUntil(trip);
+        Optional<LocalDateTime> modifiableUntil = getModifiableUntil(trip);
         boolean stillModifiable = modifiableUntil.isPresent();
         return stillModifiable;
     }
 
-    protected Optional<Date> getModifiableUntil(Trip trip) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(trip.getCreatedOn());
-        calendar.add(Calendar.HOUR, config.getTripModifiableHours());
-        Date modifiableUntil = calendar.getTime();
-        boolean canBeModified = modifiableUntil.after(new Date());
-        Optional<Date> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
+    protected Optional<LocalDateTime> getModifiableUntil(Trip trip) {
+        LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.getTripModifiableHours());
+        boolean canBeModified = modifiableUntil.isAfter(LocalDateTime.now());
+        Optional<LocalDateTime> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
         return result;
     }
 
@@ -151,10 +144,10 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Trip entity = new Trip();
-        entity.setCreatedOn(Timestamp.from(Instant.now()));
-        entity.setDay(new java.sql.Date(trip.date.getTime()));
-        entity.setStartTime(Time.valueOf(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault())));
-        entity.setEndTime(Time.valueOf(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault())));
+        entity.setCreatedOn(LocalDateTime.now());
+        entity.setDay(LocalDate.ofInstant(trip.date.toInstant(), ZoneId.systemDefault()));
+        entity.setStartTime(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault()));
+        entity.setEndTime(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault()));
         entity.setLakeId(trip.lakeId);
         entity.setName(trip.name);
         entity.setType(trip.type);
@@ -212,9 +205,9 @@ public class TripResource extends AbstractFisholaResource {
 
         AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
 
-        existingTrip.setDay(new java.sql.Date(trip.date.getTime()));
-        existingTrip.setStartTime(Time.valueOf(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault())));
-        existingTrip.setEndTime(Time.valueOf(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault())));
+        existingTrip.setDay(LocalDate.ofInstant(trip.date.toInstant(), ZoneId.systemDefault()));
+        existingTrip.setStartTime(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault()));
+        existingTrip.setEndTime(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault()));
         existingTrip.setLakeId(trip.lakeId);
         existingTrip.setName(trip.name);
         existingTrip.setType(trip.type);
@@ -297,8 +290,8 @@ public class TripResource extends AbstractFisholaResource {
     protected UUID createCatch(UUID tripId, CatchBean aCatch) {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
-        catchPojo.setCreatedOn(Timestamp.from(Instant.now()));
-        aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))));
+        catchPojo.setCreatedOn(LocalDateTime.now());
+        aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault())));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
@@ -318,7 +311,7 @@ public class TripResource extends AbstractFisholaResource {
 
     protected void updateCatch(Catch existingCatch, CatchBean aCatch) {
 
-        existingCatch.setCatchTime(aCatch.caughtAt.map(caughtAt -> Time.valueOf(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault()))).orElse(null));
+        existingCatch.setCatchTime(aCatch.caughtAt.map(caughtAt -> LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault())).orElse(null));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
@@ -351,25 +344,21 @@ public class TripResource extends AbstractFisholaResource {
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
         TripBean result = new TripBean();
-        result.createdOn = Optional.ofNullable(entity.getCreatedOn())
-                .map(Date::toInstant)
-                .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+        result.createdOn = Optional.ofNullable(entity.getCreatedOn());
         result.id = entity.getId().toString();
         result.name = entity.getName();
         result.mode = entity.getMode();
         result.type = entity.getType();
         result.lakeId = entity.getLakeId();
-        result.date = entity.getDay();
-        result.startedAt = entity.getStartTime();
-        result.finishedAt = entity.getEndTime();
+        result.date = localDateToDate(entity.getDay());
+        result.startedAt = localTimeToDate(entity.getDay(), entity.getStartTime());
+        result.finishedAt = localTimeToDate(entity.getDay(), entity.getEndTime());
         result.weatherId = entity.getWeatherId();
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
         result.techniqueIds = tripsDao.getTripTechniques(tripId);
 
-        result.modifiableUntil = getModifiableUntil(entity)
-                .map(Date::toInstant)
-                .map(instant -> LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+        result.modifiableUntil = getModifiableUntil(entity);
 
         List<Catch> catchs = catchsDao.listCatchs(tripId);
         Set<UUID> catchIds = catchs.stream()
@@ -413,7 +402,10 @@ public class TripResource extends AbstractFisholaResource {
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
-        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime());
+
+        // FIXME AThimel 23/03/2020
+        Date caughtAt = localTimeToDate(LocalDate.now(), aCatch.getCatchTime());
+        result.caughtAt = Optional.ofNullable(caughtAt);
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
         result.hasPicture = catchsWithPictures.contains(catchId);

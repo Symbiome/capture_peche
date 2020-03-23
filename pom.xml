@@ -32,7 +32,7 @@
     <gitlabProjectName>fishola</gitlabProjectName>
 
     <quarkus.version>1.3.0.Final</quarkus.version>
-    <jooqVersion>3.12.4</jooqVersion>
+    <jooqVersion>3.13.1</jooqVersion>
     <flywayVersion>6.3.1</flywayVersion>
     <postgresqlDriverVersion>42.2.11</postgresqlDriverVersion>
 

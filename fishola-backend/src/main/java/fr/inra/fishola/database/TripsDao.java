@@ -13,8 +13,8 @@ import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +79,7 @@ public class TripsDao extends AbstractFisholaDao {
                     .ifPresent(conditions::add);
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
-            SelectSeekStep2<TripRecord, Date, Timestamp> tripRecords =
+            SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
                     orderDesc
                             ? builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
                             : builder.orderBy(Tables.TRIP.DAY.asc(), Tables.TRIP.CREATED_ON.asc());
