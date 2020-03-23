@@ -207,11 +207,11 @@ export default class EditCatch extends Vue {
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
-      this.caughtAt = Helpers.formatToTime(someCatch.caughtAt);
+      this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
       if (this.inCreation && this.tripMode == 'Live') {
-        let millis:number = someCatch.caughtAt!.getTime() - someTrip.startedAt.getTime();
-        this.rightShortcut = 'timer-' + Math.floor(millis/1000);
+        let seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
+        this.rightShortcut = 'timer-' + seconds;
       }
     }
 
@@ -367,8 +367,7 @@ export default class EditCatch extends Vue {
     }
 
     if (this.caughtAt && this.caughtAt.length > 0) {
-      let newDate = Helpers.parseDateTime(this.tripDate || new Date(), this.caughtAt);
-      this.aCatch.caughtAt = newDate;
+      this.aCatch.caughtAt = this.caughtAt;
     } else {
       delete this.aCatch.caughtAt;
     }

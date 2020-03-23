@@ -3,8 +3,8 @@ package fr.inra.fishola.rest.trips;
 import fr.inra.fishola.entities.enums.TripMode;
 import fr.inra.fishola.entities.enums.TripType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,9 +20,9 @@ public class TripBean {
     public UUID lakeId;
     public Set<UUID> speciesIds;
     public String otherSpecies;
-    public Date date;
-    public Date startedAt;
-    public Date finishedAt;
+    public LocalDate date;
+    public String startedAt;
+    public String finishedAt;
     public UUID weatherId;
     public List<CatchBean> catchs;
     public Set<UUID> techniqueIds;

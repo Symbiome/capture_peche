@@ -96,8 +96,8 @@ export default class EditTrip extends Vue {
     lakeId: '',
     speciesIds: [],
     date: new Date(),
-    startedAt: new Date(),
-    finishedAt: new Date(),
+    startedAt: '',
+    finishedAt: '',
     weatherId: '',
     catchs: [],
     otherSpecies: '',
@@ -122,7 +122,7 @@ export default class EditTrip extends Vue {
       this.modifiableDuration = Helpers.computeDurationTrunced(new Date(), this.trip.modifiableUntil);
     }
     this.ready = true;
-    this.duration = Helpers.computeDuration(this.trip.startedAt, this.trip.finishedAt);
+    this.duration = Helpers.computeDurationFromString(this.trip.startedAt, this.trip.finishedAt);
   }
 
   startSave() {

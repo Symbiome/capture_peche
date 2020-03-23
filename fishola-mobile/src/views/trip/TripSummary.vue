@@ -51,7 +51,7 @@ export default class TripSummaryVue extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: new Date(), lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
+  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: '', lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
 
   actionRequested:ActionType = "SaveTrip";
 

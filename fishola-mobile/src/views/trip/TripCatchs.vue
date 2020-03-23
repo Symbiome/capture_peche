@@ -45,6 +45,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
+import Helpers from '../../pojos/Helpers';
 
 @Component({
   components: {
@@ -58,7 +59,7 @@ export default class TripCatchs extends Vue {
 
   @Prop() id!:string;
 
-  trip?:TripMain = { id:'', name:'', mode:'Live', startedAt: new Date(), catchs:[] };
+  trip?:TripMain = { id:'', name:'', mode:'Live', startedAt: '', catchs:[] };
 
   duration?:string = '';
   liveRunning:boolean = false;
@@ -98,25 +99,21 @@ export default class TripCatchs extends Vue {
   }
 
   computeDuration() {
-    if (this.trip!) {
-      let startedAt = this.trip!.startedAt;
-      if (startedAt) {
-        let end = this.trip!.finishedAt || new Date();
-        let seconds = Math.floor((end.getTime()-startedAt.getTime())/1000);
-        let minutes = Math.floor(seconds/60);
-        let hours = Math.floor(minutes/60);
-        let result = '';
-        if (hours > 0) {
-          result += hours + 'h ';
-          minutes -= hours * 60;
-        }
-        if (minutes > 0) {
-          result += minutes + 'min ';
-          seconds -= hours * 60*60 + minutes * 60;
-        }
-        result += seconds + 's';
-        this.duration = result;
+    if (this.trip! && this.trip!.startedAt) {
+      let seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt, this.trip!.finishedAt);
+      let minutes = Math.floor(seconds/60);
+      let hours = Math.floor(minutes/60);
+      let result = '';
+      if (hours > 0) {
+        result += hours + 'h ';
+        minutes -= hours * 60;
       }
+      if (minutes > 0) {
+        result += minutes + 'min ';
+        seconds -= hours * 60*60 + minutes * 60;
+      }
+      result += seconds + 's';
+      this.duration = result;
     }
   }
 

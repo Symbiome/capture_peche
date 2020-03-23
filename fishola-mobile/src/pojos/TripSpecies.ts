@@ -4,7 +4,7 @@ export default interface TripSpecies {
     id: string;
     lakeId: string;
     mode: string;
-    startedAt: Date;
+    startedAt: string;
     speciesIds: string[];
     otherSpecies: string;
 

@@ -25,12 +25,13 @@ import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import TripMain from '@/pojos/TripMain';
+import Helpers from '../../pojos/Helpers';
 
 @Component
 export default class RunningOverlay extends Vue {
 
   label: string = '';
-  startedAt: Date = new Date();
+  startedAt: string;
 
   trip?:TripMain;
   interval?:number;
@@ -58,8 +59,7 @@ export default class RunningOverlay extends Vue {
   }
 
   computeDuration() {
-    let end = new Date();
-    let seconds = Math.floor((end.getTime()-this.startedAt.getTime())/1000);
+    let seconds = Helpers.computeDurationInSeconds(this.startedAt);
     let minutes = Math.floor(seconds/60);
     let hours = Math.floor(minutes/60);
     let result = '';

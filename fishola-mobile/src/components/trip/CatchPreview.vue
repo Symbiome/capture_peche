@@ -78,7 +78,7 @@ export default class CatchPreview extends Vue {
 
   created() {
     if (this.aCatch.caughtAt) {
-      this.caughtAtLabel = Helpers.formatToTime(this.aCatch.caughtAt);
+      this.caughtAtLabel = this.aCatch.caughtAt;
     }
 
     if (this.aCatch.hasPicture) {

@@ -83,7 +83,7 @@ export default class TripMetaVue extends Vue {
   
   @Prop() id!:string;
 
-  trip:TripMeta = { id:'', mode:'Live', date: new Date(), startedAt: new Date() };
+  trip:TripMeta = { id:'', mode:'Live', date: new Date(), startedAt: '' };
 
   date:string = '';
   startedAt:string = '';
@@ -114,10 +114,10 @@ export default class TripMetaVue extends Vue {
         this.date = Helpers.formatToDate(someTrip.date);
       }
       if (someTrip.startedAt) {
-        this.startedAt = Helpers.formatToTime(someTrip.startedAt);
+        this.startedAt = someTrip.startedAt;
       }
       if (someTrip.finishedAt) {
-        this.finishedAt = Helpers.formatToTime(someTrip.finishedAt);
+        this.finishedAt = someTrip.finishedAt;
       }
     }
 
@@ -175,8 +175,8 @@ export default class TripMetaVue extends Vue {
         if (this.startedAt) {
           this.startedAtError = '';
 
-          let startedAt = Helpers.parseDateTime(newDate, this.startedAt);
-          this.trip!.startedAt = startedAt;
+          // let startedAt = Helpers.parseDateTime(newDate, this.startedAt);
+          this.trip!.startedAt = this.startedAt;
         } else {
           this.startedAtError = "Vous devez renseigner l'heure de début";
           hasError = true;
@@ -185,8 +185,8 @@ export default class TripMetaVue extends Vue {
         if (this.finishedAt) {
           this.finishedAtError = '';
 
-          let finishedAt = Helpers.parseDateTime(newDate, this.finishedAt);
-          this.trip!.finishedAt = finishedAt;
+          // let finishedAt = Helpers.parseDateTime(newDate, this.finishedAt);
+          this.trip!.finishedAt = this.finishedAt;
         } else {
           this.finishedAtError = "Vous devez renseigner l'heure de fin";
           hasError = true;

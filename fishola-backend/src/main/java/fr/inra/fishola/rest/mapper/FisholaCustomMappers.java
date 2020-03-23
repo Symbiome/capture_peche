@@ -35,6 +35,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -151,7 +152,8 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
                 iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
                 try {
                     Date date = iso8601Format.parse(dateString);
-                    builder.date(date);
+                    LocalDateTime localDateTime = LocalDateTime.from(date.toInstant());
+                    builder.date(localDateTime);
                 } catch (Exception eee) {
                     log.error("Unable to read date", eee);
                 }

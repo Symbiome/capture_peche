@@ -5,8 +5,9 @@ import VueLodash from 'vue-lodash'
 import debounce from 'lodash/debounce'
 import throttle from 'lodash/throttle'
 import orderBy from 'lodash/orderBy'
+import moment from 'moment'
 
-Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy } })
+Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy, moment } })
 Vue.config.productionTip = false
 
 new Vue({

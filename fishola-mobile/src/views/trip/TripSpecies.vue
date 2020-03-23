@@ -77,7 +77,7 @@ export default class TripSpeciesVue extends Vue {
   
   @Prop() id!:string;
 
-  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: new Date(), otherSpecies:'' };
+  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: '', otherSpecies:'' };
 
   hasOtherSpecies:boolean = false;
 

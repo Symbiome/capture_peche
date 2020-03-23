@@ -137,7 +137,7 @@ public class DashboardResource extends AbstractFisholaResource {
         DashboardLastTrip result = ImmutableDashboardLastTrip.builder()
                 .tripId(trip.getId())
                 .catchsCount(allCatchsIndex.get(trip.getId()).size())
-                .day(localDateToDate(trip.getDay()))
+                .day(trip.getDay())
                 .build();
         return result;
     }

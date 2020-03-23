@@ -9,7 +9,7 @@ export default interface TripMeta {
     mode: TripMode;
     type?: TripType;
     date?:Date;
-    startedAt?: Date;
-    finishedAt?: Date;
+    startedAt?: string;
+    finishedAt?: string;
 
 }

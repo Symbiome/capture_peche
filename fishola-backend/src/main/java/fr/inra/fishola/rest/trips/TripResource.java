@@ -39,8 +39,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -145,9 +144,9 @@ public class TripResource extends AbstractFisholaResource {
 
         Trip entity = new Trip();
         entity.setCreatedOn(LocalDateTime.now());
-        entity.setDay(LocalDate.ofInstant(trip.date.toInstant(), ZoneId.systemDefault()));
-        entity.setStartTime(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault()));
-        entity.setEndTime(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault()));
+        entity.setDay(trip.date);
+        entity.setStartTime(LocalTime.parse(trip.startedAt));
+        entity.setEndTime(LocalTime.parse(trip.finishedAt));
         entity.setLakeId(trip.lakeId);
         entity.setName(trip.name);
         entity.setType(trip.type);
@@ -205,9 +204,9 @@ public class TripResource extends AbstractFisholaResource {
 
         AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
 
-        existingTrip.setDay(LocalDate.ofInstant(trip.date.toInstant(), ZoneId.systemDefault()));
-        existingTrip.setStartTime(LocalTime.ofInstant(trip.startedAt.toInstant(), ZoneId.systemDefault()));
-        existingTrip.setEndTime(LocalTime.ofInstant(trip.finishedAt.toInstant(), ZoneId.systemDefault()));
+        existingTrip.setDay(trip.date);
+        existingTrip.setStartTime(LocalTime.parse(trip.startedAt));
+        existingTrip.setEndTime(LocalTime.parse(trip.finishedAt));
         existingTrip.setLakeId(trip.lakeId);
         existingTrip.setName(trip.name);
         existingTrip.setType(trip.type);
@@ -291,7 +290,7 @@ public class TripResource extends AbstractFisholaResource {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(LocalDateTime.now());
-        aCatch.caughtAt.ifPresent(caughtAt -> catchPojo.setCatchTime(LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault())));
+        aCatch.caughtAt.map(LocalTime::parse).ifPresent(catchPojo::setCatchTime);
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
@@ -311,7 +310,7 @@ public class TripResource extends AbstractFisholaResource {
 
     protected void updateCatch(Catch existingCatch, CatchBean aCatch) {
 
-        existingCatch.setCatchTime(aCatch.caughtAt.map(caughtAt -> LocalTime.ofInstant(caughtAt.toInstant(), ZoneId.systemDefault())).orElse(null));
+        existingCatch.setCatchTime(aCatch.caughtAt.map(LocalTime::parse).orElse(null));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
@@ -350,9 +349,9 @@ public class TripResource extends AbstractFisholaResource {
         result.mode = entity.getMode();
         result.type = entity.getType();
         result.lakeId = entity.getLakeId();
-        result.date = localDateToDate(entity.getDay());
-        result.startedAt = localTimeToDate(entity.getDay(), entity.getStartTime());
-        result.finishedAt = localTimeToDate(entity.getDay(), entity.getEndTime());
+        result.date = entity.getDay();
+        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         result.weatherId = entity.getWeatherId();
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
@@ -402,10 +401,7 @@ public class TripResource extends AbstractFisholaResource {
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
-
-        // FIXME AThimel 23/03/2020
-        Date caughtAt = localTimeToDate(LocalDate.now(), aCatch.getCatchTime());
-        result.caughtAt = Optional.ofNullable(caughtAt);
+        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern("HH:mm")));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
         result.hasPicture = catchsWithPictures.contains(catchId);

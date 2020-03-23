@@ -8,8 +8,8 @@ export default interface TripSummary {
     lakeId: string;
     date: Date;
     type: TripType;
-    startedAt: Date;
-    finishedAt?: Date;
+    startedAt: string;
+    finishedAt?: string;
     modifiableUntil?: Date;
     speciesIds: string[];
     otherSpecies: string;

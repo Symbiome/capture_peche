@@ -169,6 +169,8 @@ import {DashboardAndSpecies} from '@/services/DashboardService';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../router';
 
+import moment from 'moment';
+
 export class DistributionEntry {
     constructor (
         public species:SpeciesWithAlias,
@@ -280,7 +282,7 @@ export default class DashboardVue extends Vue {
       let rawCatchs:any[] = rawTop[speciesId];
       rawCatchs.forEach((rawCatch:any) => {
         this.catchToTripId[rawCatch.id] = rawCatch.tripId;
-        let aCatch:CatchBean = TripsService.backendCatchToCatchBean(new Date(), rawCatch);
+        let aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
         catchs.push(aCatch);
       })
       let entry:TopEntry = new TopEntry(species, catchs);

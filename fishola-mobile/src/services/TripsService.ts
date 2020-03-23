@@ -9,6 +9,8 @@ import PicturesService from '@/services/PicturesService';
 import CatchSummary from '@/pojos/CatchSummary';
 import ReferentialService from './ReferentialService';
 
+import moment from 'moment';
+
 export default class TripsService extends AbstractFisholaService {
 
     static instance?:TripsService;
@@ -38,7 +40,7 @@ export default class TripsService extends AbstractFisholaService {
 
             newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
             newTrip.date = now;
-            newTrip.startedAt = now;
+            newTrip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
         }
 
         this.getDatabase()
@@ -87,7 +89,7 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static backendCatchToCatchBean(realDate:Date, input:any):CatchBean {
+    static backendCatchToCatchBean(realDate:moment.Moment, input:any):CatchBean {
 
         let result:any = {
             tripId: input.tripId,
@@ -102,17 +104,9 @@ export default class TripsService extends AbstractFisholaService {
             withSample: input.withSample,
             hasPicture: input.hasPicture,
             latitude: input.latitude,
-            longitude: input.longitude
+            longitude: input.longitude,
+            caughtAt: input.caughtAt
         };
-
-        if (input.caughtAt) {
-            // let timeArray = input.caughtAt.split(':');
-            // let caughtAt = new Date(input.caughtAt);
-            // caughtAt.setHours(timeArray[0], timeArray[1], timeArray[2]);
-            let caughtAt = new Date(input.caughtAt);
-
-            result.caughtAt = caughtAt;
-        }
 
         return result;
     }
@@ -124,7 +118,7 @@ export default class TripsService extends AbstractFisholaService {
         let catchs:CatchBean[] = [];
         if (input.catchs) {
             input.catchs.forEach((aCatch:any) => {
-                let aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(realDate, aCatch);
+                let aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(moment(realDate), aCatch);
                 catchs.push(aCatchBean);
             });
         }
@@ -141,38 +135,24 @@ export default class TripsService extends AbstractFisholaService {
             speciesIds: input.speciesIds || [],
             techniqueIds: input.techniqueIds || [],
             catchs: catchs,
+            startedAt: input.startedAt,
+            finishedAt: input.finishedAt,
         };
-
-        if (input.startedAt) {
-            // let startTimeArray = input.startedAt.split(':');
-            // let startedAt = new Date(realDate);
-            // startedAt.setHours(startTimeArray[0], startTimeArray[1], startTimeArray[2]);
-            let startedAt = new Date(input.startedAt);
-            
-            result.startedAt = startedAt;
-
-            if (input.finishedAt) {
-                // let endTimeArray = input.finishedAt.split(':');
-                // let finishedAt = new Date(realDate);
-                // finishedAt.setHours(endTimeArray[0], endTimeArray[1], endTimeArray[2]);
-                let finishedAt = new Date(input.finishedAt);
-                // Cas particulier d'une pêche qui se termine après minuit
-                if (finishedAt.getTime() < startedAt.getTime()) {
-                    finishedAt.setDate(finishedAt.getDate() + 1);
-                }
-
-                result.finishedAt = finishedAt;
-            }
-        }
 
         if (input.modifiableUntil) {
             result.modifiableUntil = Helpers.parseLocalDateTime(input.modifiableUntil);
         }
+console.log("Trip parsé", result);
         return result;
     }
 
     static storedTripToLight(input:TripBean):TripLight {
-        let seconds:number = Math.floor((input.finishedAt.getTime() - input.startedAt.getTime())/1000);
+        let start = moment(input.startedAt, 'HH:mm');
+        let end = moment(input.finishedAt, 'HH:mm');
+        if (end.isBefore(start)) {
+            end = end.add(24, 'hours');
+        }
+        let seconds:number = end.diff(start, 'seconds');
         let catchsCount:number = input.catchs ? input.catchs.length : 0;
 
         let result:TripLight = <any> input;
@@ -229,7 +209,7 @@ export default class TripsService extends AbstractFisholaService {
     static finishTrip(trip:TripMain, callback: () => void) {
         if (trip.id == Constants.RUNNING_ID) {
             if (trip.mode == 'Live') {
-                trip.finishedAt = new Date();
+                trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
             }
 
             let tripBean:TripBean = <TripBean>trip;
@@ -330,7 +310,7 @@ export default class TripsService extends AbstractFisholaService {
     static finishTripCreation(trip:TripSpecies, callback: (id:string) => void) {
         if (trip.id == Constants.DIRTY_ID) {
             if (trip.mode == 'Live') {
-                trip.startedAt = new Date();
+                trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
             }
 
             trip.id = Constants.RUNNING_ID;
@@ -454,7 +434,7 @@ export default class TripsService extends AbstractFisholaService {
                 });
             }
             if (trip.mode == 'Live' && result.id == Constants.NEW_CATCH_ID) {
-                result.caughtAt = new Date();
+                result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
             }
             callback(trip, result);
         });

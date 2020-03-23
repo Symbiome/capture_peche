@@ -137,10 +137,10 @@ export default class SomeTripSummary extends Vue {
       }
     }
     if (someTrip.startedAt) {
-      this.startedAt = Helpers.formatToTime(someTrip.startedAt);
+      this.startedAt = Helpers.truncateTimeToMinutes(someTrip.startedAt);
     }
     if (someTrip.finishedAt) {
-      this.finishedAt = Helpers.formatToTime(someTrip.finishedAt);
+      this.finishedAt = Helpers.truncateTimeToMinutes(someTrip.finishedAt);
     }
 
     let speciesPerLake = this.allSpecies.get(someTrip.lakeId);
@@ -198,9 +198,7 @@ export default class SomeTripSummary extends Vue {
 
       if (this.startedAt) {
         this.startedAtError = '';
-
-        let startedAt = Helpers.parseDateTime(newDate, this.startedAt);
-        this.trip!.startedAt = startedAt;
+        this.trip!.startedAt = this.startedAt;
       } else {
         this.startedAtError = "Vous devez renseigner l'heure de début";
         hasError = true;
@@ -208,9 +206,7 @@ export default class SomeTripSummary extends Vue {
 
       if (this.finishedAt) {
         this.finishedAtError = '';
-
-        let finishedAt = Helpers.parseDateTime(newDate, this.finishedAt);
-        this.trip!.finishedAt = finishedAt;
+        this.trip!.finishedAt = this.finishedAt;
       } else {
         this.finishedAtError = "Vous devez renseigner l'heure de fin";
         hasError = true;

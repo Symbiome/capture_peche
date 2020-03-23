@@ -3,7 +3,7 @@ package fr.inra.fishola.rest.feedback;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,7 +41,7 @@ public interface Feedback {
 
     Optional<String> version();
 
-    Optional<Date> date();
+    Optional<LocalDateTime> date();
 
     Optional<String> location();
 

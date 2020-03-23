@@ -11,7 +11,7 @@ export interface CatchBean {
     releasedStateId?: string;
     techniqueId: string;
     description?: string;
-    caughtAt?: Date;
+    caughtAt?: string;
     withSample: boolean;
     latitude?: number;
     longitude?: number;
@@ -29,8 +29,8 @@ export interface TripBean {
     speciesIds: string[];
     otherSpecies: string;
     date: Date;
-    startedAt: Date;
-    finishedAt: Date;
+    startedAt: string;
+    finishedAt: string;
     weatherId: string;
     catchs: CatchBean[];
     techniqueIds: string[];

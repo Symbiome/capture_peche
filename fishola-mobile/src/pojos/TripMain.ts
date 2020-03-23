@@ -4,8 +4,8 @@ export default interface TripMain {
     id: string;
     name: string;
     mode: string;
-    startedAt: Date;
-    finishedAt?: Date;
+    startedAt: string;
+    finishedAt?: string;
     catchs: any[];
     modifiableUntil?: Date;
 

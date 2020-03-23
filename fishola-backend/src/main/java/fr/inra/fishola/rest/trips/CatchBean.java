@@ -1,6 +1,5 @@
 package fr.inra.fishola.rest.trips;
 
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,7 +14,7 @@ public class CatchBean {
     public Optional<UUID> releasedStateId = Optional.empty();
     public UUID techniqueId;
     public Optional<String> description = Optional.empty();
-    public Optional<Date> caughtAt = Optional.empty();
+    public Optional<String> caughtAt = Optional.empty();
     public boolean withSample;
     public Optional<Double> latitude = Optional.empty();
     public Optional<Double> longitude = Optional.empty();
