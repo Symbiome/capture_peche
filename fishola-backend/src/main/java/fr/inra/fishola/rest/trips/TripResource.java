@@ -268,6 +268,10 @@ public class TripResource extends AbstractFisholaResource {
 
         UUID userId = getUserId(cookie);
 
+        deleteTrip(tripId, userId);
+    }
+
+    protected void deleteTrip(UUID tripId, UUID userId) {
         Trip existingTrip = tripsDao.getTrip(tripId);
         Preconditions.checkState(existingTrip != null, "Impossible de supprimer une sortie qui n'existe pas : " + tripId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
@@ -283,6 +287,17 @@ public class TripResource extends AbstractFisholaResource {
             if (log.isDebugEnabled()) {
                 log.debug("Sortie masquée : " + tripId);
             }
+        }
+    }
+
+    @DELETE
+    @Path("/")
+    public void deleteTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, List<UUID> tripIds) {
+
+        UUID userId = getUserId(cookie);
+
+        for (UUID tripId : tripIds) {
+            deleteTrip(tripId, userId);
         }
     }
 

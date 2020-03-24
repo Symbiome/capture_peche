@@ -1,7 +1,10 @@
 <template>
   <div class="my-trips-item">
     <div class="item-selection">
-      <input type="checkbox" v-bind:id="'checkbox-' + trip.id" class="pelorous-checkbox" />
+      <input type="checkbox"
+             v-bind:id="'checkbox-' + trip.id"
+             class="pelorous-checkbox"
+             v-model="selected"/>
       <label v-bind:for="'checkbox-' + trip.id"></label>
     </div>
     <div class="item-description" v-on:click="openTrip">
@@ -38,13 +41,14 @@ import {TripLight, Lake} from '@/pojos/BackendPojos';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import router from '../../router';
 
 @Component
 export default class MyTripItem extends Vue {
   @Prop() trip!: TripLight;
 
+  selected:boolean = false;
   date:string = '';
   lakeName:string = '';
   duration:string = '';
@@ -64,6 +68,15 @@ export default class MyTripItem extends Vue {
 
   openTrip() {
     router.push({name:'trip', params: {id: this.trip.id}});
+  }
+
+  @Watch('selected')
+  onSelectedChanged(value: boolean, oldValue: boolean) {
+    if (value) {
+      this.$emit('selected');
+    } else {
+      this.$emit('unselected');
+    }
   }
 
 }

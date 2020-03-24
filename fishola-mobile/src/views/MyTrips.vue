@@ -10,14 +10,16 @@
                    v-bind:hasSearchTerm="!!currentSearchTerm"
                    v-bind:noTripYet="totalCount == 0"
                    v-bind:loading="loading"
-                   v-on:more-trips="loadNextPage"/>
+                   v-on:more-trips="loadNextPage"
+                   v-on:trip-selected="tripSelected"
+                   v-on:trip-unselected="tripUnselected"/>
       <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    v-bind:hideButton="hasRunningTrip"
-                   v-bind:button-icon="totalCount == 0 ? 'icon-fishing':'icon-plus'"
-                   v-bind:button-text="totalCount == 0 ? 'Commencer':'Nouveau'"
-                   v-on:buttonClicked="newTrip"
+                   v-bind:button-icon="selectedTripIds.length == 0 ? (totalCount == 0 ? 'icon-fishing':'icon-plus'): 'icon-delete'"
+                   v-bind:button-text="selectedTripIds.length == 0 ? (totalCount == 0 ? 'Commencer':'Nouveau') : 'Supprimer'"
+                   v-on:buttonClicked="footerButtonClicked"
                    selected="home"/>
   </div>
 </template>
@@ -63,6 +65,8 @@ export default class MyTrips extends Vue {
 
   hasRunningTrip:boolean = false;
 
+  selectedTripIds:string[] = [];
+
   @Watch('term')
   onTermChanged(value: string, oldValue: string) {
     if (this.refreshTimer) {
@@ -80,6 +84,7 @@ export default class MyTrips extends Vue {
   loadTrips() {
     this.currentPage = 0;
     this.currentSearchTerm = this.term;
+    this.selectedTripIds = [];
     TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
     this.loading = true;
   }
@@ -130,8 +135,45 @@ export default class MyTrips extends Vue {
     this.loadTrips();
   }
 
+  footerButtonClicked() {
+    if (this.selectedTripIds.length == 0) {
+      this.newTrip();
+    } else {
+      let message = "Voulez-vous supprimer cette sortie ?";
+      if (this.selectedTripIds.length > 1) {
+        message = "Voulez-vous supprimer ces sorties ?";
+      }
+      if (confirm(message)) {
+        this.deleteSelectedTrips();
+      }
+    }
+  }
+
   newTrip() {
     router.push('/trips/new');
+  }
+
+  tripSelected(tripId:string) {
+    this.selectedTripIds.push(tripId);
+  }
+
+  tripUnselected(tripId:string) {
+    let index = this.selectedTripIds.indexOf(tripId);
+    if (index != -1) {
+      this.selectedTripIds.splice(index, 1);
+    }
+  }
+
+  deleteSelectedTrips() {
+    TripsService.deleteTrips(this.selectedTripIds)
+      .then(this.tripsDeleted);
+  }
+
+  tripsDeleted() {
+    let plural = this.selectedTripIds.length > 1 ? 's' : '';
+    let message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
+    this.$root.$emit('toaster-success', message);
+    this.loadTrips();
   }
 
 }
