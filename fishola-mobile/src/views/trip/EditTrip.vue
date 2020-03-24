@@ -48,7 +48,8 @@
                    v-on:deleteClicked="deleteTrip"
                    shortcuts="back,spacer,delete"/>
     <FisholaFooter v-if="ready && !modifiable"
-                   shortcuts="back,spacer,blank"/>
+                   v-on:deleteClicked="deleteTrip"
+                   shortcuts="back,spacer,delete"/>
   </div>
 </template>
 
