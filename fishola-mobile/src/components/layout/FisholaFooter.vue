@@ -3,6 +3,7 @@
     <FooterButton v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
+                  v-bind:deleteMode="buttonIcon == 'icon-delete'"
                   v-on:clicked="$emit('buttonClicked')"/>
 
     <div class="footer-element pastille"

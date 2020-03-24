@@ -1,7 +1,7 @@
 <template>
   <div class="footer-button">
     <div>
-      <button v-on:click="$emit('clicked')">
+      <button v-on:click="$emit('clicked')" v-bind:class="deleteMode ? 'delete' : ''">
         <i v-if="icon" v-bind:class="icon"/>
         {{text}}
       </button>
@@ -16,6 +16,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class FooterButton extends Vue {
   @Prop() icon?:string;
   @Prop() text?:string;
+  @Prop({default: false}) deleteMode:boolean;
 
   mounted() {
   }
@@ -64,6 +65,10 @@ export default class FooterButton extends Vue {
     i {
       margin-right: 5px;
       font-size: 20px;
+    }
+
+    &.delete {
+      background-color: @cardinal;
     }
   }
 }

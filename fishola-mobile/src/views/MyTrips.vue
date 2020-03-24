@@ -17,8 +17,8 @@
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    v-bind:hideButton="hasRunningTrip"
-                   v-bind:button-icon="totalCount == 0 ? 'icon-fishing':'icon-plus'"
-                   v-bind:button-text="totalCount == 0 ? 'Commencer':'Nouveau'"
+                   v-bind:button-icon="selectedTripIds.length == 0 ? (totalCount == 0 ? 'icon-fishing':'icon-plus'): 'icon-delete'"
+                   v-bind:button-text="selectedTripIds.length == 0 ? (totalCount == 0 ? 'Commencer':'Nouveau') : 'Supprimer'"
                    v-on:buttonClicked="newTrip"
                    selected="home"/>
   </div>
