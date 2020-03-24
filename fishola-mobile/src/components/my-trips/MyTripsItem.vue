@@ -55,7 +55,7 @@ export default class MyTripItem extends Vue {
     var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
     this.date = this.trip.date.toLocaleDateString('fr-FR', dayOptions);
 
-    this.duration = Helpers.computeDurationFromSeconds(this.trip.durationInSeconds);
+    this.duration = Helpers.formatSecondsDuration(this.trip.durationInSeconds);
   }
 
   lakesIndexLoaded(lakes:Map<string, Lake>) {

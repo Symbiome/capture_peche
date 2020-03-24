@@ -119,10 +119,10 @@ export default class EditTrip extends Vue {
     this.trip = someTrip;
     if (this.trip.modifiableUntil) {
       this.modifiable = true;
-      this.modifiableDuration = Helpers.computeDurationTrunced(new Date(), this.trip.modifiableUntil);
+      this.modifiableDuration = Helpers.humanizeDurationFromDates(new Date(), this.trip.modifiableUntil);
     }
     this.ready = true;
-    this.duration = Helpers.computeDurationFromString(this.trip.startedAt, this.trip.finishedAt);
+    this.duration = Helpers.renderDuration(this.trip.startedAt, this.trip.finishedAt);
   }
 
   startSave() {

@@ -145,7 +145,6 @@ export default class FisholaFooter extends Vue {
     if (key && key.indexOf('step-') == 0) {
       let stepIndex = parseInt(key[5]);
       let stepCount = parseInt(key[7]);
-      // this.steps = [];
 
       for (let i=1; i<=stepCount; i++) {
         this.steps.push({
@@ -157,7 +156,7 @@ export default class FisholaFooter extends Vue {
     }
     if (key && key.indexOf('timer-') == 0) {
       let seconds:number = parseInt(key.substring(6));
-      this.timer = Helpers.computeDurationFromSeconds(seconds);
+      this.timer = Helpers.formatSecondsDurationTruncate(seconds);
     }
     this.activeButtons[key] = true;
   }

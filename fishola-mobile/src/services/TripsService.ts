@@ -142,17 +142,11 @@ export default class TripsService extends AbstractFisholaService {
         if (input.modifiableUntil) {
             result.modifiableUntil = Helpers.parseLocalDateTime(input.modifiableUntil);
         }
-console.log("Trip parsé", result);
         return result;
     }
 
     static storedTripToLight(input:TripBean):TripLight {
-        let start = moment(input.startedAt, 'HH:mm');
-        let end = moment(input.finishedAt, 'HH:mm');
-        if (end.isBefore(start)) {
-            end = end.add(24, 'hours');
-        }
-        let seconds:number = end.diff(start, 'seconds');
+        let seconds:number = Helpers.computeDurationInSeconds(input.startedAt, input.finishedAt);
         let catchsCount:number = input.catchs ? input.catchs.length : 0;
 
         let result:TripLight = <any> input;

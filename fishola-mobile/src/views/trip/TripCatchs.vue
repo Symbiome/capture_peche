@@ -102,23 +102,10 @@ export default class TripCatchs extends Vue {
     if (this.trip! && this.trip!.startedAt) {
       let seconds;
       if (this.id == Constants.RUNNING_ID) {
-        seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt);
+        this.duration = Helpers.renderDuration(this.trip!.startedAt);
       } else {
-        seconds = Helpers.computeDurationInSeconds(this.trip!.startedAt, this.trip!.finishedAt);
+        this.duration = Helpers.renderDuration(this.trip!.startedAt, this.trip!.finishedAt);
       }
-      let minutes = Math.floor(seconds/60);
-      let hours = Math.floor(minutes/60);
-      let result = '';
-      if (hours > 0) {
-        result += hours + 'h ';
-        minutes -= hours * 60;
-      }
-      if (minutes > 0) {
-        result += minutes + 'min ';
-        seconds -= hours * 60*60 + minutes * 60;
-      }
-      result += seconds + 's';
-      this.duration = result;
     }
   }
 

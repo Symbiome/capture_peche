@@ -3,7 +3,25 @@ import moment from 'moment';
 
 export default class Helpers {
 
-    static computeDurationInSeconds(startedAt:string, finishedAt?:string):number {
+    static renderDuration(startedAt:string, finishedAt?:string):string {
+        let duration = this.computeDuration(startedAt, finishedAt);
+        let result = this.formatDuration(duration);
+        return result;
+    }
+
+    static humanizeDuration(startedAt:string, finishedAt?:string):string {
+        let duration = this.computeDuration(startedAt, finishedAt);
+        let result = duration.humanize();
+        return result;
+    }
+
+    static humanizeDurationFromDates(startedAt:Date, finishedAt:Date):string {
+        let duration = this.computeDurationFromDates(startedAt, finishedAt);
+        let result = duration.humanize();
+        return result;
+    }
+
+    static computeDuration(startedAt:string, finishedAt?:string):moment.Duration {
         let start = moment(startedAt, moment.HTML5_FMT.TIME_SECONDS);
         let end = moment();
         if (finishedAt) {
@@ -12,75 +30,69 @@ export default class Helpers {
         if (end.isBefore(start)) {
             end = end.add(24, 'hours');
         }
-        let seconds = end.diff(start, 'seconds');
+        let diff = end.diff(start);
+        let result = moment.duration(diff)
+        return result;
+    }
+
+    static computeDurationFromDates(startedAt:Date, finishedAt:Date):moment.Duration {
+        let start = moment(startedAt);
+        let end = moment(finishedAt);
+        if (end.isBefore(start)) {
+            end = end.add(24, 'hours');
+        }
+        let diff = end.diff(start);
+        let result = moment.duration(diff)
+        return result;
+    }
+
+    static formatDuration(duration:moment.Duration):string {
+
+        let result = '';
+        if (duration.days() > 0) {
+            result += duration.days() + 'd ';
+        }
+        if (duration.hours() > 0) {
+            result += duration.hours() + 'h ';
+        }
+        if (duration.minutes() > 0) {
+            result += duration.minutes() + 'min ';
+        }
+        if (duration.seconds() > 0) {
+            result += duration.seconds() + 's ';
+        }
+
+        if (result == '') {
+            result = '0s';
+        }
+
+        return result;
+    }
+
+    static formatSecondsDuration(seconds:number):string {
+        let duration:moment.Duration = moment.duration(seconds, 'seconds');
+        let result = this.formatDuration(duration);
+        return result;
+    }
+
+    static computeDurationInSeconds(startedAt:string, finishedAt?:string):number {
+        let duration:moment.Duration = this.computeDuration(startedAt, finishedAt);
+        let seconds = Math.floor(duration.asSeconds());
         return seconds;
     }
 
-    static computeDurationFromString(startedAt:string, finishedAt:string):string {
-        let seconds = this.computeDurationInSeconds(startedAt, finishedAt);
-        let result = Helpers.computeDurationFromSeconds(seconds);
-        return result;
-    }
-
-    static computeDuration(startedAt:Date, finishedAt:Date):string {
-        let seconds = Math.floor((finishedAt.getTime() - startedAt.getTime())/1000);
-        let result = Helpers.computeDurationFromSeconds(seconds);
-        return result;
-    }
-
-    static computeDurationFromSeconds(seconds:number):string {
+    static formatSecondsDurationTruncate(seconds:number):string {
 
         if (seconds < 60) {
             return seconds + 's';
         }
 
-        let minutes = Math.floor(seconds/60);
-        let hours = Math.floor(minutes/60);
-        let days = Math.floor(hours/24);
-        let result = '';
-        if (days > 0) {
-            result += days + 'd ';
-            hours -= days * 24;
-        }
-        if (hours > 0) {
-            result += hours + 'h ';
-            minutes -= days * 24*60 + hours * 60;
-        }
-        if (minutes > 0) {
-            result += minutes + 'min ';
-            seconds -= days * 24*60*60 + hours * 60*60 + minutes * 60;
-        }
-        return result;
-    }
+        let duration:moment.Duration = moment.duration(seconds, 'seconds');
 
-    static computeDurationTrunced(startedAt:Date, finishedAt:Date):string {
-        let seconds = Math.floor((finishedAt.getTime() - startedAt.getTime())/1000);
-        let result = Helpers.computeDurationTruncedFromSeconds(seconds);
-        return result;
-    }
+        // On tronque à la minute inférieur
+        duration.subtract(duration.seconds(), 'seconds');
 
-    static computeDurationTruncedFromSeconds(seconds:number):string {
-
-        if (seconds < 60) {
-            return seconds + 's';
-        }
-
-        let minutes = Math.floor(seconds/60);
-        let hours = Math.floor(minutes/60);
-        let days = Math.floor(hours/24);
-        let result = '';
-        if (days > 0) {
-            result += days + 'd ';
-            hours -= days * 24;
-        }
-        if (hours > 0) {
-            result += hours + 'h ';
-            minutes -= days * 24*60 + hours * 60;
-        }
-        if (minutes > 0 && days == 0) {
-            result += minutes + 'min ';
-            seconds -= days * 24*60*60 + hours * 60*60 + minutes * 60;
-        }
+        let result = this.formatDuration(duration);
         return result;
     }
 
@@ -97,13 +109,6 @@ export default class Helpers {
         let result = year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
         return result;
     }
-
-    // static formatToTime(time:Date):string {
-    //     let hours = time.getHours();
-    //     let minutes = time.getMinutes();
-    //     let result = (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
-    //     return result;
-    // }
 
     static parseDateTime(date:Date, time:string):Date {
         let result = new Date(date);

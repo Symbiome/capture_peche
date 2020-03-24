@@ -7,6 +7,8 @@ import throttle from 'lodash/throttle'
 import orderBy from 'lodash/orderBy'
 import moment from 'moment'
 
+moment.locale('fr');
+
 Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy, moment } })
 Vue.config.productionTip = false
 
