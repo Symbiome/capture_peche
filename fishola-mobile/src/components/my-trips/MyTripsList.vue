@@ -5,7 +5,9 @@
          v-on:scroll="scrolled"
          id="scroll-container">
       <div v-for="t in trips" v-bind:key="t.id">
-        <MyTripsItem v-bind:trip="t"/>
+        <MyTripsItem v-bind:trip="t"
+                     v-on:selected="tripSelected(t.id)"
+                     v-on:unselected="tripUnselected(t.id)"/>
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
@@ -65,6 +67,14 @@ export default class MyTripsList extends Vue {
 
   askForMoreTrips() {
     this.$emit('more-trips');
+  }
+
+  tripSelected(tripId:string) {
+    this.$emit('trip-selected', tripId);
+  }
+
+  tripUnselected(tripId:string) {
+    this.$emit('trip-unselected', tripId);
   }
 
 }

@@ -10,7 +10,9 @@
                    v-bind:hasSearchTerm="!!currentSearchTerm"
                    v-bind:noTripYet="totalCount == 0"
                    v-bind:loading="loading"
-                   v-on:more-trips="loadNextPage"/>
+                   v-on:more-trips="loadNextPage"
+                   v-on:trip-selected="tripSelected"
+                   v-on:trip-unselected="tripUnselected"/>
       <RunningOverlay v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
@@ -62,6 +64,8 @@ export default class MyTrips extends Vue {
   refreshTimer:any = undefined;
 
   hasRunningTrip:boolean = false;
+
+  selectedTripIds:string[] = [];
 
   @Watch('term')
   onTermChanged(value: string, oldValue: string) {
@@ -132,6 +136,17 @@ export default class MyTrips extends Vue {
 
   newTrip() {
     router.push('/trips/new');
+  }
+
+  tripSelected(tripId:string) {
+    this.selectedTripIds.push(tripId);
+  }
+
+  tripUnselected(tripId:string) {
+    let index = this.selectedTripIds.indexOf(tripId);
+    if (index != -1) {
+      this.selectedTripIds.splice(index, 1);
+    }
   }
 
 }
