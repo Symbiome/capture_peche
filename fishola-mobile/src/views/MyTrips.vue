@@ -19,7 +19,7 @@
                    v-bind:hideButton="hasRunningTrip"
                    v-bind:button-icon="selectedTripIds.length == 0 ? (totalCount == 0 ? 'icon-fishing':'icon-plus'): 'icon-delete'"
                    v-bind:button-text="selectedTripIds.length == 0 ? (totalCount == 0 ? 'Commencer':'Nouveau') : 'Supprimer'"
-                   v-on:buttonClicked="newTrip"
+                   v-on:buttonClicked="footerButtonClicked"
                    selected="home"/>
   </div>
 </template>
@@ -84,6 +84,7 @@ export default class MyTrips extends Vue {
   loadTrips() {
     this.currentPage = 0;
     this.currentSearchTerm = this.term;
+    this.selectedTripIds = [];
     TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
     this.loading = true;
   }
@@ -134,6 +135,20 @@ export default class MyTrips extends Vue {
     this.loadTrips();
   }
 
+  footerButtonClicked() {
+    if (this.selectedTripIds.length == 0) {
+      this.newTrip();
+    } else {
+      let message = "Voulez-vous supprimer cette sortie ?";
+      if (this.selectedTripIds.length > 1) {
+        message = "Voulez-vous supprimer ces sorties ?";
+      }
+      if (confirm(message)) {
+        this.deleteSelectedTrips();
+      }
+    }
+  }
+
   newTrip() {
     router.push('/trips/new');
   }
@@ -147,6 +162,18 @@ export default class MyTrips extends Vue {
     if (index != -1) {
       this.selectedTripIds.splice(index, 1);
     }
+  }
+
+  deleteSelectedTrips() {
+    TripsService.deleteTrips(this.selectedTripIds)
+      .then(this.tripsDeleted);
+  }
+
+  tripsDeleted() {
+    let plural = this.selectedTripIds.length > 1 ? 's' : '';
+    let message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
+    this.$root.$emit('toaster-success', message);
+    this.loadTrips();
   }
 
 }
