@@ -488,7 +488,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static deleteTrips(tripIds:string[]):Promise<void> {
         console.log("Supprime les sorties", tripIds);
-        return Promise.resolve();
+        return this.backendDelete(`/v1/trips`, tripIds);
     }
 
     static getRunningTrip():Promise<TripMain> {

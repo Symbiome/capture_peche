@@ -126,7 +126,7 @@ export default abstract class AbstractFisholaService {
       });
     }
 
-    static backendDelete(uri:string):Promise<void> {
+    static backendDelete(uri:string, data?:any):Promise<void> {
       return new Promise<void>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();
@@ -140,7 +140,12 @@ export default abstract class AbstractFisholaService {
             reject(result);
           }
         };
-        xhr.send();
+        if (data != null) {
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify(data));
+        } else {
+          xhr.send();
+        }
       });
     }
 

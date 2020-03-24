@@ -149,6 +149,7 @@ public class TripsDao extends AbstractFisholaDao {
     public void hide(UUID tripId) {
         withContext(context -> context.update(Tables.TRIP)
                 .set(Tables.TRIP.HIDDEN, true)
-                .where(Tables.TRIP.ID.eq(tripId)));
+                .where(Tables.TRIP.ID.eq(tripId))
+                .execute());
     }
 }
