@@ -230,7 +230,7 @@ export default class Menu extends Vue {
     flex-direction: column;
     align-items: flex-end;
 
-    color:white;
+    color: @white;
 
     padding: 15px;
 

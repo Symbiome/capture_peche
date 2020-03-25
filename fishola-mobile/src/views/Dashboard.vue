@@ -493,7 +493,6 @@ export default class DashboardVue extends Vue {
         width: calc(100% + 60px);
         left: -30px;
         height: 0px;
-        // background-color: @terra-cotta;
         border: 1px solid @terra-cotta;
       }
 

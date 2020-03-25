@@ -3,6 +3,7 @@
     <FisholaHeader />
     <div class="catch-picture">
       <PicturePreview v-bind:src="pictureSrc"
+                      v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
                       v-on:take-picture="takePicture" />
       <input type="file"
