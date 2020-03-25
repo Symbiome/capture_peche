@@ -18,7 +18,9 @@
       </div>
 
       <div class="preview-picture">
-        <PicturePreview v-bind:src="pictureSrc"/>
+        <PicturePreview v-bind:src="pictureSrc"
+                        v-bind:enableModal="false"
+                        v-bind:modifiable="modifiable"/>
       </div>
     </div>
     <div class="preview-bottom">
@@ -47,11 +49,9 @@ import PicturePreview from '@/components/trip/PicturePreview.vue';
 import Top from '@/components/common/Top.vue';
 
 import PicturesService from '@/services/PicturesService';
-import TripsService from '@/services/TripsService';
 import {SpeciesWithAliasAndTechnique} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Constants from '@/services/Constants';
-import Helpers from '@/pojos/Helpers';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -65,6 +65,7 @@ export default class CatchPreview extends Vue {
 
   @Prop() lakeId: string;
   @Prop() aCatch: CatchSummary;
+  @Prop({default: true}) modifiable: boolean;
 
   @Prop({default: 'size'}) metaMode:string;
   @Prop({default: 'species'}) bottom:string;

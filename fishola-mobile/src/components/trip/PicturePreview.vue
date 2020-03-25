@@ -1,33 +1,61 @@
 <template>
-  <div class="picture-preview"
-       v-on:click="$emit('take-picture')">
-    <div v-if="!src" class="no-picture">
+  <div class="picture-preview">
+    <div v-if="!src"
+         class="no-picture"
+         v-on:click="$emit('take-picture')">
       <img src="/img/camera.svg"/>
       <span>{{noPictureText}}</span>
     </div>
-    <img v-if="src"
-         class="picture" 
-         v-bind:src="src">
+    <div class="picture"
+         v-on:click="openModal">
+      <img v-if="src"
+          class="picture"
+          v-bind:src="src"/>
+    </div>
+    <PictureModal v-if="src && showModal && enableModal"
+                  v-bind:src="src"
+                  v-bind:replaceButton="modifiable"
+                  v-on:replace="onReplace"
+                  v-on:closeModal="closeModal"/>
   </div>
 </template>
 
 <script lang="ts">
-import CatchSummary from '@/pojos/CatchSummary';
-import {SpeciesWithAlias, Technique, TripBean} from '@/pojos/BackendPojos';
 
-import TripsService from '@/services/TripsService';
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/pojos/Helpers';
+import PictureModal from '@/components/trip/PictureModal.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
+@Component({
+  components: {
+    PictureModal
+  }
+})
 export default class PicturePreview extends Vue {
 
   @Prop() src:string = '';
   @Prop({default:'Aucune photo'}) noPictureText?:string;
+  @Prop({default: true}) modifiable: boolean;
+  @Prop({default: true}) enableModal: boolean;
+
+  showModal:boolean = false;
 
   created() {
+  }
+
+  openModal() {
+    if (this.enableModal) {
+      this.showModal = true;
+    }
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+
+  onReplace() {
+    this.closeModal();
+    this.$emit('take-picture');
   }
 
 }
@@ -43,7 +71,7 @@ export default class PicturePreview extends Vue {
   height: 100%;
   width: 100%;
 
-  img.picture {
+  .picture {
     height: 100%;
     width: 100%;
     object-fit: cover;

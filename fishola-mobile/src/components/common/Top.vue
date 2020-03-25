@@ -38,7 +38,7 @@ export default class Top extends Vue {
   }
 
   .top-1::after {
-    content: '\f11b'; // Correspond à .icon-star:before dans _icons.less
+    content: '\f11d'; // Correspond à .icon-star:before dans _icons.less
     font-family: 'Fishola-Icons';
     color: @terra-cotta;
     position: absolute;

@@ -3,6 +3,7 @@
     <FisholaHeader />
     <div class="catch-picture">
       <PicturePreview v-bind:src="pictureSrc"
+                      v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
                       v-on:take-picture="takePicture" />
       <input type="file"
@@ -326,7 +327,7 @@ export default class EditCatch extends Vue {
 
     if (!this.aCatch.size) {
       hasError = true;
-      this.sizeError = 'Taille nobligatoire';
+      this.sizeError = 'Taille obligatoire';
     } else if (this.aCatch.size > 0) {
       this.sizeError = '';
     } else {

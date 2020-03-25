@@ -23,13 +23,8 @@
 
 <script lang="ts">
 import CatchSummary from '@/pojos/CatchSummary';
-import {SpeciesWithAlias, TripBean} from '@/pojos/BackendPojos';
 
-import CatchPreview from '@/components/trip/CatchPreview.vue'
-
-import TripsService from '@/services/TripsService';
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/pojos/Helpers';
+import CatchPreview from '@/components/trip/CatchPreview.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
