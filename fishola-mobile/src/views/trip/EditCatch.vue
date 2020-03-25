@@ -327,7 +327,7 @@ export default class EditCatch extends Vue {
 
     if (!this.aCatch.size) {
       hasError = true;
-      this.sizeError = 'Taille nobligatoire';
+      this.sizeError = 'Taille obligatoire';
     } else if (this.aCatch.size > 0) {
       this.sizeError = '';
     } else {
