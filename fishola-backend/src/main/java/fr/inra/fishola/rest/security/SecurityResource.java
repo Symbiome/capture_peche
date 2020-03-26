@@ -252,7 +252,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         usersDao.updateUser(existingUser);
 
-        return Response.ok().build();
+        return Response.noContent().build();
     }
 
     // XXX AThimel 19/02/2020 : Devrait être en POST

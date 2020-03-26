@@ -87,13 +87,26 @@ export default class ProfilePasswordVue extends Vue {
 
     if (this.confirm == this.bean.newPassword) {
       ProfileService.updatePassword(this.bean).then(
-        (a) => console.log("a", a),
-        (b) => console.log("b", b)
+        this.saved,
+        this.onError
       );
       // let apiUrl = Constants.apiUrl("/v1/security/password");
       // httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
     } else {
       this.validationErrors['confirm'] = 'Les mots de passe ne correspondent pas';
+    }
+  }
+
+  saved() {
+    this.$root.$emit('toaster-success', 'Mot de passe mis à jour');
+    router.push('profile');
+  }
+
+  onError(response:any) {
+    if (response.status == 400) {
+      this.validationErrors = response.content;
+    } else {
+      this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
     }
   }
 

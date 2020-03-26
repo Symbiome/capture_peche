@@ -42,6 +42,7 @@
                            label="Mot de passe"
                            v-bind:values="['********']"
                            v-on:clicked="editPassword"/>
+          <div class="bottom-page-spacer"></div>
         </div>
       </div>
     </div>
