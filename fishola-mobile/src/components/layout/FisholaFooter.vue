@@ -52,7 +52,7 @@
          v-on:click="goHome">
       <i class="icon-home"></i>
     </div>
-    <div class="footer-element"
+    <div class="footer-element timer"
          v-if="timer">
       {{timer}}
     </div>
@@ -256,6 +256,11 @@ export default class FisholaFooter extends Vue {
     i {
       font-size: 19px;
     }
+
+    &.timer {
+      white-space: nowrap;
+    }
+
   }
 
   .footer-element.steps {
