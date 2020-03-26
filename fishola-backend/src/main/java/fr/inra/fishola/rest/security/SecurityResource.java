@@ -205,6 +205,56 @@ public class SecurityResource extends AbstractFisholaResource {
 
     }
 
+    @POST
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updatePassword(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UpdatePasswordBean bean) {
+
+        if (bean == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID userId = getUserId(cookie);
+
+        Optional<FisholaUser> user = usersDao.findById(userId);
+        boolean loginResult = user.map(FisholaUser::getEmail)
+                .map(email -> usersDao.authenticate(email, bean.currentPassword))
+                .map(optional -> optional.orElse(false)) // authent failed
+                .orElse(false); // user not found
+
+        Map<String, String> validationErrors = new HashMap<>();
+
+        if (loginResult) {
+
+            if (StringUtils.isEmpty(bean.newPassword)) {
+                validationErrors.put("newPassword", "Le mot de passe est obligatoire");
+            } else if (bean.newPassword.length() < 6) {
+                validationErrors.put("newPassword", "Le mot de passe doit comporter au moins 6 caractères");
+            }
+
+        } else {
+            validationErrors.put("currentPassword", "Mot de passe erroné");
+        }
+
+        if (!validationErrors.isEmpty()) {
+            Response response = Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(validationErrors)
+                    .build();
+            return response;
+        }
+
+        Preconditions.checkState(user.isPresent(), "Si l'utilisateur n'était pas trouvé on aurait failé avant");
+
+        FisholaUser existingUser = user.get();
+        String hashedPassword = usersDao.hashPassword(bean.newPassword);
+        existingUser.setPassword(hashedPassword);
+
+        usersDao.updateUser(existingUser);
+
+        return Response.ok().build();
+    }
+
     // XXX AThimel 19/02/2020 : Devrait être en POST
     @GET
     @Path("/logout")

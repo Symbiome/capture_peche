@@ -1,7 +1,7 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
 import TripsService from './TripsService';
-import {UserSettings, Feedback} from '@/pojos/BackendPojos';
+import {UserSettings, Feedback, UpdatePasswordBean} from '@/pojos/BackendPojos';
 
 export default class ProfileService extends AbstractFisholaService {
 
@@ -21,6 +21,10 @@ export default class ProfileService extends AbstractFisholaService {
                     },
                     reject);
         });
+    }
+
+    static updatePassword(bean:UpdatePasswordBean):Promise<void> {
+        return this.backendPost("/v1/security/password", bean);
     }
 
     static getProfile():Promise<UserProfile> {

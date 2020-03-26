@@ -5,7 +5,27 @@
       <div class="pane">
         <h1>Mot de passe</h1>
         <div class="pane-content">
-          Work in progress
+          <FormInput name="currentPassword"
+                     type="password"
+                     label="Mot de passe actuel"
+                     placeholder="Tapez votre mot de passe"
+                     v-model="bean.currentPassword"
+                     v-bind:error="validationErrors['currentPassword']"
+                     />
+          <FormInput name="newPassword"
+                     type="password"
+                     label="Nouveau mot de passe"
+                     placeholder="Choisissez un mot de passe"
+                     v-model="bean.newPassword"
+                     v-bind:error="validationErrors['newPassword']"
+                     />
+          <FormInput name="confirm"
+                     type="password"
+                     label="Confirmation du mot de passe"
+                     placeholder="Confirmez votre mot de passe"
+                     v-model="confirm"
+                     v-bind:error="validationErrors['confirm']"
+                     />
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -21,16 +41,32 @@
 import FisholaHeader from '@/components/layout/FisholaHeader.vue';
 import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
+import FormInput from '@/components/common/FormInput.vue';
+
+import { UpdatePasswordBean } from '@/pojos/BackendPojos';
+
+import ProfileService from '../services/ProfileService';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../router';
 
 @Component({
   components: {
     FisholaHeader,
+    FormInput,
     FisholaFooter
   }
 })
 export default class ProfilePasswordVue extends Vue {
+
+  validationErrors:any = {
+    currentPassword : '',
+    newPassword : '',
+    confirm : ''
+  };
+
+  bean:UpdatePasswordBean = {currentPassword: '', newPassword: ''};
+  confirm:string = '';
 
   created() {
   }
@@ -38,8 +74,27 @@ export default class ProfilePasswordVue extends Vue {
   mounted() {
   }
 
+  cleanValidationErros() {
+    if (this.validationErrors) {
+      let keys = Object.keys(this.validationErrors);
+      keys.forEach(key => this.validationErrors[key] = '');
+    }
+  }
+
   save() {
-    this.$root.$emit('toaster-warning', 'Work in progress')
+
+    this.cleanValidationErros();
+
+    if (this.confirm == this.bean.newPassword) {
+      ProfileService.updatePassword(this.bean).then(
+        (a) => console.log("a", a),
+        (b) => console.log("b", b)
+      );
+      // let apiUrl = Constants.apiUrl("/v1/security/password");
+      // httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
+    } else {
+      this.validationErrors['confirm'] = 'Les mots de passe ne correspondent pas';
+    }
   }
 
 }

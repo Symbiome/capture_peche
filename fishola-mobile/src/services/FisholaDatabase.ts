@@ -32,6 +32,8 @@ export default class FisholaDatabase extends Dexie {
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
         this.dirtyPictures = this.table("dirtyPictures");
+
+        console.log("Base Fishola prête");
     }
 
     static getInstance():FisholaDatabase {
