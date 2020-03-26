@@ -41,7 +41,7 @@
           <FormMultiValues name="password"
                            label="Mot de passe"
                            v-bind:values="['********']"
-                           v-on:clicked="$root.$emit('toaster-warning', 'Work in progress')"/>
+                           v-on:clicked="editPassword"/>
         </div>
       </div>
     </div>
@@ -171,6 +171,10 @@ export default class Profile extends Vue {
       let keys = Object.keys(this.validationErrors);
       keys.forEach(key => this.validationErrors[key] = '');
     }
+  }
+
+  editPassword() {
+    router.push('/profile-password');
   }
 
 }
