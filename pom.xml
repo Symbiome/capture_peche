@@ -33,7 +33,7 @@
 
     <quarkus.version>1.3.0.Final</quarkus.version>
     <jooqVersion>3.13.1</jooqVersion>
-    <flywayVersion>6.3.1</flywayVersion>
+    <flywayVersion>6.3.2</flywayVersion>
     <postgresqlDriverVersion>42.2.11</postgresqlDriverVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
