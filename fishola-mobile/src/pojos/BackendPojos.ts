@@ -106,6 +106,11 @@ export interface UserSettings {
     promptSamples: boolean;
 }
 
+export interface UpdatePasswordBean {
+    currentPassword: string;
+    newPassword: string;
+}
+
 export interface Feedback {
     id: string;
     category: string;

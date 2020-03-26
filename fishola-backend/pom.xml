@@ -165,6 +165,7 @@
             <class>fr.inra.fishola.entities.tables.pojos.Editorial</class>
             <class>fr.inra.fishola.rest.editorial.DocumentationLight</class>
             <class>fr.inra.fishola.rest.security.UserSettings</class>
+            <class>fr.inra.fishola.rest.security.UpdatePasswordBean</class>
             <class>fr.inra.fishola.rest.feedback.Feedback</class>
             <class>fr.inra.fishola.rest.dashboard.Dashboard</class>
           </classes>

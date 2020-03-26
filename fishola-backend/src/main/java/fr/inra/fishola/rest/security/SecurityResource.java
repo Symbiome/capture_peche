@@ -53,6 +53,15 @@ public class SecurityResource extends AbstractFisholaResource {
     @Inject
     protected MailService mailService;
 
+    protected Optional<String> validatePassword(String password) {
+        if (StringUtils.isEmpty(password)) {
+            return Optional.of("Le mot de passe est obligatoire");
+        } else if (password.length() < 6) {
+            return Optional.of("Le mot de passe doit comporter au moins 6 caractères");
+        }
+        return Optional.empty();
+    }
+
     @PUT
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -79,11 +88,8 @@ public class SecurityResource extends AbstractFisholaResource {
             validationErrors.put("email", "E-mail déjà utilisé");
         }
 
-        if (StringUtils.isEmpty(bean.password)) {
-            validationErrors.put("password", "Le mot de passe est obligatoire");
-        } else if (bean.password.length() < 6) {
-            validationErrors.put("password", "Le mot de passe doit comporter au moins 6 caractères");
-        }
+        Optional<String> passwordError = validatePassword(bean.password);
+        passwordError.ifPresent(error -> validationErrors.put("password", error));
 
         if (!validationErrors.isEmpty()) {
             Response response = Response
@@ -203,6 +209,53 @@ public class SecurityResource extends AbstractFisholaResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+    }
+
+    @POST
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updatePassword(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UpdatePasswordBean bean) {
+
+        if (bean == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID userId = getUserId(cookie);
+
+        Optional<FisholaUser> user = usersDao.findById(userId);
+        boolean loginResult = user.map(FisholaUser::getEmail)
+                .map(email -> usersDao.authenticate(email, bean.currentPassword))
+                .map(optional -> optional.orElse(false)) // authent failed
+                .orElse(false); // user not found
+
+        Map<String, String> validationErrors = new HashMap<>();
+
+        if (loginResult) {
+
+            Optional<String> passwordError = validatePassword(bean.newPassword);
+            passwordError.ifPresent(error -> validationErrors.put("newPassword", error));
+
+        } else {
+            validationErrors.put("currentPassword", "Mot de passe erroné");
+        }
+
+        if (!validationErrors.isEmpty()) {
+            Response response = Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(validationErrors)
+                    .build();
+            return response;
+        }
+
+        Preconditions.checkState(user.isPresent(), "Si l'utilisateur n'était pas trouvé on aurait failé avant");
+
+        FisholaUser existingUser = user.get();
+        String hashedPassword = usersDao.hashPassword(bean.newPassword);
+        existingUser.setPassword(hashedPassword);
+
+        usersDao.updateUser(existingUser);
+
+        return Response.noContent().build();
     }
 
     // XXX AThimel 19/02/2020 : Devrait être en POST

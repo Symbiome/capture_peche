@@ -22,6 +22,7 @@ import Credits from '../views/Credits.vue'
 
 import Settings from '../views/Settings.vue'
 import Profile from '../views/Profile.vue'
+import ProfilePassword from '../views/ProfilePassword.vue'
 
 Vue.use(VueRouter)
 
@@ -117,6 +118,11 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: Profile
+  },
+  {
+    path: '/profile-password',
+    name: 'profile-password',
+    component: ProfilePassword
   },
   {
     path: '/about',
