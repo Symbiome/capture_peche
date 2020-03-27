@@ -82,9 +82,8 @@ export default class CatchPreview extends Vue {
       this.caughtAtLabel = this.aCatch.caughtAt;
     }
 
-    if (this.aCatch.hasPicture) {
-      PicturesService.getPicture(this.aCatch.id, this.pictureLoaded);
-    }
+    PicturesService.getPicture(this.aCatch.id)
+      .then(this.pictureLoaded, this.noPictureFound);
 
     ReferentialService.getSpeciesAndTechniques(this.lakeId)
       .then(this.referentialLoaded);
@@ -94,8 +93,14 @@ export default class CatchPreview extends Vue {
     }
   }
 
-  pictureLoaded(content?:string) {
-    this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
+  pictureLoaded(content:string) {
+    this.pictureSrc = content;
+  }
+
+  noPictureFound() {
+    if (this.aCatch.hasPicture) {
+      this.pictureSrc = Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
+    }
   }
 
   referentialLoaded(data:SpeciesWithAliasAndTechnique) {

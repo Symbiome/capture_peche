@@ -43,9 +43,15 @@ export default class PicturesService extends AbstractFisholaService {
             });
     }
 
-    static getPicture(catchId:string, callback:(content?:string)=>any) {
-        this.getPictureFull(catchId, (content?, dirtySince?) => {
-            callback(content);
+    static getPicture(catchId:string):Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.getPictureFull(catchId, (content?, dirtySince?) => {
+                if (content) {
+                    resolve(content);
+                } else {
+                    reject();
+                }
+            });
         });
     }
 

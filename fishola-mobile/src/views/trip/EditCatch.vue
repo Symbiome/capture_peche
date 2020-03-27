@@ -224,9 +224,8 @@ export default class EditCatch extends Vue {
       }
     }
 
-    if (someCatch.hasPicture) {
-      PicturesService.getPicture(someCatch.id, this.pictureLoaded);
-    }
+    PicturesService.getPicture(someCatch.id)
+      .then(this.pictureLoaded, this.noPictureFound);
 
     if (this.inCreation) {
       let latestSpeciesId = this.getLatestCatchSpecies(someTrip);
@@ -252,8 +251,14 @@ export default class EditCatch extends Vue {
     }
   }
 
-  pictureLoaded(content?:string) {
-    this.pictureSrc = content ? content : Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
+  pictureLoaded(content:string) {
+    this.pictureSrc = content;
+  }
+
+  noPictureFound() {
+    if (this.aCatch.hasPicture) {
+      this.pictureSrc = Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
+    }
   }
 
   referentialLoaded(data:SpeciesTechniquesAndReleasedFishStates) {
