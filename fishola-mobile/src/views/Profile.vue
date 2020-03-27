@@ -81,7 +81,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class Profile extends Vue {
+export default class ProfileView extends Vue {
 
   profile:UserProfile = {firstName:'', email:'', initials:''};
   fullName:string = '';

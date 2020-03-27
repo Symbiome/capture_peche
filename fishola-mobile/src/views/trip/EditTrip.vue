@@ -80,7 +80,7 @@ export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques";
     FisholaFooter
   }
 })
-export default class EditTrip extends Vue {
+export default class EditTripView extends Vue {
 
   @Prop() id!:string;
 

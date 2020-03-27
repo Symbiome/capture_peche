@@ -51,7 +51,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class NewTrip extends Vue {
+export default class NewTripView extends Vue {
   
   constructor() {
     super();

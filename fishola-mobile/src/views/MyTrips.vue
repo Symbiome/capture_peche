@@ -50,7 +50,7 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class MyTrips extends Vue {
+export default class MyTripsView extends Vue {
   
   trips:TripLight[] = [];
   loading:boolean = true;

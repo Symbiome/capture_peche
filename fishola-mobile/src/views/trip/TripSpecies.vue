@@ -73,7 +73,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripSpeciesVue extends Vue {
+export default class TripSpeciesView extends Vue {
   
   @Prop() id!:string;
 

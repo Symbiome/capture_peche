@@ -57,7 +57,7 @@ import router from '../router';
     FisholaFooter
   }
 })
-export default class ProfilePasswordVue extends Vue {
+export default class ProfilePasswordView extends Vue {
 
   validationErrors:any = {
     currentPassword : '',

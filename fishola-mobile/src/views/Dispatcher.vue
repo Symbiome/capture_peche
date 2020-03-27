@@ -17,7 +17,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {}
 })
-export default class Dispatcher extends Vue {
+export default class DispatcherView extends Vue {
 
   constructor() {
     super();

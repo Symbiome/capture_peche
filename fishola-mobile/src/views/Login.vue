@@ -50,7 +50,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FormInput
   }
 })
-export default class Login extends Vue {
+export default class LoginView extends Vue {
 
   email = '';
   emailError = '';

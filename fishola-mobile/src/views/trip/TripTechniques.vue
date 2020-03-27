@@ -53,7 +53,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripTechniquesVue extends Vue {
+export default class TripTechniquesView extends Vue {
 
   @Prop() id!:string;
 

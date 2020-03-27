@@ -58,7 +58,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class Credits extends Vue {
+export default class CreditsView extends Vue {
 
   paragraphs:string[] = [];
   link = '';

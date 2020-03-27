@@ -47,7 +47,7 @@ export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques";
     FisholaFooter
   }
 })
-export default class TripSummaryVue extends Vue {
+export default class TripSummaryView extends Vue {
 
   @Prop() id!:string;
 

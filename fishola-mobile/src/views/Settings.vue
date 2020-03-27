@@ -43,7 +43,7 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class Settings extends Vue {
+export default class SettingsView extends Vue {
 
   settings:UserSettings | null = null;
 

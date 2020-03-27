@@ -44,7 +44,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FisholaFooter
   }
 })
-export default class Documentation extends Vue {
+export default class DocumentationView extends Vue {
   
   elements:DocumentationLight[] = [];
 

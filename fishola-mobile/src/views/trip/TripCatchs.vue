@@ -55,7 +55,7 @@ import Helpers from '../../pojos/Helpers';
     FisholaFooter
   }
 })
-export default class TripCatchs extends Vue {
+export default class TripCatchsView extends Vue {
 
   @Prop() id!:string;
 

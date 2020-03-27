@@ -79,7 +79,7 @@ import router from '../../router';
     FisholaFooter
   }
 })
-export default class TripMetaVue extends Vue {
+export default class TripMetaView extends Vue {
   
   @Prop() id!:string;
 

@@ -195,7 +195,7 @@ export class TopEntry {
     CatchPreviewList
   }
 })
-export default class DashboardVue extends Vue {
+export default class DashboardView extends Vue {
 
   speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
   months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];

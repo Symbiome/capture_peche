@@ -135,7 +135,7 @@ import Constants from '../../services/Constants';
     FisholaFooter
   }
 })
-export default class EditCatch extends Vue {
+export default class EditCatchView extends Vue {
 
   @Prop() tripId!:string;
   @Prop() catchId!:string;

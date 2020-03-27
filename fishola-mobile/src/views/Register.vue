@@ -75,7 +75,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FormInput
   }
 })
-export default class Register extends Vue {
+export default class RegisterView extends Vue {
 
   bean:UserRegister = new UserRegister();
   passwordConfirm:string = '';
