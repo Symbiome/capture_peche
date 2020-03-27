@@ -52,6 +52,10 @@
     <developerConnection>scm:git:git@gitlab.nuiton.org:inra/fishola.git</developerConnection>
   </scm>
 
+  <prerequisites>
+    <maven>3.6.2</maven>
+  </prerequisites>
+
   <modules>
     <module>fishola-backend</module>
     <module>fishola-mobile</module>

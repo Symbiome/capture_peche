@@ -16,7 +16,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <fontendMavenPluginVersion>1.8.0</fontendMavenPluginVersion>
+    <fontendMavenPluginVersion>1.9.1</fontendMavenPluginVersion>
   </properties>
 
   <dependencies>
