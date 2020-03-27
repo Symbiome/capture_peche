@@ -118,8 +118,4 @@ export default class ProfilePasswordVue extends Vue {
 
 @import "../less/main";
 
-.profile-password-page {
-
-}
-
 </style>
