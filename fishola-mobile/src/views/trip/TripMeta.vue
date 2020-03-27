@@ -222,8 +222,4 @@ export default class TripMetaView extends Vue {
 
 @import "../../less/main";
 
-.edit-trip-meta-page {
-
-}
-
 </style>

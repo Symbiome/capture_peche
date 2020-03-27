@@ -111,8 +111,4 @@ export default class TripSummaryView extends Vue {
 
 @import "../../less/main";
 
-.edit-trip-summary-page {
-
-}
-
 </style>
