@@ -193,6 +193,14 @@ export default class EditCatch extends Vue {
     this.settings = settings;
   }
 
+  getLatestCatchSpecies(someTrip:TripBean):string|undefined {
+    if (someTrip.catchs && someTrip.catchs.length > 0) {
+      let latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
+      return latestCatch.speciesId;
+    }
+    return;
+  }
+
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
     let lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
@@ -218,6 +226,13 @@ export default class EditCatch extends Vue {
 
     if (someCatch.hasPicture) {
       PicturesService.getPicture(someCatch.id, this.pictureLoaded);
+    }
+
+    if (this.inCreation) {
+      let latestSpeciesId = this.getLatestCatchSpecies(someTrip);
+      if (latestSpeciesId) {
+        someCatch.speciesId = latestSpeciesId;
+      }
     }
 
     ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId)
