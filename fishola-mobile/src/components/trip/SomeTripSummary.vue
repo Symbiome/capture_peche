@@ -70,6 +70,7 @@ import FormMultiValues from '@/components/common/FormMultiValues.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
+import moment from 'moment';
 
 @Component({
   components: {
@@ -196,6 +197,13 @@ export default class SomeTripSummary extends Vue {
       let newDate = new Date(this.date);
       this.trip!.date = newDate;
 
+      let newDateSOD = moment(newDate).startOf('day');
+      let nowSOD = moment().startOf('day');
+      if (newDateSOD.isAfter(nowSOD)) {
+        this.dateError = "La date ne peut être dans le futur";
+        hasError = true;
+      }
+
       if (this.startedAt) {
         this.startedAtError = '';
         this.trip!.startedAt = this.startedAt;
@@ -205,8 +213,18 @@ export default class SomeTripSummary extends Vue {
       }
 
       if (this.finishedAt) {
-        this.finishedAtError = '';
-        this.trip!.finishedAt = this.finishedAt;
+
+        let startedAtMoment = moment(this.startedAt, moment.HTML5_FMT.TIME_SECONDS);
+        let finishedAtMoment = moment(this.finishedAt, moment.HTML5_FMT.TIME_SECONDS);
+
+        if (finishedAtMoment.isAfter(startedAtMoment)) {
+          this.finishedAtError = '';
+          this.trip!.finishedAt = this.finishedAt;
+        } else {
+          this.finishedAtError = "Doit être après l'heure de début";
+          hasError = true;
+        }
+
       } else {
         this.finishedAtError = "Vous devez renseigner l'heure de fin";
         hasError = true;
