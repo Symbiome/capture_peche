@@ -112,7 +112,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static backendTripToTrip(input:any):TripBean {
-        let realDate = new Date(input.date);
+        let realDate = Helpers.parseLocalDate(input.date);
         let realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
 
         let catchs:CatchBean[] = [];
