@@ -46,9 +46,13 @@
                    button-icon="icon-edit"
                    v-on:buttonClicked="startSave"
                    v-on:deleteClicked="deleteTrip"
+                   back-event="onBackButton"
+                   v-on:onBackButton="returnToTrips"
                    shortcuts="back,spacer,delete"/>
     <FisholaFooter v-if="ready && !modifiable"
                    v-on:deleteClicked="deleteTrip"
+                   back-event="onBackButton"
+                   v-on:onBackButton="returnToTrips"
                    shortcuts="back,spacer,delete"/>
   </div>
 </template>
@@ -175,6 +179,10 @@ export default class EditTripView extends Vue {
   }
 
   tripDeleted() {
+    this.returnToTrips();
+  }
+
+  returnToTrips() {
     router.push('/trips');
   }
 
