@@ -27,9 +27,6 @@ export default class Helpers {
         if (finishedAt) {
             end = moment(finishedAt, moment.HTML5_FMT.TIME_SECONDS);
         }
-        if (end.isBefore(start)) {
-            end = end.add(24, 'hours');
-        }
         let diff = end.diff(start);
         let result = moment.duration(diff)
         return result;
@@ -38,9 +35,6 @@ export default class Helpers {
     static computeDurationFromDates(startedAt:Date, finishedAt:Date):moment.Duration {
         let start = moment(startedAt);
         let end = moment(finishedAt);
-        if (end.isBefore(start)) {
-            end = end.add(24, 'hours');
-        }
         let diff = end.diff(start);
         let result = moment.duration(diff)
         return result;
