@@ -287,6 +287,13 @@ export default class EditCatchView extends Vue {
     data.techniques.forEach((t) => this.allTechniques.push(t));
     data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
+
+    // Tentative pour déclencher l'ouverture de l'APN dès le début de la capture
+    // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
+    // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
+    // if (this.inCreation) {
+    //   setTimeout(this.takePicture, 500);
+    // }
   }
 
   takePicture() {
