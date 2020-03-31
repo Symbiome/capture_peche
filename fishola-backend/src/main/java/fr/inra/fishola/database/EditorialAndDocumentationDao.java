@@ -17,6 +17,13 @@ import java.util.UUID;
 @Singleton
 public class EditorialAndDocumentationDao extends AbstractFisholaDao {
 
+    public List<Documentation> listDocumentationsWithoutContent() {
+        List<Documentation> result = withContext(context -> context.selectFrom(Tables.DOCUMENTATION)
+                .where(Tables.DOCUMENTATION.CONTENT.isNull())
+                .fetchInto(Documentation.class));
+        return result;
+    }
+
     public LinkedHashMap<UUID, String> listDocumentations() {
         return withContext(context -> {
             Result<Record2<UUID, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NAME)
@@ -29,9 +36,9 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         });
     }
 
-    public Optional<byte[]> getDocumentation(UUID docId) {
+    public Optional<Documentation> getDocumentation(UUID docId) {
         Documentation doc = withDao(DocumentationDao.class, dao -> dao.findById(docId));
-        Optional<byte[]> result = Optional.ofNullable(doc).map(Documentation::getContent);
+        Optional<Documentation> result = Optional.ofNullable(doc);
         return result;
     }
 
@@ -44,6 +51,10 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
             return Optional.empty();
         });
         return result;
+    }
+
+    public void updateDocumentation(Documentation documentation) {
+        withDaoNoResult(DocumentationDao.class, dao -> dao.update(documentation));
     }
 
 }

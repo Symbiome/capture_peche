@@ -2,6 +2,7 @@ package fr.inra.fishola.rest.editorial;
 
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.EditorialAndDocumentationDao;
+import fr.inra.fishola.entities.tables.pojos.Documentation;
 import fr.inra.fishola.entities.tables.pojos.Editorial;
 import fr.inra.fishola.rest.AbstractFisholaResource;
 
@@ -14,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +56,19 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @GET
     @Path("/documentation/{docId}")
+    @Produces("application/pdf")
     public Response downloadDocumentation(@PathParam("docId") UUID docId) {
-        Optional<byte[]> bytes = dao.getDocumentation(docId);
+        Optional<Documentation> optional = dao.getDocumentation(docId);
+        if (optional.isEmpty()) {
+            return Response.status(404).build();
+        }
 
-        Response response = bytes.map(this::wrapAsStreamingOutput)
-                .map(Response::ok)
-                .orElseGet(() -> Response.status(404))
+        Documentation documentation = optional.get();
+        String filename = documentation.getName()
+                .replaceAll("[ ]", "_");
+        StreamingOutput output = this.wrapAsStreamingOutput(documentation.getContent());
+        Response response = Response.ok(output)
+                .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))
                 .build();
         return response;
     }
