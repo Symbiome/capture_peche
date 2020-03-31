@@ -15,6 +15,12 @@
             <span>Effectuer des prélèvements</span>
             <FormToggle v-model="settings.promptSamples" />
           </div>
+          <div class="info"
+               v-if="sampleBuyPonitsDocumentationUrl">
+            Pour pouvoir effectuer des prélèvements, vous devez vous munir
+            d'un kit dans un des points de collecte :
+            <a :href="sampleBuyPonitsDocumentationUrl">consulter la liste</a>
+          </div>
 
           <div class="bottom-page-spacer"></div>
         </div>
@@ -35,6 +41,7 @@ import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
+import DocumentationService from '../services/DocumentationService';
 
 @Component({
   components: {
@@ -46,6 +53,8 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
 export default class SettingsView extends Vue {
 
   settings:UserSettings | null = null;
+
+  sampleBuyPonitsDocumentationUrl:string = '';
 
   constructor() {
     super();
@@ -60,6 +69,8 @@ export default class SettingsView extends Vue {
 
   mounted() {
     this.loadSettings();
+    DocumentationService.getSampleBuyPonitsDocumentation()
+      .then((doc) => this.sampleBuyPonitsDocumentationUrl = doc.url);
   }
 
   loadSettings() {
@@ -111,6 +122,17 @@ export default class SettingsView extends Vue {
       line-height: 16px;
       color: @gunmetal;
     }
+  }
+
+  .info {
+    padding-left: 40px;
+    padding-right: 40px;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 10px;
+    line-height: 14px;
+    color: @pale-sky;
+    text-align: center;
   }
 
 }
