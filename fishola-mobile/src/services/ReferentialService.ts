@@ -15,14 +15,6 @@ export class SpeciesWithAliasAndTechnique {
     }
 }
 
-export class SpeciesTechniquesAndReleasedFishStates {
-    constructor (
-        public species:SpeciesWithAlias[],
-        public techniques:Technique[],
-        public states:ReleasedFishState[]) {
-    }
-}
-
 export class LakesWeathersTripTypesSpeciesAndTechniques {
     constructor (
         public lakes:Lake[],
@@ -195,19 +187,6 @@ export default class ReferentialService extends AbstractFisholaService {
                 .then(
                     (data:[Lake[], any[]]) => {
                         let result:LakesAndTripTypes = new LakesAndTripTypes(data[0], data[1]);
-                        resolve(result);
-                    },
-                    reject);
-        });
-    }
-
-    static getSpeciesTechniquesAndReleasedFishStates(lakeId:string):Promise<SpeciesTechniquesAndReleasedFishStates> {
-        return new Promise<SpeciesTechniquesAndReleasedFishStates>((resolve, reject) => {
-            Promise
-                .all([ReferentialService.getSpeciesPlusCustom(lakeId), ReferentialService.getTechniques(), ReferentialService.getReleasedFishStates()])
-                .then(
-                    (data:[SpeciesWithAlias[], Technique[], ReleasedFishState[]]) => {
-                        let result:SpeciesTechniquesAndReleasedFishStates = new SpeciesTechniquesAndReleasedFishStates(data[0], data[1], data[2]);
                         resolve(result);
                     },
                     reject);

@@ -53,13 +53,12 @@
                      v-bind:error="keepError"
                      v-bind:readonly="!modifiable"/>
           <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
-          <FormSelect name="releaseState"
-                      v-if="false"
+          <!--FormSelect name="releaseState"
                       label="État du poisson relâché"
                       v-bind:options="allReleasedFishStates"
                       v-model="aCatch.releasedStateId"
                       v-bind:error="releasedStateIdError"
-                      v-bind:readonly="!modifiable"/>
+                      v-bind:readonly="!modifiable"/-->
           <FormSelect name="technique"
                       label="Technique de pêche"
                       v-bind:options="allTechniques"
@@ -96,12 +95,12 @@
 </template>
 
 <script lang="ts">
-import {TripBean, CatchBean, Technique, SpeciesWithAlias, ReleasedFishState, TripMode} from '@/pojos/BackendPojos';
+import {TripBean, CatchBean, Technique, SpeciesWithAlias, TripMode} from '@/pojos/BackendPojos';
 import CatchSummary from '@/pojos/CatchSummary';
 
 import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
-import {SpeciesTechniquesAndReleasedFishStates} from '@/services/ReferentialService';
+import {SpeciesWithAliasAndTechnique} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/pojos/Helpers';
 import GeolocationService from '@/services/GeolocationService';
@@ -172,7 +171,7 @@ export default class EditCatchView extends Vue {
 
   allSpecies:SpeciesWithAlias[] = [];
   allTechniques:Technique[] = [];
-  allReleasedFishStates:ReleasedFishState[] = [];
+  // allReleasedFishStates:ReleasedFishState[] = [];
 
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
@@ -233,7 +232,7 @@ export default class EditCatchView extends Vue {
       }
     }
 
-    ReferentialService.getSpeciesTechniquesAndReleasedFishStates(lakeId)
+    ReferentialService.getSpeciesAndTechniques(lakeId)
       .then(this.referentialLoaded);
 
     if (this.inCreation && this.tripMode == 'Live') {
@@ -260,7 +259,7 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  referentialLoaded(data:SpeciesTechniquesAndReleasedFishStates) {
+  referentialLoaded(data:SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
       if (s.builtIn // Espèce de base
           || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
@@ -284,7 +283,7 @@ export default class EditCatchView extends Vue {
     }
     this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
-    data.states.forEach((s) => this.allReleasedFishStates.push(s));
+    // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
 
     // Tentative pour déclencher l'ouverture de l'APN dès le début de la capture
