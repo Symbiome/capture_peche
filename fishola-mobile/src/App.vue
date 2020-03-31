@@ -18,7 +18,7 @@ import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
