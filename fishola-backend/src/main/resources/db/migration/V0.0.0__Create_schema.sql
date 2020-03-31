@@ -3,6 +3,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE gender
     AS ENUM('Male', 'Female', 'NonBinary');
 
+CREATE SEQUENCE sample_base_id_sequence;
+
 CREATE TABLE fishola_user (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     first_name TEXT NOT NULL,
@@ -12,7 +14,8 @@ CREATE TABLE fishola_user (
     gender gender,
     birth_year INT,
     prompt_weight BOOLEAN NOT NULL DEFAULT TRUE,
-    prompt_samples BOOLEAN NOT NULL DEFAULT FALSE
+    prompt_samples BOOLEAN NOT NULL DEFAULT FALSE,
+    sample_base_id INT NOT NULL UNIQUE DEFAULT nextval('sample_base_id_sequence')
 );
 
 CREATE TABLE lake (

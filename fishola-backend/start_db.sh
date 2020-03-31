@@ -7,4 +7,5 @@ docker run \
   --restart always \
   -v ${DBdir}/${DB}:/var/lib/postgresql/data \
   -e POSTGRES_DB=${DB} \
+  -e POSTGRES_PASSWORD=whatever \
   -d postgres:12

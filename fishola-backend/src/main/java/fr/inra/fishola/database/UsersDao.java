@@ -1,6 +1,7 @@
 package fr.inra.fishola.database;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import fr.inra.fishola.entities.Sequences;
 import fr.inra.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inra.fishola.entities.tables.pojos.FisholaUser;
 
@@ -67,6 +68,16 @@ public class UsersDao extends AbstractFisholaDao {
 
     public void updateUser(FisholaUser existingUser) {
         withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
+    }
+
+    public void increaseSampleBaseId(UUID userId) {
+        withContextNoResult(context -> {
+            int nextSampleBaseId = context.nextval(Sequences.SAMPLE_BASE_ID_SEQUENCE).intValue();
+            context.update(FISHOLA_USER)
+                    .set(FISHOLA_USER.SAMPLE_BASE_ID, nextSampleBaseId)
+                    .where(FISHOLA_USER.ID.eq(userId))
+                    .execute();
+        });
     }
 
 }

@@ -275,7 +275,21 @@ public class SecurityResource extends AbstractFisholaResource {
                 .lastName(Optional.ofNullable(input.getLastName()))
                 .birthYear(Optional.ofNullable(input.getBirthYear()))
                 .gender(Optional.ofNullable(input.getGender()))
+                .sampleBaseId(encodeSampleBaseId(input.getSampleBaseId()))
                 .build();
+        return result;
+    }
+
+    public static final char[] ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+
+    public static String encodeSampleBaseId(final int rawNumber) {
+        int low = rawNumber % ALPHABET.length;
+        String result = String.valueOf(ALPHABET[low]);
+        int remaining = rawNumber - ALPHABET.length;
+        if (remaining >= 0) {
+            int high = remaining / ALPHABET.length;
+            result = encodeSampleBaseId(high) + result;
+        }
         return result;
     }
 

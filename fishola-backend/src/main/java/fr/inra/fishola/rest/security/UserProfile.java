@@ -26,6 +26,8 @@ public interface UserProfile {
 
     Optional<Integer> birthYear();
 
+    String sampleBaseId();
+
     @Value.Derived
     default String initials() {
         List<Character> initials = new LinkedList<>(splitToInitials(firstName()));
