@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
 import fr.inra.fishola.entities.tables.daos.ReleasedFishStateDao;
+import fr.inra.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inra.fishola.entities.tables.daos.SpeciesDao;
 import fr.inra.fishola.entities.tables.daos.TechniqueDao;
 import fr.inra.fishola.entities.tables.daos.WeatherDao;
@@ -76,11 +77,7 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public List<SpeciesByLake> listSpeciesByLake() {
-        List<SpeciesByLake> result = withContext(context ->
-                context.selectFrom(Tables.SPECIES_BY_LAKE)
-                    .fetch()
-                    .into(SpeciesByLake.class)
-        );
+        List<SpeciesByLake> result = withDao(SpeciesByLakeDao.class, SpeciesByLakeDao::findAll);
         return result;
     }
 

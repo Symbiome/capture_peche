@@ -2,7 +2,11 @@ package fr.inra.fishola.database;
 
 import fr.inra.fishola.entities.Tables;
 import fr.inra.fishola.entities.tables.daos.TripDao;
+import fr.inra.fishola.entities.tables.daos.TripExpectedSpeciesDao;
+import fr.inra.fishola.entities.tables.daos.TripTechniquesDao;
 import fr.inra.fishola.entities.tables.pojos.Trip;
+import fr.inra.fishola.entities.tables.pojos.TripExpectedSpecies;
+import fr.inra.fishola.entities.tables.pojos.TripTechniques;
 import fr.inra.fishola.entities.tables.records.TripRecord;
 import org.jooq.Condition;
 import org.jooq.SelectConditionStep;
@@ -20,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
@@ -40,33 +45,21 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public int setSpecies(UUID tripId, Set<UUID> speciesIds) {
-        return withContext(context -> {
-            context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES)
-                    .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
-                    .execute();
-            int count = 0;
-            for (UUID speciesId : speciesIds) {
-                count += context.insertInto(Tables.TRIP_EXPECTED_SPECIES, Tables.TRIP_EXPECTED_SPECIES.TRIP_ID, Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID)
-                        .values(tripId, speciesId)
-                        .execute();
-            }
-            return count;
-        });
+        deleteTripSpecies(tripId);
+        Set<TripExpectedSpecies> expectedSpecies = speciesIds.stream()
+                .map(speciesId -> new TripExpectedSpecies(tripId, speciesId))
+                .collect(Collectors.toSet());
+        withDaoNoResult(TripExpectedSpeciesDao.class, dao -> dao.insert(expectedSpecies));
+        return expectedSpecies.size();
     }
 
     public int setTechniques(UUID tripId, Set<UUID> techniqueIds) {
-        return withContext(context -> {
-            context.deleteFrom(Tables.TRIP_TECHNIQUES)
-                    .where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId))
-                    .execute();
-            int count = 0;
-            for (UUID techniqueId : techniqueIds) {
-                count += context.insertInto(Tables.TRIP_TECHNIQUES, Tables.TRIP_TECHNIQUES.TRIP_ID, Tables.TRIP_TECHNIQUES.TECHNIQUE_ID)
-                        .values(tripId, techniqueId)
-                        .execute();
-            }
-            return count;
-        });
+        deleteTripTechniques(tripId);
+        Set<TripTechniques> techniques = techniqueIds.stream()
+                .map(techniqueId -> new TripTechniques(tripId, techniqueId))
+                .collect(Collectors.toSet());
+        withDaoNoResult(TripTechniquesDao.class, dao -> dao.insert(techniques));
+        return techniques.size();
     }
 
     public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm) {
@@ -120,6 +113,11 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> getTripSpecies(UUID tripId) {
+//        Set<UUID> speciesIds = withDao(TripExpectedSpeciesDao.class, dao -> dao.fetchByTripId(tripId)
+//                .stream()
+//                .map(TripExpectedSpecies::getSpeciesId)
+//                .collect(Collectors.toSet()));
+        // Pour plus de performances, on ne charge pas l'objet complet mais on fait une projection
         Set<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
                 .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
                 .fetchSet(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID));
@@ -127,6 +125,11 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> getTripTechniques(UUID tripId) {
+//        Set<UUID> techniqueIds = withDao(TripTechniquesDao.class, dao -> dao.fetchByTripId(tripId)
+//                .stream()
+//                .map(TripTechniques::getTechniqueId)
+//                .collect(Collectors.toSet()));
+        // Pour plus de performances, on ne charge pas l'objet complet mais on fait une projection
         Set<UUID> techniqueIds = withContext(context -> context.selectFrom(Tables.TRIP_TECHNIQUES)
                 .where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId))
                 .fetchSet(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID));
@@ -137,13 +140,23 @@ public class TripsDao extends AbstractFisholaDao {
         withDaoNoResult(TripDao.class, dao -> dao.update(existingTrip));
     }
 
-    public void delete(UUID tripId) {
-        catchsDao.deleteByTrip(tripId);
+    protected void deleteTripSpecies(UUID tripId) {
         withContextNoResult(context -> {
             context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute();
-            context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
-            context.deleteFrom(Tables.TRIP).where(Tables.TRIP.ID.eq(tripId)).execute();
         });
+    }
+
+    protected void deleteTripTechniques(UUID tripId) {
+        withContextNoResult(context -> {
+            context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
+        });
+    }
+
+    public void delete(UUID tripId) {
+        catchsDao.deleteByTrip(tripId);
+        deleteTripSpecies(tripId);
+        deleteTripTechniques(tripId);
+        withDaoNoResult(TripDao.class, dao -> dao.deleteById(tripId));
     }
 
     public void hide(UUID tripId) {
