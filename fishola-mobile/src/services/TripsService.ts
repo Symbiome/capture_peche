@@ -10,6 +10,7 @@ import CatchSummary from '@/pojos/CatchSummary';
 import ReferentialService from './ReferentialService';
 
 import moment from 'moment';
+import ProfileService from './ProfileService';
 
 export default class TripsService extends AbstractFisholaService {
 
@@ -517,6 +518,19 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static newSampleId():Promise<string> {
-        return Promise.resolve('BALEC-42');
+        return new Promise<string>((resolve, reject) => {
+            ProfileService.getProfile()
+                .then((profile) => {
+                    let now = moment();
+                    // TODO AThimel 01/04/2020 Pour l'instant on garanti l'unicité sur la base de :
+                    // TODO AThimel 01/04/2020   [jour-du-mois] * 1440 + [heure] * 60 + [minute]
+                    // TODO AThimel 01/04/2020 Quand on saura en assurer l'unicité, utiliser une séquence propre au [sampleBaseId]
+                    let number = now.date()*(24*60) + now.hours()*60 + now.minutes();
+                    let result = profile.sampleBaseId + "-" + number;
+                    resolve(result);
+                },
+                reject);
+        });
     }
+
 }

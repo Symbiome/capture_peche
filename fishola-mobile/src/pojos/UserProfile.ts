@@ -10,7 +10,8 @@ export default class UserProfile {
     constructor(
         public firstName:string,
         public email:string,
-        public initials:string) {
+        public initials:string,
+        public sampleBaseId:string) {
     }
 
     static fullName(p:UserProfile) {
@@ -22,7 +23,7 @@ export default class UserProfile {
     }
 
     static fromJson(input:any) {
-        let result = new UserProfile(input.firstName, input.email, input.initials);
+        let result = new UserProfile(input.firstName, input.email, input.initials, input.sampleBaseId);
         result.lastName = input.lastName;
         result.gender = input.gender;
         result.birthYear = input.birthYear;
