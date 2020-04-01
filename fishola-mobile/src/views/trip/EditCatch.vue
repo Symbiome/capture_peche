@@ -79,6 +79,27 @@
                       label="Prélèvement (optionnel)"
                       v-model="aCatch.withSample"
                       v-bind:readonly="!modifiable"/>
+          <div v-if="aCatch.withSample">
+
+            <div class="info"
+                v-if="sampleBuyPonitsDocumentationUrl">
+              Pour pouvoir effectuer des prélèvements, vous devez vous munir
+              d'un kit dans un des points de collecte :
+              <a :href="sampleBuyPonitsDocumentationUrl">consulter la liste</a>
+            </div>
+
+            <div class="sample-id-container">
+              <div class="description">
+                Numéro d'échantillon à reporter :
+              </div>
+              <div v-if="!sampleIdReady" class="spinner">&nbsp;</div>
+              <div class="sample-id"
+                   v-if="sampleIdReady">
+                {{aCatch.sampleId}}
+              </div>
+            </div>
+
+          </div>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -117,9 +138,10 @@ import FormTextarea from '@/components/common/FormTextarea.vue'
 import PicturePreview from '@/components/trip/PicturePreview.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import router from '../../router';
 import Constants from '../../services/Constants';
+import DocumentationService from '@/services/DocumentationService';
 
 @Component({
   components: {
@@ -173,6 +195,9 @@ export default class EditCatchView extends Vue {
   allTechniques:Technique[] = [];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
+  sampleBuyPonitsDocumentationUrl:string = '';
+  sampleIdReady:boolean = false;
+
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
@@ -180,6 +205,8 @@ export default class EditCatchView extends Vue {
   }
 
   mounted() {
+    DocumentationService.getSampleBuyPonitsDocumentation()
+      .then((doc) => this.sampleBuyPonitsDocumentationUrl = doc.url);
   }
 
   loadSettings() {
@@ -230,6 +257,10 @@ export default class EditCatchView extends Vue {
       if (latestSpeciesId) {
         someCatch.speciesId = latestSpeciesId;
       }
+    }
+
+    if (someCatch.sampleId) {
+      this.sampleIdReady = true;
     }
 
     ReferentialService.getSpeciesAndTechniques(lakeId)
@@ -316,6 +347,19 @@ export default class EditCatchView extends Vue {
       this.pictureSrc = content;
       this.newPictureTaken = true;
     });
+  }
+
+  @Watch('aCatch.withSample')
+  onWithSampleChanged(value: boolean, oldValue: boolean) {
+    if (value && !this.aCatch.sampleId) {
+      TripsService.newSampleId()
+        .then(this.onNewSampleId);
+    }
+  }
+
+  onNewSampleId(newSampleId:string) {
+    this.aCatch.sampleId = newSampleId;
+    this.sampleIdReady = true;
   }
 
   validateClicked() {
@@ -453,6 +497,55 @@ export default class EditCatchView extends Vue {
     position: absolute;
     top: 0;
     background-color: @gainsboro;
+  }
+
+  .info {
+    font-style: italic;
+    font-weight: 300;
+    font-size: 10px;
+    line-height: 14px;
+    color: @pale-sky;
+    text-align: center;
+  }
+
+  .sample-id-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .description {
+      font-size: 14px;
+      line-height: 16px;
+      color: @black;
+      margin: 10px;
+    }
+
+    @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+    .spinner {
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+      border-top: 3px solid @pelorous;
+      border-left: 3px solid @pelorous;
+      animation:spin 2s linear infinite;
+    }
+
+    .sample-id {
+      font-family: monospace, sans-serif;
+      font-size: 18px;
+      background-color: @gainsboro;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border: 1px solid @gunmetal;
+      border-radius: 5px;
+      width: fit-content;
+    }
   }
 }
 

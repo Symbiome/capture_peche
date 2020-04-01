@@ -11,6 +11,7 @@ export default interface CatchSummary {
     description?: string;
     caughtAt?: string;
     withSample: boolean;
+    sampleId?: string;
     hasPicture?: boolean;
     latitude?:number;
     longitude?:number;

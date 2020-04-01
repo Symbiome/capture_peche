@@ -516,4 +516,7 @@ export default class TripsService extends AbstractFisholaService {
         }); 
     }
 
+    static newSampleId():Promise<string> {
+        return Promise.resolve('BALEC-42');
+    }
 }
