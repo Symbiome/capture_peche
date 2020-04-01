@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -173,12 +174,24 @@ public class TripResource extends AbstractFisholaResource {
             log.debug(techniquesCreated + " technique(s) utilisée(s) : " + trip.techniqueIds);
         }
 
-        for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
+        Collection<CatchBean> catchBeans = CollectionUtils.emptyIfNull(trip.catchs);
+        for (CatchBean aCatch : catchBeans) {
             UUID catchId = createCatch(tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
                 log.debug("Capture créée : " + catchId);
             }
+        }
+
+        Set<String> sampleIds = catchBeans.stream()
+                .map(catchBean -> catchBean.sampleId)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(StringUtils::isNotEmpty)
+                .collect(Collectors.toSet());
+        if (!sampleIds.isEmpty()) {
+            // On reçoit un échantillon, on incrémente l'identifiant de l'utilisateur
+            usersDao.increaseSampleBaseId(userId);
         }
 
         URI uri = UriBuilder.fromPath("/api/v1/trips/" + tripId).build();
@@ -229,9 +242,14 @@ public class TripResource extends AbstractFisholaResource {
 
         List<Catch> existingCatchs = catchsDao.listCatchs(tripId);
         ImmutableMap<UUID, Catch> existingCatchsIndex = Maps.uniqueIndex(existingCatchs, Catch::getId);
+        Set<String> existingSampleIds = existingCatchs.stream()
+                .map(Catch::getSampleId)
+                .filter(StringUtils::isNotEmpty)
+                .collect(Collectors.toSet());
 
         Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
-        for (CatchBean aCatch : CollectionUtils.emptyIfNull(trip.catchs)) {
+        Collection<CatchBean> incomingCatchBeans = CollectionUtils.emptyIfNull(trip.catchs);
+        for (CatchBean aCatch : incomingCatchBeans) {
 
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
             if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
@@ -257,6 +275,21 @@ public class TripResource extends AbstractFisholaResource {
                 log.debug("Capture supprimée : " + catchId);
             }
         });
+
+        Set<String> incomingSampleIds = incomingCatchBeans.stream()
+                .map(catchBean -> catchBean.sampleId)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(StringUtils::isNotEmpty)
+                .collect(Collectors.toSet());
+        Set<String> newSampleIds = Sets.difference(incomingSampleIds, existingSampleIds);
+        if (!newSampleIds.isEmpty()) {
+            if (log.isWarnEnabled()) {
+                log.warn("Nouveaux échantillons: " + newSampleIds);
+            }
+            // On reçoit un échantillon, on incrémente l'identifiant de l'utilisateur
+            usersDao.increaseSampleBaseId(userId);
+        }
 
         Response response = Response.ok(replacements).build();
         return response;
