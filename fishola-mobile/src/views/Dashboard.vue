@@ -550,7 +550,8 @@ export default class DashboardView extends Vue {
       display: flex;
       flex-direction: row;
       align-items: center;
-      overflow: auto;
+      overflow-x: auto;
+      overflow-y: hidden;
 
       height: 200px;
       margin-bottom: 20px;

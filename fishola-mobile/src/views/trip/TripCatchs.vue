@@ -153,7 +153,8 @@ export default class TripCatchsView extends Vue {
         display: flex;
         flex-direction: row;
         align-items: center;
-        overflow: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
 
         height: calc(100vw - 80px);
 
