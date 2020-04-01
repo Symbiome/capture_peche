@@ -102,7 +102,7 @@ export default class TripsService extends AbstractFisholaService {
             releasedStateId: input.releasedStateId,
             techniqueId: input.techniqueId,
             description: input.description,
-            withSample: input.withSample,
+            sampleId: input.sampleId,
             hasPicture: input.hasPicture,
             latitude: input.latitude,
             longitude: input.longitude,
@@ -420,7 +420,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
         TripsService.getTrip(tripId, (trip:TripBean) => {
-            let result:CatchSummary = {id:catchId, withSample:false};
+            let result:CatchSummary = {id:catchId};
             if (trip.catchs) {
                 trip.catchs.forEach((someCatch:CatchBean) => {
                     if (catchId == someCatch.id) {

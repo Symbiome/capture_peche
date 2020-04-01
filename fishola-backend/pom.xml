@@ -163,6 +163,7 @@
             <class>fr.inra.fishola.entities.tables.pojos.Technique</class>
             <class>fr.inra.fishola.entities.tables.pojos.Weather</class>
             <class>fr.inra.fishola.entities.tables.pojos.Editorial</class>
+            <class>fr.inra.fishola.entities.tables.pojos.SampleType</class>
             <class>fr.inra.fishola.rest.editorial.DocumentationLight</class>
             <class>fr.inra.fishola.rest.security.UserSettings</class>
             <class>fr.inra.fishola.rest.security.UpdatePasswordBean</class>

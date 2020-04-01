@@ -33,3 +33,8 @@ INSERT INTO released_fish_state (name, export_as) VALUES
     ('Légèrement blessé', 'Légèrement blessé'),
     ('Blessé', 'Blessé'),
     ('Mort', 'Mort');
+
+INSERT INTO sample_type (name, export_as) VALUES
+    ('Écailles', 'ecailles'),
+    ('Estomac', 'estomac'),
+    ('Tête', 'tete');

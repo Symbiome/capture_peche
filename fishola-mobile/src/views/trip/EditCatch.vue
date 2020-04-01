@@ -75,11 +75,11 @@
                      type="time"
                      v-model="caughtAt"
                      v-bind:readonly="!modifiable"/>
-          <FormToggle v-if="aCatch.withSample || (settings && settings.promptSamples)"
+          <FormToggle v-if="withSample || (settings && settings.promptSamples)"
                       label="Prélèvement (optionnel)"
-                      v-model="aCatch.withSample"
+                      v-model="withSample"
                       v-bind:readonly="!modifiable"/>
-          <div v-if="aCatch.withSample">
+          <div v-if="withSample">
 
             <div class="info"
                 v-if="sampleBuyPonitsDocumentationUrl">
@@ -170,7 +170,7 @@ export default class EditCatchView extends Vue {
   tripMode:TripMode = 'Live';
   tripSpeciesIds:string[] = [];
   tripOtherSpecies:string = '';
-  aCatch: CatchSummary = {id: '', withSample: false};
+  aCatch: CatchSummary = {id: ''};
 
   pictureSrc:string = '';
   newPictureTaken:boolean = false;
@@ -195,6 +195,7 @@ export default class EditCatchView extends Vue {
   allTechniques:Technique[] = [];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
+  withSample:boolean = false;
   sampleBuyPonitsDocumentationUrl:string = '';
   sampleIdReady:boolean = false;
 
@@ -261,6 +262,7 @@ export default class EditCatchView extends Vue {
 
     if (someCatch.sampleId) {
       this.sampleIdReady = true;
+      this.withSample = true;
     }
 
     ReferentialService.getSpeciesAndTechniques(lakeId)
@@ -349,7 +351,7 @@ export default class EditCatchView extends Vue {
     });
   }
 
-  @Watch('aCatch.withSample')
+  @Watch('withSample')
   onWithSampleChanged(value: boolean, oldValue: boolean) {
     if (value && !this.aCatch.sampleId) {
       TripsService.newSampleId()
@@ -450,6 +452,9 @@ export default class EditCatchView extends Vue {
         aCatchBean.speciesId = '';
       }
       aCatchBean.hasPicture = this.pictureSrc != '';
+      if (!this.withSample) {
+        aCatchBean.sampleId = '';
+      }
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
   }

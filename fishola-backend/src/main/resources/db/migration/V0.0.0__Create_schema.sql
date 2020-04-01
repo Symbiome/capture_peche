@@ -59,6 +59,12 @@ CREATE TABLE released_fish_state (
     export_as TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE sample_type (
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    export_as TEXT NOT NULL UNIQUE
+);
+
 CREATE TYPE trip_mode
     AS ENUM('Live', 'Afterwards');
 
@@ -105,7 +111,14 @@ CREATE TABLE catch (
     released_fish_state_id UUID REFERENCES released_fish_state(id),
     description TEXT,
     latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION
+    longitude DOUBLE PRECISION,
+    sample_id TEXT
+);
+
+CREATE TABLE catch_sample_types (
+    catch_id UUID REFERENCES catch(id) NOT NULL,
+    sample_type_id UUID REFERENCES sample_type(id) NOT NULL,
+    PRIMARY KEY (catch_id, sample_type_id)
 );
 
 CREATE TABLE catch_picture (

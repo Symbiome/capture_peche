@@ -10,7 +10,6 @@ export default interface CatchSummary {
     techniqueId?: string;
     description?: string;
     caughtAt?: string;
-    withSample: boolean;
     sampleId?: string;
     hasPicture?: boolean;
     latitude?:number;

@@ -12,7 +12,7 @@ export interface CatchBean {
     techniqueId: string;
     description?: string;
     caughtAt?: string;
-    withSample: boolean;
+    sampleId?: string;
     latitude?: number;
     longitude?: number;
     hasPicture: boolean;
@@ -93,6 +93,12 @@ export interface Editorial extends Serializable {
     name: string;
     content: string;
     link: string;
+}
+
+export interface SampleType extends Serializable {
+    id: string;
+    name: string;
+    exportAs: string;
 }
 
 export interface DocumentationLight {
