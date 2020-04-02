@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "fr.inrae.fishola",
+    "sha256_cert_fingerprints":
+    ["D8:1C:3F:DF:8E:95:C6:D7:36:39:F5:23:60:88:FC:4C:3F:32:D0:D6:1D:54:A1:33:EB:25:76:82:70:E1:20:51"]
+  }
+}]
