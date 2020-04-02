@@ -217,6 +217,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
 
+            // Le champ est nécessaire côté Java mais on attend rien de la part du front
+            builder.sampleBaseId("########");
+
             UserProfile result = builder.build();
             return result;
         }
