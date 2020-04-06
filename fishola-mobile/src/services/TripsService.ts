@@ -297,9 +297,13 @@ export default class TripsService extends AbstractFisholaService {
         this.getDatabase().onCreationTrip.delete(Constants.DIRTY_ID);
     }
 
-    static cancelCreations() {
-        this.getDatabase().onCreationTrip.delete(Constants.DIRTY_ID);
+    static deleteRunningTrip() {
         this.getDatabase().onCreationTrip.delete(Constants.RUNNING_ID);
+    }
+
+    static cancelCreations() {
+        this.deleteDirtyTrip();
+        this.deleteRunningTrip();
     }
 
     static finishTripCreation(trip:TripSpecies, callback: (id:string) => void) {
@@ -499,7 +503,21 @@ export default class TripsService extends AbstractFisholaService {
                 .get(Constants.RUNNING_ID)
                 .then((runningTrip) => {
                     if (runningTrip) {
-                        resolve(runningTrip);
+                        if (runningTrip.mode == 'Live') {
+                            let dateMoment = moment(runningTrip.date);
+                            let todayMoment = moment();
+                            if (dateMoment.dayOfYear() == todayMoment.dayOfYear()) {
+                                resolve(runningTrip);
+                            } else {
+                                console.log("Il y avait une sortie live en cours, on la bascule en sortie à posteriori");
+                                runningTrip.mode = 'Afterwards';
+                                this.saveTrip(runningTrip, () => {
+                                    resolve(runningTrip);
+                                })
+                            }
+                        } else {
+                            resolve(runningTrip);
+                        }
                     } else {
                         reject("Pas de running trip");
                     }
