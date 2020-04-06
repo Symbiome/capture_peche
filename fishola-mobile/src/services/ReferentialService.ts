@@ -73,12 +73,35 @@ export default class ReferentialService extends AbstractFisholaService {
         return this.backendGetWithCache('/v1/referential/species-custom');
     }
 
+    static getSpeciesCustomNoCache():Promise<SpeciesWithAlias[]> {
+        return this.backendGet('/v1/referential/species-custom');
+    }
+
     static getAllSpecies():Promise<SpeciesWithAlias[]> {
         return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
             Promise
                 .all([
                         ReferentialService.getSpeciesWithoutLake(),
                         ReferentialService.getSpeciesCustom()
+                    ])
+                .then((data:[SpeciesWithAlias[], SpeciesWithAlias[]]) => {
+                    let result:SpeciesWithAlias[] = [];
+
+                    data[0].forEach((value) => result.push(value));
+                    data[1].forEach((value) => result.push(value));
+
+                    resolve(result);
+                },
+                reject);
+        });
+    }
+
+    static getAllSpeciesNoCache():Promise<SpeciesWithAlias[]> {
+        return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
+            Promise
+                .all([
+                        ReferentialService.getSpeciesWithoutLake(),
+                        ReferentialService.getSpeciesCustomNoCache()
                     ])
                 .then((data:[SpeciesWithAlias[], SpeciesWithAlias[]]) => {
                     let result:SpeciesWithAlias[] = [];

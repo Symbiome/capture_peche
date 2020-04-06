@@ -27,7 +27,7 @@ export default class DashboardService extends AbstractFisholaService {
             .all(
                 [
                     this.backendGet('/v1/dashboard'),
-                    ReferentialService.getAllSpecies()
+                    ReferentialService.getAllSpeciesNoCache()
                 ])
             .then((data:[Dashboard, SpeciesWithAlias[]]) => {
                 if (data[0].latestTripsCatchs) {
