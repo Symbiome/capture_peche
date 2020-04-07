@@ -351,24 +351,31 @@ export default class TripsService extends AbstractFisholaService {
             this.getDatabase()
                 .dirtyTrips
                 .toArray((dirtyTrips) => {
-                    dirtyTrips
-                        .forEach((dirtyTrip:TripBean) => {
-                            let promise = this.syncTrip(dirtyTrip);
-                            promise.then(() => {
-                                this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
-                                someTripsSaved = true;
-                                console.log("Trip saved !");
-                            }, () => {
-                                console.log("Arf, môrche pô :(");
+                    if (dirtyTrips && dirtyTrips.length > 0) {
+                        console.log(`${dirtyTrips.length} sorties à synchroniser`);
+                        dirtyTrips
+                            .forEach((dirtyTrip:TripBean) => {
+                                let promise = this.syncTrip(dirtyTrip);
+                                promise.then(() => {
+                                    this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
+                                    someTripsSaved = true;
+                                    console.log("Trip saved !");
+                                }, 
+                                (error) => {
+                                    console.log("Arf, môrche pô :(", error);
+                                });
+                                allPromises.push(promise);
                             });
-                            allPromises.push(promise);
-                        });
 
-                    Promise.all(allPromises)
-                        .then(() => {
-                            resolve(someTripsSaved)
-                        }, reject);
-                    });
+                        Promise.all(allPromises)
+                            .then(() => {
+                                resolve(someTripsSaved)
+                            }, reject);
+                    } else {
+                        console.log("Aucune sortie à synchroniser");
+                        resolve(false);
+                    }
+                });
             });
 
         return result;
