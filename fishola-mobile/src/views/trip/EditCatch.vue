@@ -7,7 +7,7 @@
                       noPictureText="Appuyer pour ajouter une photo"
                       v-on:take-picture="takePicture" />
       <input type="file"
-             accept="image/*"
+             accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG"
              id="cameraInput"
              name="cameraInput"
              v-on:change="pictureTaken"
