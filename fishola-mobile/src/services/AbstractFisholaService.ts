@@ -59,27 +59,32 @@ export default abstract class AbstractFisholaService {
         });
     }
 
-    static backendGetWithArgs(uri:string, args:any, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+    static backendGetWithArgs(uri:string, args:any):Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+          let apiUrl = Constants.apiUrl(uri);
+          var xhr = new XMLHttpRequest();
 
-        let queryString = Object.keys(args)
-          .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(args[k]))
-          .join('&');
-        apiUrl += "?" + queryString;
+          let queryString = Object.keys(args)
+            .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(args[k]))
+            .join('&');
+          apiUrl += "?" + queryString;
 
-        xhr.open('GET', apiUrl, true);
-        xhr.withCredentials = true;
-        xhr.onload = function() {
-          if (this.status == 200) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
-            callback(parsed);
-          } else if (errorCallback) {
-            errorCallback(this.status);
-          }
-        };
-        xhr.send();
+          xhr.open('GET', apiUrl, true);
+          xhr.withCredentials = true;
+          xhr.onload = function() {
+            if (this.status == 200 || this.status == 201) {
+              let responseText = this['responseText'];
+              let parsed = JSON.parse(responseText);
+              resolve(parsed);
+            } else if (this.status == 204) {
+              resolve();
+            } else {
+              let result = AbstractFisholaService.wrapResponseReject(this);
+              reject(result);
+            }
+          };
+          xhr.send();
+        });
     }
 
     static wrapResponseReject(xhr:XMLHttpRequest):any {
@@ -176,28 +181,31 @@ export default abstract class AbstractFisholaService {
       });
     }
 
-    static backendPutPlain(uri:string, data:string, callback:(result:any)=>any, errorCallback?:(status:any) => any) {
-      let apiUrl = Constants.apiUrl(uri);
-      var xhr = new XMLHttpRequest();
-      xhr.open('PUT', apiUrl, true);
-      xhr.withCredentials = true;
-      xhr.onload = function() {
-        if (this.status == 200 || this.status == 201) {
-          let responseText = this['responseText'];
-          let parsed = JSON.parse(responseText);
-          callback(parsed);
-        } else if (this.status == 204) {
-          callback(null);
-        } else if (errorCallback) {
-          errorCallback(this.status);
+    static backendPutPlain(uri:string, data:string):Promise<any> {
+      return new Promise<any>((resolve, reject) => {
+        let apiUrl = Constants.apiUrl(uri);
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', apiUrl, true);
+        xhr.withCredentials = true;
+        xhr.onload = function() {
+          if (this.status == 200 || this.status == 201) {
+            let responseText = this['responseText'];
+            let parsed = JSON.parse(responseText);
+            resolve(parsed);
+          } else if (this.status == 204) {
+            resolve();
+          } else {
+            let result = AbstractFisholaService.wrapResponseReject(this);
+            reject(result);
+          }
+        };
+        if (data != null) {
+          xhr.setRequestHeader('Content-Type', 'text/plain');
+          xhr.send(data);
+        } else {
+          xhr.send();
         }
-      };
-      if (data != null) {
-        xhr.setRequestHeader('Content-Type', 'text/plain');
-        xhr.send(data);
-      } else {
-        xhr.send();
-      }
+      });
   }
 }
 

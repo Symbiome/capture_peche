@@ -12,6 +12,13 @@ import ReferentialService from './ReferentialService';
 import moment from 'moment';
 import ProfileService from './ProfileService';
 
+export class TripsAndCount {
+    constructor (
+        public trips:TripLight[],
+        public count:number) {
+    }
+}
+
 export default class TripsService extends AbstractFisholaService {
 
     static instance?:TripsService;
@@ -164,40 +171,49 @@ export default class TripsService extends AbstractFisholaService {
         return input;
     }
 
-    static listTrips(sortDown:boolean, searchTerm:string, callback:(trips:TripLight[], count:number)=>any, pageIndex?:number) {
+    static listTrips(sortDown:boolean, searchTerm:string, pageIndex?:number):Promise<TripsAndCount> {
 
-        let result:TripLight[] = [];
+        return new Promise<TripsAndCount>((resolve, reject) => {
 
-        let dirtyTripsIds:string[] = [];
+            // TODO 07/04/2020 On devrait faire un Promise.all pour le chargement
 
-        this.getDatabase()
-            .dirtyTrips
-            .toArray((trips) => {
-                trips.forEach(trip => {
-                    let tripLight:TripLight = TripsService.storedTripToLight(trip);
-                    dirtyTripsIds.push(tripLight.id);
-                    result.push(tripLight);
+            let result:TripLight[] = [];
+
+            let dirtyTripsIds:string[] = [];
+
+            this.getDatabase()
+                .dirtyTrips
+                .toArray((trips) => {
+                    trips.forEach(trip => {
+                        let tripLight:TripLight = TripsService.storedTripToLight(trip);
+                        dirtyTripsIds.push(tripLight.id);
+                        result.push(tripLight);
+                    });
                 });
 
-        });
+            let page = {
+                pageNumber: pageIndex || 0,
+                pageSize: 10,
+                desc: sortDown,
+                term: searchTerm
+            };
 
-        let page = {
-            pageNumber: pageIndex || 0,
-            pageSize: 10,
-            desc: sortDown,
-            term: searchTerm
-        };
-
-        this.backendGetWithArgs('/v1/trips', page, (trips:any) => {
-            console.log("Sorties récupérées depuis le back :", trips);
-            trips.elements.forEach((trip:TripLight) => {
-                if (dirtyTripsIds.indexOf(trip.id) == -1) {
-                    let tl:TripLight = TripsService.backendTripToLight(trip);
-                    result.push(tl);
-                }
-            })
-            let count:number = dirtyTripsIds.length + trips.count;
-            callback(result, count);
+            this.backendGetWithArgs('/v1/trips', page)
+                .then(
+                    (trips:any) => {
+                        console.log("Sorties récupérées depuis le back :", trips);
+                        trips.elements.forEach((trip:TripLight) => {
+                            if (dirtyTripsIds.indexOf(trip.id) == -1) {
+                                let tl:TripLight = TripsService.backendTripToLight(trip);
+                                result.push(tl);
+                            }
+                        })
+                        let count:number = dirtyTripsIds.length + trips.count;
+                        let tripsAndCount = new TripsAndCount(result, count);
+                        resolve(tripsAndCount);
+                    },
+                    reject
+                );
         });
     }
 

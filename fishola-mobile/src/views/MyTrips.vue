@@ -30,6 +30,7 @@ import router from '@/router'
 import {TripLight} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
+import {TripsAndCount} from '@/services/TripsService';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
@@ -85,13 +86,15 @@ export default class MyTripsView extends Vue {
     this.currentPage = 0;
     this.currentSearchTerm = this.term;
     this.selectedTripIds = [];
-    TripsService.listTrips(this.sortDown, this.term, this.tripsLoaded);
+    TripsService.listTrips(this.sortDown, this.term)
+      .then(this.tripsLoaded, this.loadError);
     this.loading = true;
   }
 
   loadNextPage() {
     if (this.trips.length < this.count) {
-      TripsService.listTrips(this.sortDown, this.currentSearchTerm, this.moreTripsLoaded, (this.currentPage + 1));
+      TripsService.listTrips(this.sortDown, this.currentSearchTerm, this.currentPage + 1)
+        .then(this.moreTripsLoaded, this.loadError);
     }
   }
 
@@ -113,21 +116,28 @@ export default class MyTripsView extends Vue {
     this.$root.$off('trips-saved');
   }
 
-  tripsLoaded(ts:TripLight[], count:number) {
+  tripsLoaded(data:TripsAndCount) {
     this.trips.slice();
-    this.trips = ts;
+    this.trips = data.trips;
     this.loading = false;
-    this.count = count;
+    this.count = data.count;
 
     // On considère que le premier appel renvoie toujours le total
     if (this.totalCount == -1) {
-      this.totalCount = count;
+      this.totalCount = data.count;
     }
   }
 
-  moreTripsLoaded(ts:TripLight[], count:number) {
+  moreTripsLoaded(data:TripsAndCount) {
     this.currentPage++;
-    ts.forEach((t) => this.trips.push(t));
+    data.trips.forEach((t) => this.trips.push(t));
+  }
+
+  loadError(data:any) {
+    console.log("Erreur au chargmeent des sorties", data);
+    if (data.status == 401) {
+      router.push('/login');
+    }
   }
 
   reverseSortOrder() {

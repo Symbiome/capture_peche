@@ -140,7 +140,13 @@ export default class PicturesService extends AbstractFisholaService {
                     }
                 }
                 if (content) {
-                    this.backendPutPlain(`/v1/pictures/${pictureId}`, content, resolve, reject);
+                    this.backendPutPlain(`/v1/pictures/${pictureId}`, content)
+                        .then(
+                            resolve,
+                            (error:any) => {
+                                console.log(`Erreur lors de la synchro de l'image ${pictureId}`, error);
+                                reject(error);
+                            });
                 } else {
                     reject(`Unable to find picture content ${pictureId}`);
                 }

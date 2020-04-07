@@ -30,7 +30,7 @@ public class AccessDeniedException extends AbstractFisholaRuntimeException {
 
     public static void throwNew(String message) throws AccessDeniedException {
         if (log.isDebugEnabled()) {
-            log.warn("AccessDeniedException:" + message);
+            log.warn("AccessDeniedException: " + message);
         }
         throw new AccessDeniedException(message);
     }

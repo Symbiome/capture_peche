@@ -30,7 +30,7 @@ public class NotFoundException extends AbstractFisholaRuntimeException {
 
     public static void throwNew(String message) throws AccessDeniedException {
         if (log.isDebugEnabled()) {
-            log.warn("NotFoundException:" + message);
+            log.warn("NotFoundException: " + message);
         }
         throw new AccessDeniedException(message);
     }
