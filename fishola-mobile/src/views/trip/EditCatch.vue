@@ -413,6 +413,16 @@ export default class EditCatchView extends Vue {
       this.weightError = 'Le poids ne peut pas être négatif';
     }
 
+    if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
+      let target = 0.01 * Math.pow(this.aCatch.size, 3);
+      let minValue = target * .6;
+      let maxValue = target * 1.4;
+      if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
+        hasError = true;
+        this.weightError = "Le poids n'est pas cohérent avec la taille";
+      }
+    }
+
     if (this.aCatch.keep === true || this.aCatch.keep === false) {
       this.keepError = '';
     } else {
