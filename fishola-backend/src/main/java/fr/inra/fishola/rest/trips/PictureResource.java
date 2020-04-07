@@ -57,7 +57,12 @@ public class PictureResource extends AbstractFisholaResource {
     @Path("/{catchId}")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setPicture(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId, String content) {
+    public Response setPicture(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie,
+                               @PathParam("catchId") UUID catchId, String content) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Réception d'une image pour la capture : " + catchId);
+        }
 
         UUID userId = getUserId(cookie);
 
@@ -68,10 +73,6 @@ public class PictureResource extends AbstractFisholaResource {
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
         AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
-
-        if (log.isDebugEnabled()) {
-            log.debug("Réception d'une image pour la capture : " + catchId);
-        }
 
         // tokenize the data
         String[] contentSplitted = content.split(",");
