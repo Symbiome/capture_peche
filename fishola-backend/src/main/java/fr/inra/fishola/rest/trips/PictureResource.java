@@ -10,6 +10,7 @@ import fr.inra.fishola.entities.tables.pojos.Catch;
 import fr.inra.fishola.entities.tables.pojos.Trip;
 import fr.inra.fishola.exceptions.AccessDeniedException;
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
+import fr.inra.fishola.exceptions.NotFoundException;
 import fr.inra.fishola.rest.AbstractFisholaResource;
 import fr.inra.fishola.rest.ImageHelper;
 import org.apache.commons.logging.Log;
@@ -67,7 +68,7 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = getUserId(cookie);
 
         Catch existingCatch = catchsDao.getCatch(catchId);
-        Preconditions.checkArgument(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
         Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));

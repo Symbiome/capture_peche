@@ -8,13 +8,13 @@ import javax.ws.rs.core.Response;
 /**
  * @author Arnaud Thimel (Code Lutin)
  */
-public class AccessDeniedException extends AbstractFisholaRuntimeException {
+public class NotFoundException extends AbstractFisholaRuntimeException {
 
-    private static final Log log = LogFactory.getLog(AccessDeniedException.class);
+    private static final Log log = LogFactory.getLog(NotFoundException.class);
 
-    protected static final String DEFAULT_MESSAGE = "Access denied";
+    protected static final String DEFAULT_MESSAGE = "Not found";
 
-    protected AccessDeniedException(String message) {
+    protected NotFoundException(String message) {
         super(message);
     }
 
@@ -23,21 +23,21 @@ public class AccessDeniedException extends AbstractFisholaRuntimeException {
     }
 
     public static void check(boolean expression, String message) throws AccessDeniedException {
-        if ( ! expression) {
+        if (!expression) {
             throwNew(message);
         }
     }
 
     public static void throwNew(String message) throws AccessDeniedException {
         if (log.isDebugEnabled()) {
-            log.warn("AccessDeniedException:" + message);
+            log.warn("NotFoundException:" + message);
         }
         throw new AccessDeniedException(message);
     }
 
     @Override
     public Response.Status getStatus() {
-        return Response.Status.FORBIDDEN;
+        return Response.Status.NOT_FOUND;
     }
 
 }
