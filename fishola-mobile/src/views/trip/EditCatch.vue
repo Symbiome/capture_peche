@@ -253,12 +253,13 @@ export default class EditCatchView extends Vue {
     PicturesService.getPicture(someCatch.id)
       .then(this.pictureLoaded, this.noPictureFound);
 
-    if (this.inCreation) {
-      let latestSpeciesId = this.getLatestCatchSpecies(someTrip);
-      if (latestSpeciesId) {
-        someCatch.speciesId = latestSpeciesId;
-      }
-    }
+    // FIXME AThimel 08/04/2020 : On désactive pour l'instant car ça cause un bug de rafrachissement en cas de changement d'espèce
+    // if (this.inCreation) {
+    //   let latestSpeciesId = this.getLatestCatchSpecies(someTrip);
+    //   if (latestSpeciesId) {
+    //     someCatch.speciesId = latestSpeciesId;
+    //   }
+    // }
 
     if (someCatch.sampleId) {
       this.sampleIdReady = true;
