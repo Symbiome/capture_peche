@@ -3,6 +3,7 @@ package fr.inra.fishola.rest.trips;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.CatchsDao;
@@ -56,6 +57,10 @@ import java.util.stream.Collectors;
 public class TripResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(TripResource.class);
+
+    private static final Ordering<CatchBean> CATCH_ORDERING_ON_CAUGHT_AT = Ordering.natural()
+            .nullsFirst()
+            .onResultOf(c -> c.caughtAt.orElse(null));
 
     @Inject
     protected FisholaConfiguration config;
@@ -416,6 +421,7 @@ public class TripResource extends AbstractFisholaResource {
         Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
         result.catchs = catchs.stream()
                 .map(aCatch -> toCatchBean(aCatch, catchsWithPictures))
+                .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
                 .collect(Collectors.toList());
 
 //        Set<UUID> allSpeciesIds = new HashSet<>(result.speciesIds);
