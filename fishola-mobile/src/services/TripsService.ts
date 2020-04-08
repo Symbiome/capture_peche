@@ -172,11 +172,11 @@ export default class TripsService extends AbstractFisholaService {
         return input;
     }
 
-    static listTrips(sortDown:boolean, searchTerm:string, pageIndex?:number):Promise<TripsAndCount> {
+    static listTrips(sortDown:boolean, searchTerm:string, rawPageIndex?:number):Promise<TripsAndCount> {
+
+        let pageIndex =  rawPageIndex || 0;
 
         return new Promise<TripsAndCount>((resolve, reject) => {
-
-            // TODO 07/04/2020 On devrait faire un Promise.all pour le chargement
 
             let result:TripLight[] = [];
 
@@ -188,12 +188,14 @@ export default class TripsService extends AbstractFisholaService {
                     trips.forEach(trip => {
                         let tripLight:TripLight = TripsService.storedTripToLight(trip);
                         dirtyTripsIds.push(tripLight.id);
-                        result.push(tripLight);
+                        if (pageIndex === 0) {
+                            result.push(tripLight);
+                        }
                     });
                 });
 
             let page = {
-                pageNumber: pageIndex || 0,
+                pageNumber: pageIndex,
                 pageSize: 10,
                 desc: sortDown,
                 term: searchTerm
@@ -251,66 +253,54 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static saveTrip0(trip:any):Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
+                this.getDatabase()
+                    .onCreationTrip
+                    .put(trip)
+                    .then((savedId) => {
+                        console.log("Sauvegardé dans onCreationTrip", savedId);
+                        resolve(savedId);
+                    },
+                    reject);
+            } else {
+                let tripBean:TripBean = <TripBean>trip;
+                this.setSaveDelayMarker(tripBean);
+                this.getDatabase()
+                    .dirtyTrips
+                    .put(tripBean)
+                    .then((savedId) => {
+                        console.log("Sauvegardé dans dirtyTrips", savedId);
+                        resolve(savedId);
+                    },
+                    reject);
+            }
+        });
+    }
+
     static saveTripMeta(trip:TripMeta, callback: () => void) {
-        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
-            this.getDatabase()
-                .onCreationTrip
-                .put(trip)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        } else {
-            let tripBean:TripBean = <TripBean>trip;
-            this.getDatabase()
-                .dirtyTrips
-                .put(tripBean)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        }
+        this.saveTrip0(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
     }
 
     static saveTripSpecies(trip:TripSpecies, callback: () => void) {
-        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
-            this.getDatabase()
-                .onCreationTrip
-                .put(trip)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        } else {
-            let tripBean:TripBean = <TripBean>trip;
-            this.getDatabase()
-                .dirtyTrips
-                .put(tripBean)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        }
+        this.saveTrip0(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
     }
 
     static saveTrip(trip:TripBean, callback: () => void) {
-        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
-            this.getDatabase()
-                .onCreationTrip
-                .put(trip)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        } else {
-            this.getDatabase()
-                .dirtyTrips
-                .put(trip)
-                .then((aaa) => {
-                    console.log(aaa);
-                    callback();
-                });
-        }
+        this.saveTrip0(trip)
+            .then((aaa) => {
+                console.log(aaa);
+                callback();
+            });
     }
 
     static deleteDirtyTrip() {
@@ -345,23 +335,46 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
+    static removeSaveDelayMarker(someObject:any) {
+        delete someObject.saveDelayMarker;
+    }
+
+    static setSaveDelayMarker(someObject:any) {
+        someObject.saveDelayMarker = new Date();
+    }
+
+    /**
+     * Indique si la sauvegarde de la sortie doit être différée ou non
+     */
+    static shouldDelaySave(someObject:any):boolean {
+        if (!someObject.saveDelayMarker) {
+            return false;
+        }
+        let delayMoment = moment(someObject.saveDelayMarker);
+        let now = moment();
+        let durationMillis = now.diff(delayMoment);
+        let duration = moment.duration(durationMillis);
+        // On diffère les sauvegardes non explicites de moins de 1h
+        let result = duration.minutes() < 60;
+        return result;
+    }
+
     /**
      * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
      */
     static sendTrip(trip:TripBean, callback: () => void) {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
-            this.getDatabase()
-                .dirtyTrips
-                .put(trip)
-                .then((aaa) => {
-                    console.log("Nouvelle sortie dans les dirtyTrips", aaa);
-                    this.cancelCreations();
-                    callback();
-                });
-        } else {
-            throw 'Ne doit être appelé que sur une sortie en cours de création. Id=' + trip.id;
         }
+        this.removeSaveDelayMarker(trip);
+        this.getDatabase()
+            .dirtyTrips
+            .put(trip)
+            .then((aaa) => {
+                console.log("Nouvelle sortie dans les dirtyTrips", aaa);
+                this.cancelCreations();
+                callback();
+            });
     }
 
     static syncTrips():Promise<boolean> {
@@ -377,16 +390,20 @@ export default class TripsService extends AbstractFisholaService {
                         console.log(`${dirtyTrips.length} sorties à synchroniser`);
                         dirtyTrips
                             .forEach((dirtyTrip:TripBean) => {
-                                let promise = this.syncTrip(dirtyTrip);
-                                promise.then(() => {
-                                    this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
-                                    someTripsSaved = true;
-                                    console.log("Trip saved !");
-                                }, 
-                                (error) => {
-                                    console.log("Arf, môrche pô :(", error);
-                                });
-                                allPromises.push(promise);
+                                if (this.shouldDelaySave(dirtyTrip)) {
+                                    console.log(`On ignore la sortie qui est peut-être encore en cours de modif`, dirtyTrip.id);
+                                } else {
+                                    let promise = this.syncTrip(dirtyTrip);
+                                    promise.then(() => {
+                                        this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
+                                        someTripsSaved = true;
+                                        console.log("Trip saved !");
+                                    },
+                                    (error) => {
+                                        console.log("Arf, môrche pô :(", error);
+                                    });
+                                    allPromises.push(promise);
+                                }
                             });
 
                         Promise.all(allPromises)

@@ -67,18 +67,18 @@ export default class TripSummaryView extends Vue {
   }
 
   startSave() {
-      // On demande au composant enfant de fournir le modèle mis à jour
-      let summaryComponent:any = this.$refs.summary;
-      summaryComponent.emitUpdatedTrip();
+    // On demande au composant enfant de fournir le modèle mis à jour
+    let summaryComponent:any = this.$refs.summary;
+    summaryComponent.emitUpdatedTrip();
   }
 
   onUpdatedTrip(trip:any) {
-        // On reçoit le modèle mis à jour, on le sauvegarde
-      if (this.actionRequested == "SendTrip") {
-        TripsService.sendTrip(trip, this.tripSaved);
-      } else {
-        TripsService.saveTrip(trip, this.tripSaved);
-      }
+    // On reçoit le modèle mis à jour, on le sauvegarde
+    if (this.actionRequested == "SendTrip") {
+      TripsService.sendTrip(trip, this.tripSaved);
+    } else {
+      TripsService.saveTrip(trip, this.tripSaved);
+    }
   }
 
   goEditSpecies() {

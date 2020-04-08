@@ -72,7 +72,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
-export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques";
+export type ActionType = "UpdateTrip" | "EditSpecies" | "EditTechniques";
 
 @Component({
   components: {
@@ -87,7 +87,7 @@ export default class EditTripView extends Vue {
 
   @Prop() id!:string;
 
-  actionRequested:ActionType = "SaveTrip";
+  actionRequested:ActionType = "UpdateTrip";
 
   // Ce flag permet de ne créer le composant SomeTripSummary que lorsque les données sont prêtes
   ready:boolean = false;
@@ -130,14 +130,18 @@ export default class EditTripView extends Vue {
   }
 
   startSave() {
-      // On demande au composant enfant de fournir le modèle mis à jour
-      let summaryComponent:any = this.$refs.summary;
-      summaryComponent.emitUpdatedTrip();
+    // On demande au composant enfant de fournir le modèle mis à jour
+    let summaryComponent:any = this.$refs.summary;
+    summaryComponent.emitUpdatedTrip();
   }
 
   onUpdatedTrip(trip:TripBean) {
-      // On reçoit le modèle mis à jour, on le sauvegarde
+    // On reçoit le modèle mis à jour, on le sauvegarde
+    if (this.actionRequested == "UpdateTrip") {
+      TripsService.sendTrip(trip, this.tripSaved);
+    } else {
       TripsService.saveTrip(trip, this.tripSaved);
+    }
   }
 
   goEditSpecies() {
@@ -151,7 +155,7 @@ export default class EditTripView extends Vue {
   }
 
   tripSaved() {
-    if (this.actionRequested == "SaveTrip") {
+    if (this.actionRequested == "UpdateTrip") {
       router.push('/trips');
       this.$root.$emit('ask-for-sync-check');
     } else if (this.actionRequested == "EditSpecies") {

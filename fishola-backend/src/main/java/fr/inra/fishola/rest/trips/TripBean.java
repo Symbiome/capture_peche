@@ -30,7 +30,7 @@ public class TripBean {
     // Calculés
     public Optional<LocalDateTime> modifiableUntil;
 
-    public void setDirty(boolean dirty) {
+    public void setSaveDelayMarker(Object o) {
         // On ignore, c'est pour que le front réussisse l'appel
     }
 
