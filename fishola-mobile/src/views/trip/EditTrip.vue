@@ -42,8 +42,7 @@
       </div>
     </div>
     <FisholaFooter v-if="ready && modifiable"
-                   button-text="Modifier"
-                   button-icon="icon-edit"
+                   button-text="Enregistrer"
                    v-on:buttonClicked="startSave"
                    v-on:deleteClicked="deleteTrip"
                    back-event="onBackButton"

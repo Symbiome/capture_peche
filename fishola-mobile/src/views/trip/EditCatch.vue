@@ -105,7 +105,7 @@
       </div>
     </div>
     <FisholaFooter v-if="ready && modifiable"
-                   v-bind:button-text="inCreation ? 'Valider' : 'Modifier'"
+                   v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
                    button-icon="icon-fish"
                    v-on:buttonClicked="validateClicked"
                    v-on:deleteClicked="deleteCatch"

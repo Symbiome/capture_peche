@@ -67,7 +67,7 @@ export default class RunningOverlay extends Vue {
   }
 
   finish() {
-    TripsService.finishTrip(this.trip!, this.tripSaved);
+    TripsService.finishTripCatchs(this.trip!, this.tripSaved);
   }
 
   tripSaved() {

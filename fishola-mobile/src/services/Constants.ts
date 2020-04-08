@@ -1,7 +1,7 @@
 
 export default class Constants {
 
-    static DIRTY_ID:string = 'DIRTY';
+    static NEW_TRIP_ID:string = 'NEW';
     static RUNNING_ID:string = 'RUNNING';
     static NEW_CATCH_ID:string = 'NEW';
 

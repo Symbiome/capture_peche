@@ -114,7 +114,7 @@ export default class TripCatchsView extends Vue {
       this.computeDuration();
       this.liveRunning = false;
     }
-    TripsService.finishTrip(this.trip!, this.tripSaved);
+    TripsService.finishTripCatchs(this.trip!, this.tripSaved);
   }
 
   tripSaved() {

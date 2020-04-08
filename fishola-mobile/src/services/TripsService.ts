@@ -11,6 +11,7 @@ import ReferentialService from './ReferentialService';
 
 import moment from 'moment';
 import ProfileService from './ProfileService';
+import TripSummary from '@/pojos/TripSummary';
 
 export class TripsAndCount {
     constructor (
@@ -38,7 +39,7 @@ export default class TripsService extends AbstractFisholaService {
     static newTrip(mode:TripMode, callback:(id:string)=>any) {
 
         let newTrip:TripMeta = {
-            id: Constants.DIRTY_ID,
+            id: Constants.NEW_TRIP_ID,
             mode: mode,
         }
 
@@ -66,7 +67,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
-        if (id == Constants.DIRTY_ID || id == Constants.RUNNING_ID) {
+        if (id == Constants.NEW_TRIP_ID || id == Constants.RUNNING_ID) {
             this.getDatabase()
                 .onCreationTrip
                 .get(id)
@@ -217,7 +218,10 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static finishTrip(trip:TripMain, callback: () => void) {
+    /**
+     * Termine la phase d'ajout de captures sur une sortie (trip.id == Constants.RUNNING_ID)
+     */
+    static finishTripCatchs(trip:TripMain, callback: () => void) {
         if (trip.id == Constants.RUNNING_ID) {
             if (trip.mode == 'Live') {
                 trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
@@ -248,7 +252,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static saveTripMeta(trip:TripMeta, callback: () => void) {
-        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
             this.getDatabase()
                 .onCreationTrip
                 .put(trip)
@@ -269,7 +273,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static saveTripSpecies(trip:TripSpecies, callback: () => void) {
-        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
             this.getDatabase()
                 .onCreationTrip
                 .put(trip)
@@ -290,7 +294,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static saveTrip(trip:TripBean, callback: () => void) {
-        if (trip.id == Constants.DIRTY_ID || trip.id == Constants.RUNNING_ID) {
+        if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
             this.getDatabase()
                 .onCreationTrip
                 .put(trip)
@@ -310,7 +314,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteDirtyTrip() {
-        this.getDatabase().onCreationTrip.delete(Constants.DIRTY_ID);
+        this.getDatabase().onCreationTrip.delete(Constants.NEW_TRIP_ID);
     }
 
     static deleteRunningTrip() {
@@ -322,8 +326,11 @@ export default class TripsService extends AbstractFisholaService {
         this.deleteRunningTrip();
     }
 
-    static finishTripCreation(trip:TripSpecies, callback: (id:string) => void) {
-        if (trip.id == Constants.DIRTY_ID) {
+    /**
+     * Appelé quand on a terminé l'initialisation de la sortie (meta + espèces)
+     */
+    static finishTripBootstrap(trip:TripSpecies, callback: (id:string) => void) {
+        if (trip.id == Constants.NEW_TRIP_ID) {
             if (trip.mode == 'Live') {
                 trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
             }
@@ -338,10 +345,12 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static sendTrip(trip:any, callback: () => void) {
+    /**
+     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
+     */
+    static sendTrip(trip:TripBean, callback: () => void) {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
-            trip.dirty = true;
             this.getDatabase()
                 .dirtyTrips
                 .put(trip)
@@ -351,10 +360,7 @@ export default class TripsService extends AbstractFisholaService {
                     callback();
                 });
         } else {
-            this.saveTrip(trip, () => {
-                    console.log("Mise à jour de la sortie dans les dirtyTrips", trip.id);
-                    callback();
-                });
+            throw 'Ne doit être appelé que sur une sortie en cours de création. Id=' + trip.id;
         }
     }
 

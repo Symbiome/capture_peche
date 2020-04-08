@@ -37,7 +37,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
 
-export type ActionType = "SaveTrip" | "EditSpecies" | "EditTechniques";
+export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
 
 @Component({
   components: {
@@ -53,7 +53,7 @@ export default class TripSummaryView extends Vue {
 
   trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: '', lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
 
-  actionRequested:ActionType = "SaveTrip";
+  actionRequested:ActionType = "SendTrip";
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -74,7 +74,7 @@ export default class TripSummaryView extends Vue {
 
   onUpdatedTrip(trip:any) {
         // On reçoit le modèle mis à jour, on le sauvegarde
-      if (this.actionRequested == "SaveTrip") {
+      if (this.actionRequested == "SendTrip") {
         TripsService.sendTrip(trip, this.tripSaved);
       } else {
         TripsService.saveTrip(trip, this.tripSaved);
@@ -92,7 +92,7 @@ export default class TripSummaryView extends Vue {
   }
 
   tripSaved() {
-    if (this.actionRequested == "SaveTrip") {
+    if (this.actionRequested == "SendTrip") {
       router.push('/trips');
       this.$root.$emit('ask-for-sync-check');
     } else if (this.actionRequested == "EditSpecies") {

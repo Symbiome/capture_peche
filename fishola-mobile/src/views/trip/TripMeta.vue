@@ -121,7 +121,7 @@ export default class TripMetaView extends Vue {
       }
     }
 
-    if (this.id == Constants.DIRTY_ID) {
+    if (this.id == Constants.NEW_TRIP_ID) {
       GeolocationService.getClosestLake()
         .then(
           (lake) => {
