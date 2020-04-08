@@ -138,7 +138,8 @@ export default class EditTripView extends Vue {
   onUpdatedTrip(trip:TripBean) {
     // On reçoit le modèle mis à jour, on le sauvegarde
     if (this.actionRequested == "UpdateTrip") {
-      TripsService.sendTrip(trip, this.tripSaved);
+      TripsService.sendTrip(trip)
+        .then(this.tripSaved);
     } else {
       TripsService.saveTrip(trip, this.tripSaved);
     }

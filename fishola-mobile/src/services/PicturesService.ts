@@ -38,7 +38,6 @@ export default class PicturesService extends AbstractFisholaService {
                 callback(item.content, item.dirtySince);
             })
             .catch(() => {
-                console.log("Image non trouvée");
                 callback();
             });
     }

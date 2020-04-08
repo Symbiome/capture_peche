@@ -419,6 +419,7 @@ export default class EditCatchView extends Vue {
       let minValue = target * .6;
       let maxValue = target * 1.4;
       if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
+        console.log(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
         hasError = true;
         this.weightError = "Le poids n'est pas cohérent avec la taille";
       }

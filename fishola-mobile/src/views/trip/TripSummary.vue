@@ -75,7 +75,8 @@ export default class TripSummaryView extends Vue {
   onUpdatedTrip(trip:any) {
     // On reçoit le modèle mis à jour, on le sauvegarde
     if (this.actionRequested == "SendTrip") {
-      TripsService.sendTrip(trip, this.tripSaved);
+      TripsService.sendTripAndCancelCreations(trip)
+        .then(this.tripSaved);
     } else {
       TripsService.saveTrip(trip, this.tripSaved);
     }

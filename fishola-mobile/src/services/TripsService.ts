@@ -360,21 +360,38 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     /**
-     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
+     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur
      */
-    static sendTrip(trip:TripBean, callback: () => void) {
+    static sendTrip(trip:TripBean):Promise<string> {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
         }
         this.removeSaveDelayMarker(trip);
-        this.getDatabase()
+        return new Promise<string>((resolve, reject) => {
+            this.getDatabase()
             .dirtyTrips
             .put(trip)
-            .then((aaa) => {
-                console.log("Nouvelle sortie dans les dirtyTrips", aaa);
-                this.cancelCreations();
-                callback();
+            .then((savedTripId) => {
+                console.log("Nouvelle sortie dans les dirtyTrips", savedTripId);
+                resolve(savedTripId);
             });
+        });
+    }
+
+    /**
+     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
+     */
+    static sendTripAndCancelCreations(trip:TripBean):Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.sendTrip(trip)
+                .then(
+                    (savedTripId) => {
+                        this.cancelCreations();
+                        resolve(savedTripId);
+                    },
+                    reject
+                );
+        });
     }
 
     static syncTrips():Promise<boolean> {
