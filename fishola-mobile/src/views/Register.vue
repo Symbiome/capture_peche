@@ -40,6 +40,15 @@
                     v-model="passwordConfirm"
                     v-bind:error="validationErrors['passwordConfirm']"
                     />
+
+          <div class="form-checkbox">
+            <input type="checkbox"
+                   id="register-cgu"
+                   class="pelorous-checkbox"
+                   v-model="cgu" />
+            <label for="register-cgu"></label>
+            <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
+          </div>
       </div>
       <div class="register-buttons">
         <div class="back">
@@ -66,6 +75,7 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import router from '@/router'
 
+import DocumentationService from '@/services/DocumentationService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -82,12 +92,15 @@ export default class RegisterView extends Vue {
   validationErrors:any = {
     passwordConfirm : ''
   };
+  cgu:boolean = false;
+  cguUrl:string = '';
 
   constructor() {
     super();
   }
 
   mounted() {
+    this.cguUrl = DocumentationService.getCGUUrl();
   }
 
   cancel() {
@@ -124,9 +137,11 @@ export default class RegisterView extends Vue {
 
     this.cleanValidationErros();
 
-    if (this.passwordConfirm == this.bean.password) {
+    if (this.passwordConfirm == this.bean.password && this.cgu) {
       let apiUrl = Constants.apiUrl("/v1/security/register");
       httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
+    } else if (!this.cgu) {
+      this.$root.$emit('toaster-error', 'Vous devez accepter les CGU');
     } else {
       this.validationErrors['passwordConfirm'] = 'Les mots de passe ne correspondent pas';
     }
@@ -211,10 +226,23 @@ export default class RegisterView extends Vue {
     //   color: @pale-sky;
     // }
 
+    .register-cgu-label {
+      margin-left: 10px;
+      color: @gunmetal;
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 16px;
+
+      a {
+        color: @pelorous;
+        font-weight: bold;
+        text-decoration: none;
+      }
+    }
   }
 
   .register-buttons {
-    height: 100px;
+    height: 76px;
     background-color: @zircon;
     padding-left: 30px;
     padding-right: 30px;

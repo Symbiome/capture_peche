@@ -7,4 +7,5 @@ INSERT INTO documentation (name) VALUES
     ('Réglementation sur le lac du Bourget'),
     ('Réglementation sur le lac d''Aiguebelette'),
     ('Documentation sur les espèces'),
-    ('Documentation sur les prélèvements');
+    ('Documentation sur les prélèvements'),
+    ('Conditions Générales d''Utilisation');

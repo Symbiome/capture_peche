@@ -16,10 +16,10 @@
             <FormToggle v-model="settings.promptSamples" />
           </div>
           <div class="info"
-               v-if="sampleBuyPonitsDocumentationUrl">
+               v-if="samplesDocumentationUrl">
             Pour pouvoir effectuer des prélèvements, vous devez vous munir
             d'un kit dans un des points de collecte :
-            <a :href="sampleBuyPonitsDocumentationUrl">consulter la liste</a>
+            <a :href="samplesDocumentationUrl">consulter la liste</a>
           </div>
 
           <div class="bottom-page-spacer"></div>
@@ -54,7 +54,7 @@ export default class SettingsView extends Vue {
 
   settings:UserSettings | null = null;
 
-  sampleBuyPonitsDocumentationUrl:string = '';
+  samplesDocumentationUrl:string = '';
 
   constructor() {
     super();
@@ -69,8 +69,7 @@ export default class SettingsView extends Vue {
 
   mounted() {
     this.loadSettings();
-    DocumentationService.getSampleBuyPonitsDocumentation()
-      .then((doc) => this.sampleBuyPonitsDocumentationUrl = doc.url);
+    this.samplesDocumentationUrl = DocumentationService.getSamplesDocumentationUrl();
   }
 
   loadSettings() {

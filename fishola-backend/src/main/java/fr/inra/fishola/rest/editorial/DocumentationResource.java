@@ -4,6 +4,7 @@ import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.database.EditorialAndDocumentationDao;
 import fr.inra.fishola.entities.tables.pojos.Documentation;
 import fr.inra.fishola.entities.tables.pojos.Editorial;
+import fr.inra.fishola.exceptions.NotFoundException;
 import fr.inra.fishola.rest.AbstractFisholaResource;
 
 import javax.inject.Inject;
@@ -70,6 +71,41 @@ public class DocumentationResource extends AbstractFisholaResource {
         Response response = Response.ok(output)
                 .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))
                 .build();
+        return response;
+    }
+
+    @Deprecated
+    protected Response downloadDocumentationByName(String name) {
+        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
+
+        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
+        Optional<UUID> docId = docs.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().equalsIgnoreCase(name))
+                .map(Map.Entry::getKey)
+                .findAny();
+
+        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", name));
+
+        Response response = downloadDocumentation(docId.get());
+        return response;
+    }
+
+    @GET
+    @Path("/documentation/fixed/cgu")
+    @Produces("application/pdf")
+    public Response downloadGCU() {
+        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
+        Response response = downloadDocumentationByName("Conditions Générales d'Utilisation");
+        return response;
+    }
+
+    @GET
+    @Path("/documentation/fixed/samples")
+    @Produces("application/pdf")
+    public Response downloadSamples() {
+        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
+        Response response = downloadDocumentationByName("Documentation sur les prélèvements");
         return response;
     }
 

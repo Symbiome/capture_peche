@@ -82,10 +82,10 @@
           <div v-if="withSample">
 
             <div class="info"
-                v-if="sampleBuyPonitsDocumentationUrl">
+                v-if="samplesDocumentationUrl">
               Pour pouvoir effectuer des prélèvements, vous devez vous munir
               d'un kit dans un des points de collecte :
-              <a :href="sampleBuyPonitsDocumentationUrl">consulter la liste</a>
+              <a :href="samplesDocumentationUrl">consulter la liste</a>
             </div>
 
             <div class="sample-id-container">
@@ -196,7 +196,7 @@ export default class EditCatchView extends Vue {
   // allReleasedFishStates:ReleasedFishState[] = [];
 
   withSample:boolean = false;
-  sampleBuyPonitsDocumentationUrl:string = '';
+  samplesDocumentationUrl:string = '';
   sampleIdReady:boolean = false;
 
   created() {
@@ -206,8 +206,7 @@ export default class EditCatchView extends Vue {
   }
 
   mounted() {
-    DocumentationService.getSampleBuyPonitsDocumentation()
-      .then((doc) => this.sampleBuyPonitsDocumentationUrl = doc.url);
+    this.samplesDocumentationUrl = DocumentationService.getSamplesDocumentationUrl();
   }
 
   loadSettings() {

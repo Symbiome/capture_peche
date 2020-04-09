@@ -1,5 +1,6 @@
 import {Editorial, DocumentationLight} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import Constants from '@/services/Constants';
 
 export default class DocumentationService extends AbstractFisholaService {
 
@@ -7,22 +8,14 @@ export default class DocumentationService extends AbstractFisholaService {
         super();
     }
 
-    static getSampleBuyPonitsDocumentation():Promise<DocumentationLight> {
-        return new Promise<DocumentationLight>((resolve, reject) => {
-            this.getDocumentations()
-                .then((allDocs:DocumentationLight[]) => {
-                    let found = false;
-                    allDocs.forEach((doc) => {
-                        if (doc.name == 'Documentation sur les prélèvements') {
-                            resolve(doc);
-                            found = true;
-                        }
-                    });
-                    if (!found) {
-                        reject("Not Found");
-                    }
-                }, reject);
-        });
+    static getSamplesDocumentationUrl():string {
+        let result = Constants.apiUrl('/v1/documentation/fixed/samples');
+        return result;
+    }
+
+    static getCGUUrl():string {
+        let result = Constants.apiUrl('/v1/documentation/fixed/cgu');
+        return result;
     }
 
     static getDocumentations():Promise<DocumentationLight[]> {
