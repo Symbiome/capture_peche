@@ -244,7 +244,7 @@ export default class EditCatchView extends Vue {
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
-      if (this.inCreation && this.tripMode == 'Live') {
+      if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
         let seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
         this.rightShortcut = 'timer-' + seconds;
       }
