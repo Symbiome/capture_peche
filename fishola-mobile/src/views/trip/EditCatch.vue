@@ -268,7 +268,7 @@ export default class EditCatchView extends Vue {
     ReferentialService.getSpeciesAndTechniques(lakeId)
       .then(this.referentialLoaded);
 
-    if (this.inCreation && this.tripMode == 'Live') {
+    if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
       GeolocationService.getPosition()
         .then(
           (position) => {
