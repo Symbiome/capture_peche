@@ -411,15 +411,20 @@ export default class EditCatchView extends Vue {
       this.weightError = '';
     } else {
       hasError = true;
-      this.weightError = 'Le poids ne peut pas être négatif';
+      this.weightError = 'Le poids doit être strictement positif';
     }
 
     if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
-      let target = 0.01 * Math.pow(this.aCatch.size, 3);
-      let minValue = target * .6;
-      let maxValue = target * 1.4;
-      if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
-        console.log(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
+      if (this.aCatch.size > 25) {
+        let minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
+        let maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
+        if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
+          console.log(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
+          hasError = true;
+          this.weightError = "Le poids n'est pas cohérent avec la taille";
+        }
+      } else if (this.aCatch.weight > 300) {
+        console.log(`Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`);
         hasError = true;
         this.weightError = "Le poids n'est pas cohérent avec la taille";
       }
