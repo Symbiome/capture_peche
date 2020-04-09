@@ -415,7 +415,7 @@ export default class EditCatchView extends Vue {
     }
 
     if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
-      if (this.aCatch.size > 25) {
+      if (this.aCatch.size >= 25) {
         let minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
         let maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
         if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
