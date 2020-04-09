@@ -2,7 +2,7 @@ import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
 import {TripLight, TripMode, TripBean, CatchBean} from '@/pojos/BackendPojos';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 import Constants from '@/services/Constants';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import PicturesService from '@/services/PicturesService';

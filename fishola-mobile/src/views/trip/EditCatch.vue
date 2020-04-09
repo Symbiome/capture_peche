@@ -123,7 +123,7 @@ import PicturesService from '@/services/PicturesService';
 import TripsService from '@/services/TripsService';
 import {SpeciesWithAliasAndTechnique} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 import GeolocationService from '@/services/GeolocationService';
 
 import {UserSettings} from '@/pojos/BackendPojos';
@@ -489,9 +489,10 @@ export default class EditCatchView extends Vue {
   }
 
   deleteCatch() {
-    if (confirm("Voulez-vous supprimer la capture ?")) {
-      TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
-    }
+    Helpers.confirm(this.$modal, "Voulez-vous supprimer la capture ?")
+      .then(() => {
+        TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
+      });
   }
 
   leavePage() {

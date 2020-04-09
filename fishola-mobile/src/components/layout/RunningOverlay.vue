@@ -25,7 +25,7 @@ import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import TripMain from '@/pojos/TripMain';
-import Helpers from '../../pojos/Helpers';
+import Helpers from '@/services/Helpers';
 
 @Component
 export default class RunningOverlay extends Vue {

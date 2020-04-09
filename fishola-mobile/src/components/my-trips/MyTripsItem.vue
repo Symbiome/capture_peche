@@ -39,7 +39,7 @@
 import {TripLight, Lake} from '@/pojos/BackendPojos';
 
 import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import router from '../../router';

@@ -54,7 +54,7 @@ import TripMeta from '@/pojos/TripMeta';
 
 import {Lake} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import {LakesAndTripTypes} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';

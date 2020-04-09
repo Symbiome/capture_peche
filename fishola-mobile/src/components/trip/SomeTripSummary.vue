@@ -60,7 +60,7 @@ import TripSummary from '@/pojos/TripSummary';
 import {Lake, Weather, SpeciesWithAlias, Technique} from '@/pojos/BackendPojos';
 
 import Constants from '@/services/Constants';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 import {LakesWeathersTripTypesSpeciesAndTechniques} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
 

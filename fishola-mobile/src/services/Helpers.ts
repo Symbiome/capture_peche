@@ -141,4 +141,27 @@ export default class Helpers {
         let result = m.format('HH:mm');
         return result;
     }
+
+    static confirm(modal:any, text:string, title?:string):Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let params:any = {
+                title: title,
+                text: text,
+                buttons: [
+                    {
+                        title: 'Non'
+                    },
+                    {
+                        title: 'Oui',
+                        handler: () => {
+                            modal.hide('dialog');
+                            resolve();
+                        }
+                    }
+                ]
+            };
+            modal.show('dialog', params);
+          
+        });
+    }
 }

@@ -71,6 +71,8 @@
 import ProfileService from '@/services/ProfileService';
 import TripsService from '@/services/TripsService';
 
+import Helpers from '@/services/Helpers';
+
 import Avatar from '@/components/common/Avatar.vue';
 import UserProfile from '@/pojos/UserProfile';
 
@@ -167,17 +169,34 @@ export default class Menu extends Vue {
   }
 
   logout() {
-    if (confirm("Voulez-vous vous déconnecter ?")) {
-      this.closeMenu();
+    Helpers.confirm(this.$modal, 'Voulez-vous vous déconnecter ?', 'Déconnexion')
+      .then(() => {
+        this.logoutConfirmed(false);
+      });
+  }
 
+  promptLogoutWithRunningTrip() {
+    Helpers.confirm(this.$modal, 'Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?', 'Déconnexion')
+      .then(() => {
+        this.logoutConfirmed(true);
+      });
+  }
+
+  logoutConfirmed(ignoreRunningTrip:boolean) {
+    this.closeMenu();
+    if (ignoreRunningTrip) {
+      ProfileService.logout()
+        .then(this.logguedOut);
+    } else {
       TripsService.hasRunningTrip()
-        .then((result:boolean) => {
-          if (!result || confirm("Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?")) {
+        .then((hasRunningTrip:boolean) => {
+          if (hasRunningTrip) {
+            this.promptLogoutWithRunningTrip();
+          } else {
             ProfileService.logout()
               .then(this.logguedOut);
           }
         });
-
     }
   }
 

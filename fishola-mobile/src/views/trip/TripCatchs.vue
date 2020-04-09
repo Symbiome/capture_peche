@@ -37,6 +37,7 @@ import CatchSummary from '@/pojos/CatchSummary';
 import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/services/Helpers';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -45,7 +46,6 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
-import Helpers from '../../pojos/Helpers';
 
 @Component({
   components: {

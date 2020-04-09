@@ -61,7 +61,7 @@ import {TripBean} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
 import Constants from '@/services/Constants';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -177,9 +177,9 @@ export default class EditTripView extends Vue {
   }
 
   deleteTrip() {
-    if (confirm("Voulez-vous supprimer la sortie ?")) {
+    Helpers.confirm(this.$modal, "Voulez-vous supprimer la sortie ?").then(() => {
       TripsService.deleteTrip(this.id, this.tripDeleted);
-    }
+    });
   }
 
   tripDeleted() {

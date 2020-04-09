@@ -31,6 +31,7 @@ import {TripLight} from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
 import {TripsAndCount} from '@/services/TripsService';
+import Helpers from '@/services/Helpers';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
@@ -153,9 +154,8 @@ export default class MyTripsView extends Vue {
       if (this.selectedTripIds.length > 1) {
         message = "Voulez-vous supprimer ces sorties ?";
       }
-      if (confirm(message)) {
-        this.deleteSelectedTrips();
-      }
+      Helpers.confirm(this.$modal, message)
+        .then(this.deleteSelectedTrips);
     }
   }
 

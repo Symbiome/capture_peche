@@ -96,13 +96,14 @@
 import TripsService from '@/services/TripsService';
 import ProfileService from '@/services/ProfileService';
 
+import Helpers from '@/services/Helpers';
+
 import router from '@/router';
 
 import UserProfile from '@/pojos/UserProfile';
 import FooterButton from '@/components/layout/FooterButton.vue';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import Helpers from '@/pojos/Helpers';
 
 @Component({
   components: {
@@ -163,16 +164,33 @@ export default class FisholaFooter extends Vue {
   }
 
   logout() {
-    if (confirm("Voulez-vous vous déconnecter ?")) {
+    Helpers.confirm(this.$modal, 'Voulez-vous vous déconnecter ?', 'Déconnexion')
+      .then(() => {
+        this.logoutConfirmed(false);
+      });
+  }
 
+  promptLogoutWithRunningTrip() {
+    Helpers.confirm(this.$modal, 'Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?', 'Déconnexion')
+      .then(() => {
+        this.logoutConfirmed(true);
+      });
+  }
+
+  logoutConfirmed(ignoreRunningTrip:boolean) {
+    if (ignoreRunningTrip) {
+      ProfileService.logout()
+        .then(this.logguedOut);
+    } else {
       TripsService.hasRunningTrip()
-        .then((result:boolean) => {
-          if (!result || confirm("Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?")) {
+        .then((hasRunningTrip:boolean) => {
+          if (hasRunningTrip) {
+            this.promptLogoutWithRunningTrip();
+          } else {
             ProfileService.logout()
               .then(this.logguedOut);
           }
         });
-
     }
   }
 
@@ -218,10 +236,13 @@ export default class FisholaFooter extends Vue {
   }
 
   giveup() {
-    if (confirm("Voulez-vous vraiment abandonner cette sortie ?")) {
-      TripsService.cancelCreations();
-      router.push('/trips');
-    }
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
   }
 
   doDelete() {

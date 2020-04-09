@@ -1,7 +1,7 @@
 import {Dashboard, SpeciesWithAlias} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from './ReferentialService';
-import Helpers from '@/pojos/Helpers';
+import Helpers from '@/services/Helpers';
 
 export class DashboardAndSpecies {
     constructor (
