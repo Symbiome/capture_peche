@@ -1,24 +1,41 @@
+
+-- VUE : trip_species_names
+
 CREATE OR REPLACE VIEW trip_species_names AS
-SELECT tes.trip_id, string_agg(s.export_as, ',' ORDER BY s.export_as) AS species
+SELECT
+    tes.trip_id AS trip_id,
+    string_agg(s.export_as, ',' ORDER BY s.export_as) AS species
 FROM trip_expected_species tes
 INNER JOIN species s
     ON s.id = tes.species_id
 GROUP BY tes.trip_id;
+COMMENT ON VIEW trip_species_names IS 'Permet d''avoir, pour chaque sortie, la liste des espèces recherchées séparées par des virgules';
+
+-- VUE : trip_techniques_names
 
 CREATE OR REPLACE VIEW trip_techniques_names AS
-SELECT tt.trip_id, string_agg(t.export_as, ',' ORDER BY t.export_as) AS techniques
+SELECT
+    tt.trip_id AS trip_id,
+    string_agg(t.export_as, ',' ORDER BY t.export_as) AS techniques
 FROM trip_techniques tt
 INNER JOIN technique t
     ON t.id = tt.technique_id
 GROUP BY tt.trip_id;
+COMMENT ON VIEW trip_techniques_names IS 'Permet d''avoir, pour chaque sortie, la liste des techniques séparées par des virgules';
+
+-- VUE : catch_picture_url
 
 CREATE OR REPLACE VIEW catch_picture_url AS
-SELECT c.id AS catch_id,
-('http://localhost:8080/api/v1/pictures/' || cp.catch_id) AS url
+SELECT
+    c.id AS catch_id,
+    ('http://localhost:8080/api/v1/pictures/' || cp.catch_id) AS url
 FROM catch c
 INNER JOIN catch_picture cp
-    ON cp.catch_id = c.id
-;
+    ON cp.catch_id = c.id;
+
+COMMENT ON VIEW catch_picture_url IS 'Permet d''avoir, pour chaque capture, l''URL pour télécharger l''image';
+
+-- VUE : catchs_export
 
 CREATE OR REPLACE VIEW catchs_export AS
 SELECT
@@ -67,11 +84,12 @@ INNER JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
 INNER JOIN technique ct ON ct.id = c.technique_id
 INNER JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
-INNER JOIN weather w ON w.id = t.weather_id
-;
+INNER JOIN weather w ON w.id = t.weather_id;
+
+COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
 
 -- On peut ensuite extraire l'ensemble dans du CSV via l'une des 2 commandes suivante :
---   COPY (select * from catchs_export) TO '/tmp/toto.csv' DELIMITER ',' CSV HEADER;
+--   COPY (select * from catchs_export) TO '/tmp/catchs.csv' DELIMITER ',' CSV HEADER;
 -- ou
---   psql -h 172.17.0.2 -U postgres fishola -t -A -F";" -c "select * from catchs_export" > /tmp/toto.csv
+--   psql -h 172.17.0.2 -U postgres fishola -t -A -F";" -c "select * from catchs_export" > /tmp/catchs.csv
