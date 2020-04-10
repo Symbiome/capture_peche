@@ -1,0 +1,77 @@
+CREATE OR REPLACE VIEW trip_species_names AS
+SELECT tes.trip_id, string_agg(s.export_as, ',' ORDER BY s.export_as) AS species
+FROM trip_expected_species tes
+INNER JOIN species s
+    ON s.id = tes.species_id
+GROUP BY tes.trip_id;
+
+CREATE OR REPLACE VIEW trip_techniques_names AS
+SELECT tt.trip_id, string_agg(t.export_as, ',' ORDER BY t.export_as) AS techniques
+FROM trip_techniques tt
+INNER JOIN technique t
+    ON t.id = tt.technique_id
+GROUP BY tt.trip_id;
+
+CREATE OR REPLACE VIEW catch_picture_url AS
+SELECT c.id AS catch_id,
+('http://localhost:8080/api/v1/pictures/' || cp.catch_id) AS url
+FROM catch c
+INNER JOIN catch_picture cp
+    ON cp.catch_id = c.id
+;
+
+CREATE OR REPLACE VIEW catchs_export AS
+SELECT
+    'FISHOLA' AS nom_du_projet,
+    l.export_as AS nom_du_site,
+    (l.export_as || ' : peche amateur ') AS nom_de_la_plateforme,
+    to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
+    u.id AS id_login,
+    u.birth_year AS annee_naissance_utilisateur,
+    CASE u.gender WHEN 'Male' THEN 'H'
+                  WHEN 'Female' THEN 'F'
+                  WHEN 'NonBinary' THEN '?'
+                  END AS sexe_utilisateur,
+    to_char(t.day, 'MM') AS mois_de_la_sortie,
+    to_char(t.day, 'YYYY') AS annee_de_la_sortie,
+    CASE t.type WHEN 'Craft' THEN 'Embarcation'
+                WHEN 'Border' THEN 'Bord'
+                END AS type_de_peche,
+    t.name AS nom_de_la_sortie,
+    t.id AS id_sortie,
+    tsn.species AS espece_recherchee,
+    to_char(t.start_time, 'HH24:MI:SS') AS debut_de_peche,
+    to_char(t.end_time, 'HH24:MI:SS') AS fin_de_peche,
+    (t.end_time - t.start_time) AS duree_de_la_sortie,
+    ttn.techniques AS technique_de_peche_par_sortie,
+    c.id AS id_capture,
+    ct.export_as AS technique_de_peche_par_capture,
+    s.export_as AS espece_capturee,
+    c.size * 100 AS longueur_totale,
+    c.weight AS poids,
+    c.latitude AS latitude,
+    c.longitude AS longitude,
+    CASE c.kept WHEN true THEN 'non'
+                WHEN false THEN 'oui'
+                END AS poisson_relache,
+    cpu.url AS url_photos,
+    c.sample_id AS id_prelevement,
+    w.export_as AS conditions_meteo,
+    c.description AS commentaires
+FROM catch c
+INNER JOIN trip t ON t.id = c.trip_id
+INNER JOIN lake l ON l.id = t.lake_id
+LEFT JOIN fishola_user u ON u.id = t.owner_id
+INNER JOIN trip_species_names tsn ON tsn.trip_id = t.id
+INNER JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
+INNER JOIN technique ct ON ct.id = c.technique_id
+INNER JOIN species s ON s.id = c.species_id
+LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+INNER JOIN weather w ON w.id = t.weather_id
+;
+
+
+-- On peut ensuite extraire l'ensemble dans du CSV via l'une des 2 commandes suivante :
+--   COPY (select * from catchs_export) TO '/tmp/toto.csv' DELIMITER ',' CSV HEADER;
+-- ou
+--   psql -h 172.17.0.2 -U postgres fishola -t -A -F";" -c "select * from catchs_export" > /tmp/toto.csv
