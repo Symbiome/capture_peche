@@ -30,6 +30,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -125,7 +126,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         // FIXME AThimel 20/12/2019 Pour les besoins de la démo, on active d'office les comptes
         try {
-            verifyAfterRegistration(token);
+            verifyAfterRegistration(request, token);
         } catch (Exception eee) {
             log.error("Unable to verify token", eee);
         }
@@ -148,7 +149,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @GET
     @Path("/verify")
-    public Response verifyAfterRegistration(@QueryParam("t") String token) {
+    public Response verifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
 
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
@@ -178,11 +179,13 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
 
-            // TODO: 22/11/2019 Réponse adaptée
-            return Response.ok().build();
+            String verifiedUrl = config.getApiUrl("/verify_ok.html", request);
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return success;
         } catch (DataAccessException dae) {
-            // TODO: 22/11/2019 Réponse adaptée
-            return Response.ok().build();
+            String verifiedUrl = config.getApiUrl("/verify_fail.html", request);
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return error;
         }
     }
 

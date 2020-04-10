@@ -52,7 +52,9 @@ public class FisholaConfiguration {
     }
 
     public String getApiUrl(String path, HttpServletRequest httpServletRequest) {
-        return String.format("%s%s", getBackendBaseUrl(httpServletRequest), path);
+        String backendBaseUrl = getBackendBaseUrl(httpServletRequest);
+        String result = String.format("%s%s", backendBaseUrl, path);
+        return result;
     }
 
     public String getMailFrom() {
