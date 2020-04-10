@@ -25,7 +25,8 @@ INSERT INTO technique (name, built_in, export_as) VALUES
     ('Pêche à la sonde', true, 'sonde'),
     ('Pêche au leurre', true, 'leurre'),
     ('Pêche au vif', true, 'vif'),
-    ('Pêche au coup', true, 'coup');
+    ('Pêche au coup', true, 'coup'),
+    ('Autre', true, 'autre');
 
 INSERT INTO released_fish_state (name, export_as) VALUES
     ('Comme neuf', 'Comme neuf'),
