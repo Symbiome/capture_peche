@@ -221,7 +221,7 @@ html {
 }
 
 .v--modal-overlay {
-  background-color: @black-alpha-70 !important;
+  background-color: @black-alpha-50 !important;
 
   .v--modal {
     border-radius: 14px;
@@ -235,27 +235,27 @@ html {
       text-align: center;
 
       .dialog-c-title {
-        color: @black-alpha-90;
+        color: @gunmetal;
         font-size: 17px;
         line-height: 22px;
       }
 
       .dialog-c-text {
-        color: @black-alpha-60;
+        color: @pale-sky;
         font-size: 13px;
         line-height: 18px;
       }
     }
 
     .vue-dialog-buttons {
-      color: @dodger-blue;
-      border-top: 1px solid @black-alpha-15;
+      color: @pelorous;
+      border-top: 1px solid @very-light-grey;
 
       button.vue-dialog-button {
         font-size: 17px !important;
 
         &:not(:first-of-type) {
-          border-left: 1px solid @black-alpha-15;
+          border-left: 1px solid @very-light-grey;
         }
       }
     }
