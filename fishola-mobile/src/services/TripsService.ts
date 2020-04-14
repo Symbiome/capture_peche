@@ -335,18 +335,18 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static removeSaveDelayMarker(someObject:any) {
+    static removeSaveDelayMarker(someObject:TripBean) {
         delete someObject.saveDelayMarker;
     }
 
-    static setSaveDelayMarker(someObject:any) {
+    static setSaveDelayMarker(someObject:TripBean) {
         someObject.saveDelayMarker = new Date();
     }
 
     /**
      * Indique si la sauvegarde de la sortie doit être différée ou non
      */
-    static shouldDelaySave(someObject:any):boolean {
+    static shouldDelaySave(someObject:TripBean):boolean {
         if (!someObject.saveDelayMarker) {
             return false;
         }
