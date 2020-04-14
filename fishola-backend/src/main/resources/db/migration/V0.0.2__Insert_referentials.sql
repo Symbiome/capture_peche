@@ -13,9 +13,8 @@ INSERT INTO species (name, built_in, export_as) VALUES
 
 INSERT INTO weather (name, export_as) VALUES
     ('Ensoleillé', 'Ensoleillé'),
-    ('Couvert', 'Couvert'),
+    ('Sec couvert', 'Sec couvert'),
     ('Neigeux', 'Neigeux'),
-    ('Nuageux', 'Nuageux'),
     ('Orageux', 'Orageux'),
     ('Pluvieux', 'Pluvieux'),
     ('Brumeux', 'Brumeux');
