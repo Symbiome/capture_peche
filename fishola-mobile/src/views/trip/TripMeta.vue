@@ -14,11 +14,13 @@
           <FormSelect name="lake"
                       label="Lac"
                       v-bind:options="lakes"
+                      orderBy="name"
                       v-model="trip.lakeId"
                       v-bind:error="lakeIdError"/>
           <FormSelect name="type"
                       label="Type de pêche"
                       v-bind:options="types"
+                      orderBy="name"
                       v-model="trip.type"
                       v-bind:error="typeError" />
           <div v-if="trip.mode == 'Afterwards'">

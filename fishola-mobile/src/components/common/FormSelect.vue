@@ -62,6 +62,7 @@ export default class FormSelect extends Vue {
   @Prop() error?: string;
   @Prop() options?: any[];
   @Prop() readonly!: boolean;
+  @Prop() orderBy?: string;
 
   readonlyValues:string[] = [];
 
@@ -76,10 +77,10 @@ export default class FormSelect extends Vue {
   }
 
   sortedOptions():any[] {
-    if (this.options) {
-      return Vue.lodash.orderBy(this.options, 'name');
+    if (this.options && this.orderBy) {
+      return Vue.lodash.orderBy(this.options, this.orderBy);
     }
-    return [];
+    return this.options || [];
   }
 }
 </script>

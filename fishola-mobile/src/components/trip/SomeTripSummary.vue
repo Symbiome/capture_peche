@@ -9,6 +9,7 @@
     <FormSelect name="lake"
                 label="Lac"
                 v-bind:options="allLakes"
+                orderBy="name"
                 v-model="trip.lakeId"
                 v-bind:error="lakeIdError"
                 v-bind:readonly="readonly"/>
@@ -33,12 +34,14 @@
     <FormSelect name="weather"
                 label="Météo"
                 v-bind:options="allWeathers"
+                orderBy="name"
                 v-model="trip.weatherId"
                 v-bind:error="weatherIdError"
                 v-bind:readonly="readonly"/>
     <FormSelect name="type"
                 label="Type de pêche"
                 v-bind:options="allTripTypes"
+                orderBy="name"
                 v-model="trip.type"
                 v-bind:readonly="readonly"/>
     <FormMultiValues name="species"

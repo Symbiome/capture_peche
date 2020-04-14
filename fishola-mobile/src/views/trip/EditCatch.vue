@@ -314,6 +314,7 @@ export default class EditCatchView extends Vue {
           this.allSpecies.push(customSpecies);
       });
     }
+    this.allSpecies = Vue.lodash.orderBy(this.allSpecies, 'name');
     this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
