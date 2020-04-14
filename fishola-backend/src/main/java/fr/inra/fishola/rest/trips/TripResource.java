@@ -125,15 +125,25 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    protected boolean isStillModifiable(Trip trip) {
-        Optional<LocalDateTime> modifiableUntil = getModifiableUntil(trip);
+    protected boolean isStillModifiable(Trip trip, LocalDateTime now) {
+        Optional<LocalDateTime> modifiableUntil = getModifiableUntil(trip, now);
         boolean stillModifiable = modifiableUntil.isPresent();
         return stillModifiable;
     }
 
+    protected boolean isStillModifiable(Trip trip) {
+        boolean stillModifiable = isStillModifiable(trip, LocalDateTime.now());
+        return stillModifiable;
+    }
+
     protected Optional<LocalDateTime> getModifiableUntil(Trip trip) {
+        Optional<LocalDateTime> result = getModifiableUntil(trip, LocalDateTime.now());
+        return result;
+    }
+
+    protected Optional<LocalDateTime> getModifiableUntil(Trip trip, LocalDateTime now) {
         LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.getTripModifiableHours());
-        boolean canBeModified = modifiableUntil.isAfter(LocalDateTime.now());
+        boolean canBeModified = modifiableUntil.isAfter(now);
         Optional<LocalDateTime> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
         return result;
     }
@@ -220,7 +230,14 @@ public class TripResource extends AbstractFisholaResource {
         Preconditions.checkState(existingTrip != null, "Impossible de mettre à jour une sortie qui n'existe pas : " + tripId);
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
-        AccessDeniedException.check(isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie");
+        boolean stillModifiable = isStillModifiable(existingTrip);
+        if (!stillModifiable && trip.saveDelayMarker.isPresent()) {
+            if (log.isWarnEnabled()) {
+                log.warn("La sortie n'est plus modifiable. On vérifie si elle l'était à sa dernière sauvegarde");
+            }
+            stillModifiable = isStillModifiable(existingTrip, trip.saveDelayMarker.get());
+        }
+        AccessDeniedException.check(stillModifiable, "Il n'est plus possible de modifier la sortie");
 
         existingTrip.setDay(trip.date);
         existingTrip.setStartTime(LocalTime.parse(trip.startedAt));

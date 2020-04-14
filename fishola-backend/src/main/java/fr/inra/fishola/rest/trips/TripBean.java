@@ -27,12 +27,17 @@ public class TripBean {
     public List<CatchBean> catchs;
     public Set<UUID> techniqueIds;
 
+    public Optional<LocalDateTime> saveDelayMarker = Optional.empty();
+
     // Calculés
     public Optional<LocalDateTime> modifiableUntil;
 
-    public void setSaveDelayMarker(Object o) {
-        // On ignore, c'est pour que le front réussisse l'appel
-    }
+//    public void setSaveDelayMarker( {
+//        System.out.println(saveDelayMarker);
+//        if (saveDelayMarker != null) {
+//            System.out.println(saveDelayMarker.getClass().getName());
+//        }
+//    }
 
     @Override
     public String toString() {

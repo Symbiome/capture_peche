@@ -353,9 +353,9 @@ export default class TripsService extends AbstractFisholaService {
         let delayMoment = moment(someObject.saveDelayMarker);
         let now = moment();
         let durationMillis = now.diff(delayMoment);
-        let duration = moment.duration(durationMillis);
-        // On diffère les sauvegardes non explicites de moins de 1h
-        let result = duration.minutes() < 60;
+        let durationInMinutes = durationMillis / (60 * 1000);
+        // On diffère les sauvegardes non explicites de moins de 30 min
+        let result = durationInMinutes < 30;
         return result;
     }
 
