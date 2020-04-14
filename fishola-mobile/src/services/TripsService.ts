@@ -485,6 +485,14 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
+    static getLatestCatchSpecies(someTrip:TripBean):string|undefined {
+        if (someTrip.catchs && someTrip.catchs.length > 0) {
+            let latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
+            return latestCatch.speciesId;
+        }
+        return;
+    }
+
     static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
         TripsService.getTrip(tripId, (trip:TripBean) => {
             let result:CatchSummary = {id:catchId};
@@ -497,6 +505,13 @@ export default class TripsService extends AbstractFisholaService {
             }
             if (trip.mode == 'Live' && result.id == Constants.NEW_CATCH_ID) {
                 result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+
+                // On essaye de récupérer la dernière espèce capturée pour sélectionner la même
+                let latestSpeciesId = this.getLatestCatchSpecies(trip);
+                if (latestSpeciesId) {
+                    result.speciesId = latestSpeciesId;
+                }
+
             }
             callback(trip, result);
         });
