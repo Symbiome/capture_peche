@@ -6,7 +6,7 @@
       <div class="pane">
         <h1>Espèce recherchée</h1>
         <div class="pane-content">
-          <div v-for="s in species" 
+          <div v-for="s in sortedSpecies()"
                v-bind:key="s.id"
                class="species-item"
                v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
@@ -93,6 +93,10 @@ export default class TripSpeciesView extends Vue {
   }
 
   mounted() {
+  }
+
+  sortedSpecies():SpeciesWithAlias[] {
+    return Vue.lodash.orderBy(this.species, 'name');
   }
 
   speciesLoaded(map:Map<string, SpeciesWithAlias[]>) {

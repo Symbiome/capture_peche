@@ -16,7 +16,7 @@
               v-on:input="$emit('input', $event.target.value)"
               >
         <option value="" v-if="!value"></option>
-        <option v-for="option in options"
+        <option v-for="option in sortedOptions()"
                 v-bind:key="option.id"
                 v-bind:value="option.id">
           {{ option.name }}
@@ -73,6 +73,13 @@ export default class FormSelect extends Vue {
         }
       });
     }
+  }
+
+  sortedOptions():any[] {
+    if (this.options) {
+      return Vue.lodash.orderBy(this.options, 'name');
+    }
+    return [];
   }
 }
 </script>
