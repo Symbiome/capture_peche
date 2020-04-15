@@ -84,7 +84,8 @@ INNER JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
 INNER JOIN technique ct ON ct.id = c.technique_id
 INNER JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
-INNER JOIN weather w ON w.id = t.weather_id;
+INNER JOIN weather w ON w.id = t.weather_id
+WHERE t.created_on < (now() - INTERVAL '168 hours');
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
