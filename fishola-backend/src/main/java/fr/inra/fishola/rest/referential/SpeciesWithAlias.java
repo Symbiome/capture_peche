@@ -14,6 +14,7 @@ public interface SpeciesWithAlias {
     UUID id();
     String  name();
     boolean builtIn();
+    boolean mandatorySize();
 
     Optional<String> alias();
 
@@ -22,6 +23,7 @@ public interface SpeciesWithAlias {
                 .id(source.getId())
                 .name(source.getName())
                 .builtIn(source.getBuiltIn())
+                .mandatorySize(source.getMandatorySize())
                 .alias(Optional.ofNullable(alias))
                 .build();
         return result;

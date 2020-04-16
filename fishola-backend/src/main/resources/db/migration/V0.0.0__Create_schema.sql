@@ -36,7 +36,8 @@ CREATE TABLE species (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     export_as TEXT NOT NULL UNIQUE,
-    built_in BOOLEAN NOT NULL
+    built_in BOOLEAN NOT NULL,
+    mandatory_size BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE TABLE species_by_lake (

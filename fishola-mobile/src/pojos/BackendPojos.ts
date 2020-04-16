@@ -52,6 +52,7 @@ export interface SpeciesWithAlias {
     id: string;
     name: string;
     builtIn: boolean;
+    mandatorySize: boolean;
     alias?: string;
 }
 
@@ -74,6 +75,7 @@ export interface Species extends Serializable {
     name: string;
     exportAs: string;
     builtIn: boolean;
+    mandatorySize: boolean;
 }
 
 export interface Technique extends Serializable {

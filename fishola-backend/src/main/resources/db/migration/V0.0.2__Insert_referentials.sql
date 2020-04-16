@@ -11,6 +11,10 @@ INSERT INTO species (name, built_in, export_as) VALUES
     ('Perche', true, 'perche'),
     ('Truite', true, 'truite');
 
+UPDATE species
+    SET mandatory_size=false
+    WHERE name='Perche';
+
 INSERT INTO weather (name, export_as) VALUES
     ('Ensoleillé', 'Ensoleillé'),
     ('Sec couvert', 'Sec couvert'),
