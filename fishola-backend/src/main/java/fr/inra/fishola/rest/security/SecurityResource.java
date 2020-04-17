@@ -179,11 +179,11 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
 
-            String verifiedUrl = config.getApiUrl("/verify_ok.html", request);
+            String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
             Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
             return success;
         } catch (DataAccessException dae) {
-            String verifiedUrl = config.getApiUrl("/verify_fail.html", request);
+            String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
             Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
             return error;
         }
