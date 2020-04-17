@@ -2,7 +2,7 @@
   <div class="catch-preview">
     <div class="preview-top">
       <div class="meta">
-        <div class="meta-row" v-if="metaMode == 'size'">
+        <div class="meta-row" v-if="metaMode == 'size' && aCatch.size">
           <i class="icon-size"/> {{aCatch.size}} cm<br/>
         </div>
         <div class="meta-row" v-if="metaMode == 'weight'">

@@ -5,7 +5,7 @@ export interface CatchBean {
     id: string;
     speciesId?: string;
     otherSpecies?: string;
-    size: number;
+    size?: number;
     weight?: number;
     keep: boolean;
     releasedStateId?: string;

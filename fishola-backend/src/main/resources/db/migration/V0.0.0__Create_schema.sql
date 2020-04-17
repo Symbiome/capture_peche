@@ -106,7 +106,7 @@ CREATE TABLE catch (
     catch_time TIME WITHOUT TIME ZONE,
     species_id UUID REFERENCES species(id) NOT NULL,
     technique_id UUID REFERENCES technique(id) NOT NULL,
-    size INT NOT NULL,
+    size INT,
     weight INT,
     kept BOOLEAN NOT NULL,
     released_fish_state_id UUID REFERENCES released_fish_state(id),

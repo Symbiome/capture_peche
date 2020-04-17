@@ -8,7 +8,7 @@ public class CatchBean {
     public String id;
     public Optional<UUID> speciesId = Optional.empty();
     public Optional<String> otherSpecies = Optional.empty();
-    public int size;
+    public Optional<Integer> size = Optional.empty();
     public Optional<Integer> weight = Optional.empty();
     public boolean keep;
     public Optional<UUID> releasedStateId = Optional.empty();

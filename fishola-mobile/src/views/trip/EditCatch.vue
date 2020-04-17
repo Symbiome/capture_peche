@@ -33,7 +33,7 @@
                      v-bind:readonly="!modifiable"
                      v-if="aCatch.speciesId == '__other__'"/>
           <FormInput name="size"
-                     label="Taille en cm"
+                     :label="sizeLabel"
                      type="number"
                      placeholder="Entrez une taille en centimètres"
                      v-model="aCatch.size"
@@ -177,6 +177,9 @@ export default class EditCatchView extends Vue {
 
   caughtAt:string = '';
 
+  defaultSizeLabel:string = "Taille en cm";
+  sizeLabel:string = this.defaultSizeLabel;
+
   speciesIdError:string = '';
   otherSpeciesError:string = '';
   sizeError:string = '';
@@ -293,13 +296,14 @@ export default class EditCatchView extends Vue {
           let customSpecies:SpeciesWithAlias = {
             id: name,
             name: name,
-            builtIn: false
+            builtIn: false,
+            mandatorySize: true
           };
           this.allSpecies.push(customSpecies);
       });
     }
     this.allSpecies = Vue.lodash.orderBy(this.allSpecies, 'name');
-    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false});
+    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: true});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
@@ -310,6 +314,26 @@ export default class EditCatchView extends Vue {
     // if (this.inCreation) {
     //   setTimeout(this.takePicture, 500);
     // }
+  }
+
+  isMandatorySize(speciesId?:string):boolean {
+    let result = true;
+    if (speciesId) {
+      this.allSpecies.forEach((s:SpeciesWithAlias) => {
+        if (s.id == speciesId && s.mandatorySize === false) {
+          result = false;
+        }
+      });
+    }
+    return result;
+  }
+
+  @Watch('aCatch.speciesId')
+  speciesChanged(newValue:string, oldValue:string) {
+    this.sizeLabel = this.defaultSizeLabel;
+    if (newValue && this.isMandatorySize(newValue) === false) {
+      this.sizeLabel = this.defaultSizeLabel + ' (optionnelle)';
+    }
   }
 
   takePicture() {
@@ -379,16 +403,17 @@ export default class EditCatchView extends Vue {
         this.speciesIdError = 'Espèce obligatoire';
       }
 
-    } 
+    }
 
-    if (!this.aCatch.size) {
+    let mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    if (mandatorySize && !this.aCatch.size) {
       hasError = true;
       this.sizeError = 'Taille obligatoire';
-    } else if (this.aCatch.size > 0) {
-      this.sizeError = '';
-    } else {
+    } else if (this.aCatch.size && this.aCatch.size <= 0) {
       hasError = true;
       this.sizeError = 'La taille doit être strictement positive';
+    } else {
+      this.sizeError = '';
     }
 
     if (!this.aCatch.weight || this.aCatch.weight > 0) {
@@ -465,7 +490,6 @@ export default class EditCatchView extends Vue {
   }
 
   catchSaved(catchId:string) {
-    console.log("Capture enregistrée", catchId);
     if (this.pictureSrc && this.newPictureTaken) {
       PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
     } else {

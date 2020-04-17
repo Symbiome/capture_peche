@@ -364,7 +364,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
-        catchPojo.setSize(aCatch.size);
+        aCatch.size.ifPresent(catchPojo::setSize);
         aCatch.weight.ifPresent(catchPojo::setWeight);
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
@@ -385,7 +385,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
-        existingCatch.setSize(aCatch.size);
+        existingCatch.setSize(aCatch.size.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
@@ -468,7 +468,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID catchId = aCatch.getId();
         result.id = catchId.toString();
         result.speciesId = Optional.of(aCatch.getSpeciesId());
-        result.size = aCatch.getSize();
+        result.size = Optional.ofNullable(aCatch.getSize());
         result.weight = Optional.ofNullable(aCatch.getWeight());
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
