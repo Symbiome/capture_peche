@@ -24,12 +24,25 @@ Pour connaître l'IP de la base de données :
 
 ## Démarrer le backend en mode dev
 
-Le backend s'attend à joindre la base de données par le nom d'host `docker_pg`.
-Si ce n'est donc pas déjà fait, il faut ajouter une ligne dans `/etc/hosts` telle que :
+Les variables attendues par l'application pour joindre la bade de données sont :
 
+```properties
+%dev.quarkus.datasource.url=jdbc:postgresql://192.168.1.86:5432/fishola
+%dev.quarkus.datasource.username=postgres
+%dev.quarkus.datasource.password=whatever
 ```
-172.17.0.2	docker_pg
+
+`%dev` signifie que ces valeurs sont valables uniquement pour le mode `dev`.
+
+Le meilleur moyen de saisir ces variables est de créer un fichier `.env` à la racine du module `fishola-backend` et y ajouter les lignes suivantes :
+
+```properties
+QUARKUS_DATASOURCE_URL=jdbc:postgresql://192.168.1.86:5432/fishola
+QUARKUS_DATASOURCE_USERNAME=postgres
+QUARKUS_DATASOURCE_PASSWORD=whatever
 ```
+
+Ce fichier n'est pas ajouté au repo Git, chacun est donc libre d'y surcharger les propriété qu'il souhaite.
 
 Ensuite on démarre Quarkus en mode dev :
 
