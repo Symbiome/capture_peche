@@ -8,13 +8,19 @@ Il suffit de lancer le script `start_db.sh` :
 ./start_db.sh
 ```
 
-Il est ensuite possible de se connecter à la base de données avec `psql` :
+Il est ensuite possible de se connecter à la base de données avec `psql` (si installée sur l'OS) :
 
 ```bash
 ./psql.sh
 ```
 
-La base démarrée est une base PostgreSQL 11 dont le volume est monté dans `/home/postgres-11`.
+ou bien par la commande `psql` via Docker : 
+
+```bash
+./psql-by-docker.sh
+```
+
+La base démarrée est une base PostgreSQL 12 dont le volume est monté dans `/home/postgres-12`.
 
 Pour connaître l'IP de la base de données :
 
