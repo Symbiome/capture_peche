@@ -24,35 +24,30 @@ public interface FisholaConfiguration {
 
     Optional<String> getBackendBaseUrl();
 
-    default String getBackendBaseUrl(HttpServletRequest httpServletRequest) {
+    default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = getBackendBaseUrl();
         String result;
         if (backendBaseUrl.isPresent()) { // Ne pas utiliser de lambda sinon ça plante au démarrage
             result = backendBaseUrl.get();
         } else {
-            result = computeBackendBaseUrl(httpServletRequest);
+            String requestUrl = httpServletRequest.getRequestURL().toString();
+            String requestUri = httpServletRequest.getRequestURI();
+            int index = requestUrl.indexOf(requestUri);
+            if (index != -1) {
+                result = requestUrl.substring(0, index);
+                Log log = LogFactory.getLog(FisholaConfiguration.class);
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("No 'BackendBaseUrl' in conf, computed is: %s", result));
+                }
+            } else {
+                throw new FisholaTechnicalException("Unable to compute backendBaseUrl", null);
+            }
         }
         return result;
     }
 
-    default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
-        String requestUrl = httpServletRequest.getRequestURL().toString();
-        String requestUri = httpServletRequest.getRequestURI();
-        int index = requestUrl.indexOf(requestUri);
-        if (index != -1) {
-            String guessed = requestUrl.substring(0, index);
-            Log log = LogFactory.getLog(FisholaConfiguration.class);
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("No 'BackendBaseUrl' in conf, computed is: %s", guessed));
-            }
-            return guessed;
-        } else {
-            throw new FisholaTechnicalException("Unable to compute backendBaseUrl", null);
-        }
-    }
-
     default String getApiUrl(String path, HttpServletRequest httpServletRequest) {
-        String backendBaseUrl = getBackendBaseUrl(httpServletRequest);
+        String backendBaseUrl = computeBackendBaseUrl(httpServletRequest);
         String result = String.format("%s%s", backendBaseUrl, path);
         return result;
     }
