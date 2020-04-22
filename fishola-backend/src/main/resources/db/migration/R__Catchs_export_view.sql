@@ -28,7 +28,7 @@ COMMENT ON VIEW trip_techniques_names IS 'Permet d''avoir, pour chaque sortie, l
 CREATE OR REPLACE VIEW catch_picture_url AS
 SELECT
     c.id AS catch_id,
-    ('http://localhost:8080/api/v1/pictures/' || cp.catch_id) AS url
+    ('https://fishola.demo.codelutin.com/api/v1/pictures/' || cp.catch_id) AS url
 FROM catch c
 INNER JOIN catch_picture cp
     ON cp.catch_id = c.id;
@@ -41,7 +41,7 @@ CREATE OR REPLACE VIEW catchs_export AS
 SELECT
     'FISHOLA' AS nom_du_projet,
     l.export_as AS nom_du_site,
-    (l.export_as || ' : peche amateur ') AS nom_de_la_plateforme,
+    (l.export_as || ' : peche amateur') AS nom_de_la_plateforme,
     to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
     u.id AS id_login,
     u.birth_year AS annee_naissance_utilisateur,
@@ -64,7 +64,7 @@ SELECT
     c.id AS id_capture,
     ct.export_as AS technique_de_peche_par_capture,
     s.export_as AS espece_capturee,
-    c.size * 100 AS longueur_totale,
+    c.size * 10 AS longueur_totale,
     c.weight AS poids,
     c.latitude AS latitude,
     c.longitude AS longitude,
@@ -91,6 +91,6 @@ COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
 
 -- On peut ensuite extraire l'ensemble dans du CSV via l'une des 2 commandes suivante :
---   COPY (select * from catchs_export) TO '/tmp/catchs.csv' DELIMITER ',' CSV HEADER;
+--   COPY (select * from catchs_export) TO '/tmp/catchs.csv' DELIMITER ';' CSV HEADER;
 -- ou
 --   psql -h 172.17.0.2 -U postgres fishola -t -A -F";" -c "select * from catchs_export" > /tmp/catchs.csv
