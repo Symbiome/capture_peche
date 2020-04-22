@@ -120,9 +120,21 @@ public class MailService {
 
         MimeMessage message = buildMimeMessage(mail);
         try {
-            Transport.send(message);
-        } catch (MessagingException e) {
-            throw new FisholaTechnicalException("Peut pas envoyer le mail", e);
+            if (config.getSmtpUsername().isPresent() && config.getSmtpPassword().isPresent()) {
+                Transport.send(message, config.getSmtpUsername().get(), config.getSmtpPassword().get());
+            } else {
+                Transport.send(message);
+            }
+
+            if (log.isInfoEnabled()) {
+                log.info(String.format("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject()));
+            }
+
+        } catch (MessagingException me) {
+            if (log.isErrorEnabled()) {
+                log.error("Impossible d'envoyer le mail", me);
+            }
+            throw new FisholaTechnicalException("Peut pas envoyer le mail", me);
         }
     }
 

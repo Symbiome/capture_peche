@@ -55,12 +55,24 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "fishola@codelutin.com")
     String getMailFrom();
 
+    Optional<String> getSmtpUsername();
+
+    Optional<String> getSmtpPassword();
+
+    @ConfigProperty(defaultValue = "false")
+    boolean getSmtpStarttls();
+
+    String getSmtpHost();
+
+    int getSmtpPort();
+
     default Properties getMailProperties() {
+        boolean auth = getSmtpUsername().isPresent() && getSmtpPassword().isPresent();
         Properties prop = new Properties();
-        prop.put("mail.smtp.auth", false);
-        prop.put("mail.smtp.starttls.enable", "false");
-        prop.put("mail.smtp.host", "docker_mail");
-        prop.put("mail.smtp.port", "25");
+        prop.put("mail.smtp.auth", auth);
+        prop.put("mail.smtp.starttls.enable", String.valueOf(getSmtpStarttls()));
+        prop.put("mail.smtp.host", getSmtpHost());
+        prop.put("mail.smtp.port", String.valueOf(getSmtpPort()));
 //        prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
         return prop;
     }
@@ -85,7 +97,6 @@ public interface FisholaConfiguration {
         return result;
     }
 
-    @ConfigProperty(defaultValue = "thimel@codelutin.com")
     String getFeedbackMailTo();
 
 }
