@@ -14,6 +14,7 @@
              v-bind:type="type"
              v-bind:placeholder="placeholder"
              v-bind:value="value"
+             v-bind:min="min"
              v-on:input="$emit('input', $event.target.value)"
              v-bind:class="error?'field-error':''" />
       <div v-bind:class="error?'field-error':''" >
@@ -57,6 +58,7 @@ export default class FormInput extends Vue {
   @Prop() value!: string;
   @Prop() error?: string;
   @Prop() readonly!: boolean;
+  @Prop() min?: string;
 
   readonlyValues:string[] = [];
 
