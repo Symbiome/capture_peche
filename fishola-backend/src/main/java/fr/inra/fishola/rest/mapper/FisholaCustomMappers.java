@@ -35,6 +35,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.LinkedList;
@@ -121,6 +122,22 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
+    protected static Optional<LocalDateTime> readIso8601Date(String dateString) {
+
+        DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            Date date = iso8601Format.parse(dateString);
+            Instant instant = date.toInstant();
+            LocalDateTime localDateTime = LocalDateTime.from(instant);
+            Optional<LocalDateTime> result = Optional.of(localDateTime);
+            return result;
+        } catch (Exception eee) {
+            log.error("Unable to read date", eee);
+            return Optional.empty();
+        }
+    }
+
     public static class FeedbackBeanDeserializer extends StdDeserializer<Feedback> {
 
         protected FeedbackBeanDeserializer() {
@@ -147,17 +164,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "version").ifPresent(builder::version);
             readText(node, "location").ifPresent(builder::location);
             readText(node, "locationTitle").ifPresent(builder::locationTitle);
-            readText(node, "date").ifPresent(dateString -> {
-                DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-                iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
-                try {
-                    Date date = iso8601Format.parse(dateString);
-                    LocalDateTime localDateTime = LocalDateTime.from(date.toInstant());
-                    builder.date(localDateTime);
-                } catch (Exception eee) {
-                    log.error("Unable to read date", eee);
-                }
-            });
+            readText(node, "date").flatMap(FisholaCustomMappers::readIso8601Date).ifPresent(builder::date);
             Feedback result = builder.build();
             return result;
         }
