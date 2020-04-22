@@ -75,16 +75,16 @@ SELECT
     c.sample_id AS id_prelevement,
     w.export_as AS conditions_meteo,
     c.description AS commentaires
-FROM catch c
-INNER JOIN trip t ON t.id = c.trip_id
+FROM trip t
 INNER JOIN lake l ON l.id = t.lake_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
-INNER JOIN trip_species_names tsn ON tsn.trip_id = t.id
-INNER JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
-INNER JOIN technique ct ON ct.id = c.technique_id
-INNER JOIN species s ON s.id = c.species_id
-LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+LEFT JOIN trip_species_names tsn ON tsn.trip_id = t.id
+LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
 INNER JOIN weather w ON w.id = t.weather_id
+LEFT JOIN catch c ON t.id = c.trip_id
+LEFT JOIN technique ct ON ct.id = c.technique_id
+LEFT JOIN species s ON s.id = c.species_id
+LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
 WHERE t.created_on < (now() - INTERVAL '168 hours');
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
@@ -93,4 +93,4 @@ COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 -- On peut ensuite extraire l'ensemble dans du CSV via l'une des 2 commandes suivante :
 --   COPY (select * from catchs_export) TO '/tmp/catchs.csv' DELIMITER ';' CSV HEADER;
 -- ou
---   psql -h 172.17.0.2 -U postgres fishola -t -A -F";" -c "select * from catchs_export" > /tmp/catchs.csv
+--   psql -h 172.17.0.2 -U postgres fishola -A -F";" -c "select * from catchs_export" | head -n -1 > /tmp/catchs.csv
