@@ -1,6 +1,7 @@
 package fr.inra.fishola.rest.feedback;
 
 import com.google.common.collect.ImmutableMap;
+import fr.inra.fishola.FisholaConfiguration;
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import fr.inra.fishola.mails.FisholaMail;
 import fr.inra.fishola.mails.FisholaMailAttachment;
@@ -31,6 +32,9 @@ public class FeedbackResource {
 
     @Inject
     protected MailService mailService;
+
+    @Inject
+    protected FisholaConfiguration config;
 
     @PUT
     @Path("/")
@@ -82,7 +86,7 @@ public class FeedbackResource {
                 "emails/new-feedback.html",
                 args);
         builder.subject("Nouveau feedback : " + feedback.category());
-        builder.addTos("thimel@codelutin.com");
+        builder.addTos(config.getFeedbackMailTo());
         if (screenshotBytes.isPresent()) {
             byte[] bytes = screenshotBytes.get();
             FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()

@@ -85,4 +85,7 @@ public interface FisholaConfiguration {
         return result;
     }
 
+    @ConfigProperty(defaultValue = "thimel@codelutin.com")
+    String getFeedbackMailTo();
+
 }
