@@ -2,6 +2,7 @@ package fr.inra.fishola.rest.trips;
 
 import fr.inra.fishola.entities.enums.TripMode;
 import fr.inra.fishola.entities.enums.TripType;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,8 +55,9 @@ public class TripBean {
                 ", startedAt=" + startedAt +
                 ", finishedAt=" + finishedAt +
                 ", weatherId=" + weatherId +
-                ", catchs=" + catchs +
+                ", catchs=" + CollectionUtils.size(catchs) +
                 ", techniqueIds=" + techniqueIds +
+                ", saveDelayMarker=" + saveDelayMarker +
                 ", modifiableUntil=" + modifiableUntil +
                 '}';
     }

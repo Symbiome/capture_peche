@@ -158,6 +158,14 @@ public class TripResource extends AbstractFisholaResource {
 
         UUID userId = getUserId(cookie);
 
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Nouvelle sortie à persister : id=%s", trip.id));
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace(String.format("Détails de la sortie : %s", trip));
+        }
+
         Trip entity = new Trip();
         entity.setCreatedOn(LocalDateTime.now());
         entity.setDay(trip.date);
@@ -173,7 +181,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug("Création de la sortie : " + tripId);
+            log.debug("Sortie en cours de création : " + tripId);
         }
 
         Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
@@ -191,6 +199,10 @@ public class TripResource extends AbstractFisholaResource {
 
         Collection<CatchBean> catchBeans = CollectionUtils.emptyIfNull(trip.catchs);
         for (CatchBean aCatch : catchBeans) {
+            if (log.isTraceEnabled()) {
+                log.trace(String.format("Détails de la capture : %s", aCatch));
+            }
+
             UUID catchId = createCatch(tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
@@ -225,6 +237,14 @@ public class TripResource extends AbstractFisholaResource {
         Map<String, UUID> replacements = new HashMap<>();
 
         UUID userId = getUserId(cookie);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Sortie à mettre à jour : id=%s", tripId));
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace(String.format("Détails de la sortie : %s", trip));
+        }
 
         Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
         Preconditions.checkState(existingTrip != null, "Impossible de mettre à jour une sortie qui n'existe pas : " + tripId);
@@ -272,6 +292,10 @@ public class TripResource extends AbstractFisholaResource {
         Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
         Collection<CatchBean> incomingCatchBeans = CollectionUtils.emptyIfNull(trip.catchs);
         for (CatchBean aCatch : incomingCatchBeans) {
+
+            if (log.isTraceEnabled()) {
+                log.trace(String.format("Détails de la capture : %s", aCatch));
+            }
 
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
             if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
@@ -322,6 +346,10 @@ public class TripResource extends AbstractFisholaResource {
     public void deleteTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
 
         UUID userId = getUserId(cookie);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Suppression de la sortie : id=%s", tripId));
+        }
 
         deleteTrip(tripId, userId);
     }

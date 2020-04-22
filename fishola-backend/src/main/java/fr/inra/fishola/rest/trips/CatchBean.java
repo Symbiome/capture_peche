@@ -22,4 +22,25 @@ public class CatchBean {
     public boolean hasPicture = false;
     public Optional<UUID> tripId = Optional.empty();
 
+    @Override
+    public String toString() {
+        return "CatchBean{" +
+                "id='" + id + '\'' +
+                ", speciesId=" + speciesId +
+                ", otherSpecies=" + otherSpecies +
+                ", size=" + size +
+                ", weight=" + weight +
+                ", keep=" + keep +
+                ", releasedStateId=" + releasedStateId +
+                ", techniqueId=" + techniqueId +
+                ", description=" + description +
+                ", caughtAt=" + caughtAt +
+                ", sampleId=" + sampleId +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", hasPicture=" + hasPicture +
+                ", tripId=" + tripId +
+                '}';
+    }
+
 }
