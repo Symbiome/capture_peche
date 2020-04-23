@@ -186,7 +186,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug("Sortie en cours de création : " + tripId);
+            log.debug(String.format("Sortie en cours de création : %s -> %s", trip.id, tripId));
         }
 
         Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
@@ -211,7 +211,7 @@ public class TripResource extends AbstractFisholaResource {
             UUID catchId = createCatch(tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
-                log.debug("Capture créée : " + catchId);
+                log.debug(String.format("Capture créée : %s -> %s", aCatch.id, catchId));
             }
         }
 
@@ -316,7 +316,7 @@ public class TripResource extends AbstractFisholaResource {
                 UUID catchId = createCatch(tripId, aCatch);
                 replacements.put(aCatch.id, catchId);
                 if (log.isDebugEnabled()) {
-                    log.debug("Capture créée : " + catchId);
+                    log.debug(String.format("Capture créée : %s -> %s", aCatch.id, catchId));
                 }
             }
         }
