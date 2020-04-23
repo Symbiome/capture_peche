@@ -2,6 +2,17 @@ import {Lake} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from '@/services/ReferentialService';
 
+export class CoordsAndLake {
+
+    constructor (
+        public latitude:number,
+        public longitude:number,
+        public lake:Lake
+    ) {
+    }
+
+}
+
 export default class GeolocationService extends AbstractFisholaService {
 
     constructor () {
@@ -17,8 +28,8 @@ export default class GeolocationService extends AbstractFisholaService {
         });
     }
 
-    static getClosestLake():Promise<Lake> {
-        return new Promise<Lake>((resolve, reject) => {
+    static getClosestLake():Promise<CoordsAndLake> {
+        return new Promise<CoordsAndLake>((resolve, reject) => {
             let promises = [ReferentialService.getLakes(), GeolocationService.getPosition()];
             Promise.all(promises)
                 .then(
@@ -36,7 +47,8 @@ export default class GeolocationService extends AbstractFisholaService {
                             const latitude = position.coords.latitude;
                             const longitude = position.coords.longitude;
 
-                            let result = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
+                            let closestLake = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
+                            let result = new CoordsAndLake(latitude, longitude, closestLake);
                             resolve(result);
                         }
                     },

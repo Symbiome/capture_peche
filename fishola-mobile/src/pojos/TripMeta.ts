@@ -11,5 +11,7 @@ export default interface TripMeta {
     date?:Date;
     startedAt?: string;
     finishedAt?: string;
+    beginLatitude?: number;
+    beginLongitude?: number;
 
 }

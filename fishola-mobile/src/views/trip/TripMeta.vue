@@ -60,6 +60,7 @@ import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import {LakesAndTripTypes} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
+import {CoordsAndLake} from '@/services/GeolocationService';
 import GeolocationService from '@/services/GeolocationService';
 
 import FormInput from '@/components/common/FormInput.vue'
@@ -126,15 +127,22 @@ export default class TripMetaView extends Vue {
     if (this.id == Constants.NEW_TRIP_ID) {
       GeolocationService.getClosestLake()
         .then(
-          (lake) => {
+          (coordsAndLake:CoordsAndLake) => {
+            let lake = coordsAndLake.lake;
             console.log("Le lac le plus proche est ", lake);
             this.trip.lakeId = lake.id;
             // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
             this.lakeIdError = lake.id;
             this.lakeIdError = '';
+
+            if (this.trip.mode == 'Live') {
+              this.trip.beginLatitude = coordsAndLake.latitude;
+              this.trip.beginLongitude = coordsAndLake.longitude;
+              console.log(`Coordonnées de début de sortie : ${this.trip.beginLatitude},${this.trip.beginLongitude}`);
+            }
           },
           (e) => {
-            console.error("Merdu", e);
+            console.error("Impossible de récupérer les coordonnées", e);
           }
         );
     }

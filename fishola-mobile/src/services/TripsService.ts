@@ -12,6 +12,7 @@ import ReferentialService from './ReferentialService';
 import moment from 'moment';
 import ProfileService from './ProfileService';
 import TripSummary from '@/pojos/TripSummary';
+import GeolocationService from './GeolocationService';
 
 export class TripsAndCount {
     constructor (
@@ -378,10 +379,7 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    /**
-     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
-     */
-    static sendTripAndCancelCreations(trip:TripBean):Promise<string> {
+    static doSendTripAndCancelCreations(trip:TripBean):Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.sendTrip(trip)
                 .then(
@@ -392,6 +390,34 @@ export default class TripsService extends AbstractFisholaService {
                     reject
                 );
         });
+    }
+
+    /**
+     * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
+     */
+    static sendTripAndCancelCreations(trip:TripBean):Promise<string> {
+
+        if (trip.mode == 'Live') {
+            // On tente de récupérer les coordonnées GPS pour enregistrer les coordonnées de fin de sortie
+            return new Promise<string>((resolve, reject) => {
+                GeolocationService.getPosition()
+                .then(
+                  (position) => {
+                      trip.endLatitude = position.coords.latitude;
+                      trip.endLongitude = position.coords.longitude;
+                      console.log(`Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`);
+                      this.doSendTripAndCancelCreations(trip).then(resolve, reject);
+                  },
+                  (e) => {
+                    console.error("Pas de coordonnées, on sauvegarde quand même", e);
+                    this.doSendTripAndCancelCreations(trip).then(resolve, reject);
+                  }
+                );
+            });
+        } else {
+            return this.doSendTripAndCancelCreations(trip);
+        }
+
     }
 
     static syncTrips():Promise<boolean> {
