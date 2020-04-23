@@ -27,6 +27,10 @@ public class TripBean {
     public UUID weatherId;
     public List<CatchBean> catchs;
     public Set<UUID> techniqueIds;
+    public Optional<Double> beginLatitude = Optional.empty();
+    public Optional<Double> beginLongitude = Optional.empty();
+    public Optional<Double> endLatitude = Optional.empty();
+    public Optional<Double> endLongitude = Optional.empty();
 
     public Optional<LocalDateTime> saveDelayMarker = Optional.empty();
 
@@ -57,6 +61,10 @@ public class TripBean {
                 ", weatherId=" + weatherId +
                 ", catchs=" + CollectionUtils.size(catchs) +
                 ", techniqueIds=" + techniqueIds +
+                ", beginLatitude=" + beginLatitude +
+                ", beginLongitude=" + beginLongitude +
+                ", endLatitude=" + endLatitude +
+                ", endLongitude=" + endLongitude +
                 ", saveDelayMarker=" + saveDelayMarker +
                 ", modifiableUntil=" + modifiableUntil +
                 '}';

@@ -178,6 +178,11 @@ public class TripResource extends AbstractFisholaResource {
         entity.setOwnerId(userId);
         entity.setWeatherId(trip.weatherId);
 
+        trip.beginLatitude.ifPresent(entity::setBeginLatitude);
+        trip.beginLongitude.ifPresent(entity::setBeginLongitude);
+        trip.endLatitude.ifPresent(entity::setEndLatitude);
+        trip.endLongitude.ifPresent(entity::setEndLongitude);
+
         UUID tripId = tripsDao.create(entity);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
@@ -268,6 +273,8 @@ public class TripResource extends AbstractFisholaResource {
         existingTrip.setMode(trip.mode);
         existingTrip.setOwnerId(userId);
         existingTrip.setWeatherId(trip.weatherId);
+
+        // On ne met pas à jour les coordonnées de début/fin de sortie car ce n'est pas modifiable dans l'application
 
         tripsDao.updateTrip(existingTrip);
 

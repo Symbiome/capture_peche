@@ -34,6 +34,10 @@ export interface TripBean {
     weatherId: string;
     catchs: CatchBean[];
     techniqueIds: string[];
+    beginLatitude?: number;
+    beginLongitude?: number;
+    endLatitude?: number;
+    endLongitude?: number;
     saveDelayMarker?: Date;
     modifiableUntil?: Date;
 }
