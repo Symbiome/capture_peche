@@ -110,25 +110,27 @@ public class SecurityResource extends AbstractFisholaResource {
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
 
-        String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
-        String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
+        if (config.isAutoVerifyAccounts()) {
+            try {
+                verifyAfterRegistration(request, token);
+            } catch (Exception eee) {
+                log.error("Unable to verify token", eee);
+            }
+        } else {
 
-        ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
-                "emails/email-validation.html",
-                "verifyLink", verifyUrl,
-                "firstName", bean.firstName);
-        FisholaMail mail = builder
-                .addTos(email)
-                .subject("Fishola - Validation de votre e-mail")
-                .build();
-        // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
-        mailService.sendMail(mail);
+            String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
+            String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
-        // FIXME AThimel 20/12/2019 Pour les besoins de la démo, on active d'office les comptes
-        try {
-            verifyAfterRegistration(request, token);
-        } catch (Exception eee) {
-            log.error("Unable to verify token", eee);
+            ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+                    "emails/email-validation.html",
+                    "verifyLink", verifyUrl,
+                    "firstName", bean.firstName);
+            FisholaMail mail = builder
+                    .addTos(email)
+                    .subject("Fishola - Validation de votre e-mail")
+                    .build();
+            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+            mailService.sendMail(mail);
         }
 
         return Response.ok().build();

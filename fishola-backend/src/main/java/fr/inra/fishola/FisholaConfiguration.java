@@ -99,4 +99,7 @@ public interface FisholaConfiguration {
 
     String getFeedbackMailTo();
 
+    @ConfigProperty(defaultValue = "false")
+    boolean isAutoVerifyAccounts();
+
 }
