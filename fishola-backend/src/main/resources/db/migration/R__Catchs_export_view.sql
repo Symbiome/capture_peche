@@ -68,6 +68,10 @@ SELECT
     c.weight AS poids_du_poisson,
     c.latitude AS latitude_de_la_capture,
     c.longitude AS longitude_de_la_capture,
+    t.begin_latitude AS latitude_debut_de_peche,
+    t.begin_longitude AS longitude_debut_de_peche,
+    t.end_latitude AS latitude_fin_de_peche,
+    t.end_longitude AS longitude_fin_de_peche,
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
