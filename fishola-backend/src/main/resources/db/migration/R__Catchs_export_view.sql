@@ -64,10 +64,10 @@ SELECT
     c.id AS id_capture,
     ct.export_as AS technique_de_peche_par_capture,
     s.export_as AS espece_capturee,
-    c.size * 10 AS longueur_totale,
-    c.weight AS poids,
-    c.latitude AS latitude,
-    c.longitude AS longitude,
+    c.size * 10 AS longueur_totale_du_poisson,
+    c.weight AS poids_du_poisson,
+    c.latitude AS latitude_de_la_capture,
+    c.longitude AS longitude_de_la_capture,
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
