@@ -77,7 +77,11 @@
                      type="time"
                      v-model="caughtAt"
                      v-bind:readonly="!modifiable"/>
-          <FormToggle v-if="withSample || (settings && settings.promptSamples)"
+          <FormToggle v-if="withSample
+                            || ( settings
+                                 && settings.promptSamples
+                                 && (authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
+                               )"
                       label="Prélèvement (optionnel)"
                       v-model="withSample"
                       v-bind:readonly="!modifiable"/>
@@ -203,6 +207,7 @@ export default class EditCatchView extends Vue {
   withSample:boolean = false;
   samplesDocumentationUrl:string = '';
   sampleIdReady:boolean = false;
+  authorizedSampleSpeciesIds:string[] = [];
 
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
@@ -288,6 +293,9 @@ export default class EditCatchView extends Vue {
           || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
         ) {
         this.allSpecies.push(s);
+        if (s.authorizedSample) {
+          this.authorizedSampleSpeciesIds.push(s.id);
+        }
       }
     });
      // Espèce custom sélectionnée pour la sortie mais pas encore synchro
@@ -299,13 +307,14 @@ export default class EditCatchView extends Vue {
             id: name,
             name: name,
             builtIn: false,
-            mandatorySize: true
+            mandatorySize: true,
+            authorizedSample: false
           };
           this.allSpecies.push(customSpecies);
       });
     }
     this.allSpecies = Vue.lodash.orderBy(this.allSpecies, 'name');
-    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: true});
+    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: true, authorizedSample: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
