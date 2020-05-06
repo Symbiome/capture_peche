@@ -79,7 +79,10 @@ export default class TripSummaryView extends Vue {
         this.$root.$emit('toaster-error', 'Vous devez définir les technique de pêche utilisées');
       } else {
         TripsService.sendTripAndCancelCreations(trip)
-          .then(this.tripSaved);
+          .then(
+            this.tripSaved,
+            (e) => console.log("Unexpected error during sendTripAndCancelCreations", e)
+          );
       }
     } else {
       TripsService.saveTrip(trip, this.tripSaved);
