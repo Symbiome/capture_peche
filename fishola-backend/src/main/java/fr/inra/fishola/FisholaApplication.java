@@ -24,12 +24,19 @@ public class FisholaApplication {
     private static final Log log = LogFactory.getLog(FisholaApplication.class);
 
     @Inject
+    protected FisholaConfiguration config;
+
+    @Inject
     protected AgroalDataSource dataSource;
 
     @Inject
     protected EditorialAndDocumentationDao documentationDao;
 
     void onStart(@Observes StartupEvent ev) {
+
+        if (log.isInfoEnabled()) {
+            log.info(String.format("Starting Fishola v%s (%s): %s", config.getVersion(), config.getGitRevision(), config.getActiveProfile()));
+        }
 
         Flyway flyway = Flyway.configure().dataSource(dataSource).load();
 

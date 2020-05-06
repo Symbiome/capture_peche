@@ -1,5 +1,8 @@
 package fr.inra.fishola.rest;
 
+import fr.inra.fishola.FisholaConfiguration;
+
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -18,8 +21,11 @@ import java.util.List;
 public class StatusResource {
 
     protected static final List<String> READABLE_SIZE_UNITS = Arrays.asList("B", "KB", "MB", "GB", "TB", "PB");
-    private static final LocalDateTime RUNNING_SINCE = LocalDateTime.now();
-    private static final double ONE_BYTE_AS_DOUBLE = 1024d;
+    protected static final LocalDateTime RUNNING_SINCE = LocalDateTime.now();
+    protected static final double ONE_BYTE_AS_DOUBLE = 1024d;
+
+    @Inject
+    protected FisholaConfiguration config;
 
     public static String asReadableSize(Long bytes) {
         Iterator<String> iterator = READABLE_SIZE_UNITS.iterator();
@@ -75,6 +81,11 @@ public class StatusResource {
         long statusStart = System.currentTimeMillis();
 
         ImmutableHealth.Builder builder = ImmutableHealth.builder();
+
+        builder.version(config.getVersion());
+        builder.gitRevision(config.getGitRevision());
+        builder.buildDate(config.getBuildDate());
+
         builder.encoding(System.getProperty("file.encoding"));
 
         String jvmName = System.getProperty("java.vm.name");

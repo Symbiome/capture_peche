@@ -7,6 +7,12 @@ import org.immutables.value.Value;
 @JsonSerialize(as = ImmutableHealth.class)
 public interface Health {
 
+    String version();
+
+    String gitRevision();
+
+    String buildDate();
+
     String encoding();
 
     String jvmName();

@@ -2,6 +2,7 @@ package fr.inra.fishola;
 
 import fr.inra.fishola.exceptions.FisholaTechnicalException;
 import io.quarkus.arc.config.ConfigProperties;
+import io.quarkus.runtime.configuration.ProfileManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -13,6 +14,16 @@ import java.util.Properties;
 
 @ConfigProperties(prefix = "fishola")
 public interface FisholaConfiguration {
+
+    String getVersion();
+
+    String getGitRevision();
+
+    String getBuildDate();
+
+    default String getActiveProfile() {
+        return ProfileManager.getActiveProfile();
+    }
 
     @ConfigProperty(defaultValue = "12")
     int getPasswordHashCost();
