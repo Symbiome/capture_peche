@@ -37,7 +37,8 @@ COMMENT ON VIEW catch_picture_url IS 'Permet d''avoir, pour chaque capture, l''U
 
 -- VUE : catchs_export
 
-CREATE OR REPLACE VIEW catchs_export AS
+DROP VIEW IF EXISTS catchs_export;
+CREATE VIEW catchs_export AS
 SELECT
     'FISHOLA' AS nom_du_projet,
     l.export_as AS nom_du_site,
