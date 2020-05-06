@@ -143,3 +143,9 @@ CREATE TABLE documentation (
     name TEXT NOT NULL UNIQUE,
     content BYTEA
 );
+
+CREATE TABLE authorized_sample (
+    lake_id UUID REFERENCES lake(id) NOT NULL,
+    species_id UUID REFERENCES species(id) NOT NULL,
+    PRIMARY KEY (lake_id, species_id)
+);

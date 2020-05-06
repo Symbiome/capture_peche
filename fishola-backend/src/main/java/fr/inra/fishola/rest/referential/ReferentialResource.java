@@ -3,6 +3,7 @@ package fr.inra.fishola.rest.referential;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inra.fishola.database.ReferentialDao;
+import fr.inra.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inra.fishola.entities.tables.pojos.Lake;
 import fr.inra.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inra.fishola.entities.tables.pojos.Species;
@@ -92,6 +93,13 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/weathers")
     public List<Weather> getWeathers() {
         List<Weather> result = referentialDao.listWeathers();
+        return result;
+    }
+
+    @GET
+    @Path("/authorized-samples")
+    public List<AuthorizedSample> getAuthorizedSamples() {
+        List<AuthorizedSample> result = referentialDao.listAuthorizedSamples();
         return result;
     }
 

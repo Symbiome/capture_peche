@@ -6,12 +6,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import fr.inra.fishola.entities.Tables;
+import fr.inra.fishola.entities.tables.daos.AuthorizedSampleDao;
 import fr.inra.fishola.entities.tables.daos.LakeDao;
 import fr.inra.fishola.entities.tables.daos.ReleasedFishStateDao;
 import fr.inra.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inra.fishola.entities.tables.daos.SpeciesDao;
 import fr.inra.fishola.entities.tables.daos.TechniqueDao;
 import fr.inra.fishola.entities.tables.daos.WeatherDao;
+import fr.inra.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inra.fishola.entities.tables.pojos.Lake;
 import fr.inra.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inra.fishola.entities.tables.pojos.Species;
@@ -180,6 +182,11 @@ public class ReferentialDao extends AbstractFisholaDao {
             log.debug("Espèce créée pour exportAs=" + exportAs + " => " + result);
         }
 
+        return result;
+    }
+
+    public List<AuthorizedSample> listAuthorizedSamples() {
+        List<AuthorizedSample> result = withDao(AuthorizedSampleDao.class, AuthorizedSampleDao::findAll);
         return result;
     }
 
