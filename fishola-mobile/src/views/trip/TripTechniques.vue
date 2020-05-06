@@ -4,8 +4,8 @@
     <div class="edit-trip-techniques-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1>Technique utilisée</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Technique utilisée</h1>
           <div v-for="s in techniques"
                v-bind:key="s.id"
                class="techniques-item"

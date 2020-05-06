@@ -9,8 +9,8 @@
         </div>
       </div>
       <div class="pane">
-        <h1>Profil</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Profil</h1>
           <FormInput name="firstName"
                      label="Prénom"
                      placeholder="Renseignez votre prénom"

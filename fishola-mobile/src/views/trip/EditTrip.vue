@@ -5,8 +5,8 @@
       <SomeTripHeader v-if="ready"
                       v-bind:trip="trip"/>
       <div class="pane">
-        <h1>{{duration}}</h1>
-        <div class="pane-content-large">
+        <div class="pane-content large">
+          <h1>{{duration}}</h1>
           <div v-if="modifiable"
               class="edit-trip-modifiable-until">
             <i class="icon-edit"/>

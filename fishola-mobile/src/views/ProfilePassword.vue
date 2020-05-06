@@ -3,8 +3,8 @@
     <FisholaHeader />
     <div class="profile-pasword-page page">
       <div class="pane">
-        <h1>Mot de passe</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Mot de passe</h1>
           <FormInput name="currentPassword"
                      type="password"
                      label="Mot de passe actuel"

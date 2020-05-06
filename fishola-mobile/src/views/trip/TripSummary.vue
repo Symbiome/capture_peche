@@ -4,8 +4,8 @@
     <div class="edit-trip-summary-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1>Fin de pêche</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Fin de pêche</h1>
           <SomeTripSummary ref="summary"
                            v-if="trip.lakeId"
                            v-bind:trip="trip"

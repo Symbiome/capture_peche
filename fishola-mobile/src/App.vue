@@ -200,12 +200,15 @@ html {
     padding-left: 30px;
     padding-right: 30px;
 
-  }
+    &.large {
+      padding-left: unset;
+      padding-right: unset;
+    }
 
-  .pane-content-large {
-
-    overflow: auto;
-
+    &.rounded {
+      border-top-left-radius: 30px;
+      border-top-right-radius: 30px;
+    }
   }
 
   &.pane-only {

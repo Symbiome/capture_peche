@@ -3,8 +3,8 @@
     <FisholaHeader/>
     <div class="page settings-page">
       <div class="pane pane-only">
-        <h1>Paramètres</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Paramètres</h1>
 
           <div class="settings-row" v-if="settings">
             <span>Renseigner le poids des captures</span>

@@ -3,13 +3,14 @@
     <FisholaHeader/>
     <div class="page dashboard-page">
       <div class="pane pane-only">
-        <h1>Tableau de bord</h1>
 
         <div class="spinner-wrapper" v-if="!ready">
           <div class="spinner"></div>
         </div>
 
-        <div class="pane-content-large" v-if="ready">
+        <div class="pane-content large rounded" v-if="ready">
+
+          <h1>Tableau de bord</h1>
 
           <div class="shrinked">
             <h2><i class="icon-fish" />Mes poissons</h2>
@@ -376,13 +377,12 @@ export default class DashboardView extends Vue {
     }
   }
 
-  .pane-content-large {
+  .pane-content {
 
     overflow: auto;
 
     text-align:center;
 
-    background-color: @white-smoke;
     padding-top: 30px;
 
     color: @gunmetal;

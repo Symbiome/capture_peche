@@ -4,8 +4,8 @@
     <div class="edit-trip-meta-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1>Information de pêche</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Information de pêche</h1>
           <FormInput name="name"
                       label="Nom de la sortie"
                       placeholder="Nommez votre sortie"

@@ -2,8 +2,8 @@
   <div class="feedback page-with-header-and-footer" v-bind:class="display ? '' : 'feedback-hidden'">
     <div class="page feedback-page">
       <div class="pane">
-        <h1>Des retours ?</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Des retours ?</h1>
           <p>Si vous voyez une anomalie ou si vous avez simplement une remarque à faire, remplissez ce formulaire pour nous faire parvenir votre avis.</p>
           <p>N'hésitez pas à en abuser !</p>
 

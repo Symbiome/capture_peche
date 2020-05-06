@@ -5,7 +5,7 @@
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
         <h1>{{duration}}</h1>
-        <div class="pane-content-large">
+        <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
             <CatchPreviewList v-if="ready"
                               v-bind:modifiable="true"
@@ -146,7 +146,7 @@ export default class TripCatchsView extends Vue {
       color: @gunmetal;
     }
 
-    .pane-content-large {
+    .pane-content {
       text-align:center;
 
       .catchs-list {

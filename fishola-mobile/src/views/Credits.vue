@@ -3,8 +3,8 @@
     <FisholaHeader/>
     <div class="page credits-page">
       <div class="pane pane-only">
-        <h1>Infos</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Infos</h1>
 
           <div class="credits-row">
             <p v-for="p in paragraphs"

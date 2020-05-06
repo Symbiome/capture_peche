@@ -3,8 +3,8 @@
     <FisholaHeader/>
     <div class="page documentation-page">
       <div class="pane pane-only">
-        <h1>Documentation</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Documentation</h1>
 
           <div class="documentation-row"
                v-for="doc in elements"

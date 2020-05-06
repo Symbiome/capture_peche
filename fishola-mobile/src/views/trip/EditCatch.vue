@@ -16,8 +16,8 @@
     </div>
     <div class="edit-catch-page page">
       <div class="pane">
-        <h1>Capture</h1>
-        <div class="pane-content" v-if="ready">
+        <div class="pane-content rounded" v-if="ready">
+          <h1>Capture</h1>
           <FormSelect name="species"
                       label="Espèce"
                       v-bind:options="allSpecies"

@@ -4,8 +4,8 @@
     <div class="edit-trip-species-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1>Espèce recherchée</h1>
-        <div class="pane-content">
+        <div class="pane-content rounded">
+          <h1>Espèce recherchée</h1>
           <div v-for="s in sortedSpecies()"
                v-bind:key="s.id"
                class="species-item"
