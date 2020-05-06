@@ -133,7 +133,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Optional<LocalDateTime> result = Optional.of(localDateTime);
             return result;
         } catch (Exception eee) {
-            log.error("Unable to read date", eee);
+            log.error("Unable to read date: " + dateString, eee);
             return Optional.empty();
         }
     }

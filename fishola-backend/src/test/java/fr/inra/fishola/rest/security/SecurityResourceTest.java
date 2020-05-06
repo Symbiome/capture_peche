@@ -2,7 +2,6 @@ package fr.inra.fishola.rest.security;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.common.Assert;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +50,7 @@ class SecurityResourceTest {
         Set<String> done = new HashSet<>();
         for (int i=0; i<1000000; i++) {
             String encoded = SecurityResource.encodeSampleBaseId(i);
-            Assert.assertTrue(done.add(encoded));
+            Assertions.assertTrue(done.add(encoded));
         }
 
     }
