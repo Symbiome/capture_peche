@@ -15,19 +15,18 @@
   <name>Fishola :: Mobile</name>
   <packaging>pom</packaging>
 
-  <properties>
-    <fontendMavenPluginVersion>1.9.1</fontendMavenPluginVersion>
-  </properties>
+  <properties/>
 
   <dependencies>
   </dependencies>
 
   <build>
     <plugins>
+
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>${fontendMavenPluginVersion}</version>
+
         <executions>
 
           <execution>

@@ -188,7 +188,6 @@
       <plugin>
         <groupId>cz.habarta.typescript-generator</groupId>
         <artifactId>typescript-generator-maven-plugin</artifactId>
-        <version>2.21.588</version>
         <executions>
           <execution>
             <id>generate</id>
@@ -226,10 +225,10 @@
           <noFileComment>true</noFileComment>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>com.github.slavaz</groupId>
         <artifactId>embedded-postgresql-maven-plugin</artifactId>
-        <version>1.2.4</version>
         <executions>
           <execution>
             <id>start-pgsql</id>
@@ -258,7 +257,6 @@
       <plugin>
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-maven-plugin</artifactId>
-        <version>${flywayVersion}</version>
 
         <!-- Note that we're executing the Flyway plugin in the "generate-sources" phase -->
         <executions>
@@ -291,7 +289,6 @@
       </plugin>
 
       <plugin>
-
         <!-- Specify the maven code generator plugin -->
         <!-- Use org.jooq            for the Open Source Edition
                  org.jooq.pro        for commercial editions,
@@ -303,7 +300,6 @@
                    Import the others manually from your distribution -->
         <groupId>org.jooq</groupId>
         <artifactId>jooq-codegen-maven</artifactId>
-        <version>${jooqVersion}</version>
 
         <!-- The plugin should hook into the generate goal -->
         <executions>
@@ -360,7 +356,6 @@
       <plugin>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${quarkus.version}</version>
         <executions>
           <execution>
             <goals>
@@ -369,6 +364,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
@@ -377,6 +373,7 @@
           </systemProperties>
         </configuration>
       </plugin>
+
     </plugins>
   </build>
   <profiles>

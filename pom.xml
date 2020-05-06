@@ -31,8 +31,8 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkus.version>1.4.1.Final</quarkus.version>
-    <jooqVersion>3.13.1</jooqVersion>
+    <quarkus.version>1.4.2.Final</quarkus.version>
+    <jooqVersion>3.13.2</jooqVersion>
     <flywayVersion>6.4.1</flywayVersion>
     <postgresqlDriverVersion>42.2.12</postgresqlDriverVersion>
 
@@ -136,7 +136,7 @@
       <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.10.2</version>
+        <version>3.10.3</version>
       </dependency>
 
       <dependency>
@@ -199,6 +199,42 @@
           <groupId>pl.project13.maven</groupId>
           <artifactId>git-commit-id-plugin</artifactId>
           <version>4.0.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>cz.habarta.typescript-generator</groupId>
+          <artifactId>typescript-generator-maven-plugin</artifactId>
+          <version>2.22.595</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.slavaz</groupId>
+          <artifactId>embedded-postgresql-maven-plugin</artifactId>
+          <version>1.2.4</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-maven-plugin</artifactId>
+          <version>${flywayVersion}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.jooq</groupId>
+          <artifactId>jooq-codegen-maven</artifactId>
+          <version>${jooqVersion}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>1.10.0</version>
         </plugin>
 
       </plugins>
