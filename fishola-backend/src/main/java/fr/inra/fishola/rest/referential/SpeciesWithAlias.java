@@ -11,20 +11,29 @@ import java.util.UUID;
 @JsonSerialize(as = ImmutableSpeciesWithAlias.class)
 public interface SpeciesWithAlias {
 
+    // Informations liées uniquement à l'espèce
     UUID id();
     String  name();
     boolean builtIn();
     boolean mandatorySize();
 
+    // Informations dépendante du lac
     Optional<String> alias();
+    boolean authorizedSample();
 
-    static SpeciesWithAlias of(Species source, String alias) {
+    static SpeciesWithAlias of(Species source) {
+        SpeciesWithAlias result = of(source, null, false);
+        return result;
+    }
+
+    static SpeciesWithAlias of(Species source, String alias, boolean authorizedSample) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
                 .builtIn(source.getBuiltIn())
                 .mandatorySize(source.getMandatorySize())
                 .alias(Optional.ofNullable(alias))
+                .authorizedSample(authorizedSample)
                 .build();
         return result;
     }

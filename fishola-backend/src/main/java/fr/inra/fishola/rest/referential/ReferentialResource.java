@@ -11,6 +11,7 @@ import fr.inra.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inra.fishola.entities.tables.pojos.Technique;
 import fr.inra.fishola.entities.tables.pojos.Weather;
 import fr.inra.fishola.rest.AbstractFisholaResource;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,7 +51,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public List<SpeciesWithAlias> getSpecies() {
         List<Species> species = referentialDao.listBuiltInSpecies();
         List<SpeciesWithAlias> result = species.stream()
-                .map(s -> SpeciesWithAlias.of(s, null))
+                .map(SpeciesWithAlias::of)
                 .collect(Collectors.toList());
         return result;
     }
@@ -59,7 +61,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public List<SpeciesWithAlias> getCustomSpecies() {
         List<Species> species = referentialDao.listCustomSpecies();
         List<SpeciesWithAlias> result = species.stream()
-                .map(s -> SpeciesWithAlias.of(s, null))
+                .map(SpeciesWithAlias::of)
                 .collect(Collectors.toList());
         return result;
     }
@@ -72,10 +74,16 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
         Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
 
-        Multimap<UUID, SpeciesWithAlias> result = Multimaps.transformValues(entitiesByLakeId, input -> {
+        List<AuthorizedSample> authorizedSamples = getAuthorizedSamples();
+        Set<Pair<UUID, UUID>> authorizedSamplesSet = authorizedSamples.stream()
+                .map(authorizedSample -> Pair.of(authorizedSample.getLakeId(), authorizedSample.getSpeciesId()))
+                .collect(Collectors.toSet());
+
+        Multimap<UUID, SpeciesWithAlias> result = Multimaps.transformEntries(entitiesByLakeId, (lakeId, input) -> {
             Species rawSpecies = rawSpeciesIndex.get(input.getSpeciesId());
             String alias = input.getAlias();
-            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias);
+            boolean authorizedSample = authorizedSamplesSet.contains(Pair.of(lakeId, rawSpecies.getId()));
+            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample);
             return speciesWithAlias;
         });
 
