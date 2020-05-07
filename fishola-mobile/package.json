@@ -1,6 +1,6 @@
 {
   "name": "fishola-mobile",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --port 8081",
@@ -11,6 +11,7 @@
     "@types/lodash": "^4.14.150",
     "core-js": "^3.6.5",
     "dexie": "^2.0.4",
+    "git-describe": "^4.0.4",
     "html2canvas": "^1.0.0-rc.5",
     "lodash": "^4.17.15",
     "moment": "^2.25.2",

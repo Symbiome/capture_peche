@@ -27,6 +27,10 @@
             <label for="feedback-with-picture"></label>
             <label for="feedback-with-picture" class="real-label">Inclure une copie d'écran</label>
           </div>
+          <FormInput name="version"
+                     label="Version de l'application"
+                     readonly="true"
+                     v-model="model.frontendVersion"/>
 
           <div class="bottom-page-spacer"></div>
         </div>
@@ -73,7 +77,12 @@ export default class FeedbackModal extends Vue {
 
   display = false;
 
-  model:Feedback = { category: 'BUG', id: 'FAKE' };
+  // version:string = process.env.VUE_APP_VERSION;
+  projectVersion:string = process.env.VUE_APP_PROJECT_VERSION;
+  gitRevision:string = process.env.VUE_APP_GIT_REVISION;
+  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`
+
+  model:Feedback = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
   withPicture:boolean = false;
 
   categories:any[] = [
@@ -96,7 +105,7 @@ export default class FeedbackModal extends Vue {
   }
 
   openFeedback() {
-    this.model = { category: 'BUG', id: 'FAKE' };
+    this.model = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
     this.loadProfile();
   }
 

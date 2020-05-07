@@ -39,7 +39,9 @@ public interface Feedback {
 
     Optional<String> locale();
 
-    Optional<String> version();
+    Optional<String> frontendVersion();
+
+    Optional<String> backendVersion();
 
     Optional<LocalDateTime> date();
 

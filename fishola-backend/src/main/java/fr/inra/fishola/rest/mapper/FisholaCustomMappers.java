@@ -161,7 +161,8 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "screenResolution").ifPresent(builder::screenResolution);
             readText(node, "displaySize").ifPresent(builder::displaySize);
             readText(node, "locale").ifPresent(builder::locale);
-            readText(node, "version").ifPresent(builder::version);
+            readText(node, "frontendVersion").ifPresent(builder::frontendVersion);
+            readText(node, "backendVersion").ifPresent(builder::backendVersion);
             readText(node, "location").ifPresent(builder::location);
             readText(node, "locationTitle").ifPresent(builder::locationTitle);
             readText(node, "date").flatMap(FisholaCustomMappers::readIso8601Date).ifPresent(builder::date);

@@ -138,7 +138,8 @@ export interface Feedback {
     screenResolution?: string;
     displaySize?: string;
     locale?: string;
-    version?: string;
+    frontendVersion?: string;
+    backendVersion?: string;
     date?: Date;
     location?: string;
     locationTitle?: string;

@@ -19,6 +19,11 @@ public interface FisholaConfiguration {
 
     String getGitRevision();
 
+    default String getFullVersion() {
+        String result = String.format("%s (%s)", getVersion(), getGitRevision());
+        return result;
+    }
+
     String getBuildDate();
 
     default String getActiveProfile() {

@@ -8,7 +8,7 @@
   <parent>
     <groupId>fr.inra</groupId>
     <artifactId>fishola</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>fishola-mobile</artifactId>
@@ -58,6 +58,10 @@
             </goals>
             <configuration>
               <arguments>run build</arguments>
+
+              <environmentVariables>
+                <MAVEN_PROJECT_VERSION>${project.version}</MAVEN_PROJECT_VERSION>
+              </environmentVariables>
             </configuration>
           </execution>
 

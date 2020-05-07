@@ -66,7 +66,12 @@ public class FeedbackResource {
             }
         }
 
-        FisholaMail fisholaMail = toFisholaMail(bean, screenshotBytes);
+        ImmutableFeedback feedback = ImmutableFeedback.builder()
+                .from(bean)
+                .backendVersion(config.getFullVersion())
+                .build();
+
+        FisholaMail fisholaMail = toFisholaMail(feedback, screenshotBytes);
         mailService.sendMail(fisholaMail);
 
     }

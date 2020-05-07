@@ -35,7 +35,7 @@ public class FisholaApplication {
     void onStart(@Observes StartupEvent ev) {
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Starting Fishola v%s (%s): %s", config.getVersion(), config.getGitRevision(), config.getActiveProfile()));
+            log.info(String.format("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile()));
         }
 
         Flyway flyway = Flyway.configure().dataSource(dataSource).load();
