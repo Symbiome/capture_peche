@@ -37,4 +37,8 @@ public interface Health {
 
     long duration();
 
+    String currentDate();
+
+    String currentTimeZone();
+
 }

@@ -13,8 +13,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 @Path("/api/v1/status")
 @Produces(MediaType.APPLICATION_JSON)
@@ -85,6 +87,9 @@ public class StatusResource {
         builder.version(config.getVersion());
         builder.gitRevision(config.getGitRevision());
         builder.buildDate(config.getBuildDate());
+
+        builder.currentDate(new Date().toString());
+        builder.currentTimeZone(TimeZone.getDefault().toString());
 
         builder.encoding(System.getProperty("file.encoding"));
 
