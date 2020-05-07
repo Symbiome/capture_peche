@@ -16,7 +16,8 @@ class FisholaCustomMappersTest {
         Assertions.assertEquals(6, parsed.get().getDayOfMonth());
         Assertions.assertEquals(5, parsed.get().getMonthValue());
         Assertions.assertEquals(2020, parsed.get().getYear());
-        Assertions.assertEquals(15, parsed.get().getHour());
+        // L'heure en String est en UTC, on la converti sur la TZ courante
+        Assertions.assertTrue(parsed.get().getHour() == 16 || parsed.get().getHour() == 17);
         Assertions.assertEquals(49, parsed.get().getMinute());
     }
 

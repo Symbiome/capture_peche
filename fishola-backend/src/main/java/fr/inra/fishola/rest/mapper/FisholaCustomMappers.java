@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
@@ -123,6 +124,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     protected static Optional<LocalDateTime> readIso8601Date(String dateString) {
         DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
         try {
             Date date = iso8601Format.parse(dateString);
             LocalDateTime localDateTime = date.toInstant()
