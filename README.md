@@ -35,19 +35,19 @@ Il faut commencer par compiler le projet pour la prod
 mvn clean install
 ```
 
-Pour la suite on suppose qu'on a dans `~/.ssh/config` une config qui porte le nom `mau-demo3`.
+Pour la suite on suppose qu'on a dans `~/.ssh/config` une config qui porte le nom `jaipur-demo4`.
 
 Envoi du projet via `rsync` :
 
 ```bash
-rsync -rlptD --del * mau-demo3:/var/local/demo3/inra/fishola/build/fishola/  --exclude='**/node*'
+rsync -rlptD --del * jaipur-demo4:/var/local/demo3/inra/fishola/build/fishola/  --exclude='**/node*'
 ```
 
 Déploiement :
 
 ```bash
-ssh mau-demo3
-cd /var/local/demo3/inra/fishola
-docker-compose down
-docker-compose up --build -d
+ssh jaipur-demo4
+cd /var/local/demo4/inra/fishola
+./restart.sh
 ```
+
