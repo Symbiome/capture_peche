@@ -40,14 +40,12 @@ Pour la suite on suppose qu'on a dans `~/.ssh/config` une config qui porte le no
 Envoi du projet via `rsync` :
 
 ```bash
-rsync -rlptD --del * jaipur-demo4:/var/local/demo3/inra/fishola/build/fishola/  --exclude='**/node*'
+rsync -rlptD --del * jaipur-demo4:/var/local/demo4/inra/fishola/build/fishola/  --exclude='**/node*'
 ```
 
 Déploiement :
 
 ```bash
-ssh jaipur-demo4
-cd /var/local/demo4/inra/fishola
-./restart.sh
+ssh jaipur-demo4 "/var/local/demo4/inrae/fishola/reload.sh"
 ```
 
