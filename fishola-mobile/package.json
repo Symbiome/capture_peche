@@ -11,6 +11,7 @@
     "@capacitor/android": "^2.0.2",
     "@capacitor/cli": "^2.0.2",
     "@capacitor/core": "^2.0.2",
+    "@capacitor/ios": "^2.0.2",
     "@types/lodash": "^4.14.151",
     "core-js": "^3.6.5",
     "dexie": "^3.0.1",
