@@ -3,6 +3,7 @@
   "appName": "fishola",
   "bundledWebRuntime": false,
   "npmClient": "npm",
-  "webDir": "public",
-  "cordova": {}
+  "webDir": "target/dist",
+  "cordova": {},
+  "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh"
 }
