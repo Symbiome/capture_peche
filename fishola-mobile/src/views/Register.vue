@@ -41,14 +41,14 @@
                     v-bind:error="validationErrors['passwordConfirm']"
                     />
 
-          <div class="form-checkbox">
-            <input type="checkbox"
-                   id="register-cgu"
-                   class="pelorous-checkbox"
-                   v-model="cgu" />
-            <label for="register-cgu"></label>
-            <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
-          </div>
+        <div class="form-checkbox">
+          <input type="checkbox"
+                  id="register-cgu"
+                  class="pelorous-checkbox"
+                  v-model="cgu" />
+          <label for="register-cgu"></label>
+          <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
+        </div>
       </div>
       <div class="register-buttons">
         <div class="back">
