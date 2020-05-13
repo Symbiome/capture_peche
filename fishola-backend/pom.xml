@@ -298,7 +298,7 @@
           <locations>
             <location>filesystem:src/main/resources/db/migration</location>
           </locations>
-          <connectRetries>600</connectRetries>
+          <connectRetries>30</connectRetries>
         </configuration>
       </plugin>
 
