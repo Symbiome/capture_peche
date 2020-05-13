@@ -40,7 +40,7 @@
 
 <!--    <javaVersion>14</javaVersion>-->
     <!-- FIXME AThimel 22/01/2020 Pour l'instant on ne peut pas mettre Java 13 à cause de : https://github.com/mojohaus/extra-enforcer-rules/issues/80 et/ou https://github.com/mojohaus/extra-enforcer-rules/pull/93/ -->
-    <javaVersion>12</javaVersion>
+    <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
   </properties>
