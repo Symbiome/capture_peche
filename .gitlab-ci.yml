@@ -20,7 +20,7 @@ build:compile-only:
   script:
     - mvn clean install
   tags:
-    - tmpfs
+    - docker
 
 #build:with-tests:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
