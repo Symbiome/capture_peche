@@ -18,7 +18,7 @@
     <localJdbcPort>55432</localJdbcPort>
     <localJdbcDatabaseName>fishola</localJdbcDatabaseName>
     <localJdbcPassword>fishola</localJdbcPassword>
-    <localJdbcUrl>jdbc:postgresql://localhost:${localJdbcPort}/${localJdbcDatabaseName}</localJdbcUrl>
+    <localJdbcUrl>jdbc:postgresql://127.0.0.1:${localJdbcPort}/${localJdbcDatabaseName}</localJdbcUrl>
     <localJdbcUser>fishola</localJdbcUser>
   </properties>
 
