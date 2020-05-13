@@ -1,3 +1,12 @@
+# DinD service is required for Testcontainers
+services:
+  - docker:dind
+
+variables:
+  # Instruct Testcontainers to use the daemon of DinD.
+  DOCKER_HOST: "tcp://docker:2375"
+  # Improve performance with overlayfs.
+  DOCKER_DRIVER: overlay2
 
 stages:
 - build
@@ -10,19 +19,6 @@ build:compile-only:
   when: manual
   script:
     - mvn clean install
-  tags:
-    - tmpfs
-
-build:start-pg:
-  image: maven:3.6-openjdk-11
-  stage: build
-  when: manual
-  script:
-    - cd fishola-backend
-    - mvn clean com.github.slavaz:embedded-postgresql-maven-plugin:start
-    - which pgrep
-    - pgrep -a postgres
-    - netstat -laputen | grep 55432
   tags:
     - tmpfs
 
