@@ -35,6 +35,7 @@
     <jooqVersion>3.13.2</jooqVersion>
     <flywayVersion>6.4.1</flywayVersion>
     <postgresqlDriverVersion>42.2.12</postgresqlDriverVersion>
+    <testcontainersVersion>1.14.1</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
@@ -190,13 +191,13 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
-        <version>1.12.5</version>
+        <version>${testcontainersVersion}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>postgresql</artifactId>
-        <version>1.12.5</version>
+        <version>${testcontainersVersion}</version>
         <scope>test</scope>
       </dependency>
 

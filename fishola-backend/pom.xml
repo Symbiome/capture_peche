@@ -15,11 +15,6 @@
   <name>Fishola :: Backend</name>
 
   <properties>
-    <localJdbcPort>55432</localJdbcPort>
-    <localJdbcDatabaseName>fishola</localJdbcDatabaseName>
-    <localJdbcPassword>fishola</localJdbcPassword>
-    <localJdbcUrl>jdbc:postgresql://127.0.0.1:${localJdbcPort}/${localJdbcDatabaseName}</localJdbcUrl>
-    <localJdbcUser>fishola</localJdbcUser>
   </properties>
 
   <dependencies>
@@ -240,66 +235,29 @@
       </plugin>
 
       <plugin>
-        <groupId>com.github.slavaz</groupId>
-        <artifactId>embedded-postgresql-maven-plugin</artifactId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
-            <id>start-pgsql</id>
+            <id>create-init-fishola-database</id>
             <phase>generate-sources</phase>
             <goals>
-              <goal>start</goal>
+              <goal>run</goal>
             </goals>
-          </execution>
-          <execution>
-            <id>stop-pgsql</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <pgServerVersion>10</pgServerVersion>
-          <pgServerPort>${localJdbcPort}</pgServerPort>
-          <dbName>${localJdbcDatabaseName}</dbName>
-          <userName>${localJdbcUser}</userName>
-          <password>${localJdbcPassword}</password>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.flywaydb</groupId>
-        <artifactId>flyway-maven-plugin</artifactId>
-
-        <!-- Note that we're executing the Flyway plugin in the "generate-sources" phase -->
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>migrate</goal>
-            </goals>
+            <configuration>
+              <target>
+                <concat destfile="${project.build.directory}/init-fishola-database.sql" force="yes">
+                  <fileset dir="${project.basedir}/src/main/resources/db/migration">
+                    <include name="V*.sql"></include>
+                  </fileset>
+                  <fileset dir="${project.basedir}/src/main/resources/db/migration">
+                    <include name="R*.sql"></include>
+                  </fileset>
+                </concat>
+              </target>
+            </configuration>
           </execution>
         </executions>
-
-        <dependencies>
-          <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresqlDriverVersion}</version>
-          </dependency>
-        </dependencies>
-
-        <!-- Note that we need to prefix the db/migration path with filesystem: to prevent Flyway
-             from looking for our migration scripts only on the classpath -->
-        <configuration>
-          <url>${localJdbcUrl}</url>
-          <user>${localJdbcUser}</user>
-          <password>${localJdbcPassword}</password>
-          <locations>
-            <location>filesystem:src/main/resources/db/migration</location>
-          </locations>
-          <connectRetries>30</connectRetries>
-        </configuration>
       </plugin>
 
       <plugin>
@@ -331,6 +289,22 @@
             <artifactId>postgresql</artifactId>
             <version>${postgresqlDriverVersion}</version>
           </dependency>
+          <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainersVersion}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainersVersion}</version>
+          </dependency>
+          <!-- Il semblerait que testcontainers en ait besoin -->
+          <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+          </dependency>
         </dependencies>
 
         <!-- Specify the plugin configuration.
@@ -339,10 +313,10 @@
 
           <!-- JDBC connection parameters -->
           <jdbc>
-            <driver>org.postgresql.Driver</driver>
-            <url>${localJdbcUrl}</url>
-            <user>${localJdbcUser}</user>
-            <password>${localJdbcPassword}</password>
+            <driver>org.testcontainers.jdbc.ContainerDatabaseDriver</driver>
+            <url>jdbc:tc:postgresql:12:///fishola-build?TC_TMPFS=/testtmpfs:rw&amp;=TC_INITSCRIPT=file:${project.build.directory}/init-fishola-database.sql</url>
+            <user>whatever</user>
+            <password>whatever</password>
           </jdbc>
 
           <!-- Generator parameters -->
@@ -361,7 +335,7 @@
             </generate>
             <target>
               <packageName>fr.inra.fishola.entities</packageName>
-              <directory>target/generated-sources/jooq</directory>
+              <directory>${project.build.directory}/generated-sources/jooq</directory>
             </target>
           </generator>
         </configuration>
