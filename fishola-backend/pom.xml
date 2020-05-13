@@ -298,6 +298,7 @@
           <locations>
             <location>filesystem:src/main/resources/db/migration</location>
           </locations>
+          <connectRetries>3</connectRetries>
         </configuration>
       </plugin>
 
