@@ -15,9 +15,10 @@
   <name>Fishola :: Backend</name>
 
   <properties>
+    <localJdbcPort>55432</localJdbcPort>
     <localJdbcDatabaseName>fishola</localJdbcDatabaseName>
     <localJdbcPassword>fishola</localJdbcPassword>
-    <localJdbcUrl>jdbc:postgresql:${localJdbcDatabaseName}</localJdbcUrl>
+    <localJdbcUrl>jdbc:postgresql://localhost:${localJdbcPort}/${localJdbcDatabaseName}</localJdbcUrl>
     <localJdbcUser>fishola</localJdbcUser>
   </properties>
 
@@ -259,7 +260,7 @@
         </executions>
         <configuration>
           <pgServerVersion>10</pgServerVersion>
-          <pgServerPort>5432</pgServerPort>
+          <pgServerPort>${localJdbcPort}</pgServerPort>
           <dbName>${localJdbcDatabaseName}</dbName>
           <userName>${localJdbcUser}</userName>
           <password>${localJdbcPassword}</password>
