@@ -5,10 +5,10 @@ Application smartphone en sciences participatives pour la pêche amateur sur les
 ## Pré-requis
 
 Les prérequis sont :
-* OpenJDK 13+
-* Maven 3.5.3+
-* Node v12.13.0
-* NPM 6.12.0
+* OpenJDK 14+
+* Maven 3.6.2+
+* Node v12.16.1
+* NPM 6.13.4
 * Docker
 
 À noter qu'il est possible de construire le front sans installer `Node` & `NPM`, mais il ne sera pas possible de
@@ -16,11 +16,10 @@ démarrer le projet en mode dev
 
 ## Démarer le projet (mode dev)
 
-Il est recommandé de lancer une première fois la compilation pour installer
-le POM parent :
+Il est recommandé de lancer une première fois la compilation pour installer le POM parent :
 
 ```bash
-mvn clean install -Dmaven.test.skip
+mvn clean install
 ```
 
 Ensuite il faut démarrer :
@@ -29,7 +28,7 @@ Ensuite il faut démarrer :
 
 ## Déploiement sur démo
 
-Il faut commencer par compiler le projet pour la prod
+Il faut commencer par builder le projet pour la prod :
 
 ```bash
 mvn clean install
@@ -46,6 +45,6 @@ rsync -rlptD --del * jaipur-demo4:/var/local/demo4/inra/fishola/build/fishola/  
 Déploiement :
 
 ```bash
-ssh jaipur-demo4 "/var/local/demo4/inrae/fishola/reload.sh"
+ssh jaipur-demo4 "cd /var/local/demo4/inrae/fishola && ./restart.sh"
 ```
 

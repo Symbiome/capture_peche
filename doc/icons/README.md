@@ -29,3 +29,4 @@ Il suffit ensuite d'utiliser les icônes dans le HTML tel que :
 La génération est configurable dans le fichier [fontcustom.yml](/doc/icons/fontcustom.yml).
 
 Plus d'informations pour la configuration [sur GitHub](https://github.com/FontCustom/fontcustom/blob/master/lib/fontcustom/templates/fontcustom.yml).
+

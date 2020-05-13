@@ -48,7 +48,7 @@ _DEV_QUARKUS_DATASOURCE_USERNAME=postgres
 _DEV_QUARKUS_DATASOURCE_PASSWORD=whatever
 ```
 
-Ce fichier n'est pas ajouté au repo Git, chacun est donc libre d'y surcharger les propriété qu'il souhaite.
+Ce fichier n'est pas ajouté au repo Git, chacun est donc libre d'y surcharger les propriétés qu'il souhaite.
 
 Ensuite on démarre Quarkus en mode dev :
 
@@ -57,3 +57,4 @@ mvn clean compile quarkus:dev
 ```
 
 Quarkus tourne sur le port `8080`, on peut vérifier que tout va bien grâce au [endpoint status](http://localhost:8080/api/v1/status).
+
