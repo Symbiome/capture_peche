@@ -18,24 +18,22 @@ build:compile-only:
   stage: build
   when: manual
   script:
-    - mvn clean install
+    - mvn clean package -Dmaven.test.skip
   tags:
     - docker
 
-#build:with-tests:
-#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
-#  stage: build
-#  script:
-#    - mvn clean package
-#    - rm * .git* -rf || true
-#  except:
-#    - /^master.*$/
-#    - /^release\/.*$/
-#    - /^conception$/
-#    - schedules
-#  tags:
-#    - tmpfs
-#
+build:with-tests:
+  image: maven:3.6-openjdk-11
+  stage: build
+  script:
+    - mvn clean package
+  except:
+    - /^master.*$/
+    - /^release\/.*$/
+    - schedules
+  tags:
+    - docker
+
 #check-releasable:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
 #  stage: check-releasable
