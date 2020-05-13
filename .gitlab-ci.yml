@@ -13,6 +13,18 @@ build:compile-only:
   tags:
     - tmpfs
 
+build:start-pg:
+  image: maven:3.6-openjdk-11
+  stage: build
+  when: manual
+  script:
+    - cd fishola-backen
+    - mvn clean com.github.slavaz:embedded-postgresql-maven-plugin:start
+    - pgrep -a postgres
+    - netstat -laputen | grep 55432
+  tags:
+    - tmpfs
+
 #build:with-tests:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
 #  stage: build
