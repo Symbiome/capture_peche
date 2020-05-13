@@ -20,6 +20,7 @@ build:start-pg:
   script:
     - cd fishola-backend
     - mvn clean com.github.slavaz:embedded-postgresql-maven-plugin:start
+    - which pgrep
     - pgrep -a postgres
     - netstat -laputen | grep 55432
   tags:
