@@ -18,7 +18,7 @@ build:start-pg:
   stage: build
   when: manual
   script:
-    - cd fishola-backen
+    - cd fishola-backend
     - mvn clean com.github.slavaz:embedded-postgresql-maven-plugin:start
     - pgrep -a postgres
     - netstat -laputen | grep 55432
