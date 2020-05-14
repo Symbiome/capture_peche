@@ -6,6 +6,18 @@
   "webDir": "target/dist",
   "cordova": {},
   "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1000,
+      "launchAutoHide": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "large",
+      "spinnerColor": "#1e9bc4",
+      "showSpinner": true,
+      "splashFullScreen": true,
+      "splashImmersive": true
+    }
+  },
   "server": {
     "hostname": "fishola.demo.codelutin.com"
   }
