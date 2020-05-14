@@ -5,8 +5,5 @@
   "npmClient": "npm",
   "webDir": "target/dist",
   "cordova": {},
-  "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
-  "server": {
-    "hostname": "fishola.demo.codelutin.com"
-  }
+  "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh"
 }
