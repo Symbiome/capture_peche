@@ -30,7 +30,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -49,7 +49,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Fishola a besoin de votre appareil photo pour vous permettre de partager les photos de vos prises</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Fishola a besoin d&apos;accéder à votre galerie pour vous permettre de partager les photos de vos prises</string>
+	<string>Fishola a besoin d'accéder à votre galerie pour vous permettre de partager les photos de vos prises</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
