@@ -1,0 +1,69 @@
+# DinD service is required for Testcontainers
+services:
+  - docker:dind
+
+variables:
+  # Instruct Testcontainers to use the daemon of DinD.
+  DOCKER_HOST: "tcp://docker:2375"
+  # Improve performance with overlayfs.
+  DOCKER_DRIVER: overlay2
+
+stages:
+- build
+- check-releasable
+- sonar
+
+build:compile-only:
+  image: maven:3.6-openjdk-11
+  stage: build
+  when: manual
+  script:
+    - mvn clean package -Dmaven.test.skip
+  tags:
+    - docker
+
+build:with-tests:
+  image: maven:3.6-openjdk-11
+  stage: build
+  script:
+    - mvn clean package
+  except:
+    - /^master.*$/
+    - /^release\/.*$/
+    - schedules
+  tags:
+    - docker
+
+#check-releasable:
+#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
+#  stage: check-releasable
+#  script:
+#    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
+#    - rm * .git* -rf || true
+#  only:
+#    - /^develop.*$/
+#  when: manual
+#  tags:
+#    - tmpfs
+#
+#daily-check-releasable:
+#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
+#  stage: check-releasable
+#  script:
+#    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
+#    - rm * .git* -rf || true
+#  only:
+#    - schedules
+#  tags:
+#    - tmpfs
+#
+#sonar_job:
+#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
+#  stage: sonar
+#  script:
+#    - mvn -e -U clean verify -Dmaven.test.skip -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar -Dsonar.host.url=https://qa.codelutin.com -Dsonar.projectKey=fr.afb:sispea -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
+#    - rm * .git* -rf || true
+#  only:
+#    - schedules
+#  tags:
+#    - tmpfs

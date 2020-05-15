@@ -35,12 +35,13 @@
     <jooqVersion>3.13.2</jooqVersion>
     <flywayVersion>6.4.1</flywayVersion>
     <postgresqlDriverVersion>42.2.12</postgresqlDriverVersion>
+    <testcontainersVersion>1.14.1</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
 <!--    <javaVersion>14</javaVersion>-->
     <!-- FIXME AThimel 22/01/2020 Pour l'instant on ne peut pas mettre Java 13 à cause de : https://github.com/mojohaus/extra-enforcer-rules/issues/80 et/ou https://github.com/mojohaus/extra-enforcer-rules/pull/93/ -->
-    <javaVersion>12</javaVersion>
+    <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
   </properties>
@@ -190,13 +191,13 @@
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
-        <version>1.12.5</version>
+        <version>${testcontainersVersion}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>postgresql</artifactId>
-        <version>1.12.5</version>
+        <version>${testcontainersVersion}</version>
         <scope>test</scope>
       </dependency>
 

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 class FisholaCustomMappersTest {
@@ -16,8 +17,8 @@ class FisholaCustomMappersTest {
         Assertions.assertEquals(6, parsed.get().getDayOfMonth());
         Assertions.assertEquals(5, parsed.get().getMonthValue());
         Assertions.assertEquals(2020, parsed.get().getYear());
-        // L'heure en String est en UTC, on la converti sur la TZ courante
-        Assertions.assertTrue(parsed.get().getHour() == 16 || parsed.get().getHour() == 17);
+        // L'heure en String est en UTC, on la converti sur la TZ de Paris
+        Assertions.assertEquals(17, parsed.get().atZone(ZoneId.of("Europe/Paris")).getHour());
         Assertions.assertEquals(49, parsed.get().getMinute());
     }
 
