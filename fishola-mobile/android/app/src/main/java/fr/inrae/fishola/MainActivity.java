@@ -1,4 +1,4 @@
-package fr.inra.fishola;
+package fr.inrae.fishola;
 
 import android.os.Bundle;
 
