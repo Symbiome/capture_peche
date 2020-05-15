@@ -1,6 +1,6 @@
 {
   "appId": "fr.inra.fishola",
-  "appName": "fishola",
+  "appName": "Fishola",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "target/dist",
@@ -8,14 +8,13 @@
   "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 1000,
+      "launchShowDuration": 2500,
       "launchAutoHide": true,
+      "androidScaleType": "CENTER_CROP",
       "androidSpinnerStyle": "large",
       "iosSpinnerStyle": "large",
       "spinnerColor": "#1e9bc4",
-      "showSpinner": true,
-      "splashFullScreen": true,
-      "splashImmersive": true
+      "showSpinner": true
     }
   }
 }
