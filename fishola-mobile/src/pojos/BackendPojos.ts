@@ -143,6 +143,7 @@ export interface Feedback {
     date?: Date;
     location?: string;
     locationTitle?: string;
+    device?: string;
 }
 
 export interface Dashboard {

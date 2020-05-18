@@ -64,6 +64,9 @@ import html2canvas from 'html2canvas';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+import { Plugins, CameraResultType } from '@capacitor/core';
+const { Device } = Plugins;
+
 @Component({
   components: {
     FisholaHeader,
@@ -80,7 +83,9 @@ export default class FeedbackModal extends Vue {
   // version:string = process.env.VUE_APP_VERSION;
   projectVersion:string = process.env.VUE_APP_PROJECT_VERSION;
   gitRevision:string = process.env.VUE_APP_GIT_REVISION;
-  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`
+  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`;
+
+  device:string = '';
 
   model:Feedback = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
   withPicture:boolean = false;
@@ -92,6 +97,10 @@ export default class FeedbackModal extends Vue {
   ];
 
   created() {
+
+    Device.getInfo()
+      .then(info => {this.device = JSON.stringify(info)});
+
   }
 
   mounted() {
@@ -188,6 +197,7 @@ export default class FeedbackModal extends Vue {
     this.addEnvInfo();
     this.model.date = new Date();
     this.model.location = window.location.href;
+    this.model.device = this.device;
     ProfileService.sendFeedback(this.model)
       .then(() => {
         this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');

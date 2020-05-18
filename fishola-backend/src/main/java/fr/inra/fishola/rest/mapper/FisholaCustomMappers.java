@@ -166,6 +166,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "location").ifPresent(builder::location);
             readText(node, "locationTitle").ifPresent(builder::locationTitle);
             readText(node, "date").flatMap(FisholaCustomMappers::readIso8601Date).ifPresent(builder::date);
+            readText(node, "device").ifPresent(builder::device);
             Feedback result = builder.build();
             return result;
         }

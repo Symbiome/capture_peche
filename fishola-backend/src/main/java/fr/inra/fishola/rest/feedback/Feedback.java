@@ -49,4 +49,6 @@ public interface Feedback {
 
     Optional<String> locationTitle();
 
+    Optional<String> device();
+
 }
