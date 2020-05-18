@@ -236,7 +236,6 @@
 
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
         <executions>
           <execution>
             <id>create-init-fishola-database</id>

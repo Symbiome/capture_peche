@@ -33,9 +33,9 @@
 
     <quarkus.version>1.4.2.Final</quarkus.version>
     <jooqVersion>3.13.2</jooqVersion>
-    <flywayVersion>6.4.1</flywayVersion>
+    <flywayVersion>6.4.2</flywayVersion>
     <postgresqlDriverVersion>42.2.12</postgresqlDriverVersion>
-    <testcontainersVersion>1.14.1</testcontainersVersion>
+    <testcontainersVersion>1.14.2</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
@@ -44,6 +44,7 @@
     <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
+    <antRunPluginVersion>3.0.0</antRunPluginVersion>
   </properties>
 
   <scm>
@@ -100,7 +101,7 @@
       <dependency>
         <groupId>org.immutables</groupId>
         <artifactId>value</artifactId>
-        <version>2.8.7</version>
+        <version>2.8.8</version>
       </dependency>
 
       <dependency>
