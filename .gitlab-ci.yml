@@ -43,7 +43,7 @@ build:android-debug:
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
+    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
     - unzip -d android-sdk-linux android-sdk.zip
     - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
     - echo y | android-sdk-linux/tools/bin/sdkmanager "platform-tools" >/dev/null
@@ -62,6 +62,19 @@ build:android-debug:
       - fishola-mobile/android/app/build/outputs/
   tags:
     - android
+
+build:ios-debug:
+  stage: build
+  when: manual
+  script:
+    - cd fishola-mobile/ios/App
+    - xcodebuild clean -project App.xcodeproj -scheme App | xcpretty
+    - pod install
+    - xcodebuild -scheme 
+  #  - xcodebuild clean archive -archivePath build/App -scheme App
+  #  - xcodebuild -exportArchive -exportFormat ipa -archivePath "build/App.xcarchive" -exportPath "build/App.ipa" -exportProvisioningProfile "fr.inrae.fishola"
+  tags:
+    - ios
 
 #check-releasable:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
