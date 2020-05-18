@@ -38,7 +38,7 @@ build:with-tests:
     - docker
 
 build:android-debug:
-  image: java-node
+  image: timbru31/java-node
   stage: build
   when: manual
   script:
