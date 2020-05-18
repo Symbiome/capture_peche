@@ -38,7 +38,7 @@ build:with-tests:
     - docker
 
 build:android-debug:
-  image: timbru31/java-node
+  image: registry.nuiton.org/codelutin/dockerfiles:debian-dev-java8
   stage: build
   when: manual
   script:
