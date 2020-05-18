@@ -56,7 +56,9 @@ build:android-debug:
     - set +o pipefail
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
-    - cd fishola-mobile/android
+    - cd fishola-mobile
+    - npm install
+    - cd android
     - ./gradlew assembleDebug
   artifacts:
     paths:
