@@ -6,13 +6,13 @@
                       v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
                       v-on:take-picture="takePicture" />
-      <!-- input type="file"
+      <input type="file"
              accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG"
              id="cameraInput"
              name="cameraInput"
              v-on:change="pictureTaken"
              style="display:none;"
-             ref="fileInput" -->
+             ref="fileInput">
     </div>
     <div class="edit-catch-page page">
       <div class="pane">
@@ -151,6 +151,7 @@ import DocumentationService from '@/services/DocumentationService';
 
 import { Plugins, CameraResultType } from '@capacitor/core';
 const { Camera } = Plugins;
+const { Device } = Plugins;
 
 @Component({
   components: {
@@ -168,6 +169,8 @@ export default class EditCatchView extends Vue {
 
   @Prop() tripId!:string;
   @Prop() catchId!:string;
+
+  platform:string = '';
 
   settings:UserSettings | null = null;
 
@@ -216,6 +219,9 @@ export default class EditCatchView extends Vue {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
+
+    Device.getInfo()
+      .then(info => {this.platform = info.platform});
   }
 
   mounted() {
@@ -352,42 +358,47 @@ export default class EditCatchView extends Vue {
 
   takePicture() {
     if (this.modifiable) {
-      // let input:any = this.$refs.fileInput;
-      // input.click();
-
-      Camera.getPhoto({
-          quality: 95,
-          allowEditing: false,
-          resultType: CameraResultType.DataUrl
-        }).then(image => {
-          var imageSrc = image.dataUrl;
-          if (imageSrc) {
-            this.pictureSrc = imageSrc;
-            this.newPictureTaken = true;
-          }
-        }, failure => {
-          console.error('Unable to use camera', failure);
-        });
-
+      if (this.platform == "web") {
+        // Si on est pas dans une APP on conserve le comportement avec le champ 'file'
+        let input:any = this.$refs.fileInput;
+        input.click();
+      } else {
+        Camera.getPhoto({
+            quality: 95,
+            allowEditing: false,
+            resultType: CameraResultType.DataUrl
+          }).then(
+            image => {
+              var imageSrc = image.dataUrl;
+              if (imageSrc) {
+                this.pictureSrc = imageSrc;
+                this.newPictureTaken = true;
+              }
+            },
+            failure => {
+              console.error('Unable to use camera', failure);
+            }
+          );
+      }
     }
   }
 
-  // readUploadedFile(file:any, callback: (fileContent:string) => void) {
-  //   var reader = new FileReader();
-  //   reader.onload = function readSuccess(loadEvt:any) {
-  //       let content:string = loadEvt.target.result;
-  //       callback(content);
-  //   };
-  //   reader.readAsDataURL(file);
-  // }
+  readUploadedFile(file:any, callback: (fileContent:string) => void) {
+    var reader = new FileReader();
+    reader.onload = function readSuccess(loadEvt:any) {
+        let content:string = loadEvt.target.result;
+        callback(content);
+    };
+    reader.readAsDataURL(file);
+  }
 
-  // pictureTaken(evt:any) {
-  //   let file = evt.srcElement.files[0];
-  //   this.readUploadedFile(file, (content:string) => {
-  //     this.pictureSrc = content;
-  //     this.newPictureTaken = true;
-  //   });
-  // }
+  pictureTaken(evt:any) {
+    let file = evt.srcElement.files[0];
+    this.readUploadedFile(file, (content:string) => {
+      this.pictureSrc = content;
+      this.newPictureTaken = true;
+    });
+  }
 
   @Watch('withSample')
   onWithSampleChanged(value: boolean, oldValue: boolean) {
