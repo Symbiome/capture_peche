@@ -38,7 +38,7 @@ build:with-tests:
     - docker
 
 build:android-debug:
-  image: openjdk:9-jdk
+  image: java-node
   stage: build
   when: manual
   script:
