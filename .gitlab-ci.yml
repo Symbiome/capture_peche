@@ -38,6 +38,7 @@ build:with-tests:
     - docker
 
 build:android-debug:
+  image: openjdk:8-jdk
   stage: build
   when: manual
   script:
