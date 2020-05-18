@@ -60,6 +60,8 @@ build:android-debug:
   artifacts:
     paths:
       - fishola-mobile/android/app/build/outputs/
+  tags:
+    - android
 
 #check-releasable:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
