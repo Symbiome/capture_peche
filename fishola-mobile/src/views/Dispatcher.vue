@@ -14,6 +14,9 @@ import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+import { Plugins } from '@capacitor/core';
+const { SplashScreen } = Plugins;
+
 @Component({
   components: {}
 })
@@ -34,9 +37,11 @@ export default class DispatcherView extends Vue {
         (profile) => {
           this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
           router.push('trips');
+          SplashScreen.hide();
         },
         (status) => {
           router.push('/login');
+          SplashScreen.hide();
         }
       );
 
