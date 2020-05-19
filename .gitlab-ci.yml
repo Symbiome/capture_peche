@@ -20,6 +20,11 @@ stages:
 build:compile-only:
   image: maven:3.6-openjdk-11
   stage: build
+  # Cache modules in between jobs (required so that android can use)
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+    - .npm/
   script:
     - mvn clean package -Dmaven.test.skip
   except:
