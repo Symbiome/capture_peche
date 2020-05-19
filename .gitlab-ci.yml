@@ -15,17 +15,19 @@ stages:
 - build
 - check-releasable
 - sonar
+- build-mobile
 
 build:compile-only:
   image: maven:3.6-openjdk-11
   stage: build
-  when: manual
   script:
     - mvn clean package -Dmaven.test.skip
+  except:
+    - /^develop.*$/
   tags:
     - docker
 
-build:with-tests:
+build:compile-with-tests:
   image: maven:3.6-openjdk-11
   stage: build
   script:
@@ -37,9 +39,10 @@ build:with-tests:
   tags:
     - docker
 
-build:android-debug:
-  image: registry.nuiton.org/codelutin/dockerfiles:debian-dev-java8
-  stage: build
+# must be run after the build stage
+build:android:
+  image: openjdk:9-jdk
+  stage: build-mobile
   when: manual
   script:
     - apt-get --quiet update --yes
@@ -57,27 +60,26 @@ build:android-debug:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - npm install
     - cd android
-    - ./gradlew assembleDebug
+    - ./gradlew assembleRelease
   artifacts:
     paths:
       - fishola-mobile/android/app/build/outputs/
   tags:
     - android
 
-build:ios-debug:
-  stage: build
-  when: manual
-  script:
-    - cd fishola-mobile/ios/App
-    - xcodebuild clean -project App.xcodeproj -scheme App | xcpretty
-    - pod install
-    - xcodebuild -scheme 
-  #  - xcodebuild clean archive -archivePath build/App -scheme App
-  #  - xcodebuild -exportArchive -exportFormat ipa -archivePath "build/App.xcarchive" -exportPath "build/App.ipa" -exportProvisioningProfile "fr.inrae.fishola"
-  tags:
-    - ios
+#build:ios:
+#  stage: build
+#  when: manual
+#  script:
+#    - cd fishola-mobile/ios/App
+#    - xcodebuild clean -project App.xcodeproj -scheme App | xcpretty
+#    - pod install
+#    - xcodebuild -workspace App.xcworkspace -scheme App clean archive -configuration release -sdk iphoneos -archivePath App.xcarchive
+#    - xcodebuild -exportArchive -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath Fishola.ipa
+#
+#  tags:
+#    - ios
 
 #check-releasable:
 #  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
