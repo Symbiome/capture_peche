@@ -11,6 +11,7 @@
         android:theme="@style/AppTheme">
 
         <activity
+            android:screenOrientation="sensorPortrait"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
             android:name="fr.inrae.fishola.MainActivity"
             android:label="@string/title_activity_main"
