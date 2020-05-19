@@ -47,6 +47,10 @@ build:compile-with-tests:
 build:android:
   image: openjdk:9-jdk
   stage: build-mobile
+  cache:
+    paths:
+      - fishola-mobile/node_modules
+      - fishola-mobile/target/dist
   script:
     # devrait contenir les dossiers node*
     - ls -al fishola-mobile
