@@ -22,6 +22,7 @@ build:compile-only:
   stage: build
   cache:
     paths:
+      - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist
   script:
@@ -49,13 +50,10 @@ build:android:
   stage: build-mobile
   cache:
     paths:
+      - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist
   script:
-    # devrait contenir les dossiers node*
-    - ls -al fishola-mobile
-    # devrait contenir le dossier dist
-    - ls -al fishola-mobile/target
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
     - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
@@ -70,7 +68,9 @@ build:android:
     - set +o pipefail
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
-    - cd fishola-mobile/android
+    - cd fishola-mobile
+    - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
+    - cd android
     - ./gradlew assembleRelease
   artifacts:
     paths:
