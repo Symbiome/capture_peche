@@ -23,7 +23,8 @@ build:compile-only:
   script:
     - mvn clean package -Dmaven.test.skip
   except:
-    - /^develop.*$/
+    refs:
+    - develop
   tags:
     - docker
 
@@ -32,10 +33,9 @@ build:compile-with-tests:
   stage: build
   script:
     - mvn clean package
-  except:
-    - /^master.*$/
-    - /^release\/.*$/
-    - schedules
+  only:
+    refs:
+    - develop
   tags:
     - docker
 
@@ -43,7 +43,6 @@ build:compile-with-tests:
 build:android:
   image: openjdk:9-jdk
   stage: build-mobile
-  when: manual
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
