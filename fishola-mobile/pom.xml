@@ -41,17 +41,6 @@
           </execution>
 
           <execution>
-            <id>configurate npm cache location</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-           <!-- required to make android & ios build find node_modules/@capacitor/android/capacitor  -->
-            <configuration>
-              <arguments>ci --cache .npm --prefer-offline</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
             <id>npm install</id>
             <goals>
               <goal>npm</goal>
