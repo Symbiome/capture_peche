@@ -45,6 +45,7 @@
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
     <antRunPluginVersion>3.0.0</antRunPluginVersion>
+    <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
   </properties>
 
   <scm>
