@@ -20,6 +20,9 @@ stages:
 build:compile-only:
   image: maven:3.6-openjdk-11
   stage: build
+  cache:
+    paths:
+      - fishola-mobile/node_modules
   script:
     - mvn clean package -Dmaven.test.skip
   except:
