@@ -13,9 +13,9 @@ variables:
 
 stages:
 - build
+- build-mobile
 - check-releasable
 - sonar
-- build-mobile
 
 build:compile-only:
   image: maven:3.6-openjdk-11
@@ -36,13 +36,18 @@ build:compile-only:
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
   stage: build
+  cache:
+    paths:
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
+      - fishola-mobile/target/dist
   script:
     - mvn clean package
   only:
     refs:
     - develop
   tags:
-    - docker
+    - sticky
 
 # must be run after the build stage
 build:android:
