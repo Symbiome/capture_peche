@@ -30,7 +30,7 @@ build:compile-only:
     refs:
     - develop
   tags:
-    - android
+    - sticky
 
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
@@ -72,7 +72,7 @@ build:android:
     paths:
       - fishola-mobile/android/app/build/outputs/
   tags:
-    - android
+    - sticky
 
 #build:ios:
 #  stage: build
