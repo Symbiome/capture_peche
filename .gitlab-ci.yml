@@ -23,13 +23,14 @@ build:compile-only:
   cache:
     paths:
       - fishola-mobile/node_modules
+      - fishola-mobile/target/dist
   script:
     - mvn clean package -Dmaven.test.skip
   except:
     refs:
     - develop
   tags:
-    - docker
+    - android
 
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
@@ -49,6 +50,8 @@ build:android:
   script:
     # devrait contenir les dossiers node*
     - ls -al fishola-mobile
+    # devrait contenir le dossier dist
+    - ls -al fishola-mobile/target
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
     - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
