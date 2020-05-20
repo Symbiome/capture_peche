@@ -15,21 +15,9 @@ class ReferentialResourceTest {
                 .when().get("/api/v1/referential/lakes")
                 .then()
                 .statusCode(200)
-                .body(CoreMatchers.containsString("\"Lac d'Annecy\""));
-        given()
-                .when().get("/api/v1/referential/lakes")
-                .then()
-                .statusCode(200)
-                .body(CoreMatchers.containsString("\"Léman\""));
-        given()
-                .when().get("/api/v1/referential/lakes")
-                .then()
-                .statusCode(200)
-                .body(CoreMatchers.containsString("\"Lac du Bourget\""));
-        given()
-                .when().get("/api/v1/referential/lakes")
-                .then()
-                .statusCode(200)
+                .body(CoreMatchers.containsString("\"Lac d'Annecy\""))
+                .body(CoreMatchers.containsString("\"Léman\""))
+                .body(CoreMatchers.containsString("\"Lac du Bourget\""))
                 .body(CoreMatchers.containsString("\"Lac d'Aiguebelette\""));
     }
 
