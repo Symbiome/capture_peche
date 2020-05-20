@@ -24,81 +24,90 @@ export default class GeolocationService extends AbstractFisholaService {
 
     static getPosition():Promise<GeolocationPosition> {
 
-        return new Promise<any>((resolve, reject) => {
+        let isNotSecured:boolean = (window.location.protocol == 'http:');
 
-            console.log("Before getCurrentPosition", new Date());
+        if (isNotSecured) {
 
-            let positionPromise:Promise<GeolocationPosition> = Geolocation.getCurrentPosition({
-                enableHighAccuracy: false,
-                maximumAge: 20,
-                timeout: 10000
+            return Promise.reject("Pas de Geolocation hors contexte sécurisé");
+
+        } else {
+
+            return new Promise<any>((resolve, reject) => {
+
+                console.log("Before getCurrentPosition", new Date());
+
+                let positionPromise:Promise<GeolocationPosition> = Geolocation.getCurrentPosition({
+                    enableHighAccuracy: false,
+                    maximumAge: 20,
+                    timeout: 10000
+                });
+                positionPromise.then(
+                    (position:GeolocationPosition) => {
+
+                        console.log("Got currentPosition", new Date());
+                        console.log("position", JSON.stringify(position));
+                        resolve(position);
+                        /* enableHighAccuracy: true
+                        {
+                            "coords":{
+                                "latitude":47.1552435,
+                                "longitude":-1.5262437,
+                                "accuracy":21.48699951171875,
+                                "altitude":77.79999542236328,
+                                "altitudeAccuracy":2,
+                                "speed":0.0025068377144634724,
+                                "heading":315.3136291503906
+                            },
+                            "timestamp":1589819559643
+                        }
+
+                        */
+
+                        /* enableHighAccuracy: false
+                        {
+                            "coords":{
+                                "latitude":47.1552424,
+                                "longitude":-1.5262452,
+                                "accuracy":21.347000122070312,
+                                "altitude":77.79999542236328,
+                                "altitudeAccuracy":2,
+                                "speed":0.012332512997090816,
+                                "heading":274.6920471191406
+                            },
+                            "timestamp":1589819653984
+                        }
+                        */
+                    },
+                    (failure) => {
+                        console.error("Unable to get current position", failure);
+                        reject(failure);
+                    })
+
+                // if (!navigator.geolocation) {
+                //     return Promise.reject("Geoloc non supportée par le navigateur");
+                // }
+                // return new Promise<any>((resolve, reject) => {
+                //     navigator.geolocation.getCurrentPosition(resolve, reject);
+                // });
+
+                /* De base :
+
+                    GeolocationPosition {
+                        coords: { (GeolocationCoordinates)
+                            accuracy: 22.951000213623047
+                            altitude: 77.5
+                            altitudeAccuracy: null
+                            heading: 263.546142578125
+                            latitude: 47.1552407
+                            longitude: -1.5262464
+                            speed: 0.0011239566374570131
+                        }
+                        timestamp: 1589884798399 (number)
+                    }
+
+                */
             });
-            positionPromise.then(
-                (position:GeolocationPosition) => {
-
-                    console.log("Got currentPosition", new Date());
-                    console.log("position", JSON.stringify(position));
-                    resolve(position);
-                    /* enableHighAccuracy: true
-                    {
-                        "coords":{
-                            "latitude":47.1552435,
-                            "longitude":-1.5262437,
-                            "accuracy":21.48699951171875,
-                            "altitude":77.79999542236328,
-                            "altitudeAccuracy":2,
-                            "speed":0.0025068377144634724,
-                            "heading":315.3136291503906
-                        },
-                        "timestamp":1589819559643
-                    }
-
-                    */
-
-                    /* enableHighAccuracy: false
-                    {
-                        "coords":{
-                            "latitude":47.1552424,
-                            "longitude":-1.5262452,
-                            "accuracy":21.347000122070312,
-                            "altitude":77.79999542236328,
-                            "altitudeAccuracy":2,
-                            "speed":0.012332512997090816,
-                            "heading":274.6920471191406
-                        },
-                        "timestamp":1589819653984
-                    }
-                    */
-                },
-                (failure) => {
-                    console.error("Unable to get current position", failure);
-                    reject(failure);
-                })
-
-            // if (!navigator.geolocation) {
-            //     return Promise.reject("Geoloc non supportée par le navigateur");
-            // }
-            // return new Promise<any>((resolve, reject) => {
-            //     navigator.geolocation.getCurrentPosition(resolve, reject);
-            // });
-
-            /* De base :
-
-                GeolocationPosition {
-                    coords: { (GeolocationCoordinates)
-                        accuracy: 22.951000213623047
-                        altitude: 77.5
-                        altitudeAccuracy: null
-                        heading: 263.546142578125
-                        latitude: 47.1552407
-                        longitude: -1.5262464
-                        speed: 0.0011239566374570131
-                    }
-                    timestamp: 1589884798399 (number)
-                }
-
-            */
-        });
+        }
 
     }
 
