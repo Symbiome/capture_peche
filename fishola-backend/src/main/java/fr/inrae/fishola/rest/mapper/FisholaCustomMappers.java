@@ -33,19 +33,15 @@ import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.TimeZone;
 
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
@@ -126,37 +122,11 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
-    protected static Optional<LocalDateTime> readIso8601DateBuiltIn(String dateString) {
-        System.out.println(">>>>> readIso8601DateBuiltIn <<<<<");
-        try {
-            TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(dateString);
-            System.out.println("temporalAccessor: " + temporalAccessor);
-            Instant instant = Instant.from(temporalAccessor);
-            System.out.println("instant: " + instant);
-            ZoneId zoneId = ZoneId.systemDefault();
-            System.out.println("zoneId: " + zoneId);
-            ZonedDateTime zonedDateTime = instant.atZone(zoneId);
-            System.out.println("zonedDateTime: " + zonedDateTime);
-            LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
-            System.out.println("localDateTime: " + localDateTime);
-            Optional<LocalDateTime> result = Optional.of(localDateTime);
-            return result;
-        } catch (Exception eee) {
-            log.error("Unable to read date: " + dateString, eee);
-            return Optional.empty();
-        }
-    }
-
     protected static Optional<LocalDateTime> readIso8601AtZone(String dateString, ZoneId zoneId) {
-        System.out.println(">>>>> readIso8601AtZone <<<<<");
         try {
             Optional<Instant> instant = iso8601ToInstant(dateString);
-            System.out.println("instant: " + instant);
-            System.out.println("zoneId: " + zoneId);
             Optional<ZonedDateTime> zonedDateTime = instant.map(i -> i.atZone(zoneId));
-            System.out.println("zonedDateTime: " + zonedDateTime);
             Optional<LocalDateTime> localDateTime = zonedDateTime.map(ZonedDateTime::toLocalDateTime);
-            System.out.println("localDateTime: " + localDateTime);
             return localDateTime;
         } catch (Exception eee) {
             log.error("Unable to read date: " + dateString, eee);
@@ -165,36 +135,10 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     }
 
     protected static Optional<Instant> iso8601ToInstant(String dateString) {
-        System.out.println(">>>>> iso8601ToInstant <<<<<");
         try {
             TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(dateString);
-            System.out.println("temporalAccessor: " + temporalAccessor);
             Instant instant = Instant.from(temporalAccessor);
-            System.out.println("instant: " + instant);
             Optional<Instant> result = Optional.of(instant);
-            return result;
-        } catch (Exception eee) {
-            log.error("Unable to read date: " + dateString, eee);
-            return Optional.empty();
-        }
-    }
-
-    protected static Optional<LocalDateTime> readIso8601Date(String dateString) {
-        System.out.println(">>>>> readIso8601Date <<<<<");
-        DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
-        try {
-            Date date = iso8601Format.parse(dateString);
-            System.out.println("date: " + date);
-            Instant instant = date.toInstant();
-            System.out.println("instant: " + instant);
-            ZoneId zoneId = ZoneId.systemDefault();
-            System.out.println("zoneId: " + zoneId);
-            ZonedDateTime zonedDateTime = instant.atZone(zoneId);
-            System.out.println("zonedDateTime: " + zonedDateTime);
-            LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
-            System.out.println("localDateTime: " + localDateTime);
-            Optional<LocalDateTime> result = Optional.of(localDateTime);
             return result;
         } catch (Exception eee) {
             log.error("Unable to read date: " + dateString, eee);
@@ -229,7 +173,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "backendVersion").ifPresent(builder::backendVersion);
             readText(node, "location").ifPresent(builder::location);
             readText(node, "locationTitle").ifPresent(builder::locationTitle);
-            readText(node, "date").flatMap(FisholaCustomMappers::readIso8601DateBuiltIn).ifPresent(builder::date);
+            readText(node, "date").flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::date);
             readText(node, "device").ifPresent(builder::device);
             Feedback result = builder.build();
             return result;
