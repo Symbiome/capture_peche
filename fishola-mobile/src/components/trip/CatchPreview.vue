@@ -13,6 +13,7 @@
         </div>
         <div class="meta-row">
           {{techniqueLabel}}
+          <span v-if="aCatch.keep"> - conservé</span>
           <span v-if="!aCatch.keep"> - relâché</span>
         </div>
       </div>
