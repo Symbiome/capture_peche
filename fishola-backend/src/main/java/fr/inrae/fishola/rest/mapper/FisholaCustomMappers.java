@@ -128,8 +128,6 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     protected static Optional<LocalDateTime> readIso8601DateBuiltIn(String dateString) {
         System.out.println(">>>>> readIso8601DateBuiltIn <<<<<");
-        DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        iso8601Format.setTimeZone(TimeZone.getTimeZone("UTC"));
         try {
             TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(dateString);
             System.out.println("temporalAccessor: " + temporalAccessor);
@@ -142,6 +140,38 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
             System.out.println("localDateTime: " + localDateTime);
             Optional<LocalDateTime> result = Optional.of(localDateTime);
+            return result;
+        } catch (Exception eee) {
+            log.error("Unable to read date: " + dateString, eee);
+            return Optional.empty();
+        }
+    }
+
+    protected static Optional<LocalDateTime> readIso8601AtZone(String dateString, ZoneId zoneId) {
+        System.out.println(">>>>> readIso8601AtZone <<<<<");
+        try {
+            Optional<Instant> instant = iso8601ToInstant(dateString);
+            System.out.println("instant: " + instant);
+            System.out.println("zoneId: " + zoneId);
+            Optional<ZonedDateTime> zonedDateTime = instant.map(i -> i.atZone(zoneId));
+            System.out.println("zonedDateTime: " + zonedDateTime);
+            Optional<LocalDateTime> localDateTime = zonedDateTime.map(ZonedDateTime::toLocalDateTime);
+            System.out.println("localDateTime: " + localDateTime);
+            return localDateTime;
+        } catch (Exception eee) {
+            log.error("Unable to read date: " + dateString, eee);
+            return Optional.empty();
+        }
+    }
+
+    protected static Optional<Instant> iso8601ToInstant(String dateString) {
+        System.out.println(">>>>> iso8601ToInstant <<<<<");
+        try {
+            TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(dateString);
+            System.out.println("temporalAccessor: " + temporalAccessor);
+            Instant instant = Instant.from(temporalAccessor);
+            System.out.println("instant: " + instant);
+            Optional<Instant> result = Optional.of(instant);
             return result;
         } catch (Exception eee) {
             log.error("Unable to read date: " + dateString, eee);
