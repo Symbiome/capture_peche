@@ -53,6 +53,7 @@ build:compile-with-tests:
 build:android:
   image: openjdk:9-jdk
   stage: build-mobile
+  when: manual
   cache:
     paths:
       - fishola-mobile/node
