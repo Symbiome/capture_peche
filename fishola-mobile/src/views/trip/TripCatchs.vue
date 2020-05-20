@@ -4,7 +4,10 @@
     <div class="edit-trip-catchs-page page">
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
-        <h1>{{duration}}</h1>
+        <h1>
+          {{duration}}
+          <Running/>
+        </h1>
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
             <CatchPreviewList v-if="ready"
@@ -39,6 +42,7 @@ import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/services/Helpers';
 
+import Running from '@/components/common/Running.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
@@ -51,6 +55,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    Running,
     CatchPreviewList,
     FisholaFooter
   }
@@ -102,9 +107,9 @@ export default class TripCatchsView extends Vue {
     if (this.trip! && this.trip!.startedAt) {
       let seconds;
       if (this.id == Constants.RUNNING_ID) {
-        this.duration = Helpers.renderDuration(this.trip!.startedAt);
+        this.duration = Helpers.renderDurationNoSeconds(this.trip!.startedAt);
       } else {
-        this.duration = Helpers.renderDuration(this.trip!.startedAt, this.trip!.finishedAt);
+        this.duration = Helpers.renderDurationNoSeconds(this.trip!.startedAt, this.trip!.finishedAt);
       }
     }
   }

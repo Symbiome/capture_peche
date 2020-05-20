@@ -8,6 +8,7 @@
     <div class="running-overlay-bar">
       <div class="left">
         {{label}}
+        <Running v-if="live" :negative="true"/>
       </div>
       <div class="right" v-on:click="finish">
         Fin <i class="icon icon-stop"/>
@@ -27,7 +28,13 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import TripMain from '@/pojos/TripMain';
 import Helpers from '@/services/Helpers';
 
-@Component
+import Running from '@/components/common/Running.vue'
+
+@Component({
+  components: {
+    Running
+  }
+})
 export default class RunningOverlay extends Vue {
 
   label: string = '';
@@ -35,6 +42,7 @@ export default class RunningOverlay extends Vue {
 
   trip?:TripMain;
   interval?:number;
+  live:boolean = true;
 
   mounted() {
     TripsService.getRunningTrip()
@@ -48,7 +56,8 @@ export default class RunningOverlay extends Vue {
   tripLoaded(trip:TripMain) {
     this.trip = trip;
 
-    if (trip.mode == 'Live') {
+    this.live = trip.mode == 'Live';
+    if (this.live) {
       this.startedAt = trip.startedAt;
       this.computeDuration();
       this.interval = setInterval(this.computeDuration, 1000);
@@ -59,7 +68,7 @@ export default class RunningOverlay extends Vue {
   }
 
   computeDuration() {
-    this.label = Helpers.renderDuration(this.startedAt);
+    this.label = Helpers.renderDurationNoSeconds(this.startedAt);
   }
 
   goToRunningTrip() {

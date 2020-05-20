@@ -5,7 +5,13 @@ export default class Helpers {
 
     static renderDuration(startedAt:string, finishedAt?:string):string {
         let duration = this.computeDuration(startedAt, finishedAt);
-        let result = this.formatDuration(duration);
+        let result = this.formatDuration(duration, true);
+        return result;
+    }
+
+    static renderDurationNoSeconds(startedAt:string, finishedAt?:string):string {
+        let duration = this.computeDuration(startedAt, finishedAt);
+        let result = this.formatDuration(duration, false);
         return result;
     }
 
@@ -40,7 +46,7 @@ export default class Helpers {
         return result;
     }
 
-    static formatDuration(duration:moment.Duration):string {
+    static formatDuration(duration:moment.Duration, includeSeconds?:boolean):string {
 
         let result = '';
         if (duration.days() > 0) {
@@ -52,12 +58,12 @@ export default class Helpers {
         if (duration.minutes() > 0) {
             result += duration.minutes() + 'min ';
         }
-        if (duration.seconds() > 0) {
+        if (includeSeconds && duration.seconds() > 0) {
             result += duration.seconds() + 's ';
         }
 
         if (result == '') {
-            result = '0s';
+            result = '0' + (includeSeconds ? 's':'min');
         }
 
         return result;
