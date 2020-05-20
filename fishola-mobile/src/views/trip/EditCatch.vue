@@ -68,8 +68,8 @@
                       v-bind:error="techniqueIdError"
                       v-bind:readonly="!modifiable"/>
           <FormTextarea name="description"
-                        label="Description (optionnelle)"
-                        placeholder="Écrivez une description"
+                        label="Observation (optionnelle)"
+                        placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
                         v-model="aCatch.description"
                         v-bind:readonly="!modifiable"/>
           <FormInput name="caughtAt"
