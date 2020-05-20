@@ -83,7 +83,7 @@ CREATE TABLE trip (
     end_time TIME WITHOUT TIME ZONE NOT NULL,
     type trip_type NOT NULL,
     lake_id UUID REFERENCES lake(id) NOT NULL,
-    weather_id UUID REFERENCES weather(id) NOT NULL,
+    weather_id UUID REFERENCES weather(id),
     hidden BOOLEAN NOT NULL DEFAULT false,
     begin_latitude DOUBLE PRECISION,
     begin_longitude DOUBLE PRECISION,

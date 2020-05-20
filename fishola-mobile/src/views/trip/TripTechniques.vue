@@ -67,7 +67,6 @@ export default class TripTechniquesView extends Vue {
     date: new Date(),
     startedAt: '',
     finishedAt: '',
-    weatherId: '',
     catchs: [],
     otherSpecies: '',
     techniqueIds:[]

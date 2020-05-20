@@ -8,7 +8,6 @@ import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
-import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.JwtHelper;
@@ -42,7 +41,6 @@ public class TripResourceTest extends AbstractFisholaTest {
     protected JwtHelper jwtHelper;
 
     protected List<Lake> lakes;
-    protected List<Weather> weathers;
     protected List<Species> species;
     protected List<Technique> techniques;
     protected String token;
@@ -51,7 +49,6 @@ public class TripResourceTest extends AbstractFisholaTest {
     @Transactional
     public void loadReferentials() {
         this.lakes = referentialDao.listLakes();
-        this.weathers = referentialDao.listWeathers();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
     }
@@ -91,7 +88,6 @@ public class TripResourceTest extends AbstractFisholaTest {
         trip.startedAt = "00:00";
         trip.finishedAt = "00:01";
         trip.lakeId = this.lakes.iterator().next().getId();
-        trip.weatherId = this.weathers.iterator().next().getId();
         trip.name = "Whatever";
         trip.type = TripType.Craft;
         trip.mode = TripMode.Live;

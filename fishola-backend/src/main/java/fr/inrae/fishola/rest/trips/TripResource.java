@@ -176,8 +176,8 @@ public class TripResource extends AbstractFisholaResource {
         entity.setType(trip.type);
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
-        entity.setWeatherId(trip.weatherId);
 
+        trip.weatherId.ifPresent(entity::setWeatherId);
         trip.beginLatitude.ifPresent(entity::setBeginLatitude);
         trip.beginLongitude.ifPresent(entity::setBeginLongitude);
         trip.endLatitude.ifPresent(entity::setEndLatitude);
@@ -272,7 +272,7 @@ public class TripResource extends AbstractFisholaResource {
         existingTrip.setType(trip.type);
         existingTrip.setMode(trip.mode);
         existingTrip.setOwnerId(userId);
-        existingTrip.setWeatherId(trip.weatherId);
+        existingTrip.setWeatherId(trip.weatherId.orElse(null));
 
         // On ne met pas à jour les coordonnées de début/fin de sortie car ce n'est pas modifiable dans l'application
 
@@ -459,7 +459,7 @@ public class TripResource extends AbstractFisholaResource {
         result.date = entity.getDay();
         result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
         result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        result.weatherId = entity.getWeatherId();
+        result.weatherId = Optional.ofNullable(entity.getWeatherId());
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);
         result.techniqueIds = tripsDao.getTripTechniques(tripId);

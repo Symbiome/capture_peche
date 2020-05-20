@@ -31,7 +31,7 @@ export interface TripBean {
     date: Date;
     startedAt: string;
     finishedAt: string;
-    weatherId: string;
+    weatherId?: string;
     catchs: CatchBean[];
     techniqueIds: string[];
     beginLatitude?: number;

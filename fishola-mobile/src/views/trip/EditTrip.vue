@@ -102,7 +102,6 @@ export default class EditTripView extends Vue {
     date: new Date(),
     startedAt: '',
     finishedAt: '',
-    weatherId: '',
     catchs: [],
     otherSpecies: '',
     techniqueIds:[]

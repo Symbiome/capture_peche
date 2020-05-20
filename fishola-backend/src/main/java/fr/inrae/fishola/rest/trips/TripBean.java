@@ -24,7 +24,7 @@ public class TripBean {
     public LocalDate date;
     public String startedAt;
     public String finishedAt;
-    public UUID weatherId;
+    public Optional<UUID> weatherId = Optional.empty();
     public List<CatchBean> catchs;
     public Set<UUID> techniqueIds;
     public Optional<Double> beginLatitude = Optional.empty();

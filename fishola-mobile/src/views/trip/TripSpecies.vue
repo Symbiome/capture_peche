@@ -165,9 +165,9 @@ export default class TripSpeciesView extends Vue {
   }
 
   summaryNotYetSaved(tripAsAny:any) {
-    // Si on a pas encore d'identifiant de météo c'est qu'on est pas
-    // encore passé par la sauvegarde sur l'écran de résumé
-    return !tripAsAny.weatherId;
+    // Si on a pas encore la liste des techniques c'est qu'on est pas
+    // encore passé par la sauvegarde sur l'écran de résumé #JoeLaBidouille
+    return !tripAsAny.techniqueIds;
   }
 
   tripSaved(savedId:string) {

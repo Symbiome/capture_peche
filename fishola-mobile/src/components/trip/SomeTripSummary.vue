@@ -32,7 +32,7 @@
                 v-bind:error="finishedAtError"
                 v-bind:readonly="readonly"/>
     <FormSelect name="weather"
-                label="Météo"
+                label="Météo (optionnelle)"
                 v-bind:options="allWeathers"
                 orderBy="name"
                 v-model="trip.weatherId"
@@ -124,6 +124,11 @@ export default class SomeTripSummary extends Vue {
 
   referentialsLoaded(data:LakesWeathersTripTypesSpeciesAndTechniques) {
     data.lakes.forEach((lake) => this.allLakes.push(lake));
+    this.allWeathers.push({
+      id:'__none__',
+      name:'',
+      exportAs:''
+    });
     data.weathers.forEach((weather) => this.allWeathers.push(weather));
     data.tripTypes.forEach((type) => this.allTripTypes.push(type));
     data.techniques.forEach((technique) => this.allTechniques.push(technique));
@@ -132,6 +137,10 @@ export default class SomeTripSummary extends Vue {
   }
 
   tripLoaded(someTrip:TripSummary) {
+
+    if (!someTrip.weatherId || someTrip.weatherId == null) {
+      someTrip.weatherId = '__none__';
+    }
 
     if (someTrip.date) {
       if (this.readonly) {
@@ -238,16 +247,20 @@ export default class SomeTripSummary extends Vue {
       hasError = true;
     }
 
-    if (this.trip!.weatherId) {
-      this.weatherIdError = '';
-    } else {
-      hasError = true;
-      this.weatherIdError = 'Vous devez préciser la météo';
-    }
+    // if (this.trip!.weatherId) {
+    //   this.weatherIdError = '';
+    // } else {
+    //   hasError = true;
+    //   this.weatherIdError = 'Vous devez préciser la météo';
+    // }
 
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
+
+      if (this.trip!.weatherId == '__none__') {
+        delete this.trip!.weatherId;
+      }
       // On émet au parent le modèle mis à jour
       this.$emit('trip-modified', this.trip!);
     }
