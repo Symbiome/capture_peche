@@ -316,14 +316,14 @@ export default class EditCatchView extends Vue {
             id: name,
             name: name,
             builtIn: false,
-            mandatorySize: true,
+            mandatorySize: false,
             authorizedSample: false
           };
           this.allSpecies.push(customSpecies);
       });
     }
     this.allSpecies = Vue.lodash.orderBy(this.allSpecies, 'name');
-    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: true, authorizedSample: false});
+    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: false, authorizedSample: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
