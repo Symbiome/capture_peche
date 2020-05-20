@@ -7,11 +7,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t inra/fishola-rest-jvm .
+# docker build -f src/main/docker/Dockerfile.jvm -t inrae/fishola-rest-jvm .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 inra/fishola-rest-jvm
+# docker run -i --rm -p 8080:8080 inrae/fishola-rest-jvm
 #
 ###
 FROM fabric8/java-alpine-openjdk8-jre

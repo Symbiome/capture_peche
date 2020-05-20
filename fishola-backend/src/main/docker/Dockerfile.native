@@ -7,11 +7,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t inra/fishola-rest .
+# docker build -f src/main/docker/Dockerfile.native -t inrae/fishola-rest .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 inra/fishola-rest
+# docker run -i --rm -p 8080:8080 inrae/fishola-rest
 #
 ###
 FROM registry.access.redhat.com/ubi8/ubi-minimal

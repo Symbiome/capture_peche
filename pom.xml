@@ -11,7 +11,7 @@
     <version>11.7</version>
   </parent>
 
-  <groupId>fr.inra</groupId>
+  <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
@@ -49,9 +49,9 @@
   </properties>
 
   <scm>
-    <url>https://gitlab.nuiton.org/inra/fishola</url>
-    <connection>scm:git:git@gitlab.nuiton.org:inra/fishola.git</connection>
-    <developerConnection>scm:git:git@gitlab.nuiton.org:inra/fishola.git</developerConnection>
+    <url>https://gitlab.nuiton.org/inrae/fishola</url>
+    <connection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</connection>
+    <developerConnection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</developerConnection>
   </scm>
 
   <prerequisites>

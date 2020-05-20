@@ -7,11 +7,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.demo -t inra/fishola-backend:demo .
+# docker build -f src/main/docker/Dockerfile.demo -t inrae/fishola-backend:demo .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 --name fishola-backend inra/fishola-backend:demo
+# docker run -i --rm -p 8080:8080 --name fishola-backend inrae/fishola-backend:demo
 #
 ###
 FROM openjdk:14
