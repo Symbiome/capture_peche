@@ -1,5 +1,5 @@
 <template>
-  <div class="header-title">
+  <div class="header-title" v-on:click="goHome">
     <img src="img/logo-small.svg" alt="Fishola" />
     <span v-if="envName" class="env">({{envName}})</span>
     <!--
@@ -12,10 +12,16 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+import router from '@/router';
+
 @Component
 export default class Title extends Vue {
 
   envName?:string = process.env.VUE_APP_ENV;
+
+  goHome() {
+    router.push('/trips');
+  }
 
 }
 </script>
