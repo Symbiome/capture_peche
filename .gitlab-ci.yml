@@ -86,10 +86,11 @@ build:android:
     - cd fishola-mobile
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
+    - ./gradlew clean
     - ./gradlew assembleRelease
   artifacts:
     paths:
-      - fishola-mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk
+      - fishola-mobile/android/app/build/outputs/apk/release/
   tags:
     - sticky
 
