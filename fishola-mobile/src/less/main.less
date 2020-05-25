@@ -2,10 +2,11 @@
 @import "_font";
 @import "_icons";
 
-@header-height: 40px;
+@header-height: calc(40px + env(safe-area-inset-top));
 @secondary-header-height: 40px;
-@footer-height: 76px;
-
+@footer-height: calc(76px + env(safe-area-inset-bottom));
+@feedback-top: calc(50px + env(safe-area-inset-top));
+@toaster-height: calc(50px + env(safe-area-inset-top));
 button {
   cursor: pointer;
 }
@@ -172,5 +173,4 @@ button:active {
 body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
 }

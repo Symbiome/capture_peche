@@ -44,8 +44,8 @@ export default class PictureModal extends Vue {
 .picture-modal {
 
   position: fixed;
-  z-index: 1500;
-  top: 0;
+  z-index: 1500;   
+  top: env(safe-area-inset-top);
   left: 0;
   width: 100%;
   height: 100%;
@@ -54,7 +54,7 @@ export default class PictureModal extends Vue {
 
   .close {
     position: fixed;
-    top: 30px;
+    top: calc(env(safe-area-inset-top) + 30px);
     right: 30px;
     background-color: #fff5;
 

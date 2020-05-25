@@ -575,10 +575,10 @@ export default class EditCatchView extends Vue {
 
 .edit-catch {
   .catch-picture {
-    height: 165px;
+    height: calc(165px + env(safe-area-inset-top));
     width: 100%;
     position: absolute;
-    top: 0;
+    top: env(safe-area-inset-top);
     background-color: @gainsboro;
   }
 

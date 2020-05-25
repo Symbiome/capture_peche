@@ -150,7 +150,7 @@ export default class CatchPreview extends Vue {
       position: absolute;
       z-index: 20;
       width: fit-content;
-      height: 108px;
+      height: calc(108px + env(safe-area-inset-top));
       background: @cyprus;
       opacity: 0.8;
       border-radius: 8px;
@@ -175,8 +175,8 @@ export default class CatchPreview extends Vue {
 
 
     .preview-picture {
-      position: absolute;
-      top: 0px;
+      position: absolute;    
+      top: env(safe-area-inset-top);
       left: 0px;
       height: 100%;
       width: 100%;

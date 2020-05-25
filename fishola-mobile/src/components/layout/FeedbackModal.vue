@@ -214,12 +214,12 @@ export default class FeedbackModal extends Vue {
 
 .feedback {
   position: absolute;
-  top: 50px;
+  top: @feedback-top;
   left: 0px;
   z-index: 50;
   background-color: transparent;
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - @feedback-top);
   padding-top: 0px;
 
   &.feedback-hidden {

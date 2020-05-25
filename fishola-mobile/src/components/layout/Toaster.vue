@@ -76,18 +76,18 @@ export default class Toaster extends Vue {
   @import "../../less/main";
 
   .toaster-hidden {
-    top: -50px;
+    top: calc(-1 * @toaster-height);
   }
 
   .toaster-disappears {
     animation-duration: 0.5s;
     animation-name: disappear;
 
-    top: -50px;
+    top: calc(-1 * @toaster-height);
 
     @keyframes disappear {
       from {top: 0px;}
-      to {top: -50px;}
+      to {top: calc(-1 * @toaster-height);}
     }
   }
 
@@ -98,7 +98,7 @@ export default class Toaster extends Vue {
     top: 0px;
 
     @keyframes appear {
-      from {top: -50px;}
+      from {top: calc(-1 * @toaster-height);}
       to {top: 0px;}
     }
   }
@@ -108,7 +108,7 @@ export default class Toaster extends Vue {
     position:absolute;
     left: 0px;
     width: 100%;
-    height: 50px;
+    height: @toaster-height;
     z-index: 999;
 
     display: flex;
