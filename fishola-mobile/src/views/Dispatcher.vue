@@ -14,8 +14,8 @@ import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import { Plugins } from '@capacitor/core';
-const { SplashScreen } = Plugins;
+import { Plugins, StatusBarStyle } from '@capacitor/core';
+const { SplashScreen, StatusBar } = Plugins;
 
 @Component({
   components: {}
@@ -42,10 +42,14 @@ export default class DispatcherView extends Vue {
           }
           router.push('trips');
           SplashScreen.hide();
+          // Reveal status bar on iOS
+          StatusBar.show();
         },
         (status) => {
           router.push('/login');
           SplashScreen.hide();
+          // Reveal status bar on iOS
+          StatusBar.show();
         }
       );
 
