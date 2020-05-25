@@ -163,3 +163,14 @@ button:active {
 .bottom-page-spacer {
   height: 30px;
 }
+
+/*========= iOS-specific ============ */
+// Required on iPhone to avoid app to overlapp status bar and other protected zones*/
+.header {
+  margin-top: env(safe-area-inset-top);
+}
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
