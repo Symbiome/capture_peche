@@ -1,5 +1,6 @@
 package fr.inrae.fishola.rest.trips;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
@@ -61,6 +63,8 @@ public class TripResource extends AbstractFisholaResource {
     private static final Ordering<CatchBean> CATCH_ORDERING_ON_CAUGHT_AT = Ordering.natural()
             .nullsFirst()
             .onResultOf(c -> c.caughtAt.orElse(null));
+
+    private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
 
     @Inject
     protected FisholaConfiguration config;
@@ -486,7 +490,22 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    protected UUID checkSpeciesOrCreateIfNecessary(Optional<UUID> speciesId, Optional<String> otherSpecies) {
+    protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {
+        if (speciesId.isPresent()) {
+            if (UUID_PATTERN.matcher(speciesId.get()).matches()) {
+                Optional<UUID> speciesUuid = speciesId.map(UUID::fromString);
+                return checkSpeciesOrCreateIfNecessarySwitched(speciesUuid, otherSpecies);
+            } else {
+                // On rajoute l'espèce à la liste des autres espèces
+                Optional<String> otherSpeciesFixed = Optional.of(Joiner.on(",").skipNulls().join(speciesId.get(), otherSpecies.orElse(null)));
+                return checkSpeciesOrCreateIfNecessarySwitched(Optional.empty(), otherSpeciesFixed);
+            }
+        } else {
+            return checkSpeciesOrCreateIfNecessarySwitched(Optional.empty(), otherSpecies);
+        }
+    }
+
+    protected UUID checkSpeciesOrCreateIfNecessarySwitched(Optional<UUID> speciesId, Optional<String> otherSpecies) {
         Preconditions.checkArgument(speciesId.isPresent() || otherSpecies.isPresent(), "Il faut au moins une espèce");
         if (speciesId.isPresent()) {
             return speciesId.get();
@@ -502,7 +521,7 @@ public class TripResource extends AbstractFisholaResource {
         result.tripId = Optional.of(aCatch.getTripId());
         UUID catchId = aCatch.getId();
         result.id = catchId.toString();
-        result.speciesId = Optional.of(aCatch.getSpeciesId());
+        result.speciesId = Optional.of(aCatch.getSpeciesId().toString());
         result.size = Optional.ofNullable(aCatch.getSize());
         result.weight = Optional.ofNullable(aCatch.getWeight());
         result.keep = aCatch.getKept();
