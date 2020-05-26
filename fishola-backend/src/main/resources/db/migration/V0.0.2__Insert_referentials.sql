@@ -25,7 +25,7 @@ INSERT INTO weather (name, export_as) VALUES
 
 INSERT INTO technique (name, built_in, export_as) VALUES
     ('Pêche à la traîne', true, 'traine'),
-    ('Pêche à la sonde', true, 'sonde'),
+    ('Pêche à la sonde/gambe/nymphes/canin', true, 'sonde'),
     ('Pêche au leurre', true, 'leurre'),
     ('Pêche au vif', true, 'vif'),
     ('Pêche au coup', true, 'coup'),
