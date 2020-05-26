@@ -89,8 +89,10 @@ build:android:
     - ./gradlew clean
     - ./gradlew assembleRelease
   artifacts:
+    name: "fishola-android-$CI_COMMIT_REF_NAME"
     paths:
-      - fishola-mobile/android/app/build/outputs/apk/release/
+      - fishola-mobile/android/app/build/outputs/apk/release/*.apk
+    expire_in: 2 weeks
   tags:
     - sticky
 
