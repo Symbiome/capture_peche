@@ -14,8 +14,8 @@ import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import { Plugins, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar } = Plugins;
+import { Plugins, StatusBarStyle, KeyboardInfo } from '@capacitor/core';
+const { SplashScreen, StatusBar, Keyboard} = Plugins;
 
 @Component({
   components: {}
@@ -27,11 +27,14 @@ export default class DispatcherView extends Vue {
   }
 
   mounted() {
+    // Keyboard configuration: show accessory bar (on iOS)
+    // This bar is displayed on top of keyboard and allows to navigate
+    // Through inputs + hide keyboard
+    Keyboard.setAccessoryBarVisible({isVisible: true});
     this.checkForActiveSession();
   }
 
   checkForActiveSession() {
-
     ProfileService.getProfile()
       .then(
         (profile) => {
