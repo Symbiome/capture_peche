@@ -131,7 +131,7 @@ public class TripResourceTest extends AbstractFisholaTest {
         catchBean.size = Optional.of(123);
         catchBean.techniqueId = this.techniques.iterator().next().getId();
         // On met un faux identifiant d'espèce
-        catchBean.speciesId = Optional.of(UUID.randomUUID());
+        catchBean.speciesId = Optional.of(UUID.randomUUID().toString());
         trip.catchs.add(catchBean);
 
         given()
