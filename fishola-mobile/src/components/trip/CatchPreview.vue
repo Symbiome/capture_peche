@@ -109,7 +109,7 @@ export default class CatchPreview extends Vue {
     this.speciesLabel = this.aCatch.otherSpecies || '';
     data.species.forEach(s => {
       if (this.aCatch.speciesId == s.id) {
-        this.speciesLabel = s.name;
+        this.speciesLabel = s.alias ? s.alias : s.name;
       }
     });
     data.techniques.forEach(t => {

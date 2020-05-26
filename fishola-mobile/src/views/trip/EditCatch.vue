@@ -20,7 +20,7 @@
           <h1>Capture</h1>
           <FormSelect name="species"
                       label="Espèce"
-                      v-bind:options="allSpecies"
+                      v-bind:options="allSpeciesWithAliases"
                       v-model="aCatch.speciesId"
                       v-bind:error="speciesIdError"
                       v-bind:readonly="!modifiable"/>
@@ -206,7 +206,7 @@ export default class EditCatchView extends Vue {
   middleShortcut:string = '';
   rightShortcut:string = 'delete';
 
-  allSpecies:SpeciesWithAlias[] = [];
+  allSpeciesWithAliases:SpeciesWithAlias[] = [];
   allTechniques:Technique[] = [];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
@@ -295,13 +295,25 @@ export default class EditCatchView extends Vue {
     }
   }
 
+  embedAlias(s:SpeciesWithAlias):SpeciesWithAlias {
+    let result:SpeciesWithAlias = {
+      id: s.id,
+      name: s.alias ? (`${s.alias} (${s.name})`) : s.name,
+      builtIn: s.builtIn,
+      mandatorySize: s.mandatorySize,
+      authorizedSample: s.authorizedSample
+    };
+    return result;
+  }
+
   referentialLoaded(data:SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
       if (s.builtIn // Espèce de base
           || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
           || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
         ) {
-        this.allSpecies.push(s);
+        let speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
+        this.allSpeciesWithAliases.push(speciesWithAlias);
         if (s.authorizedSample) {
           this.authorizedSampleSpeciesIds.push(s.id);
         }
@@ -319,11 +331,11 @@ export default class EditCatchView extends Vue {
             mandatorySize: false,
             authorizedSample: false
           };
-          this.allSpecies.push(customSpecies);
+          this.allSpeciesWithAliases.push(customSpecies);
       });
     }
-    this.allSpecies = Vue.lodash.orderBy(this.allSpecies, 'name');
-    this.allSpecies.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: false, authorizedSample: false});
+    this.allSpeciesWithAliases = Vue.lodash.orderBy(this.allSpeciesWithAliases, 'name');
+    this.allSpeciesWithAliases.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: false, authorizedSample: false});
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
@@ -339,7 +351,7 @@ export default class EditCatchView extends Vue {
   isMandatorySize(speciesId?:string):boolean {
     let result = true;
     if (speciesId) {
-      this.allSpecies.forEach((s:SpeciesWithAlias) => {
+      this.allSpeciesWithAliases.forEach((s:SpeciesWithAlias) => {
         if (s.id == speciesId && s.mandatorySize === false) {
           result = false;
         }
