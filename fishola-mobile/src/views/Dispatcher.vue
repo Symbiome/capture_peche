@@ -11,11 +11,12 @@ import Constants from '@/services/Constants';
 import router from '@/router'
 
 import ProfileService from '@/services/ProfileService';
+import KeyboardManager from '@/services/KeyboardManager';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import { Plugins, StatusBarStyle, KeyboardInfo } from '@capacitor/core';
-const { SplashScreen, StatusBar, Keyboard} = Plugins;
+import { Plugins, StatusBarStyle } from '@capacitor/core';
+const { SplashScreen, StatusBar} = Plugins;
 
 @Component({
   components: {}
@@ -27,11 +28,8 @@ export default class DispatcherView extends Vue {
   }
 
   mounted() {
-    // Keyboard configuration: show accessory bar (on iOS)
-    // This bar is displayed on top of keyboard and allows to navigate
-    // Through inputs + hide keyboard
-    Keyboard.setAccessoryBarVisible({isVisible: true});
     this.checkForActiveSession();
+    KeyboardManager.setupKeyboardConfiguration();
   }
 
   checkForActiveSession() {
@@ -55,11 +53,8 @@ export default class DispatcherView extends Vue {
           StatusBar.show();
         }
       );
-
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -3,8 +3,8 @@
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
-    <div class="page login-page">
-      <div class="login-title">
+    <div class="page keyboardSensitive login-page">
+      <div class="login-title hiddenWhenKeyboardShows_SmallScreensOnly">
         <div class="welcome">Bienvenue sur</div>
         <img class="logo" src="img/logo-big.svg" alt="Fishola"/>
       </div>
@@ -26,8 +26,8 @@
       </div>
       <div class="login-buttons">
         <div class="signin"><button v-on:click="signIn">Connexion</button></div>
-        <div class="signup"><button v-on:click="signUp">Créer un compte</button></div>
-        <div class="forgotten-password"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
+        <div class="signup hiddenWhenKeyboardShows"><button v-on:click="signUp">Créer un compte</button></div>
+        <div class="forgotten-password hiddenWhenKeyboardShows"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
       </div>
     </div>
   </div>
@@ -207,7 +207,6 @@ export default class LoginView extends Vue {
   }
 
   .login-buttons {
-    height: 237px;
     background-color: @white-smoke;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
@@ -274,6 +273,7 @@ export default class LoginView extends Vue {
     .forgotten-password {
       font-size: 16px;
       line-height: 22px;
+      margin-bottom: 30px;
     }
 
   }
