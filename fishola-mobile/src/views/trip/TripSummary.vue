@@ -5,7 +5,7 @@
       <SomeTripHeader v-bind:trip="trip"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Fin de pêche</h1>
+          <h1>Récapitulatif</h1>
           <SomeTripSummary ref="summary"
                            v-if="trip.lakeId"
                            v-bind:trip="trip"
@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Envoyer"
+    <FisholaFooter button-text="Terminer"
                    button-icon="icon-send"
                    v-on:buttonClicked="startSave"
                    shortcuts="back,step-4-4,giveup"/>
