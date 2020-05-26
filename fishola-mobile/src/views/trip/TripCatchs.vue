@@ -6,7 +6,7 @@
       <div class="pane">
         <h1>
           {{duration}}
-          <Running/>
+          <Running v-if="liveRunning"/>
         </h1>
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
