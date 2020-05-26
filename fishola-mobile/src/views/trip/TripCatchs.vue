@@ -20,13 +20,13 @@
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
               <i class="icon-fish"/>
-              Capture
+              Nouvelle capture
             </button>
           </div>
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Terminer"
+    <FisholaFooter button-text="Fin de pêche"
                    v-on:buttonClicked="finish"
                    shortcuts="back,step-3-4,giveup"
                    back-event="onBackButton"
