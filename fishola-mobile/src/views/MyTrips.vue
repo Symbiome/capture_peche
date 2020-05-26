@@ -16,7 +16,7 @@
                    v-on:more-trips="loadNextPage"
                    v-on:trip-selected="tripSelected"
                    v-on:trip-unselected="tripUnselected"/>
-      <RunningOverlay v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    v-bind:hideButton="hasRunningTrip"

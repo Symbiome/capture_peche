@@ -36,6 +36,9 @@ export default class FooterButton extends Vue {
   position: absolute;
   bottom: calc(@footer-height - 13px);
 
+  &.keyboardShowing {
+    bottom: min(calc(@reduced-footer-height - 13px), 2px);
+  }
   display: flex;
   justify-content: center;
 

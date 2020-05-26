@@ -14,8 +14,8 @@ export default class KeyboardManager {
     // Css class to hide when keyboard shows (small resolution only)
     static CSS_HIDE_CLASS_SMALL_SCREEN_ONLY = ".hiddenWhenKeyboardShows_SmallScreensOnly";
 
-    // Css class for which the "keyboardShowing" class will be added (but no other change)
-    static CSS_KEYBOARD_SENSITIVE_CLASS = ".keyboardSensitive";
+    // Css classes for which the "keyboardShowing" class will be added (but no other change)
+    static CSS_KEYBOARD_SENSITIVE_CLASS = ".keyboardSensitive, .page, .pane";
 
 
     // Height (in px) under which elements tagged with the
@@ -76,18 +76,13 @@ export default class KeyboardManager {
             }
         });
 
-        // Step 2: add 'keyboardShowing' class for .keyboardSensitive elements
-        let keyboardSensitives = <HTMLElement[]><unknown>document.querySelectorAll(".keyboardSensitive");
+        // Step 2: add 'keyboardShowing' class for .keyboardSensitive elements (and .page)
+        let keyboardSensitives = <HTMLElement[]><unknown>document.querySelectorAll(KeyboardManager.CSS_KEYBOARD_SENSITIVE_CLASS);
         keyboardSensitives.forEach( keyboardSensitive => {
             if (keyboardShowing) {
-                console.log("Add keyboardShowing to ", keyboardSensitive.classList);
                 keyboardSensitive.classList.add("keyboardShowing");
-                keyboardSensitive.classList.remove("keyboardSensitive");
-                console.log("=> ", keyboardSensitive.classList);
             } else {
-                console.log("Removing keyboardShowing from ", keyboardSensitive.classList);
                 keyboardSensitive.classList.remove("keyboardShowing");
-                keyboardSensitive.classList.add("keyboardSensitive");
             }
         });
     }

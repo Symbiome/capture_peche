@@ -5,6 +5,7 @@
 @header-height: calc(40px + env(safe-area-inset-top));
 @secondary-header-height: 40px;
 @footer-height: calc(76px + env(safe-area-inset-bottom));
+@reduced-footer-height: calc(0px + env(safe-area-inset-bottom));
 @feedback-top: calc(50px + env(safe-area-inset-top));
 @toaster-height: calc(50px + env(safe-area-inset-top));
 button {
@@ -176,11 +177,8 @@ body {
 }
 
 /*========= Keyboard specific ======== */
-// Customizations when keyboard is showing
-
 // Applied when keyboard is showing to all elements
 // with hiddenWhenKeyboardShows or hiddenWhenKeyboardShows_SmallScreensOnly class
 .hidden {
   display: none !important;
 }
-

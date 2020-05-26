@@ -228,6 +228,10 @@ export default class FeedbackModal extends Vue {
 
   .page {
     height: calc(100% - @footer-height);
+    &.keyboardShowing {
+      // Make page take new footer height into account
+      height: calc(100% - @reduced-footer-height);
+    }
 
     .pane {
       margin-top: 0px;

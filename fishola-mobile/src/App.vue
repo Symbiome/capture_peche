@@ -145,6 +145,10 @@ html {
     justify-content: space-between;
 
     height: calc(100% - @header-height - @footer-height);
+    &.keyboardShowing {
+      // Take reduced footer height into account
+      height: calc(100% - @header-height - @reduced-footer-height);
+    }
   }
 }
 
@@ -188,7 +192,10 @@ html {
   margin-top: 10px;
 
   height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
-
+  &.keyboardShowing {
+    // Take reduced footer height into account
+    height: calc(100% - @header-height - @secondary-header-height - @reduced-footer-height - 10px);
+  }
   color: @gunmetal;
 
   z-index: 10;

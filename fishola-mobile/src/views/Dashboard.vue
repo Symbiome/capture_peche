@@ -154,7 +154,7 @@
         </div>
 
       </div>
-      <RunningOverlay v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    selected="dashboard" />

@@ -32,7 +32,7 @@
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
-      <RunningOverlay v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
     </div>
     <FisholaFooter shortcuts="back,credits,documentation"
                    selected="credits" />

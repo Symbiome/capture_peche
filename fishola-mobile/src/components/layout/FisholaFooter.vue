@@ -1,22 +1,22 @@
 <template>
-  <div class="footer">
-    <FooterButton v-if="!hideButton && (buttonIcon || buttonText)"
+  <div class="footer keyboardSensitive">
+    <FooterButton class="keyboardSensitive" v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
                   v-bind:deleteMode="buttonIcon == 'icon-delete'"
                   v-on:clicked="$emit('buttonClicked')"/>
 
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['logout']"
          v-on:click="logout">
       <i class="icon-logout"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['back']"
          v-on:click="goBack">
       <i class="icon-arrow icon-back"></i>
     </div>
-    <div class="footer-element steps"
+    <div class="footer-element steps hiddenWhenKeyboardShows"
          v-if="steps.length > 0">
       <div v-for="s in steps" 
            v-bind:key="s.id"
@@ -24,67 +24,67 @@
         <!-- {{s.active}} -->
       </div>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['spacer']">
          <!-- spacer -->
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='dashboard'?'filled':'unfilled'"
          v-if="activeButtons['dashboard']"
          v-on:click="goDashboard">
       <i class="icon-dashboard"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='settings'?'filled':'unfilled'"
          v-if="activeButtons['settings']"
          v-on:click="goSettings">
       <i class="icon-settings"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='credits'?'filled':'unfilled'"
          v-if="activeButtons['credits']"
          v-on:click="goCredits">
       <i class="icon-info"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='home'?'filled':'unfilled'"
          v-if="activeButtons['home']"
          v-on:click="goHome">
       <i class="icon-home"></i>
     </div>
-    <div class="footer-element timer"
+    <div class="footer-element timer hiddenWhenKeyboardShows"
          v-if="timer">
       {{timer}}
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['giveup']"
          v-on:click="giveup">
       Abandon
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['delete']"
          v-on:click="doDelete">
       <i class="icon-delete"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='profile'?'filled':'unfilled'"
          v-if="activeButtons['profile']"
          v-on:click="goProfile">
       <i class="icon-profile"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='documentation'?'filled':'unfilled'"
          v-if="activeButtons['documentation']"
          v-on:click="goDocumentation">
       <i class="icon-files"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-bind:class="selected=='feedback'?'filled':'unfilled'"
          v-if="activeButtons['feedback']"
          v-on:click="openFeedback">
       <i class="icon-faq"></i>
     </div>
-    <div class="footer-element pastille"
+    <div class="footer-element pastille hiddenWhenKeyboardShows"
          v-if="activeButtons['blank']">
          <!-- spacer -->
     </div>
@@ -264,6 +264,10 @@ export default class FisholaFooter extends Vue {
   align-items: center;
 
   height: @footer-height;
+  &.keyboardShowing {
+    height: @reduced-footer-height;
+  }
+
   width: 100%;
   background-color: @zircon;
   color: @pelorous;

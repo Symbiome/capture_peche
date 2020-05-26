@@ -3,10 +3,10 @@
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
-    <div class="page keyboardSensitive login-page">
-      <div class="login-title hiddenWhenKeyboardShows_SmallScreensOnly">
-        <div class="welcome">Bienvenue sur</div>
-        <img class="logo" src="img/logo-big.svg" alt="Fishola"/>
+    <div class="page login-page">
+      <div class="login-title keyboardSensitive">
+        <div class="welcome keyboardSensitive">Bienvenue sur</div>
+        <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="Fishola"/>
       </div>
       <div class="login-form">
         <FormInput name="email"
@@ -24,8 +24,8 @@
                     v-bind:error="passwordError"
                     />
       </div>
-      <div class="login-buttons">
-        <div class="signin"><button v-on:click="signIn">Connexion</button></div>
+      <div class="login-buttons keyboardSensitive">
+        <div class="signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
         <div class="signup hiddenWhenKeyboardShows"><button v-on:click="signUp">Créer un compte</button></div>
         <div class="forgotten-password hiddenWhenKeyboardShows"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
       </div>
@@ -156,6 +156,9 @@ export default class LoginView extends Vue {
 
   .login-title {
     height: 140px;
+    &.keyboardShowing {
+      height: 60px;
+    }
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -163,9 +166,16 @@ export default class LoginView extends Vue {
     .welcome {
       font-size: 24px;
       line-height: 33px;
+      &.keyboardShowing {
+        font-size: 16px;
+        line-height: 18px;
+      }
     }
     .logo {
       height: 100px;
+      &.keyboardShowing {
+        height: 40px;
+      }
     }
   }
 
@@ -216,12 +226,19 @@ export default class LoginView extends Vue {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-
+    
+    &.keyboardShowing {
+        padding-top: 5px;
+        background-color: @transparent;
+    }
     .signin {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
       margin-bottom: 20px;
+      &.keyboardShowing {
+          margin-bottom: 5px; 
+      }
 
       button {
 
@@ -277,8 +294,6 @@ export default class LoginView extends Vue {
     }
 
   }
-
-
 }
 
 </style>
