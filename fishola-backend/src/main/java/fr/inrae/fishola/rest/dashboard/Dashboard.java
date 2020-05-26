@@ -4,14 +4,18 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import org.immutables.value.Value;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableDashboard.class)
 public interface Dashboard {
+
+    Map<UUID, Integer> caughtSpeciesCount();
 
     Map<UUID, Double> caughtSpeciesDistribution();
 
@@ -22,5 +26,7 @@ public interface Dashboard {
     Map<UUID, List<CatchBean>> topBySize();
 
     Map<UUID, List<CatchBean>> topByWeight();
+
+    Map<UUID, Set<String>> speciesAliases();
 
 }

@@ -147,11 +147,13 @@ export interface Feedback {
 }
 
 export interface Dashboard {
+    caughtSpeciesCount: { [index: string]: number };
     caughtSpeciesDistribution: { [index: string]: number };
     latestTripsCatchs: DashboardLastTrip[];
     averageCatchsPerTrip?: number;
     topBySize: { [index: string]: CatchBean[] };
     topByWeight: { [index: string]: CatchBean[] };
+    speciesAliases: { [index: string]: string[] };
 }
 
 export interface Serializable {

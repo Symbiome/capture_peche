@@ -2,6 +2,7 @@ package fr.inrae.fishola.database;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -83,6 +84,12 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
+    public List<SpeciesByLake> listSpeciesWithAliases() {
+        List<SpeciesByLake> result = listSpeciesByLake().stream()
+                .filter(sbl -> StringUtils.isNotEmpty(sbl.getAlias()))
+                .collect(ImmutableList.toImmutableList());
+        return result;
+    }
     public List<ReleasedFishState> listReleasedFishStates() {
         List<ReleasedFishState> result = withDao(ReleasedFishStateDao.class, ReleasedFishStateDao::findAll);
         return result;

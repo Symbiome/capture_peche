@@ -24,9 +24,10 @@
                 <div class="distribution-row-data">
                   <div class="species">
                     {{f.species.name}}
+                    <span class="alias" v-if="f.species.alias">({{f.species.alias}})</span>
                   </div>
                   <div class="percent">
-                    {{f.percent}} %
+                    {{f.count}}
                   </div>
                 </div>
                 <div class="distribution-row-bar">
@@ -39,7 +40,7 @@
           </div>
 
           <div class="shrinked">
-            <h2><i class="icon-fishing" />Moyenne des captures</h2>
+            <h2><i class="icon-fishing" />Mes captures</h2>
             <div class="not-enough-data" v-if="latestTrips.length == 0">
               <span>Pas assez de données</span>
             </div>
@@ -106,6 +107,7 @@
                  v-bind:key="'size-' + t.species.id"
                  v-on:click="selectTopSize(t)">
               {{t.species.name}}
+              <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
             </div>
           </div>
           <div class="dashboard-top-catchs catch-preview-list-scrollable"
@@ -131,6 +133,7 @@
                  v-bind:key="'weight-' + t.species.id"
                  v-on:click="selectTopWeight(t)">
               {{t.species.name}}
+              <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
             </div>
           </div>
           <div class="dashboard-top-catchs catch-preview-list-scrollable"
@@ -175,7 +178,8 @@ import moment from 'moment';
 export class DistributionEntry {
     constructor (
         public species:SpeciesWithAlias,
-        public percent:number
+        public percent:number,
+        public count:number
         ) {
     }
 }
@@ -231,16 +235,24 @@ export default class DashboardView extends Vue {
   }
 
   loaded(data:DashboardAndSpecies) {
+    let speciesAliases = data.dashboard.speciesAliases;
     data.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
+
+      let aliases = speciesAliases[species.id];
+      if (aliases) {
+        species.alias = aliases.join(' ou ');
+      }
     });
 
+    let speciesCount = data.dashboard.caughtSpeciesCount;
     let distribution = data.dashboard.caughtSpeciesDistribution;
     Object.keys(distribution)
       .forEach((speciesId) => {
         let species:SpeciesWithAlias = this.speciesIndex[speciesId];
         let percent:number = Math.round(distribution[speciesId]);
-        let entry:DistributionEntry = new DistributionEntry(species, percent);
+        let count:number = speciesCount[speciesId];
+        let entry:DistributionEntry = new DistributionEntry(species, percent, count);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -345,6 +357,11 @@ export default class DashboardView extends Vue {
 
 
   @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+  .alias {
+    font-style: italic;
+    color: @pale-sky;
+  }
 
   .spinner-wrapper {
     width: 100%;

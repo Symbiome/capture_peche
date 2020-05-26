@@ -2,14 +2,17 @@ package fr.inrae.fishola.rest.dashboard;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import fr.inrae.fishola.database.CatchsDao;
+import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.trips.CatchBean;
@@ -31,12 +34,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractFisholaResource {
+
+    @Inject
+    protected ReferentialDao referentialDao;
 
     @Inject
     protected CatchsDao catchsDao;
@@ -55,7 +62,10 @@ public class DashboardResource extends AbstractFisholaResource {
         List<Catch> allCatches = catchsDao.findAllByUserId(userId);
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Double> caughtSpeciesDistribution = computeDistribution(allCatches);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches);
+        builder.caughtSpeciesCount(caughtSpeciesCount);
+
+        Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
         PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches);
@@ -75,6 +85,15 @@ public class DashboardResource extends AbstractFisholaResource {
 
         Map<UUID, List<CatchBean>> topByWeight = computeTopCatchs(allCatches, catchsWithPictures, Catch::getWeight);
         builder.topByWeight(topByWeight);
+
+        List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
+        Multimap<UUID, SpeciesByLake> speciesWithAliasesIndex = Multimaps.index(speciesByLakes, SpeciesByLake::getSpeciesId);
+        speciesWithAliasesIndex.asMap().forEach((speciesId, speciesWithAlias) -> {
+            Set<String> aliases = speciesByLakes.stream()
+                    .map(SpeciesByLake::getAlias)
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+            builder.putSpeciesAliases(speciesId, aliases);
+        });
 
         Dashboard result = builder.build();
         return result;
@@ -111,15 +130,14 @@ public class DashboardResource extends AbstractFisholaResource {
         return result;
     }
 
-    protected Map<UUID, Double> computeDistribution(List<Catch> allCatches) {
+    protected Map<UUID, Integer> computeDistribution(List<Catch> allCatches) {
         int allCatchsCount = allCatches.size();
         ImmutableMultiset<UUID> caughtSpeciesDistributionSet = allCatches.stream()
                 .map(Catch::getSpeciesId)
                 .collect(ImmutableMultiset.toImmutableMultiset());
-        Map<UUID, Integer> caughtSpeciesDistributionCount = caughtSpeciesDistributionSet.entrySet()
+        Map<UUID, Integer> result = caughtSpeciesDistributionSet.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount));
-        Map<UUID, Double> result = Maps.transformValues(caughtSpeciesDistributionCount, count -> count * 100d / allCatchsCount);
         return result;
     }
 
