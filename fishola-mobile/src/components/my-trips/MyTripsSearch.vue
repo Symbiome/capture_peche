@@ -3,7 +3,7 @@
     <div class="">
       <i class="icon-magnifying-glass"></i>
       <input type="text"
-             placeholder="Recherche"
+             placeholder="Rechercher une sortie"
              name="search_term"
              v-bind:value="value"
              v-on:input="$emit('input', $event.target.value)"/>
