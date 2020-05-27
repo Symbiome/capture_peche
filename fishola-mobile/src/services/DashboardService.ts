@@ -42,4 +42,9 @@ export default class DashboardService extends AbstractFisholaService {
         });
     }
 
+    static loadDashboardOrTimeout():Promise<DashboardAndSpecies> {
+        let promise = this.loadDashboard();
+        return this.timeout(5000, promise);
+    }
+
 }

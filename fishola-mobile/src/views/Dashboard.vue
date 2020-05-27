@@ -8,7 +8,11 @@
           <div class="spinner"></div>
         </div>
 
-        <div class="pane-content large rounded" v-if="ready">
+        <div class="pane-content rounded offline" v-if="ready && offline">
+          <span>Le tableau de bord n'est pas disponible sans connexion internet</span>
+        </div>
+
+        <div class="pane-content large rounded" v-if="ready && !offline">
 
           <h1>Tableau de bord</h1>
 
@@ -206,6 +210,7 @@ export default class DashboardView extends Vue {
   months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
   ready:boolean = false;
+  offline:boolean = false;
 
   caughtSpeciesDistribution:DistributionEntry[] = [];
   averageCatchsPerTripRounded:number = 0;
@@ -228,10 +233,15 @@ export default class DashboardView extends Vue {
   }
 
   mounted() {
-    DashboardService.loadDashboard()
-      .then(this.loaded);
+    DashboardService.loadDashboardOrTimeout()
+      .then(this.loaded, this.cannotLoad);
     TripsService.hasRunningTrip()
       .then((result:boolean) => this.hasRunningTrip = result);
+  }
+
+  cannotLoad() {
+    this.offline = true;
+    this.ready = true;
   }
 
   loaded(data:DashboardAndSpecies) {
@@ -403,6 +413,20 @@ export default class DashboardView extends Vue {
     padding-top: 30px;
 
     color: @gunmetal;
+
+    &.offline {
+      height: 100%;
+      padding-left: 60px;
+      padding-right: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      span {
+        color: @carrot-orange;
+        font-size: 18px;
+        line-height: 25px;
+      }
+    }
 
     .shrinked {
       padding-left: 30px;
