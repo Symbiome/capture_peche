@@ -20,6 +20,7 @@ import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
 
 import { Component, Vue } from 'vue-property-decorator';
+import ReferentialService from './services/ReferentialService';
 
 @Component({
   components: {
@@ -33,6 +34,11 @@ export default class AppView extends Vue {
     interval?:number;
 
     created() {
+      ReferentialService.prepareCaches()
+        .then(
+          () => console.log("Préparation des caches terminée"),
+          (error) => console.error("Erreur lors de la préparation des caches", error)
+        );
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;
       console.log(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);

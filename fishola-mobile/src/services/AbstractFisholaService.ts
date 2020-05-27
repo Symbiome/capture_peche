@@ -1,5 +1,6 @@
 import Constants from '@/services/Constants';
 import FisholaDatabase from './FisholaDatabase';
+import OfflineEntry from '@/pojos/OfflineEntry';
 
 class CacheEntry {
   constructor(public since:number, public content:any) {
@@ -17,6 +18,12 @@ export default abstract class AbstractFisholaService {
 
     static clearCache(uri:string) {
       this.caches.delete(uri);
+    }
+
+    static pushToCache(uri:string, content:any) {
+      // console.log(`Mise en cache pour ${uri}`, content);
+      let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
+      this.caches.set(uri, newEntry);
     }
 
     static backendGet(uri:string):Promise<any> {
@@ -206,6 +213,82 @@ export default abstract class AbstractFisholaService {
           xhr.send();
         }
       });
-  }
+    }
+
+    static timeout(ms:number, promise:Promise<any>):Promise<any> {
+        // Create a promise that rejects in <ms> milliseconds
+        let timeout = new Promise((resolve, reject) => {
+            let id = setTimeout(() => {
+                clearTimeout(id);
+                reject('Timed out in '+ ms + 'ms.')
+            }, ms)
+        })
+
+        // Returns a race between our timeout and the passed in promise
+        return Promise.race([
+            promise,
+            timeout
+        ]);
+    }
+
+    static backendGetAndStoreToOfflineStorage(uri:string):Promise<any> {
+        return new Promise<string>((resolve, reject) => {
+            let promise = this.backendGet(uri);
+            promise.then(
+                    (result) => {
+                        console.log(`New content available, save it to offline storage for '${uri}'`, result);
+                        let entry:OfflineEntry = {
+                          key: uri,
+                          content: result
+                        }
+                        this.getDatabase().offlineStorage.put(entry);
+                        resolve(result);
+                    },
+                    (error) => {
+                        console.log(`Error loading from the backend for '${uri}'`, error);
+                        reject(error);
+                    }
+                );
+        });
+    }
+
+    static tryBackendGetOrOfflineStorage(uri:string):Promise<any> {
+        return new Promise<string>((resolve, reject) => {
+            let promise = this.backendGetAndStoreToOfflineStorage(uri);
+            this.timeout(1000, promise)
+                .then(
+                    (result) => {
+                        console.log(`Got fresh answer for '${uri}'`, result);
+                        resolve(result);
+                    },
+                    (error) => {
+                        console.log(`Unableto load from the backend for '${uri}'`, error);
+                        this.getDatabase().offlineStorage.get(uri).then(
+                          (entry?:OfflineEntry) => {
+                            if (entry) {
+                              resolve(entry.content);
+                            } else {
+                              reject(`No offline entry for ${uri}`);
+                            }
+                          },
+                          reject);
+                    }
+                );
+        });
+    }
+
+    static prepareCache(uri:string):Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let lakes = this.tryBackendGetOrOfflineStorage(uri);
+            lakes.then(
+                (data) => {
+                    this.pushToCache(uri, data);
+                    resolve();
+                },
+                reject
+            );
+        });
+    }
+
 }
 

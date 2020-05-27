@@ -230,4 +230,22 @@ export default class ReferentialService extends AbstractFisholaService {
         });
     }
 
+    static prepareCaches():Promise<void> {
+        let allPromises:Promise<void>[] = [
+            this.prepareCache('/v1/referential/lakes'),
+            this.prepareCache('/v1/referential/species-per-lake'),
+            this.prepareCache('/v1/referential/species'),
+            this.prepareCache('/v1/referential/species-custom'),
+            this.prepareCache('/v1/referential/weathers'),
+            this.prepareCache('/v1/referential/techniques'),
+            this.prepareCache('/v1/referential/released-fish-states')
+        ];
+        return new Promise<void>((resolve, reject) => {
+            Promise.all(allPromises).then(
+                () => resolve()
+                ,reject
+            );
+        });
+    }
+
 }

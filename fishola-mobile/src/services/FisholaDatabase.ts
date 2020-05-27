@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import {TripBean} from '@/pojos/BackendPojos';
 import StoredPicture from '@/pojos/StoredPicture';
+import OfflineEntry from '@/pojos/OfflineEntry';
 
 export default class FisholaDatabase extends Dexie {
 
@@ -11,6 +12,7 @@ export default class FisholaDatabase extends Dexie {
     onCreationTrip: Dexie.Table<any, string>;
     dirtyTrips: Dexie.Table<TripBean, string>;
     dirtyPictures: Dexie.Table<StoredPicture, string>;
+    offlineStorage: Dexie.Table<OfflineEntry, string>;
 
     constructor () {
         super("Fishola");
@@ -24,10 +26,17 @@ export default class FisholaDatabase extends Dexie {
             dirtyTrips: 'id',
             dirtyPictures: 'id'
         });
+        this.version(3).stores({
+            onCreationTrip: 'id',
+            dirtyTrips: 'id',
+            dirtyPictures: 'id',
+            offlineStorage: 'key',
+        });
 
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
         this.dirtyPictures = this.table("dirtyPictures");
+        this.offlineStorage = this.table("offlineStorage");
 
         console.log("Base Fishola prête");
     }
