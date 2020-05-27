@@ -3,7 +3,16 @@
     <FisholaHeader/>
     <div class="page settings-page">
       <div class="pane pane-only">
-        <div class="pane-content rounded">
+
+        <div class="spinner-wrapper" v-if="loading">
+          <div class="spinner"></div>
+        </div>
+
+        <div class="pane-content offline" v-if="!loading && offline">
+          <span>Les paramètres ne sont pas disponible sans connexion internet</span>
+        </div>
+
+        <div class="pane-content rounded" v-if="!loading && !offline">
           <h1>Paramètres</h1>
 
           <div class="settings-row" v-if="settings">
@@ -53,6 +62,8 @@ import DocumentationService from '../services/DocumentationService';
 export default class SettingsView extends Vue {
 
   settings:UserSettings | null = null;
+  loading:boolean = true;
+  offline:boolean = false;
 
   samplesDocumentationUrl:string = '';
 
@@ -74,10 +85,16 @@ export default class SettingsView extends Vue {
 
   loadSettings() {
     ProfileService.getSettings()
-      .then(this.settingsLoaded);
+      .then(this.settingsLoaded, this.cannotLoadSettings);
+  }
+
+  cannotLoadSettings() {
+    this.loading = false;
+    this.offline = true;
   }
 
   settingsLoaded(settings:UserSettings) {
+    this.loading = false;
     this.settings = settings;
   }
 
@@ -101,9 +118,43 @@ export default class SettingsView extends Vue {
 
 .settings-page {
 
+  .spinner-wrapper {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .spinner {
+      height: 60px;
+      width: 60px;
+      border-radius: 50%;
+      border-top: 3px solid @pelorous;
+      border-left: 3px solid @pelorous;
+      animation:spin 2s linear infinite;
+    }
+  }
+
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
+
+    &.offline {
+      height: 100%;
+      padding-left: 60px;
+      padding-right: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      span {
+        text-align: center;
+        color: @carrot-orange;
+        font-size: 18px;
+        line-height: 25px;
+      }
+    }
   }
 
   .settings-row {

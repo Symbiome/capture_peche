@@ -63,7 +63,7 @@ export default class ProfileService extends AbstractFisholaService {
     }
 
     static fetchSettings():Promise<UserSettings> {
-        return new Promise<UserSettings>((resolve, reject) => {
+        let promise = new Promise<UserSettings>((resolve, reject) => {
             this.backendGet("/v1/security/settings")
                 .then(
                     (fetched) => {
@@ -72,6 +72,7 @@ export default class ProfileService extends AbstractFisholaService {
                     },
                     reject);
         });
+        return this.timeout(5000, promise);
     }
 
     static getSettings():Promise<UserSettings> {
