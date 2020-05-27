@@ -21,6 +21,7 @@ import PicturesService from '@/services/PicturesService';
 
 import { Component, Vue } from 'vue-property-decorator';
 import ReferentialService from './services/ReferentialService';
+import DocumentationService from './services/DocumentationService';
 
 @Component({
   components: {
@@ -36,8 +37,13 @@ export default class AppView extends Vue {
     created() {
       ReferentialService.prepareCaches()
         .then(
-          () => console.log("Préparation des caches terminée"),
-          (error) => console.error("Erreur lors de la préparation des caches", error)
+          () => console.log("Préparation des caches du référentiel terminée"),
+          (error) => console.error("Erreur lors de la préparation des caches du référentiel", error)
+        );
+      DocumentationService.prepareCaches()
+        .then(
+          () => console.log("Préparation des caches de documentation terminée"),
+          (error) => console.error("Erreur lors de la préparation des caches de documentation", error)
         );
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;
