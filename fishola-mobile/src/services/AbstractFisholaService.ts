@@ -255,7 +255,7 @@ export default abstract class AbstractFisholaService {
     static backendGetOrOfflineStorage(uri:string):Promise<any> {
         return new Promise<string>((resolve, reject) => {
             let promise = this.backendGetAndStoreToOfflineStorage(uri);
-            this.timeout(10000, promise)
+            this.timeout(5000, promise)
                 .then(
                     (result) => {
                         console.log(`Got fresh answer for '${uri}'`, result);
