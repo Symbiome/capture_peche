@@ -1,4 +1,5 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import StoredPicture from '@/pojos/StoredPicture';
 
 export default class PicturesService extends AbstractFisholaService {
 
@@ -8,10 +9,10 @@ export default class PicturesService extends AbstractFisholaService {
 
     static savePicture(catchId:string, content:string, callback:()=>any, dirtySince?:number) {
 
-        let newPicture = {
+        let newPicture:StoredPicture = {
             id: catchId,
-            content: content,
-            dirtySince: dirtySince || new Date().getTime()
+            dirtySince: dirtySince || new Date().getTime(),
+            content: content
         }
 
         this.getDatabase()
@@ -29,41 +30,51 @@ export default class PicturesService extends AbstractFisholaService {
             .delete(catchId);
     }
 
-    static getPictureFull(catchId:string, callback:(content?:string, dirtySince?:number)=>any) {
+    static getPictureFull(catchId:string):Promise<StoredPicture> {
         
-        this.getDatabase()
+        return new Promise<StoredPicture>((resolve, reject) => {
+            this.getDatabase()
             .dirtyPictures
-            .get(catchId)
-            .then((item:any) => {
-                callback(item.content, item.dirtySince);
-            })
-            .catch(() => {
-                callback();
-            });
+            .get(catchId).then(
+                (item?:StoredPicture) => {
+                    if (item) {
+                        resolve(item);
+                    } else {
+                        reject();
+                    }
+                },
+                reject);
+        });
     }
 
     static getPicture(catchId:string):Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.getPictureFull(catchId, (content?, dirtySince?) => {
-                if (content) {
-                    resolve(content);
-                } else {
-                    reject();
-                }
-            });
+            this.getPictureFull(catchId).then(
+                (result) => {
+                    if (result.content) {
+                        resolve(result.content);
+                    } else {
+                        reject();
+                    }
+                },
+                reject);
         });
     }
 
     static checkForPicturesToRename(map:any) {
         let keys:string[] = Object.keys(map);
         keys.forEach((key:string) => {
-            PicturesService.getPictureFull(key, (content?, dirtySince?) => {
-                if (content) {
+            PicturesService.getPictureFull(key).then(result => {
+                if (result.content) {
                     let newId = map[key];
                     console.log(`On change l'ID de l'image ${key} -> ${newId}`);
-                    PicturesService.savePicture(newId, content, () => {
-                        PicturesService.deletePicture(key);
-                    }, dirtySince);
+                    PicturesService.savePicture(
+                        newId,
+                        result.content,
+                        () => {
+                            PicturesService.deletePicture(key);
+                        },
+                        result.dirtySince);
                 }
             })
         });
@@ -98,11 +109,11 @@ export default class PicturesService extends AbstractFisholaService {
                 pictureIds
                     .filter((pictureId) => pictureId.length != 36)
                     .forEach((pictureId) => {
-                        PicturesService.getPictureFull(pictureId, (content?, dirtySince?) => {
-                            if (dirtySince) {
-                                let dirtySinceInMillis = new Date().getTime() - dirtySince;
+                        PicturesService.getPictureFull(pictureId).then(result => {
+                            if (result.dirtySince) {
+                                let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                                 if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
-                                    console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${dirtySince}`);
+                                    console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                                     PicturesService.deletePicture(pictureId);
                                     return;
                                 }
@@ -128,18 +139,18 @@ export default class PicturesService extends AbstractFisholaService {
     static syncPicture(pictureId:string):Promise<void> {
         return new Promise((resolve, reject) =>  {
             console.log("On essaye de sauvegarder la photo", pictureId);
-            PicturesService.getPictureFull(pictureId, (content?, dirtySince?) => {
-                if (dirtySince) {
-                    let dirtySinceInMillis = new Date().getTime() - dirtySince;
+            PicturesService.getPictureFull(pictureId).then(result => {
+                if (result.dirtySince) {
+                    let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                     if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
-                        console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${dirtySince}`);
+                        console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                         PicturesService.deletePicture(pictureId);
                         reject("Photo non synchronisée depuis trop longtemps");
                         return;
                     }
                 }
-                if (content) {
-                    this.backendPutPlain(`/v1/pictures/${pictureId}`, content)
+                if (result.content) {
+                    this.backendPutPlain(`/v1/pictures/${pictureId}`, result.content)
                         .then(
                             resolve,
                             (error:any) => {

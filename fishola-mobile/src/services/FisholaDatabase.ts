@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import {TripBean} from '@/pojos/BackendPojos';
+import StoredPicture from '@/pojos/StoredPicture';
 
 export default class FisholaDatabase extends Dexie {
 
@@ -9,26 +10,21 @@ export default class FisholaDatabase extends Dexie {
     // (just to inform Typescript. Instanciated by Dexie in stores() method)
     onCreationTrip: Dexie.Table<any, string>;
     dirtyTrips: Dexie.Table<TripBean, string>;
-    dirtyPictures: Dexie.Table<any, string>;
-    //...other tables goes here...
+    dirtyPictures: Dexie.Table<StoredPicture, string>;
 
     constructor () {
         super("Fishola");
         console.log("Construction de la base Fishola ...");
         this.version(1).stores({
-            onCreationTrip: 'id, mode',
-            dirtyTrips: 'id, mode',
-            //...other tables goes here...
+            onCreationTrip: 'id',
+            dirtyTrips: 'id',
         });
         this.version(2).stores({
-            onCreationTrip: 'id, mode',
-            dirtyTrips: 'id, mode',
-            dirtyPictures: 'id, content, dirtySince'
-            //...other tables goes here...
+            onCreationTrip: 'id',
+            dirtyTrips: 'id',
+            dirtyPictures: 'id'
         });
 
-        // The following line is needed if your typescript
-        // is compiled using babel instead of tsc:
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
         this.dirtyPictures = this.table("dirtyPictures");
