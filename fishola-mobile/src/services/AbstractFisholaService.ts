@@ -161,7 +161,7 @@ export default abstract class AbstractFisholaService {
       });
     }
 
-    static backendPost(uri:string, data:any):Promise<any> {
+    static backendPost(uri:string, data?:any):Promise<any> {
       return new Promise<any>((resolve, reject) => {
         let apiUrl = Constants.apiUrl(uri);
         var xhr = new XMLHttpRequest();

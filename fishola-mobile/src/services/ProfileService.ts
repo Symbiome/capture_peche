@@ -51,8 +51,7 @@ export default class ProfileService extends AbstractFisholaService {
     static logout():Promise<void> {
         this.deleteFromOfflineStorage("/v1/security/profile");
         return new Promise<void>((resolve, reject) => {
-            // XXX AThimel 19/02/2020 : Devrait être en POST
-            this.backendGet("/v1/security/logout")
+            this.backendPost("/v1/security/logout")
                 .then(
                     () => {
                         UserProfile.unsetCurrent();
