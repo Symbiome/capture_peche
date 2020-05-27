@@ -252,6 +252,22 @@ export default abstract class AbstractFisholaService {
         });
     }
 
+    static unmarkOffline(input:any) {
+      if (input && typeof input === 'object') {
+        delete input.offlineMarker;
+      }
+    }
+
+    static markOffline(input:any) {
+      if (input && typeof input === 'object') {
+        input.offlineMarker = true;
+      }
+    }
+
+    static deleteFromOfflineStorage(uri:string) {
+      this.getDatabase().offlineStorage.delete(uri);
+    }
+
     static backendGetOrOfflineStorage(uri:string):Promise<any> {
         return new Promise<string>((resolve, reject) => {
             let promise = this.backendGetAndStoreToOfflineStorage(uri);
@@ -259,6 +275,7 @@ export default abstract class AbstractFisholaService {
                 .then(
                     (result) => {
                         console.log(`Got fresh answer for '${uri}'`, result);
+                        this.unmarkOffline(result);
                         resolve(result);
                     },
                     (error) => {
@@ -267,9 +284,7 @@ export default abstract class AbstractFisholaService {
                           (entry?:OfflineEntry) => {
                             if (entry) {
                               let content = entry.content;
-                              if (Object.keys(content).indexOf('offlineMarker') != -1) {
-                                content.offlineMarker = true;
-                              }
+                              this.markOffline(content);
                               resolve(content);
                             } else {
                               reject(`No offline entry for ${uri}`);
