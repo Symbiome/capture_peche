@@ -11,10 +11,10 @@ import ReferentialService from './ReferentialService';
 
 import moment from 'moment';
 import ProfileService from './ProfileService';
-import TripSummary from '@/pojos/TripSummary';
 import GeolocationService from './GeolocationService';
 
 export class TripsAndCount {
+    offlineMarker:boolean = false;
     constructor (
         public trips:TripLight[],
         public count:number) {
@@ -202,8 +202,8 @@ export default class TripsService extends AbstractFisholaService {
                 term: searchTerm
             };
 
-            this.backendGetWithArgs('/v1/trips', page)
-                .then(
+            let promise = this.backendGetWithArgs('/v1/trips', page);
+            this.timeout(5000, promise).then(
                     (trips:any) => {
                         console.log("Sorties récupérées depuis le back :", trips);
                         trips.elements.forEach((trip:TripLight) => {
@@ -216,7 +216,12 @@ export default class TripsService extends AbstractFisholaService {
                         let tripsAndCount = new TripsAndCount(result, count);
                         resolve(tripsAndCount);
                     },
-                    reject
+                    (error) => {
+                        console.error("Erreur pendant le chargement des sorties", error);
+                        let tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
+                        tripsAndCount.offlineMarker = true;
+                        resolve(tripsAndCount);
+                    }
                 );
         });
     }

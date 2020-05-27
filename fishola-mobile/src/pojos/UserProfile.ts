@@ -6,6 +6,7 @@ export default class UserProfile {
     lastName?:string;
     gender?:string;
     birthYear?:number;
+    offlineMarker:boolean = false;
 
     constructor(
         public firstName:string,

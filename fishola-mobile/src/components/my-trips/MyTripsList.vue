@@ -9,9 +9,20 @@
                      v-on:selected="tripSelected(t.id)"
                      v-on:unselected="tripUnselected(t.id)"/>
       </div>
+      <div v-if="offline" class="offline-with-trips">
+        <div class="top">
+          <img src="/img/illustration_fish_wire.svg"/>
+          <span>Pas de connexion internet</span>
+        </div>
+        <div class="bottom">
+          <span>Vous pouvez créer<br/>une sortie !</span>
+          <i class="icon-triangle"></i>
+        </div>
+
+      </div>
       <div class="bottom-page-spacer"></div>
     </div>
-    <div v-if="!loading && trips.length == 0" class="pane-content no-trips">
+    <div v-if="!loading && !offline && trips.length == 0" class="pane-content no-trips">
       <div class="top">
         <img src="/img/illustration_fish.svg"/>
         <span v-if="hasSearchTerm">Aucune sortie de pêche trouvée</span>
@@ -19,6 +30,16 @@
       </div>
       <div class="bottom" v-if="noTripYet">
         <span>Commencez votre <br/>première sortie !</span>
+        <i class="icon-triangle"></i>
+      </div>
+    </div>
+    <div v-if="!loading && offline && trips.length == 0" class="pane-content no-trips offline">
+      <div class="top">
+        <img src="/img/illustration_fish_wire.svg"/>
+        <span>Pas de connexion internet</span>
+      </div>
+      <div class="bottom">
+        <span>Vous pouvez créer<br/>une sortie !</span>
         <i class="icon-triangle"></i>
       </div>
     </div>
@@ -44,6 +65,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class MyTripsList extends Vue {
   @Prop() trips!:TripLight[];
   @Prop() loading!:boolean;
+  @Prop() offline!:boolean;
   @Prop() hasSearchTerm!:boolean;
   @Prop() noTripYet!:boolean;
 
@@ -116,6 +138,64 @@ export default class MyTripsList extends Vue {
         font-size: 18px;
         line-height: 25px;
         color: @pale-sky;
+        text-align: center;
+        margin-top: 30px;
+      }
+    }
+
+    .bottom {
+      height: 176px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      text-align: center;
+
+      span {
+        color: @pelorous;
+        font-size: 18px;
+        line-height: 25px;
+      }
+      i {
+        color: @terra-cotta;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+    }
+
+    &.offline {
+      .top {
+        span {
+         color: @carrot-orange;
+        }
+      }
+    }
+  }
+
+  .offline-with-trips {
+
+    margin-top: 30px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .top {
+      flex: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      img {
+        width: 40%;
+      }
+
+      span {
+        font-size: 18px;
+        line-height: 25px;
+        color: @carrot-orange; 
         text-align: center;
         margin-top: 30px;
       }

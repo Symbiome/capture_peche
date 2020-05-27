@@ -3,12 +3,15 @@
     <FisholaHeader />
     <div class="page my-trips-page">
       <MyTripsHeader v-bind:count="count"
+                     v-bind:offline="offline"
                      v-bind:sortDown="sortDown"
                      v-on:reverseSortOrder="reverseSortOrder"/>
-      <MyTripsSearch v-model="term"/>
+      <MyTripsSearch v-model="term"
+                     v-bind:offline="offline"/>
       <MyTripsList v-bind:trips="trips"
                    v-bind:hasSearchTerm="!!currentSearchTerm"
                    v-bind:noTripYet="totalCount == 0"
+                   v-bind:offline="offline"
                    v-bind:loading="loading"
                    v-on:more-trips="loadNextPage"
                    v-on:trip-selected="tripSelected"
@@ -56,6 +59,7 @@ export default class MyTripsView extends Vue {
   
   trips:TripLight[] = [];
   loading:boolean = true;
+  offline:boolean = false;
   sortDown:boolean = true;
   term:string = '';
   currentSearchTerm:string = '';
@@ -122,6 +126,7 @@ export default class MyTripsView extends Vue {
     this.trips = data.trips;
     this.loading = false;
     this.count = data.count;
+    this.offline = data.offlineMarker;
 
     // On considère que le premier appel renvoie toujours le total
     if (this.totalCount == -1) {

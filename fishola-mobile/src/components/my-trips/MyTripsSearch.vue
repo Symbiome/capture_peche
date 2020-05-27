@@ -1,11 +1,12 @@
 <template>
   <div class="my-trips-search">
-    <div class="">
+    <div :class="offline ? 'offline' : ''">
       <i class="icon-magnifying-glass"></i>
       <input type="text"
-             placeholder="Rechercher une sortie"
+             v-bind:placeholder="offline ? 'Recherche non disponible' : 'Rechercher une sortie'"
              name="search_term"
              v-bind:value="value"
+             v-bind:disabled="offline"
              v-on:input="$emit('input', $event.target.value)"/>
     </div>
   </div>
@@ -19,6 +20,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class MyTripsSearch extends Vue {
 
   @Prop() value!: string;
+  @Prop() offline!: boolean;
 
 }
 </script>
@@ -59,6 +61,16 @@ export default class MyTripsSearch extends Vue {
       font-size: 12px;
       // line-height: 19px;
     }
+
+
+    &.offline {
+      background-color: @solitude;
+
+      input::placeholder {
+        color: @carrot-orange;
+      }
+    }
+
   }
 }
 

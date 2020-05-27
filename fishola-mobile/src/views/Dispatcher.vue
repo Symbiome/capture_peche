@@ -35,7 +35,11 @@ export default class DispatcherView extends Vue {
     ProfileService.getProfile()
       .then(
         (profile) => {
-          this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
+          if (profile.offlineMarker) {
+            this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
+          } else {
+            this.$root.$emit('toaster-warning', 'Pas de connexion internet');
+          }
           router.push('trips');
           SplashScreen.hide();
         },

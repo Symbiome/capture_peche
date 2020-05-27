@@ -83,7 +83,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class ProfileView extends Vue {
 
-  profile:UserProfile = {firstName:'', email:'', initials:'', sampleBaseId:''};
+  profile:UserProfile = {firstName:'', email:'', initials:'', sampleBaseId:'', offlineMarker:false};
   fullName:string = '';
 
   birthYear:string = '0';

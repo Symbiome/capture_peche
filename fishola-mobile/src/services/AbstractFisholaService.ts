@@ -55,7 +55,7 @@ export default abstract class AbstractFisholaService {
       }
 
       return new Promise<any>((resolve, reject) => {
-        this.backendGet(uri)
+        this.backendGetAndStoreToOfflineStorage(uri)
           .then(
             (content:any) => {
               let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
@@ -252,21 +252,25 @@ export default abstract class AbstractFisholaService {
         });
     }
 
-    static tryBackendGetOrOfflineStorage(uri:string):Promise<any> {
+    static backendGetOrOfflineStorage(uri:string):Promise<any> {
         return new Promise<string>((resolve, reject) => {
             let promise = this.backendGetAndStoreToOfflineStorage(uri);
-            this.timeout(1000, promise)
+            this.timeout(10000, promise)
                 .then(
                     (result) => {
                         console.log(`Got fresh answer for '${uri}'`, result);
                         resolve(result);
                     },
                     (error) => {
-                        console.log(`Unableto load from the backend for '${uri}'`, error);
+                        console.log(`Unable to load from the backend for '${uri}'`, error);
                         this.getDatabase().offlineStorage.get(uri).then(
                           (entry?:OfflineEntry) => {
                             if (entry) {
-                              resolve(entry.content);
+                              let content = entry.content;
+                              if (Object.keys(content).indexOf('offlineMarker') != -1) {
+                                content.offlineMarker = true;
+                              }
+                              resolve(content);
                             } else {
                               reject(`No offline entry for ${uri}`);
                             }
@@ -279,7 +283,7 @@ export default abstract class AbstractFisholaService {
 
     static prepareCache(uri:string):Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let lakes = this.tryBackendGetOrOfflineStorage(uri);
+            let lakes = this.backendGetOrOfflineStorage(uri);
             lakes.then(
                 (data) => {
                     this.pushToCache(uri, data);

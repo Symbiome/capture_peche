@@ -10,7 +10,8 @@
         <i class="icon-chevron icon-chevron-up" v-if="!sortDown"></i>
       </div>
       <div class="header-icons-group">
-        <span>{{count}}</span>
+        <span v-if="offline">?</span>
+        <span v-if="!offline">{{count}}</span>
         <i class="icon-fishing"></i>
       </div>
     </div>
@@ -22,6 +23,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class MyTripsHeader extends Vue {
+  @Prop() offline!:boolean;
   @Prop() count!:number;
   @Prop() sortDown!:boolean;
 }

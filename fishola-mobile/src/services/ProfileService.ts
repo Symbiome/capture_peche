@@ -13,7 +13,7 @@ export default class ProfileService extends AbstractFisholaService {
 
     static fetchProfile():Promise<UserProfile> {
         return new Promise<UserProfile>((resolve, reject) => {
-            this.backendGet("/v1/security/profile")
+            this.backendGetOrOfflineStorage("/v1/security/profile")
                 .then(
                     (fetched) => {
                         UserProfile.setCurrent(fetched);
