@@ -30,7 +30,9 @@ export default class GeolocationService extends AbstractFisholaService {
             Device.getInfo().then(
                 (device:DeviceInfo) => {
 
-                    let isNotSecured:boolean = (window.location.protocol == 'http:');
+                    let isNotSecured:boolean =
+                            device.platform == "web"
+                            && window.location.protocol == 'http:';
                     let isDesktopBrowser:boolean =
                             device.platform == "web"
                             && device.operatingSystem != "android"
