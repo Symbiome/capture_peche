@@ -130,11 +130,13 @@ export default class ReferentialService extends AbstractFisholaService {
 
                     let perLake = data[0];
                     perLake.forEach((value, lakeId) => {
-                        let lakeSpecies:SpeciesWithAlias[] = [];
-                        value.forEach((s) => lakeSpecies.push(s));
-                        // Quel que soit le lac, on ajoute les espèces custom à la liste
-                        custom.forEach((s) => lakeSpecies.push(s));
-                        result.set(lakeId, lakeSpecies);
+                        if (lakeId != "offlineMarker") {
+                            let lakeSpecies:SpeciesWithAlias[] = [];
+                            value.forEach((s) => lakeSpecies.push(s));
+                            // Quel que soit le lac, on ajoute les espèces custom à la liste
+                            custom.forEach((s) => lakeSpecies.push(s));
+                            result.set(lakeId, lakeSpecies);
+                        }
                     });
 
                     resolve(result);
