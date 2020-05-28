@@ -176,7 +176,7 @@ export default class CatchPreview extends Vue {
 
     .preview-picture {
       position: absolute;    
-      top: env(safe-area-inset-top);
+      top: 0px;
       left: 0px;
       height: 100%;
       width: 100%;
