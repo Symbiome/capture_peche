@@ -30,6 +30,7 @@ export default class DispatcherView extends Vue {
   mounted() {
     this.checkForActiveSession();
     KeyboardManager.setupKeyboardConfiguration();
+    StatusBar.setBackgroundColor({"color": "#1E9BC4"});
   }
 
   checkForActiveSession() {
