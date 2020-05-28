@@ -31,7 +31,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.5.0.Final</quarkusVersion>
+    <quarkusVersion>1.4.2.Final</quarkusVersion>
     <jooqVersion>3.13.2</jooqVersion>
     <flywayVersion>6.4.3</flywayVersion>
     <jacksonVersion>2.11.0</jacksonVersion>
