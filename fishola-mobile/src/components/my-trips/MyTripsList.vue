@@ -18,7 +18,6 @@
           <span>Vous pouvez créer<br/>une sortie !</span>
           <i class="icon-triangle"></i>
         </div>
-
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
