@@ -31,7 +31,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static getInstance():TripsService {
         if (!this.instance) {
-            console.log("Pas encore d'instance partagée, on la créé");
+            console.debug("Pas encore d'instance partagée, on la créé");
             this.instance = new TripsService();
         }
         return this.instance;
@@ -84,14 +84,14 @@ export default class TripsService extends AbstractFisholaService {
                 .get(id)
                 .then((aaa) => {
                     if (aaa) {
-                        console.log("Sortie trouvée dans les dirtyTrips :", aaa);
+                        console.debug("Sortie trouvée dans les dirtyTrips :", aaa);
                         callback(aaa);
                     } else {
                         // Il faut charger le trip depuis le back
                         let url:string = `/v1/trips/${id}`;
                         this.backendGet(url)
                             .then((bbb:any) => {
-                                console.log("Sortie récupérée depuis le back :", bbb);
+                                console.debug("Sortie récupérée depuis le back :", bbb);
                                 callback(TripsService.backendTripToTrip(bbb));
                             });
                     }
@@ -205,7 +205,7 @@ export default class TripsService extends AbstractFisholaService {
             let promise = this.backendGetWithArgs('/v1/trips', page);
             this.timeout(5000, promise).then(
                     (trips:any) => {
-                        console.log("Sorties récupérées depuis le back :", trips);
+                        console.debug("Sorties récupérées depuis le back :", trips);
                         trips.elements.forEach((trip:TripLight) => {
                             if (dirtyTripsIds.indexOf(trip.id) == -1) {
                                 let tl:TripLight = TripsService.backendTripToLight(trip);
@@ -251,7 +251,7 @@ export default class TripsService extends AbstractFisholaService {
                 .onCreationTrip
                 .put(tripBean)
                 .then((aaa) => {
-                    console.log(aaa);
+                    console.debug(aaa);
                     callback();
                 });
         } else {
@@ -266,7 +266,7 @@ export default class TripsService extends AbstractFisholaService {
                     .onCreationTrip
                     .put(trip)
                     .then((savedId) => {
-                        console.log("Sauvegardé dans onCreationTrip", savedId);
+                        console.debug("Sauvegardé dans onCreationTrip", savedId);
                         resolve(savedId);
                     },
                     reject);
@@ -277,7 +277,7 @@ export default class TripsService extends AbstractFisholaService {
                     .dirtyTrips
                     .put(tripBean)
                     .then((savedId) => {
-                        console.log("Sauvegardé dans dirtyTrips", savedId);
+                        console.debug("Sauvegardé dans dirtyTrips", savedId);
                         resolve(savedId);
                     },
                     reject);
@@ -288,7 +288,7 @@ export default class TripsService extends AbstractFisholaService {
     static saveTripMeta(trip:TripMeta, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
-                console.log(aaa);
+                console.debug(aaa);
                 callback();
             });
     }
@@ -296,7 +296,7 @@ export default class TripsService extends AbstractFisholaService {
     static saveTripSpecies(trip:TripSpecies, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
-                console.log(aaa);
+                console.debug(aaa);
                 callback();
             });
     }
@@ -304,7 +304,7 @@ export default class TripsService extends AbstractFisholaService {
     static saveTrip(trip:TripBean, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
-                console.log(aaa);
+                console.debug(aaa);
                 callback();
             });
     }
@@ -378,7 +378,7 @@ export default class TripsService extends AbstractFisholaService {
             .dirtyTrips
             .put(trip)
             .then((savedTripId) => {
-                console.log("Nouvelle sortie dans les dirtyTrips", savedTripId);
+                console.info("Nouvelle sortie dans les dirtyTrips", savedTripId);
                 resolve(savedTripId);
             });
         });
@@ -410,7 +410,7 @@ export default class TripsService extends AbstractFisholaService {
                   (position) => {
                       trip.endLatitude = position.coords.latitude;
                       trip.endLongitude = position.coords.longitude;
-                      console.log(`Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`);
+                      console.info(`Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`);
                       this.doSendTripAndCancelCreations(trip).then(resolve, reject);
                   },
                   (e) => {
@@ -435,20 +435,20 @@ export default class TripsService extends AbstractFisholaService {
                 .dirtyTrips
                 .toArray((dirtyTrips) => {
                     if (dirtyTrips && dirtyTrips.length > 0) {
-                        console.log(`${dirtyTrips.length} sorties à synchroniser`);
+                        console.info(`${dirtyTrips.length} sorties à synchroniser`);
                         dirtyTrips
                             .forEach((dirtyTrip:TripBean) => {
                                 if (this.shouldDelaySave(dirtyTrip)) {
-                                    console.log(`On ignore la sortie qui est peut-être encore en cours de modif`, dirtyTrip.id);
+                                    console.debug(`On ignore la sortie qui est peut-être encore en cours de modif`, dirtyTrip.id);
                                 } else {
                                     let promise = this.syncTrip(dirtyTrip);
                                     promise.then(() => {
                                         this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
                                         someTripsSaved = true;
-                                        console.log("Trip saved !");
+                                        console.debug("Trip saved !");
                                     },
                                     (error) => {
-                                        console.log("Arf, môrche pô :(", error);
+                                        console.error("Unable to sync trip ", error);
                                     });
                                     allPromises.push(promise);
                                 }
@@ -459,7 +459,7 @@ export default class TripsService extends AbstractFisholaService {
                                 resolve(someTripsSaved)
                             }, reject);
                     } else {
-                        console.log("Aucune sortie à synchroniser");
+                        console.info("Aucune sortie à synchroniser");
                         resolve(false);
                     }
                 });
@@ -487,7 +487,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static syncTrip(trip:TripBean):Promise<void> {
         return new Promise((resolve, reject) =>  {
-            console.log("On essaye de sauvegarder la sortie", trip);
+            console.debug("On essaye de sauvegarder la sortie", trip);
             if (trip.createdOn) {
                 this.backendPut(`/v1/trips/${trip.id}`, trip)
                     .then(
@@ -601,7 +601,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteTrips(tripIds:string[]):Promise<void> {
-        console.log("Supprime les sorties", tripIds);
+        console.info("Supprime les sorties", tripIds);
         return this.backendDelete(`/v1/trips`, tripIds);
     }
 
@@ -618,7 +618,7 @@ export default class TripsService extends AbstractFisholaService {
                             if (dateMoment.dayOfYear() == todayMoment.dayOfYear()) {
                                 resolve(runningTrip);
                             } else {
-                                console.log("Il y avait une sortie live en cours, on la bascule en sortie à posteriori");
+                                console.debug("Il y avait une sortie live en cours, on la bascule en sortie à posteriori");
                                 runningTrip.mode = 'Afterwards';
                                 this.saveTrip(runningTrip, () => {
                                     resolve(runningTrip);

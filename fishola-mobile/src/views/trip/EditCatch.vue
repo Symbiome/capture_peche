@@ -279,7 +279,7 @@ export default class EditCatchView extends Vue {
             this.aCatch.longitude = position.coords.longitude;
           },
           (e) => {
-            console.error("Merdu", e);
+            console.error("Error whjle geting location from geolocation service", e);
           }
         );
     }
@@ -480,12 +480,12 @@ export default class EditCatchView extends Vue {
         let minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
         let maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
         if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
-          console.log(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
+          console.info(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
           hasError = true;
           this.weightError = "Le poids n'est pas cohérent avec la taille";
         }
       } else if (this.aCatch.weight > 300) {
-        console.log(`Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`);
+        console.info(`Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`);
         hasError = true;
         this.weightError = "Le poids n'est pas cohérent avec la taille";
       }

@@ -38,7 +38,7 @@ export default class Toaster extends Vue {
   }
 
   beforeDestroy() {
-    console.log("Destroy toaster");
+    console.debug("Destroy toaster");
     this.$root.$off('toaster-error');
     this.$root.$off('toaster-warning');
     this.$root.$off('toaster-success');

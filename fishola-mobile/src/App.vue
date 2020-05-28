@@ -37,17 +37,17 @@ export default class AppView extends Vue {
     created() {
       ReferentialService.prepareCaches()
         .then(
-          () => console.log("Préparation des caches du référentiel terminée"),
+          () => console.debug("Préparation des caches du référentiel terminée"),
           (error) => console.error("Erreur lors de la préparation des caches du référentiel", error)
         );
       DocumentationService.prepareCaches()
         .then(
-          () => console.log("Préparation des caches de documentation terminée"),
+          () => console.debug("Préparation des caches de documentation terminée"),
           (error) => console.error("Erreur lors de la préparation des caches de documentation", error)
         );
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;
-      console.log(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
+      console.debug(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
       this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
       this.$root.$on('ask-for-sync-check', this.checkOutOfSyncTrips);
@@ -59,9 +59,9 @@ export default class AppView extends Vue {
     }
 
     checkOutOfSyncTrips() {
-      // console.log("SYNCHO : Recherche des sorties");
+      // console.debug("SYNCHO : Recherche des sorties");
       TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
-        console.log("Apparement, il y a un pb de sync", e);
+        console.error("Apparement, il y a un pb de sync", e);
         // Même en cas d'erreur on essaye de synchro les photos
         this.checkOutOfSyncPictures();
       });
@@ -75,7 +75,7 @@ export default class AppView extends Vue {
     }
 
     checkOutOfSyncPictures() {
-      // console.log("SYNCHO : Recherche des photos");
+      // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
     }
 }

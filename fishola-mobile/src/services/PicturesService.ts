@@ -19,7 +19,7 @@ export default class PicturesService extends AbstractFisholaService {
             .dirtyPictures
             .put(newPicture)
             .then(id => {
-                console.log('Image enregistrée', id);
+                console.info('Image enregistrée', id);
                 callback();
             });
     }
@@ -67,7 +67,7 @@ export default class PicturesService extends AbstractFisholaService {
             PicturesService.getPictureFull(key).then(result => {
                 if (result.content) {
                     let newId = map[key];
-                    console.log(`On change l'ID de l'image ${key} -> ${newId}`);
+                    console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
                     PicturesService.savePicture(
                         newId,
                         result.content,
@@ -88,7 +88,7 @@ export default class PicturesService extends AbstractFisholaService {
             .primaryKeys((pictureIds:string[]) => {
 
                 if (pictureIds && pictureIds.length > 0) {
-                    console.log("Liste des IDs de photos dans la base embarquée", pictureIds);
+                    console.info("Liste des IDs de photos dans la base embarquée", pictureIds);
                 }
 
                 let allPromises:Promise<void>[] = [];
@@ -100,7 +100,7 @@ export default class PicturesService extends AbstractFisholaService {
                         let promise = this.syncPicture(pictureId);
                         allPromises.push(promise);
                         promise.then(() => {
-                            console.log("Photo synchronisée, on la supprime de la base embarquée", pictureId);
+                            console.info("Photo synchronisée, on la supprime de la base embarquée", pictureId);
                             PicturesService.deletePicture(pictureId);
                         });
                     });
@@ -113,7 +113,7 @@ export default class PicturesService extends AbstractFisholaService {
                             if (result.dirtySince) {
                                 let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                                 if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
-                                    console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
+                                    console.info(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                                     PicturesService.deletePicture(pictureId);
                                     return;
                                 }
@@ -126,10 +126,10 @@ export default class PicturesService extends AbstractFisholaService {
                         .all(allPromises)
                         .then(
                             () => {
-                                console.log("Toutes les photos sont sauvegardées");
+                                console.info("Toutes les photos sont sauvegardées");
                             },
                             (eee) => {
-                                console.log("Problème de synchro des images", eee);
+                                console.error("Problème de synchro des images", eee);
                             });
                 }
 
@@ -138,12 +138,12 @@ export default class PicturesService extends AbstractFisholaService {
 
     static syncPicture(pictureId:string):Promise<void> {
         return new Promise((resolve, reject) =>  {
-            console.log("On essaye de sauvegarder la photo", pictureId);
+            console.info("On essaye de sauvegarder la photo", pictureId);
             PicturesService.getPictureFull(pictureId).then(result => {
                 if (result.dirtySince) {
                     let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                     if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
-                        console.log(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
+                        console.info(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                         PicturesService.deletePicture(pictureId);
                         reject("Photo non synchronisée depuis trop longtemps");
                         return;
@@ -154,7 +154,7 @@ export default class PicturesService extends AbstractFisholaService {
                         .then(
                             resolve,
                             (error:any) => {
-                                console.log(`Erreur lors de la synchro de l'image ${pictureId}`, error);
+                                console.error(`Erreur lors de la synchro de l'image ${pictureId}`, error);
                                 reject(error);
                             });
                 } else {

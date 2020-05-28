@@ -81,7 +81,7 @@ export default class TripCatchsView extends Vue {
   }
 
   tripLoaded(someTrip:TripMain) {
-    console.log("Trip chargé", someTrip);
+    console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
 
     if (this.trip.mode == 'Live') {

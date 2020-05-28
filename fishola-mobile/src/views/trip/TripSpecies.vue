@@ -105,7 +105,7 @@ export default class TripSpeciesView extends Vue {
   }
 
   tripLoaded(someTrip:TripSpecies) {
-    console.log("Trip chargé", someTrip);
+    console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
     let lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
     this.species = [];

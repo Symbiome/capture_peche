@@ -21,7 +21,7 @@ export default abstract class AbstractFisholaService {
     }
 
     static pushToCache(uri:string, content:any) {
-      // console.log(`Mise en cache pour ${uri}`, content);
+      // console.debug(`Mise en cache pour ${uri}`, content);
       let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
       this.caches.set(uri, newEntry);
     }
@@ -50,7 +50,7 @@ export default abstract class AbstractFisholaService {
     static backendGetWithCache(uri:string):Promise<any> {
       let entry = this.caches.get(uri);
       if (entry && ((new Date().getTime() - entry.since) < (1000 * 60 * 60))) {
-        // console.log("On utilise le cache", uri);
+        // console.debug("On utilise le cache", uri);
         return Promise.resolve(entry.content);
       }
 
@@ -106,7 +106,7 @@ export default abstract class AbstractFisholaService {
           result.content = parsed;
         }
       } catch (e) {
-        console.error(e);
+        console.error("Error while wrapping response", e);
       }
       return result;
     }
@@ -236,7 +236,7 @@ export default abstract class AbstractFisholaService {
             let promise = this.backendGet(uri);
             promise.then(
                     (result) => {
-                        console.log(`New content available, save it to offline storage for '${uri}'`, result);
+                        console.info(`New content available, save it to offline storage for '${uri}'`, result);
                         let entry:OfflineEntry = {
                           key: uri,
                           content: result
@@ -245,7 +245,7 @@ export default abstract class AbstractFisholaService {
                         resolve(result);
                     },
                     (error) => {
-                        console.log(`Error loading from the backend for '${uri}'`, error);
+                        console.error(`Error loading from the backend for '${uri}'`, error);
                         reject(error);
                     }
                 );
@@ -274,12 +274,12 @@ export default abstract class AbstractFisholaService {
             this.timeout(5000, promise)
                 .then(
                     (result) => {
-                        console.log(`Got fresh answer for '${uri}'`, result);
+                        console.info(`Got fresh answer for '${uri}'`, result);
                         this.unmarkOffline(result);
                         resolve(result);
                     },
                     (error) => {
-                        console.log(`Unable to load from the backend for '${uri}'`, error);
+                        console.error(`Unable to load from the backend for '${uri}'`, error);
                         this.getDatabase().offlineStorage.get(uri).then(
                           (entry?:OfflineEntry) => {
                             if (entry) {

@@ -110,7 +110,7 @@ export default class TripMetaView extends Vue {
   }
 
   tripLoaded(someTrip:TripMeta) {
-    console.log("Trip chargé", someTrip);
+    console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
     if (someTrip.mode == 'Afterwards') {
       if (someTrip.date) {
@@ -129,7 +129,7 @@ export default class TripMetaView extends Vue {
         .then(
           (coordsAndLake:CoordsAndLake) => {
             let lake = coordsAndLake.lake;
-            console.log("Le lac le plus proche est ", lake);
+            console.debug("Le lac le plus proche est ", lake);
             this.trip.lakeId = lake.id;
             // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
             this.lakeIdError = lake.id;
@@ -138,7 +138,7 @@ export default class TripMetaView extends Vue {
             if (this.trip.mode == 'Live') {
               this.trip.beginLatitude = coordsAndLake.latitude;
               this.trip.beginLongitude = coordsAndLake.longitude;
-              console.log(`Coordonnées de début de sortie : ${this.trip.beginLatitude},${this.trip.beginLongitude}`);
+              console.info(`Coordonnées de début de sortie : ${this.trip.beginLatitude},${this.trip.beginLongitude}`);
             }
           },
           (e) => {

@@ -16,7 +16,7 @@ export default class FisholaDatabase extends Dexie {
 
     constructor () {
         super("Fishola");
-        console.log("Construction de la base Fishola ...");
+        console.info("Construction de la base Fishola ...");
         this.version(1).stores({
             onCreationTrip: 'id',
             dirtyTrips: 'id',
@@ -38,7 +38,7 @@ export default class FisholaDatabase extends Dexie {
         this.dirtyPictures = this.table("dirtyPictures");
         this.offlineStorage = this.table("offlineStorage");
 
-        console.log("Base Fishola prête");
+        console.info("Base Fishola prête");
     }
 
     static getInstance():FisholaDatabase {

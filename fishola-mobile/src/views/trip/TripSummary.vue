@@ -81,7 +81,7 @@ export default class TripSummaryView extends Vue {
         TripsService.sendTripAndCancelCreations(trip)
           .then(
             this.tripSaved,
-            (e) => console.log("Unexpected error during sendTripAndCancelCreations", e)
+            (e) => console.error("Unexpected error during sendTripAndCancelCreations", e)
           );
       }
     } else {

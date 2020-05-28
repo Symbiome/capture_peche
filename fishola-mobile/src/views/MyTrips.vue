@@ -111,7 +111,7 @@ export default class MyTripsView extends Vue {
 
   mounted() {
     this.$root.$on('trips-saved', () => {
-      console.log("La liste des sorties a été mise à jour, on rafraichit ...");
+      console.debug("La liste des sorties a été mise à jour, on rafraichit ...");
       this.loadTrips();
     });
   }
@@ -140,7 +140,7 @@ export default class MyTripsView extends Vue {
   }
 
   loadError(data:any) {
-    console.log("Erreur au chargmeent des sorties", data);
+    console.error("Erreur au chargement des sorties", data);
     if (data.status == 401) {
       router.push('/login');
     }

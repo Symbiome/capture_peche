@@ -88,7 +88,7 @@ export default class TripTechniquesView extends Vue {
   }
 
   tripLoaded(someTrip:TripBean) {
-    console.log("Trip chargé", someTrip);
+    console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
   }
 

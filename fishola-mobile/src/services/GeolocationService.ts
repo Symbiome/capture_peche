@@ -38,9 +38,9 @@ export default class GeolocationService extends AbstractFisholaService {
                             && device.operatingSystem != "android"
                             && device.operatingSystem != "ios";
 
-                    console.log("isNotSecured", isNotSecured);
-                    console.log("isDesktopBrowser", isDesktopBrowser);
-                    console.log("device", device);
+                    console.info("isNotSecured", isNotSecured);
+                    console.info("isDesktopBrowser", isDesktopBrowser);
+                    console.info("device", device);
 
                     if (isNotSecured) {
 
@@ -53,7 +53,7 @@ export default class GeolocationService extends AbstractFisholaService {
                     } else {
 
 
-                        console.log("Before getCurrentPosition", new Date());
+                        console.debug("Before getCurrentPosition", new Date());
 
                         let positionPromise:Promise<GeolocationPosition> = Geolocation.getCurrentPosition({
                             enableHighAccuracy: false,
@@ -63,8 +63,8 @@ export default class GeolocationService extends AbstractFisholaService {
                         positionPromise.then(
                             (position:GeolocationPosition) => {
 
-                                console.log("Got currentPosition", new Date());
-                                console.log("position", JSON.stringify(position));
+                                console.debug("Got currentPosition", new Date());
+                                console.debug("position", JSON.stringify(position));
                                 resolve(position);
                                 /* enableHighAccuracy: true
                                 {
@@ -148,8 +148,8 @@ export default class GeolocationService extends AbstractFisholaService {
                         } else {
                             let position:GeolocationPosition = data[1];
 
-                            console.log("lakes", lakes);
-                            console.log("position", position);
+                            console.info("lakes", lakes);
+                            console.info("position", position);
 
                             const latitude = position.coords.latitude;
                             const longitude = position.coords.longitude;
@@ -182,9 +182,9 @@ export default class GeolocationService extends AbstractFisholaService {
                 minDistance = distance;
                 result = lake;
             }
-            console.log(`Distance pour le ${lake.name}: ${distance}`);
+            console.debug(`Distance pour le ${lake.name}: ${distance}`);
         });
-        console.log(`Winner is: ${result.name}`);
+        console.debug(`Winner is: ${result.name}`);
         return result;
     }
 
@@ -199,7 +199,7 @@ export default class GeolocationService extends AbstractFisholaService {
                         if (!lakes || lakes.length == 0) {
                             reject();
                         } else {
-                            console.log("lakes", lakes);
+                            console.debug("lakes", lakes);
 
                             // Les Sorinières
                             const latitude = 47.1464206;

@@ -160,7 +160,7 @@ export default class ProfileView extends Vue {
             this.validationErrors = response.content;
             this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
           } else {
-            console.error(response);
+            console.error("ProfileService.saveProfile", response);
             this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
           }
         }

@@ -114,16 +114,16 @@ export default class RegisterView extends Vue {
       xhr.open(method, url, true);
       xhr.withCredentials = true;
       xhr.onload = function() {
-        // console.log(this);
+        // console.debug(this);
         if (this.status == 200) {
           successCallback();
         } else if (this.status == 400) {
           let responseText = this['responseText'] || '{}';
-          console.log("responseText: " + responseText);
+          console.debug("responseText: " + responseText);
           let parsed = JSON.parse(responseText);
           validationErrorCallback(parsed);
         } else {
-          console.error("C'est la merde noire, façon " + this.status, this['responseText']);
+          console.error("Error in httpCall reponse " + this.status, this['responseText']);
           errorCallback(this.status);
         }
       };

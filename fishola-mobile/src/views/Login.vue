@@ -76,14 +76,14 @@ export default class LoginView extends Vue {
         xhr.withCredentials = true;
         if (callback) {
             xhr.onload = function() {
-              // console.log(this);
+              // console.debug(this);
               if (this.status == 200 || this.status == 401 || this.status == 404) {
                 // let responseText = this['responseText'];
-                // console.log("responseText: " + responseText);
+                // console.debug("responseText: " + responseText);
                 // let parsed = JSON.parse(responseText);
                 callback(this.status);
               } else {
-                console.error("C'est la merde noire, façon " + this.status);
+                console.error("Error during httpcall " + url + " " + this.status);
               }
           };
         }
