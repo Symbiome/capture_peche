@@ -2,7 +2,7 @@ import {Lake} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from '@/services/ReferentialService';
 
-import { Plugins, GeolocationPosition, DeviceInfo } from '@capacitor/core';
+import { Plugins, GeolocationPosition, CallbackID, DeviceInfo } from '@capacitor/core';
 const { Geolocation } = Plugins;
 const { Device } = Plugins;
 
@@ -19,13 +19,16 @@ export class CoordsAndLake {
 
 export default class GeolocationService extends AbstractFisholaService {
 
+    static watchId?:CallbackID;
+    static latestPosition?:GeolocationPosition;
+    static latestError?:any;
+
     constructor () {
         super();
     }
 
-    static getPosition():Promise<GeolocationPosition> {
-
-        return new Promise<any>((resolve, reject) => {
+    static canUsePosition():Promise<void> {
+        return new Promise<void>((resolve, reject) => {
 
             Device.getInfo().then(
                 (device:DeviceInfo) => {
@@ -44,95 +47,84 @@ export default class GeolocationService extends AbstractFisholaService {
 
                     if (isNotSecured) {
 
-                        return reject("Pas de Geolocation hors contexte sécurisé");
+                         reject("Pas de Geolocation hors contexte sécurisé");
 
                     } else if (isDesktopBrowser) {
 
-                        return reject("Pas de Geolocation sans smartphone");
+                        reject("Pas de Geolocation sans smartphone");
 
                     } else {
-
-
-                        console.debug("Before getCurrentPosition", new Date());
-
-                        let positionPromise:Promise<GeolocationPosition> = Geolocation.getCurrentPosition({
-                            enableHighAccuracy: false,
-                            maximumAge: 20,
-                            timeout: 10000
-                        });
-                        positionPromise.then(
-                            (position:GeolocationPosition) => {
-
-                                console.debug("Got currentPosition", new Date());
-                                console.debug("position", JSON.stringify(position));
-                                resolve(position);
-                                /* enableHighAccuracy: true
-                                {
-                                    "coords":{
-                                        "latitude":47.1552435,
-                                        "longitude":-1.5262437,
-                                        "accuracy":21.48699951171875,
-                                        "altitude":77.79999542236328,
-                                        "altitudeAccuracy":2,
-                                        "speed":0.0025068377144634724,
-                                        "heading":315.3136291503906
-                                    },
-                                    "timestamp":1589819559643
-                                }
-
-                                */
-
-                                /* enableHighAccuracy: false
-                                {
-                                    "coords":{
-                                        "latitude":47.1552424,
-                                        "longitude":-1.5262452,
-                                        "accuracy":21.347000122070312,
-                                        "altitude":77.79999542236328,
-                                        "altitudeAccuracy":2,
-                                        "speed":0.012332512997090816,
-                                        "heading":274.6920471191406
-                                    },
-                                    "timestamp":1589819653984
-                                }
-                                */
-                            },
-                            (failure) => {
-                                console.error("Unable to get current position", failure);
-                                reject(failure);
-                            })
-
-                        // if (!navigator.geolocation) {
-                        //     return Promise.reject("Geoloc non supportée par le navigateur");
-                        // }
-                        // return new Promise<any>((resolve, reject) => {
-                        //     navigator.geolocation.getCurrentPosition(resolve, reject);
-                        // });
-
-                        /* De base :
-
-                            GeolocationPosition {
-                                coords: { (GeolocationCoordinates)
-                                    accuracy: 22.951000213623047
-                                    altitude: 77.5
-                                    altitudeAccuracy: null
-                                    heading: 263.546142578125
-                                    latitude: 47.1552407
-                                    longitude: -1.5262464
-                                    speed: 0.0011239566374570131
-                                }
-                                timestamp: 1589884798399 (number)
-                            }
-
-                        */
+                        resolve();
                     }
                 },
                 reject);
+
+        });
+    }
+
+    static startWatchingPosition():Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.canUsePosition()
+                .then(
+                    () => {
+                        if (GeolocationService.watchId) {
+                            console.error("Il y a déjà un watcher en cours");
+                        } else {
+                            let options = {
+                                enableHighAccuracy: false,
+                                maximumAge: 20,
+                                timeout: 3000
+                            };
+                            let watchId:CallbackID = Geolocation.watchPosition(options, this.receivePosition);
+                            GeolocationService.watchId = watchId;
+                        }
+                        resolve();
+                    },
+                    reject
+                );
+        });
+    }
+
+    static stopWatchingPosition() {
+
+        console.debug("About to stop watching position", GeolocationService.watchId);
+        if (GeolocationService.watchId) {
+            Geolocation.clearWatch({id: GeolocationService.watchId});
+        }
+
+    }
+
+    static receivePosition(position?:GeolocationPosition, error?:any) {
+        console.log("position", position);
+        console.log("error", error);
+        if (position && position != null) {
+            GeolocationService.latestPosition = position;
+            delete GeolocationService.latestError;
+        } else {
+            delete GeolocationService.latestPosition;
+            GeolocationService.latestError = error;
+        }
+    }
+
+    static getPosition():Promise<GeolocationPosition> {
+
+        return new Promise<GeolocationPosition>((resolve, reject) => {
+
+            if (this.latestPosition) {
+                resolve(this.latestPosition);
+            } else if (this.latestError) {
+                reject(this.latestError);
+            } else {
+                reject("Did you start the watcher before?");
+            }
         });
 
     }
 
     static getClosestLake():Promise<CoordsAndLake> {
+
+        // TODO AThimel 28/05/2020 Gérer un timeout pour laisser le temps au téléphone de capturer le GPS
+
         return new Promise<CoordsAndLake>((resolve, reject) => {
             Promise.all(
                 [

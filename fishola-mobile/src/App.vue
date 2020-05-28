@@ -22,6 +22,7 @@ import PicturesService from '@/services/PicturesService';
 import { Component, Vue } from 'vue-property-decorator';
 import ReferentialService from './services/ReferentialService';
 import DocumentationService from './services/DocumentationService';
+import GeolocationService from './services/GeolocationService';
 
 @Component({
   components: {
@@ -56,6 +57,7 @@ export default class AppView extends Vue {
     beforeDestroy() {
       this.$root.$off('ask-for-sync-check');
       clearInterval(this.interval);
+      this.stopWatchingPosition();
     }
 
     checkOutOfSyncTrips() {
@@ -77,6 +79,10 @@ export default class AppView extends Vue {
     checkOutOfSyncPictures() {
       // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
+    }
+
+    stopWatchingPosition() {
+      GeolocationService.stopWatchingPosition();
     }
 }
 
