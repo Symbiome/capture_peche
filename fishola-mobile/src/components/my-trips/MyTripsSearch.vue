@@ -66,8 +66,12 @@ export default class MyTripsSearch extends Vue {
     &.offline {
       background-color: @solitude;
 
+      input {
+        background-color: @solitude;
+      }
       input::placeholder {
         color: @carrot-orange;
+        background-color: @solitude;
       }
     }
 
