@@ -108,7 +108,7 @@ export default class TripSpeciesView extends Vue {
     console.log("Trip chargé", someTrip);
     this.trip = someTrip;
     let lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
-    this.species = []
+    this.species = [];
     lakeAndCustomSpecies.forEach((s) => {
       if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
         this.species.push(s);
