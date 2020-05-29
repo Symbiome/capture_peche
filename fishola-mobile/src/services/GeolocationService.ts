@@ -95,8 +95,8 @@ export default class GeolocationService extends AbstractFisholaService {
     }
 
     static receivePosition(position?:GeolocationPosition, error?:any) {
-        console.log("position", position);
-        console.log("error", error);
+        console.debug("position", position);
+        console.debug("error", error);
         if (position && position != null) {
             GeolocationService.latestPosition = position;
             delete GeolocationService.latestError;
