@@ -277,9 +277,10 @@ export default class EditCatchView extends Vue {
           (position) => {
             this.aCatch.latitude = position.coords.latitude;
             this.aCatch.longitude = position.coords.longitude;
+            console.info(`Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`);
           },
           (e) => {
-            console.error("Error whjle geting location from geolocation service", e);
+            console.error("Error while geting location from geolocation service", e);
           }
         );
     }

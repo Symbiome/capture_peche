@@ -96,12 +96,12 @@ export default class GeolocationService extends AbstractFisholaService {
     }
 
     static receivePosition(position?:GeolocationPosition, error?:any) {
-        console.debug("position", position);
-        console.debug("error", error);
         if (position && position != null) {
+            console.debug("Received position", JSON.stringify(position));
             GeolocationService.latestPosition = position;
             delete GeolocationService.latestError;
         } else {
+            console.debug("Error receiving position", error);
             delete GeolocationService.latestPosition;
             GeolocationService.latestError = error;
         }
@@ -122,15 +122,39 @@ export default class GeolocationService extends AbstractFisholaService {
 
     }
 
-    static getClosestLake():Promise<CoordsAndLake> {
+    static getPositionWithRetryUntilTimeout(ms:number):Promise<GeolocationPosition> {
+        console.debug("getPositionWithRetryUntilTimeout", ms);
+        if (ms < 0) {
+            return Promise.reject("Timeout");
+        }
+        return new Promise<GeolocationPosition>((resolve, reject) => {
+            let startedAt = new Date().getTime();
+            GeolocationService.getPosition()
+                    .then(
+                        (result) => {
+                            resolve(result);
+                        },
+                        () => {
+                            setTimeout(() =>
+                                {
+                                    let remaing = ms - (new Date().getTime() - startedAt);
+                                    GeolocationService.getPositionWithRetryUntilTimeout(remaing)
+                                        .then(resolve, reject);
+                                },
+                                200
+                            );
+                        }
+                    )
+        });
+    }
 
-        // TODO AThimel 28/05/2020 Gérer un timeout pour laisser le temps au téléphone de capturer le GPS
+    static getClosestLake():Promise<CoordsAndLake> {
 
         return new Promise<CoordsAndLake>((resolve, reject) => {
             Promise.all(
                 [
                     ReferentialService.getLakes(),
-                    GeolocationService.getPosition()
+                    GeolocationService.getPositionWithRetryUntilTimeout(3000)
                 ])
                 .then(
                     (data:[Lake[], GeolocationPosition]) => {

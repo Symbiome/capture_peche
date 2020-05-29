@@ -41,7 +41,7 @@
                         v-bind:error="finishedAtError"/>
           </div>
 
-          TODO Afficher l'état de l'acquisition de la position
+          <!-- TODO Afficher l'état de l'acquisition de la position -->
 
           <div class="bottom-page-spacer"></div>
         </div>
