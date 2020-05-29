@@ -150,12 +150,6 @@ export default class TripMetaView extends Vue {
         );
     }
 
-    // TODO AThimel 28/05/2020 À placer sur le tout premier écran d'une sortie pour anticiper le chargement de la position
-    let watching = GeolocationService.startWatchingPosition();
-    watching.then(
-      (r) => console.debug("Le watcher est démarré", r),
-      (e) => console.error("Pas d'acquisition de la position", e)
-    );
   }
 
   referentialsLoaded(data:LakesAndTripTypes) {

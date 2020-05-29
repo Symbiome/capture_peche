@@ -62,13 +62,14 @@ export default class GeolocationService extends AbstractFisholaService {
         });
     }
 
-    static startWatchingPosition():Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    static startWatchingPosition():Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
             this.canUsePosition()
                 .then(
                     () => {
                         if (GeolocationService.watchId) {
                             console.error("Il y a déjà un watcher en cours");
+                            resolve(false);
                         } else {
                             let options = {
                                 enableHighAccuracy: false,
@@ -77,8 +78,8 @@ export default class GeolocationService extends AbstractFisholaService {
                             };
                             let watchId:CallbackID = Geolocation.watchPosition(options, this.receivePosition);
                             GeolocationService.watchId = watchId;
+                            resolve(true);
                         }
-                        resolve();
                     },
                     reject
                 );
