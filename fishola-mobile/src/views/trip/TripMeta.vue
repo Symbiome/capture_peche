@@ -130,19 +130,12 @@ export default class TripMetaView extends Vue {
     if (this.id == Constants.NEW_TRIP_ID) {
       GeolocationService.getClosestLake()
         .then(
-          (coordsAndLake:CoordsAndLake) => {
-            let lake = coordsAndLake.lake;
+          (lake:Lake) => {
             console.debug("Le lac le plus proche est ", lake);
             this.trip.lakeId = lake.id;
             // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
             this.lakeIdError = lake.id;
             this.lakeIdError = '';
-
-            if (this.trip.mode == 'Live') {
-              this.trip.beginLatitude = coordsAndLake.latitude;
-              this.trip.beginLongitude = coordsAndLake.longitude;
-              console.info(`Coordonnées de début de sortie : ${this.trip.beginLatitude},${this.trip.beginLongitude}`);
-            }
           },
           (e) => {
             console.error("Impossible de récupérer les coordonnées", e);

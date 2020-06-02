@@ -7,5 +7,7 @@ export default interface TripSpecies {
     startedAt: string;
     speciesIds: string[];
     otherSpecies: string;
+    beginLatitude?: number;
+    beginLongitude?: number;
 
 }

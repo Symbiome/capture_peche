@@ -148,9 +148,9 @@ export default class GeolocationService extends AbstractFisholaService {
         });
     }
 
-    static getClosestLake():Promise<CoordsAndLake> {
+    static getClosestLake():Promise<Lake> {
 
-        return new Promise<CoordsAndLake>((resolve, reject) => {
+        return new Promise<Lake>((resolve, reject) => {
             Promise.all(
                 [
                     ReferentialService.getLakes(),
@@ -172,8 +172,7 @@ export default class GeolocationService extends AbstractFisholaService {
                             const longitude = position.coords.longitude;
 
                             let closestLake = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
-                            let result = new CoordsAndLake(latitude, longitude, closestLake);
-                            resolve(result);
+                            resolve(closestLake);
                         }
                     },
                     reject

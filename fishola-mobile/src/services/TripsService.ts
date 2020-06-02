@@ -327,15 +327,34 @@ export default class TripsService extends AbstractFisholaService {
      */
     static finishTripBootstrap(trip:TripSpecies, callback: (id:string) => void) {
         if (trip.id == Constants.NEW_TRIP_ID) {
-            if (trip.mode == 'Live') {
-                trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
-            }
 
             trip.id = Constants.RUNNING_ID;
-            TripsService.saveTripSpecies(trip, () => {
-                this.deleteDirtyTrip();
-                callback(trip.id!);
-            });
+
+            let finish = () => {
+                TripsService.saveTripSpecies(trip, () => {
+                    this.deleteDirtyTrip();
+                    callback(trip.id!);
+                });
+            }
+
+            if (trip.mode == 'Live') {
+                trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+
+                GeolocationService.getPosition()
+                    .then(
+                        (position) => {
+                            trip.beginLatitude = position.coords.latitude;
+                            trip.beginLongitude = position.coords.longitude;
+                            console.info(`Coordonnées de début de sortie : ${trip.beginLatitude},${trip.beginLongitude}`);
+                            finish();
+                        },
+                        (error) => {
+                            console.warn("Pas de coordonnées GPS", error);
+                            finish();
+                        });
+            } else {
+                finish();
+            }
         } else {
             TripsService.saveTripSpecies(trip, () => {callback(trip.id!);});
         }
