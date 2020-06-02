@@ -272,7 +272,7 @@ export default class EditCatchView extends Vue {
       .then(this.referentialLoaded);
 
     if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
-      GeolocationService.getPosition()
+      GeolocationService.checkWatchAndGetPositionUntilTimeout()
         .then(
           (position) => {
             this.aCatch.latitude = position.coords.latitude;

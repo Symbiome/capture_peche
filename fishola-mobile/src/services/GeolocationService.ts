@@ -91,6 +91,7 @@ export default class GeolocationService extends AbstractFisholaService {
         console.debug("About to stop watching position", GeolocationService.watchId);
         if (GeolocationService.watchId) {
             Geolocation.clearWatch({id: GeolocationService.watchId});
+            delete GeolocationService.watchId;
         }
 
     }
@@ -102,19 +103,22 @@ export default class GeolocationService extends AbstractFisholaService {
             delete GeolocationService.latestError;
         } else {
             console.debug("Error receiving position", error);
-            delete GeolocationService.latestPosition;
+            // delete GeolocationService.latestPosition;
             GeolocationService.latestError = error;
+            GeolocationService.stopWatchingPosition();
         }
     }
 
-    static getPosition():Promise<GeolocationPosition> {
+    static getInstantPosition():Promise<GeolocationPosition> {
 
         return new Promise<GeolocationPosition>((resolve, reject) => {
 
-            if (this.latestPosition) {
-                resolve(this.latestPosition);
-            } else if (this.latestError) {
+            if (this.latestError) {
                 reject(this.latestError);
+            } else if (this.latestPosition) {
+                let age = new Date().getTime() - this.latestPosition.timestamp;
+                console.debug("Âge de la position", age);
+                resolve(this.latestPosition);
             } else {
                 reject("Did you start the watcher before?");
             }
@@ -129,23 +133,39 @@ export default class GeolocationService extends AbstractFisholaService {
         }
         return new Promise<GeolocationPosition>((resolve, reject) => {
             let startedAt = new Date().getTime();
-            GeolocationService.getPosition()
+            GeolocationService.getInstantPosition()
                     .then(
                         (result) => {
                             resolve(result);
                         },
-                        () => {
-                            setTimeout(() =>
-                                {
-                                    let remaing = ms - (new Date().getTime() - startedAt);
-                                    GeolocationService.getPositionWithRetryUntilTimeout(remaing)
-                                        .then(resolve, reject);
-                                },
-                                200
-                            );
+                        (error) => {
+                            if (error && error.message && error.message.indexOf('User denied') != -1) {
+                                reject(error);
+                            } else if (error && error.message && error.message.indexOf('location unavailable') != -1) {
+                                reject(error);
+                            } else {
+                                setTimeout(() =>
+                                    {
+                                        let remaing = ms - (new Date().getTime() - startedAt);
+                                        GeolocationService.getPositionWithRetryUntilTimeout(remaing)
+                                            .then(resolve, reject);
+                                    },
+                                    200
+                                );
+                            }
                         }
                     )
         });
+    }
+
+    static checkWatchAndGetPositionUntilTimeout(ms?:number):Promise<GeolocationPosition> {
+        console.debug("GeolocationService.watchId", GeolocationService.watchId);
+        if (!GeolocationService.watchId) {
+            this.startWatchingPosition();
+            delete GeolocationService.latestError;
+        }
+        let result = GeolocationService.getPositionWithRetryUntilTimeout(ms || 10000);
+        return result;
     }
 
     static getClosestLake():Promise<Lake> {
@@ -154,7 +174,7 @@ export default class GeolocationService extends AbstractFisholaService {
             Promise.all(
                 [
                     ReferentialService.getLakes(),
-                    GeolocationService.getPositionWithRetryUntilTimeout(3000)
+                    GeolocationService.checkWatchAndGetPositionUntilTimeout(3000)
                 ])
                 .then(
                     (data:[Lake[], GeolocationPosition]) => {

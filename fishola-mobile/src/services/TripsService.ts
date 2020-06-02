@@ -340,7 +340,7 @@ export default class TripsService extends AbstractFisholaService {
             if (trip.mode == 'Live') {
                 trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
 
-                GeolocationService.getPosition()
+                GeolocationService.checkWatchAndGetPositionUntilTimeout()
                     .then(
                         (position) => {
                             trip.beginLatitude = position.coords.latitude;
@@ -424,7 +424,7 @@ export default class TripsService extends AbstractFisholaService {
         if (trip.mode == 'Live') {
             // On tente de récupérer les coordonnées GPS pour enregistrer les coordonnées de fin de sortie
             return new Promise<string>((resolve, reject) => {
-                GeolocationService.getPosition()
+                GeolocationService.checkWatchAndGetPositionUntilTimeout()
                 .then(
                   (position) => {
                       trip.endLatitude = position.coords.latitude;

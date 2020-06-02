@@ -36,7 +36,6 @@
 
 <script lang="ts">
 import TripsService from '@/services/TripsService';
-import GeolocationService from '@/services/GeolocationService';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -56,13 +55,6 @@ export default class NewTripView extends Vue {
   
   constructor() {
     super();
-
-    let watching = GeolocationService.startWatchingPosition();
-    watching.then(
-      (newlyStarted) => console.debug("Le watcher tourne. Nouvellement démarré ?", newlyStarted),
-      (e) => console.error("Pas d'acquisition de la position", e)
-    );
-
   }
 
   newLiveTrip() {
