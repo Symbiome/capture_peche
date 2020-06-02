@@ -6,7 +6,7 @@
     <div class="page login-page">
       <div class="login-title keyboardSensitive">
         <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="Fishola"/>
+        <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="FISHOLA"/>
       </div>
       <div class="login-form">
         <FormInput name="email"

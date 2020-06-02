@@ -127,7 +127,7 @@ public class SecurityResource extends AbstractFisholaResource {
                     "firstName", bean.firstName);
             FisholaMail mail = builder
                     .addTos(email)
-                    .subject("Fishola - Validation de votre e-mail")
+                    .subject("FISHOLA - Validation de votre e-mail")
                     .build();
             // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
             mailService.sendMail(mail);

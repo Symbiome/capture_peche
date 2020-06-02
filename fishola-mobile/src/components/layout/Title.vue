@@ -1,11 +1,7 @@
 <template>
   <div class="header-title" v-on:click="goHome">
-    <img src="img/logo-small.svg" alt="Fishola" />
+    <img src="img/logo-small.svg" alt="FISHOLA" />
     <span v-if="envName" class="env">({{envName}})</span>
-    <!--
-    <img src="img/logo-FISHOLA-logo-negatif.svg" alt="Fishola" />
-    <img src="img/logo-FISHOLA-nom-negatif.svg" alt="Fishola" />
-    -->
   </div>
 </template>
 

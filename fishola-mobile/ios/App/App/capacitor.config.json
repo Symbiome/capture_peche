@@ -1,6 +1,6 @@
 {
   "appId": "fr.inrae.fishola",
-  "appName": "Fishola",
+  "appName": "FISHOLA",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "target/dist",

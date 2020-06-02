@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Fishola</string>
-    <string name="title_activity_main">Fishola</string>
+    <string name="app_name">FISHOLA</string>
+    <string name="title_activity_main">FISHOLA</string>
     <string name="package_name">fr.inrae.fishola</string>
     <string name="custom_url_scheme">fr.inrae.fishola</string>
 </resources>
