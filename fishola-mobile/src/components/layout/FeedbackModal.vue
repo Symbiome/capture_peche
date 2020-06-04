@@ -114,6 +114,11 @@ export default class FeedbackModal extends Vue {
   }
 
   openFeedback() {
+    // Hide footer to avoid having footer overlaping
+    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    if (footer != null) {
+      footer.classList.add("hidden");
+    }
     this.model = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
     this.loadProfile();
   }
@@ -130,6 +135,11 @@ export default class FeedbackModal extends Vue {
   }
 
   closeFeedback() {
+    // Reveal footer now that modal is closed
+    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    if (footer != null) {
+      footer.classList.remove("hidden");
+    }
     this.display = false;
   }
 
@@ -211,6 +221,13 @@ export default class FeedbackModal extends Vue {
 <style scoped lang="less">
 
 @import "../../less/main";
+
+.feedback-page {
+  &.keyboardShowing {
+    margin-top: -50px;
+    height: 100vh !important;
+  }
+}
 
 .feedback {
   position: absolute;
