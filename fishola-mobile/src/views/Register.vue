@@ -192,7 +192,7 @@ export default class RegisterView extends Vue {
   padding-bottom: 90px;
 
   &.keyboardShowing {
-    margin-top: 5px;
+    margin-top: calc(5px + env(safe-area-inset-top));
     padding-top: 0px;
     padding-bottom:2px;
     height: calc(100% - 5px);

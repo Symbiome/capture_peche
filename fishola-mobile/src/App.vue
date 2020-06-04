@@ -152,8 +152,9 @@ html {
 
     height: calc(100% - @header-height - @footer-height);
     &.keyboardShowing {
+      margin-top: env(safe-area-inset-top);
       // Take reduced footer height into account
-      height: calc(100% - @reduced-footer-height);
+      height: calc(100%  - env(safe-area-inset-top) - @reduced-footer-height);
     }
   }
 }
@@ -200,7 +201,7 @@ html {
   height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
   &.keyboardShowing {
     // Take reduced footer height into account
-    height: calc(100% - @reduced-footer-height - 10px);
+    height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height - 10px);
   }
   color: @gunmetal;
 

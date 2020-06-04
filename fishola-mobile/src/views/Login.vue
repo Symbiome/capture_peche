@@ -157,6 +157,7 @@ export default class LoginView extends Vue {
   .login-title {
     height: 140px;
     &.keyboardShowing {
+      margin-top: calc(2 * env(safe-area-inset-top));
       height: 81px;
     }
     display: flex;

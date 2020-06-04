@@ -224,7 +224,7 @@ export default class FeedbackModal extends Vue {
 
 .feedback-page {
   &.keyboardShowing {
-    margin-top: -50px;
+    margin-top: -50px !important;
     height: 100vh !important;
   }
 }
@@ -247,7 +247,7 @@ export default class FeedbackModal extends Vue {
     height: calc(100% - @footer-height);
     &.keyboardShowing {
       // Make page take new footer height into account
-      height: calc(100% - @reduced-footer-height);
+      height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height);
     }
 
     .pane {
