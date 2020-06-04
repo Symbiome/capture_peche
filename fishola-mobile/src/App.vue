@@ -217,6 +217,14 @@ html {
     line-height: 30px;
     color: @pelorous;
     text-align: center;
+
+    &.keyboardShowing {
+      margin-top:10px;
+      margin-bottom: 5px;
+      height: 16px;
+      line-height: 16px;
+      font-size:16px;
+    }
   }
 
   .pane-content {

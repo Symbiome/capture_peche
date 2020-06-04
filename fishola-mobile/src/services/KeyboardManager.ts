@@ -15,7 +15,7 @@ export default class KeyboardManager {
     static CSS_HIDE_CLASS_SMALL_SCREEN_ONLY = ".hiddenWhenKeyboardShows_SmallScreensOnly";
 
     // Css classes for which the "keyboardShowing" class will be added (but no other change)
-    static CSS_KEYBOARD_SENSITIVE_CLASS = ".keyboardSensitive, .page, .pane";
+    static CSS_KEYBOARD_SENSITIVE_CLASS = ".keyboardSensitive, .page, .pane, h1";
 
 
     // Height (in px) under which elements tagged with the
