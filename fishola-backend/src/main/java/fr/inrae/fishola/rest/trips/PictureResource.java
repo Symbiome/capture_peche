@@ -13,6 +13,7 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -65,7 +66,8 @@ public class PictureResource extends AbstractFisholaResource {
             log.debug("Réception d'une image pour la capture : " + catchId);
         }
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
         NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
@@ -121,7 +123,7 @@ public class PictureResource extends AbstractFisholaResource {
            throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
         }
 
-        Response response = Response.noContent().build();
+        Response response = noContent(userIdAndRenewal);
         return response;
     }
 

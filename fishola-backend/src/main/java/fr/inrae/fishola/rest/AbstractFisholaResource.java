@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.util.Optional;
 import java.util.UUID;
@@ -131,6 +132,26 @@ public abstract class AbstractFisholaResource {
             output.write(array);
             output.flush();
         };
+    }
+
+    protected Response noContent(UserIdAndRenewal userIdAndRenewal) {
+        Response.ResponseBuilder responseBuilder = Response.noContent();
+        Response result = buildResponse(responseBuilder, userIdAndRenewal);
+        return result;
+    }
+
+    protected Response wrapEntity(Object entity, UserIdAndRenewal userIdAndRenewal) {
+        Response.ResponseBuilder responseBuilder = Response.ok(entity);
+        Response result = buildResponse(responseBuilder, userIdAndRenewal);
+        return result;
+    }
+
+    protected Response buildResponse(Response.ResponseBuilder responseBuilder, UserIdAndRenewal userIdAndRenewal) {
+        userIdAndRenewal.renewalToken()
+                .map(this::createTokenCookie)
+                .ifPresent(responseBuilder::cookie);
+        Response result = responseBuilder.build();
+        return result;
     }
 
 }

@@ -60,7 +60,7 @@ public class TripResourceTest extends AbstractFisholaTest {
 
     @Transactional
     protected int countTrips() {
-        UUID userId = jwtHelper.tokenToUserID(token);
+        UUID userId = jwtHelper.verifyToken(token);
         int result = tripsDao.countMyTrips(userId);
         return result;
     }

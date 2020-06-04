@@ -14,6 +14,7 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -80,25 +81,29 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/")
-    public PaginationResult<TripLight> getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie,
+    public Response getMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie,
                                                   @QueryParam("pageNumber") int pageNumber,
                                                   @QueryParam("pageSize") int pageSize,
                                                   @QueryParam("desc") boolean desc,
                                                   @QueryParam("term") String term) {
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
         PaginationParameter page = PaginationParameter.of(pageNumber, pageSize, "date", desc);
         Optional<String> searchTerm = Optional.ofNullable(StringUtils.trimToNull(term));
         PaginationResult<Trip> entities = tripsDao.listMyTrips(userId, page, searchTerm);
         PaginationResult<TripLight> result = entities.transform(this::toTripLight);
-        return result;
+        Response response = wrapEntity(result, userIdAndRenewal);
+        return response;
     }
 
     @GET
     @Path("/count")
-    public int countMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        UUID userId = getUserId(cookie);
+    public Response countMyTrips(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
         int result = tripsDao.countMyTrips(userId);
-        return result;
+        Response response = wrapEntity(result, userIdAndRenewal);
+        return response;
     }
 
     protected TripLight toTripLight(Trip trip) {
@@ -160,7 +165,8 @@ public class TripResource extends AbstractFisholaResource {
 
         // TODO: 30/12/2019 Détection des doublons
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Nouvelle sortie à persister : id=%s", trip.id));
@@ -235,7 +241,8 @@ public class TripResource extends AbstractFisholaResource {
             log.debug("URI de la sortie : " + uri);
         }
 
-        Response response = Response.created(uri).entity(replacements).build();
+        Response.ResponseBuilder responseBuilder = Response.created(uri).entity(replacements);
+        Response response = buildResponse(responseBuilder, userIdAndRenewal);
         return response;
     }
 
@@ -245,7 +252,8 @@ public class TripResource extends AbstractFisholaResource {
 
         Map<String, UUID> replacements = new HashMap<>();
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Sortie à mettre à jour : id=%s", tripId));
@@ -348,7 +356,7 @@ public class TripResource extends AbstractFisholaResource {
             usersDao.increaseSampleBaseId(userId);
         }
 
-        Response response = Response.ok(replacements).build();
+        Response response = wrapEntity(replacements, userIdAndRenewal);
         return response;
     }
 
@@ -356,7 +364,8 @@ public class TripResource extends AbstractFisholaResource {
     @Path("/{tripId}")
     public void deleteTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Suppression de la sortie : id=%s", tripId));
@@ -388,7 +397,8 @@ public class TripResource extends AbstractFisholaResource {
     @Path("/")
     public void deleteTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, List<UUID> tripIds) {
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         for (UUID tripId : tripIds) {
             deleteTrip(tripId, userId);
@@ -446,9 +456,11 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/{tripId}")
-    public TripBean getTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
+    public Response getTrip(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("tripId") UUID tripId) {
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
+
         Trip entity = tripsDao.getTrip(tripId);
 
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
@@ -487,7 +499,8 @@ public class TripResource extends AbstractFisholaResource {
 //                .forEach(allSpeciesIds::add);
 //        result.customSpecies = referentialDao.customSpeciesIndex(allSpeciesIds);
 
-        return result;
+        Response response = wrapEntity(result, userIdAndRenewal);
+        return response;
     }
 
     protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {

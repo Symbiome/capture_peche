@@ -98,11 +98,8 @@ public class DashboardResource extends AbstractFisholaResource {
         });
 
         Dashboard result = builder.build();
-        Response.ResponseBuilder responseBuilder = Response.ok(result);
-        userIdAndRenewal.renewalToken()
-                .map(this::createTokenCookie)
-                .ifPresent(responseBuilder::cookie);
-        return responseBuilder.build();
+        Response response = wrapEntity(result, userIdAndRenewal);
+        return response;
     }
 
     protected List<CatchBean> toDashboardTopCatchs(Collection<Catch> catches,
