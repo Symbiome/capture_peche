@@ -239,8 +239,13 @@ export default class DashboardView extends Vue {
       .then((result:boolean) => this.hasRunningTrip = result);
   }
 
-  cannotLoad() {
-    this.offline = true;
+  cannotLoad(error:any) {
+    if (error && error.timeoutReached) {
+      this.offline = true;
+    } else if (error && error.status == 401) {
+      this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+      router.push('/login');
+    }
     this.ready = true;
   }
 

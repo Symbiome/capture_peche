@@ -220,7 +220,11 @@ export default abstract class AbstractFisholaService {
         let timeout = new Promise((resolve, reject) => {
             let id = setTimeout(() => {
                 clearTimeout(id);
-                reject('Timed out in '+ ms + 'ms.')
+                let error = {
+                  timeoutReached: true,
+                  message: 'Timed out in '+ ms + 'ms.'
+                };
+                reject(error);
             }, ms)
         })
 
@@ -279,18 +283,26 @@ export default abstract class AbstractFisholaService {
                         resolve(result);
                     },
                     (error) => {
+                      if (error && error.timeoutReached) {
                         console.error(`Unable to load from the backend for '${uri}'`, error);
-                        this.getDatabase().offlineStorage.get(uri).then(
-                          (entry?:OfflineEntry) => {
-                            if (entry) {
-                              let content = entry.content;
-                              this.markOffline(content);
-                              resolve(content);
-                            } else {
-                              reject(`No offline entry for ${uri}`);
-                            }
-                          },
-                          reject);
+                        this.getDatabase()
+                          .offlineStorage
+                          .get(uri)
+                          .then(
+                            (entry?:OfflineEntry) => {
+                              if (entry) {
+                                let content = entry.content;
+                                this.markOffline(content);
+                                resolve(content);
+                              } else {
+                                reject(`No offline entry for ${uri}`);
+                              }
+                            },
+                            reject
+                          );
+                      } else {
+                        reject(error);
+                      }
                     }
                 );
         });

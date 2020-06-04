@@ -217,10 +217,14 @@ export default class TripsService extends AbstractFisholaService {
                         resolve(tripsAndCount);
                     },
                     (error) => {
-                        console.error("Erreur pendant le chargement des sorties", error);
-                        let tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
-                        tripsAndCount.offlineMarker = true;
-                        resolve(tripsAndCount);
+                        if (error && error.timeoutReached) {
+                            console.error("Erreur pendant le chargement des sorties", error);
+                            let tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
+                            tripsAndCount.offlineMarker = true;
+                            resolve(tripsAndCount);
+                        } else {
+                            reject(error);
+                        }
                     }
                 );
         });

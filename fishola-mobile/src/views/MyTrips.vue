@@ -141,7 +141,8 @@ export default class MyTripsView extends Vue {
 
   loadError(data:any) {
     console.error("Erreur au chargement des sorties", data);
-    if (data.status == 401) {
+    if (data && data.status == 401) {
+      this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
       router.push('/login');
     }
   }
