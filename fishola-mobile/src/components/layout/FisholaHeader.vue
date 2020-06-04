@@ -1,5 +1,5 @@
 <template>
-  <div class="header">
+  <div class="header hiddenWhenKeyboardShows">
     <div>
       <Title v-if="title"/>
     </div>

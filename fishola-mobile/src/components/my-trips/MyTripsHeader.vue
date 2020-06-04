@@ -1,5 +1,5 @@
 <template>
-  <div class="my-trips-header secondary-header">
+  <div class="my-trips-header secondary-header hiddenWhenKeyboardShows">
     <div>
       <span>Mes sorties</span>
     </div>

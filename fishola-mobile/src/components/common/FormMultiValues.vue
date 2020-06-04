@@ -1,6 +1,6 @@
 <template>
   <div class="form-multi-values">
-    <div class="header">
+    <div class="header hiddenWhenKeyboardShows">
       <label>
         {{label}}
       </label>

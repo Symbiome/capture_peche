@@ -50,13 +50,13 @@
           <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
         </div>
       </div>
-      <div class="register-buttons">
-        <div class="back">
+      <div class="register-buttons keyboardSensitive">
+        <div class="back hiddenWhenKeyboardShows">
           <button v-on:click="cancel">
             Retour
           </button>
         </div>
-        <div class="register">
+        <div class="register keyboardSensitive">
           <button v-on:click="register">
             S'enregistrer
           </button>
@@ -189,6 +189,14 @@ export default class RegisterView extends Vue {
   border-top-right-radius: 30px;
   margin-top: 50px;
   padding-top: 30px;
+  padding-bottom: 90px;
+
+  &.keyboardShowing {
+    margin-top: 5px;
+    padding-top: 0px;
+    padding-bottom:2px;
+    height: calc(100% - 5px);
+  }
 
   h1 {
     margin-top: 0px;
@@ -242,10 +250,17 @@ export default class RegisterView extends Vue {
   }
 
   .register-buttons {
-    height: 76px;
+    position: absolute;
+    width: 100vw;
+    bottom: 0px;
+    height: 55px;
     background-color: @zircon;
     padding-left: 30px;
     padding-right: 30px;
+
+    &.keyboardShowing {
+      height:35px;
+    }
 
     display: flex;
     flex-direction: row;
@@ -254,7 +269,10 @@ export default class RegisterView extends Vue {
 
     .register {
       height: 45px;
-
+      &.keyboardShowing {
+        margin:auto;
+        margin-top: -10px;
+      }
       button {
 
           height: 100%;

@@ -157,7 +157,7 @@ export default class LoginView extends Vue {
   .login-title {
     height: 140px;
     &.keyboardShowing {
-      height: 60px;
+      height: 81px;
     }
     display: flex;
     flex-direction: column;
@@ -174,7 +174,7 @@ export default class LoginView extends Vue {
     .logo {
       height: 100px;
       &.keyboardShowing {
-        height: 40px;
+        height: 65px;
       }
     }
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="some-trip-header secondary-header">
+  <div class="some-trip-header secondary-header hiddenWhenKeyboardShows">
     <div>
       <span v-if="trip">{{trip.name}}</span>
       <span v-if="!trip">Nouvelle sortie</span>
