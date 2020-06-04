@@ -255,6 +255,11 @@
       <artifactId>postgresql</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.quarkus.gizmo</groupId>
+      <artifactId>gizmo</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

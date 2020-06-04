@@ -31,7 +31,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.4.2.Final</quarkusVersion>
+    <quarkusVersion>1.5.0.Final</quarkusVersion>
     <jooqVersion>3.13.2</jooqVersion>
     <flywayVersion>6.4.3</flywayVersion>
     <jacksonVersion>2.11.0</jacksonVersion>
@@ -337,6 +337,14 @@
         <groupId>org.testcontainers</groupId>
         <artifactId>postgresql</artifactId>
         <version>${testcontainersVersion}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- FIXME AThimel 04/06/2020 : Pas besoin de tirer cette dépendance, mais on est obligée de forcer la version en 1.0.2 car la 1.0.3 tire ASM 8 qui fait planter les tests : Unsupported api 524288 -->
+      <dependency>
+        <groupId>io.quarkus.gizmo</groupId>
+        <artifactId>gizmo</artifactId>
+        <version>1.0.2.Final</version>
         <scope>test</scope>
       </dependency>
 
