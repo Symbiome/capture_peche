@@ -8,11 +8,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -23,6 +26,8 @@ import java.util.UUID;
 
 @RequestScoped
 public class JwtHelper {
+
+    private static final Log log = LogFactory.getLog(JwtHelper.class);
 
     @Inject
     protected FisholaConfiguration config;
@@ -35,6 +40,10 @@ public class JwtHelper {
 
     public String createToken(UUID userId) {
 
+        if (log.isInfoEnabled()) {
+            log.info("Création d'un token JWT pour l'utilisateur " + userId);
+        }
+
 //        iss issuer : qui a émis le token
 //        sub subject : identifiant unique métier
 //        aud audience : fishola mobile ?
@@ -45,7 +54,7 @@ public class JwtHelper {
 
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, 24);
+        calendar.add(Calendar.HOUR, config.getJwtLifetimeHours());
         Date expiresAt = calendar.getTime();
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
@@ -60,6 +69,43 @@ public class JwtHelper {
         return result;
     }
 
+    public UUID verifyToken(String token) {
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        DecodedJWT verify = JWT.require(algorithmHS)
+                .withIssuer("fishola-backend")
+                .build()
+                .verify(token);
+        String subject = verify.getSubject();
+
+        Preconditions.checkState(StringUtils.isNotEmpty(subject), "Subject manquant");
+
+        UUID result = UUID.fromString(subject);
+        return result;
+    }
+
+    public UUID verifyExpiredToken(String token) {
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+
+        // On convertit en secondes
+        long seconds = config.getJwtRenewalHours() * 60 * 60;
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        DecodedJWT verify = JWT.require(algorithmHS)
+                .withIssuer("fishola-backend")
+                .acceptExpiresAt(seconds)
+                .build()
+                .verify(token);
+        String subject = verify.getSubject();
+
+        Preconditions.checkState(StringUtils.isNotEmpty(subject), "Subject manquant");
+
+        UUID result = UUID.fromString(subject);
+        return result;
+    }
+
+    @Deprecated
     public UUID tokenToUserID(String token) throws NotAuthenticatedException {
 
         try {

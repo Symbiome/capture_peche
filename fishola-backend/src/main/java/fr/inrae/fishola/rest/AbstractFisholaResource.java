@@ -1,7 +1,10 @@
 package fr.inrae.fishola.rest;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -17,6 +20,8 @@ import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
+
+    private static final Log log = LogFactory.getLog(AbstractFisholaResource.class);
 
     public static final String AUTHENTICATION_COOKIE_NAME = "token";
 
@@ -52,6 +57,7 @@ public abstract class AbstractFisholaResource {
         return result;
     }
 
+    @Deprecated
     protected UUID getUserId(Cookie cookie) {
         String token = Optional.ofNullable(cookie)
                 .map(Cookie::getValue)
@@ -62,6 +68,62 @@ public abstract class AbstractFisholaResource {
             throw new NotAuthenticatedException("Utilisateur inconnu");
         }
         return userId;
+    }
+
+    /**
+     * Vérifie le token contenu dans le cookie et tente un renouvelement le cas échéant.
+     * @param cookie le cookie envoyé par le navigateur
+     * @return L'identifiant de l'utilisateur et éventuellement le nouveau token s'il y a eu renouvellement
+     */
+    protected UserIdAndRenewal getUserIdOrRenew(Cookie cookie) {
+        String token = Optional.ofNullable(cookie)
+                .map(Cookie::getValue)
+                .orElse(null);
+        try {
+            UUID userId = jwtHelper.verifyToken(token);
+            // Now we have to check that the userId is valid
+            if (!usersDao.isValidUserId(userId)) {
+                throw new NotAuthenticatedException("Utilisateur inconnu");
+            }
+            UserIdAndRenewal result = UserIdAndRenewal.of(userId);
+            return result;
+        } catch (TokenExpiredException tee) {
+            Optional<UserIdAndRenewal> renewal = tryTokenRenewal(token);
+            if (renewal.isPresent()) {
+                return renewal.get();
+            } else {
+                throw new NotAuthenticatedException("Token non renouvelable", tee);
+            }
+        } catch (RuntimeException re) {
+            throw new NotAuthenticatedException("Token invalide", re);
+        }
+    }
+
+    /**
+     * Dans le cas d'un token expiré on tente de le renouveller
+     * @param token le token expiré
+     * @return le résultat de la tentative. Optional.empty() si le renouvellement a échoué.
+     */
+    protected Optional<UserIdAndRenewal> tryTokenRenewal(String token) {
+        try {
+            UUID userId = jwtHelper.verifyExpiredToken(token);
+            boolean isValid = usersDao.isValidUserId(userId);
+            if (isValid) {
+                if (log.isInfoEnabled()) {
+                    log.info("Renouvellement automatique du token JWT pour l'utilisateur " + userId);
+                }
+                String newToken = jwtHelper.createToken(userId);
+                UserIdAndRenewal result = UserIdAndRenewal.of(userId, newToken);
+                return Optional.of(result);
+            } else {
+                return Optional.empty();
+            }
+        } catch (Exception eee) {
+            if (log.isWarnEnabled()) {
+                log.warn("Le renouvellement de Token n'est pas possible", eee);
+            }
+            return Optional.empty();
+        }
     }
 
     protected StreamingOutput wrapAsStreamingOutput(byte[] array) {

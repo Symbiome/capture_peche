@@ -35,7 +35,13 @@ public interface FisholaConfiguration {
 
     String getJwtSecret();
 
-    @ConfigProperty(defaultValue = "148")
+    @ConfigProperty(defaultValue = "24")
+    int getJwtLifetimeHours();
+
+    @ConfigProperty(defaultValue = "168") // Renouvellement accepté pendant 7j (168=7*24) après expiration
+    int getJwtRenewalHours();
+
+    @ConfigProperty(defaultValue = "168")
     int getTripModifiableHours();
 
     Optional<String> getBackendBaseUrl();
