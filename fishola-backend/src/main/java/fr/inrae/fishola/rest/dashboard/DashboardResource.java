@@ -15,6 +15,7 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
 import org.nuiton.util.pagination.PaginationParameter;
@@ -27,6 +28,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,9 +54,10 @@ public class DashboardResource extends AbstractFisholaResource {
 
     @GET
     @Path("/dashboard")
-    public Dashboard getDashboard(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+    public Response getDashboard(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
 
-        UUID userId = getUserId(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UUID userId = userIdAndRenewal.userId();
 
         ImmutableDashboard.Builder builder = ImmutableDashboard.builder();
 
@@ -96,7 +98,11 @@ public class DashboardResource extends AbstractFisholaResource {
         });
 
         Dashboard result = builder.build();
-        return result;
+        Response.ResponseBuilder responseBuilder = Response.ok(result);
+        userIdAndRenewal.renewalToken()
+                .map(this::createTokenCookie)
+                .ifPresent(responseBuilder::cookie);
+        return responseBuilder.build();
     }
 
     protected List<CatchBean> toDashboardTopCatchs(Collection<Catch> catches,
