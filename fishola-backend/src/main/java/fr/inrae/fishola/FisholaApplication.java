@@ -72,6 +72,12 @@ public class FisholaApplication {
 
     @Transactional
     void ensureDocumentations() {
+        ensureDocumentationByName("Réglementation sur le lac d'Annecy", "/sample/reglement-annecy.pdf");
+        ensureDocumentationByName("Réglementation sur le Léman", "/sample/reglement-leman.pdf");
+        ensureDocumentationByName("Réglementation sur le lac du Bourget", "/sample/reglement-bourget.pdf");
+        ensureDocumentationByName("Réglementation sur le lac d'Aiguebelette", "/sample/reglement-aiguebelette.pdf");
+        ensureDocumentationByName("Documentation sur les espèces", "/sample/presentation-coregone-final.pdf");
+        ensureDocumentationByName("Documentation sur les prélèvements", "/sample/fiche-prelevement.pdf");
         ensureDocumentationByName("Conditions Générales d'Utilisation", "/sample/CGU.pdf");
     }
 
