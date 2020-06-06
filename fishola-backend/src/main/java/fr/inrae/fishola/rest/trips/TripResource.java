@@ -169,7 +169,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Nouvelle sortie à persister : id=%s", trip.id));
+            log.debug(String.format("Nouvelle sortie à persister : id=%s; owner=%s", trip.id, userId));
         }
 
         if (log.isTraceEnabled()) {
@@ -256,7 +256,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Sortie à mettre à jour : id=%s", tripId));
+            log.debug(String.format("Sortie à mettre à jour : id=%s, owner=%s", tripId, userId));
         }
 
         if (log.isTraceEnabled()) {
