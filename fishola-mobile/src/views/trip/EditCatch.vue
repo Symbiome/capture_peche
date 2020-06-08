@@ -379,7 +379,10 @@ export default class EditCatchView extends Vue {
         Camera.getPhoto({
             quality: 95,
             allowEditing: false,
-            resultType: CameraResultType.DataUrl
+            resultType: CameraResultType.DataUrl,
+            promptLabelCancel: 'Annuler',
+            promptLabelPhoto: 'Sélectionner une image',
+            promptLabelPicture: 'Prendre une photo'
           }).then(
             image => {
               var imageSrc = image.dataUrl;
