@@ -85,7 +85,7 @@ build:android-demo:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - ln -s target/dist-demo target/dist
+    - mv target/dist-demo target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - ./gradlew clean
@@ -125,7 +125,7 @@ build:android-beta:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - ln -s target/dist-beta target/dist
+    - mv target/dist-beta target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - ./gradlew clean
