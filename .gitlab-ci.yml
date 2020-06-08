@@ -92,7 +92,7 @@ build:android-demo:
     - ./gradlew assembleRelease
     - cp app/build/outputs/apk/release/*.apk ../../
   artifacts:
-    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
+    name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
     paths:
       - ./*.apk
     expire_in: 2 weeks
@@ -132,7 +132,7 @@ build:android-beta:
     - ./gradlew assembleRelease
     - cp app/build/outputs/apk/release/*.apk ../../
   artifacts:
-    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
+    name: "fishola-android-beta-$CI_COMMIT_SHORT_SHA"
     paths:
       - ./*.apk
     expire_in: 2 weeks
