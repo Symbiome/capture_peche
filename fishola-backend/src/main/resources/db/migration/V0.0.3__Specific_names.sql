@@ -14,7 +14,7 @@ UPDATE species_by_lake
 
 UPDATE species_by_lake
     SET ALIAS = 'Féra'
-    WHERE lake_id = ( SELECT id FROM lake WHERE name = 'Lac Léman' )
+    WHERE lake_id = ( SELECT id FROM lake WHERE name = 'Léman' )
     AND species_id = ( SELECT id FROM species WHERE name = 'Corégone' );
 
 UPDATE species_by_lake
