@@ -69,6 +69,7 @@ build:android-demo:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
+      - fishola-mobile/target/dist-beta
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -85,7 +86,7 @@ build:android-demo:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - cp -r target/dist-demo target/dist
+    - mv target/dist-demo target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - ./gradlew clean
@@ -108,6 +109,7 @@ build:android-beta:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
+      - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-beta
   script:
     - apt-get --quiet update --yes
@@ -125,7 +127,7 @@ build:android-beta:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - cp -r target/dist-beta target/dist
+    - mv target/dist-beta target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - ./gradlew clean
