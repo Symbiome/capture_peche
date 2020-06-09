@@ -38,7 +38,7 @@ public abstract class AbstractFisholaResource {
     }
 
     protected NewCookie dropTokenCookie() {
-        NewCookie result = newTokenCookie("", 0);
+        NewCookie result = newTokenCookie("invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
         return result;
     }
 
