@@ -20,7 +20,7 @@ export default class KeyboardManager {
 
     // Height (in px) under which elements tagged with the
     // small resolution class should also be hidden
-    static SMALL_SCREEN_HEIGHT = 250;
+    static SMALL_SCREEN_HEIGHT = 400;
 
     static alreadyConfigured = false;
 
@@ -50,7 +50,7 @@ export default class KeyboardManager {
         // Hide all DOM elements tagged with CSS_HIDE_CLASS
         let toHide = [KeyboardManager.CSS_HIDE_CLASS];
         // On small resolution, also hide CSS_HIDE_CLASS_SMALL_SCREEN_ONLY
-        if (keyboardInfo.keyboardHeight < KeyboardManager.SMALL_SCREEN_HEIGHT) {
+        if (document.body.clientHeight - keyboardInfo.keyboardHeight < KeyboardManager.SMALL_SCREEN_HEIGHT) {
             toHide.push(KeyboardManager.CSS_HIDE_CLASS_SMALL_SCREEN_ONLY);
         }
         KeyboardManager.hideOrRevealElementsWithClass(true, toHide);

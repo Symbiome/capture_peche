@@ -161,7 +161,6 @@ html {
 
 .full-background {
   background-image: url("/img/background_transparent.png");
-  // background-image: url("/img/background.png");
   background-repeat: no-repeat;
   background-size: 100%;
   background-position: center;
@@ -170,9 +169,18 @@ html {
 .shifted-background {
   background-image: url("/img/background.png");
   background-repeat: no-repeat;
-  background-size: 100%;
-  background-position: center;
-  background-position-y: -230px;
+  background-size: 100% auto;
+  background-position: top;
+  // Very small resolution: scale down kacground to make it fit widht
+  background-position-y: -1vw;
+  @media(min-width:200px) {
+    background-position-y: -3vw;
+  }
+  // Resolutions larger than background: strech background width
+  @media (min-width: 350px) {
+    background-size: cover;
+    background-position-y: -4vw;
+  }
 }
 
 .secondary-header {

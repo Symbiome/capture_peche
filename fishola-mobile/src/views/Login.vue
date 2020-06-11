@@ -4,7 +4,7 @@
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
     <div class="page login-page">
-      <div class="login-title keyboardSensitive">
+      <div class="login-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
         <div class="welcome keyboardSensitive">Bienvenue sur</div>
         <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="FISHOLA"/>
       </div>
