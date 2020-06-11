@@ -27,16 +27,34 @@ export default class Title extends Vue {
 
 @import "../../less/main";
 
-.header-title {
+.header-title {    
   font-size: 24px;
-
   img {
     height: 30px;
   }
-
   span.env {
     color: @terra-cotta;
     font-size: 16px;
+  }
+  @media(max-width:350px) {
+    font-size: 14px;
+    img {
+      height: 20px;
+      margin-top:5px;
+    }
+    span.env {
+      font-size: 12px;
+    }
+  }
+
+  @media(max-width:280px) {
+    img {
+      height: 15px;
+      margin-top:7px;
+    }
+    span.env {
+      display:none;
+    }
   }
 }
 </style>

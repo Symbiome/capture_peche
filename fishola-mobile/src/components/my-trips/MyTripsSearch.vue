@@ -36,7 +36,13 @@ export default class MyTripsSearch extends Vue {
   padding-right: 20px;
   padding-top: 10px;
   padding-bottom: 10px;
-
+  
+  @media(max-width:350px) {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
   div {
     background-color: @white;
 
@@ -44,10 +50,16 @@ export default class MyTripsSearch extends Vue {
     padding-left: 20px;
     border-radius: 30px;
     line-height: 40px;
-
+    @media(max-width:350px) {
+      padding-left: 5px;
+      border-radius: 10px;
+    }
     .icon-magnifying-glass {
       color: @pelorous;
       margin-right: 10px;
+      @media(max-width:272px) {
+        display:none;
+      }
     }
 
     input {
