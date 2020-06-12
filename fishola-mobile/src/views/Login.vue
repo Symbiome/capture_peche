@@ -47,7 +47,9 @@
       <div class="login-buttons keyboardSensitive">
         <div class="signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
         <div class="signup hiddenWhenKeyboardShows"><button v-on:click="signUp">Créer un compte</button></div>
-        <div class="forgotten-password hiddenWhenKeyboardShows"><a v-on:click="forgottenPassword">Mot de passe oublié ?</a></div>
+        <ForgottenPassword 
+          v-bind:alreadTypedEmail="email"
+          v-bind:tohideSelector="'.login-form,.signin,.signup'"/>
       </div>
     </div>
   </div>
@@ -58,6 +60,7 @@
 import Constants from '@/services/Constants';
 
 import FormInput from '@/components/common/FormInput.vue'
+import ForgottenPassword from '@/components/common/ForgottenPassword.vue';
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -68,7 +71,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 @Component({
   components: {
     FisholaHeader,
-    FormInput
+    FormInput,
+    ForgottenPassword
   }
 })
 export default class LoginView extends Vue {
@@ -153,10 +157,6 @@ export default class LoginView extends Vue {
 
   signUp() {
     router.push('register');
-  }
-
-  forgottenPassword() {
-    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 
   autoLogin() {
