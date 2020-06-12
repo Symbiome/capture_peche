@@ -315,13 +315,6 @@ export default class LoginView extends Vue {
 
       }
     }
-
-    .forgotten-password {
-      font-size: 16px;
-      line-height: 22px;
-      margin-bottom: 30px;
-    }
-
   }
 }
 
