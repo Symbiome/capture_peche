@@ -1,6 +1,6 @@
 <template>
   <div class="forgotten-password hiddenWhenKeyboardShows">
-    <a v-on:click="forgottenPassword">Mot de passe oublié ? </a>
+    <a v-on:click="expandCollapse">Mot de passe oublié ? </a>
     </div>
 </template>
 
@@ -20,14 +20,32 @@ export default class ForgottenPassword extends Vue {
   // Example value: ".class1,.class2,.class3"
   @Prop() tohideSelector?:string;
 
-  forgottenPassword() {
+  // Indicates if components is in its collapsed (just forgotten password text) or expanded (with inputs & buttons) form
+  private collapsed: boolean = true;
+
+  /*
+  * Expand or collapsed the component according to its current state
+  */
+  expandCollapse() {
+    this.hideRevealElements();
+    this.collapsed = !this.collapsed;
+    this.$root.$emit('toaster-warning', 'Work in progress');
+  }
+
+  /**
+  * Hides or reveal all elements matching the toHideSelector prop
+  */
+  hideRevealElements() {
     if (this.tohideSelector != null) {
       let toHides = document.querySelectorAll(this.tohideSelector);
       toHides.forEach( toHide => {
-        toHide.classList.add("hidden");
+        if (toHide.classList.contains("hidden")) {
+          toHide.classList.remove("hidden");
+        } else {
+          toHide.classList.add("hidden");
+        }
       });
     }
-    this.$root.$emit('toaster-warning', 'Work in progress');
   }
 }
 </script>
