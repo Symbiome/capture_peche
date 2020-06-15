@@ -30,6 +30,12 @@ public interface FisholaConfiguration {
         return ProfileManager.getActiveProfile();
     }
 
+    default boolean isDevMode() {
+        String activeProfile = this.getActiveProfile();
+        boolean result = "dev".equals(activeProfile);
+        return result;
+    }
+
     @ConfigProperty(defaultValue = "12")
     int getPasswordHashCost();
 

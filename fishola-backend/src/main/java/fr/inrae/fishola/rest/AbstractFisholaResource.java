@@ -47,7 +47,8 @@ public abstract class AbstractFisholaResource {
     }
 
     private NewCookie newTokenCookie(String token, int maxAge) {
-        // FIXME AThimel 21/11/2019 Secure + HTTPOnly
+        // XXX AThimel 15/06/2020 Ça pourrait être problématique pour faire tourner un pautre profil que "dev" sur une IP locale
+        boolean secure = !config.isDevMode();
         NewCookie result = new NewCookie(
                 AUTHENTICATION_COOKIE_NAME,
                 token,
@@ -57,7 +58,7 @@ public abstract class AbstractFisholaResource {
                 null,
                 maxAge,
                 null,
-                false,
+                secure,
                 true);
         return result;
     }
