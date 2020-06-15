@@ -24,7 +24,7 @@ public abstract class AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(AbstractFisholaResource.class);
 
-    public static final String AUTHENTICATION_COOKIE_NAME = "token";
+    public static final String AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
     @Inject
     protected JwtHelper jwtHelper;
