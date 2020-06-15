@@ -1,5 +1,5 @@
 <template>
-  <div class="forgotten-password hiddenWhenKeyboardShows">
+  <div class="forgotten-password keyboardSensitive" v-bind:class="{ expanded: !collapsed, collapsed: collapsed}">
     <a v-on:click="expandCollapse">
       <!-- Back button (expanded formed) -->
       <div v-if="!collapsed" class="pastille backarrow">
@@ -51,7 +51,7 @@ export default class ForgottenPassword extends Vue {
   private collapsed: boolean = true;
 
   private forgottenEmail?: string;
-  private emailError?: string;
+  private emailError = '';
   private reinitRequestSent = false;
 
   /*
@@ -143,7 +143,30 @@ export default class ForgottenPassword extends Vue {
     line-height: 22px;
     margin-left: 30px;
     margin-right: 30px;
-    margin-bottom: 30px;
+    margin-bottom:30px;
+    &.collapsed {
+      // Hidden in collapsed mode
+      &.keyboardShowing {
+        display:none;
+      }
+    }
+    &.expanded {
+      &.keyboardShowing {
+        position: absolute;
+        bottom: 0;
+        border-top-left-radius: 30px;
+        border-top-right-radius: 30px;
+        color: @gunmetal;
+        width:100vw;
+        padding-top:20px;
+        padding-left:30px;
+        padding-right:30px;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-bottom: -10px;
+        background-color: @white-smoke;
+      }
+    }
   }
   .backarrow {
     float: left;

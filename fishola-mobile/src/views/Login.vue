@@ -46,10 +46,10 @@
       </div>
       <div class="login-buttons keyboardSensitive">
         <div class="signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
-        <div class="signup hiddenWhenKeyboardShows"><button v-on:click="signUp">Créer un compte</button></div>
-        <ForgottenPassword 
-          v-bind:alreadTypedEmail="email"
-          v-bind:tohideSelector="'.login-form,.signin,.signup'"/>
+        <div class="signup keyboardSensitive"><button v-on:click="signUp">Créer un compte</button></div>
+        <ForgottenPassword
+            v-bind:alreadTypedEmail="email"
+            v-bind:tohideSelector="'.login-form,.signin,.signup'"/>
       </div>
     </div>
   </div>
@@ -250,7 +250,7 @@ export default class LoginView extends Vue {
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     color: @gunmetal;
-    padding-top: 30px;
+    padding-top: 20px;
 
     display: flex;
     flex-direction: column;
@@ -266,11 +266,10 @@ export default class LoginView extends Vue {
       margin-right: 30px;
       margin-bottom: 20px;
       &.keyboardShowing {
-          margin-bottom: 5px; 
+          margin-bottom: -30px; 
       }
 
       button {
-
           height: 100%;
           width: 100%;
           border-radius: 50px;
@@ -293,8 +292,10 @@ export default class LoginView extends Vue {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
-      margin-bottom: 30px;
-
+      margin-bottom: 10px;
+      &.keyboardShowing {
+         display: none;
+      }
       button {
 
           height: 100%;
