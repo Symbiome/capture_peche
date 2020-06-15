@@ -98,6 +98,7 @@ import FormInput from '@/components/common/FormInput.vue'
 import router from '@/router'
 
 import DocumentationService from '@/services/DocumentationService';
+import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -130,38 +131,10 @@ export default class RegisterView extends Vue {
   }
 
   register() {
-
-    function httpCall(method: string, url:string, data:any, successCallback:()=>any, validationErrorCallback:(validationErrors:any)=>any, errorCallback:(status:number)=>any) {
-      var xhr = new XMLHttpRequest();
-      xhr.open(method, url, true);
-      xhr.withCredentials = true;
-      xhr.onload = function() {
-        // console.debug(this);
-        if (this.status == 200) {
-          successCallback();
-        } else if (this.status == 400) {
-          let responseText = this['responseText'] || '{}';
-          console.debug("responseText: " + responseText);
-          let parsed = JSON.parse(responseText);
-          validationErrorCallback(parsed);
-        } else {
-          console.error("Error in httpCall reponse " + this.status, this['responseText']);
-          errorCallback(this.status);
-        }
-      };
-      if (data != null) {
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(JSON.stringify(data));
-      } else {
-        xhr.send();
-      }
-    }
-
     this.cleanValidationErros();
 
     if (this.passwordConfirm == this.bean.password && this.cgu) {
-      let apiUrl = Constants.apiUrl("/v1/security/register");
-      httpCall('PUT', apiUrl, this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
+      ProfileService.register(this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
     } else if (!this.cgu) {
       this.$root.$emit('toaster-error', 'Vous devez accepter les CGU');
     } else {

@@ -22,6 +22,14 @@ import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
 import TripsService from './TripsService';
 import {UserSettings, Feedback, UpdatePasswordBean} from '@/pojos/BackendPojos';
+import UserRegister from '@/pojos/UserRegister';
+
+export class Credentials {
+    constructor (
+        public email:string,
+        public password:string) {
+    }
+}
 
 export default class ProfileService extends AbstractFisholaService {
 
@@ -66,6 +74,54 @@ export default class ProfileService extends AbstractFisholaService {
                     },
                     reject)
         });
+    }
+
+    /**
+     * Tries to signin with the given credentials.
+     *  @param credentials the credentials to use for trying to log in
+     * Returns :
+     * - 200 if login is correct
+     * - 401 if mail exists put password is wrong
+     * - 404 if mail does not exist
+     */
+    static signin(credentials: Credentials): Promise<number> {
+        return new Promise((resolve, reject) =>  {
+            this.backendPost("/v1/security/login", credentials).then(
+                () => {
+                    resolve(200)
+                },
+                (error) => {
+                    resolve(error.status)
+                }
+            )
+        });
+    }
+
+
+    /**
+     * Tries to register the given user
+     * @param newUser The new user to register
+     * @param successCallback callback called in case of success
+     * @param validationErrorCallback callback called if some field are not valid
+     * @param errorCallback callback called if there is an actual error server-side
+     */
+    static register( newUser: UserRegister
+                   , successCallback:()=>any
+                   , validationErrorCallback:(validationErrors:any)=>any
+                   , errorCallback:(status:number)=>any) {
+       this.backendPut("/v1/security/register", newUser).then(
+                successCallback,
+                (error) => {
+                    if (error.status == 400) {
+                        let response = error.content || '{}';
+                        console.debug("Register response ", response);
+                        validationErrorCallback(response);
+                    } else {
+                        console.error("Error in httpCall reponse " + error.status, error['responseText']);
+                        errorCallback(error.status);
+                    }
+                }
+        );
     }
 
     static logout():Promise<void> {

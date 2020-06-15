@@ -58,3 +58,17 @@ mvn clean compile quarkus:dev
 
 Quarkus tourne sur le port `8080`, on peut vérifier que tout va bien grâce au [endpoint status](http://localhost:8080/api/v1/status).
 
+Si une application tourne déjà sur 8080, vous pouvez indiquer un port alternatif dans le fichier application.properties :
+quarkus.http.port=8082
+Notez que si vous modifiez ce port, il faudra également modifier le port dans le .env de fishola_mobile
+
+Pour lancer un serveur mail localement, vous pouvez utiliser un mailcatcher : 
+* `docker run -p 41080:80 -p 41025:25 -d --name maildev --rm djfarrelly/maildev`
+* Editez l'addresse smtp du serveur (dans application.properties)
+```properties
+%dev.fishola.smtp-starttls=false
+%dev.fishola.smtp-host=localhost
+%dev.fishola.smtp-port=41025
+```
+L'ihm de mail est accessible sur localhost:41080
+

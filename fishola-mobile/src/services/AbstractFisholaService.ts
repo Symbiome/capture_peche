@@ -140,8 +140,13 @@ export default abstract class AbstractFisholaService {
         xhr.onload = function() {
           if (this.status == 200 || this.status == 201) {
             let responseText = this['responseText'];
+          try {
             let parsed = JSON.parse(responseText);
             resolve(parsed);
+          } catch (syntaxError) {
+            console.error("Could not parse server response as JSON ", responseText);
+            resolve(responseText);
+          }
           } else if (this.status == 204) {
             resolve();
           } else {
@@ -190,8 +195,13 @@ export default abstract class AbstractFisholaService {
         xhr.onload = function() {
           if (this.status == 200 || this.status == 201) {
             let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
-            resolve(parsed);
+            try {
+              let parsed = JSON.parse(responseText);
+              resolve(parsed);
+            } catch (syntaxError) {
+              console.error("Could not parse server response as JSON ", responseText);
+              resolve(responseText);
+            }
           } else if (this.status == 204) {
             resolve();
           } else {

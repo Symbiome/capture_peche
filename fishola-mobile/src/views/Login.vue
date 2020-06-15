@@ -57,10 +57,10 @@
 
 <script lang="ts">
 
-import Constants from '@/services/Constants';
-
+import Constants from '@/services/Constants'
+import ProfileService from '@/services/ProfileService'
 import FormInput from '@/components/common/FormInput.vue'
-import ForgottenPassword from '@/components/common/ForgottenPassword.vue';
+import ForgottenPassword from '@/components/common/ForgottenPassword.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import router from '@/router'
 
@@ -94,39 +94,11 @@ export default class LoginView extends Vue {
   }
 
   signIn() {
-
-    function httpCall(method: string, url:string, data:any, callback:(status:any)=>any) {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.withCredentials = true;
-        if (callback) {
-            xhr.onload = function() {
-              // console.debug(this);
-              if (this.status == 200 || this.status == 401 || this.status == 404) {
-                // let responseText = this['responseText'];
-                // console.debug("responseText: " + responseText);
-                // let parsed = JSON.parse(responseText);
-                callback(this.status);
-              } else {
-                console.error("Error during httpcall " + url + " " + this.status);
-              }
-          };
-        }
-        if (data != null) {
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(data));
-        }
-        else xhr.send();
-    }
-
     this.emailError = '';
     this.passwordError = '';
-
-    let loginBean =  {email: this.email, password: this.password};
-
-    let apiUrl = Constants.apiUrl("/v1/security/login");
-    httpCall('POST', apiUrl, loginBean, this.signInResult);
-
+    ProfileService
+      .signin({"email": this.email, "password": this.password})
+      .then(this.signInResult, () => {this.signInResult(404)}); 
   }
 
   signInResult(status:number) {
