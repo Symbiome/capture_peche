@@ -1,7 +1,6 @@
 package fr.inrae.fishola.rest.security;
 
 import com.google.common.base.Preconditions;
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.mails.FisholaMail;
@@ -48,9 +47,6 @@ public class SecurityResource extends AbstractFisholaResource {
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
     private static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
-
-    @Inject
-    protected FisholaConfiguration config;
 
     @Inject
     protected MailService mailService;

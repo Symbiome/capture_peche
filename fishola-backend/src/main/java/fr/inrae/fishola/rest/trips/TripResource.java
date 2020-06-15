@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
@@ -66,9 +65,6 @@ public class TripResource extends AbstractFisholaResource {
             .onResultOf(c -> c.caughtAt.orElse(null));
 
     private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
-
-    @Inject
-    protected FisholaConfiguration config;
 
     @Inject
     protected ReferentialDao referentialDao;

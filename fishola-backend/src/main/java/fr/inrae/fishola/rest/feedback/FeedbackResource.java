@@ -1,13 +1,13 @@
 package fr.inrae.fishola.rest.feedback;
 
 import com.google.common.collect.ImmutableMap;
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.FisholaMailAttachment;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inrae.fishola.mails.MailService;
+import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,15 +26,12 @@ import java.util.Base64;
 import java.util.Optional;
 
 @Path("/api/v1/feedback")
-public class FeedbackResource {
+public class FeedbackResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(FeedbackResource.class);
 
     @Inject
     protected MailService mailService;
-
-    @Inject
-    protected FisholaConfiguration config;
 
     @PUT
     @Path("/")

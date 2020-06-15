@@ -3,7 +3,6 @@ package fr.inrae.fishola.rest.trips;
 import com.google.common.base.Preconditions;
 import com.mortennobel.imagescaling.ResampleFilters;
 import com.mortennobel.imagescaling.ResampleOp;
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
@@ -42,9 +41,6 @@ import java.util.UUID;
 public class PictureResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(PictureResource.class);
-
-    @Inject
-    protected FisholaConfiguration config;
 
     @Inject
     protected TripsDao tripsDao;

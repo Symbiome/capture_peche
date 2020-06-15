@@ -1,6 +1,5 @@
 package fr.inrae.fishola.rest.editorial;
 
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
@@ -27,9 +26,6 @@ import java.util.stream.Collectors;
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DocumentationResource extends AbstractFisholaResource {
-
-    @Inject
-    protected FisholaConfiguration config;
 
     @Inject
     protected EditorialAndDocumentationDao dao;

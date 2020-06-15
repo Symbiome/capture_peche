@@ -1,6 +1,7 @@
 package fr.inrae.fishola.rest;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.apache.commons.logging.Log;
@@ -31,6 +32,9 @@ public abstract class AbstractFisholaResource {
 
     @Inject
     protected UsersDao usersDao;
+
+    @Inject
+    protected FisholaConfiguration config;
 
     protected NewCookie createTokenCookie(String token) {
         NewCookie result = newTokenCookie(token, DEFAULT_MAX_AGE);
