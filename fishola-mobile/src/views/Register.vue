@@ -71,6 +71,8 @@
 import Constants from '@/services/Constants';
 import UserRegister from '@/pojos/UserRegister';
 
+import Helpers from '@/services/Helpers';
+
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import router from '@/router'
@@ -155,8 +157,13 @@ export default class RegisterView extends Vue {
   }
 
   registrationOk() {
-    this.$root.$emit('toaster-success', 'Compte enregistré. Vous devez valider votre e-mail', 10000);
-    router.push('/login');
+
+    Helpers.alert(this.$modal, 'Vous devez confirmer votre adresse e-mail avant d\'utiliser FISHOLA. Merci de vérifier votre boîte e-mail', 'Compte enregistré')
+      .then(() => {
+        this.$root.$emit('toaster-success', 'Compte enregistré. Vous devez valider votre e-mail', 10000);
+        router.push('/login');
+      });
+
   }
 
   setValidationErrors(validationErrors:any) {

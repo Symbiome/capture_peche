@@ -167,7 +167,25 @@ export default class Helpers {
                 ]
             };
             modal.show('dialog', params);
-          
+        });
+    }
+
+    static alert(modal:any, text:string, title?:string):Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let params:any = {
+                title: title,
+                text: text,
+                buttons: [
+                    {
+                        title: 'J\'ai compris',
+                        handler: () => {
+                            modal.hide('dialog');
+                            resolve();
+                        }
+                    }
+                ]
+            };
+            modal.show('dialog', params);
         });
     }
 }
