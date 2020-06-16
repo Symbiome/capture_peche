@@ -41,6 +41,7 @@ import FormInput from '@/components/common/FormInput.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import router from '@/router'
 
+import ProfileService from '../services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -109,6 +110,13 @@ export default class LoginView extends Vue {
       case 200:
         this.$root.$emit('profile-updated');
         router.push('trips');
+
+        // Après login, on tente de télécharger les settings
+        ProfileService.prepareCaches()
+          .then(
+            () => console.debug("Préparation des caches du profil utilisateur terminée"),
+            (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
+          );
         break;
       case 401:
         this.$root.$emit('toaster-error', 'E-mail ou mot de passe incorrect');

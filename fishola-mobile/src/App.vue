@@ -22,6 +22,7 @@ import PicturesService from '@/services/PicturesService';
 import { Component, Vue } from 'vue-property-decorator';
 import ReferentialService from './services/ReferentialService';
 import DocumentationService from './services/DocumentationService';
+import ProfileService from './services/ProfileService';
 import GeolocationService from './services/GeolocationService';
 
 @Component({
@@ -45,6 +46,11 @@ export default class AppView extends Vue {
         .then(
           () => console.debug("Préparation des caches de documentation terminée"),
           (error) => console.error("Erreur lors de la préparation des caches de documentation", error)
+        );
+      ProfileService.prepareCaches()
+        .then(
+          () => console.debug("Préparation des caches du profil utilisateur terminée"),
+          (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
         );
       this.checkOutOfSyncTrips();
       let syncDelay = 30000;

@@ -64,7 +64,7 @@ export default class ProfileService extends AbstractFisholaService {
 
     static fetchSettings():Promise<UserSettings> {
         let promise = new Promise<UserSettings>((resolve, reject) => {
-            this.backendGet("/v1/security/settings")
+            this.backendGetOrOfflineStorage("/v1/security/settings")
                 .then(
                     (fetched) => {
                         ProfileService.settings = fetched;
@@ -72,7 +72,7 @@ export default class ProfileService extends AbstractFisholaService {
                     },
                     reject);
         });
-        return this.timeout(5000, promise);
+        return promise;
     }
 
     static getSettings():Promise<UserSettings> {
@@ -88,10 +88,23 @@ export default class ProfileService extends AbstractFisholaService {
             this.backendPut("/v1/security/settings", settings)
                 .then(
                     () => {
+                        this.deleteFromOfflineStorage("/v1/security/settings");
                         delete ProfileService.settings;
                         resolve();
                     },
                     reject)
+        });
+    }
+
+    static prepareCaches():Promise<void> {
+        let allPromises:Promise<void>[] = [
+            this.prepareCache('/v1/security/settings')
+        ];
+        return new Promise<void>((resolve, reject) => {
+            Promise.all(allPromises).then(
+                () => resolve()
+                ,reject
+            );
         });
     }
 

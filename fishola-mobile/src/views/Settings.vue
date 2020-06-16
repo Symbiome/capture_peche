@@ -93,9 +93,17 @@ export default class SettingsView extends Vue {
     this.offline = true;
   }
 
+  hasOfflineMarker(input:any):boolean {
+    return input.offlineMarker;
+  }
+
   settingsLoaded(settings:UserSettings) {
-    this.loading = false;
-    this.settings = settings;
+    if (this.hasOfflineMarker(settings)) {
+      this.cannotLoadSettings();
+    } else {
+      this.loading = false;
+      this.settings = settings;
+    }
   }
 
   saveSettings() {
