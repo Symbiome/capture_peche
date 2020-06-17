@@ -151,11 +151,11 @@ build:deploy-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: deploy
   when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-demo
+#  cache:
+#    paths:
+#      - fishola-backend/target/lib
+#      - fishola-backend/target/fishola-backend-*-runner.jar
+#      - fishola-mobile/target/dist-demo
   script:
     - ls -al fishola-backend/target
     - ls -al fishola-mobile/target
