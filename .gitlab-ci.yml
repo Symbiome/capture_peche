@@ -151,14 +151,19 @@ build:deploy-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: deploy
   when: manual
-#  cache:
-#    paths:
-#      - fishola-backend/target/lib
-#      - fishola-backend/target/fishola-backend-*-runner.jar
-#      - fishola-mobile/target/dist-demo
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-demo
   script:
     - ls -al fishola-backend/target
     - ls -al fishola-mobile/target
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
+    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t inrae/fishola:backend-demo fishola-backend
+    - docker build --no-cache --file fishola-mobile/Dockerfile.demo -t inrae/fishola:mobile-demo fishola-mobile
+    - docker push registry.nuiton.org/inrae/fishola
+    - docker logout registry.nuiton.org
   tags:
     - sticky
 
