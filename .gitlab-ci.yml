@@ -36,7 +36,8 @@ build:compile-only:
       - fishola-backend/target/fishola-backend-*-runner.jar
       - fishola-mobile/node
       - fishola-mobile/node_modules
-      - fishola-mobile/target/dist
+      - fishola-mobile/target/dist-demo
+      - fishola-mobile/target/dist-beta
   script:
     - mvn clean package -Dmaven.test.skip
   except:
