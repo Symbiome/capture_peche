@@ -3,8 +3,6 @@ services:
   - docker:dind
 
 variables:
-  # Instruct Testcontainers to use the daemon of DinD.
-  DOCKER_HOST: "tcp://docker:2375"
   # Improve performance with overlayfs.
   DOCKER_DRIVER: overlay2
   ANDROID_COMPILE_SDK: "29"
@@ -30,6 +28,9 @@ build:dependency-tree:
 build:compile-only:
   image: maven:3.6-openjdk-11
   stage: build
+  variables:
+    # Instruct Testcontainers to use the daemon of DinD.
+    DOCKER_HOST: "tcp://docker:2375"
   cache:
     paths:
       - fishola-backend/target/lib
@@ -49,6 +50,9 @@ build:compile-only:
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
   stage: build
+  variables:
+    # Instruct Testcontainers to use the daemon of DinD.
+    DOCKER_HOST: "tcp://docker:2375"
   cache:
     paths:
       - fishola-backend/target/lib
@@ -160,12 +164,13 @@ build:deploy-demo:
     - ls -al fishola-backend/target
     - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
-    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t inrae/fishola:backend-demo fishola-backend
-    - docker build --no-cache --file fishola-mobile/Dockerfile.demo -t inrae/fishola:mobile-demo fishola-mobile
+    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
+    - docker build --no-cache --file fishola-mobile/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
     - sticky
+    - docker
 
 #build:ios:
 #  stage: build
