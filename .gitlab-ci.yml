@@ -14,6 +14,7 @@ variables:
 stages:
 - build
 - build-mobile
+- deploy
 - check-releasable
 - sonar
 
@@ -31,6 +32,8 @@ build:compile-only:
   stage: build
   cache:
     paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist
@@ -47,6 +50,8 @@ build:compile-with-tests:
   stage: build
   cache:
     paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
@@ -138,6 +143,21 @@ build:android-beta:
     paths:
       - ./*.apk
     expire_in: 2 weeks
+  tags:
+    - sticky
+
+build:deploy-demo:
+  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  stage: deploy
+  when: manual
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-demo
+  script:
+    - ls -al fishola-backend/target
+    - ls -al fishola-mobile/target
   tags:
     - sticky
 
