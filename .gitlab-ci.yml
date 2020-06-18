@@ -193,6 +193,13 @@ build:docker-beta:
     - sticky
     - docker
 
+build:deploy-demo:
+  image: debian:latest
+  stage: deploy
+  when: manual
+  script:
+    - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
+
 #build:ios:
 #  stage: build
 #  when: manual
