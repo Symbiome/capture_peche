@@ -201,6 +201,14 @@ build:deploy-demo:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
+build:deploy-beta:
+  image: debian:latest
+  stage: deploy
+  when: manual
+  script:
+    - apt update && apt install -y curl && apt clean
+    - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-beta
+
 #build:ios:
 #  stage: build
 #  when: manual
