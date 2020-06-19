@@ -13,7 +13,6 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.quarkus.test.junit.QuarkusTest;
 import org.hamcrest.CoreMatchers;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
-
 import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +77,6 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .body(CoreMatchers.containsString("\"count\":" + count));
     }
 
-    @NotNull
     protected TripBean buildValidTripBean() {
         TripBean trip = new TripBean();
 
