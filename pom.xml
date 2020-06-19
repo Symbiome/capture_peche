@@ -1,4 +1,25 @@
 <?xml version="1.0"?>
+<!--
+  #%L
+  Fishola
+  %%
+  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  %%
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #L%
+  -->
+
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -21,9 +42,16 @@
   <inceptionYear>2019</inceptionYear>
 
   <organization>
-    <name>INRAE</name>
-    <url>https://www.inrae.fr/</url>
+    <name>INRAE - UMR CARRTEL</name>
+    <url>https://www6.dijon.inrae.fr/thonon</url>
   </organization>
+
+  <licenses>
+    <license>
+      <name>AGPL-3.0-only</name>
+      <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+    </license>
+  </licenses>
 
   <packaging>pom</packaging>
 
@@ -40,13 +68,16 @@
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
-<!--    <javaVersion>14</javaVersion>-->
+    <license.licenseName>agpl_v3</license.licenseName>
+
+    <!--    <javaVersion>14</javaVersion>-->
     <!-- FIXME AThimel 22/01/2020 Pour l'instant on ne peut pas mettre Java 13 à cause de : https://github.com/mojohaus/extra-enforcer-rules/issues/80 et/ou https://github.com/mojohaus/extra-enforcer-rules/pull/93/ -->
     <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
     <antRunPluginVersion>3.0.0</antRunPluginVersion>
     <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
+    <licensePluginVersion>2.0.0</licensePluginVersion>
   </properties>
 
   <scm>
@@ -395,6 +426,17 @@
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
           <version>1.10.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>${licensePluginVersion}</version>
+          <configuration>
+            <extraExtensions>
+              <vue>html</vue>
+            </extraExtensions>
+          </configuration>
         </plugin>
 
       </plugins>
