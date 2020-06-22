@@ -16,7 +16,7 @@
           v-model="forgottenEmail"
           v-bind:error="emailError"
         />
-        <div class="sendpassword"><button v-on:click="reinitPassword">Réinitialiser</button></div>
+        <div class="sendpassword"><button v-on:click="resetPassword">Réinitialiser</button></div>
     </div>
     <div class="reinitRequestSent" v-if="reinitRequestSent">
       Votre demande de réinitialisation de mot de passe a été envoyée. Veuillez-vérifier vos emails sur le compte {{ forgottenEmail }}
@@ -28,6 +28,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import FormInput from '@/components/common/FormInput.vue';
 import Constants from '@/services/Constants';
+import ProfileService from '@/services/ProfileService';
 
 /**
 * ForgottenPassword component, which, when clicked:
@@ -68,42 +69,19 @@ export default class ForgottenPassword extends Vue {
   /**
   * Sends password reinitialization request to server
   */
-  reinitPassword() {
-    // TODO Use new route instead of login
-    function httpCall(method: string, url:string, data:any, callback:(status:any)=>any) {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-        xhr.withCredentials = true;
-        if (callback) {
-            xhr.onload = function() {
-              if (this.status == 200 || this.status == 401 || this.status == 404) {
-                callback(this.status);
-              } else {
-                console.error("Error during httpcall " + url + " " + this.status);
-              }
-          };
-        }
-        if (data != null) {
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(data));
-        }
-        else xhr.send();
-    }
+  resetPassword() {
 
     this.emailError = '';
     let loginBean =  {email: this.forgottenEmail, password: "fAls3"};
 
-    let apiUrl = Constants.apiUrl("/v1/security/login");
-    httpCall('POST', apiUrl, loginBean, this.reinitResult);
+    ProfileService
+      .resetPassword(this.forgottenEmail)
+      .then(this.resetResult, () => {this.resetResult(404)});
   }
 
-  reinitResult(status:number) {
+  resetResult(status:number) {
     switch(status) {
       case 200:
-        this.$root.$emit('toaster-success', 'Mot de passe réinitialisé');
-        this.reinitRequestSent = true;
-        break;
-      case 401:
         this.$root.$emit('toaster-success', 'Mot de passe réinitialisé');
         this.reinitRequestSent = true;
         break;
@@ -112,6 +90,8 @@ export default class ForgottenPassword extends Vue {
         this.emailError = 'E-mail inconnu';
         break;
       default:
+        this.$root.$emit('toaster-error', 'Erreur technique');
+        this.emailError = 'Erreur technique, veuillez réessayer';
         console.error("Unexpected status: " + status);
     }
   }

@@ -97,6 +97,26 @@ export default class ProfileService extends AbstractFisholaService {
         });
     }
 
+    /**
+     * Tries to send a password reset request to server
+     * @param mail the mail on witch password reset should be sent
+     * Returns :
+     * - 200 if mail is correct
+     * - 404 if mail does not exist
+     */
+    static resetPassword(mail: String): Promise<number> {
+        return new Promise((resolve, reject) =>  {
+            this.backendPost("/v1/security/reset", mail).then(
+                () => {
+                    resolve(200)
+                },
+                (error) => {
+                    resolve(error.status)
+                }
+            )
+        });
+    }
+
 
     /**
      * Tries to register the given user
