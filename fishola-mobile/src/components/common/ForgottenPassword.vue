@@ -16,6 +16,13 @@
           v-model="forgottenEmail"
           v-bind:error="emailError"
         />
+        <FormInput name="newPassword"
+          type="password"
+          label="Choisissez un nouveau mot de passe"
+          placeholder="Nouveau mot de passe"
+          v-model="newPassword"
+          v-bind:error="passwordError"
+        />
         <div class="sendpassword"><button v-on:click="resetPassword">Réinitialiser</button></div>
     </div>
     <div class="reinitRequestSent" v-if="reinitRequestSent">
@@ -52,7 +59,9 @@ export default class ForgottenPassword extends Vue {
   private collapsed: boolean = true;
 
   private forgottenEmail?: string;
+  private newPassword?: string;
   private emailError = '';
+  private passwordError = '';
   private reinitRequestSent = false;
 
   /*
@@ -61,6 +70,7 @@ export default class ForgottenPassword extends Vue {
   expandCollapse() {
     // Initialize email with already typed email
     this.forgottenEmail = this.alreadTypedEmail;
+    this.newPassword = '';
     this.reinitRequestSent = false;
     this.hideRevealElements();
     this.collapsed = !this.collapsed;
@@ -72,11 +82,16 @@ export default class ForgottenPassword extends Vue {
   resetPassword() {
 
     this.emailError = '';
-    let loginBean =  {email: this.forgottenEmail, password: "fAls3"};
+    this.passwordError = '';
+    if (this.newPassword == undefined || this.newPassword.length > 3) {
+      let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
-    ProfileService
-      .resetPassword(this.forgottenEmail)
-      .then(this.resetResult, () => {this.resetResult(404)});
+      ProfileService
+        .resetPassword(loginBean)
+        .then(this.resetResult, () => {this.resetResult(404)});
+    } else {
+      this.passwordError = 'Mot de passe trop court';
+    }
   }
 
   resetResult(status:number) {

@@ -64,8 +64,6 @@ import ForgottenPassword from '@/components/common/ForgottenPassword.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import router from '@/router'
 
-import ProfileService from '../services/ProfileService';
-
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({

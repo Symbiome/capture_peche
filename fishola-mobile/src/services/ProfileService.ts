@@ -104,9 +104,9 @@ export default class ProfileService extends AbstractFisholaService {
      * - 200 if mail is correct
      * - 404 if mail does not exist
      */
-    static resetPassword(mail: String): Promise<number> {
+    static resetPassword(credentials: Credentials): Promise<number> {
         return new Promise((resolve, reject) =>  {
-            this.backendPost("/v1/security/reset", mail).then(
+            this.backendPost("/v1/security/request-password-reset", credentials).then(
                 () => {
                     resolve(200)
                 },

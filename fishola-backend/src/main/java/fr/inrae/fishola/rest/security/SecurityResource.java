@@ -234,6 +234,45 @@ public class SecurityResource extends AbstractFisholaResource {
 
     }
 
+    /**
+     * Password reset request: sends an email allowing user to modify his password.
+     * @param reset the email on which password should be reset and the new desired password
+     * @return 200 if password request mail was sent, 404 if mail not found
+     */
+    @POST
+    @Path("/request-password-reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response requestPasswordReset(LoginBean reset, @Context HttpServletRequest request) {
+        Optional<FisholaUser> correspondingUser = usersDao.findByEmail(reset.email);
+        if (correspondingUser.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            Preconditions.checkState(correspondingUser.isPresent(), "Impossible de trouver l'utilisateur : " + reset.email);
+            String passwordHashed = usersDao.hashPassword(reset.password);
+
+            // Prepare a special token that will allow user to reset password once clicked from emails
+            Map<String, String> claims = new HashMap<>();
+            claims.put(CLAIM_EMAIL, reset.email);
+            claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
+
+            String token = jwtHelper.createCustomToken("reset-password", 1, claims);
+
+            String apiBaseUrl = config.getApiUrl("/api/v1/security/reset-password", request);
+            String resetUrl = String.format("%s?t=%s", apiBaseUrl, token);
+
+            ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+                    "emails/password_reset.html",
+                    "resetLink", resetUrl,
+                    "firstName", correspondingUser.get().getFirstName());
+            FisholaMail mail = builder
+                    .addTos(reset.email)
+                    .subject("FISHOLA - Réinitialisation de votre mot de passe")
+                    .build();
+            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+            mailService.sendMail(mail);
+            return Response.ok().build();
+        }
+    }
     @POST
     @Path("/password")
     @Consumes(MediaType.APPLICATION_JSON)
