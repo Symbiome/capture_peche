@@ -70,7 +70,7 @@ build:compile-with-tests:
     - sticky
 
 # must be run after the build stage
-build:android-demo:
+package:android-demo:
   image: openjdk:9-jdk
   stage: package
   when: manual
@@ -111,7 +111,7 @@ build:android-demo:
     - sticky
 
 # must be run after the build stage
-build:android-beta:
+package:android-beta:
   image: openjdk:9-jdk
   stage: package
   when: manual
@@ -151,7 +151,7 @@ build:android-beta:
   tags:
     - sticky
 
-build:docker-demo:
+package:docker-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
   when: manual
@@ -172,7 +172,7 @@ build:docker-demo:
     - sticky
     - docker
 
-build:docker-beta:
+package:docker-beta:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
   when: manual
@@ -193,7 +193,7 @@ build:docker-beta:
     - sticky
     - docker
 
-build:deploy-demo:
+deploy:demo:
   image: debian:latest
   stage: deploy
   when: manual
@@ -201,7 +201,7 @@ build:deploy-demo:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
-build:deploy-beta:
+deploy:beta:
   image: debian:latest
   stage: deploy
   when: manual
