@@ -29,6 +29,11 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,10 +57,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 
 @Path("/api/v1/security")
@@ -247,19 +248,31 @@ public class SecurityResource extends AbstractFisholaResource {
         if (correspondingUser.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
+            // Step 1: check that user with given email exists
             Preconditions.checkState(correspondingUser.isPresent(), "Impossible de trouver l'utilisateur : " + reset.email);
+
+            // Step 2: validate & hash password
+            Optional<String> passwordError = validatePassword(reset.password);
+            Map<String, String> validationErrors = new LinkedHashMap<>();
+            passwordError.ifPresent(error -> validationErrors.put("password", error));
+            if (!validationErrors.isEmpty()) {
+                Response response = Response
+                        .status(Response.Status.BAD_REQUEST)
+                        .entity(validationErrors)
+                        .build();
+                return response;
+            }
             String passwordHashed = usersDao.hashPassword(reset.password);
 
-            // Prepare a special token that will allow user to reset password once clicked from emails
+            // Step 3: Prepare a special token that will allow user to reset password once clicked from emails
             Map<String, String> claims = new HashMap<>();
             claims.put(CLAIM_EMAIL, reset.email);
             claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
-
             String token = jwtHelper.createCustomToken("reset-password", 1, claims);
-
             String apiBaseUrl = config.getApiUrl("/api/v1/security/reset-password", request);
             String resetUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
+            // Step 4: send mail
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/password_reset.html",
                     "resetLink", resetUrl,

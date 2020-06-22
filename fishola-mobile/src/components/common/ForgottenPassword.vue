@@ -83,22 +83,22 @@ export default class ForgottenPassword extends Vue {
 
     this.emailError = '';
     this.passwordError = '';
-    if (this.newPassword == undefined || this.newPassword.length > 3) {
-      let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
+    let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
-      ProfileService
-        .resetPassword(loginBean)
-        .then(this.resetResult, () => {this.resetResult(404)});
-    } else {
-      this.passwordError = 'Mot de passe trop court';
-    }
+    ProfileService
+      .resetPassword(loginBean)
+      .then(this.resetResult, () => {this.resetResult(404)});
   }
 
   resetResult(status:number) {
     switch(status) {
       case 200:
-        this.$root.$emit('toaster-success', 'Mot de passe réinitialisé');
+        this.$root.$emit('toaster-success', 'Demande de changement envoyée');
         this.reinitRequestSent = true;
+        break;
+      case 400:
+        this.$root.$emit('toaster-error', 'Mot de passe non valide');
+        this.passwordError = 'Mot de passe non valide';
         break;
       case 404:
         this.$root.$emit('toaster-error', 'E-mail inconnu');
