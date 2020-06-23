@@ -1,14 +1,11 @@
 <template>
   <div class="forgotten-password keyboardSensitive" v-bind:class="{ expanded: !collapsed, collapsed: collapsed}">
     <a v-on:click="expandCollapse">
-      <!-- Back button (expanded formed) -->
-      <div v-if="!collapsed" class="pastille backarrow">
-        <i class="icon-arrow icon-back"></i>
-      </div>
       <!-- Title (collapsed format) -->
       <span v-if="collapsed"> Mot de passe oublié ?</span> 
     </a>
-    <div v-if="!collapsed && !reinitRequestSent">
+    <div v-if="!collapsed">
+       <h1 class="title">Mot de passe oublié</h1>
        <FormInput name="forgottenEmail"
           type="email"
           label="Pour quel e-mail avez-vous oublié votre mot de passe? "
@@ -23,10 +20,17 @@
           v-model="newPassword"
           v-bind:error="passwordError"
         />
-        <div class="sendpassword"><button v-on:click="resetPassword">Réinitialiser</button></div>
-    </div>
-    <div class="reinitRequestSent" v-if="reinitRequestSent">
-      Votre demande de réinitialisation de mot de passe a été envoyée. Veuillez-vérifier vos emails sur le compte {{ forgottenEmail }}
+        <FormInput name="newPasswordConfirmation"
+          type="password"
+          label="Confirmez votre nouveau mot de passe"
+          placeholder="Nouveau mot de passe"
+          v-model="newPasswordConfirmation"
+          v-bind:error="passwordConfirmationError"
+        />
+        <div class="sendpassword">
+          <button class="cancel" v-on:click="expandCollapse">Annuler</button>
+          <button v-on:click="resetPassword">Réinitialiser</button>
+        </div>
     </div>
   </div>
 </template>
@@ -36,6 +40,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import FormInput from '@/components/common/FormInput.vue';
 import Constants from '@/services/Constants';
 import ProfileService from '@/services/ProfileService';
+import Helpers from '@/services/Helpers';
 
 /**
 * ForgottenPassword component, which, when clicked:
@@ -60,9 +65,10 @@ export default class ForgottenPassword extends Vue {
 
   private forgottenEmail?: string;
   private newPassword?: string;
+  private newPasswordConfirmation?: string;
   private emailError = '';
   private passwordError = '';
-  private reinitRequestSent = false;
+  private passwordConfirmationError = '';
 
   /*
   * Expand or collapsed the component according to its current state
@@ -71,7 +77,7 @@ export default class ForgottenPassword extends Vue {
     // Initialize email with already typed email
     this.forgottenEmail = this.alreadTypedEmail;
     this.newPassword = '';
-    this.reinitRequestSent = false;
+    this.newPasswordConfirmation = '';
     this.hideRevealElements();
     this.collapsed = !this.collapsed;
   }
@@ -83,18 +89,29 @@ export default class ForgottenPassword extends Vue {
 
     this.emailError = '';
     this.passwordError = '';
-    let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
+    this.passwordConfirmationError = '';
+    if (this.newPassword && this.newPassword.length > 2 && this.newPassword != this.newPasswordConfirmation) {
+        this.$root.$emit('toaster-error', 'Les mots de passe ne correspondent pas');
+        this.passwordConfirmationError = 'Les mots de passe ne correspondent pas';
+    } else {
+      let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
-    ProfileService
-      .resetPassword(loginBean)
-      .then(this.resetResult, () => {this.resetResult(404)});
+      ProfileService
+        .resetPassword(loginBean)
+        .then(this.resetResult, () => {this.resetResult(404)});
+    }
   }
 
   resetResult(status:number) {
     switch(status) {
       case 200:
-        this.$root.$emit('toaster-success', 'Demande de changement envoyée');
-        this.reinitRequestSent = true;
+        Helpers.alert(this.$modal,
+         'Votre demande de réinitialisation de mot de passe a été envoyée. Merci de vérifier votre boîte e-mail',
+         'Mot de passe réinitialisé')
+        .then(() => {
+          this.$root.$emit('toaster-success', 'Demande de changement de mot de passe envoyée', 10000);
+          this.expandCollapse();
+        });
         break;
       case 400:
         this.$root.$emit('toaster-error', 'Mot de passe non valide');
@@ -163,24 +180,29 @@ export default class ForgottenPassword extends Vue {
       }
     }
   }
-  .backarrow {
-    float: left;
+  .title {
+    margin-bottom: 20px;
+    height: 30px;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 22px;
+    line-height: 30px;
     color: @pelorous;
+    text-align: center;
   }
-
   .sendpassword {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
       margin-bottom: 20px;
+      display:flex;
+      justify-content: space-around;
       &.keyboardShowing {
           margin-bottom: 5px; 
       }
-
       button {
-
           height: 100%;
-          width: 100%;
+          width:50%;
           border-radius: 50px;
 
           font-style: normal;
@@ -191,12 +213,18 @@ export default class ForgottenPassword extends Vue {
           border: 0px;
           padding-left: 20px;
           padding-right: 20px;
+          margin-left:20px;
+          margin-right:20px;
 
           background-color: @terra-cotta;
           color: @white;
+          &.cancel {
+        
+             border: 1px solid @pelorous;
+
+            background-color: @white-smoke;
+            color: @pelorous;
+          }
       }
-    }
-    .reinitRequestSent {
-      font-size: 14px;
     }
 </style>
