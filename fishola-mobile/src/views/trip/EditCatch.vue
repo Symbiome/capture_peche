@@ -489,11 +489,33 @@ export default class EditCatchView extends Vue {
       hasError = true;
       this.sizeError = 'La taille doit être strictement positive';
     } else {
-      this.sizeError = '';
+      if (this.aCatch.size) {
+        if (this.aCatch.size != Math.floor(this.aCatch.size)) {
+          hasError = true;
+          this.sizeError = 'La taille doit être un nombre entier';
+        } else {
+          // On force pour stocker uniquement la valeur tronquée
+          this.aCatch.size = Math.floor(this.aCatch.size);
+          this.sizeError = '';
+        }
+      } else {
+        this.sizeError = '';
+      }
     }
 
     if (!this.aCatch.weight || this.aCatch.weight > 0) {
-      this.weightError = '';
+      if (this.aCatch.weight) {
+        if (this.aCatch.weight != Math.floor(this.aCatch.weight)) {
+          hasError = true;
+          this.weightError = 'Le poids doit être un nombre entier';
+        } else {
+          // On force pour stocker uniquement la valeur tronquée
+          this.aCatch.weight = Math.floor(this.aCatch.weight);
+          this.weightError = '';
+        }
+      } else {
+        this.weightError = '';
+      }
     } else {
       hasError = true;
       this.weightError = 'Le poids doit être strictement positif';
