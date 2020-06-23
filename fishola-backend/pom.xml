@@ -390,9 +390,9 @@
                   <fileset dir="${project.basedir}/src/main/resources/db/migration">
                     <include name="V*.sql"></include>
                   </fileset>
-                  <fileset dir="${project.basedir}/src/main/resources/db/migration">
-                    <include name="R*.sql"></include>
-                  </fileset>
+<!--                  <fileset dir="${project.basedir}/src/main/resources/db/migration">-->
+<!--                    <include name="R*.sql"></include>-->
+<!--                  </fileset>-->
                 </concat>
               </target>
             </configuration>

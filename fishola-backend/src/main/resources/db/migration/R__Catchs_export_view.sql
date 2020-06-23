@@ -48,7 +48,7 @@ COMMENT ON VIEW trip_techniques_names IS 'Permet d''avoir, pour chaque sortie, l
 CREATE OR REPLACE VIEW catch_picture_url AS
 SELECT
     c.id AS catch_id,
-    ('https://fishola.demo.codelutin.com/api/v1/pictures/' || cp.catch_id) AS url
+    ('${baseUrl}/api/v1/pictures/' || cp.catch_id) AS url
 FROM catch c
 INNER JOIN catch_picture cp
     ON cp.catch_id = c.id;
@@ -111,7 +111,7 @@ LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
-AND t.created_on < (now() - INTERVAL '168 hours');
+AND t.created_on < (now() - INTERVAL '${exportSafeHours} hours');
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 

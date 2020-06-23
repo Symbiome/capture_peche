@@ -71,6 +71,9 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "168")
     int getTripModifiableHours();
 
+    @ConfigProperty(defaultValue = "168") // Délai avant que les sorties soient disponibles dans le fichier d'export. En théorie ce chiffre doit être le même que #getTripModifiableHours()
+    int getExportSafeHours();
+
     Optional<String> getBackendBaseUrl();
 
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {

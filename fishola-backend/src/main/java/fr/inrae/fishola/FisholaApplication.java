@@ -21,6 +21,7 @@ package fr.inrae.fishola;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
@@ -63,7 +64,14 @@ public class FisholaApplication {
             log.info(String.format("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile()));
         }
 
-        Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+        Map<String, String> flywayPlaceholders = ImmutableMap.of(
+                "baseUrl", config.getBackendBaseUrl().orElse("http://localhost:8080"),
+                "exportSafeHours", String.valueOf(config.getExportSafeHours())
+        );
+        Flyway flyway = Flyway.configure()
+                .placeholders(flywayPlaceholders)
+                .dataSource(dataSource)
+                .load();
 
         flyway.migrate();
 
