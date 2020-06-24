@@ -96,7 +96,8 @@ export default class TripSummaryView extends Vue {
     // On reçoit le modèle mis à jour, on le sauvegarde
     if (this.actionRequested == "SendTrip") {
       if (!trip.techniqueIds || trip.techniqueIds.length < 1) {
-        this.$root.$emit('toaster-error', 'Vous devez définir les technique de pêche utilisées');
+        this.$root.$emit('toaster-error', 'Vous devez définir les techniques de pêche utilisées');
+        this.goEditTechniques();
       } else {
         TripsService.sendTripAndCancelCreations(trip)
           .then(
