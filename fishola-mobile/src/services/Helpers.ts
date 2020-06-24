@@ -168,17 +168,21 @@ export default class Helpers {
         return result;
     }
 
-    static confirm(modal:any, text:string, title?:string):Promise<void> {
+    static confirm(modal:any, text:string, title?:string, rejectText?:string, resolveText?:string):Promise<void> {
         return new Promise<void>((resolve, reject) => {
             let params:any = {
                 title: title,
                 text: text,
                 buttons: [
                     {
-                        title: 'Non'
+                        title: rejectText || 'Non',
+                        handler: () => {
+                            modal.hide('dialog');
+                            reject();
+                        }
                     },
                     {
-                        title: 'Oui',
+                        title: resolveText || 'Oui',
                         handler: () => {
                             modal.hide('dialog');
                             resolve();
