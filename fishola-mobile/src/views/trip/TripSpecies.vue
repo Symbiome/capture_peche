@@ -61,7 +61,7 @@
                      />
             </div>
           </div>
-          <div class="info">Séparez les espèces par une virgule (&nbsp;,&nbsp;) si vous en recherchez plusieurs</div>
+          <div class="info">Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en renseigner plusieurs</div>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
