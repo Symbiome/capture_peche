@@ -195,6 +195,20 @@ export default class ReferentialService extends AbstractFisholaService {
         return this.backendGetWithCache('/v1/referential/techniques');
     }
 
+    static getTechniquesIndex():Promise<Map<string, Technique>> {
+        return new Promise<Map<string, Technique>>((resolve, reject) => {
+            ReferentialService.getTechniques()
+                .then((techniques:Technique[]) => {
+                    let result = new Map<string, Technique>();
+                    techniques.forEach((t:Technique) => {
+                        result.set(t.id, t);
+                    })
+                    resolve(result);
+                },
+                reject);
+        });
+    }
+
     static getReleasedFishStates():Promise<ReleasedFishState[]> {
         return this.backendGetWithCache('/v1/referential/released-fish-states');
     }

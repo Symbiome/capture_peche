@@ -46,8 +46,11 @@
 
 <script lang="ts">
 import TripSummary from '@/pojos/TripSummary';
+import { Technique } from '@/pojos/BackendPojos';
 
 import TripsService from '@/services/TripsService';
+
+import Helpers from '@/services/Helpers';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -56,6 +59,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../../router';
+import ReferentialService from '../../services/ReferentialService';
 
 export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
 
@@ -72,11 +76,13 @@ export default class TripSummaryView extends Vue {
   @Prop() id!:string;
 
   trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: '', lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
+  techniquesIndex:Map<string, Technique>;
 
   actionRequested:ActionType = "SendTrip";
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
+    ReferentialService.getTechniquesIndex().then((index:Map<string, Technique>) => this.techniquesIndex = index);
   }
 
   mounted() {
@@ -99,11 +105,28 @@ export default class TripSummaryView extends Vue {
         this.$root.$emit('toaster-error', 'Vous devez définir les techniques de pêche utilisées');
         this.goEditTechniques();
       } else {
-        TripsService.sendTripAndCancelCreations(trip)
+        // On force l'utilisateur à vérifier les techniques via la popup
+        let liList:string = '';
+        trip.techniqueIds.forEach((techniqueId:string) => {
+          let techniqueName = this.techniquesIndex!.get(techniqueId)!.name;
+          liList += `<li>${techniqueName}</li>`;
+        });
+        let confirmText = `Les techniques suivantes ont été détectées. Est-ce correct ?<br/><ul>${liList}</ul>`;
+
+        Helpers.confirm(this.$modal, confirmText, 'Techniques de pêche', 'Corriger', 'C\'est bon')
           .then(
-            this.tripSaved,
-            (e) => console.error("Unexpected error during sendTripAndCancelCreations", e)
+            () => {
+              TripsService.sendTripAndCancelCreations(trip)
+                .then(
+                  this.tripSaved,
+                  (e) => console.error("Unexpected error during sendTripAndCancelCreations", e)
+                );
+            },
+            () => {
+              this.goEditTechniques();
+            }
           );
+
       }
     } else {
       TripsService.saveTrip(trip, this.tripSaved);
