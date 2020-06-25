@@ -441,4 +441,34 @@
     </pluginManagement>
     <plugins/>
   </build>
+
+  <profiles>
+
+    <!-- Profil temporaire le temps que la synchro NUITON -> Central soit rétablie -->
+    <profile>
+
+      <id>nuiton</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+
+      <repositories>
+        <!-- nuiton public -->
+        <repository>
+          <id>nuiton-nexus-repository</id>
+          <url>https://nexus.nuiton.org/nexus/content/groups/public/</url>
+          <snapshots>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </repository>
+      </repositories>
+
+    </profile>
+
+  </profiles>
 </project>
