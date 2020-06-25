@@ -49,7 +49,7 @@
         />
         <div class="sendpassword">
           <button class="cancel" v-on:click="expandCollapse">Annuler</button>
-          <button v-on:click="resetPassword">Réinitialiser</button>
+          <button v-on:click="sendPasswordReinitialisationRequest">Réinitialiser</button>
         </div>
     </div>
   </div>
@@ -105,7 +105,7 @@ export default class ForgottenPassword extends Vue {
   /**
   * Sends password reinitialization request to server
   */
-  resetPassword() {
+  sendPasswordReinitialisationRequest() {
 
     this.emailError = '';
     this.passwordError = '';
@@ -117,7 +117,7 @@ export default class ForgottenPassword extends Vue {
       let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
       ProfileService
-        .resetPassword(loginBean)
+        .requestPasswordReset(loginBean)
         .then(this.resetResult, () => {this.resetResult(404)});
     }
   }

@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
@@ -294,9 +295,38 @@ public class SecurityResource extends AbstractFisholaResource {
         }
     }
 
+    /**
+     * Triggered when users opens the reset mail and does not have app installed.
+     * Success/failure will be displayed as an html page.
+     */
     @GET
     @Path("/reset-password")
-    public Response resetPassword(@Context HttpServletRequest request, @QueryParam("t") String token) {
+    public Response resetPasswordFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doResetPassword(request, token)) {
+            String verifiedUrl = config.getApiUrl("/api/password_reset_ok.html", request);
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
+            return success;
+        } else {
+            String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return error;
+        }
+    }
+    /**
+     * Triggered when users opens the reset mail and does have app installed.
+     * Success/failure will be displayed as an HTTP response code
+     */
+    @GET
+    @Path("/reset-password-app")
+    public Response resetPasswordFromApp(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doResetPassword(request, token)) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+
+    private Boolean doResetPassword(HttpServletRequest request, String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("reset-password", token);
             Function<String, String> getClaimOrFail = claimName -> {
@@ -316,9 +346,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 FisholaUser existingUser = user.get();
                 existingUser.setPassword(newPasswordHashed);
                 usersDao.updateUser(existingUser);
-                String verifiedUrl = config.getApiUrl("/api/password_reset_ok.html", request);
-                Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
-                return success;
+                return true;
             }
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
@@ -326,12 +354,12 @@ public class SecurityResource extends AbstractFisholaResource {
         }  catch (FisholaTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : FisholaTechnicalException", fte);
+        } catch (JWTDecodeException jde) {
+            // Token may have expire: silent catch, reset fail page will be shown
+            log.warn("Password reset fail : JWTDecodeException", jde);
         }
-        String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
-        Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-        return error;
+        return false;
     }
-
 
     @POST
     @Path("/password")
