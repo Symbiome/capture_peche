@@ -99,7 +99,7 @@ package:android-demo:
     - mv target/dist-demo target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
-    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > /tmp/keystore-fishola.jks
+    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
     - cat ${SIGNING_CONFIG} >> gradle.properties
     - ./gradlew clean
     - ./gradlew assembleRelease
@@ -142,7 +142,7 @@ package:android-beta:
     - mv target/dist-beta target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
-    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > /tmp/keystore-fishola.jks
+    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
     - cat ${SIGNING_CONFIG} >> gradle.properties
     - ./gradlew clean
     - ./gradlew assembleRelease
