@@ -44,6 +44,10 @@ import ReferentialService from './services/ReferentialService';
 import DocumentationService from './services/DocumentationService';
 import ProfileService from './services/ProfileService';
 import GeolocationService from './services/GeolocationService';
+import { Plugins, AppState } from '@capacitor/core';
+import router from '@/router';
+
+const { App } = Plugins;
 
 @Component({
   components: {
@@ -78,6 +82,25 @@ export default class AppView extends Vue {
       this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
       this.$root.$on('ask-for-sync-check', this.checkOutOfSyncTrips);
+
+      // If app is opened externally (typically from mails when validating account or password forgotten)
+      App.addListener('appUrlOpen', (data: any) => {
+        // Catch any URL like %%/security/ACTION?t=TOKEN
+        console.info("Opening from external url " + data.url);
+        let start = data.url.indexOf('security');
+        if (start > 0 && data.url.indexOf('?t=') > 0) {
+          let actionAndToken = data.url.substring(start + 'security'.length + 1);
+          let action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
+          let token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
+          if ('reset-password' === action) {
+            console.info("Detected reset password request");
+            router.push({name:'reset-password', params: {token: token}});
+          } else if ('verify' === action) {
+            console.info("Detected verify request");
+            router.push({name:'verify', params: {token: token}});
+          }
+        }
+      });
     }
 
     beforeDestroy() {

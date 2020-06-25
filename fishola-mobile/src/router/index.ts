@@ -44,6 +44,9 @@ import Settings from '../views/Settings.vue'
 import Profile from '../views/Profile.vue'
 import ProfilePassword from '../views/ProfilePassword.vue'
 
+import ResetPassword from '../views/ResetPassword.vue'
+import VerifyAccount from '../views/VerifyAccount.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -143,6 +146,18 @@ const routes = [
     path: '/profile-password',
     name: 'profile-password',
     component: ProfilePassword
+  },
+  {
+    path: '/reset-password/:token',
+    name: 'reset-password',
+    component: ResetPassword,
+    props: true
+  },
+  {
+    path: '/verify/:token',
+    name: 'verify',
+    component: VerifyAccount,
+    props: true
   }
   // ,{
   //   path: '/about',
