@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.7</version>
+    <version>11.8</version>
   </parent>
 
   <groupId>fr.inrae</groupId>
@@ -75,8 +75,6 @@
     <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
-    <antRunPluginVersion>3.0.0</antRunPluginVersion>
-    <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
     <licensePluginVersion>2.0.0</licensePluginVersion>
   </properties>
 
