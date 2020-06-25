@@ -19,40 +19,63 @@
   #L%
   -->
   <template>
-  <div class="verify page-with-header-and-footer shifted-background">
-    <FisholaHeader />
-    <div class="verify-page page">
-      <div class="pane">
-        <div class="pane-content large">
-            <h1>Verify</h1>
-            <p> {{ token }} </p>
+    <div class="verify-account page-with-header full-background">
+      <div class="page verify-account-page">
+        <div class="verify-account-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
+          <div class="welcome keyboardSensitive">Bienvenue sur</div>
+          <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="FISHOLA"/>
         </div>
+        <div class="pending" v-if="pending">
+            <p>Validation de votre compte en cours, veuillez patientier...</p>
+            <div class="spinner">&nbsp;</div>
+        </div>
+        <div v-if="!pending && !verifySuccess" class="verify-account-form">
+            <p>Une erreur est survenue pendant la vérification de votre email.</p>
+            <p>Merci de recommencer votre inscription.</p>
+            <div class="sendpassword">
+              <button v-on:click="backToLogin">OK</button>
+            </div>
+        </div>
+        <div v-if="!pending && verifySuccess" class="verify-account-form">
+            <p>Votre email a bien été vérifié.</p>
+            <p>Vous pouvez dès à présent vous connecter sur la page de Login.</p>
+            <div class="sendpassword">
+              <button v-on:click="backToLogin">OK</button>
+            </div>
+        </div>
+      
       </div>
     </div>
-    <FisholaFooter back-event="onBackButton"
-                   v-on:onBackButton="backToLogin"
-                   shortcuts="back"/>
-  </div>
 </template>
 
 <script lang="ts">
 import Constants from '@/services/Constants';
 import Helpers from '@/services/Helpers';
-
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../router';
 
-@Component({
-  components: {
-    FisholaHeader,
-    FisholaFooter
-  }
-})
+@Component
 export default class VerifyAccount extends Vue {
   @Prop() token!:string;
+
+  private pending: boolean = true;
+  private verifySuccess: boolean = false;
+
+  mounted() {
+    // Send password reset request to server
+      ProfileService
+        .verifyAccount(this.token)
+        .then(() => { 
+          this.verifySuccess = true;
+          this.pending = false;
+        },
+        () => { 
+          this.verifySuccess = false;
+          this.pending = false;
+        });
+  }
 
   backToLogin() {
     router.push('/login');
@@ -63,4 +86,95 @@ export default class VerifyAccount extends Vue {
 
 @import "../less/main";
 
+.page-with-header {
+  h1 {
+    font-size:24px;
+  }
+  .verify-account-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding:30px;
+    text-align:center;
+
+    .verify-account-title {
+      height: 140px;
+      &.keyboardShowing {
+        margin-top: calc(2 * env(safe-area-inset-top));
+        height: 81px;
+      }
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .welcome {
+        font-size: 24px;
+        line-height: 33px;
+        &.keyboardShowing {
+          font-size: 16px;
+          line-height: 18px;
+        }
+      }
+      .logo {
+        height: 100px;
+        &.keyboardShowing {
+          height: 65px;
+        }
+      }
+    }
+     .sendpassword {
+      height: 45px;
+      margin-left: 30px;
+      margin-right: 30px;
+      margin-bottom: 20px;
+      display:flex;
+      justify-content: space-around;
+      &.keyboardShowing {
+          margin-bottom: 5px; 
+      }
+      button {
+          height: 100%;
+          width:50%;
+          border-radius: 50px;
+
+          font-style: normal;
+          font-weight: bold;
+          font-size: 18px;
+          line-height: 25px;
+
+          border: 0px;
+          padding-left: 20px;
+          padding-right: 20px;
+          margin-left:20px;
+          margin-right:20px;
+
+          background-color: @terra-cotta;
+          color: @white;
+          &.cancel {
+        
+             border: 1px solid @pelorous;
+
+            background-color: @white-smoke;
+            color: @pelorous;
+          }
+      }
+    }
+    .pending {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+      .spinner {
+        height: 60px;
+        width: 60px;
+        border-radius: 50%;
+        border-top: 3px solid @white;
+        border-left: 3px solid @white;
+        animation:spin 2s linear infinite;
+      }
+    }
+  }
+}
 </style>

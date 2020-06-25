@@ -129,6 +129,10 @@ export default class ProfileService extends AbstractFisholaService {
         return this.backendGetWithArgs("/v1/security/reset-password-app", urlParams);
     }
 
+    static verifyAccount(token: string) {
+        let urlParams = { t: token };
+        return this.backendGetWithArgs("/v1/security/verify-app", urlParams);
+    }
 
     /**
      * Tries to register the given user

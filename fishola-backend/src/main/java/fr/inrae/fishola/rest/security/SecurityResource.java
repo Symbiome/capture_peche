@@ -134,7 +134,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         if (config.isAutoVerifyAccounts()) {
             try {
-                verifyAfterRegistration(request, token);
+                verifyAfterRegistrationFromMail(request, token);
             } catch (Exception eee) {
                 log.error("Unable to verify token", eee);
             }
@@ -171,10 +171,38 @@ public class SecurityResource extends AbstractFisholaResource {
         }
     }
 
+    /**
+     * Triggered when users opens the verify mail and does not have app installed.
+     * Success/failure will be displayed as an html page.
+     */
     @GET
     @Path("/verify")
-    public Response verifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
+    public Response verifyAfterRegistrationFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doVerifyAfterRegistration(request, token)) {
+            String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return success;
+        } else {
+            String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return error;
+        }
+    }
+    /**
+     * Triggered when users opens the verify mail and does have app installed.
+     * Success/failure will be displayed as an HTTP response code
+     */
+    @GET
+    @Path("/verify-app")
+    public Response verifyAfterRegistrationFromApp(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doVerifyAfterRegistration(request, token)) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
 
+    private boolean doVerifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
@@ -203,19 +231,18 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
 
-            String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
-            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-            return success;
+            return true;
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
             log.warn("Password reset fail : DataAccesException", dae);
         }  catch (FisholaTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : FisholaTechnicalException", fte);
+        }  catch (JWTDecodeException jde) {
+            // Token may have expire: silent catch, reset fail page will be shown
+            log.warn("Password reset fail : JWTDecodeException", jde);
         }
-        String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
-        Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-        return error;
+        return false;
     }
 
     @POST
