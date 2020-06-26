@@ -31,11 +31,9 @@ import Constants from '@/services/Constants';
 import router from '@/router'
 
 import ProfileService from '@/services/ProfileService';
-import KeyboardManager from '@/services/KeyboardManager';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-
-import { Plugins, StatusBarStyle } from '@capacitor/core';
+import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
 const { SplashScreen, StatusBar} = Plugins;
 
 @Component({
@@ -49,8 +47,6 @@ export default class DispatcherView extends Vue {
 
   mounted() {
     this.checkForActiveSession();
-    KeyboardManager.setupKeyboardConfiguration();
-    StatusBar.setBackgroundColor({"color": "#1E9BC4"});
   }
 
   checkForActiveSession() {
@@ -64,13 +60,14 @@ export default class DispatcherView extends Vue {
           }
           router.push('trips');
           SplashScreen.hide();
-          // Reveal status bar on iOS
           StatusBar.show();
         },
         (status) => {
-          router.push('/login');
+          // Only push route if no route has already been pushed (typically when opening from external url)
+          if (router.currentRoute.name == "dispatcher") {
+            router.push('/login');
+          }
           SplashScreen.hide();
-          // Reveal status bar on iOS
           StatusBar.show();
         }
       );
