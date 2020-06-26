@@ -100,7 +100,7 @@ package:android-demo:
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} > signin.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
     - ./gradlew clean
     - ./gradlew assembleRelease
     - cp app/build/outputs/apk/release/*.apk ../../
@@ -143,7 +143,7 @@ package:android-beta:
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} > signin.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
     - ./gradlew clean
     - ./gradlew assembleRelease
     - cp app/build/outputs/apk/release/*.apk ../../
