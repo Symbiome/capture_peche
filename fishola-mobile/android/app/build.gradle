@@ -6,16 +6,18 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
+        versionCode 8
         versionName "1.0-beta-3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
         signing {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+            def Properties signinProps = new Properties()
+            signinProps.load(new FileInputStream(file('./signin.properties')))
+            storeFile file(signinProps["RELEASE_STORE_FILE"])
+            keyAlias signinProps["RELEASE_KEY_ALIAS"]
+            storePassword signinProps["RELEASE_STORE_PASSWORD"]
+            keyPassword signinProps["RELEASE_KEY_PASSWORD"]
 
             // Optional, specify signing versions used
             v1SigningEnabled true
