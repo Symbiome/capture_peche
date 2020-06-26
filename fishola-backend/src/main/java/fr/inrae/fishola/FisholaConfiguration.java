@@ -129,6 +129,12 @@ public interface FisholaConfiguration {
         return prop;
     }
 
+    @ConfigProperty(defaultValue = "true")
+    boolean isAsyncEmails();
+
+    @ConfigProperty(defaultValue = "60")
+    int getAsyncEmailsRetentionMinutes();
+
     /**
      * Par défaut la qualité semble être de ~0.74.
      * Pour une qualité équivalent mettre 0.98.

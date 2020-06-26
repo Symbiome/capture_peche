@@ -143,6 +143,21 @@ public class MailService {
 
     public void sendMail(FisholaMail mail) {
 
+        if (config.isAsyncEmails()) {
+            sendMailAsync(mail);
+        } else {
+            try {
+                sendMail0(mail);
+            } catch (MessagingException me) {
+                log.error("Unable to synchronously send email: " + mail, me);
+                throw new FisholaTechnicalException("Unable to synchronously send email: " + mail, me);
+            }
+        }
+
+    }
+
+    public void sendMailAsync(FisholaMail mail) {
+
         if (log.isInfoEnabled()) {
             log.info(String.format("Saving email to send to '%s': « %s »", mail.getTos(), mail.getSubject()));
         }
@@ -156,13 +171,17 @@ public class MailService {
 
     }
 
-    @Scheduled(every="30s")
+    @Scheduled(every="{fishola.async-emails-every}")
     protected void sendPendingEmails() {
 
         int pendingEmailsCount = PENDING_EMAILS.size();
         if (log.isInfoEnabled() && pendingEmailsCount > 0) {
             log.info(String.format("Trying to send %d pending emails", pendingEmailsCount));
         }
+
+        Preconditions.checkState(
+                pendingEmailsCount == 0 || config.isAsyncEmails(),
+                "On ne devrait pas avoir de mails pending vu qu'on est pas en async");
 
         Iterator<FisholaMail> iterator = PENDING_EMAILS.iterator();
         while (iterator.hasNext()) {
@@ -175,9 +194,10 @@ public class MailService {
                 Preconditions.checkState(fisholaMail.pendingSince().isPresent(), "FisholaMail sans pendingSince: " + fisholaMail);
                 Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
                 log.warn(String.format("Unable to send mail for the last %d seconds", pendingDuration.toSeconds()), eee);
-                if (pendingDuration.toMinutes() > 1) {
+                int retentionMinutes = config.getAsyncEmailsRetentionMinutes();
+                if (pendingDuration.toMinutes() > retentionMinutes) {
                     if (log.isErrorEnabled()) {
-                        log.error(String.format("Email could never been send, now stop trying: %s", fisholaMail));
+                        log.error(String.format("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes, fisholaMail));
                     }
                     iterator.remove();
                 }
