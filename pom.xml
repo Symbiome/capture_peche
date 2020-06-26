@@ -325,6 +325,12 @@
       </dependency>
 
       <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-scheduler</artifactId>
+        <version>${quarkusVersion}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
         <version>0.9.6</version>

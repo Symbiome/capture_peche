@@ -24,10 +24,12 @@ package fr.inrae.fishola.mails;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import io.quarkus.scheduler.Scheduled;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,8 +47,12 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.StringWriter;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequestScoped
 public class MailService {
@@ -55,6 +61,8 @@ public class MailService {
 
     @Inject
     protected FisholaConfiguration config;
+
+    protected static final ConcurrentLinkedQueue<FisholaMail> PENDING_EMAILS = new ConcurrentLinkedQueue<>();
 
     public ImmutableFisholaMail.Builder newMail(String body) {
         ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder()
@@ -136,26 +144,63 @@ public class MailService {
     public void sendMail(FisholaMail mail) {
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Will send an email to '%s': « %s »", mail.getTos(), mail.getSubject()));
+            log.info(String.format("Saving email to send to '%s': « %s »", mail.getTos(), mail.getSubject()));
+        }
+
+        FisholaMail safeMail = mail.pendingSince().isPresent() ? mail : ImmutableFisholaMail.builder()
+                .fromInstance(mail)
+                .pendingSince(LocalDateTime.now())
+                .build();
+
+        PENDING_EMAILS.add(safeMail);
+
+    }
+
+    @Scheduled(every="30s")
+    protected void sendPendingEmails() {
+
+        int pendingEmailsCount = PENDING_EMAILS.size();
+        if (log.isInfoEnabled() && pendingEmailsCount > 0) {
+            log.info(String.format("Trying to send %d pending emails", pendingEmailsCount));
+        }
+
+        Iterator<FisholaMail> iterator = PENDING_EMAILS.iterator();
+        while (iterator.hasNext()) {
+            FisholaMail fisholaMail = iterator.next();
+            try {
+                sendMail0(fisholaMail);
+                // Envoi de mail OK, on le supprime de la liste
+                iterator.remove();
+            } catch (Exception eee) {
+                Preconditions.checkState(fisholaMail.pendingSince().isPresent(), "FisholaMail sans pendingSince: " + fisholaMail);
+                Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
+                log.warn(String.format("Unable to send mail for the last %d seconds", pendingDuration.toSeconds()), eee);
+                if (pendingDuration.toMinutes() > 1) {
+                    if (log.isErrorEnabled()) {
+                        log.error(String.format("Email could never been send, now stop trying: %s", fisholaMail));
+                    }
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    protected void sendMail0(FisholaMail mail) throws MessagingException {
+
+        if (log.isInfoEnabled()) {
+            log.info(String.format("Trying to send an email to '%s': « %s »", mail.getTos(), mail.getSubject()));
         }
 
         MimeMessage message = buildMimeMessage(mail);
-        try {
-            if (config.getSmtpUsername().isPresent() && config.getSmtpPassword().isPresent()) {
-                Transport.send(message, config.getSmtpUsername().get(), config.getSmtpPassword().get());
-            } else {
-                Transport.send(message);
-            }
 
-            if (log.isInfoEnabled()) {
-                log.info(String.format("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject()));
-            }
+        if (config.getSmtpUsername().isPresent() && config.getSmtpPassword().isPresent()) {
+            Transport.send(message, config.getSmtpUsername().get(), config.getSmtpPassword().get());
+        } else {
+            Transport.send(message);
+        }
 
-        } catch (MessagingException me) {
-            if (log.isErrorEnabled()) {
-                log.error("Impossible d'envoyer le mail", me);
-            }
-            throw new FisholaTechnicalException("Peut pas envoyer le mail", me);
+        if (log.isInfoEnabled()) {
+            log.info(String.format("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject()));
         }
     }
 

@@ -26,8 +26,17 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.immutables.value.Value;
 
-@Value.Immutable
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Value.Immutable()
+@Value.Style(
+        // Le builder aura une méthode "fromInstance" qui permet de l'initialiser à partir d'une autre instance. La
+        // méthode "from" est masquée par FisholaMail#from donc on choisit d'introduire un nouveau nom par défaut
+        from = "fromInstance")
 public interface FisholaMail {
+
+    Optional<LocalDateTime> pendingSince();
 
     String getFrom();
 
