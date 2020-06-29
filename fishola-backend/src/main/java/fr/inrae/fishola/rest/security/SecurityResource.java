@@ -22,7 +22,6 @@ package fr.inrae.fishola.rest.security;
  */
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
@@ -284,7 +283,7 @@ public class SecurityResource extends AbstractFisholaResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
             // Step 1: check that user with given email exists
-            Preconditions.checkState(correspondingUser.isPresent(), "Impossible de trouver l'utilisateur : " + reset.email);
+            // NB : ensured by the test above
 
             // Step 2: validate & hash password
             Optional<String> passwordError = validatePassword(reset.password);
@@ -367,9 +366,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 log.info(String.format("Password reset for %s", email));
             }
             Optional<FisholaUser> user = usersDao.findByEmail(email);
-            if (!user.isEmpty()) {
-                Preconditions.checkState(user.isPresent(), "Si l'utilisateur n'était pas trouvé on aurait failé avant");
-
+            if (user.isPresent()) {
                 FisholaUser existingUser = user.get();
                 existingUser.setPassword(newPasswordHashed);
                 usersDao.updateUser(existingUser);
