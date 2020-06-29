@@ -1,5 +1,5 @@
 {
-  "appId": "fr.inrae.fishola",
+  "appId": "fr.inrae.carrtel.fishola",
   "appName": "FISHOLA",
   "bundledWebRuntime": false,
   "npmClient": "npm",
