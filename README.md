@@ -28,23 +28,6 @@ Ensuite il faut démarrer :
 
 ## Déploiement sur démo
 
-Il faut commencer par builder le projet pour la prod :
-
-```bash
-mvn clean install
-```
-
-Pour la suite on suppose qu'on a dans `~/.ssh/config` une config qui porte le nom `jaipur-demo4`.
-
-Envoi du projet via `rsync` :
-
-```bash
-rsync -rlptD --del * jaipur-demo4:/var/local/demo4/inrae/fishola/build/fishola/  --exclude='**/node*'
-```
-
-Déploiement :
-
-```bash
-ssh jaipur-demo4 "cd /var/local/demo4/inrae/fishola && ./restart.sh"
-```
-
+Sur chaque pipeline il y a une tâche permettant de construire les images Docker contenant l'application : `package:docker-demo`.
+Une fois que les images sont construites, elles sont disponibles dans le registry. Il suffit ensuite d'utiliser la tâche `deploy:demo` pour déclencher un rechargement de l'application.
+Quelques instannts plus tard, l'application nouvellement déployée sera utilisable à l'adresse : https://fishola.demo.codelutin.com.
