@@ -29,21 +29,18 @@
             <p>Validation de votre compte en cours, veuillez patientier...</p>
             <div class="spinner">&nbsp;</div>
         </div>
-        <div v-if="!pending && !verifySuccess" class="verify-account-form">
+        <div v-if="!pending && !verifySuccess" class="verify-account-form error">
             <p>Une erreur est survenue pendant la vérification de votre email.</p>
             <p>Merci de recommencer votre inscription.</p>
-            <div class="ok">
-              <button v-on:click="backToLogin">OK</button>
-            </div>
         </div>
-        <div v-if="!pending && verifySuccess" class="verify-account-form">
+        <div v-if="!pending && verifySuccess" class="verify-account-form success">
             <p>Votre email a bien été vérifié.</p>
             <p>Vous pouvez dès à présent vous connecter sur la page de Login.</p>
-            <div class="ok">
-              <button v-on:click="backToLogin">OK</button>
-            </div>
         </div>
-      
+        <div class="ok">
+          <button v-on:click="backToLogin">OK</button>
+        </div>
+
       </div>
     </div>
 </template>
@@ -119,6 +116,20 @@ export default class VerifyAccount extends Vue {
         }
       }
     }
+
+    .verify-account-form {
+      padding-left: 20px;
+      padding-right: 20px;
+      border-radius: 10px;
+      &.error {
+        background-color: @cardinal;
+      }
+
+      &.success {
+        background-color: @lime-green;
+      }
+    }
+
      .ok {
       height: 45px;
       margin-left: 30px;

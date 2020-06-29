@@ -29,19 +29,16 @@
             <p>Réinitialisation du mot de passe en cours, veuillez patientier...</p>
             <div class="spinner">&nbsp;</div>
         </div>
-        <div v-if="!pending && !reinitSuccess" class="password-reset-form">
+        <div v-if="!pending && !reinitSuccess" class="password-reset-form error">
             <p>Votre demande de réinitialisation de mot de passe a expiré.</p>
             <p>Merci de renouveler votre demande de réinitialisation.</p>
-            <div class="ok">
-              <button v-on:click="backToLogin">OK</button>
-            </div>
         </div>
-        <div v-if="!pending && reinitSuccess" class="password-reset-form">
+        <div v-if="!pending && reinitSuccess" class="password-reset-form success">
             <p>Votre mot de passe a bien été modifié.</p>
             <p>Vous pouvez dès à présent vous connecter avec votre nouveau mot de passe.</p>
-            <div class="ok">
-              <button v-on:click="backToLogin">OK</button>
-            </div>
+        </div>
+        <div class="ok">
+          <button v-on:click="backToLogin">OK</button>
         </div>
       
       </div>
@@ -119,6 +116,20 @@ export default class ResetPassword extends Vue {
         }
       }
     }
+
+    .password-reset-form {
+      padding-left: 20px;
+      padding-right: 20px;
+      border-radius: 10px;
+      &.error {
+        background-color: @cardinal;
+      }
+
+      &.success {
+        background-color: @lime-green;
+      }
+    }
+
      .ok {
       height: 45px;
       margin-left: 30px;
