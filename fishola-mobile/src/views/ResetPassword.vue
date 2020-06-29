@@ -32,14 +32,14 @@
         <div v-if="!pending && !reinitSuccess" class="password-reset-form">
             <p>Votre demande de réinitialisation de mot de passe a expiré.</p>
             <p>Merci de renouveler votre demande de réinitialisation.</p>
-            <div class="sendpassword">
+            <div class="ok">
               <button v-on:click="backToLogin">OK</button>
             </div>
         </div>
         <div v-if="!pending && reinitSuccess" class="password-reset-form">
             <p>Votre mot de passe a bien été modifié.</p>
             <p>Vous pouvez dès à présent vous connecter avec votre nouveau mot de passe.</p>
-            <div class="sendpassword">
+            <div class="ok">
               <button v-on:click="backToLogin">OK</button>
             </div>
         </div>
@@ -87,9 +87,6 @@ export default class ResetPassword extends Vue {
 @import "../less/main";
 
 .page-with-header {
-  h1 {
-    font-size:24px;
-  }
   .password-reset-page {
     display: flex;
     flex-direction: column;
@@ -122,7 +119,7 @@ export default class ResetPassword extends Vue {
         }
       }
     }
-     .sendpassword {
+     .ok {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
@@ -150,13 +147,6 @@ export default class ResetPassword extends Vue {
 
           background-color: @terra-cotta;
           color: @white;
-          &.cancel {
-        
-             border: 1px solid @pelorous;
-
-            background-color: @white-smoke;
-            color: @pelorous;
-          }
       }
     }
     .pending {

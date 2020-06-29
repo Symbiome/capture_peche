@@ -32,14 +32,14 @@
         <div v-if="!pending && !verifySuccess" class="verify-account-form">
             <p>Une erreur est survenue pendant la vérification de votre email.</p>
             <p>Merci de recommencer votre inscription.</p>
-            <div class="sendpassword">
+            <div class="ok">
               <button v-on:click="backToLogin">OK</button>
             </div>
         </div>
         <div v-if="!pending && verifySuccess" class="verify-account-form">
             <p>Votre email a bien été vérifié.</p>
             <p>Vous pouvez dès à présent vous connecter sur la page de Login.</p>
-            <div class="sendpassword">
+            <div class="ok">
               <button v-on:click="backToLogin">OK</button>
             </div>
         </div>
@@ -87,9 +87,6 @@ export default class VerifyAccount extends Vue {
 @import "../less/main";
 
 .page-with-header {
-  h1 {
-    font-size:24px;
-  }
   .verify-account-page {
     display: flex;
     flex-direction: column;
@@ -122,7 +119,7 @@ export default class VerifyAccount extends Vue {
         }
       }
     }
-     .sendpassword {
+     .ok {
       height: 45px;
       margin-left: 30px;
       margin-right: 30px;
@@ -150,13 +147,6 @@ export default class VerifyAccount extends Vue {
 
           background-color: @terra-cotta;
           color: @white;
-          &.cancel {
-        
-             border: 1px solid @pelorous;
-
-            background-color: @white-smoke;
-            color: @pelorous;
-          }
       }
     }
     .pending {
