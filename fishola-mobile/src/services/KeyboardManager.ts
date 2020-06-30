@@ -70,8 +70,8 @@ export default class KeyboardManager {
         // Hide all DOM elements tagged with CSS_HIDE_CLASS
         let toHide = [KeyboardManager.CSS_HIDE_CLASS];
         // On small resolution, also hide CSS_HIDE_CLASS_SMALL_SCREEN_ONLY
-        console.info("KeyboardShowing - Display " + document.body.clientHeight + "px, keyboard " + keyboardInfo.keyboardHeight + "px, devicePixelRatio " +  window.devicePixelRatio);
-        if (document.body.clientHeight * window.devicePixelRatio < KeyboardManager.SMALL_SCREEN_HEIGHT) {
+        console.info("KeyboardShowing - Display " + window.innerHeight + "px, keyboard " + keyboardInfo.keyboardHeight + "px, devicePixelRatio " +  window.devicePixelRatio);
+        if (window.innerHeight * window.devicePixelRatio < KeyboardManager.SMALL_SCREEN_HEIGHT) {
             toHide.push(KeyboardManager.CSS_HIDE_CLASS_SMALL_SCREEN_ONLY);
         }
         KeyboardManager.hideOrRevealElementsWithClass(true, toHide);
