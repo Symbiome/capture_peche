@@ -114,8 +114,10 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "false")
     boolean getSmtpStarttls();
 
+    @ConfigProperty(defaultValue = "localhost")
     String getSmtpHost();
 
+    @ConfigProperty(defaultValue = "25")
     int getSmtpPort();
 
     default Properties getMailProperties() {
