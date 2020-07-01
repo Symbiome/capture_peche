@@ -31,3 +31,7 @@ Ensuite il faut démarrer :
 Sur chaque pipeline il y a une tâche permettant de construire les images Docker contenant l'application : `package:docker-demo`.
 Une fois que les images sont construites, elles sont disponibles dans le registry. Il suffit ensuite d'utiliser la tâche `deploy:demo` pour déclencher un rechargement de l'application.
 Quelques instannts plus tard, l'application nouvellement déployée sera utilisable à l'adresse : https://fishola.demo.codelutin.com.
+
+## Licence
+
+L'application FISHOLA est sous licence [GNU Affero General Public License v3](/LICENSE.txt).
