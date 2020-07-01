@@ -1,4 +1,4 @@
-# Mise en production en l'application FISHOLA
+# Guide de mise en production en l'application FISHOLA
 
 ## Base de données
 
@@ -148,3 +148,11 @@ Toutefois c'est possible, il suffit pour cela d'exposer le contenu du dossier `d
 Attention, la partie web n'est pas configurable comme le backend, la configuration se fait en amont de la création du dossier `dist-production`.
 
 Si l'application web est déployée il est recommandé de le faire sur un nom de domaine différent du backend afin que les 2 puissent être déployés à la racine du nom de domaine.
+
+### Application Android
+
+TODO
+
+### Application iOs
+
+TODO
