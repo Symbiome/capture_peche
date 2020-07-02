@@ -197,6 +197,29 @@ package:docker-beta:
     - sticky
     - docker
 
+package:backend:
+  image: debian:latest
+  stage: package
+  when: manual
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-beta
+  script:
+    - apt update && apt install -y zip && apt clean
+    - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
+    - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
+    - cp doc/application.properties.sample fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
+    - zip -rq fishola-backend-$CI_COMMIT_SHORT_SHA.zip fishola-backend-$CI_COMMIT_SHORT_SHA
+  artifacts:
+    name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - fishola-backend-$CI_COMMIT_SHORT_SHA.zip
+    expire_in: 2 weeks
+  tags:
+    - sticky
+
 deploy:demo:
   image: debian:latest
   stage: deploy
