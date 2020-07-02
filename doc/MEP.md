@@ -25,7 +25,7 @@ Il y a 5 propriétés obligatoires à définir sans quoi l'application ne peut p
  - `quarkus.datasource.jdbc.url` : L'URL JDBC de la base de données telle que `jdbc:postgresql://HOST:PORT/DATABASE`. Exemple : `jdbc:postgresql://docker_pg:5432/fishola`
  - `quarkus.datasource.username` : Le nom d'utilisateur pour la base de données
  - `quarkus.datasource.password` : Le mot de passe pour la base de données
- - `fishola.jwt-secret` : La clé utilisée pour les token JWT. C'est une chaîne de caractère arbitraire. Dès lors que cette chaîne change, les token JWT générés ne seront plus valides et les utilisateurs seront donc tous déconnectés de l'application ;
+ - `fishola.jwt-secret` : La clé utilisée pour les token JWT. C'est une chaîne de caractère arbitraire. Dès que cette chaîne change, les token JWT générés ne seront plus valides et les utilisateurs seront donc tous déconnectés de l'application ;
  - `fishola.smtp-host` : Hôte d'accès au serveur SMTP pour l'envoi de mails.
 
 Il est fortement recommandé de renseigner également la propriété `fishola.backend-base-url` qui permet au backend de savoir quelle est son adresse publique (pour l'envoi de mails entre autres).
@@ -56,7 +56,7 @@ fishola.smtp-starttls | Si le SMTP requiert starttls | false
 fishola.async-emails | Est-ce que l'envoi d'email se fait en ascynchrone | true
 fishola.async-emails-every | Durée entre chaque salve d'envoi de mails | 30s
 fishola.async-emails-retention-minutes | Durée (en minutes) de conservations des emails en erreur | 60
-fishola.raw-image-quality | Qualité des images stockées en base | .90f
+fishola.raw-image-quality | Qualité des images stockées en base (Pourcentage) | .90f
 fishola.pictures-preview-folder-path | Chemin où sont stockées les miniatures | /tmp/fishola-pictures
 fishola.feedback-mail-to | Adresse de destination pour les feedbacks | fishola-lutins@list.forge.codelutin.com
 fishola.auto-verify-accounts | Faut-il vérifier automatiquement les nouveaux comptes ? | false
