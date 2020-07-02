@@ -82,6 +82,7 @@ Une fois le JDK installé, il faut lancer l'application depuis le dossier conten
 java -jar fishola-backend-VERSION-runner.jar
 ```
 
+Par défaut, les logs de l'application sont dans un fichier `fishola-backend.log`.
 Il est possible de vérifier que l'application fonctionne via l'URL : `http://SERVER:PORT/api/v1/status`
 
 C'est peu recommandé mais il est possible de spécifier des paramètres directement au démarrage. Exemple avec un changement de port :

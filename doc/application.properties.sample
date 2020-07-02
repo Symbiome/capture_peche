@@ -1,0 +1,12 @@
+# L'URL JDBC de la base de données telle que `jdbc:postgresql://HOST:PORT/DATABASE`. Exemple : `jdbc:postgresql://docker_pg:5432/fishola`
+quarkus.datasource.jdbc.url=
+
+# Nom d'utilisateur et mot de passe
+quarkus.datasource.username=
+quarkus.datasource.password=
+
+# La clé utilisée pour les token JWT. C'est une chaîne de caractère arbitraire. Dès lors que cette chaîne change, les token JWT générés ne seront plus valides et les utilisateurs seront donc tous déconnectés de l'application
+fishola.jwt-secret=
+
+# Hôte d'accès au serveur SMTP pour l'envoi de mails.
+fishola.smtp-host=
