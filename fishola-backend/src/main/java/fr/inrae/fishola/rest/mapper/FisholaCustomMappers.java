@@ -188,6 +188,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "os").ifPresent(builder::os);
             readText(node, "platform").ifPresent(builder::platform);
             readText(node, "screenResolution").ifPresent(builder::screenResolution);
+            readText(node, "devicePixelRatio").ifPresent(builder::devicePixelRatio);
             readText(node, "displaySize").ifPresent(builder::displaySize);
             readText(node, "locale").ifPresent(builder::locale);
             readText(node, "frontendVersion").ifPresent(builder::frontendVersion);

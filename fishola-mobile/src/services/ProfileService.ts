@@ -99,12 +99,13 @@ export default class ProfileService extends AbstractFisholaService {
 
     /**
      * Tries to send a password reset request to server
-     * @param mail the mail on witch password reset should be sent
+     * @param credentials the mail on witch password reset should be sent + new desired password
      * Returns :
-     * - 200 if mail is correct
+     * - 200 if mail is correct & new password is valid
+     * - 401 if mail is correct and new password validation fails
      * - 404 if mail does not exist
      */
-    static resetPassword(credentials: Credentials): Promise<number> {
+    static requestPasswordReset(credentials: Credentials): Promise<number> {
         return new Promise((resolve, reject) =>  {
             this.backendPost("/v1/security/request-password-reset", credentials).then(
                 () => {
@@ -117,6 +118,21 @@ export default class ProfileService extends AbstractFisholaService {
         });
     }
 
+
+    /**
+     * Actually resets the password using the given token (which has been created through 
+     * a previous call to sendPasswordReinitialisationRequest).
+     * @param token the password reinitialisation token
+     */
+    static resetPassword(token: string) {
+        let urlParams = { t: token };
+        return this.backendGetWithArgs("/v1/security/reset-password-app", urlParams);
+    }
+
+    static verifyAccount(token: string) {
+        let urlParams = { t: token };
+        return this.backendGetWithArgs("/v1/security/verify-app", urlParams);
+    }
 
     /**
      * Tries to register the given user

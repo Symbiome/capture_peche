@@ -28,23 +28,21 @@ Ensuite il faut démarrer :
 
 ## Déploiement sur démo
 
-Il faut commencer par builder le projet pour la prod :
+Sur chaque pipeline il y a une tâche permettant de construire les images Docker contenant l'application : `package:docker-demo`.
+Une fois que les images sont construites, elles sont disponibles dans le registry. Il suffit ensuite d'utiliser la tâche `deploy:demo` pour déclencher un rechargement de l'application.
+Quelques instannts plus tard, l'application nouvellement déployée sera utilisable à l'adresse : https://fishola.demo.codelutin.com.
 
-```bash
-mvn clean install
-```
+## Mise en production
 
-Pour la suite on suppose qu'on a dans `~/.ssh/config` une config qui porte le nom `jaipur-demo4`.
+L'application FISHOLA est composée de 5 éléments :
+ - 1 base de donnée PostgreSQL
+ - 1 serveur SMTP
+ - 1 backend en JAVA
+ - 1 application mobile Android
+ - 1 application mobile iOs
 
-Envoi du projet via `rsync` :
+Le déploiement est détaillé dans le [Guide de mise en production](/doc/MEP.md)
 
-```bash
-rsync -rlptD --del * jaipur-demo4:/var/local/demo4/inrae/fishola/build/fishola/  --exclude='**/node*'
-```
+## Licence
 
-Déploiement :
-
-```bash
-ssh jaipur-demo4 "cd /var/local/demo4/inrae/fishola && ./restart.sh"
-```
-
+L'application FISHOLA est sous licence [GNU Affero General Public License v3](/LICENSE.txt).

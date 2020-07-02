@@ -6,16 +6,19 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
+        versionCode 8
         versionName "1.0-beta-3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
     }
     signingConfigs {
         signing {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+            def Properties signinProps = new Properties()
+            signinProps.load(new FileInputStream(file('./signin.properties')))
+            storeFile file(signinProps["RELEASE_STORE_FILE"])
+            keyAlias signinProps["RELEASE_KEY_ALIAS"]
+            storePassword signinProps["RELEASE_STORE_PASSWORD"]
+            keyPassword signinProps["RELEASE_KEY_PASSWORD"]
 
             // Optional, specify signing versions used
             v1SigningEnabled true
@@ -37,6 +40,31 @@ android {
                     output.outputFileName = "Fishola-${flavor}-${versionName}-${versionCode}-${formattedDate}.apk"
                 }
             }
+        }
+    }
+    flavorDimensions "version"
+    productFlavors {
+        demo {
+            // Assigns this product flavor to the "version" flavor dimension.
+            // If you are using only one dimension, this property is optional,
+            // and the plugin automatically assigns all the module's flavors to
+            // that dimension.
+            dimension "version"
+            applicationIdSuffix ".demo"
+            versionNameSuffix "-demo"
+            resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
+        }
+        beta {
+            dimension "version"
+            applicationIdSuffix ".beta"
+            versionNameSuffix "-beta"
+            resValue "string", "DEEP_LINK_URL", "fishola-beta.demo.codelutin.com"
+        }
+        production {
+            dimension "version"
+            applicationIdSuffix ".production"
+            versionNameSuffix "-production"
+            resValue "string", "DEEP_LINK_URL", "fishola.inrae.fr"
         }
     }
 }

@@ -156,6 +156,7 @@ export interface Feedback {
     os?: string;
     platform?: string;
     screenResolution?: string;
+    devicePixelRatio?: string;
     displaySize?: string;
     locale?: string;
     frontendVersion?: string;

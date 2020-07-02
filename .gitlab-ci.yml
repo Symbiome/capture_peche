@@ -100,10 +100,10 @@ package:android-demo:
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} >> gradle.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
     - ./gradlew clean
-    - ./gradlew assembleRelease
-    - cp app/build/outputs/apk/release/*.apk ../../
+    - ./gradlew assembleDemo
+    - cp app/build/outputs/apk/demo/release/*.apk ../../
   artifacts:
     name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
     paths:
@@ -143,10 +143,10 @@ package:android-beta:
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} >> gradle.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
     - ./gradlew clean
-    - ./gradlew assembleRelease
-    - cp app/build/outputs/apk/release/*.apk ../../
+    - ./gradlew assembleBeta
+    - cp app/build/outputs/apk/beta/release/*.apk ../../
   artifacts:
     name: "fishola-android-beta-$CI_COMMIT_SHORT_SHA"
     paths:

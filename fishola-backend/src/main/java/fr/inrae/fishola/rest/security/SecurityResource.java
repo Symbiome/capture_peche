@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
@@ -133,7 +133,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         if (config.isAutoVerifyAccounts()) {
             try {
-                verifyAfterRegistration(request, token);
+                verifyAfterRegistrationFromMail(request, token);
             } catch (Exception eee) {
                 log.error("Unable to verify token", eee);
             }
@@ -170,10 +170,38 @@ public class SecurityResource extends AbstractFisholaResource {
         }
     }
 
+    /**
+     * Triggered when users opens the verify mail and does not have app installed.
+     * Success/failure will be displayed as an html page.
+     */
     @GET
     @Path("/verify")
-    public Response verifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
+    public Response verifyAfterRegistrationFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doVerifyAfterRegistration(request, token)) {
+            String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return success;
+        } else {
+            String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return error;
+        }
+    }
+    /**
+     * Triggered when users opens the verify mail and does have app installed.
+     * Success/failure will be displayed as an HTTP response code
+     */
+    @GET
+    @Path("/verify-app")
+    public Response verifyAfterRegistrationFromApp(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doVerifyAfterRegistration(request, token)) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
 
+    private boolean doVerifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
@@ -202,19 +230,18 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
             );
 
-            String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
-            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-            return success;
+            return true;
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
             log.warn("Password reset fail : DataAccesException", dae);
         }  catch (FisholaTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : FisholaTechnicalException", fte);
+        }  catch (JWTDecodeException jde) {
+            // Token may have expire: silent catch, reset fail page will be shown
+            log.warn("Password reset fail : JWTDecodeException", jde);
         }
-        String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
-        Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-        return error;
+        return false;
     }
 
     @POST
@@ -256,7 +283,7 @@ public class SecurityResource extends AbstractFisholaResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
             // Step 1: check that user with given email exists
-            Preconditions.checkState(correspondingUser.isPresent(), "Impossible de trouver l'utilisateur : " + reset.email);
+            // NB : ensured by the test above
 
             // Step 2: validate & hash password
             Optional<String> passwordError = validatePassword(reset.password);
@@ -294,9 +321,38 @@ public class SecurityResource extends AbstractFisholaResource {
         }
     }
 
+    /**
+     * Triggered when users opens the reset mail and does not have app installed.
+     * Success/failure will be displayed as an html page.
+     */
     @GET
     @Path("/reset-password")
-    public Response resetPassword(@Context HttpServletRequest request, @QueryParam("t") String token) {
+    public Response resetPasswordFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doResetPassword(request, token)) {
+            String verifiedUrl = config.getApiUrl("/api/password_reset_ok.html", request);
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
+            return success;
+        } else {
+            String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            return error;
+        }
+    }
+    /**
+     * Triggered when users opens the reset mail and does have app installed.
+     * Success/failure will be displayed as an HTTP response code
+     */
+    @GET
+    @Path("/reset-password-app")
+    public Response resetPasswordFromApp(@Context HttpServletRequest request, @QueryParam("t") String token) {
+        if (doResetPassword(request, token)) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+
+    private Boolean doResetPassword(HttpServletRequest request, String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("reset-password", token);
             Function<String, String> getClaimOrFail = claimName -> {
@@ -310,15 +366,11 @@ public class SecurityResource extends AbstractFisholaResource {
                 log.info(String.format("Password reset for %s", email));
             }
             Optional<FisholaUser> user = usersDao.findByEmail(email);
-            if (!user.isEmpty()) {
-                Preconditions.checkState(user.isPresent(), "Si l'utilisateur n'était pas trouvé on aurait failé avant");
-
+            if (user.isPresent()) {
                 FisholaUser existingUser = user.get();
                 existingUser.setPassword(newPasswordHashed);
                 usersDao.updateUser(existingUser);
-                String verifiedUrl = config.getApiUrl("/api/password_reset_ok.html", request);
-                Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
-                return success;
+                return true;
             }
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
@@ -326,12 +378,12 @@ public class SecurityResource extends AbstractFisholaResource {
         }  catch (FisholaTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : FisholaTechnicalException", fte);
+        } catch (JWTDecodeException jde) {
+            // Token may have expire: silent catch, reset fail page will be shown
+            log.warn("Password reset fail : JWTDecodeException", jde);
         }
-        String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
-        Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
-        return error;
+        return false;
     }
-
 
     @POST
     @Path("/password")

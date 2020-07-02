@@ -56,6 +56,8 @@ public interface Feedback {
 
     Optional<String> screenResolution();
 
+    Optional<String> devicePixelRatio();
+
     Optional<String> displaySize();
 
     Optional<String> locale();

@@ -116,6 +116,7 @@ public interface FisholaConfiguration {
 
     String getSmtpHost();
 
+    @ConfigProperty(defaultValue = "25")
     int getSmtpPort();
 
     default Properties getMailProperties() {
@@ -128,6 +129,12 @@ public interface FisholaConfiguration {
 //        prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
         return prop;
     }
+
+    @ConfigProperty(defaultValue = "true")
+    boolean isAsyncEmails();
+
+    @ConfigProperty(defaultValue = "60")
+    int getAsyncEmailsRetentionMinutes();
 
     /**
      * Par défaut la qualité semble être de ~0.74.

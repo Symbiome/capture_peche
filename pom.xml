@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.0-beta-3</version>
+  <version>1.0-beta-4</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -322,6 +322,12 @@
         <groupId>javax.mail</groupId>
         <artifactId>mail</artifactId>
         <version>1.5.0-b01</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-scheduler</artifactId>
+        <version>${quarkusVersion}</version>
       </dependency>
 
       <dependency>

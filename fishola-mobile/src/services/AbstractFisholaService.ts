@@ -101,8 +101,12 @@ export default abstract class AbstractFisholaService {
           xhr.onload = function() {
             if (this.status == 200 || this.status == 201) {
               let responseText = this['responseText'];
-              let parsed = JSON.parse(responseText);
-              resolve(parsed);
+              if (responseText.length < 1 ) {
+                resolve(true);
+              } else {
+                let parsed = JSON.parse(responseText);
+                resolve(parsed);
+              }
             } else if (this.status == 204) {
               resolve();
             } else {

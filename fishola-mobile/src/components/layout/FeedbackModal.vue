@@ -191,6 +191,7 @@ export default class FeedbackModal extends Vue {
     this.model.platform = navigator.platform;
     this.model.screenResolution = screen.width + "x" + screen.height;
     this.model.displaySize = window.innerWidth + "x" + window.innerHeight;
+    this.model.devicePixelRatio = "" + window.devicePixelRatio;
     this.model.locale = navigator.language;
   }
 

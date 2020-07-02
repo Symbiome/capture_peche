@@ -89,3 +89,4 @@ lint/tmp/
 app/src/main/assets/public
 
 keystore-fishola.jks
+signin.properties
