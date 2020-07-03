@@ -448,6 +448,36 @@
     <plugins/>
   </build>
 
+  <repositories>
+    <repository>
+      <id>central-mirror</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central-mirror</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <profiles>
 
     <!-- À activer en cas de besoin (release nuiton pas encore dispo sur Central) -->
