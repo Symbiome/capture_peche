@@ -1,0 +1,36 @@
+@import "_colors";
+
+button {
+  cursor: pointer;
+}
+
+
+/*========== Retour haptique ============ */
+
+@gradient-white: @white;
+@gradient-opposite: @terra-cotta;
+
+@keyframes gradient {
+  0% {
+    background: radial-gradient(circle at center, rgba( 255, 125 , 125, 0 ) 0%, @gradient-white 0%, @gradient-white 100%);
+  }
+  25% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.3 ) 24%, @gradient-white 25%, @gradient-white 100%);
+  }
+  50% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.5 ) 49%, @gradient-white 50%, @gradient-white 100%);
+  }
+  75% {
+    background: radial-gradient(circle at center, rgba( 255, 125, 125, 0.8 ) 74%, @gradient-white 75%, @gradient-white 100%);
+  }
+  100% {
+    color: @gradient-white;
+    background: radial-gradient(circle at center, @gradient-opposite 99%, @gradient-white 100%, @gradient-white 100%);
+  }
+}
+
+button:active {
+  animation: gradient 100ms;
+  background: @gradient-opposite;
+  color: @gradient-white;
+}

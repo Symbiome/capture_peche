@@ -1,0 +1,52 @@
+<template>
+  <div id="app">
+    <Menu/>
+    <router-view/>
+  </div>
+</template>
+
+<script lang="ts">
+
+import Menu from '@/components/Menu.vue'
+
+export default {
+  name: 'App',
+  components: {
+    Menu
+  }
+}
+</script>
+
+<style lang="less">
+
+@import "less/main";
+
+body {
+  background-color: @white;
+  margin: 0px;
+  height: 100%;
+  overflow: hidden;
+  overflow-x: hidden;
+  width: 100vw;
+}
+
+html {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+#app {
+  font-family: 'Open Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: @gunmetal;
+  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+</style>
