@@ -212,6 +212,7 @@ package:backend:
     - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
     - cp doc/application.properties.sample fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
   artifacts:
+    name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend-$CI_COMMIT_SHORT_SHA
     expire_in: 2 weeks
