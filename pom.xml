@@ -450,19 +450,19 @@
 
   <profiles>
 
-    <!-- Profil temporaire le temps que la synchro NUITON -> Central soit rétablie -->
+    <!-- À activer en cas de besoin (release nuiton pas encore dispo sur Central) -->
     <profile>
 
       <id>nuiton</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
 
       <repositories>
-        <!-- nuiton public -->
+        <!-- Mirroir du repo contenant nuiton -->
         <repository>
-          <id>nuiton-nexus-repository</id>
-          <url>https://nexus.nuiton.org/nexus/content/groups/public/</url>
+          <id>nuiton-releases</id>
+          <url>https://nexus.nuiton.org/nexus/content/repositories/central-releases/</url>
           <snapshots>
             <enabled>true</enabled>
             <checksumPolicy>fail</checksumPolicy>
