@@ -46,6 +46,7 @@ build:compile-only:
     - develop
   tags:
     - sticky
+    - docker
 
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
@@ -68,6 +69,7 @@ build:compile-with-tests:
     - develop
   tags:
     - sticky
+    - docker
 
 # must be run after the build stage
 package:android-demo:
