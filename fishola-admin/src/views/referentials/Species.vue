@@ -22,7 +22,9 @@ export default class SpeciesVue extends Vue {
   specieColumns:any[] = [
     {
       field: 'id',
-      label: 'Identifiant'
+      label: 'Identifiant',
+      visible: false,
+      readOnly: true
     },
     {
       field: 'name',

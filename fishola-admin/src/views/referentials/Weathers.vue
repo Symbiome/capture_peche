@@ -22,7 +22,9 @@ export default class WeathersVue extends Vue {
   weatherColumns:any[] = [
     {
       field: 'id',
-      label: 'Identifiant'
+      label: 'Identifiant',
+      visible: false,
+      readOnly: true
     },
     {
       field: 'name',

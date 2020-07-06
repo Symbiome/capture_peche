@@ -22,7 +22,9 @@ export default class LakesVue extends Vue {
   lakeColumns:any[] = [
     {
       field: 'id',
-      label: 'Identifiant'
+      label: 'Identifiant',
+      visible: false,
+      readOnly: true
     },
     {
       field: 'name',

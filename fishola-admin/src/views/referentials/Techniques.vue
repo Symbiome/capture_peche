@@ -22,7 +22,9 @@ export default class TechniquesVue extends Vue {
   techniqueColumns:any[] = [
     {
       field: 'id',
-      label: 'Identifiant'
+      label: 'Identifiant',
+      visible: false,
+      readOnly: true
     },
     {
       field: 'name',

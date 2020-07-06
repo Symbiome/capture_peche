@@ -9,17 +9,26 @@
             :selected.sync="selection.item"
             >
         </b-table>
-        <hr/>
-        Sélection : {{selection.item}}
+        <b-modal :active.sync="selection.item"
+                 trap-focus
+                 :destroy-on-hide="false"
+                 aria-role="dialog"
+                 aria-modal>
+            <ReferentialItem :item="selection.item"
+                             :columns="columns">
+            </ReferentialItem>
+        </b-modal>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
+import ReferentialItem from '@/components/ReferentialItem.vue'
 
 @Component({
   components: {
+    ReferentialItem
   }
 })
 export default class Refenretial extends Vue {
