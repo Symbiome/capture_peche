@@ -6,6 +6,9 @@
   "webDir": "target/dist",
   "cordova": {},
   "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
+  "server" : {
+    "hostname" : "fishola-beta.demo.codelutin.com"
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2500,
