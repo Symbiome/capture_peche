@@ -2,7 +2,7 @@
   <div class="species">
     <Referential
       name="Espèces"
-      url="http://localhost:8080/api/v1/referential/species"
+      url="/v1/referential/raw-species"
       :columns="specieColumns"></Referential>
   </div>
 </template>
@@ -37,10 +37,6 @@ export default class SpeciesVue extends Vue {
     {
       field: 'mandatorySize',
       label: 'Taille obligatoire'
-    },
-    {
-      field: 'authorizedSample',
-      label: 'Prélèvements autorisé'
     }
   ];
 }

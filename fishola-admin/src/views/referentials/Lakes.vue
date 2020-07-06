@@ -2,7 +2,7 @@
   <div class="lakes">
     <Referential
       name="Lacs" 
-      url="http://localhost:8080/api/v1/referential/lakes"
+      url="/v1/referential/lakes"
       :columns="lakeColumns"></Referential>
   </div>
 </template>

@@ -66,14 +66,35 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
+    public void updateLake(Lake lake) {
+        withDaoNoResult(LakeDao.class, dao -> dao.update(lake));
+    }
+
     public List<Weather> listWeathers() {
         List<Weather> result = withDao(WeatherDao.class, WeatherDao::findAll);
         return result;
     }
 
+    public void updateWeather(Weather weather) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.update(weather));
+    }
+
     public List<Technique> listBuiltInTechniques() {
         List<Technique> result = withDao(TechniqueDao.class, dao -> dao.fetchByBuiltIn(true));
         return result;
+    }
+
+    public void updateTechnique(Technique technique) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.update(technique));
+    }
+
+    public List<Species> listAllSpecies() {
+        List<Species> result = withDao(SpeciesDao.class, SpeciesDao::findAll);
+        return result;
+    }
+
+    public void updateSpecies(Species species) {
+        withDaoNoResult(SpeciesDao.class, dao -> dao.update(species));
     }
 
     public List<Species> listBuiltInSpecies() {

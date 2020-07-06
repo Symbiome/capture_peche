@@ -7,14 +7,16 @@
             </b-field>
         </div>
         <div class="buttons">
-            <button class="button is-primary">Enregistrer</button>
-            <button class="button" type="button" @click="$parent.close()">Annuler</button>
+            <button class="button is-primary" @click="save()">Enregistrer</button>
+            <button class="button" type="button" @click="onSaved()">Annuler</button>
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
+
+import BackendService from '@/services/BackendService.ts';
 
 @Component({
   components: {
@@ -23,6 +25,24 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 export default class RefenretialItem extends Vue {
     @Prop() item!: any;
     @Prop() columns!: any[];
+    @Prop() backendUrl!: string;
+
+    save() {
+        if (this.item.id) {
+            let url = this.backendUrl + '/' + this.item.id;
+            BackendService.backendPut(url, this.item).then(this.onSaved, (err) => console.error("You are fucked", err));
+        } else {
+            // Création
+            window.alert('NYI');
+        }
+    }
+
+    onSaved() {
+        this.$emit('referential-updated');
+        this.$parent.close();
+    }
+
+
 }
 </script>
 

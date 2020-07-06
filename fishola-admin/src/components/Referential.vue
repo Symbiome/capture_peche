@@ -15,7 +15,9 @@
                  aria-role="dialog"
                  aria-modal>
             <ReferentialItem :item="selection.item"
-                             :columns="columns">
+                             :columns="columns"
+                             :backendUrl="url"
+                             v-on:referential-updated="loadData">
             </ReferentialItem>
         </b-modal>
     </div>
@@ -24,7 +26,9 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
-import ReferentialItem from '@/components/ReferentialItem.vue'
+import BackendService from '@/services/BackendService.ts';
+
+import ReferentialItem from '@/components/ReferentialItem.vue';
 
 @Component({
   components: {
@@ -39,29 +43,13 @@ export default class Refenretial extends Vue {
 
     selection = {item:null};
 
-
-    backendGet(apiUrl:string):Promise<any> {
-      return new Promise<any>((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', apiUrl, true);
-        xhr.withCredentials = true;
-        xhr.onload = function() {
-          if (this.status == 200) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
-            resolve(parsed);
-          } else if (this.status == 204) {
-            resolve();
-          } else {
-            reject(this.status);
-          }
-        };
-        xhr.send();
-      });
+    mounted() {
+        this.loadData();
     }
 
-    mounted() {
-        this.backendGet(this.url).then((res) => this.data = res);
+    loadData() {
+        delete this.data;
+        BackendService.backendGet(this.url).then((res) => this.data = res);
     }
 }
 </script>

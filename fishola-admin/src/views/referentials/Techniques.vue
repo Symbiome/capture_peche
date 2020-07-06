@@ -2,7 +2,7 @@
   <div class="techniques">
     <Referential
       name="Techniques de pêche"
-      url="http://localhost:8080/api/v1/referential/techniques"
+      url="/v1/referential/techniques"
       :columns="techniqueColumns"></Referential>
   </div>
 </template>

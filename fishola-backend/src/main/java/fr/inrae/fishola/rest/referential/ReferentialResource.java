@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.referential;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.database.ReferentialDao;
@@ -36,9 +37,12 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +64,48 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
+    @PUT
+    @Path("/lakes/{lakeId}")
+    public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
+        Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
+        Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.updateLake(lake);
+        return Response.noContent().build();
+    }
+
     @GET
     @Path("/techniques")
     public List<Technique> getTechniques() {
         List<Technique> result = referentialDao.listBuiltInTechniques();
         return result;
+    }
+
+    @PUT
+    @Path("/techniques/{techniqueId}")
+    public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
+        Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
+        Preconditions.checkArgument(techniqueId.equals(technique.getId()), "L'identifiant ne correspond pas");
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.updateTechnique(technique);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/raw-species")
+    public List<Species> getRawSpecies() {
+        List<Species> species = referentialDao.listAllSpecies();
+        return species;
+    }
+
+    @PUT
+    @Path("/raw-species/{speciesId}")
+    public Response updateLake(@PathParam("speciesId") UUID speciesId, Species species) {
+        Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
+        Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.updateSpecies(species);
+        return Response.noContent().build();
     }
 
     @GET
@@ -123,6 +164,16 @@ public class ReferentialResource extends AbstractFisholaResource {
     public List<Weather> getWeathers() {
         List<Weather> result = referentialDao.listWeathers();
         return result;
+    }
+
+    @PUT
+    @Path("/weathers/{weatherId}")
+    public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
+        Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
+        Preconditions.checkArgument(weatherId.equals(weather.getId()), "L'identifiant ne correspond pas");
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.updateWeather(weather);
+        return Response.noContent().build();
     }
 
     @GET
