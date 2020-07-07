@@ -33,7 +33,7 @@ Pour connaître l'IP de la base de données :
 Les variables attendues par l'application pour joindre la bade de données sont :
 
 ```properties
-%dev.quarkus.datasource.url=jdbc:postgresql://192.168.1.86:5432/fishola
+%dev.quarkus.datasource.jdbc.url=jdbc:postgresql://192.168.1.86:5432/fishola
 %dev.quarkus.datasource.username=postgres
 %dev.quarkus.datasource.password=whatever
 ```
@@ -43,7 +43,7 @@ Les variables attendues par l'application pour joindre la bade de données sont 
 Le meilleur moyen de saisir ces variables est de créer un fichier `.env` à la racine du module `fishola-backend` et y ajouter les lignes suivantes :
 
 ```properties
-_DEV_QUARKUS_DATASOURCE_URL=jdbc:postgresql://192.168.1.86:5432/fishola
+_DEV_QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://192.168.1.86:5432/fishola
 _DEV_QUARKUS_DATASOURCE_USERNAME=postgres
 _DEV_QUARKUS_DATASOURCE_PASSWORD=whatever
 ```
