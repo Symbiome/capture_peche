@@ -34,7 +34,7 @@ export default class Constants {
     }
 
     static apiUrl(path:string):string {
-        let result = Constants.baseApiUrl() + path;
+        const result = Constants.baseApiUrl() + path;
         return result;
     }
 
