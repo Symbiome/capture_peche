@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
+import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
@@ -33,6 +34,7 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +53,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -60,6 +63,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
@@ -565,6 +569,45 @@ public class SecurityResource extends AbstractFisholaResource {
 
         Response response = noContent(userIdAndRenewal);
         return response;
+    }
+
+    protected UserProfileForAdmin toUserProfileForAdmin(FisholaUser input) {
+        ImmutableUserProfileForAdmin result = ImmutableUserProfileForAdmin.builder()
+                .id(input.getId())
+                .email(input.getEmail())
+                .firstName(input.getFirstName())
+                .lastName(Optional.ofNullable(input.getLastName()))
+                .birthYear(Optional.ofNullable(input.getBirthYear()))
+                .gender(Optional.ofNullable(input.getGender()))
+                .excludeFromExports(input.getExcludeFromExports())
+                .build();
+        return result;
+    }
+
+    @GET
+    @Path("/users")
+    public List<UserProfileForAdmin> listUsers() {
+        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        // TODO AThimel 07/07/2020 Pagination
+        List<FisholaUser> users = usersDao.findAll();
+        List<UserProfileForAdmin> result = users.stream()
+                .map(this::toUserProfileForAdmin)
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    @PUT
+    @Path("/users/{userId}")
+    public Response updateUser(@PathParam("userId") UUID userId, UserProfileForAdmin user) {
+        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        Preconditions.checkArgument(userId.equals(user.id()), "L'identifiant ne correspond pas");
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
+        FisholaUser existingUser = optional.get();
+        // On ne met volontairement pas les autres champs à jour car c'est juste pour la partie admin
+        existingUser.setExcludeFromExports(user.excludeFromExports());
+        usersDao.updateUser(existingUser);
+        return Response.noContent().build();
     }
 
 }

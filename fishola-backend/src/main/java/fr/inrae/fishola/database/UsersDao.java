@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,6 +65,11 @@ public class UsersDao extends AbstractFisholaDao {
     public Optional<FisholaUser> findById(UUID userId) {
         FisholaUser user = withDao(FisholaUserDao.class, dao -> dao.findById(userId));
         Optional<FisholaUser> result = Optional.ofNullable(user);
+        return result;
+    }
+
+    public List<FisholaUser> findAll() {
+        List<FisholaUser> result = withDao(FisholaUserDao.class, FisholaUserDao::findAll);
         return result;
     }
 

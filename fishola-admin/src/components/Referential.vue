@@ -9,7 +9,8 @@
             :selected.sync="selection.item"
             >
         </b-table>
-        <b-modal :active.sync="selection.item"
+        <b-modal v-if="editable"
+                 :active.sync="selection.item"
                  trap-focus
                  :destroy-on-hide="false"
                  aria-role="dialog"
@@ -40,6 +41,7 @@ export default class Refenretial extends Vue {
     @Prop() url!: string;
     @Prop() columns!: any[];
     @Prop() data?: any[];
+    @Prop({default: true}) editable: boolean;
 
     selection = {item:null};
 

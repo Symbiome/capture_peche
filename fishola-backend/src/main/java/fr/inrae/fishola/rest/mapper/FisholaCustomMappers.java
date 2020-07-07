@@ -41,8 +41,10 @@ import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.rest.feedback.Feedback;
 import fr.inrae.fishola.rest.feedback.ImmutableFeedback;
 import fr.inrae.fishola.rest.security.ImmutableUserProfile;
+import fr.inrae.fishola.rest.security.ImmutableUserProfileForAdmin;
 import fr.inrae.fishola.rest.security.ImmutableUserSettings;
 import fr.inrae.fishola.rest.security.UserProfile;
+import fr.inrae.fishola.rest.security.UserProfileForAdmin;
 import fr.inrae.fishola.rest.security.UserSettings;
 import io.quarkus.jackson.ObjectMapperCustomizer;
 import org.apache.commons.lang3.StringUtils;
@@ -63,6 +65,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
@@ -140,6 +143,16 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static Optional<String> readText(TreeNode node, String name) {
         String value = readTextOrNull(node, name);
         Optional<String> result = Optional.ofNullable(value);
+        return result;
+    }
+
+    static Optional<UUID> readUuid(TreeNode node, String name) {
+        Optional<UUID> result = readText(node, name).map(UUID::fromString);
+        return result;
+    }
+
+    static UUID readUuidOrNull(TreeNode node, String name) {
+        UUID result = readUuid(node, name).orElse(null);
         return result;
     }
 
@@ -235,7 +248,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     public static class UserProfileDeserializer extends StdDeserializer<UserProfile> {
 
         protected UserProfileDeserializer() {
-            super(PaginationParameter.class);
+            super(UserProfile.class);
         }
 
         @Override
@@ -264,10 +277,43 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         }
     }
 
+    public static class UserProfileForAdminDeserializer extends StdDeserializer<UserProfileForAdmin> {
+
+        protected UserProfileForAdminDeserializer() {
+            super(UserProfileForAdmin.class);
+        }
+
+        @Override
+        public UserProfileForAdmin deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+            TreeNode node = jp.readValueAsTree();
+
+            UUID id = readUuidOrNull(node, "id");
+            String firstName = readTextOrNull(node, "firstName");
+            String email = readTextOrNull(node, "email");
+            Optional<String> lastName = readText(node, "lastName");
+            Optional<Integer> birthYear = readInteger(node, "birthYear");
+            Optional<String> genderString = readText(node, "gender");
+            boolean excludeFromExports = readBoolean(node, "excludeFromExports");
+
+            ImmutableUserProfileForAdmin.Builder builder = ImmutableUserProfileForAdmin.builder();
+
+            builder.id(id);
+            builder.firstName(firstName);
+            builder.email(email);
+            lastName.ifPresent(builder::lastName);
+            birthYear.ifPresent(builder::birthYear);
+            genderString.map(Gender::valueOf).ifPresent(builder::gender);
+            builder.excludeFromExports(excludeFromExports);
+
+            UserProfileForAdmin result = builder.build();
+            return result;
+        }
+    }
+
     public static class UserSettingsDeserializer extends StdDeserializer<UserSettings> {
 
         protected UserSettingsDeserializer() {
-            super(PaginationParameter.class);
+            super(UserSettings.class);
         }
 
         @Override
@@ -311,6 +357,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
             addDeserializer(PaginationParameter.class, new PaginationParameterDeserializer());
             addDeserializer(UserProfile.class, new UserProfileDeserializer());
+            addDeserializer(UserProfileForAdmin.class, new UserProfileForAdminDeserializer());
             addDeserializer(UserSettings.class, new UserSettingsDeserializer());
             addDeserializer(Feedback.class, new FeedbackBeanDeserializer());
         }

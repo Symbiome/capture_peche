@@ -1,9 +1,11 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 
-import Dispatcher from '../views/Dispatcher.vue'
-import Login from '../views/Login.vue'
-import Home from '../views/Home.vue'
+import Dispatcher from '@/views/Dispatcher.vue'
+import Login from '@/views/Login.vue'
+import Home from '@/views/Home.vue'
+
+import Users from '@/views/Users.vue'
 
 import Lakes from '@/views/referentials/Lakes.vue'
 import Weathers from '@/views/referentials/Weathers.vue'
@@ -47,6 +49,11 @@ const routes: Array<RouteConfig> = [
     path: '/referentials/species',
     name: 'species',
     component: Species
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: Users
   },
 ]
 

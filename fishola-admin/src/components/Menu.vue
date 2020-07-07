@@ -49,7 +49,7 @@
           <b-navbar-item href="#">
               Sorties
           </b-navbar-item>
-          <b-navbar-item href="#">
+          <b-navbar-item  tag="router-link" :to="{ name: 'users' }">
               Utilisateurs
           </b-navbar-item>
       </template>
