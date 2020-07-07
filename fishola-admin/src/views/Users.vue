@@ -1,6 +1,7 @@
 <template>
   <div class="lakes">
     <Referential
+      :canCreateNew="false"
       name="Utilisateurs" 
       url="/v1/security/users"
       :columns="userColumns"></Referential>

@@ -9,6 +9,9 @@
             :selected.sync="selection.item"
             >
         </b-table>
+        <div class="buttons">
+            <button class="button is-primary" v-if="canCreateNew" @click="createNew()">Nouveau</button>
+        </div>
         <b-modal v-if="editable"
                  :active.sync="selection.item"
                  trap-focus
@@ -42,6 +45,7 @@ export default class Refenretial extends Vue {
     @Prop() columns!: any[];
     @Prop() data?: any[];
     @Prop({default: true}) editable: boolean;
+    @Prop({default: true}) canCreateNew: boolean;
 
     selection = {item:null};
 
@@ -52,6 +56,10 @@ export default class Refenretial extends Vue {
     loadData() {
         delete this.data;
         BackendService.backendGet(this.url).then((res) => this.data = res);
+    }
+
+    createNew() {
+        this.$buefy.dialog.alert('Not yet implemented!');
     }
 }
 </script>
@@ -66,6 +74,13 @@ export default class Refenretial extends Vue {
         font-size: 36px;
     }
 
+    .buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row-reverse;
+        padding-right: 30px;
+        padding-top: 10px;
+    }
 }
 
 </style>

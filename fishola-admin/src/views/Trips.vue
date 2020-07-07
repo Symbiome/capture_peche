@@ -1,16 +1,19 @@
 <template>
   <div class="trips">
     <p>Vous pouvez exporter les sorties.</p>
-    <button class="button is-primary" @click="save()">Lancer un export CSV</button>
+    <button class="button is-primary" @click="exportToCsv()">Lancer un export CSV</button>
   </div>
 </template>
 
-<script>
+<script lans="ts">
 
-export default {
-  name: 'Trips',
-  components: {
-  }
+import { Component, Prop, Vue } from 'vue-property-decorator'
+
+@Component
+export default class TripsVue extends Vue {
+    exportToCsv() {
+        this.$buefy.dialog.alert('Not yet implemented!');
+    }
 }
 </script>
 
