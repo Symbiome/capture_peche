@@ -281,12 +281,12 @@ export default class Menu extends Vue {
       flex-direction: row-reverse;
       align-items: center;
 
-      height: 30px;
+      height: @pastille-size;
       margin: 10px;
       width: 100%;
 
       div.plus {
-        font-size: 30px;
+        font-size: @pastille-size;
         width: fit-content;
         transform: rotate(45deg);
       }
@@ -316,13 +316,13 @@ export default class Menu extends Vue {
         span {
           margin-right: 20px;
 
-          font-size: 14px;
+          font-size: @fonsize-menu-item-span;
           font-weight: bold;
-          line-height: 19px;
+          line-height: calc(@fonsize-menu-item + 5px);
         }
 
         i {
-          font-size: 20px;
+          font-size: @fonsize-menu-item;
           width: 30px;
           text-align: center;
         }

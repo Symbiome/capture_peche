@@ -137,8 +137,8 @@ export default class MyTripItem extends Vue {
       margin-left: 20px;
       width: 100%;
 
-      font-size: 12px;
-      line-height: 19px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 7px);
 
       .item-row {
         display: flex;
@@ -149,7 +149,7 @@ export default class MyTripItem extends Vue {
 
         .name {
           font-weight: bold;
-          font-size: 14px;
+          font-size: @fontsize-header-paragraph;
           color: @gunmetal;
         }
 

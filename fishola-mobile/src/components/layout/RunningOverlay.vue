@@ -143,8 +143,8 @@ export default class RunningOverlay extends Vue {
 
       font-style: normal;
       font-weight: bold;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + 7px);
 
       color: @white;
       background-color: @terra-cotta;
@@ -160,8 +160,8 @@ export default class RunningOverlay extends Vue {
   .running-overlay-bar {
     height: 76px;
     background-color: @cyprus;
-    font-size: 18px;
-    line-height: 25px;
+    font-size: @fontsize-button;
+    line-height: calc(@fontsize-button + 7px);
     color: @white;
     width: 100%;
 

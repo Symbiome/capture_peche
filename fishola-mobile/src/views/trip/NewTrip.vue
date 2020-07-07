@@ -152,14 +152,14 @@ export default class NewTripView extends Vue {
 
           .title {
             font-weight: bold;
-            font-size: 18px;
-            line-height: 25px;
+            font-size: @fontsize-span-big;
+            line-height: calc(@fontsize-span-big + 7px);
             color: @pelorous;
           }
 
           .detail {
-            font-size: 14px;
-            line-height: 19px;
+            font-size: @fontsize-header-paragraph;
+            line-height: calc(@fontsize-header-paragraph + 5px);
             color: @gunmetal;
           }
 
@@ -169,7 +169,7 @@ export default class NewTripView extends Vue {
             text-align: right;
 
             button {
-              font-size: 24px;
+              font-size: @fontsize-button-verry-big;
               border: 0px;
               height: 40px;
               border-radius: 50px;

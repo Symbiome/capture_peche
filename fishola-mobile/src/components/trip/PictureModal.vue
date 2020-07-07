@@ -79,7 +79,7 @@ export default class PictureModal extends Vue {
     background-color: #fff5;
 
     i {
-      font-size: 15px;
+      font-size: @fontsize-header-paragraph;
       transform: rotate(45deg);
     }
   }
@@ -106,8 +106,8 @@ export default class PictureModal extends Vue {
 
       font-style: normal;
       font-weight: bold;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + 7px);
 
       color: @white;
       background-color: @terra-cotta;
@@ -118,7 +118,7 @@ export default class PictureModal extends Vue {
 
       i {
         margin-right: 5px;
-        font-size: 20px;
+        font-size: @fontsize-button-big;
       }
 
       &.delete {

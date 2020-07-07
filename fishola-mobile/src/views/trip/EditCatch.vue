@@ -654,8 +654,8 @@ export default class EditCatchView extends Vue {
   .info {
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + 4px);
     color: @pale-sky;
     text-align: center;
   }
@@ -669,8 +669,8 @@ export default class EditCatchView extends Vue {
     margin-bottom: 20px;
 
     .description {
-      font-size: 14px;
-      line-height: 16px;
+      font-size: @fontsize-header-paragraph;
+      line-height: calc(@fontsize-header-paragraph + 2px);
       color: @black;
       margin: 10px;
     }
@@ -688,7 +688,7 @@ export default class EditCatchView extends Vue {
 
     .sample-id {
       font-family: monospace, sans-serif;
-      font-size: 18px;
+      font-size: @fontsize-span-big;
       background-color: @gainsboro;
       padding-left: 10px;
       padding-right: 10px;

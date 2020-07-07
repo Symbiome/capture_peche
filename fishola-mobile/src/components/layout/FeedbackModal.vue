@@ -277,8 +277,8 @@ export default class FeedbackModal extends Vue {
       .pane-content {
 
         color: @gunmetal;
-        font-size: 12px;
-        line-height: 16px;
+        font-size: @fontsize-feedback-paragraph;
+        line-height: calc(@fontsize-feedback-paragraph + 4px);
 
         p {
           text-align: center;

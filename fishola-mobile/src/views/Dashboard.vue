@@ -421,8 +421,8 @@ export default class DashboardView extends Vue {
     height: 50px;
     span {
       font-style: italic;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + 7px);
       color: @pale-sky;
       text-align: center;
       margin-top: 30px;
@@ -448,8 +448,8 @@ export default class DashboardView extends Vue {
       justify-content: center;
       span {
         color: @carrot-orange;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + 7px);
       }
     }
 
@@ -467,8 +467,8 @@ export default class DashboardView extends Vue {
 
       font-style: normal;
       font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
+      font-size: @fontsize-title;
+      line-height: calc(@fontsize-title + 8px);
       text-align: left;
     }
 
@@ -486,9 +486,9 @@ export default class DashboardView extends Vue {
           flex-direction: row;
           justify-content: space-between;
 
-          font-size: 12px;
-          line-height: 16px;
-          height: 16px;
+          font-size: @fontsize-small-paragraph;
+          line-height: calc(@fontsize-small-paragraph + 4px);
+          height: calc(@fontsize-small-paragraph + 4px);
 
           .species {
             color: @gunmetal;
@@ -528,10 +528,10 @@ export default class DashboardView extends Vue {
     }
 
     .average-header {
-      height: 30px;
-      line-height: 30px;
+      height: @average-header-height;
+      line-height: @average-header-height;
       font-weight: bold;
-      font-size: 14px;
+      font-size: @fontsize-header-paragraph;
       color: @terra-cotta;
 
       display: flex;
@@ -569,7 +569,7 @@ export default class DashboardView extends Vue {
 
         .count {
           font-weight: bold;
-          font-size: 12px;
+          font-size: @fontsize-small-paragraph;
           color: @pelorous;
         }
 
@@ -601,7 +601,7 @@ export default class DashboardView extends Vue {
 
         .date {
           height: 50px;
-          font-size: 12px;
+          font-size: @fontsize-small-paragraph;
           color: @gunmetal;
           .day {
             font-weight: bold;

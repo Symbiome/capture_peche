@@ -116,8 +116,8 @@ export default class FormYesNo extends Vue {
 .form-yes-no {
   margin-top: 6px;
 
-  font-size: 12px;
-  line-height: 16px;
+  font-size: @fontsize-form-input;
+  line-height: calc(@fontsize-form-input + 4px);
 
   // color: @white;
 
@@ -176,13 +176,13 @@ export default class FormYesNo extends Vue {
   }
 
   div {
-    height: 14px;
+    height: calc(@fontsize-form-error + 4px);
   }
   div.field-error {
     background-color: transparent;
     color: @cardinal;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-form-error;
+    line-height: calc(@fontsize-form-error + 4px);
   }
 }
 

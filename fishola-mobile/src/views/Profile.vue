@@ -220,14 +220,14 @@ export default class ProfileView extends Vue {
     .pastille {
       width: 70px;
       height: 70px;
-      font-size: 30px;
-      line-height: 35px;
+      font-size: @pastille-size;
+      line-height: calc(@pastille-size + 5px);
       color: @gunmetal;
     }
     .profile-header-name {
       margin-top: 10px;
-      font-size: 22px;
-      line-height: 30px;
+      font-size: @fontsize-title;
+      line-height: calc(@fontsize-title + 8px);
       color: @white;
     }
   }

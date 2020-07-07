@@ -86,8 +86,8 @@ export default class FormToggle extends Vue {
 .form-toggle {
   margin-top: 6px;
 
-  font-size: 12px;
-  line-height: 16px;
+  font-size: @fontsize-form-input;
+  line-height: calc(@fontsize-form-input + 4px);
 
   div.toggle-row {
     display: flex;
@@ -105,14 +105,14 @@ export default class FormToggle extends Vue {
     }
   }
 
-  div.error-row {
-    height: 14px;
+  div {
+    height: calc(@fontsize-form-error + 4px);
   }
   div.field-error {
     background-color: transparent;
     color: @cardinal;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-form-error;
+    line-height: calc(@fontsize-form-error + 4px);
   }
 }
 

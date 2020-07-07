@@ -100,7 +100,7 @@ export default class FisholaHeader extends Vue {
   padding-right: 20px;
   padding-top: 10px;
   padding-bottom: 0px;
-  line-height: 30px;
+  line-height: @average-header-height;
 
   z-index: 10;
 

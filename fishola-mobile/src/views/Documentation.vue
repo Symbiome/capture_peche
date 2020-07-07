@@ -113,8 +113,8 @@ export default class DocumentationView extends Vue {
     align-items: center;
 
     span {
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 4px);
       color: @gunmetal;
     }
 

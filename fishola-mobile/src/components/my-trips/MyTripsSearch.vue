@@ -90,8 +90,7 @@ export default class MyTripsSearch extends Vue {
       color: @pale-sky;
       font-style: italic;
       font-weight: normal;
-      font-size: 12px;
-      // line-height: 19px;
+      font-size: @fontsize-form-input;
     }
 
 

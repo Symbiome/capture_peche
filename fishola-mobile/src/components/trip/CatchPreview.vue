@@ -179,8 +179,8 @@ export default class CatchPreview extends Vue {
       margin-left: 20px;
 
       padding: 20px;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 4px);
       color: @white;
       text-align: left;
 
@@ -222,8 +222,8 @@ export default class CatchPreview extends Vue {
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 
-    .bottom-left {
-      font-size: 18px;
+    .bottom-left {   
+      font-size: @fontsize-span-big;
       margin-left: 20px;
       i {
         color: @pelorous;
@@ -232,7 +232,7 @@ export default class CatchPreview extends Vue {
     }
 
     .bottom-right {
-      font-size: 12px;
+      font-size: @fontsize-small-paragraph;
       margin-right: 20px;
 
       button {

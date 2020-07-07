@@ -171,8 +171,8 @@ export default class ForgottenPassword extends Vue {
 
   @import "../../less/main";
   .forgotten-password {
-    font-size: 16px;
-    line-height: 22px;
+    font-size: @fontsize-paragraph;
+    line-height: calc(@fontsize-paragraph + 5px);
     margin-left: 30px;
     margin-right: 30px;
     margin-bottom:30px;
@@ -202,11 +202,11 @@ export default class ForgottenPassword extends Vue {
   }
   .title {
     margin-bottom: 20px;
-    height: 30px;
+    height: calc(@fontsize-title + 8px);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + 8px);
     color: @pelorous;
     text-align: center;
   }
@@ -227,8 +227,8 @@ export default class ForgottenPassword extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + 7px);
 
           border: 0px;
           padding-left: 20px;

@@ -154,12 +154,12 @@ export default class Toaster extends Vue {
       align-items: center;
 
       div {
-        font-size: 12px;
-        line-height: 16px;
+        font-size: @fontsize-toaster;
+        line-height: calc(@fontsize-toaster + 4px);
 
         i {
           margin-right: 6px;
-          font-size: 12px;
+          font-size: @fontsize-toaster;
         }
       }
     }

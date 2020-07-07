@@ -73,7 +73,7 @@ export default class SomeTripHeader extends Vue {
 
 
   font-weight: bold;
-  font-size: 14px;
+  font-size: @fontsize-header-paragraph;
 
   .header-icons {
     display: flex;
@@ -91,8 +91,8 @@ export default class SomeTripHeader extends Vue {
       }
 
       .icon-chevron {
-        margin-top: 6px;
-        font-size: 7px;
+        margin-top: calc(@fontsize-small-chevron - 1px);
+        font-size:@fontsize-small-chevron;
       }
     }
   }

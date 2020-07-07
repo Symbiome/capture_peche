@@ -246,7 +246,7 @@ html {
   padding-bottom: 10px;
   padding-left: 20px;
   padding-right: 20px;
-  line-height: 20px;
+  line-height: @fontsize-top1;
   height: @secondary-header-height;
 }
 
@@ -274,22 +274,22 @@ html {
   z-index: 10;
 
   h1 {
-    margin-top: 40px;
-    margin-bottom: 40px;
-    height: 30px;
+    margin-top: calc(@fontsize-title * 1.5);
+    margin-bottom: calc(@fontsize-title * 1.5);
+    height: calc(@fontsize-title + 8px);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + 8px);
     color: @pelorous;
     text-align: center;
 
     &.keyboardShowing {
       margin-top:10px;
       margin-bottom: 5px;
-      height: 16px;
-      line-height: 16px;
-      font-size:16px;
+      height: @fontsize-title-keyboardshowing;
+      line-height: @fontsize-title-keyboardshowing;
+      font-size: @fontsize-title-keyboardshowing;
     }
   }
 
@@ -339,14 +339,14 @@ html {
 
       .dialog-c-title {
         color: @gunmetal;
-        font-size: 17px;
-        line-height: 22px;
+        font-size: @fontsize-dialog-title;
+        line-height: calc(@fontsize-dialog-title + 5px);
       }
 
       .dialog-c-text {
         color: @pale-sky;
-        font-size: 13px;
-        line-height: 18px;
+        font-size: calc(@fontsize-dialog-text + 5px);
+        line-height: calc(@fontsize-dialog-text + 5px);
       }
     }
 
@@ -355,7 +355,7 @@ html {
       border-top: 1px solid @very-light-grey;
 
       button.vue-dialog-button {
-        font-size: 17px !important;
+        font-size: @fontsize-dialog-button !important;
 
         &:not(:first-of-type) {
           border-left: 1px solid @very-light-grey;

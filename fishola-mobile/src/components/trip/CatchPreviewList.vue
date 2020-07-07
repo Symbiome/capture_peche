@@ -146,8 +146,8 @@ export default class CatchPreviewList extends Vue {
       .pastille {
         width: 70px;
         height: 70px;
-        line-height: 30px;
-        font-size: 30px;
+        font-size: @pastille-size;
+        line-height: calc(@pastille-size);
         color: @white;
         background: @pale-sky;
       }

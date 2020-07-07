@@ -199,8 +199,8 @@ export default class TripCatchsView extends Vue {
         height: 44px;
         font-style: normal;
         font-weight: bold;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-button;
+        line-height: calc(@fontsize-button + 7px);
 
         color: @pelorous;
         background-color: transparent;
@@ -212,7 +212,7 @@ export default class TripCatchsView extends Vue {
 
         i {
           margin-right: 5px;
-          font-size: 20px;
+          font-size: @fontsize-button-big;
         }
       }
     }

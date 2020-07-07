@@ -248,8 +248,8 @@ export default class TripSpeciesView extends Vue {
       margin-left: 18px;
       width: 100%;
 
-      font-size: 12px;
-      line-height: 19px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 7px);
 
       text-align: left;
 
@@ -272,7 +272,7 @@ export default class TripSpeciesView extends Vue {
         &::placeholder {
           font-style: italic;
           font-weight: normal;
-          font-size: 12px;
+          font-size: @fontsize-form-input;
           color: @pale-sky;
         }
 
@@ -290,8 +290,8 @@ export default class TripSpeciesView extends Vue {
   .info {
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + 4px);
     color: @pale-sky;
     text-align: center;
   }

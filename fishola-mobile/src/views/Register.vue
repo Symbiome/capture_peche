@@ -204,8 +204,8 @@ export default class RegisterView extends Vue {
     height: 30px;
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + 8px);
     color: @pelorous;
     text-align: center;
   }
@@ -237,9 +237,9 @@ export default class RegisterView extends Vue {
     .register-cgu-label {
       margin-left: 10px;
       color: @gunmetal;
-      font-size: 12px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 4px);
       font-weight: 300;
-      line-height: 16px;
 
       a {
         color: @pelorous;
@@ -281,8 +281,8 @@ export default class RegisterView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + 7px);
 
           border: 0px;
           padding-left: 20px;
@@ -304,8 +304,8 @@ export default class RegisterView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + 7px);
 
           border: 1px solid @pelorous;
           padding-left: 20px;

@@ -102,11 +102,11 @@ export default class VerifyAccount extends Vue {
       justify-content: center;
 
       .welcome {
-        font-size: 24px;
-        line-height: 33px;
+        font-size: @fontsize-header-title;
+        line-height: calc(@fontsize-header-title + 9px);
         &.keyboardShowing {
-          font-size: 16px;
-          line-height: 18px;
+          font-size: @fontsize-title-keyboardshowing;
+          line-height: calc(@fontsize-title-keyboardshowing + 2px);
         }
       }
       .logo {
@@ -147,8 +147,8 @@ export default class VerifyAccount extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + 7px);
 
           border: 0px;
           padding-left: 20px;

@@ -60,7 +60,7 @@ export default class MyTripsHeader extends Vue {
   justify-content: space-between;
 
   font-weight: bold;
-  font-size: 14px;
+  font-size: @fontsize-header-paragraph;
 
   .header-icons {
     display: flex;
@@ -78,8 +78,8 @@ export default class MyTripsHeader extends Vue {
       }
 
       .icon-chevron {
-        margin-top: 6px;
-        font-size: 7px;
+        margin-top: calc(@fontsize-small-chevron - 1px);
+        font-size:@fontsize-small-chevron;
       }
     }
   }

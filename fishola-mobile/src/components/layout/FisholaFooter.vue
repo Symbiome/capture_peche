@@ -299,7 +299,7 @@ export default class FisholaFooter extends Vue {
     text-align: center;
 
     i {
-      font-size: 19px;
+      font-size: @fontsize-footer;
     }
 
     &.timer {

@@ -40,13 +40,13 @@ export default class Top extends Vue {
 
   .top {
     font-weight: bold;
-    font-size: 12px;
-    line-height: 20px;
+    font-size: @fontsize-top;
+    line-height: calc(@fontsize-top + 8px);
   }
 
   .top-2, .top-3, .top-4, .top-5 {
-    height:20px;
-    width:20px;
+    height:@fontsize-top1;
+    width:@fontsize-top1;
     border-radius: 50%;
   }
 
@@ -54,7 +54,7 @@ export default class Top extends Vue {
     color: @white;
     position: relative;
     z-index: 1;
-    line-height: 18px;
+    line-height: calc(@fontsize-top1 - 2px);
   }
 
   .top-1::after {
@@ -64,8 +64,8 @@ export default class Top extends Vue {
     position: absolute;
     left: -6px;
     top: -1px;
-    font-size: 20px;
-    line-height: 20px;
+    font-size: @fontsize-top1;
+    line-height: @fontsize-top1;
     z-index: -1;
   }
 
@@ -78,7 +78,7 @@ export default class Top extends Vue {
     background-color: transparent;
     color: @cyprus;
     border: 1px solid @cyprus;
-    line-height: 18px;
+    line-height: @fontsize-top4;
   }
 
 </style>

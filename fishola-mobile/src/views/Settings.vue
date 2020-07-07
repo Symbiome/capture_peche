@@ -179,8 +179,8 @@ export default class SettingsView extends Vue {
       span {
         text-align: center;
         color: @carrot-orange;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + 7px);
       }
     }
   }
@@ -196,8 +196,8 @@ export default class SettingsView extends Vue {
     align-items: center;
 
     span {
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + 4px);
       color: @gunmetal;
     }
   }
@@ -207,8 +207,8 @@ export default class SettingsView extends Vue {
     padding-right: 40px;
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + 4px);
     color: @pale-sky;
     text-align: center;
   }
