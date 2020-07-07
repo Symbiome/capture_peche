@@ -42,6 +42,7 @@ export default class GeolocationService extends AbstractFisholaService {
     static watchId?:CallbackID;
     static latestPosition?:GeolocationPosition;
     static latestError?:any;
+    static notifiedPositionDisabled:boolean = false;
 
     constructor () {
         super();

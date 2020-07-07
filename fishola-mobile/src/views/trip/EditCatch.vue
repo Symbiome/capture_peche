@@ -38,6 +38,12 @@
       <div class="pane">
         <div class="pane-content rounded" v-if="ready">
           <h1>Capture</h1>
+
+          <span v-if="catchPositionError" class="position-error">
+            <i class="icon-warning"/>
+            {{catchPositionError}}
+          </span>
+
           <FormSelect name="species"
                       label="Espèce"
                       v-bind:options="allSpeciesWithAliases"
@@ -212,6 +218,7 @@ export default class EditCatchView extends Vue {
   defaultSizeLabel:string = "Taille en cm";
   sizeLabel:string = this.defaultSizeLabel;
 
+  catchPositionError:string = '';
   speciesIdError:string = '';
   otherSpeciesError:string = '';
   sizeError:string = '';
@@ -300,7 +307,17 @@ export default class EditCatchView extends Vue {
             console.info(`Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`);
           },
           (e) => {
-            console.error("Error while geting location from geolocation service", e);
+            console.error("Error while geting location from geolocation service", JSON.stringify(e));
+            if (JSON.stringify(e).indexOf('location unavailable') != -1) {
+              this.catchPositionError = "La position n'est pas activée, la capture ne sera pas geolocalisée";
+              if (!GeolocationService.notifiedPositionDisabled) {
+                GeolocationService.notifiedPositionDisabled = true;
+                Helpers.alert(this.$modal, 'Vous devez activer la localisation de l\'appareil pour que FISHOLA puisse acquérir votre position', 'La position n\'est pas activée');
+              }
+            } else if (JSON.stringify(e).indexOf('User denied') != -1) {
+              this.catchPositionError = "Partage de position refusé, la capture ne sera pas geolocalisée";
+            }
+
           }
         );
     }
@@ -626,6 +643,12 @@ export default class EditCatchView extends Vue {
     position: absolute;
     top: env(safe-area-inset-top);
     background-color: @gainsboro;
+  }
+
+  .position-error {
+    font-size: 14px;
+    color: @carrot-orange;
+    font-style: italic;
   }
 
   .info {
