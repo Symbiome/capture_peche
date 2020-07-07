@@ -32,11 +32,13 @@ export default class SpeciesVue extends Vue {
     },
     {
       field: 'builtIn',
-      label: 'De base'
+      label: 'Pour tout le monde ?',
+      isABoolean: true
     },
     {
       field: 'mandatorySize',
-      label: 'Taille obligatoire'
+      label: 'Taille obligatoire ?',
+      isABoolean: true
     }
   ];
 }

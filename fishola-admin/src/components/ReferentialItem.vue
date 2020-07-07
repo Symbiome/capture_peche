@@ -3,7 +3,14 @@
         <h2 v-if="item.name">{{item.name}}</h2>
         <div v-for="col in columns" v-bind:key="col.field">
             <b-field :label="col.label">
-                <b-input v-model="item[col.field]" :disabled="col.readOnly"></b-input>
+                <b-input v-model="item[col.field]"
+                         v-if="!col.isABoolean"
+                         :disabled="col.readOnly"></b-input>
+
+                <b-checkbox v-model="item[col.field]"
+                            v-if="col.isABoolean">
+                    {{item[col.field]?'Oui':'Non'}}
+                </b-checkbox>
             </b-field>
         </div>
         <div class="buttons">
@@ -80,6 +87,15 @@ export default class RefenretialItem extends Vue {
             background-color: @terra-cotta;
         }
     }
+
+    .b-checkbox.checkbox:hover input[type="checkbox"]:not(:disabled) + .check,
+    .b-checkbox.checkbox input[type="checkbox"]:checked + .check {
+        border-color: @pelorous;
+    }
+    .b-checkbox.checkbox input[type="checkbox"]:checked + .check {
+        background: @pelorous url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cpath style='fill:white' d='M 0.04038059,0.6267767 0.14644661,0.52071068 0.42928932,0.80355339 0.3232233,0.90961941 z M 0.21715729,0.80355339 0.85355339,0.16715729 0.95961941,0.2732233 0.3232233,0.90961941 z'%3E%3C/path%3E%3C/svg%3E") no-repeat center center;
+    }
+
 }
 
 </style>
