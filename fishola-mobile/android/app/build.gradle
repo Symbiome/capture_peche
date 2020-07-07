@@ -50,19 +50,16 @@ android {
             // and the plugin automatically assigns all the module's flavors to
             // that dimension.
             dimension "version"
-            applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
             resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
         }
         beta {
             dimension "version"
-            applicationIdSuffix ".beta"
             versionNameSuffix "-beta"
             resValue "string", "DEEP_LINK_URL", "fishola-beta.demo.codelutin.com"
         }
         production {
             dimension "version"
-            applicationIdSuffix ".production"
             versionNameSuffix "-production"
             resValue "string", "DEEP_LINK_URL", "fishola.inrae.fr"
         }
