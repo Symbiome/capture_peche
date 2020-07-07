@@ -274,7 +274,7 @@ export default class Menu extends Vue {
 
     color: @white;
 
-    padding: 15px;
+    padding: @margin-menu-item;
 
     .close {
       display: flex;
@@ -282,7 +282,7 @@ export default class Menu extends Vue {
       align-items: center;
 
       height: @pastille-size;
-      margin: 10px;
+      margin: @vertical-margin-small;
       width: 100%;
 
       div.plus {
@@ -300,7 +300,7 @@ export default class Menu extends Vue {
       // justify-content: center;
       align-items: flex-end;
 
-      padding-right: 15px;
+      padding-right: @margin-menu-item;
 
       .item {
 
@@ -314,7 +314,7 @@ export default class Menu extends Vue {
         width: fit-content;
 
         span {
-          margin-right: 20px;
+          margin-right: @margin-medium;
 
           font-size: @fonsize-menu-item-span;
           font-weight: bold;

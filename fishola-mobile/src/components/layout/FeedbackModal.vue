@@ -288,7 +288,7 @@ export default class FeedbackModal extends Vue {
           width: 100%;
 
           .real-label {
-            margin-left: 10px;
+            margin-left: @margin-small;
           }
         }
       }

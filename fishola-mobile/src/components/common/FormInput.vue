@@ -96,7 +96,7 @@ export default class FormInput extends Vue {
 @import "../../less/main";
 
 .form-input {
-  margin-top: 6px;
+  margin-top: @vertical-margin-x-small;
 
   font-size: @fontsize-form-input;
   line-height: calc(@fontsize-form-input + @line-height-padding-medium);
@@ -113,9 +113,9 @@ export default class FormInput extends Vue {
   }
 
   input {
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-top: 5px;
+    padding-left: @margin-small;
+    padding-right: @margin-small;
+    margin-top: @vertical-margin-xx-small;
     width: 100%;
     height: 38px;
     border-radius: 4px;

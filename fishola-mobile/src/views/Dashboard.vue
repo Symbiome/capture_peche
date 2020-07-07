@@ -425,7 +425,7 @@ export default class DashboardView extends Vue {
       line-height: calc(@fontsize-button + @line-height-padding-x-large);
       color: @pale-sky;
       text-align: center;
-      margin-top: 30px;
+      margin-top: @vertical-margin-large;
     }
   }
 
@@ -435,14 +435,14 @@ export default class DashboardView extends Vue {
 
     text-align:center;
 
-    padding-top: 30px;
+    padding-top: @vertical-margin-large;
 
     color: @gunmetal;
 
     &.offline {
       height: 100%;
-      padding-left: 60px;
-      padding-right: 60px;
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -454,15 +454,15 @@ export default class DashboardView extends Vue {
     }
 
     .shrinked {
-      padding-left: 30px;
-      padding-right: 30px;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
     }
 
     h2 {
 
       i {
         color: @pelorous;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
 
       font-style: normal;
@@ -479,7 +479,7 @@ export default class DashboardView extends Vue {
 
       .distribution-row {
 
-        margin-bottom: 10px;
+        margin-bottom: @vertical-margin-small;
 
         .distribution-row-data {
           display: flex;
@@ -542,13 +542,13 @@ export default class DashboardView extends Vue {
         border-radius: 15px;
         background-color: @terra-cotta;
         color: @white;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
     }
 
     .average {
       position: relative;
-      margin-top: 10px;
+      margin-top: @vertical-margin-small;
       width: 100%;
       display: flex;
       flex-direction: row;
@@ -575,8 +575,8 @@ export default class DashboardView extends Vue {
 
         .average-row-bar {
           position: relative;
-          margin-top: 5px;
-          margin-bottom: 5px;
+          margin-top: @vertical-margin-xx-small;
+          margin-bottom: @vertical-margin-xx-small;
           height: 150px;
           width: 14px;
           border-radius: 7px;
@@ -620,7 +620,7 @@ export default class DashboardView extends Vue {
       overflow-y: hidden;
 
       height: 200px;
-      margin-bottom: 20px;
+      margin-bottom: @vertical-margin-medium;
 
     }
 
@@ -628,15 +628,15 @@ export default class DashboardView extends Vue {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
-      margin-bottom: 10px;
+      margin-bottom: @vertical-margin-small;
 
-      padding-left: 30px;
-      padding-right: 30px;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
 
       overflow:auto;
 
       div.item {
-        margin-right: 20px;
+        margin-right: @margin-medium;
         color: @pale-sky;
         white-space: nowrap;
       }

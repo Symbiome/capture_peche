@@ -188,8 +188,8 @@ export default class TripCatchsView extends Vue {
     }
 
     .edit-trip-catchs-new-catch-button {
-      margin-top: 30px;
-      margin-bottom: 50px;
+      margin-top: @vertical-margin-large;
+      margin-bottom: @vertical-margin-xx-large;
 
       height: 44px;
       width: 100%;
@@ -207,11 +207,11 @@ export default class TripCatchsView extends Vue {
 
         border: 1px solid @pelorous;
         border-radius: 22px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
 
         i {
-          margin-right: 5px;
+          margin-right: @margin-x-small;
           font-size: @fontsize-button-big;
         }
       }

@@ -84,7 +84,7 @@ export default class FormToggle extends Vue {
 @import "../../less/main";
 
 .form-toggle {
-  margin-top: 6px;
+  margin-top: @vertical-margin-x-small;
 
   font-size: @fontsize-form-input;
   line-height: calc(@fontsize-form-input + @line-height-padding-medium);

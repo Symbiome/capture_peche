@@ -171,8 +171,8 @@ export default class SettingsView extends Vue {
 
     &.offline {
       height: 100%;
-      padding-left: 60px;
-      padding-right: 60px;
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -186,8 +186,8 @@ export default class SettingsView extends Vue {
   }
 
   .settings-row {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     height: 56px;
     border-bottom: 1px solid @solitude;
 
@@ -203,8 +203,8 @@ export default class SettingsView extends Vue {
   }
 
   .info {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     font-style: italic;
     font-weight: 300;
     font-size: @fontsize-info;

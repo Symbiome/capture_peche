@@ -322,8 +322,8 @@ export default class FisholaFooter extends Vue {
       border-radius: 50%;
       border: 1px solid @pelorous;
 
-      margin-left: 5px;
-      margin-right: 5px;
+      margin-left: @margin-x-small;
+      margin-right: @margin-x-small;
 
     }
 

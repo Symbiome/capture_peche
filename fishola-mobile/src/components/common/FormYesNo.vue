@@ -114,7 +114,7 @@ export default class FormYesNo extends Vue {
 @import "../../less/main";
 
 .form-yes-no {
-  margin-top: 6px;
+  margin-top: @vertical-margin-x-small;
 
   font-size: @fontsize-form-input;
   line-height: calc(@fontsize-form-input + @line-height-padding-medium);
@@ -140,7 +140,7 @@ export default class FormYesNo extends Vue {
 
     .choice {
       height: 21px;
-      margin-right: 20px;
+      margin-right: @margin-medium;
 
       display: flex;
       flex-direction: row;
@@ -149,19 +149,19 @@ export default class FormYesNo extends Vue {
 
       input {
         height: 16px;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
 
       span {
-        margin-left: 10px;
+        margin-left: @margin-small;
       }
     }
   }
 
   select {
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-top: 5px;
+    padding-left: @margin-small;
+    padding-right: @margin-small;
+    margin-top: @vertical-margin-xx-small;
     width: 100%;
     height: 38px;
     border-radius: 4px;

@@ -103,8 +103,8 @@ export default class DocumentationView extends Vue {
   }
 
   .documentation-row {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     height: 56px;
     border-bottom: 1px solid @solitude;
 

@@ -187,8 +187,9 @@ export default class RegisterView extends Vue {
   background-color: @white-smoke;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  margin-top: 50px;
-  padding-top: 30px;
+  margin-top: @vertical-margin-xx-large;
+  padding-top: @vertical-margin-large;
+  // TODO responsive
   padding-bottom: 90px;
 
   &.keyboardShowing {
@@ -200,7 +201,7 @@ export default class RegisterView extends Vue {
 
   h1 {
     margin-top: 0px;
-    margin-bottom: 30px;
+    margin-bottom: @vertical-margin-large;
     height: 30px;
     font-style: normal;
     font-weight: normal;
@@ -211,8 +212,8 @@ export default class RegisterView extends Vue {
   }
 
   .register-form {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
     display: flex;
     flex-direction: column;
@@ -235,7 +236,7 @@ export default class RegisterView extends Vue {
     // }
 
     .register-cgu-label {
-      margin-left: 10px;
+      margin-left: @margin-small;
       color: @gunmetal;
       font-size: @fontsize-small-paragraph;
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
@@ -255,8 +256,8 @@ export default class RegisterView extends Vue {
     bottom: 0px;
     height: 55px;
     background-color: @zircon;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
     &.keyboardShowing {
       height:35px;
@@ -285,8 +286,8 @@ export default class RegisterView extends Vue {
           line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;
@@ -308,8 +309,8 @@ export default class RegisterView extends Vue {
           line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 1px solid @pelorous;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: transparent;
           color: @pelorous;

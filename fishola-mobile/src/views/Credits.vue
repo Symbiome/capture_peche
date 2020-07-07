@@ -142,16 +142,16 @@ export default class CreditsView extends Vue {
       color: @white;
       border: 0px;
       border-radius: 50px;
-      margin-left: 10px;
+      margin-left: @margin-small;
     }
   }
 
   .credits-logos {
-    margin-top: 30px;
+    margin-top: @vertical-margin-large;
     text-align: center;
     img {
       width: 200px;
-      margin-bottom: 10px;
+      margin-bottom: @vertical-margin-small;
     }
   }
 }

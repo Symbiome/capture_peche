@@ -179,8 +179,8 @@ export default class LoginView extends Vue {
   }
 
   .login-form {
-    margin-left: 30px;
-    margin-right: 30px;
+    margin-left: @margin-large;
+    margin-right: @margin-large;
 
     display: flex;
     flex-direction: column;
@@ -209,8 +209,8 @@ export default class LoginView extends Vue {
     .form-input div.field-error {
       background-color: @cardinal;
       color: @white;
-      padding-left: 5px;
-      padding-right: 5px;
+      padding-left: @margin-x-small;
+      padding-right: @margin-x-small;
     }
 
   }
@@ -220,7 +220,7 @@ export default class LoginView extends Vue {
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     color: @gunmetal;
-    padding-top: 20px;
+    padding-top: @vertical-margin-medium;
 
     display: flex;
     flex-direction: column;
@@ -232,9 +232,9 @@ export default class LoginView extends Vue {
     }
     .signin {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 20px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+      margin-bottom: @vertical-margin-medium;
       &.keyboardShowing {
           margin-bottom: -30px; 
       }
@@ -250,8 +250,8 @@ export default class LoginView extends Vue {
           line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;
@@ -260,9 +260,9 @@ export default class LoginView extends Vue {
 
     .signup {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 10px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+      margin-bottom: @vertical-margin-small;
       &.keyboardShowing {
          display: none;
       }
@@ -278,8 +278,8 @@ export default class LoginView extends Vue {
           line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 1px solid @pelorous;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @white-smoke;
           color: @pelorous;

@@ -242,10 +242,10 @@ html {
 }
 
 .secondary-header {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-top: @margin-header-top:;
+  padding-bottom: @margin-header-top:;
+  padding-left: @margin-medium;
+  padding-right: @margin-medium;
   line-height: @fontsize-top1;
   height: @secondary-header-height;
 }
@@ -262,7 +262,7 @@ html {
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   padding-top: 0px;
-  margin-top: 10px;
+  margin-top: @vertical-margin-small;
 
   height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
   &.keyboardShowing {
@@ -286,7 +286,7 @@ html {
 
     &.keyboardShowing {
       margin-top:10px;
-      margin-bottom: 5px;
+      margin-bottom: @vertical-margin-xx-small;
       height: @fontsize-title-keyboardshowing;
       line-height: @fontsize-title-keyboardshowing;
       font-size: @fontsize-title-keyboardshowing;
@@ -297,8 +297,8 @@ html {
 
     overflow: auto;
 
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
     &.large {
       padding-left: unset;
@@ -312,13 +312,14 @@ html {
   }
 
   &.pane-only {
-    margin-top: 20px;
+    margin-top: @vertical-margin-medium;
   }
 
 }
 
 .picture-background {
   .pane {
+    // TODO responsive
     margin-top: 95px;
   }
 }

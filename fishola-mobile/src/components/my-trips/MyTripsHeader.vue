@@ -69,12 +69,12 @@ export default class MyTripsHeader extends Vue {
 
     .header-icons-group {
       display: flex;
-      margin-left: 20px;
+      margin-left: @margin-medium;
       margin-right: 0px;
       align-items: center;
 
       * {
-        margin-left: 5px;
+        margin-left: @margin-x-small;
       }
 
       .icon-chevron {

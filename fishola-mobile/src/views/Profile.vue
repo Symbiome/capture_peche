@@ -225,7 +225,7 @@ export default class ProfileView extends Vue {
       color: @gunmetal;
     }
     .profile-header-name {
-      margin-top: 10px;
+      margin-top: @vertical-margin-small;
       font-size: @fontsize-title;
       line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       color: @white;

@@ -52,14 +52,14 @@ export default class MyTripsSearch extends Vue {
 
 .my-trips-search {
   height: 60px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-left: @margin-medium;
+  padding-right: @margin-medium;
+  padding-top: @margin-header-top:;
+  padding-bottom: @margin-header-top:;
   
   @media(max-width:350px) {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: @margin-x-small;
+    padding-right: @margin-x-small;
     padding-top: 0px;
     padding-bottom: 0px;
   }
@@ -67,16 +67,16 @@ export default class MyTripsSearch extends Vue {
     background-color: @white;
 
     height: 40px;
-    padding-left: 20px;
+    padding-left: @margin-medium;
     border-radius: 30px;
     line-height: 40px;
     @media(max-width:350px) {
-      padding-left: 5px;
+      padding-left: @margin-x-small;
       border-radius: 10px;
     }
     .icon-magnifying-glass {
       color: @pelorous;
-      margin-right: 10px;
+      margin-right: @margin-small;
       @media(max-width:272px) {
         display:none;
       }

@@ -151,7 +151,7 @@ export default class CatchPreview extends Vue {
 .catch-preview {
   width: calc(100vw - 80px);
   height: 100%;
-  padding: 5px;
+  padding: @vertical-margin-xx-small;
 
   display: flex;
   flex-direction: column;
@@ -175,20 +175,20 @@ export default class CatchPreview extends Vue {
       opacity: 0.8;
       border-radius: 8px;
 
-      margin-top: 20px;
-      margin-left: 20px;
+      margin-top: @vertical-margin-medium;
+      margin-left: @margin-medium;
 
-      padding: 20px;
+      padding: @vertical-margin-medium;
       font-size: @fontsize-small-paragraph;
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @white;
       text-align: left;
 
       .meta-row {
-        padding-bottom: 10px;
+        padding-bottom: @vertical-margin-small;
 
         i {
-          margin-right: 10px;
+          margin-right: @margin-small;
         }
       }
     }
@@ -224,16 +224,16 @@ export default class CatchPreview extends Vue {
 
     .bottom-left {   
       font-size: @fontsize-span-big;
-      margin-left: 20px;
+      margin-left: @margin-medium;
       i {
         color: @pelorous;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
     }
 
     .bottom-right {
       font-size: @fontsize-small-paragraph;
-      margin-right: 20px;
+      margin-right: @margin-medium;
 
       button {
         width: 32px;
@@ -242,7 +242,7 @@ export default class CatchPreview extends Vue {
         color: @white;
         border: 0px;
         border-radius: 50px;
-        margin-left: 10px;
+        margin-left: @margin-small;
       }
     }
   }

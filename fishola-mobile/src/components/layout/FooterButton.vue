@@ -83,11 +83,11 @@ export default class FooterButton extends Vue {
     background-color: @terra-cotta;
 
     border: 0px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
 
     i {
-      margin-right: 5px;
+      margin-right: @margin-x-small;
       font-size: @fontsize-button;
     }
 

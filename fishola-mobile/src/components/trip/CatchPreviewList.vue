@@ -112,15 +112,15 @@ export default class CatchPreviewList extends Vue {
   height: 100%;
   display: flex;
 
-  padding-left: 35px;
-  padding-right: 35px;
+  padding-left: calc(@margin-large + 5px);
+  padding-right: calc(@margin-large + 5px);
 
   .new-catch {
 
     height: 100%;
 
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: @vertical-margin-xx-small;
+    padding-bottom: @vertical-margin-xx-small;
 
     .new-catch-square-button {
       display: flex;
@@ -138,8 +138,8 @@ export default class CatchPreviewList extends Vue {
       height: 100%;
       width: calc(100vw - 80px);
 
-      margin-left: 5px;
-      margin-right: 5px;
+      margin-left: @margin-x-small;
+      margin-right: @margin-x-small;
 
       cursor: pointer;
 

@@ -95,7 +95,7 @@ export default class PictureModal extends Vue {
     justify-content: center;
 
     img {
-      margin-left: 20px;
+      margin-left: @margin-medium;
     }
 
 
@@ -113,11 +113,11 @@ export default class PictureModal extends Vue {
       background-color: @terra-cotta;
 
       border: 0px;
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
 
       i {
-        margin-right: 5px;
+        margin-right: @margin-x-small;
         font-size: @fontsize-button-big;
       }
 

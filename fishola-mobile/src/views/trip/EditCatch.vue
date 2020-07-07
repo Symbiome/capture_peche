@@ -665,14 +665,14 @@ export default class EditCatchView extends Vue {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: @vertical-margin-medium;
+    margin-bottom: @vertical-margin-medium;
 
     .description {
       font-size: @fontsize-header-paragraph;
       line-height: calc(@fontsize-header-paragraph + @line-height-padding-small);
       color: @black;
-      margin: 10px;
+      margin: @vertical-margin-small;
     }
 
     @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
@@ -690,10 +690,10 @@ export default class EditCatchView extends Vue {
       font-family: monospace, sans-serif;
       font-size: @fontsize-span-big;
       background-color: @gainsboro;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 5px;
-      padding-bottom: 5px;
+      padding-left: @margin-small;
+      padding-right: @margin-small;
+      padding-top: @vertical-xx-small;
+      padding-bottom: @vertical-xx-small;
       border: 1px solid @gunmetal;
       border-radius: 5px;
       width: fit-content;
