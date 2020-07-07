@@ -107,7 +107,7 @@ export default class PictureModal extends Vue {
       font-style: normal;
       font-weight: bold;
       font-size: @fontsize-button;
-      line-height: calc(@fontsize-button + 7px);
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
       color: @white;
       background-color: @terra-cotta;

@@ -221,13 +221,13 @@ export default class ProfileView extends Vue {
       width: 70px;
       height: 70px;
       font-size: @pastille-size;
-      line-height: calc(@pastille-size + 5px);
+      line-height: calc(@pastille-size + @line-height-padding-large);
       color: @gunmetal;
     }
     .profile-header-name {
       margin-top: 10px;
       font-size: @fontsize-title;
-      line-height: calc(@fontsize-title + 8px);
+      line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       color: @white;
     }
   }

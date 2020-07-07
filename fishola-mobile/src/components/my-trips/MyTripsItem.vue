@@ -138,7 +138,7 @@ export default class MyTripItem extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + 7px);
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
       .item-row {
         display: flex;

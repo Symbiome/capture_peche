@@ -103,10 +103,10 @@ export default class ResetPassword extends Vue {
 
       .welcome {
         font-size: @fontsize-header-title;
-        line-height: calc(@fontsize-header-title + 9px);
+        line-height: calc(@fontsize-header-title + @line-height-padding-xxx-large);
         &.keyboardShowing {
           font-size: @fontsize-title-keyboardshowing;
-          line-height: calc(@fontsize-title-keyboardshowing + 2px);
+          line-height: calc(@fontsize-title-keyboardshowing + @line-height-padding-small);
         }
       }
       .logo {
@@ -148,7 +148,7 @@ export default class ResetPassword extends Vue {
           font-style: normal;
           font-weight: bold;
           font-size: @fontsize-button;
-          line-height: calc(@fontsize-button + 7px);
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
           padding-left: 20px;

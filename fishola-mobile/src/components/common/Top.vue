@@ -41,7 +41,7 @@ export default class Top extends Vue {
   .top {
     font-weight: bold;
     font-size: @fontsize-top;
-    line-height: calc(@fontsize-top + 8px);
+    line-height: calc(@fontsize-top + @line-height-padding-xx-large);
   }
 
   .top-2, .top-3, .top-4, .top-5 {

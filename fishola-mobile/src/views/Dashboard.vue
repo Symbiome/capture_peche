@@ -422,7 +422,7 @@ export default class DashboardView extends Vue {
     span {
       font-style: italic;
       font-size: @fontsize-button;
-      line-height: calc(@fontsize-button + 7px);
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
       color: @pale-sky;
       text-align: center;
       margin-top: 30px;
@@ -449,7 +449,7 @@ export default class DashboardView extends Vue {
       span {
         color: @carrot-orange;
         font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
     }
 
@@ -468,7 +468,7 @@ export default class DashboardView extends Vue {
       font-style: normal;
       font-weight: normal;
       font-size: @fontsize-title;
-      line-height: calc(@fontsize-title + 8px);
+      line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       text-align: left;
     }
 
@@ -487,8 +487,8 @@ export default class DashboardView extends Vue {
           justify-content: space-between;
 
           font-size: @fontsize-small-paragraph;
-          line-height: calc(@fontsize-small-paragraph + 4px);
-          height: calc(@fontsize-small-paragraph + 4px);
+          line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+          height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
 
           .species {
             color: @gunmetal;

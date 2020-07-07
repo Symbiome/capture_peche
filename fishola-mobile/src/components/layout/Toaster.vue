@@ -155,7 +155,7 @@ export default class Toaster extends Vue {
 
       div {
         font-size: @fontsize-toaster;
-        line-height: calc(@fontsize-toaster + 4px);
+        line-height: calc(@fontsize-toaster + @line-height-padding-medium);
 
         i {
           margin-right: 6px;

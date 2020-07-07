@@ -112,7 +112,7 @@ export default class PicturePreview extends Vue {
       color: @pale-sky;
       font-weight: 300;
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + 4px);
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     }
   }
 }

@@ -233,7 +233,7 @@ export default class EditTripView extends Vue {
     margin-bottom: 20px;
 
     font-size: @fontsize-small-paragraph;
-    line-height: calc(@fontsize-small-paragraph + 4px);
+    line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     color: @pale-sky;
 
     span {

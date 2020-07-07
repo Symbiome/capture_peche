@@ -118,7 +118,7 @@ export default class CreditsView extends Vue {
 
   p.credits-p {
     font-size: @fontsize-small-paragraph;
-    line-height: calc(@fontsize-small-paragraph + 4px);
+    line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     color: @pale-sky;
     text-align: left;
   }
@@ -128,7 +128,7 @@ export default class CreditsView extends Vue {
     text-align: right;
     font-weight: bold;
     font-size: @fontsize-header-paragraph;
-    line-height: calc(@fontsize-header-paragraph + 5px);
+    line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
 
     a, a:visited {
       text-decoration: none;

@@ -153,13 +153,13 @@ export default class NewTripView extends Vue {
           .title {
             font-weight: bold;
             font-size: @fontsize-span-big;
-            line-height: calc(@fontsize-span-big + 7px);
+            line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
             color: @pelorous;
           }
 
           .detail {
             font-size: @fontsize-header-paragraph;
-            line-height: calc(@fontsize-header-paragraph + 5px);
+            line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
             color: @gunmetal;
           }
 

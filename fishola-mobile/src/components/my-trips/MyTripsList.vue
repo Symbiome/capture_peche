@@ -155,7 +155,7 @@ export default class MyTripsList extends Vue {
 
       span {
         font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @pale-sky;
         text-align: center;
         margin-top: 30px;
@@ -174,7 +174,7 @@ export default class MyTripsList extends Vue {
       span {
         color: @pelorous;
         font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;
@@ -213,7 +213,7 @@ export default class MyTripsList extends Vue {
 
       span {
         font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @carrot-orange; 
         text-align: center;
         margin-top: 30px;
@@ -232,7 +232,7 @@ export default class MyTripsList extends Vue {
       span {
         color: @pelorous;
          font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;

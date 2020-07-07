@@ -276,11 +276,11 @@ html {
   h1 {
     margin-top: calc(@fontsize-title * 1.5);
     margin-bottom: calc(@fontsize-title * 1.5);
-    height: calc(@fontsize-title + 8px);
+    height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
     font-size: @fontsize-title;
-    line-height: calc(@fontsize-title + 8px);
+    line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
 
@@ -340,13 +340,13 @@ html {
       .dialog-c-title {
         color: @gunmetal;
         font-size: @fontsize-dialog-title;
-        line-height: calc(@fontsize-dialog-title + 5px);
+        line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
       }
 
       .dialog-c-text {
         color: @pale-sky;
-        font-size: calc(@fontsize-dialog-text + 5px);
-        line-height: calc(@fontsize-dialog-text + 5px);
+        font-size: calc(@fontsize-dialog-text + @line-height-padding-large);
+        line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
       }
     }
 

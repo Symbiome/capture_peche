@@ -318,7 +318,7 @@ export default class Menu extends Vue {
 
           font-size: @fonsize-menu-item-span;
           font-weight: bold;
-          line-height: calc(@fonsize-menu-item + 5px);
+          line-height: calc(@fonsize-menu-item + @line-height-padding-large);
         }
 
         i {

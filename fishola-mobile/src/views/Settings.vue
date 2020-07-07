@@ -180,7 +180,7 @@ export default class SettingsView extends Vue {
         text-align: center;
         color: @carrot-orange;
         font-size: @fontsize-span-big;
-        line-height: calc(@fontsize-span-big + 7px);
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
     }
   }
@@ -197,7 +197,7 @@ export default class SettingsView extends Vue {
 
     span {
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + 4px);
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @gunmetal;
     }
   }
@@ -208,7 +208,7 @@ export default class SettingsView extends Vue {
     font-style: italic;
     font-weight: 300;
     font-size: @fontsize-info;
-    line-height: calc(@fontsize-info + 4px);
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
   }

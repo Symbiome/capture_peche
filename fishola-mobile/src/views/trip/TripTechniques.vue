@@ -192,7 +192,7 @@ export default class TripTechniquesView extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + 7px);
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
       text-align: left;
 
@@ -234,7 +234,7 @@ export default class TripTechniquesView extends Vue {
     font-style: italic;
     font-weight: 300;
     font-size: @fontsize-info;
-    line-height: calc(@fontsize-info + 4px);
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
   }
