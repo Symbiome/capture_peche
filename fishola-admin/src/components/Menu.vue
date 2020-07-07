@@ -46,10 +46,10 @@
                   En téléchargement
               </b-navbar-item>
           </b-navbar-dropdown>
-          <b-navbar-item href="#">
+          <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
               Sorties
           </b-navbar-item>
-          <b-navbar-item  tag="router-link" :to="{ name: 'users' }">
+          <b-navbar-item tag="router-link" :to="{ name: 'users' }">
               Utilisateurs
           </b-navbar-item>
       </template>
@@ -90,6 +90,10 @@ export default class Menu extends Vue {
   }
   .navbar-link:not(.is-arrowless)::after {
       border-color: @pelorous !important;
+  }
+
+  .buttons {
+      margin-right: 10px;
   }
 
 </style>

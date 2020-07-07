@@ -5,6 +5,7 @@ import Dispatcher from '@/views/Dispatcher.vue'
 import Login from '@/views/Login.vue'
 import Home from '@/views/Home.vue'
 
+import Trips from '@/views/Trips.vue'
 import Users from '@/views/Users.vue'
 
 import Lakes from '@/views/referentials/Lakes.vue'
@@ -51,10 +52,15 @@ const routes: Array<RouteConfig> = [
     component: Species
   },
   {
+    path: '/trips',
+    name: 'trips',
+    component: Trips
+  },
+  {
     path: '/users',
     name: 'users',
     component: Users
-  },
+  }
 ]
 
 const router = new VueRouter({
