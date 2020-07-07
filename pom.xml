@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.0-beta-4</version>
+  <version>1.0-beta-5</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -448,21 +448,51 @@
     <plugins/>
   </build>
 
+  <repositories>
+    <repository>
+      <id>central-mirror</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central-mirror</id>
+      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+      <snapshots>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <profiles>
 
-    <!-- Profil temporaire le temps que la synchro NUITON -> Central soit rétablie -->
+    <!-- À activer en cas de besoin (release nuiton pas encore dispo sur Central) -->
     <profile>
 
       <id>nuiton</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
 
       <repositories>
-        <!-- nuiton public -->
+        <!-- Mirroir du repo contenant nuiton -->
         <repository>
-          <id>nuiton-nexus-repository</id>
-          <url>https://nexus.nuiton.org/nexus/content/groups/public/</url>
+          <id>nuiton-releases</id>
+          <url>https://nexus.nuiton.org/nexus/content/repositories/central-releases/</url>
           <snapshots>
             <enabled>true</enabled>
             <checksumPolicy>fail</checksumPolicy>

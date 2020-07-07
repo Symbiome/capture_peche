@@ -46,6 +46,7 @@ build:compile-only:
     - develop
   tags:
     - sticky
+    - docker
 
 build:compile-with-tests:
   image: maven:3.6-openjdk-11
@@ -68,6 +69,7 @@ build:compile-with-tests:
     - develop
   tags:
     - sticky
+    - docker
 
 # must be run after the build stage
 package:android-demo:
@@ -196,6 +198,28 @@ package:docker-beta:
   tags:
     - sticky
     - docker
+
+package:backend:
+  image: debian:latest
+  stage: package
+  when: manual
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-beta
+  script:
+    - apt update && apt install -y zip && apt clean
+    - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
+    - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
+    - cp doc/application.properties.sample fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
+  artifacts:
+    name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - fishola-backend-$CI_COMMIT_SHORT_SHA
+    expire_in: 2 weeks
+  tags:
+    - sticky
 
 deploy:demo:
   image: debian:latest

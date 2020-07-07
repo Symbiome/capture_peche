@@ -99,7 +99,10 @@ SELECT
     cpu.url AS url_photos,
     c.sample_id AS id_prelevement,
     w.export_as AS conditions_meteo,
-    c.description AS commentaires
+    c.description AS commentaires,
+    CASE t.mode WHEN 'Live' THEN 'En direct'
+                WHEN 'Afterwards' THEN 'A posteriori'
+                END AS mode_de_peche
 FROM trip t
 INNER JOIN lake l ON l.id = t.lake_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id

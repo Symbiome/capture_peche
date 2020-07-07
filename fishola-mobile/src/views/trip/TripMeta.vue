@@ -37,6 +37,12 @@
                       orderBy="name"
                       v-model="trip.lakeId"
                       v-bind:error="lakeIdError"/>
+
+          <span v-if="hereIAmError" class="position-error">
+            <i class="icon-warning"/>
+            {{hereIAmError}}
+          </span>
+
           <FormSelect name="type"
                       label="Type de pêche"
                       v-bind:options="types"
@@ -60,8 +66,6 @@
                         v-model="finishedAt"
                         v-bind:error="finishedAtError"/>
           </div>
-
-          <!-- TODO Afficher l'état de l'acquisition de la position -->
 
           <div class="bottom-page-spacer"></div>
         </div>
@@ -114,8 +118,7 @@ export default class TripMetaView extends Vue {
   date:string = '';
   startedAt:string = '';
   finishedAt:string = '';
-  
-  hereIAm:string = '';
+
   hereIAmError:string = '';
 
   dateError:string = '';
@@ -158,7 +161,16 @@ export default class TripMetaView extends Vue {
             this.lakeIdError = '';
           },
           (e) => {
-            console.error("Impossible de récupérer les coordonnées", e);
+            console.error("Impossible de récupérer les coordonnées", JSON.stringify(e));
+            if (JSON.stringify(e).indexOf('location unavailable') != -1) {
+              this.hereIAmError = "La position n'est pas activée, il n'est pas possible de pré-sélectionner le lac";
+              if (!GeolocationService.notifiedPositionDisabled) {
+                GeolocationService.notifiedPositionDisabled = true;
+                Helpers.alert(this.$modal, 'Vous devez activer la localisation de l\'appareil pour que FISHOLA puisse acquérir votre position', 'La position n\'est pas activée');
+              }
+            } else if (JSON.stringify(e).indexOf('User denied') != -1) {
+              this.hereIAmError = "Partage de position refusé, il n'est pas possible de pré-sélectionner le lac";
+            }
           }
         );
     }
@@ -247,5 +259,11 @@ export default class TripMetaView extends Vue {
 <style lang="less">
 
 @import "../../less/main";
+
+.position-error {
+  font-size: 14px;
+  color: @carrot-orange;
+  font-style: italic;
+}
 
 </style>
