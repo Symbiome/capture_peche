@@ -79,6 +79,7 @@ import {Feedback} from '@/pojos/BackendPojos.ts';
 import UserProfile from '@/pojos/UserProfile.ts';
 
 import ProfileService from '@/services/ProfileService';
+import FeedbackService from '@/services/FeedbackService';
 
 import html2canvas from 'html2canvas';
 
@@ -229,7 +230,7 @@ export default class FeedbackModal extends Vue {
     this.model.date = new Date();
     this.model.location = window.location.href;
     this.model.device = this.device;
-    ProfileService.sendFeedback(this.model)
+    FeedbackService.sendFeedback(this.model)
       .then(() => {
         this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');
       });
