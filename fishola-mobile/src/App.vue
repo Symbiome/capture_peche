@@ -38,6 +38,7 @@ import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
+import FeedbackService from '@/services/FeedbackService';
 import KeyboardManager from '@/services/KeyboardManager';
 
 import { Component, Vue } from 'vue-property-decorator';
@@ -137,6 +138,8 @@ export default class AppView extends Vue {
     checkOutOfSyncPictures() {
       // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
+      // Check for out of sync feedbacks any time we check for pictures
+      FeedbackService.syncFeedbacks();
     }
 
     stopWatchingPosition() {

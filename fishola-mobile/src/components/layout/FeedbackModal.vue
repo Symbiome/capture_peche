@@ -108,7 +108,7 @@ export default class FeedbackModal extends Vue {
 
   device:string = '';
 
-  model:Feedback = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
+  model:Feedback = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
   withPicture:boolean = false;
 
   categories:any[] = [
@@ -140,7 +140,7 @@ export default class FeedbackModal extends Vue {
     if (footer != null) {
       footer.classList.add("hidden");
     }
-    this.model = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
+    this.model = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
     this.loadProfile();
   }
 
