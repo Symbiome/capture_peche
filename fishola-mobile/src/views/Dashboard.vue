@@ -577,6 +577,7 @@ export default class DashboardView extends Vue {
           position: relative;
           margin-top: @vertical-margin-xx-small;
           margin-bottom: @vertical-margin-xx-small;
+          // TODO responsive
           height: 150px;
           width: 14px;
           border-radius: 7px;
@@ -618,7 +619,7 @@ export default class DashboardView extends Vue {
       align-items: center;
       overflow-x: auto;
       overflow-y: hidden;
-
+      // TODO responsive
       height: 200px;
       margin-bottom: @vertical-margin-medium;
 

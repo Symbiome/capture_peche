@@ -163,6 +163,7 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
+      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -221,6 +222,7 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
+      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;

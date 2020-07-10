@@ -303,7 +303,7 @@ export default class Menu extends Vue {
       padding-right: @margin-menu-item;
 
       .item {
-
+        // TODO responsive
         height: 50px;
 
         display: flex;

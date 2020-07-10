@@ -210,6 +210,7 @@ export default class ProfileView extends Vue {
 .profile-page {
 
   .profile-header {
+    // TODO responsive
     height: 150px;
     width: 100%;
     display: flex;

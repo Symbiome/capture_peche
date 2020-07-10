@@ -158,6 +158,7 @@ export default class RunningOverlay extends Vue {
   }
 
   .running-overlay-bar {
+    // TODO responsive
     height: 76px;
     background-color: @cyprus;
     font-size: @fontsize-button;
