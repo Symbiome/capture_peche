@@ -44,7 +44,8 @@ export default class FeedbackService extends AbstractFisholaService {
           (id) => {
             console.info("Feedback saved locally", id);
             resolve();
-            // TODO Try to send the feedback right away
+            // Try to send the feedback right away as user may leave and not come back
+            FeedbackService.syncFeedbacks();
           },
           (error) => {
             console.error(
