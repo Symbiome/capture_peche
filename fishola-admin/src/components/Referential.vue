@@ -105,6 +105,7 @@ export default class Refenretial extends Vue {
                 BackendService.backendDelete(`${this.url}/${element['id']}`).then(
                 (res) => {
                     this.$buefy.toast.open(element['name'] + ' supprimé');
+                    this.loadData();
                 },
                 (error) => {
                     this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name']);

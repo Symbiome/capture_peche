@@ -33,6 +33,8 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.POST;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
@@ -71,6 +73,14 @@ public class ReferentialResource extends AbstractFisholaResource {
         Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
         // TODO AThimel 06/07/2020 Vérifier le droit d'admin
         referentialDao.updateLake(lake);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/lakes")
+    public Response createLake(Lake lake) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.createLake(lake);
         return Response.noContent().build();
     }
 

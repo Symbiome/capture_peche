@@ -70,6 +70,11 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(LakeDao.class, dao -> dao.update(lake));
     }
 
+    public void createLake(Lake lake) {
+        withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
+    }
+
+
     public List<Weather> listWeathers() {
         List<Weather> result = withDao(WeatherDao.class, WeatherDao::findAll);
         return result;
