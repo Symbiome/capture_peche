@@ -242,8 +242,8 @@ html {
 }
 
 .secondary-header {
-  padding-top: @margin-header-top:;
-  padding-bottom: @margin-header-top:;
+  padding-top: @margin-header-top;
+  padding-bottom: @margin-header-top;
   padding-left: @margin-medium;
   padding-right: @margin-medium;
   line-height: @fontsize-top1;

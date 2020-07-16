@@ -54,8 +54,8 @@ export default class MyTripsSearch extends Vue {
   height: 60px;
   padding-left: @margin-medium;
   padding-right: @margin-medium;
-  padding-top: @margin-header-top:;
-  padding-bottom: @margin-header-top:;
+  padding-top: @margin-header-top;
+  padding-bottom: @margin-header-top;
   
   @media(max-width:350px) {
     padding-left: @margin-x-small;
