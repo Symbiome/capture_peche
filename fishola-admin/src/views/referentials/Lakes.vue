@@ -3,7 +3,10 @@
     <Referential
       name="Lacs" 
       url="/v1/referential/lakes"
-      :columns="lakeColumns"></Referential>
+      :columns="lakeColumns"
+      :createFunction=createLake
+      :deleteFunction=deleteLake
+      ></Referential>
   </div>
 </template>
 
@@ -43,6 +46,14 @@ export default class LakesVue extends Vue {
       label: 'Longitude'
     }
   ];
+
+  createLake() {
+    this.$buefy.dialog.alert('Create lake !');
+  }
+
+  deleteLake(id: string) {
+    this.$buefy.dialog.alert('Delete lake ' + id + '!');
+  }
 }
 </script>
 

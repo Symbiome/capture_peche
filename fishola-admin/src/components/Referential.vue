@@ -3,14 +3,36 @@
         <h1>{{name}}</h1>
         <b-table
             :data="data"
-            :columns="columns"
             :striped="true"
             :loading="!data"
             :selected.sync="selection.item"
             >
+            <template slot-scope="props">
+                <b-table-column 
+                    v-for="col in (columns.filter(col => col.visible !== false))"
+                    :field="col.field" 
+                    :label="col.label" 
+                    :key="col.name" sortable>
+                    {{ props.row[col.field] }}
+                </b-table-column>
+                <!-- Deletion button (only displayed if deleteFunction is defined) -->
+                <b-table-column 
+                    v-if="editable && deleteFunction != null"
+                    label="Action"
+                    @click.native="deleteFunction(props.row['id'])">
+                    <button class="button is-small is-danger">
+                        <b-icon icon="delete" size="is-small"></b-icon>
+                    </button>
+                </b-table-column>
+            </template>
         </b-table>
         <div class="buttons">
-            <button class="button is-primary" v-if="canCreateNew" @click="createNew()">Nouveau</button>
+            <!-- Creation button (only displayed if createFunction is defined) -->
+            <button class="button is-primary" 
+                v-if="editable && createFunction != null" 
+                @click="createFunction()">
+                Nouveau
+            </button>
         </div>
         <b-modal v-if="editable"
                  :active.sync="selection.item"
@@ -45,9 +67,12 @@ export default class Refenretial extends Vue {
     @Prop() columns!: any[];
     @Prop() data?: any[];
     @Prop({default: true}) editable: boolean;
-    @Prop({default: true}) canCreateNew: boolean;
-
     selection = {item:null};
+
+    /* The function used to create elements. If not specified, create button will not be displayed */
+    @Prop({default: null}) createFunction: () => void;
+    /* The function used to delete elements. If not specified, deletion buttons will not be displayed */
+    @Prop({default: null}) deleteFunction: (id: string) => void;
 
     mounted() {
         this.loadData();
@@ -56,10 +81,6 @@ export default class Refenretial extends Vue {
     loadData() {
         delete this.data;
         BackendService.backendGet(this.url).then((res) => this.data = res);
-    }
-
-    createNew() {
-        this.$buefy.dialog.alert('Not yet implemented!');
     }
 }
 </script>
