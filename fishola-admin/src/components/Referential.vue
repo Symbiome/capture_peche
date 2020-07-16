@@ -4,8 +4,8 @@
         <b-table
             :data="data"
             :striped="true"
-            :loading="!data"
             :selected.sync="selection.item"
+            :loading="!data"
             >
             <template slot-scope="props">
                 <b-table-column 
@@ -19,7 +19,7 @@
                 <b-table-column 
                     v-if="editable && deleteFunction != null"
                     label="Action"
-                    @click.native="deleteFunction(props.row['id'])">
+                    @click.native="showDeleteDialog($event, props.row['id'])">
                     <button class="button is-small is-danger">
                         <b-icon icon="delete" size="is-small"></b-icon>
                     </button>
@@ -81,6 +81,14 @@ export default class Refenretial extends Vue {
     loadData() {
         delete this.data;
         BackendService.backendGet(this.url).then((res) => this.data = res);
+    }
+
+    showDeleteDialog(event, id: string) {
+        // Do not foward click event to row (would trigger modal)
+        event.stopPropagation();
+
+        // Call delete function
+        this.deleteFunction(id);
     }
 }
 </script>
