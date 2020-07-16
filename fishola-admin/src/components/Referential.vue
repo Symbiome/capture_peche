@@ -15,11 +15,11 @@
                     :key="col.name" sortable>
                     {{ props.row[col.field] }}
                 </b-table-column>
-                <!-- Deletion button (only displayed if deleteFunction is defined) -->
+                <!-- Deletion button (only displayed if delete is allow) -->
                 <b-table-column 
-                    v-if="editable && deleteFunction != null"
+                    v-if="editable && canDelete"
                     label="Action"
-                    @click.native="showDeleteDialog($event, props.row['id'])">
+                    @click.native="showDeleteDialog($event, props.row)">
                     <button class="button is-small is-danger">
                         <b-icon icon="delete" size="is-small"></b-icon>
                     </button>
@@ -30,7 +30,7 @@
             <!-- Creation button (only displayed if createFunction is defined) -->
             <button class="button is-primary" 
                 v-if="editable && createFunction != null" 
-                @click="createFunction()">
+                @click="showCreateDialog()">
                 Nouveau
             </button>
         </div>
@@ -71,8 +71,8 @@ export default class Refenretial extends Vue {
 
     /* The function used to create elements. If not specified, create button will not be displayed */
     @Prop({default: null}) createFunction: () => void;
-    /* The function used to delete elements. If not specified, deletion buttons will not be displayed */
-    @Prop({default: null}) deleteFunction: (id: string) => void;
+    /* Indicates whether user is allowed to deleted elements in the table. */
+    @Prop({default: false}) canDelete: boolean;
 
     mounted() {
         this.loadData();
@@ -83,12 +83,32 @@ export default class Refenretial extends Vue {
         BackendService.backendGet(this.url).then((res) => this.data = res);
     }
 
-    showDeleteDialog(event, id: string) {
+    showCreateDialog() {
+        this.createFunction();
+    }
+
+    showDeleteDialog(event, element: any) {
         // Do not foward click event to row (would trigger modal)
         event.stopPropagation();
 
-        // Call delete function
-        this.deleteFunction(id);
+        // Ask for confirmation
+        this.$buefy.dialog.confirm({
+            title: 'Suppresion',
+            message: 'Êtes-vous sur de vouloir supprimer ' + element['name'] + '?',
+            confirmText: 'Supprimer',
+            type: 'is-danger',
+            hasIcon: true, 
+            onConfirm: () => {
+                // Sends an HTTP DELETE request at url/id
+                BackendService.backendDelete(`${this.url}/${element['id']}`).then(
+                (res) => {
+                    this.$buefy.toast.open(element['name'] + ' supprimé')
+                },
+                (error) => {
+                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'])
+                });
+            }
+        });
     }
 }
 </script>

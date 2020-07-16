@@ -5,7 +5,7 @@
       url="/v1/referential/lakes"
       :columns="lakeColumns"
       :createFunction=createLake
-      :deleteFunction=deleteLake
+      :canDelete=true
       ></Referential>
   </div>
 </template>
@@ -14,6 +14,7 @@
 import Referential from '@/components/Referential.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import BackendService from '@/services/BackendService.ts';
 
 @Component({
   components: {
@@ -49,10 +50,6 @@ export default class LakesVue extends Vue {
 
   createLake() {
     this.$buefy.dialog.alert('Create lake !');
-  }
-
-  deleteLake(id: string) {
-    this.$buefy.dialog.alert('Delete lake ' + id + '!');
   }
 }
 </script>
