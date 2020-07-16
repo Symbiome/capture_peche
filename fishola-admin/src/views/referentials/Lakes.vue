@@ -4,7 +4,7 @@
       name="Lacs" 
       url="/v1/referential/lakes"
       :columns="lakeColumns"
-      :createFunction=createLake
+      :createElement=createLake
       :canDelete=true
       ></Referential>
   </div>
@@ -48,8 +48,13 @@ export default class LakesVue extends Vue {
     }
   ];
 
-  createLake() {
-    this.$buefy.dialog.alert('Create lake !');
+  createLake(): any {
+    return {
+      'name': 'Nouveau lac',
+      'exportAs': 'NouveauLac',
+      'latitude': 45.5,
+      'longitude': 5.8
+    };
   }
 }
 </script>

@@ -14,7 +14,8 @@
             </b-field>
         </div>
         <div class="buttons">
-            <button class="button is-primary" @click="save()">Enregistrer</button>
+            <button v-if="!item.id" class="button is-primary" @click="save()">Créer</button>
+            <button v-if="item.id" class="button is-primary" @click="save()">Enregistrer</button>
             <button class="button" type="button" @click="onSaved()">Annuler</button>
         </div>
     </div>
@@ -35,12 +36,18 @@ export default class RefenretialItem extends Vue {
     @Prop() backendUrl!: string;
 
     save() {
+        let errorCallback = (err) => {
+            this.$buefy.toast.open('Erreur lors de la mise à jour de ' + this.item['name'])
+            this.$parent.close();
+        };
         if (this.item.id) {
+            // Update : PUT
             let url = this.backendUrl + '/' + this.item.id;
-            BackendService.backendPut(url, this.item).then(this.onSaved, (err) => console.error("You are fucked", err));
+            BackendService.backendPut(url, this.item).then(this.onSaved, errorCallback);
         } else {
-            // Création
-            window.alert('NYI');
+            // Create : POST
+            let url = this.backendUrl;
+            BackendService.backendPost(url, this.item).then(this.onSaved, errorCallback);
         }
     }
 

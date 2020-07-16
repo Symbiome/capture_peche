@@ -27,9 +27,9 @@
             </template>
         </b-table>
         <div class="buttons">
-            <!-- Creation button (only displayed if createFunction is defined) -->
+            <!-- Creation button (only displayed if createElement is defined) -->
             <button class="button is-primary" 
-                v-if="editable && createFunction != null" 
+                v-if="editable && createElement != null" 
                 @click="showCreateDialog()">
                 Nouveau
             </button>
@@ -69,8 +69,8 @@ export default class Refenretial extends Vue {
     @Prop({default: true}) editable: boolean;
     selection = {item:null};
 
-    /* The function used to create elements. If not specified, create button will not be displayed */
-    @Prop({default: null}) createFunction: () => void;
+    /* The function used to create new elements. If not specified, create button will not be displayed */
+    @Prop({default: null}) createElement: () => any;
     /* Indicates whether user is allowed to deleted elements in the table. */
     @Prop({default: false}) canDelete: boolean;
 
@@ -84,7 +84,9 @@ export default class Refenretial extends Vue {
     }
 
     showCreateDialog() {
-        this.createFunction();
+        let newElement = this.createElement();
+        // This will trigger modal appearance
+        this.selection.item = newElement;
     }
 
     showDeleteDialog(event, element: any) {
@@ -102,10 +104,10 @@ export default class Refenretial extends Vue {
                 // Sends an HTTP DELETE request at url/id
                 BackendService.backendDelete(`${this.url}/${element['id']}`).then(
                 (res) => {
-                    this.$buefy.toast.open(element['name'] + ' supprimé')
+                    this.$buefy.toast.open(element['name'] + ' supprimé');
                 },
                 (error) => {
-                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'])
+                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name']);
                 });
             }
         });
