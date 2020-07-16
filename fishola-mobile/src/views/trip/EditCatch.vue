@@ -692,8 +692,8 @@ export default class EditCatchView extends Vue {
       background-color: @gainsboro;
       padding-left: @margin-small;
       padding-right: @margin-small;
-      padding-top: @vertical-xx-small;
-      padding-bottom: @vertical-xx-small;
+      padding-top: @vertical-margin-xx-small;
+      padding-bottom: @vertical-margin-xx-small;
       border: 1px solid @gunmetal;
       border-radius: 5px;
       width: fit-content;
