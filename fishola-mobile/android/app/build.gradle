@@ -52,16 +52,19 @@ android {
             dimension "version"
             versionNameSuffix "-demo"
             resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
+            resValue "string", "DEEP_LINK_PORT", "8080"
         }
         beta {
             dimension "version"
             versionNameSuffix "-beta"
             resValue "string", "DEEP_LINK_URL", "fishola-beta.demo.codelutin.com"
+            resValue "string", "DEEP_LINK_PORT", "8080"
         }
         production {
             dimension "version"
             versionNameSuffix "-production"
-            resValue "string", "DEEP_LINK_URL", "fishola.inrae.fr"
+            resValue "string", "DEEP_LINK_URL", "147.100.179.124"
+            resValue "string", "DEEP_LINK_PORT", "8443"
         }
     }
 }

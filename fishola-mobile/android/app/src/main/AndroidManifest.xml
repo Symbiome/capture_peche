@@ -36,6 +36,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
                     android:host="@string/DEEP_LINK_URL"
+                    android:port="@string/DEEP_LINK_PORT"
                     android:pathPrefix="/api" />
             </intent-filter>
 
