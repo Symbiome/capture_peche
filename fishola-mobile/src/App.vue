@@ -349,6 +349,10 @@ html {
         font-size: calc(@fontsize-dialog-text + @line-height-padding-large);
         line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
       }
+
+      ul {
+        text-align: left;
+      }
     }
 
     .vue-dialog-buttons {
