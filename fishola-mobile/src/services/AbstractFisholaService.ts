@@ -318,7 +318,7 @@ export default abstract class AbstractFisholaService {
                     },
                     (error) => {
                       if (error && error.timeoutReached) {
-                        console.error(`Unable to load from the backend for '${uri}'`, error);
+                        console.error(`Unable to load from the backend for '${uri}'`, JSON.stringify(error));
                         this.getDatabase()
                           .offlineStorage
                           .get(uri)

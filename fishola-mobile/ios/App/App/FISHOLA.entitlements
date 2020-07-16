@@ -6,7 +6,7 @@
 	<array>
 		<string>applinks:fishola.demo.codelutin.com</string>
 		<string>applinks:fishola-beta.demo.codelutin.com</string>
-		<string>applinks:api-fishola.inrae.fr:8443</string>
+		<string>applinks:api-fishola.inrae.fr</string>
 	</array>
 </dict>
 </plist>
