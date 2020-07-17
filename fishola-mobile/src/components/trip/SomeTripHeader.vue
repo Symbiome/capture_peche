@@ -54,7 +54,7 @@ export default class SomeTripHeader extends Vue {
   }
 
   catchsCount():number {
-    let result:number = this.getCatchs(this.trip);
+    const result:number = this.getCatchs(this.trip);
     return result;
   }
 

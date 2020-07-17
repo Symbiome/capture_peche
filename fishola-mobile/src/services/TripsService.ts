@@ -59,14 +59,14 @@ export default class TripsService extends AbstractFisholaService {
 
     static newTrip(mode:TripMode, callback:(id:string)=>any) {
 
-        let newTrip:TripMeta = {
+        const newTrip:TripMeta = {
             id: Constants.NEW_TRIP_ID,
             mode: mode,
         }
 
         if (mode == 'Live') {
-            var options = {weekday: "long", month: "long", day: "numeric"};
-            let now = new Date();
+            const options = {weekday: "long", month: "long", day: "numeric"};
+            const now = new Date();
 
             newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
             newTrip.date = now;
@@ -108,7 +108,7 @@ export default class TripsService extends AbstractFisholaService {
                         callback(aaa);
                     } else {
                         // Il faut charger le trip depuis le back
-                        let url:string = `/v1/trips/${id}`;
+                        const url:string = `/v1/trips/${id}`;
                         this.backendGet(url)
                             .then((bbb:any) => {
                                 console.debug("Sortie récupérée depuis le back :", bbb);
@@ -121,7 +121,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static backendCatchToCatchBean(realDate:moment.Moment, input:any):CatchBean {
 
-        let result:any = {
+        const result:any = {
             tripId: input.tripId,
             id: input.id,
             speciesId: input.speciesId,
@@ -142,18 +142,18 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static backendTripToTrip(input:any):TripBean {
-        let realDate = Helpers.parseLocalDate(input.date);
-        let realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
+        const realDate = Helpers.parseLocalDate(input.date);
+        const realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
 
-        let catchs:CatchBean[] = [];
+        const catchs:CatchBean[] = [];
         if (input.catchs) {
             input.catchs.forEach((aCatch:any) => {
-                let aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(moment(realDate), aCatch);
+                const aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(moment(realDate), aCatch);
                 catchs.push(aCatchBean);
             });
         }
 
-        let result:any = {
+        const result:any = {
             id: input.id,
             createdOn: realCreatedOn,
             mode: input.mode,
@@ -176,10 +176,10 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static storedTripToLight(input:TripBean):TripLight {
-        let seconds:number = Helpers.computeDurationInSeconds(input.startedAt, input.finishedAt);
-        let catchsCount:number = input.catchs ? input.catchs.length : 0;
+        const seconds:number = Helpers.computeDurationInSeconds(input.startedAt, input.finishedAt);
+        const catchsCount:number = input.catchs ? input.catchs.length : 0;
 
-        let result:TripLight = <any> input;
+        const result:TripLight = <any> input;
         result.modifiable = true;
         result.durationInSeconds = seconds;
         result.catchsCount = catchsCount;
@@ -188,26 +188,26 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static backendTripToLight(input:any):TripLight {
-        let realDate = Helpers.parseLocalDate(input.date);
+        const realDate = Helpers.parseLocalDate(input.date);
         input.date = realDate;
         return input;
     }
 
     static listTrips(sortDown:boolean, searchTerm:string, rawPageIndex?:number):Promise<TripsAndCount> {
 
-        let pageIndex =  rawPageIndex || 0;
+        const pageIndex =  rawPageIndex || 0;
 
         return new Promise<TripsAndCount>((resolve, reject) => {
 
-            let result:TripLight[] = [];
+            const result:TripLight[] = [];
 
-            let dirtyTripsIds:string[] = [];
+            const dirtyTripsIds:string[] = [];
 
             this.getDatabase()
                 .dirtyTrips
                 .toArray((trips) => {
                     trips.forEach(trip => {
-                        let tripLight:TripLight = TripsService.storedTripToLight(trip);
+                        const tripLight:TripLight = TripsService.storedTripToLight(trip);
                         dirtyTripsIds.push(tripLight.id);
                         if (pageIndex === 0) {
                             result.push(tripLight);
@@ -215,31 +215,31 @@ export default class TripsService extends AbstractFisholaService {
                     });
                 });
 
-            let page = {
+            const page = {
                 pageNumber: pageIndex,
                 pageSize: 10,
                 desc: sortDown,
                 term: searchTerm
             };
 
-            let promise = this.backendGetWithArgs('/v1/trips', page);
+            const promise = this.backendGetWithArgs('/v1/trips', page);
             this.timeout(5000, promise).then(
                     (trips:any) => {
                         console.debug("Sorties récupérées depuis le back :", trips);
                         trips.elements.forEach((trip:TripLight) => {
                             if (dirtyTripsIds.indexOf(trip.id) == -1) {
-                                let tl:TripLight = TripsService.backendTripToLight(trip);
+                                const tl:TripLight = TripsService.backendTripToLight(trip);
                                 result.push(tl);
                             }
                         })
-                        let count:number = dirtyTripsIds.length + trips.count;
-                        let tripsAndCount = new TripsAndCount(result, count);
+                        const count:number = dirtyTripsIds.length + trips.count;
+                        const tripsAndCount = new TripsAndCount(result, count);
                         resolve(tripsAndCount);
                     },
                     (error) => {
                         if (error && error.timeoutReached) {
                             console.error("Erreur pendant le chargement des sorties", error);
-                            let tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
+                            const tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
                             tripsAndCount.offlineMarker = true;
                             resolve(tripsAndCount);
                         } else {
@@ -259,7 +259,7 @@ export default class TripsService extends AbstractFisholaService {
                 trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
             }
 
-            let tripBean:TripBean = <TripBean>trip;
+            const tripBean:TripBean = <TripBean>trip;
             if (!tripBean.techniqueIds) {
                 tripBean.techniqueIds = [];
             }
@@ -295,7 +295,7 @@ export default class TripsService extends AbstractFisholaService {
                     },
                     reject);
             } else {
-                let tripBean:TripBean = <TripBean>trip;
+                const tripBean:TripBean = <TripBean>trip;
                 this.setSaveDelayMarker(tripBean);
                 this.getDatabase()
                     .dirtyTrips
@@ -354,7 +354,7 @@ export default class TripsService extends AbstractFisholaService {
 
             trip.id = Constants.RUNNING_ID;
 
-            let finish = () => {
+            const finish = () => {
                 TripsService.saveTripSpecies(trip, () => {
                     this.deleteDirtyTrip();
                     callback(trip.id!);
@@ -399,12 +399,12 @@ export default class TripsService extends AbstractFisholaService {
         if (!someObject.saveDelayMarker) {
             return false;
         }
-        let delayMoment = moment(someObject.saveDelayMarker);
-        let now = moment();
-        let durationMillis = now.diff(delayMoment);
-        let durationInMinutes = durationMillis / (60 * 1000);
+        const delayMoment = moment(someObject.saveDelayMarker);
+        const now = moment();
+        const durationMillis = now.diff(delayMoment);
+        const durationInMinutes = durationMillis / (60 * 1000);
         // On diffère les sauvegardes non explicites de moins de 30 min
-        let result = durationInMinutes < 30;
+        const result = durationInMinutes < 30;
         return result;
     }
 
@@ -470,9 +470,9 @@ export default class TripsService extends AbstractFisholaService {
 
     static syncTrips():Promise<boolean> {
 
-        let result:Promise<boolean> = new Promise<boolean>((resolve, reject) => {
+        const result:Promise<boolean> = new Promise<boolean>((resolve, reject) => {
             let someTripsSaved:boolean = false;
-            let allPromises:Promise<void>[] = [];
+            const allPromises:Promise<void>[] = [];
 
             this.getDatabase()
                 .dirtyTrips
@@ -484,7 +484,7 @@ export default class TripsService extends AbstractFisholaService {
                                 if (this.shouldDelaySave(dirtyTrip)) {
                                     console.debug(`On ignore la sortie qui est peut-être encore en cours de modif`, dirtyTrip.id);
                                 } else {
-                                    let promise = this.syncTrip(dirtyTrip);
+                                    const promise = this.syncTrip(dirtyTrip);
                                     promise.then(() => {
                                         this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
                                         someTripsSaved = true;
@@ -518,7 +518,7 @@ export default class TripsService extends AbstractFisholaService {
         if (trip.catchs && trip.catchs.length > 0) {
 
             for (let i:number = 0; i<trip.catchs.length; i++) {
-                let someCatch = trip.catchs[i];
+                const someCatch = trip.catchs[i];
                 if (someCatch.otherSpecies) {
                     return true;
                 }
@@ -561,7 +561,7 @@ export default class TripsService extends AbstractFisholaService {
 
     static getLatestCatchSpecies(someTrip:TripBean):string|undefined {
         if (someTrip.catchs && someTrip.catchs.length > 0) {
-            let latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
+            const latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
             return latestCatch.speciesId;
         }
         return;
@@ -581,7 +581,7 @@ export default class TripsService extends AbstractFisholaService {
                 result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
 
                 // On essaye de récupérer la dernière espèce capturée pour sélectionner la même
-                let latestSpeciesId = this.getLatestCatchSpecies(trip);
+                const latestSpeciesId = this.getLatestCatchSpecies(trip);
                 if (latestSpeciesId) {
                     result.speciesId = latestSpeciesId;
                 }
@@ -598,7 +598,7 @@ export default class TripsService extends AbstractFisholaService {
             }
             let found = false;
             for (let i:number = 0; i<trip.catchs.length; i++) {
-                let someCatch = trip.catchs[i];
+                const someCatch = trip.catchs[i];
                 if (aCatch.id == someCatch.id) {
                     found = true;
                     trip.catchs[i] = aCatch;
@@ -624,7 +624,7 @@ export default class TripsService extends AbstractFisholaService {
             }
             let foundAtIndex:number = -1;
             for (let i:number = 0; i<trip.catchs.length; i++) {
-                let someCatch = trip.catchs[i];
+                const someCatch = trip.catchs[i];
                 if (catchId == someCatch.id) {
                     foundAtIndex = i;
                 }
@@ -656,8 +656,8 @@ export default class TripsService extends AbstractFisholaService {
                 .then((runningTrip) => {
                     if (runningTrip) {
                         if (runningTrip.mode == 'Live') {
-                            let dateMoment = moment(runningTrip.date);
-                            let todayMoment = moment();
+                            const dateMoment = moment(runningTrip.date);
+                            const todayMoment = moment();
                             if (dateMoment.dayOfYear() == todayMoment.dayOfYear()) {
                                 resolve(runningTrip);
                             } else {
@@ -691,12 +691,12 @@ export default class TripsService extends AbstractFisholaService {
         return new Promise<string>((resolve, reject) => {
             ProfileService.getProfile()
                 .then((profile) => {
-                    let now = moment();
+                    const now = moment();
                     // TODO AThimel 01/04/2020 Pour l'instant on garanti l'unicité sur la base de :
                     // TODO AThimel 01/04/2020   [jour-du-mois] * 1440 + [heure] * 60 + [minute]
                     // TODO AThimel 01/04/2020 Quand on saura en assurer l'unicité, utiliser une séquence propre au [sampleBaseId]
-                    let number = now.date()*(24*60) + now.hours()*60 + now.minutes();
-                    let result = profile.sampleBaseId + "-" + number;
+                    const number = now.date()*(24*60) + now.hours()*60 + now.minutes();
+                    const result = profile.sampleBaseId + "-" + number;
                     resolve(result);
                 },
                 reject);

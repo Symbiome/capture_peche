@@ -94,7 +94,7 @@ export default class TripSummaryView extends Vue {
 
   startSave() {
     // On demande au composant enfant de fournir le modèle mis à jour
-    let summaryComponent:any = this.$refs.summary;
+    const summaryComponent:any = this.$refs.summary;
     summaryComponent.emitUpdatedTrip();
   }
 
@@ -108,10 +108,10 @@ export default class TripSummaryView extends Vue {
         // On force l'utilisateur à vérifier les techniques via la popup
         let liList:string = '';
         trip.techniqueIds.forEach((techniqueId:string) => {
-          let techniqueName = this.techniquesIndex!.get(techniqueId)!.name;
+          const techniqueName = this.techniquesIndex!.get(techniqueId)!.name;
           liList += `<li>${techniqueName}</li>`;
         });
-        let confirmText = `Les techniques suivantes ont été détectées. Est-ce correct ?<br/><ul>${liList}</ul>`;
+        const confirmText = `Les techniques suivantes ont été détectées. Est-ce correct ?<br/><ul>${liList}</ul>`;
 
         Helpers.confirm(this.$modal, confirmText, 'Techniques de pêche', 'Corriger', 'C\'est bon')
           .then(

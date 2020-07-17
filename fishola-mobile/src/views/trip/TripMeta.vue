@@ -207,7 +207,7 @@ export default class TripMetaView extends Vue {
     if (this.trip!.mode == 'Afterwards') {
       if (this.date) {
         this.dateError = '';
-        let newDate = new Date(this.date);
+        const newDate = new Date(this.date);
         this.trip!.date = newDate;
 
         if (this.startedAt) {

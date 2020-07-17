@@ -265,7 +265,7 @@ export default class EditCatchView extends Vue {
   }
 
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
-    let lakeId:string = someTrip.lakeId;
+    const lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
@@ -282,7 +282,7 @@ export default class EditCatchView extends Vue {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
       if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
-        let seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
+        const seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
         this.rightShortcut = 'timer-' + seconds;
       }
     }
@@ -334,7 +334,7 @@ export default class EditCatchView extends Vue {
   }
 
   embedAlias(s:SpeciesWithAlias):SpeciesWithAlias {
-    let result:SpeciesWithAlias = {
+    const result:SpeciesWithAlias = {
       id: s.id,
       name: s.alias ? (`${s.alias} (${s.name})`) : s.name,
       builtIn: s.builtIn,
@@ -350,7 +350,7 @@ export default class EditCatchView extends Vue {
           || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
           || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
         ) {
-        let speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
+        const speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
         this.allSpeciesWithAliases.push(speciesWithAlias);
         if (s.authorizedSample) {
           this.authorizedSampleSpeciesIds.push(s.id);
@@ -362,7 +362,7 @@ export default class EditCatchView extends Vue {
       this.tripOtherSpecies
         .split(',')
         .forEach((name) => {
-          let customSpecies:SpeciesWithAlias = {
+          const customSpecies:SpeciesWithAlias = {
             id: name,
             name: name,
             builtIn: false,
@@ -410,7 +410,7 @@ export default class EditCatchView extends Vue {
     if (this.modifiable) {
       if (this.platform == "web") {
         // Si on est pas dans une APP on conserve le comportement avec le champ 'file'
-        let input:any = this.$refs.fileInput;
+        const input:any = this.$refs.fileInput;
         input.click();
       } else {
         Camera.getPhoto({
@@ -439,14 +439,14 @@ export default class EditCatchView extends Vue {
   readUploadedFile(file:any, callback: (fileContent:string) => void) {
     var reader = new FileReader();
     reader.onload = function readSuccess(loadEvt:any) {
-        let content:string = loadEvt.target.result;
+        const content:string = loadEvt.target.result;
         callback(content);
     };
     reader.readAsDataURL(file);
   }
 
   pictureTaken(evt:any) {
-    let file = evt.srcElement.files[0];
+    const file = evt.srcElement.files[0];
     this.readUploadedFile(file, (content:string) => {
       this.pictureSrc = content;
       this.newPictureTaken = true;
@@ -498,7 +498,7 @@ export default class EditCatchView extends Vue {
 
     }
 
-    let mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
     if (mandatorySize && !this.aCatch.size) {
       hasError = true;
       this.sizeError = 'Taille obligatoire';
@@ -540,8 +540,8 @@ export default class EditCatchView extends Vue {
 
     if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
       if (this.aCatch.size >= 25) {
-        let minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
-        let maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
+        const minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
+        const maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
         if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
           console.info(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
           hasError = true;
@@ -588,7 +588,7 @@ export default class EditCatchView extends Vue {
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
-      let aCatchBean:CatchBean = this.castToBean(this.aCatch);
+      const aCatchBean:CatchBean = this.castToBean(this.aCatch);
       if (aCatchBean.speciesId == '__other__') {
         aCatchBean.speciesId = '';
       }

@@ -127,7 +127,7 @@ export default class TripSpeciesView extends Vue {
   tripLoaded(someTrip:TripSpecies) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
-    let lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
+    const lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
     this.species = [];
     lakeAndCustomSpecies.forEach((s) => {
       if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
@@ -140,8 +140,8 @@ export default class TripSpeciesView extends Vue {
   }
 
   toggle(s:SpeciesWithAlias) {
-    let speciesId = s.id;
-    let index = this.trip.speciesIds.indexOf(speciesId);
+    const speciesId = s.id;
+    const index = this.trip.speciesIds.indexOf(speciesId);
     if (index == -1) {
       this.trip.speciesIds.push(speciesId);
     } else {

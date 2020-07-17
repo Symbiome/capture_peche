@@ -68,7 +68,7 @@ export default class KeyboardManager {
 
     private static keyboardShowing(keyboardInfo: KeyboardInfo) {
         // Hide all DOM elements tagged with CSS_HIDE_CLASS
-        let toHide = [KeyboardManager.CSS_HIDE_CLASS];
+        const toHide = [KeyboardManager.CSS_HIDE_CLASS];
         // On small resolution, also hide CSS_HIDE_CLASS_SMALL_SCREEN_ONLY
         console.debug("KeyboardShowing - Full Screen " + screen.height + "px, keyboard " + keyboardInfo.keyboardHeight + "px, devicePixelRatio " +  window.devicePixelRatio);
         console.debug("KeyboardShowing " + (screen.height -  keyboardInfo.keyboardHeight) + "*"+   window.devicePixelRatio + "=" + ((screen.height -  keyboardInfo.keyboardHeight) * window.devicePixelRatio) + " < " + KeyboardManager.SMALL_SCREEN_HEIGHT+ ": "+ ((screen.height -  keyboardInfo.keyboardHeight) * window.devicePixelRatio < KeyboardManager.SMALL_SCREEN_HEIGHT));
@@ -80,7 +80,7 @@ export default class KeyboardManager {
 
     private static keyboardHiding() {
         // Make all hidden DOM elements visible again
-        let toHide = [KeyboardManager.CSS_HIDE_CLASS, KeyboardManager.CSS_HIDE_CLASS_SMALL_SCREEN_ONLY];
+        const toHide = [KeyboardManager.CSS_HIDE_CLASS, KeyboardManager.CSS_HIDE_CLASS_SMALL_SCREEN_ONLY];
         KeyboardManager.hideOrRevealElementsWithClass(false, toHide);
     }
 
@@ -88,8 +88,8 @@ export default class KeyboardManager {
     // Also add "keyboardShowing" class for .keyboardSensitive elements
     private static hideOrRevealElementsWithClass(keyboardShowing: boolean, cssClassesList: Array<String>) {
         // Step 1: hide elements
-        let selector = cssClassesList.join(",");
-        let toReveals = <HTMLElement[]><unknown>document.querySelectorAll(selector);
+        const selector = cssClassesList.join(",");
+        const toReveals = <HTMLElement[]><unknown>document.querySelectorAll(selector);
         toReveals.forEach( toReveal => {
             if (keyboardShowing) {
                 toReveal.classList.add("hidden");
@@ -99,7 +99,7 @@ export default class KeyboardManager {
         });
 
         // Step 2: add 'keyboardShowing' class for .keyboardSensitive elements (and .page)
-        let keyboardSensitives = <HTMLElement[]><unknown>document.querySelectorAll(KeyboardManager.CSS_KEYBOARD_SENSITIVE_CLASS);
+        const keyboardSensitives = <HTMLElement[]><unknown>document.querySelectorAll(KeyboardManager.CSS_KEYBOARD_SENSITIVE_CLASS);
         keyboardSensitives.forEach( keyboardSensitive => {
             if (keyboardShowing) {
                 keyboardSensitive.classList.add("keyboardShowing");

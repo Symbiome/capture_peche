@@ -101,8 +101,8 @@ export default class FormYesNo extends Vue {
   }
 
   valueChanged(event:any) {
-    let someValue = event.target.value;
-    let someValueBoolean:boolean = someValue === 'true';
+    const someValue = event.target.value;
+    const someValueBoolean:boolean = someValue === 'true';
     this.$emit('input', someValueBoolean);
   }
 }

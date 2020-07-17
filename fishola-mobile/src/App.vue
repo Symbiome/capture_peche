@@ -72,11 +72,11 @@ export default class AppView extends Vue {
       App.addListener('appUrlOpen', (data: any) => {
         // Catch any URL like %%/security/ACTION?t=TOKEN
         console.info("Opening from external url " + data.url);
-        let start = data.url.indexOf('security');
+        const start = data.url.indexOf('security');
         if (start > 0 && data.url.indexOf('?t=') > 0) {
-          let actionAndToken = data.url.substring(start + 'security'.length + 1);
-          let action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
-          let token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
+          const actionAndToken = data.url.substring(start + 'security'.length + 1);
+          const action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
+          const token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
           if ('reset-password' === action) {
             console.info("Detected reset password request");
             router.push({name:'reset-password', params: {token: token}});
@@ -106,7 +106,7 @@ export default class AppView extends Vue {
           (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
         );
       this.checkOutOfSyncTrips();
-      let syncDelay = 30000;
+      const syncDelay = 30000;
       console.debug(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
       this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 

@@ -96,9 +96,9 @@ export default class MyTripsList extends Vue {
   }
 
   scrolled() {
-    let elem = document.getElementById('scroll-container');
+    const elem = document.getElementById('scroll-container');
     if (elem) {
-      let delta = elem.scrollHeight - elem.scrollTop - elem.offsetHeight;
+      const delta = elem.scrollHeight - elem.scrollTop - elem.offsetHeight;
       // Quand on arrive à moins de 300px du bas on demande le chargement de la suite
       if (delta < 300) {
         this.moreTripsTimer();

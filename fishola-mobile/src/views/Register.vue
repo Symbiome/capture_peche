@@ -144,7 +144,7 @@ export default class RegisterView extends Vue {
 
   cleanValidationErros() {
     if (this.validationErrors) {
-      let keys = Object.keys(this.validationErrors);
+      const keys = Object.keys(this.validationErrors);
       keys.forEach(key => this.validationErrors[key] = '');
     }
   }

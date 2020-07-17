@@ -46,15 +46,15 @@ export default class Toaster extends Vue {
 
   mounted() {
     this.$root.$on('toaster-error', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newError(text, duration);
     });
     this.$root.$on('toaster-warning', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newWarning(text, duration);
     });
     this.$root.$on('toaster-success', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newSuccess(text, duration);
     });
   }

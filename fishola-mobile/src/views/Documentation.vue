@@ -82,7 +82,7 @@ export default class DocumentationView extends Vue {
   }
 
   documentationsLoaded(docs:DocumentationLight[]) {
-    let sortedDocs = Vue.lodash.orderBy(docs, 'name');
+    const sortedDocs = Vue.lodash.orderBy(docs, 'name');
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 

@@ -150,7 +150,7 @@ export default class EditTripView extends Vue {
 
   startSave() {
     // On demande au composant enfant de fournir le modèle mis à jour
-    let summaryComponent:any = this.$refs.summary;
+    const summaryComponent:any = this.$refs.summary;
     summaryComponent.emitUpdatedTrip();
   }
 

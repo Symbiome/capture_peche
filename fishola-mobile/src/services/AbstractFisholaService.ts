@@ -42,20 +42,20 @@ export default abstract class AbstractFisholaService {
 
     static pushToCache(uri:string, content:any) {
       // console.debug(`Mise en cache pour ${uri}`, content);
-      let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
+      const newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
       this.caches.set(uri, newEntry);
     }
 
     static backendGet(uri:string):Promise<any> {
       return new Promise<any>((resolve, reject) => {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+        const apiUrl = Constants.apiUrl(uri);
+        const xhr = new XMLHttpRequest();
         xhr.open('GET', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
+            const responseText = this['responseText'];
+            const parsed = JSON.parse(responseText);
             resolve(parsed);
           } else if (this.status == 204) {
             resolve();
@@ -68,7 +68,7 @@ export default abstract class AbstractFisholaService {
     }
 
     static backendGetWithCache(uri:string):Promise<any> {
-      let entry = this.caches.get(uri);
+      const entry = this.caches.get(uri);
       if (entry && ((new Date().getTime() - entry.since) < (1000 * 60 * 60))) {
         // console.debug("On utilise le cache", uri);
         return Promise.resolve(entry.content);
@@ -78,7 +78,7 @@ export default abstract class AbstractFisholaService {
         this.backendGetAndStoreToOfflineStorage(uri)
           .then(
             (content:any) => {
-              let newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
+              const newEntry:CacheEntry = new CacheEntry(new Date().getTime(), content);
               this.caches.set(uri, newEntry);
               resolve(content);
             },
@@ -89,9 +89,9 @@ export default abstract class AbstractFisholaService {
     static backendGetWithArgs(uri:string, args:any):Promise<any> {
         return new Promise<any>((resolve, reject) => {
           let apiUrl = Constants.apiUrl(uri);
-          var xhr = new XMLHttpRequest();
+          const xhr = new XMLHttpRequest();
 
-          let queryString = Object.keys(args)
+          const queryString = Object.keys(args)
             .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(args[k]))
             .join('&');
           apiUrl += "?" + queryString;
@@ -100,17 +100,17 @@ export default abstract class AbstractFisholaService {
           xhr.withCredentials = true;
           xhr.onload = function() {
             if (this.status == 200 || this.status == 201) {
-              let responseText = this['responseText'];
+              const responseText = this['responseText'];
               if (responseText.length < 1 ) {
                 resolve(true);
               } else {
-                let parsed = JSON.parse(responseText);
+                const parsed = JSON.parse(responseText);
                 resolve(parsed);
               }
             } else if (this.status == 204) {
               resolve();
             } else {
-              let result = AbstractFisholaService.wrapResponseReject(this);
+              const result = AbstractFisholaService.wrapResponseReject(this);
               reject(result);
             }
           };
@@ -119,14 +119,14 @@ export default abstract class AbstractFisholaService {
     }
 
     static wrapResponseReject(xhr:XMLHttpRequest):any {
-      let result = {
+      const result = {
         status: xhr.status,
         content: undefined
       };
       try {
-        let responseText = xhr.responseText;
+        const responseText = xhr.responseText;
         if (responseText) {
-          let parsed = JSON.parse(responseText);
+          const parsed = JSON.parse(responseText);
           result.content = parsed;
         }
       } catch (e) {
@@ -137,15 +137,15 @@ export default abstract class AbstractFisholaService {
 
     static backendPut(uri:string, data:any):Promise<any> {
       return new Promise<any>((resolve, reject) => {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+        const apiUrl = Constants.apiUrl(uri);
+        const xhr = new XMLHttpRequest();
         xhr.open('PUT', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 201) {
-            let responseText = this['responseText'];
+            const responseText = this['responseText'];
           try {
-            let parsed = JSON.parse(responseText);
+            const parsed = JSON.parse(responseText);
             resolve(parsed);
           } catch (syntaxError) {
             console.error("Could not parse server response as JSON ", responseText);
@@ -154,7 +154,7 @@ export default abstract class AbstractFisholaService {
           } else if (this.status == 204) {
             resolve();
           } else {
-            let result = AbstractFisholaService.wrapResponseReject(this);
+            const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
           }
         };
@@ -169,15 +169,15 @@ export default abstract class AbstractFisholaService {
 
     static backendDelete(uri:string, data?:any):Promise<void> {
       return new Promise<void>((resolve, reject) => {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+        const apiUrl = Constants.apiUrl(uri);
+        const xhr = new XMLHttpRequest();
         xhr.open('DELETE', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 204) {
             resolve();
           } else {
-            let result = AbstractFisholaService.wrapResponseReject(this);
+            const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
           }
         };
@@ -192,15 +192,15 @@ export default abstract class AbstractFisholaService {
 
     static backendPost(uri:string, data?:any):Promise<any> {
       return new Promise<any>((resolve, reject) => {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+        const apiUrl = Constants.apiUrl(uri);
+        const xhr = new XMLHttpRequest();
         xhr.open('POST', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 201) {
-            let responseText = this['responseText'];
+            const responseText = this['responseText'];
             try {
-              let parsed = JSON.parse(responseText);
+              const parsed = JSON.parse(responseText);
               resolve(parsed);
             } catch (syntaxError) {
               console.error("Could not parse server response as JSON ", responseText);
@@ -209,7 +209,7 @@ export default abstract class AbstractFisholaService {
           } else if (this.status == 204) {
             resolve();
           } else {
-            let result = AbstractFisholaService.wrapResponseReject(this);
+            const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
           }
         };
@@ -224,19 +224,19 @@ export default abstract class AbstractFisholaService {
 
     static backendPutPlain(uri:string, data:string):Promise<any> {
       return new Promise<any>((resolve, reject) => {
-        let apiUrl = Constants.apiUrl(uri);
-        var xhr = new XMLHttpRequest();
+        const apiUrl = Constants.apiUrl(uri);
+        const xhr = new XMLHttpRequest();
         xhr.open('PUT', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 201) {
-            let responseText = this['responseText'];
-            let parsed = JSON.parse(responseText);
+            const responseText = this['responseText'];
+            const parsed = JSON.parse(responseText);
             resolve(parsed);
           } else if (this.status == 204) {
             resolve();
           } else {
-            let result = AbstractFisholaService.wrapResponseReject(this);
+            const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
           }
         };
@@ -251,10 +251,10 @@ export default abstract class AbstractFisholaService {
 
     static timeout(ms:number, promise:Promise<any>):Promise<any> {
         // Create a promise that rejects in <ms> milliseconds
-        let timeout = new Promise((resolve, reject) => {
-            let id = setTimeout(() => {
+        const timeout = new Promise((resolve, reject) => {
+            const id = setTimeout(() => {
                 clearTimeout(id);
-                let error = {
+                const error = {
                   timeoutReached: true,
                   message: 'Timed out in '+ ms + 'ms.'
                 };
@@ -271,11 +271,11 @@ export default abstract class AbstractFisholaService {
 
     static backendGetAndStoreToOfflineStorage(uri:string):Promise<any> {
         return new Promise<string>((resolve, reject) => {
-            let promise = this.backendGet(uri);
+            const promise = this.backendGet(uri);
             promise.then(
                     (result) => {
                         console.info(`New content available, save it to offline storage for '${uri}'`, result);
-                        let entry:OfflineEntry = {
+                        const entry:OfflineEntry = {
                           key: uri,
                           content: result
                         }
@@ -308,7 +308,7 @@ export default abstract class AbstractFisholaService {
 
     static backendGetOrOfflineStorage(uri:string):Promise<any> {
         return new Promise<string>((resolve, reject) => {
-            let promise = this.backendGetAndStoreToOfflineStorage(uri);
+            const promise = this.backendGetAndStoreToOfflineStorage(uri);
             this.timeout(5000, promise)
                 .then(
                     (result) => {
@@ -325,7 +325,7 @@ export default abstract class AbstractFisholaService {
                           .then(
                             (entry?:OfflineEntry) => {
                               if (entry) {
-                                let content = entry.content;
+                                const content = entry.content;
                                 this.markOffline(content);
                                 resolve(content);
                               } else {
@@ -344,7 +344,7 @@ export default abstract class AbstractFisholaService {
 
     static prepareCache(uri:string):Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let lakes = this.backendGetOrOfflineStorage(uri);
+            const lakes = this.backendGetOrOfflineStorage(uri);
             lakes.then(
                 (data) => {
                     this.pushToCache(uri, data);

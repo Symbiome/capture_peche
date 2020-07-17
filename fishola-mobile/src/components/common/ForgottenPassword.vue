@@ -114,7 +114,7 @@ export default class ForgottenPassword extends Vue {
         this.$root.$emit('toaster-error', 'Les mots de passe ne correspondent pas');
         this.passwordConfirmationError = 'Les mots de passe ne correspondent pas';
     } else {
-      let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
+      const loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
       ProfileService
         .requestPasswordReset(loginBean)
@@ -153,7 +153,7 @@ export default class ForgottenPassword extends Vue {
   */
   hideRevealElements() {
     if (this.tohideSelector != null) {
-      let toHides = document.querySelectorAll(this.tohideSelector);
+      const toHides = document.querySelectorAll(this.tohideSelector);
       toHides.forEach( toHide => {
         if (toHide.classList.contains("hidden")) {
           toHide.classList.remove("hidden");

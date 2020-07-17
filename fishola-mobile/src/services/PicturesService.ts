@@ -29,7 +29,7 @@ export default class PicturesService extends AbstractFisholaService {
 
     static savePicture(catchId:string, content:string, callback:()=>any, dirtySince?:number) {
 
-        let newPicture:StoredPicture = {
+        const newPicture:StoredPicture = {
             id: catchId,
             dirtySince: dirtySince || new Date().getTime(),
             content: content
@@ -82,11 +82,11 @@ export default class PicturesService extends AbstractFisholaService {
     }
 
     static checkForPicturesToRename(map:any) {
-        let keys:string[] = Object.keys(map);
+        const keys:string[] = Object.keys(map);
         keys.forEach((key:string) => {
             PicturesService.getPictureFull(key).then(result => {
                 if (result.content) {
-                    let newId = map[key];
+                    const newId = map[key];
                     console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
                     PicturesService.savePicture(
                         newId,
@@ -111,13 +111,13 @@ export default class PicturesService extends AbstractFisholaService {
                     console.info("Liste des IDs de photos dans la base embarquée", pictureIds);
                 }
 
-                let allPromises:Promise<void>[] = [];
+                const allPromises:Promise<void>[] = [];
 
                 // Pour chaque photo on créé une promise qui tente de la sauvegarder
                 pictureIds
                     .filter((pictureId) => pictureId.length == 36)
                     .forEach((pictureId) => {
-                        let promise = this.syncPicture(pictureId);
+                        const promise = this.syncPicture(pictureId);
                         allPromises.push(promise);
                         promise.then(() => {
                             console.info("Photo synchronisée, on la supprime de la base embarquée", pictureId);
@@ -131,7 +131,7 @@ export default class PicturesService extends AbstractFisholaService {
                     .forEach((pictureId) => {
                         PicturesService.getPictureFull(pictureId).then(result => {
                             if (result.dirtySince) {
-                                let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
+                                const dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                                 if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
                                     console.info(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                                     PicturesService.deletePicture(pictureId);
@@ -161,7 +161,7 @@ export default class PicturesService extends AbstractFisholaService {
             console.info("On essaye de sauvegarder la photo", pictureId);
             PicturesService.getPictureFull(pictureId).then(result => {
                 if (result.dirtySince) {
-                    let dirtySinceInMillis = new Date().getTime() - result.dirtySince;
+                    const dirtySinceInMillis = new Date().getTime() - result.dirtySince;
                     if (dirtySinceInMillis > (1000 * 60 * 60 * 24 * 7)) { // Plus de 7j
                         console.info(`On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`);
                         PicturesService.deletePicture(pictureId);

@@ -136,7 +136,7 @@ export default class FeedbackModal extends Vue {
 
   openFeedback() {
     // Hide footer to avoid having footer overlaping
-    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    const footer = document?.querySelector("#root")?.querySelector(".footer");
     if (footer != null) {
       footer.classList.add("hidden");
     }
@@ -157,7 +157,7 @@ export default class FeedbackModal extends Vue {
 
   closeFeedback() {
     // Reveal footer now that modal is closed
-    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    const footer = document?.querySelector("#root")?.querySelector(".footer");
     if (footer != null) {
       footer.classList.remove("hidden");
     }
@@ -169,10 +169,10 @@ export default class FeedbackModal extends Vue {
     this.closeFeedback();
 
     if (this.withPicture) {
-      let rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
+      const rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
       html2canvas(rootElement)
         .then((canvas:any) => {
-          let pngPicture = canvas.toDataURL("image/png")
+          const pngPicture = canvas.toDataURL("image/png")
           this.model.screenshot = pngPicture;
           this.sendFeedback();
         });
@@ -197,7 +197,7 @@ export default class FeedbackModal extends Vue {
   }
 
   getOperatingSystemNameAndVersion() {
-    let userAgent = navigator.userAgent;
+    const userAgent = navigator.userAgent;
     let os = userAgent;
     if (userAgent.indexOf("Windows NT 10.0")!=-1) os="Windows 10";
     if (userAgent.indexOf("Windows NT 6.3")!=-1) os="Windows 8.1";

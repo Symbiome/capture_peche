@@ -100,7 +100,7 @@ export default class FormRadio extends Vue {
   }
 
   valueChanged(event:any) {
-    let someValue = event.target.value;
+    const someValue = event.target.value;
     this.$emit('input', someValue);
   }
 }

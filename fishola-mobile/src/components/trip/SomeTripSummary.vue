@@ -176,11 +176,11 @@ export default class SomeTripSummary extends Vue {
       this.finishedAt = Helpers.truncateTimeToMinutes(someTrip.finishedAt);
     }
 
-    let speciesPerLake = this.allSpecies.get(someTrip.lakeId);
+    const speciesPerLake = this.allSpecies.get(someTrip.lakeId);
     someTrip.speciesIds.forEach((speciesId:string) => {
       speciesPerLake!.forEach((s) => {
         if (s.id == speciesId) {
-          let speciesDisplayValue = s.alias ? `${s.alias} (${s.name})` : s.name;
+          const speciesDisplayValue = s.alias ? `${s.alias} (${s.name})` : s.name;
           this.species.push(speciesDisplayValue);
         }
       });
@@ -226,11 +226,11 @@ export default class SomeTripSummary extends Vue {
 
     if (this.date) {
       this.dateError = '';
-      let newDate = new Date(this.date);
+      const newDate = new Date(this.date);
       this.trip!.date = newDate;
 
-      let newDateSOD = moment(newDate).startOf('day');
-      let nowSOD = moment().startOf('day');
+      const newDateSOD = moment(newDate).startOf('day');
+      const nowSOD = moment().startOf('day');
       if (newDateSOD.isAfter(nowSOD)) {
         this.dateError = "La date ne peut être dans le futur";
         hasError = true;
@@ -246,8 +246,8 @@ export default class SomeTripSummary extends Vue {
 
       if (this.finishedAt) {
 
-        let startedAtMoment = moment(this.startedAt, moment.HTML5_FMT.TIME_SECONDS);
-        let finishedAtMoment = moment(this.finishedAt, moment.HTML5_FMT.TIME_SECONDS);
+        const startedAtMoment = moment(this.startedAt, moment.HTML5_FMT.TIME_SECONDS);
+        const finishedAtMoment = moment(this.finishedAt, moment.HTML5_FMT.TIME_SECONDS);
 
         if (finishedAtMoment.isAfter(startedAtMoment)) {
           this.finishedAtError = '';

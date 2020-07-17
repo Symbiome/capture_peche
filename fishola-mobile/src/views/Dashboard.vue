@@ -270,24 +270,24 @@ export default class DashboardView extends Vue {
   }
 
   loaded(data:DashboardAndSpecies) {
-    let speciesAliases = data.dashboard.speciesAliases;
+    const speciesAliases = data.dashboard.speciesAliases;
     data.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
 
-      let aliases = speciesAliases[species.id];
+      const aliases = speciesAliases[species.id];
       if (aliases) {
         species.alias = aliases.join(' ou ');
       }
     });
 
-    let speciesCount = data.dashboard.caughtSpeciesCount;
-    let distribution = data.dashboard.caughtSpeciesDistribution;
+    const speciesCount = data.dashboard.caughtSpeciesCount;
+    const distribution = data.dashboard.caughtSpeciesDistribution;
     Object.keys(distribution)
       .forEach((speciesId) => {
-        let species:SpeciesWithAlias = this.speciesIndex[speciesId];
-        let percent:number = Math.round(distribution[speciesId]);
-        let count:number = speciesCount[speciesId];
-        let entry:DistributionEntry = new DistributionEntry(species, percent, count);
+        const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+        const percent:number = Math.round(distribution[speciesId]);
+        const count:number = speciesCount[speciesId];
+        const entry:DistributionEntry = new DistributionEntry(species, percent, count);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -322,18 +322,18 @@ export default class DashboardView extends Vue {
   }
 
   parseTop(rawTop:{ [index: string]: CatchBean[] }):TopEntry[] {
-    let result:TopEntry[] = [];
-    let topSpecies:string[] = Object.keys(rawTop);
+    const result:TopEntry[] = [];
+    const topSpecies:string[] = Object.keys(rawTop);
     topSpecies.forEach((speciesId) => {
-      let species:SpeciesWithAlias = this.speciesIndex[speciesId];
-      let catchs:CatchBean[] = [];
-      let rawCatchs:any[] = rawTop[speciesId];
+      const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+      const catchs:CatchBean[] = [];
+      const rawCatchs:any[] = rawTop[speciesId];
       rawCatchs.forEach((rawCatch:any) => {
         this.catchToTripId[rawCatch.id] = rawCatch.tripId;
-        let aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
+        const aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
         catchs.push(aCatch);
       })
-      let entry:TopEntry = new TopEntry(species, catchs);
+      const entry:TopEntry = new TopEntry(species, catchs);
       result.push(entry);
     });
     return result;
@@ -364,8 +364,8 @@ export default class DashboardView extends Vue {
   }
 
   getMonth(date:number) {
-    let month = new Date(date).getMonth();
-    let result = this.months[month];
+    const month = new Date(date).getMonth();
+    const result = this.months[month];
     return result;
   }
 

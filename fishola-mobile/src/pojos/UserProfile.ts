@@ -44,7 +44,7 @@ export default class UserProfile {
     }
 
     static fromJson(input:any) {
-        let result = new UserProfile(input.firstName, input.email, input.initials, input.sampleBaseId);
+        const result = new UserProfile(input.firstName, input.email, input.initials, input.sampleBaseId);
         result.lastName = input.lastName;
         result.gender = input.gender;
         result.birthYear = input.birthYear;

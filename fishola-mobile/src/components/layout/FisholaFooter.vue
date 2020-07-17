@@ -159,14 +159,14 @@ export default class FisholaFooter extends Vue {
   };
 
   mounted() {
-    let array = this.shortcuts.split(',');
+    const array = this.shortcuts.split(',');
     array.forEach(this.activeButton);
   }
 
   activeButton(key:string) {
     if (key && key.indexOf('step-') == 0) {
-      let stepIndex = parseInt(key[5]);
-      let stepCount = parseInt(key[7]);
+      const stepIndex = parseInt(key[5]);
+      const stepCount = parseInt(key[7]);
 
       for (let i=1; i<=stepCount; i++) {
         this.steps.push({
@@ -177,7 +177,7 @@ export default class FisholaFooter extends Vue {
 
     }
     if (key && key.indexOf('timer-') == 0) {
-      let seconds:number = parseInt(key.substring(6));
+      const seconds:number = parseInt(key.substring(6));
       this.timer = Helpers.formatSecondsDurationTruncate(seconds);
     }
     this.activeButtons[key] = true;

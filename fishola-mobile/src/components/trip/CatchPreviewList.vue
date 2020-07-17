@@ -81,8 +81,8 @@ export default class CatchPreviewList extends Vue {
 
   scrollToFirstElement() {
     try {
-      let squareButton = document.getElementById('new-catch-square-button');
-      let scrollableElements = document.getElementsByClassName('catch-preview-list-scrollable');
+      const squareButton = document.getElementById('new-catch-square-button');
+      const scrollableElements = document.getElementsByClassName('catch-preview-list-scrollable');
       if (squareButton && scrollableElements) {
         scrollableElements[0].scrollLeft = squareButton.clientWidth + 2; // +2 pour la bordure
       }

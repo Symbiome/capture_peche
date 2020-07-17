@@ -113,8 +113,8 @@ export default class TripTechniquesView extends Vue {
   }
 
   toggle(s:Technique) {
-    let techniquesId = s.id;
-    let index = this.trip.techniqueIds.indexOf(techniquesId);
+    const techniquesId = s.id;
+    const index = this.trip.techniqueIds.indexOf(techniquesId);
     if (index == -1) {
       this.trip.techniqueIds.push(techniquesId);
     } else {

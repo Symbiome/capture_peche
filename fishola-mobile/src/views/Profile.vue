@@ -127,9 +127,9 @@ export default class ProfileView extends Vue {
   }
 
   mounted() {
-    let currentYear = new Date().getFullYear();
-    let startYear = currentYear - 110;
-    let endYear = currentYear - 10;
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 110;
+    const endYear = currentYear - 10;
     for (let i=startYear; i<=endYear; i++) {
       this.years.push({id: '' + i, name: i});
     }
@@ -189,7 +189,7 @@ export default class ProfileView extends Vue {
 
   cleanValidationErros() {
     if (this.validationErrors) {
-      let keys = Object.keys(this.validationErrors);
+      const keys = Object.keys(this.validationErrors);
       keys.forEach(key => this.validationErrors[key] = '');
     }
   }

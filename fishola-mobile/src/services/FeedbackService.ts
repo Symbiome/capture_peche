@@ -71,9 +71,9 @@ export default class FeedbackService extends AbstractFisholaService {
           console.info("Offline feedbacks to send to server : ", feedbackIds);
 
           // Step 2: create promise for sending each feedback to server
-          let allPromises: Promise<void>[] = [];
+          const allPromises: Promise<void>[] = [];
           feedbackIds.forEach((feedbackId) => {
-            let promise = this.sendFeedbackToServer(feedbackId);
+            const promise = this.sendFeedbackToServer(feedbackId);
             allPromises.push(promise);
             promise.then(
               () => {
@@ -90,7 +90,7 @@ export default class FeedbackService extends AbstractFisholaService {
           feedbackIds.forEach((feedbackId) => {
             FeedbackService.getStoredFeedback(feedbackId).then((result) => {
               if (result.date) {
-                let dirtySinceInMillis =
+                const dirtySinceInMillis =
                   new Date().getTime() - result.date.getTime();
                 if (
                   dirtySinceInMillis >
@@ -125,7 +125,7 @@ export default class FeedbackService extends AbstractFisholaService {
       FeedbackService.getStoredFeedback(feedbackId).then((feedback) => {
         // Check if feedback is too old to be sent
         if (feedback.date) {
-          let dirtySinceInMillis =
+          const dirtySinceInMillis =
             new Date().getTime() - feedback.date.getTime();
           if (dirtySinceInMillis > FeedbackService.FEEDBACK_DELETION_DELAY_MS) {
             console.info(
