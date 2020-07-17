@@ -218,7 +218,7 @@ export default class TripSpeciesView extends Vue {
   .species-item {
     height: 56px;
 
-    padding-left: 40px;
+    padding-left: @margin-x-large;
 
     display: flex;
     flex-direction: row;
@@ -245,11 +245,11 @@ export default class TripSpeciesView extends Vue {
     }
 
     .item-description {
-      margin-left: 18px;
+      margin-left: @margin-medium;
       width: 100%;
 
-      font-size: 12px;
-      line-height: 19px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
       text-align: left;
 
@@ -258,10 +258,10 @@ export default class TripSpeciesView extends Vue {
       align-items: center;
 
       input {
-        padding-left: 10px;
-        padding-right: 10px;
-        margin-top: 5px;
-        margin-left: 20px;
+        padding-left: @margin-small;
+        padding-right: @margin-small;
+        margin-top: @vertical-margin-xx-small;
+        margin-left: @margin-medium;
         height: 38px;
         border-radius: 4px;
 
@@ -272,7 +272,7 @@ export default class TripSpeciesView extends Vue {
         &::placeholder {
           font-style: italic;
           font-weight: normal;
-          font-size: 12px;
+          font-size: @fontsize-form-input;
           color: @pale-sky;
         }
 
@@ -281,7 +281,7 @@ export default class TripSpeciesView extends Vue {
       .real-name {
         font-style: italic;
         color: @pale-sky;
-        margin-left: 5px;
+        margin-left: @margin-x-small;
       }
 
     }
@@ -290,8 +290,8 @@ export default class TripSpeciesView extends Vue {
   .info {
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
   }

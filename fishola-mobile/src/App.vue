@@ -242,11 +242,11 @@ html {
 }
 
 .secondary-header {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  line-height: 20px;
+  padding-top: @margin-header-top;
+  padding-bottom: @margin-header-top;
+  padding-left: @margin-medium;
+  padding-right: @margin-medium;
+  line-height: @fontsize-top1;
   height: @secondary-header-height;
 }
 
@@ -262,7 +262,7 @@ html {
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   padding-top: 0px;
-  margin-top: 10px;
+  margin-top: @vertical-margin-small;
 
   height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
   &.keyboardShowing {
@@ -274,22 +274,22 @@ html {
   z-index: 10;
 
   h1 {
-    margin-top: 40px;
-    margin-bottom: 40px;
-    height: 30px;
+    margin-top: calc(@fontsize-title * 1.5);
+    margin-bottom: calc(@fontsize-title * 1.5);
+    height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
 
     &.keyboardShowing {
       margin-top:10px;
-      margin-bottom: 5px;
-      height: 16px;
-      line-height: 16px;
-      font-size:16px;
+      margin-bottom: @vertical-margin-xx-small;
+      height: @fontsize-title-keyboardshowing;
+      line-height: @fontsize-title-keyboardshowing;
+      font-size: @fontsize-title-keyboardshowing;
     }
   }
 
@@ -297,8 +297,8 @@ html {
 
     overflow: auto;
 
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
     &.large {
       padding-left: unset;
@@ -312,13 +312,14 @@ html {
   }
 
   &.pane-only {
-    margin-top: 20px;
+    margin-top: @vertical-margin-medium;
   }
 
 }
 
 .picture-background {
   .pane {
+    // TODO responsive
     margin-top: 95px;
   }
 }
@@ -339,14 +340,18 @@ html {
 
       .dialog-c-title {
         color: @gunmetal;
-        font-size: 17px;
-        line-height: 22px;
+        font-size: @fontsize-dialog-title;
+        line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
       }
 
       .dialog-c-text {
         color: @pale-sky;
-        font-size: 13px;
-        line-height: 18px;
+        font-size: calc(@fontsize-dialog-text);
+        line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
+      }
+
+      ul {
+        text-align: left;
       }
     }
 
@@ -355,7 +360,7 @@ html {
       border-top: 1px solid @very-light-grey;
 
       button.vue-dialog-button {
-        font-size: 17px !important;
+        font-size: @fontsize-dialog-button !important;
 
         &:not(:first-of-type) {
           border-left: 1px solid @very-light-grey;

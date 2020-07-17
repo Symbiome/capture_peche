@@ -113,14 +113,15 @@ export default class MyTripItem extends Vue {
     align-items: center;
 
     margin: 0px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
+    padding-top: @vertical-margin-medium;
+    padding-bottom: @vertical-margin-medium;
 
     border-bottom: 1px solid @gainsboro;
 
     width: 100%;
+    // TODO responsive
     height: 110px;
 
     .item-selection {
@@ -134,35 +135,35 @@ export default class MyTripItem extends Vue {
     }
 
     .item-description {
-      margin-left: 20px;
+      margin-left: @margin-medium;
       width: 100%;
 
-      font-size: 12px;
-      line-height: 19px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
       .item-row {
         display: flex;
         justify-content: space-between;
-        margin-top: 5px;
+        margin-top: @vertical-margin-xx-small;
 
         color: @pale-sky;
 
         .name {
           font-weight: bold;
-          font-size: 14px;
+          font-size: @fontsize-header-paragraph;
           color: @gunmetal;
         }
 
         .left-part {
           i {
-            margin-right: 10px;
+            margin-right: @margin-small;
             color: @pale-sky;
           }
         }
 
         .right-part {
           i {
-            margin-left: 10px;
+            margin-left: @margin-small;
             color: @pelorous;
           }
 

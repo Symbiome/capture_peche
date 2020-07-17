@@ -154,15 +154,16 @@ export default class MyTripsList extends Vue {
       }
 
       span {
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @pale-sky;
         text-align: center;
-        margin-top: 30px;
+        margin-top: @vertical-margin-large;
       }
     }
 
     .bottom {
+      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -173,13 +174,13 @@ export default class MyTripsList extends Vue {
 
       span {
         color: @pelorous;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;
-        font-size: 12px;
-        margin-top: 10px;
+        font-size: @fontsize-small-paragraph;
+        margin-top: @vertical-margin-small;
       }
     }
 
@@ -194,7 +195,7 @@ export default class MyTripsList extends Vue {
 
   .offline-with-trips {
 
-    margin-top: 30px;
+    margin-top: @vertical-margin-large;
 
     display: flex;
     flex-direction: column;
@@ -212,15 +213,16 @@ export default class MyTripsList extends Vue {
       }
 
       span {
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @carrot-orange; 
         text-align: center;
-        margin-top: 30px;
+        margin-top: @vertical-margin-large;
       }
     }
 
     .bottom {
+      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -231,13 +233,13 @@ export default class MyTripsList extends Vue {
 
       span {
         color: @pelorous;
-        font-size: 18px;
-        line-height: 25px;
+         font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;
-        font-size: 12px;
-        margin-top: 10px;
+        font-size: @fontsize-small-paragraph;
+        margin-top: @vertical-margin-small;
       }
     }
   }

@@ -117,8 +117,8 @@ export default class CreditsView extends Vue {
 .credits-page {
 
   p.credits-p {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: @fontsize-small-paragraph;
+    line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     color: @pale-sky;
     text-align: left;
   }
@@ -127,8 +127,8 @@ export default class CreditsView extends Vue {
     width: 100%;
     text-align: right;
     font-weight: bold;
-    font-size: 14px;
-    line-height: 19px;
+    font-size: @fontsize-header-paragraph;
+    line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
 
     a, a:visited {
       text-decoration: none;
@@ -142,16 +142,16 @@ export default class CreditsView extends Vue {
       color: @white;
       border: 0px;
       border-radius: 50px;
-      margin-left: 10px;
+      margin-left: @margin-small;
     }
   }
 
   .credits-logos {
-    margin-top: 30px;
+    margin-top: @vertical-margin-large;
     text-align: center;
     img {
       width: 200px;
-      margin-bottom: 10px;
+      margin-bottom: @vertical-margin-small;
     }
   }
 }

@@ -111,10 +111,10 @@ export default class FormSelect extends Vue {
 @import "../../less/main";
 
 .form-select {
-  margin-top: 6px;
+  margin-top: @vertical-margin-x-small;
 
-  font-size: 12px;
-  line-height: 16px;
+  font-size: @fontsize-form-input;
+  line-height: calc(@fontsize-form-input + @line-height-padding-medium);
 
   // color: @white;
 
@@ -128,9 +128,9 @@ export default class FormSelect extends Vue {
   }
 
   select {
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-top: 5px;
+    padding-left: @margin-small;
+    padding-right: @margin-small;
+    margin-top: @vertical-margin-xx-small;
     width: 100%;
     height: 38px;
     border-radius: 4px;
@@ -143,15 +143,15 @@ export default class FormSelect extends Vue {
   select.field-error {
     border: 1px solid @cardinal !important;
   }
-
+  
   div {
-    height: 14px;
+    height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
   div.field-error {
     background-color: transparent;
     color: @cardinal;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-form-error;
+    line-height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
 }
 

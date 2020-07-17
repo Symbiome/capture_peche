@@ -210,6 +210,7 @@ export default class ProfileView extends Vue {
 .profile-page {
 
   .profile-header {
+    // TODO responsive
     height: 150px;
     width: 100%;
     display: flex;
@@ -220,14 +221,14 @@ export default class ProfileView extends Vue {
     .pastille {
       width: 70px;
       height: 70px;
-      font-size: 30px;
-      line-height: 35px;
+      font-size: @pastille-size;
+      line-height: calc(@pastille-size + @line-height-padding-large);
       color: @gunmetal;
     }
     .profile-header-name {
-      margin-top: 10px;
-      font-size: 22px;
-      line-height: 30px;
+      margin-top: @vertical-margin-small;
+      font-size: @fontsize-title;
+      line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       color: @white;
     }
   }

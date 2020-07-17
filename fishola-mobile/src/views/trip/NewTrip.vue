@@ -107,14 +107,14 @@ export default class NewTripView extends Vue {
     justify-content: center;
     align-items: center;
 
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding-top: @vertical-margin-large;
+    padding-bottom: @vertical-margin-large;
 
     .new-trip-option {
       height: 50%;
 
-      padding-left: 30px;
-      padding-right: 30px;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
 
       display: flex;
       flex-direction: row;
@@ -129,8 +129,8 @@ export default class NewTripView extends Vue {
         align-items: flex-start;
 
         .left {
-          margin-left: 5px;
-          margin-right: 5px;
+          margin-left: @margin-x-small;
+          margin-right: @margin-x-small;
 
           img {
             width: 60px;
@@ -147,19 +147,19 @@ export default class NewTripView extends Vue {
           align-items: flex-start;
 
           * {
-            margin-bottom: 10px;
+            margin-bottom: @vertical-margin-small;
           }
 
           .title {
             font-weight: bold;
-            font-size: 18px;
-            line-height: 25px;
+            font-size: @fontsize-span-big;
+            line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
             color: @pelorous;
           }
 
           .detail {
-            font-size: 14px;
-            line-height: 19px;
+            font-size: @fontsize-header-paragraph;
+            line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
             color: @gunmetal;
           }
 
@@ -169,12 +169,12 @@ export default class NewTripView extends Vue {
             text-align: right;
 
             button {
-              font-size: 24px;
+              font-size: @fontsize-button-verry-big;
               border: 0px;
               height: 40px;
               border-radius: 50px;
-              padding-left: 20px;
-              padding-right: 20px;
+              padding-left: @margin-medium;
+              padding-right: @margin-medium;
               color: @white;
               background-color: @terra-cotta;
             }

@@ -96,11 +96,11 @@ export default class FisholaHeader extends Vue {
   justify-content: space-between;
 
   height: @header-height;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 10px;
+  padding-left: @margin-medium;
+  padding-right: @margin-medium;
+  padding-top: @margin-header-top;
   padding-bottom: 0px;
-  line-height: 30px;
+  line-height: @average-header-height;
 
   z-index: 10;
 
@@ -109,7 +109,7 @@ export default class FisholaHeader extends Vue {
     flex-direction: row;
 
     * {
-      margin-left: 10px;
+      margin-left: @margin-small;
       margin-right: 0px;
     }
   }

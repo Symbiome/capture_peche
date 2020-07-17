@@ -274,19 +274,19 @@ export default class Menu extends Vue {
 
     color: @white;
 
-    padding: 15px;
+    padding: @margin-menu-item;
 
     .close {
       display: flex;
       flex-direction: row-reverse;
       align-items: center;
 
-      height: 30px;
-      margin: 10px;
+      height: @pastille-size;
+      margin: @vertical-margin-small;
       width: 100%;
 
       div.plus {
-        font-size: 30px;
+        font-size: @pastille-size;
         width: fit-content;
         transform: rotate(45deg);
       }
@@ -300,10 +300,10 @@ export default class Menu extends Vue {
       // justify-content: center;
       align-items: flex-end;
 
-      padding-right: 15px;
+      padding-right: @margin-menu-item;
 
       .item {
-
+        // TODO responsive
         height: 50px;
 
         display: flex;
@@ -314,15 +314,15 @@ export default class Menu extends Vue {
         width: fit-content;
 
         span {
-          margin-right: 20px;
+          margin-right: @margin-medium;
 
-          font-size: 14px;
+          font-size: @fonsize-menu-item-span;
           font-weight: bold;
-          line-height: 19px;
+          line-height: calc(@fonsize-menu-item + @line-height-padding-large);
         }
 
         i {
-          font-size: 20px;
+          font-size: @fonsize-menu-item;
           width: 30px;
           text-align: center;
         }

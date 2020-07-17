@@ -103,8 +103,8 @@ export default class DocumentationView extends Vue {
   }
 
   .documentation-row {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     height: 56px;
     border-bottom: 1px solid @solitude;
 
@@ -113,8 +113,8 @@ export default class DocumentationView extends Vue {
     align-items: center;
 
     span {
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @gunmetal;
     }
 

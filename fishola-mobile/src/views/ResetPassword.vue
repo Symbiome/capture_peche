@@ -88,7 +88,7 @@ export default class ResetPassword extends Vue {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    padding:30px;
+    padding:@margin-large;
     text-align:center;
 
     .password-reset-title {
@@ -102,11 +102,11 @@ export default class ResetPassword extends Vue {
       justify-content: center;
 
       .welcome {
-        font-size: 24px;
-        line-height: 33px;
+        font-size: @fontsize-header-title;
+        line-height: calc(@fontsize-header-title + @line-height-padding-xxx-large);
         &.keyboardShowing {
-          font-size: 16px;
-          line-height: 18px;
+          font-size: @fontsize-title-keyboardshowing;
+          line-height: calc(@fontsize-title-keyboardshowing + @line-height-padding-small);
         }
       }
       .logo {
@@ -118,8 +118,8 @@ export default class ResetPassword extends Vue {
     }
 
     .password-reset-form {
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
       border-radius: 10px;
       &.error {
         background-color: @cardinal;
@@ -132,13 +132,13 @@ export default class ResetPassword extends Vue {
 
      .ok {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 20px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+      margin-bottom: @vertical-margin-medium;
       display:flex;
       justify-content: space-around;
       &.keyboardShowing {
-          margin-bottom: 5px; 
+          margin-bottom: @vertical-margin-xx-small; 
       }
       button {
           height: 100%;
@@ -147,14 +147,14 @@ export default class ResetPassword extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
-          margin-left:20px;
-          margin-right:20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
+          margin-left: @margin-medium;
+          margin-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;

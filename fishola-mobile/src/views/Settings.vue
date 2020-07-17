@@ -171,23 +171,23 @@ export default class SettingsView extends Vue {
 
     &.offline {
       height: 100%;
-      padding-left: 60px;
-      padding-right: 60px;
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
       display: flex;
       flex-direction: column;
       justify-content: center;
       span {
         text-align: center;
         color: @carrot-orange;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
     }
   }
 
   .settings-row {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     height: 56px;
     border-bottom: 1px solid @solitude;
 
@@ -196,19 +196,19 @@ export default class SettingsView extends Vue {
     align-items: center;
 
     span {
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @gunmetal;
     }
   }
 
   .info {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
   }
