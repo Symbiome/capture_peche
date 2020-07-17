@@ -120,6 +120,25 @@ public class ReferentialDao extends AbstractFisholaDao {
     public void updateWeather(Weather weather) {
         withDaoNoResult(WeatherDao.class, dao -> dao.update(weather));
     }
+    public void createWeather(Weather weather) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.insert(weather));
+    }
+
+    public boolean canDeleteWeather(UUID weatherId) {
+        boolean hasReferences = withContext(context -> {
+            // Has trips
+            boolean result = context.select(Tables.TRIP.WEATHER_ID)
+                    .from(Tables.TRIP)
+                    .where(Tables.TRIP.WEATHER_ID.eq(weatherId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteWeather(UUID weatherId) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.deleteById(weatherId));
+    }
 
     public List<Technique> listBuiltInTechniques() {
         List<Technique> result = withDao(TechniqueDao.class, dao -> dao.fetchByBuiltIn(true));

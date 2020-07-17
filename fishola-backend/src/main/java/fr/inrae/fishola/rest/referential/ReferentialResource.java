@@ -208,6 +208,28 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    @POST
+    @Path("/weathers")
+    public Response createWeather(Weather weather) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.createWeather(weather);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/weathers/{weatherId}")
+    public Response updateWeather(@PathParam("weatherId") UUID weatherId) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.deleteWeather(weatherId);
+        return Response.noContent().build();
+    }
+    @GET
+    @Path("/weathers/can-delete/{weatherId}")
+    public Response canDeleteWeather(@PathParam("weatherId") UUID weatherId) {
+        return Response.ok(referentialDao.canDeleteWeather(weatherId)).build();
+    }
+
+
     @GET
     @Path("/authorized-samples")
     public List<AuthorizedSample> getAuthorizedSamples() {

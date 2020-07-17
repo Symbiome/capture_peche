@@ -155,7 +155,10 @@ export default class Refenretial extends Vue {
                         this.loadData();
                     },
                     (error) => {
-                        this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'] + ' : ' + error.message);
+                        this.$buefy.toast.open({
+                            message: 'Erreur lors de la supression de ' + this.item['name'] + ' : ' + error.message,
+                            type: 'is-danger'
+                        });
                     });
                 }
             });

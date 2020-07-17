@@ -36,18 +36,24 @@ export default class RefenretialItem extends Vue {
     @Prop() backendUrl!: string;
 
     save() {
-        let errorCallback = (err) => {
-            this.$buefy.toast.open('Erreur lors de la mise à jour de ' + this.item['name'])
-            this.$parent.close();
-        };
         if (this.item.id) {
             // Update : PUT
             let url = this.backendUrl + '/' + this.item.id;
-            BackendService.backendPut(url, this.item).then(this.onSaved, errorCallback);
+            BackendService.backendPut(url, this.item).then(this.onSaved, (err) => {
+                this.$buefy.toast.open({
+                    message: 'Erreur lors de la modification de ' + this.item['name'] + '. Veuillez vérifier vos modifications.',
+                    type: 'is-danger'
+                });
+            });
         } else {
             // Create : POST
             let url = this.backendUrl;
-            BackendService.backendPost(url, this.item).then(this.onSaved, errorCallback);
+            BackendService.backendPost(url, this.item).then(this.onSaved, (err) => {
+                this.$buefy.toast.open({
+                    message: 'Erreur lors de la création de ' + this.item['name'] + '. Veuillez vérifier qu\'un élément avec ce nom n\'existe pas déjà.',
+                    type: 'is-danger'
+                });
+            });
         }
     }
 
