@@ -13,11 +13,19 @@
                     :field="col.field" 
                     :label="col.label" 
                     :key="col.name" sortable>
-                    {{ props.row[col.field] }}
+                    <span v-if="col.isABoolean && props.row[col.field]">
+                        Oui
+                    </span>
+                    <span v-if="col.isABoolean && !props.row[col.field]">
+                        Non
+                    </span>
+                    <span v-if="!col.isABoolean">
+                        {{ props.row[col.field] }}
+                    </span>
                 </b-table-column>
                 <!-- Deletion button (only displayed if delete is allow) -->
                 <b-table-column 
-                    v-if="editable && canDelete"
+                    v-if="editable && canDelete && allowedDeletionElements.includes(props.row['id'])"
                     label="Action"
                     @click.native="showDeleteDialog($event, props.row)">
                     <button class="button is-small is-danger">
@@ -73,6 +81,12 @@ export default class Refenretial extends Vue {
     @Prop({default: null}) createElement: () => any;
     /* Indicates whether user is allowed to deleted elements in the table. */
     @Prop({default: false}) canDelete: boolean;
+    /** The function used to determine if a given element can be deleted.
+     * If not specified, only the "canDelete" boolean wil be used to determine if deletion is allowed. 
+     * */
+    @Prop({default: null}) canDeletePredicate: (any) => Promise<boolean>;
+    // Cached value of all elements for which deletion is allowed
+    @Prop() allowedDeletionElements?: any[];
 
     mounted() {
         this.loadData();
@@ -80,7 +94,11 @@ export default class Refenretial extends Vue {
 
     loadData() {
         delete this.data;
-        BackendService.backendGet(this.url).then((res) => this.data = res);
+        this.allowedDeletionElements = [];
+        BackendService.backendGet(this.url).then((res) => {
+            this.data = res;
+            this.checkCanDeletePredicate();   
+        });
     }
 
     showCreateDialog() {
@@ -88,6 +106,27 @@ export default class Refenretial extends Vue {
         // This will trigger modal appearance
         this.selection.item = newElement;
     }
+
+    /**
+     * If required by configuration, ask to server if delete is allowed.
+     */
+    checkCanDeletePredicate() {
+        if (this.canDelete) {
+            this.data.forEach(element => {
+                // Call predicate for each element
+                if (this.canDeletePredicate != null) {
+                    this.canDeletePredicate(element).then((allowDeletion) => {
+                        if (allowDeletion) {
+                            this.allowedDeletionElements.push(element['id']);
+                        }
+                    });
+                } else {
+                    this.allowedDeletionElements.push(element['id']);
+                }
+            });
+        }
+    }
+
 
     showDeleteDialog(event, element: any) {
         // Do not foward click event to row (would trigger modal)
@@ -108,7 +147,7 @@ export default class Refenretial extends Vue {
                     this.loadData();
                 },
                 (error) => {
-                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name']);
+                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'] + ' : ' + error.message);
                 });
             }
         });

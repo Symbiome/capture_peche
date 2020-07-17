@@ -3,7 +3,11 @@
     <Referential
       name="Espèces"
       url="/v1/referential/raw-species"
-      :columns="specieColumns"></Referential>
+      :columns="specieColumns"
+      :createElement=createSpecie 
+      :canDelete=true
+      :canDeletePredicate=canDeleteSpecie    
+      ></Referential>
   </div>
 </template>
 
@@ -41,6 +45,18 @@ export default class SpeciesVue extends Vue {
       isABoolean: true
     }
   ];
+
+  createSpecie(): any {
+    return {
+      'name': 'Nouvelle espèce',
+      'builtIn': true,
+      'mandatorySize': true
+    };
+  }
+
+  canDeleteSpecie(specie: any): Promise<boolean> {
+    return Promise.resolve(true);
+  }
 }
 </script>
 

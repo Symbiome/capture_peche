@@ -5,7 +5,6 @@
       url="/v1/referential/lakes"
       :columns="lakeColumns"
       :createElement=createLake
-      :canDelete=true
       ></Referential>
   </div>
 </template>
