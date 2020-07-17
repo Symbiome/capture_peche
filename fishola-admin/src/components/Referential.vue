@@ -91,7 +91,7 @@ export default class Refenretial extends Vue {
     /** The function used to determine if a given element can be deleted.
      * If not specified, only the "canDelete" boolean wil be used to determine if deletion is allowed. 
      * */
-    @Prop({default: null}) canDeletePredicate: (any) => Promise<boolean>;
+    @Prop({default: null}) canDeletePredicate: (elemenToDelete: any) => Promise<boolean>;
     // Cached value of all elements for which deletion is allowed
     @Prop() allowedDeletionElements?: any[];
 
@@ -118,28 +118,30 @@ export default class Refenretial extends Vue {
      * If required by configuration, ask to server if delete is allowed.
      */
     checkCanDeletePredicate() {
-        if (this.canDelete) {
+        if (this.canDelete && this.data) {
             this.data.forEach(element => {
                 // Call predicate for each element
                 if (this.canDeletePredicate != null) {
                     this.canDeletePredicate(element).then((allowDeletion) => {
-                        if (allowDeletion) {
+                        if (allowDeletion && this.allowedDeletionElements != null) {
                             this.allowedDeletionElements.push(element['id']);
                         }
                     });
                 } else {
-                    this.allowedDeletionElements.push(element['id']);
+                    if (this.allowedDeletionElements != null) {
+                        this.allowedDeletionElements.push(element['id']);
+                    }
                 }
             });
         }
     }
 
 
-    showDeleteDialog(event, element: any) {
+    showDeleteDialog(event: Event, element: any) {
         // Do not foward click event to row (would trigger modal)
         event.stopPropagation();
 
-        if (this.allowedDeletionElements.includes(element['id'])) {
+        if (this.allowedDeletionElements && this.allowedDeletionElements.includes(element['id'])) {
             // Ask for confirmation
             this.$buefy.dialog.confirm({
                 title: 'Suppression',
@@ -156,7 +158,7 @@ export default class Refenretial extends Vue {
                     },
                     (error) => {
                         this.$buefy.toast.open({
-                            message: 'Erreur lors de la supression de ' + this.item['name'] + ' : ' + error.message,
+                            message: 'Erreur lors de la supression de ' + element['name'] + ' : ' + error.message,
                             type: 'is-danger'
                         });
                     });

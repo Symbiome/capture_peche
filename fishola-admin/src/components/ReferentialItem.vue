@@ -14,9 +14,9 @@
             </b-field>
         </div>
         <div class="buttons">
-            <button v-if="!item.id" class="button is-primary" @click="save()">Créer</button>
-            <button v-if="item.id" class="button is-primary" @click="save()">Enregistrer</button>
-            <button class="button" type="button" @click="onSaved()">Annuler</button>
+            <button v-if="!item.id" class="button is-primary" @click="save($parent.close)">Créer</button>
+            <button v-if="item.id" class="button is-primary" @click="save($parent.close)">Enregistrer</button>
+            <button class="button" type="button" @click="onSaved($parent.close)">Annuler</button>
         </div>
     </div>
 </template>
@@ -35,11 +35,17 @@ export default class RefenretialItem extends Vue {
     @Prop() columns!: any[];
     @Prop() backendUrl!: string;
 
-    save() {
+    save(closeModal: (() => void)) {
+        let onSavedCallback = () => {
+            this.$emit('referential-updated');
+            if (closeModal) {
+                closeModal();
+            }
+        };
         if (this.item.id) {
             // Update : PUT
             let url = this.backendUrl + '/' + this.item.id;
-            BackendService.backendPut(url, this.item).then(this.onSaved, (err) => {
+            BackendService.backendPut(url, this.item).then(onSavedCallback, (err) => {
                 this.$buefy.toast.open({
                     message: 'Erreur lors de la modification de ' + this.item['name'] + '. Veuillez vérifier vos modifications.',
                     type: 'is-danger'
@@ -48,18 +54,20 @@ export default class RefenretialItem extends Vue {
         } else {
             // Create : POST
             let url = this.backendUrl;
-            BackendService.backendPost(url, this.item).then(this.onSaved, (err) => {
+            BackendService.backendPost(url, this.item).then(onSavedCallback, (err) => {
                 this.$buefy.toast.open({
-                    message: 'Erreur lors de la création de ' + this.item['name'] + '. Veuillez vérifier qu\'un élément avec ce nom n\'existe pas déjà.',
+                    message: 'Erreur lors de la création. Veuillez vérifier qu\'un élément avec ce nom n\'existe pas déjà.',
                     type: 'is-danger'
                 });
             });
         }
     }
 
-    onSaved() {
+    onSaved(closeModal: (() => void)) {
         this.$emit('referential-updated');
-        this.$parent.close();
+        if (closeModal) {
+            closeModal();
+        }
     }
 
 
