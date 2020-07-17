@@ -124,18 +124,18 @@ export default class AppView extends Vue {
       TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
         console.error("Apparement, il y a un pb de sync", e);
         // Même en cas d'erreur on essaye de synchro les photos
-        this.checkOutOfSyncPictures();
+        this.checkOutOfSyncPicturesAndFeedbacks();
       });
     }
 
     tripsSyncFinished(someTripsSaved:boolean) {
-      this.checkOutOfSyncPictures();
+      this.checkOutOfSyncPicturesAndFeedbacks();
       if (someTripsSaved) {
         this.$root.$emit('trips-saved');
       }
     }
 
-    checkOutOfSyncPictures() {
+    checkOutOfSyncPicturesAndFeedbacks() {
       // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
       // Check for out of sync feedbacks any time we check for pictures
