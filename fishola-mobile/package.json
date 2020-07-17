@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@capacitor/android": "^2.2.0",
-    "@capacitor/cli": "^2.2.0",
     "@capacitor/core": "^2.2.0",
     "@capacitor/ios": "^2.2.0",
     "@types/lodash": "^4.14.157",
@@ -32,6 +31,7 @@
     "vue-router": "^3.3.4"
   },
   "devDependencies": {
+    "@capacitor/cli": "^2.2.0",
     "@vue/cli-plugin-babel": "^4.4.6",
     "@vue/cli-plugin-eslint": "^4.4.6",
     "@vue/cli-plugin-router": "^4.4.6",
