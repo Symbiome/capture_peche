@@ -24,7 +24,7 @@ annotation `@Transactional(MANDATORY)` ce qui correspond à :
     then continue under that context.
 
 Donc pour tout appel entrant sur un DAO, la transaction est propagée depuis le service REST appelant, mais cette
-transaction n'est jamais créée spécifique pour le DAO.
+transaction n'est jamais créée spécifiquement pour le DAO.
 
 Le test `testTransaction` dans
 [TripResourceTest](/fishola-backend/src/test/java/fr/inrae/fishola/rest/trips/TripResourceTest.java) vérifie le bon
