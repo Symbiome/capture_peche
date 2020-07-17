@@ -38,6 +38,7 @@ import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
+import FeedbackService from '@/services/FeedbackService';
 import KeyboardManager from '@/services/KeyboardManager';
 
 import { Component, Vue } from 'vue-property-decorator';
@@ -123,20 +124,22 @@ export default class AppView extends Vue {
       TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
         console.error("Apparement, il y a un pb de sync", e);
         // Même en cas d'erreur on essaye de synchro les photos
-        this.checkOutOfSyncPictures();
+        this.checkOutOfSyncPicturesAndFeedbacks();
       });
     }
 
     tripsSyncFinished(someTripsSaved:boolean) {
-      this.checkOutOfSyncPictures();
+      this.checkOutOfSyncPicturesAndFeedbacks();
       if (someTripsSaved) {
         this.$root.$emit('trips-saved');
       }
     }
 
-    checkOutOfSyncPictures() {
+    checkOutOfSyncPicturesAndFeedbacks() {
       // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
+      // Check for out of sync feedbacks any time we check for pictures
+      FeedbackService.syncFeedbacks();
     }
 
     stopWatchingPosition() {
