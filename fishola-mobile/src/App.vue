@@ -346,7 +346,7 @@ html {
 
       .dialog-c-text {
         color: @pale-sky;
-        font-size: calc(@fontsize-dialog-text + @line-height-padding-large);
+        font-size: calc(@fontsize-dialog-text);
         line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
       }
 
