@@ -136,6 +136,12 @@ public class TripResourceTest extends AbstractFisholaTest {
 
     }
 
+    /**
+     * Le test se base sur le fait que la création d'une sortie et de ses captures se fait en 2 temps : d'abord la
+     * création de la sortie, puis création des captures.
+     * Dans le test ci-dessous, la sortie est valide mais pas la capture, la création de la sortie en base est donc bien
+     * faite mais comme la création de la capture échoue, le rollback vient annuler la création de la sortie.
+     */
     @Test
     public void testTransaction() {
         int countBefore = countTrips();
