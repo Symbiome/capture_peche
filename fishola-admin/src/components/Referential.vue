@@ -36,7 +36,7 @@
                     <button 
                         v-if="!allowedDeletionElements.includes(props.row['id'])"
                         class="button is-small is-light">
-                        <b-icon icon="delete" size="is-small"></b-icon>
+                        <b-icon icon="delete-off" size="is-small"></b-icon>
                     </button>
                 </b-table-column>
             </template>
@@ -142,8 +142,8 @@ export default class Refenretial extends Vue {
         if (this.allowedDeletionElements.includes(element['id'])) {
             // Ask for confirmation
             this.$buefy.dialog.confirm({
-                title: 'Suppresion',
-                message: 'Êtes-vous sur de vouloir supprimer ' + element['name'] + '?',
+                title: 'Suppression',
+                message: 'Êtes-vous sûr de vouloir supprimer ' + element['name'] + '?',
                 confirmText: 'Supprimer',
                 type: 'is-danger',
                 hasIcon: true, 

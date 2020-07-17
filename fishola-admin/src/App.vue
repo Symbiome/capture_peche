@@ -8,6 +8,7 @@
 <script lang="ts">
 
 import Menu from '@/components/Menu.vue'
+import '@mdi/font/css/materialdesignicons.css'
 
 export default {
   name: 'App',
