@@ -1,6 +1,9 @@
 # Transactions
 
-Tous les services REST héritent de `fr.inrae.fishola.rest.AbstractFisholaResource` qui a une annotation `@Transactional(REQUIRED)`.
+Tous les services REST héritent de 
+[AbstractFisholaResource](/fishola-backend/src/main/java/fr/inrae/fishola/rest/AbstractFisholaResource.java) qui a une
+annotation `@Transactional(REQUIRED)`.
+
 `REQUIRED` correspond à :
 
          If called outside a transaction context, the interceptor must begin a new
@@ -13,7 +16,7 @@ Tous les services REST héritent de `fr.inrae.fishola.rest.AbstractFisholaResour
 Donc pour chaque appel entrant à un service REST une transaction est crée. Pour chaque appel réentrant, la transaction
 est conservée.
 
-Chaque DAO "métier" (par opposition aux DAOs "techniques" générés par JOOQ) hérite de `fr.inrae.fishola.database.AbstractFisholaDao` qui a une annotation `@Transactional(MANDATORY)`.
+Chaque DAO "métier" (par opposition aux DAOs "techniques" générés par JOOQ) hérite de [AbstractFisholaDao](/fishola-backend/src/main/java/fr/inrae/fishola/database/AbstractFisholaDao.java) qui a une annotation `@Transactional(MANDATORY)`.
 `MANDATORY` correspond à :
 
          If called outside a transaction context, a TransactionalException with a
@@ -24,8 +27,9 @@ Chaque DAO "métier" (par opposition aux DAOs "techniques" générés par JOOQ) 
 Donc pour tout appel entrant sur un DAO, la transaction est propagée depuis le service REST appelant, mais cette
 transaction n'est jamais créée spécifique pour le DAO.
 
-Le test `fr.inrae.fishola.rest.trips.TripResourceTest.testTransaction` vérifie le bon fonctionnement du mécanisme
-transactionnel :
+Le test `testTransaction` dans
+[TripResourceTest](/fishola-backend/src/test/java/fr/inrae/fishola/rest/trips/TripResourceTest.java) vérifie le bon
+fonctionnement du mécanisme transactionnel :
 
      Le test se base sur le fait que la création d'une sortie et de ses captures se fait en 2 temps : d'abord la
      création de la sortie, puis création des captures.
