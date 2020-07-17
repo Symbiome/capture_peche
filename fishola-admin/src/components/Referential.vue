@@ -25,10 +25,17 @@
                 </b-table-column>
                 <!-- Deletion button (only displayed if delete is allow) -->
                 <b-table-column 
-                    v-if="editable && canDelete && allowedDeletionElements.includes(props.row['id'])"
+                    v-if="editable && canDelete"
                     label="Action"
                     @click.native="showDeleteDialog($event, props.row)">
-                    <button class="button is-small is-danger">
+                    <button 
+                        v-if="allowedDeletionElements.includes(props.row['id'])"
+                        class="button is-small is-danger">
+                        <b-icon icon="delete" size="is-small"></b-icon>
+                    </button>
+                    <button 
+                        v-if="!allowedDeletionElements.includes(props.row['id'])"
+                        class="button is-small is-light">
                         <b-icon icon="delete" size="is-small"></b-icon>
                     </button>
                 </b-table-column>
@@ -132,25 +139,30 @@ export default class Refenretial extends Vue {
         // Do not foward click event to row (would trigger modal)
         event.stopPropagation();
 
-        // Ask for confirmation
-        this.$buefy.dialog.confirm({
-            title: 'Suppresion',
-            message: 'Êtes-vous sur de vouloir supprimer ' + element['name'] + '?',
-            confirmText: 'Supprimer',
-            type: 'is-danger',
-            hasIcon: true, 
-            onConfirm: () => {
-                // Sends an HTTP DELETE request at url/id
-                BackendService.backendDelete(`${this.url}/${element['id']}`).then(
-                (res) => {
-                    this.$buefy.toast.open(element['name'] + ' supprimé');
-                    this.loadData();
-                },
-                (error) => {
-                    this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'] + ' : ' + error.message);
-                });
-            }
-        });
+        if (this.allowedDeletionElements.includes(element['id'])) {
+            // Ask for confirmation
+            this.$buefy.dialog.confirm({
+                title: 'Suppresion',
+                message: 'Êtes-vous sur de vouloir supprimer ' + element['name'] + '?',
+                confirmText: 'Supprimer',
+                type: 'is-danger',
+                hasIcon: true, 
+                onConfirm: () => {
+                    // Sends an HTTP DELETE request at url/id
+                    BackendService.backendDelete(`${this.url}/${element['id']}`).then(
+                    (res) => {
+                        this.$buefy.toast.open(element['name'] + ' supprimé');
+                        this.loadData();
+                    },
+                    (error) => {
+                        this.$buefy.toast.open('Erreur lors de la suppression de ' + element['name'] + ' : ' + error.message);
+                    });
+                }
+            });
+        } else {
+            // Explain why we cannot delete
+            this.$buefy.dialog.alert('Impossible de supprimer cet élément car il est référencé ailleurs au sein de l\'application');
+        }
     }
 }
 </script>

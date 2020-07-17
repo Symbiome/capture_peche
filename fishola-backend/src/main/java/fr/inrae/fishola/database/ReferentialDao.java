@@ -36,6 +36,7 @@ import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
+import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
@@ -73,6 +74,42 @@ public class ReferentialDao extends AbstractFisholaDao {
     public void createLake(Lake lake) {
         withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
     }
+
+    public void createSpecie(Species species) {
+        withDaoNoResult(SpeciesDao.class, dao -> dao.insert(species));
+    }
+
+    public boolean canDeleteSpecie(UUID specieId) {
+        boolean hasReferences = withContext(context -> {
+            // Has authorized
+            boolean result = context.select(Tables.AUTHORIZED_SAMPLE.SPECIES_ID)
+                    .from(Tables.AUTHORIZED_SAMPLE)
+                    .where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            // Has catch
+            result = result || context.select(Tables.CATCH.SPECIES_ID)
+                    .from(Tables.CATCH)
+                    .where(Tables.CATCH.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            // Has lake
+            result = result || context.select(Tables.SPECIES_BY_LAKE.SPECIES_ID)
+                    .from(Tables.SPECIES_BY_LAKE)
+                    .where(Tables.SPECIES_BY_LAKE.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            // Has expected
+            result = result || context.select(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID)
+                    .from(Tables.TRIP_EXPECTED_SPECIES)
+                    .where(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteSpecie(UUID specieId) {
+        withDaoNoResult(SpeciesDao.class, dao -> dao.deleteById(specieId));
+    }
+
 
 
     public List<Weather> listWeathers() {

@@ -110,11 +110,33 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/raw-species/{speciesId}")
-    public Response updateLake(@PathParam("speciesId") UUID speciesId, Species species) {
+    public Response udpateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
         Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
         // TODO AThimel 06/07/2020 Vérifier le droit d'admin
         referentialDao.updateSpecies(species);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/raw-species")
+    public Response createSpecie( Species species) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.createSpecie(species);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/raw-species/can-delete/{speciesId}")
+    public Response canDeleteSpecie(@PathParam("speciesId") UUID speciesId) {
+        return Response.ok(referentialDao.canDeleteSpecie(speciesId)).build();
+    }
+
+    @DELETE
+    @Path("/raw-species/{speciesId}")
+    public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.deleteSpecie(speciesId);
         return Response.noContent().build();
     }
 

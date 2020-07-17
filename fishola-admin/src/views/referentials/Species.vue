@@ -2,7 +2,7 @@
   <div class="species">
     <Referential
       name="Espèces"
-      url="/v1/referential/raw-species"
+      :url="url"
       :columns="specieColumns"
       :createElement=createSpecie 
       :canDelete=true
@@ -14,6 +14,7 @@
 <script lang="ts">
 import Referential from '@/components/Referential.vue'
 
+import BackendService from '@/services/BackendService.ts';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
@@ -23,6 +24,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class SpeciesVue extends Vue {
 
+  url = "/v1/referential/raw-species";
   specieColumns:any[] = [
     {
       field: 'id',
@@ -33,6 +35,10 @@ export default class SpeciesVue extends Vue {
     {
       field: 'name',
       label: 'Nom'
+    },
+    {
+      field: 'exportAs',
+      label: 'Nom d\'export'
     },
     {
       field: 'builtIn',
@@ -50,12 +56,13 @@ export default class SpeciesVue extends Vue {
     return {
       'name': 'Nouvelle espèce',
       'builtIn': true,
+      'exportAs': 'NouvelleEspece',
       'mandatorySize': true
     };
   }
 
   canDeleteSpecie(specie: any): Promise<boolean> {
-    return Promise.resolve(true);
+    return BackendService.backendGet(this.url+"/can-delete/" + specie['id']);
   }
 }
 </script>
