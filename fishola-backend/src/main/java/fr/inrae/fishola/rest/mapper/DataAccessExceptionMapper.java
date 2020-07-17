@@ -22,6 +22,8 @@ package fr.inrae.fishola.rest.mapper;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jooq.exception.DataAccessException;
 
 import javax.ws.rs.core.Response;
@@ -32,6 +34,8 @@ import java.util.Map;
 
 @Provider
 public class DataAccessExceptionMapper implements ExceptionMapper<DataAccessException> {
+
+    private static final Log log = LogFactory.getLog(DataAccessExceptionMapper.class);
 
     @Override
     public Response toResponse(DataAccessException exception) {
@@ -47,6 +51,11 @@ public class DataAccessExceptionMapper implements ExceptionMapper<DataAccessExce
         if (!entity.isEmpty()) {
             responseBuilder.entity(entity);
         }
+
+        if (log.isWarnEnabled()) {
+            log.warn(String.format("%s thrown: %s", exception.getClass().getName(), entity));
+        }
+
         Response result = responseBuilder.build();
         return result;
     }
