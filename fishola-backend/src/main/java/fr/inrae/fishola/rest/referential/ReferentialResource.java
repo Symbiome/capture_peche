@@ -101,6 +101,28 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    @POST
+    @Path("/techniques")
+    public Response createTechnique(Technique technique) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.createTechnique(technique);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/techniques/can-delete/{techniqueId}")
+    public Response canDeleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
+        return Response.ok(referentialDao.canDeleteTechnique(techniqueId)).build();
+    }
+
+    @DELETE
+    @Path("/techniques/{techniqueId}")
+    public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        referentialDao.deleteTechnique(techniqueId);
+        return Response.noContent().build();
+    }
+
     @GET
     @Path("/raw-species")
     public List<Species> getRawSpecies() {

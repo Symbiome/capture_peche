@@ -148,6 +148,30 @@ public class ReferentialDao extends AbstractFisholaDao {
     public void updateTechnique(Technique technique) {
         withDaoNoResult(TechniqueDao.class, dao -> dao.update(technique));
     }
+    public void createTechnique(Technique techniques) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.insert(techniques));
+    }
+
+    public boolean canDeleteTechnique(UUID techniqueId) {
+        boolean hasReferences = withContext(context -> {
+            // Has catch
+            boolean result = context.select(Tables.CATCH.TECHNIQUE_ID)
+                    .from(Tables.CATCH)
+                    .where(Tables.CATCH.TECHNIQUE_ID.eq(techniqueId))
+                    .fetch().isNotEmpty();
+            // Has trip
+            result = result || context.select(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID)
+                    .from(Tables.TRIP_TECHNIQUES)
+                    .where(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID.eq(techniqueId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteTechnique(UUID techniqueId) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.deleteById(techniqueId));
+    }
 
     public List<Species> listAllSpecies() {
         List<Species> result = withDao(SpeciesDao.class, SpeciesDao::findAll);

@@ -2,14 +2,17 @@
   <div class="techniques">
     <Referential
       name="Techniques de pêche"
-      url="/v1/referential/techniques"
-      :columns="techniqueColumns"></Referential>
+      :url="url"
+      :columns="techniqueColumns"
+      :createElement=createTechnique 
+      :canDelete=true
+      :canDeletePredicate=canDeleteTechnique></Referential>
   </div>
 </template>
 
 <script lang="ts">
 import Referential from '@/components/Referential.vue'
-
+import BackendService from '@/services/BackendService.ts';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
@@ -19,6 +22,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class TechniquesVue extends Vue {
 
+  url = "/v1/referential/techniques";
   techniqueColumns:any[] = [
     {
       field: 'id',
@@ -35,6 +39,17 @@ export default class TechniquesVue extends Vue {
       label: 'Nom d\'export'
     }
   ];
+
+  createTechnique(): any {
+    return {
+      'name': 'Nouvelle technique',
+      'exportAs': 'technique'
+    };
+  }
+
+  canDeleteTechnique(technique: any): Promise<boolean> {
+    return BackendService.backendGet(this.url+"/can-delete/" + technique['id']);
+  }
 }
 </script>
 

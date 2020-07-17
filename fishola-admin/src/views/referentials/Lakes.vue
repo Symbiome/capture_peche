@@ -13,7 +13,6 @@
 import Referential from '@/components/Referential.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import BackendService from '@/services/BackendService.ts';
 
 @Component({
   components: {
