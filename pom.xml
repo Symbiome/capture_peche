@@ -59,7 +59,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.5.2.Final</quarkusVersion>
+    <quarkusVersion>1.6.0.Final</quarkusVersion>
     <jooqVersion>3.13.3</jooqVersion>
     <flywayVersion>6.5.1</flywayVersion>
     <jacksonVersion>2.11.1</jacksonVersion>
@@ -228,6 +228,19 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-undertow</artifactId>
         <version>${quarkusVersion}</version>
+        <exclusions>
+          <exclusion>
+            <!--
+              quarkus-undertow a en dépendance quarkus-security qui tire la version 0.4.3 de io.smallrye.reactive:mutiny
+              alors que quarkus-mutiny tire la version 0.5.4. En excluant la dépendance ici, c'est bien la 0.5.4 qui est
+              inclue dans les dépendances du projet.
+              Sans cette exclusion, on a :
+              java.lang.NoSuchMethodError: 'void io.smallrye.mutiny.infrastructure.Infrastructure.setDefaultExecutor(java.util.concurrent.Executor)'
+            -->
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>mutiny</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>io.quarkus</groupId>
