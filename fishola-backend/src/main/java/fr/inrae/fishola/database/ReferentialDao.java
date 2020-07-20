@@ -94,13 +94,8 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public boolean canDeleteSpecie(UUID specieId) {
         boolean hasReferences = withContext(context -> {
-            // Has authorized
-            boolean result = context.select(Tables.AUTHORIZED_SAMPLE.SPECIES_ID)
-                    .from(Tables.AUTHORIZED_SAMPLE)
-                    .where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId))
-                    .fetch().isNotEmpty();
             // Has catch
-            result = result || context.select(Tables.CATCH.SPECIES_ID)
+            boolean result = context.select(Tables.CATCH.SPECIES_ID)
                     .from(Tables.CATCH)
                     .where(Tables.CATCH.SPECIES_ID.eq(specieId))
                     .fetch().isNotEmpty();
@@ -118,6 +113,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         // Delete all links between this specie and lakes
         withContextNoResult(context -> {
             context.deleteFrom(Tables.SPECIES_BY_LAKE).where(Tables.SPECIES_BY_LAKE.SPECIES_ID.eq(specieId)).execute();
+            context.deleteFrom(Tables.AUTHORIZED_SAMPLE).where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId)).execute();
             withDaoNoResult(SpeciesDao.class, dao -> dao.deleteById(specieId));
         });
 
