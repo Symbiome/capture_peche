@@ -1,9 +1,11 @@
 <template>
   <div class="pages">
     <Referential
-      name="Pages éditoriales" 
+      name="Documentation" 
       url="/v1/documentations"
-      :columns="pageColumns"
+      :columns="docColumns"
+      :createElement=createDocumentation 
+      :canDelete=true
       ></Referential>
   </div>
 </template>
@@ -20,7 +22,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class DocumentationVue extends Vue {
 
-  pageColumns:any[] = [
+  docColumns:any[] = [
     {
       field: 'id',
       label: 'Identifiant',
@@ -37,6 +39,12 @@ export default class DocumentationVue extends Vue {
       isFile: true
     }
   ];
+
+  createDocumentation() {
+    return {
+      'name': 'Nouveau document'
+    };
+  }
 }
 </script>
 

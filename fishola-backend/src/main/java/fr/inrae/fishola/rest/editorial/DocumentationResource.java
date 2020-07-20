@@ -26,12 +26,15 @@ import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -63,6 +66,13 @@ public class DocumentationResource extends AbstractFisholaResource {
                 .map(entry -> toDocumentationLight(entry, request))
                 .collect(Collectors.toList());
         return result;
+    }
+
+    @DELETE
+    @Path("/documentations/{documentId}")
+    public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
+        dao.deleteDocumentation(documentId);
+        return Response.noContent().build();
     }
 
     protected DocumentationLight toDocumentationLight(Map.Entry<UUID, String> entry, HttpServletRequest request) {
