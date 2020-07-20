@@ -112,7 +112,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/techniques/can-delete/{techniqueId}")
     public Response canDeleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
-        return Response.ok(referentialDao.canDeleteTechnique(techniqueId)).build();
+        boolean canDelete = referentialDao.canDeleteTechnique(techniqueId);
+        return Response.ok(canDelete).build();
     }
 
     @DELETE
@@ -151,7 +152,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/raw-species/can-delete/{speciesId}")
     public Response canDeleteSpecie(@PathParam("speciesId") UUID speciesId) {
-        return Response.ok(referentialDao.canDeleteSpecie(speciesId)).build();
+        boolean canDelete = referentialDao.canDeleteSpecie(speciesId);
+        return Response.ok(canDelete).build();
     }
 
     @DELETE
@@ -240,7 +242,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @DELETE
     @Path("/weathers/{weatherId}")
-    public Response updateWeather(@PathParam("weatherId") UUID weatherId) {
+    public Response deleteWeather(@PathParam("weatherId") UUID weatherId) {
         // TODO AThimel 06/07/2020 Vérifier le droit d'admin
         referentialDao.deleteWeather(weatherId);
         return Response.noContent().build();
@@ -248,7 +250,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/weathers/can-delete/{weatherId}")
     public Response canDeleteWeather(@PathParam("weatherId") UUID weatherId) {
-        return Response.ok(referentialDao.canDeleteWeather(weatherId)).build();
+        boolean canDelete = referentialDao.canDeleteWeather(weatherId);
+        return Response.ok(canDelete).build();
     }
 
 
