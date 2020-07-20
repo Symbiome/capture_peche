@@ -5,13 +5,16 @@ import Dispatcher from '@/views/Dispatcher.vue'
 import Login from '@/views/Login.vue'
 import Home from '@/views/Home.vue'
 
-import Trips from '@/views/Trips.vue'
-import Users from '@/views/Users.vue'
-
 import Lakes from '@/views/referentials/Lakes.vue'
 import Weathers from '@/views/referentials/Weathers.vue'
 import Techniques from '@/views/referentials/Techniques.vue'
 import Species from '@/views/referentials/Species.vue'
+
+import SpeciesPerLake from '@/views/customize/SpeciesPerLake.vue'
+
+import Trips from '@/views/Trips.vue'
+
+import Users from '@/views/Users.vue'
 
 Vue.use(VueRouter)
 
@@ -50,6 +53,11 @@ const routes: Array<RouteConfig> = [
     path: '/referentials/species',
     name: 'species',
     component: Species
+  },
+  {
+    path: '/customize/species-per-lake',
+    name: 'species-per-lake',
+    component: SpeciesPerLake
   },
   {
     path: '/trips',
