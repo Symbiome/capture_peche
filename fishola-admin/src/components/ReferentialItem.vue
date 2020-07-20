@@ -3,10 +3,16 @@
         <h2 v-if="item.name">{{item.name}}</h2>
         <div v-for="col in columns" v-bind:key="col.field">
             <b-field :label="col.label">
+                <!-- Short strings -->
                 <b-input v-model="item[col.field]"
-                         v-if="!col.isABoolean"
+                         v-if="!col.isABoolean && ('' + item[col.field]).length < 200"
                          :disabled="col.readOnly"></b-input>
-
+                 <!-- Long strings -->
+                 <b-input v-model="item[col.field]"
+                        type="textarea"
+                         v-if="!col.isABoolean && ('' + item[col.field]).length >= 200"
+                         :disabled="col.readOnly"></b-input>
+                <!-- Booleans -->
                 <b-checkbox v-model="item[col.field]"
                             v-if="col.isABoolean">
                     {{item[col.field]?'Oui':'Non'}}

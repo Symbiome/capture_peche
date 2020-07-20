@@ -185,6 +185,16 @@ export default class Refenretial extends Vue {
         padding-right: 30px;
         padding-top: 10px;
     }
+    table {
+        tr {
+            td {
+                overflow: hidden;
+                max-width:200px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+    }
 }
 
 </style>
