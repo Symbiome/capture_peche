@@ -178,10 +178,6 @@ export default class Refenretial extends Vue {
 
 .referential {
 
-    h1 {
-        font-size: 36px;
-    }
-
     .buttons {
         width: 100%;
         display: flex;
