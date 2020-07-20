@@ -211,6 +211,19 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .collect(ImmutableList.toImmutableList());
         return result;
     }
+
+    public void createSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.insert(sbl));
+    }
+
+    public void updateSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.update(sbl));
+    }
+
+    public void deleteSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.delete(sbl));
+    }
+
     public List<ReleasedFishState> listReleasedFishStates() {
         List<ReleasedFishState> result = withDao(ReleasedFishStateDao.class, ReleasedFishStateDao::findAll);
         return result;

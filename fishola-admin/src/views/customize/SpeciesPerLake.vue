@@ -27,8 +27,6 @@
             Enregistrer
         </button>
     </div>
-    <h2>Debug</h2>
-    {{speciesPerLakeAliases}}
   </div>
 </template>
 
@@ -57,24 +55,30 @@ export default class SpeciesPerLakeVue extends Vue {
         this.species = data[1];
         this.speciesPerLake = data[2];
 
-        this.lakes.forEach((l) => {
-          this.speciesPerLakeAliases[l.id] = {};
-        });
-
-        Object.keys(this.speciesPerLake).forEach((lakeId) => {
-          let items = this.speciesPerLake[lakeId];
-          items.forEach((spl) => {
-            if (spl.alias) {
-              this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
-            }
-          });
-        })
+        this.referentialLoaded();
 
       });
     }
 
+    referentialLoaded() {
+
+      this.lakes.forEach((l) => {
+        this.speciesPerLakeAliases[l.id] = {};
+      });
+
+      Object.keys(this.speciesPerLake).forEach((lakeId) => {
+        let items = this.speciesPerLake[lakeId];
+        items.forEach((spl) => {
+          if (spl.alias) {
+            this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
+          }
+        });
+      });
+    }
+
     save() {
-      console.log("speciesPerLakeAliases", this.speciesPerLakeAliases);
+      BackendService.backendPut("/v1/referential/species-aliases-per-lake", this.speciesPerLakeAliases)
+        .then(console.info, console.error);
     }
 }
 </script>

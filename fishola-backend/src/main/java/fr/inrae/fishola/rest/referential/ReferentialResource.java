@@ -36,6 +36,8 @@ import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
@@ -47,6 +49,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -219,6 +224,53 @@ public class ReferentialResource extends AbstractFisholaResource {
         });
 
         return result.asMap();
+    }
+
+    @PUT
+    @Path("/species-aliases-per-lake")
+    public Response saveSpeciesAliasesPerLake(Map<UUID, Map<UUID, String>> aliases) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+
+        System.out.println(aliases);
+        Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
+        for (Map.Entry<UUID, Map<UUID, String>> byLakeEntry : aliases.entrySet()) {
+            Map<UUID, String> bySpeciesEntries = byLakeEntry.getValue();
+            for (Map.Entry<UUID, String> entry : bySpeciesEntries.entrySet()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
+                String alias = entry.getValue();
+                if (StringUtils.isNotEmpty(alias)) {
+                    aliasesMap.put(lakePluSpeciesId, alias);
+                }
+            }
+        }
+
+        // On charge les alias par lac+espèce et on en fait un index
+        List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
+
+        for (SpeciesByLake entity : speciesByLake) {
+            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
+            if (aliasesMap.containsKey(lakePluSpeciesId)) {
+                String newAlias = aliases.get(entity.getLakeId()).get(entity.getSpeciesId());
+                entity.setAlias(newAlias);
+                referentialDao.updateSpeciesByLake(entity);
+            } else {
+                referentialDao.deleteSpeciesByLake(entity);
+            }
+            aliasesMap.remove(lakePluSpeciesId);
+        }
+
+        aliasesMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    UUID lakeId = entry.getKey().getKey();
+                    UUID speciesId = entry.getKey().getValue();
+                    String alias = entry.getValue();
+                    SpeciesByLake result = new SpeciesByLake(lakeId, speciesId, alias);
+                    return result;
+                })
+                .forEach(referentialDao::createSpeciesByLake);
+
+        return Response.noContent().build();
     }
 
     @GET
