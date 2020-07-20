@@ -22,8 +22,9 @@ package fr.inrae.fishola.rest.referential;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
@@ -48,6 +49,7 @@ import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -187,22 +189,33 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/species-per-lake")
     public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerLake() {
-        Map<UUID, Species> rawSpeciesIndex = referentialDao.builtInSpeciesIndex();
 
-        List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
-        Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
+        // On récupère la liste des toutes les espèces builtIn et des lacs
+        List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
+        Set<UUID> lakeIds = referentialDao.listLakes()
+                .stream()
+                .map(Lake::getId).collect(Collectors.toSet());
 
+        // On charge les alias par lac+espèce et on en fait un index
+        List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
+        Map<Pair<UUID, UUID>, SpeciesByLake> speciesByLakeIndex = Maps.uniqueIndex(speciesByLake, sbl -> Pair.of(sbl.getLakeId(), sbl.getSpeciesId()));
+
+        // On charge les autorisations de prélèvement par lac+espèce et on en fait un index
         List<AuthorizedSample> authorizedSamples = getAuthorizedSamples();
         Set<Pair<UUID, UUID>> authorizedSamplesSet = authorizedSamples.stream()
                 .map(authorizedSample -> Pair.of(authorizedSample.getLakeId(), authorizedSample.getSpeciesId()))
                 .collect(Collectors.toSet());
 
-        Multimap<UUID, SpeciesWithAlias> result = Multimaps.transformEntries(entitiesByLakeId, (lakeId, input) -> {
-            Species rawSpecies = rawSpeciesIndex.get(input.getSpeciesId());
-            String alias = input.getAlias();
-            boolean authorizedSample = authorizedSamplesSet.contains(Pair.of(lakeId, rawSpecies.getId()));
-            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample);
-            return speciesWithAlias;
+        // On compile le tout
+        Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
+        lakeIds.forEach(lakeId -> {
+            builtInSpecies.forEach(rawSpecies -> {
+                Pair<UUID, UUID> lakePlusSpeciesIds = Pair.of(lakeId, rawSpecies.getId());
+                Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
+                boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
+                SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample);
+                result.put(lakeId, speciesWithAlias);
+            });
         });
 
         return result.asMap();

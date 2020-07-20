@@ -43,17 +43,17 @@ public interface SpeciesWithAlias {
     boolean authorizedSample();
 
     static SpeciesWithAlias of(Species source) {
-        SpeciesWithAlias result = of(source, null, false);
+        SpeciesWithAlias result = of(source, Optional.empty(), false);
         return result;
     }
 
-    static SpeciesWithAlias of(Species source, String alias, boolean authorizedSample) {
+    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
                 .builtIn(source.getBuiltIn())
                 .mandatorySize(source.getMandatorySize())
-                .alias(Optional.ofNullable(alias))
+                .alias(alias)
                 .authorizedSample(authorizedSample)
                 .build();
         return result;

@@ -196,12 +196,6 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public ImmutableMap<UUID, Species> builtInSpeciesIndex() {
-        List<Species> species = listBuiltInSpecies();
-        ImmutableMap<UUID, Species> result = Maps.uniqueIndex(species, Species::getId);
-        return result;
-    }
-
     public List<Species> listCustomSpecies() {
         List<Species> result = withDao(SpeciesDao.class, dao -> dao.fetchByBuiltIn(false));
         return result;
