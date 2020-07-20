@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <Menu/>
-    <router-view/>
+    <router-view class="page-content"/>
   </div>
 </template>
 
@@ -50,4 +50,9 @@ html {
   max-width: 100%;
 }
 
+.page-content {
+
+  padding: 10px;
+
+}
 </style>
