@@ -187,7 +187,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/species-per-lake")
     public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerLake() {
-        Map<UUID, Species> rawSpeciesIndex = referentialDao.speciesIndex();
+        Map<UUID, Species> rawSpeciesIndex = referentialDao.builtInSpeciesIndex();
 
         List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
         Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
