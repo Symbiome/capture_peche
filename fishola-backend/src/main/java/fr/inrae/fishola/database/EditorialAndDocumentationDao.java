@@ -26,6 +26,7 @@ import fr.inrae.fishola.entities.tables.daos.DocumentationDao;
 import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
+import java.util.Set;
 import org.jooq.Record2;
 import org.jooq.Result;
 
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jooq.impl.DAOImpl;
 
 @Singleton
 public class EditorialAndDocumentationDao extends AbstractFisholaDao {
@@ -61,6 +63,15 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         Documentation doc = withDao(DocumentationDao.class, dao -> dao.findById(docId));
         Optional<Documentation> result = Optional.ofNullable(doc);
         return result;
+    }
+
+    public List<Editorial> getEditorials() {
+        List<Editorial> editorials = withDao(EditorialDao.class, DAOImpl::findAll);
+        return editorials;
+    }
+
+    public void updateEditorial(Editorial editorial) {
+        withDaoNoResult(EditorialDao.class, dao -> dao.update(editorial));
     }
 
     public Optional<Editorial> findEditorial(String name) {

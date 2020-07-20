@@ -39,7 +39,7 @@
               </b-navbar-item>
           </b-navbar-dropdown>
           <b-navbar-dropdown label="Documentations">
-              <b-navbar-item href="#">
+              <b-navbar-item  tag="router-link" :to="{ name: 'editorial-pages' }">
                   Pages éditoriales
               </b-navbar-item>
               <b-navbar-item href="#">

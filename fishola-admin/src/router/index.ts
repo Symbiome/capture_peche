@@ -1,3 +1,4 @@
+
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 
@@ -9,6 +10,7 @@ import Lakes from '@/views/referentials/Lakes.vue'
 import Weathers from '@/views/referentials/Weathers.vue'
 import Techniques from '@/views/referentials/Techniques.vue'
 import Species from '@/views/referentials/Species.vue'
+import EditorialPagesVue from '@/views/referentials/EditorialPages.vue'
 
 import SpeciesPerLake from '@/views/customize/SpeciesPerLake.vue'
 import AuthorizedSamples from '@/views/customize/AuthorizedSamples.vue'
@@ -74,7 +76,13 @@ const routes: Array<RouteConfig> = [
     path: '/users',
     name: 'users',
     component: Users
-  }
+  },
+  {
+    path: '/editorial-pages',
+    name: 'editorial-pages',
+    component: EditorialPagesVue
+  },
+  
 ]
 
 const router = new VueRouter({

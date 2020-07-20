@@ -21,15 +21,18 @@ package fr.inrae.fishola.rest.editorial;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
+import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -124,6 +127,24 @@ public class DocumentationResource extends AbstractFisholaResource {
         // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
         Response response = downloadDocumentationByName("Documentation sur les prélèvements");
         return response;
+    }
+
+    @GET
+    @Path("/editorial")
+    public Response getEditorials() {
+        List<Editorial> editorials = dao.getEditorials();
+        Response response = Response.ok(editorials).build();
+        return response;
+    }
+
+    @PUT
+    @Path("/editorial/{editorialId}")
+    public Response updateEditorial(@PathParam("editorialId") UUID editorialId, Editorial editorial) {
+        Preconditions.checkArgument(editorialId != null, "Identifiant de page éditoriale obligatoire");
+        Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        dao.updateEditorial(editorial);
+        return Response.noContent().build();
     }
 
     @GET
