@@ -34,6 +34,7 @@ import fr.inrae.fishola.entities.tables.daos.ReleasedFishStateDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
+import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
@@ -42,8 +43,11 @@ import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
+import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
+import java.util.LinkedHashSet;
+import javax.ws.rs.core.Link;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -72,7 +76,16 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public void createLake(Lake lake) {
-        withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
+        withDaoNoResult(LakeDao.class, dao -> {
+            dao.insert(lake);
+            UUID lakeId = lake.getId();
+            // By default, add all species to the created lake
+            List<Species> allSpecies = withDao(SpeciesDao.class, SpeciesDao::findAll);
+            Set<SpeciesByLake> lakeToSpecies = allSpecies.stream()
+                    .map(specie -> new SpeciesByLake(lakeId, specie.getId(), specie.getName()))
+                    .collect(Collectors.toSet());
+            withDaoNoResult(SpeciesByLakeDao.class, speciesByLakeDao -> speciesByLakeDao.insert(lakeToSpecies));
+        });
     }
 
     public void createSpecie(Species species) {
