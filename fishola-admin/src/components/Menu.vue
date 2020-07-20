@@ -42,7 +42,7 @@
               <b-navbar-item  tag="router-link" :to="{ name: 'editorial-pages' }">
                   Pages éditoriales
               </b-navbar-item>
-              <b-navbar-item href="#">
+              <b-navbar-item tag="router-link" :to="{ name: 'documentation' }">
                   En téléchargement
               </b-navbar-item>
           </b-navbar-dropdown>

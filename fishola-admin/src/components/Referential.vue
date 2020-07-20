@@ -9,7 +9,7 @@
             >
             <template slot-scope="props">
                 <b-table-column 
-                    v-for="col in (columns.filter(col => col.visible !== false))"
+                    v-for="col in (columns.filter(col => col.visible !== false && !col.isUrl && !col.isFile))"
                     :field="col.field" 
                     :label="col.label" 
                     :key="col.name" sortable>
@@ -22,6 +22,16 @@
                     <span v-if="!col.isABoolean">
                         {{ props.row[col.field] }}
                     </span>
+                </b-table-column>
+                <b-table-column 
+                    v-for="col in (columns.filter(col => col.visible !== false && (col.isUrl || col.isFile)))"
+                    :field="col.field" 
+                    :label="col.label" 
+                    @click.native="showLink($event, props.row[col.field])"
+                    :key="col.name" sortable>
+                    <button class="button is-small is-info">
+                        <b-icon icon="eye" size="is-small"></b-icon>
+                    </button>
                 </b-table-column>
                 <!-- Deletion button (only displayed if delete is allow) -->
                 <b-table-column 
@@ -136,6 +146,12 @@ export default class Refenretial extends Vue {
         }
     }
 
+    showLink(event: Event, url: string) {
+        // Do not foward click event to row (would trigger modal)
+        event.stopPropagation();
+
+        window.open(url,'_blank');
+    }
 
     showDeleteDialog(event: Event, element: any) {
         // Do not foward click event to row (would trigger modal)

@@ -221,7 +221,7 @@ public class ReferentialResource extends AbstractFisholaResource {
                 result.put(lakeId, speciesWithAlias);
             });
         });
-
+        
         return result.asMap();
     }
 

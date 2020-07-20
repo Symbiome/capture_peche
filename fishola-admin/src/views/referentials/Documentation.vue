@@ -2,7 +2,7 @@
   <div class="pages">
     <Referential
       name="Pages éditoriales" 
-      url="/v1/editorial"
+      url="/v1/documentations"
       :columns="pageColumns"
       ></Referential>
   </div>
@@ -18,7 +18,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     Referential
   }
 })
-export default class EditorialPagesVue extends Vue {
+export default class DocumentationVue extends Vue {
 
   pageColumns:any[] = [
     {
@@ -32,13 +32,9 @@ export default class EditorialPagesVue extends Vue {
       label: 'Nom'
     },
     {
-      field: 'content',
-      label: 'Contenu'
-    },
-    {
-      field: 'link',
-      label: 'Lien',
-      isUrl: true
+      field: 'url',
+      label: 'Fichier',
+      isFile: true
     }
   ];
 }
