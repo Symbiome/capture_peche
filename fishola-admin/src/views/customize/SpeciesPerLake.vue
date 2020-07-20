@@ -13,22 +13,22 @@
           <th>{{s.name}}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field">
-              <b-checkbox v-model="speciesPerLakeIndex[l.id][s.id].selected"></b-checkbox>
-              <b-input v-model="speciesPerLakeIndex[l.id][s.id].alias" placeholder="Nom spécifique"></b-input>
+              <b-input v-model="speciesPerLakeAliases[l.id][s.id]"
+                       placeholder="Nom spécifique"
+                       ></b-input>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
     <div class="buttons">
-        <!-- Creation button (only displayed if createElement is defined) -->
         <button class="button is-primary" 
             @click="save()">
             Enregistrer
         </button>
     </div>
     <h2>Debug</h2>
-    {{speciesPerLakeIndex}}
+    {{speciesPerLakeAliases}}
   </div>
 </template>
 
@@ -44,7 +44,7 @@ export default class SpeciesPerLakeVue extends Vue {
     lakes = [];
     species = [];
     speciesPerLake = {};
-    speciesPerLakeIndex = {};
+    speciesPerLakeAliases = {};
 
     created() {
 
@@ -58,24 +58,23 @@ export default class SpeciesPerLakeVue extends Vue {
         this.speciesPerLake = data[2];
 
         this.lakes.forEach((l) => {
-          this.speciesPerLakeIndex[l.id] = {};
-          this.species.forEach((s) => {
-            this.speciesPerLakeIndex[l.id][s.id] = {
-              selected: false,
-              alias:''
-            };
-          });
+          this.speciesPerLakeAliases[l.id] = {};
         });
 
         Object.keys(this.speciesPerLake).forEach((lakeId) => {
           let items = this.speciesPerLake[lakeId];
           items.forEach((spl) => {
-            this.speciesPerLakeIndex[lakeId][spl.id].selected = true;
-            this.speciesPerLakeIndex[lakeId][spl.id].alias = spl.alias;
+            if (spl.alias) {
+              this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
+            }
           });
         })
 
       });
+    }
+
+    save() {
+      console.log("speciesPerLakeAliases", this.speciesPerLakeAliases);
     }
 }
 </script>
