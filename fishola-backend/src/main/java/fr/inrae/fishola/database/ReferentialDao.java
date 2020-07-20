@@ -76,16 +76,7 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public void createLake(Lake lake) {
-        withDaoNoResult(LakeDao.class, dao -> {
-            dao.insert(lake);
-            UUID lakeId = lake.getId();
-            // By default, add all built-in species to the created lake
-            List<Species> allSpecies = this.listBuiltInSpecies();
-            Set<SpeciesByLake> lakeToSpecies = allSpecies.stream()
-                    .map(specie -> new SpeciesByLake(lakeId, specie.getId(), null))
-                    .collect(Collectors.toSet());
-            withDaoNoResult(SpeciesByLakeDao.class, speciesByLakeDao -> speciesByLakeDao.insert(lakeToSpecies));
-        });
+        withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
     }
 
     public void createSpecie(Species species) {
