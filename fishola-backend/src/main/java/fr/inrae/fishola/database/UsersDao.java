@@ -97,6 +97,10 @@ public class UsersDao extends AbstractFisholaDao {
         withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
     }
 
+    public void deleteUser(FisholaUser existingUser) {
+        withDaoNoResult(FisholaUserDao.class, dao -> dao.delete(existingUser));
+    }
+
     public void increaseSampleBaseId(UUID userId) {
         withContextNoResult(context -> {
             int nextSampleBaseId = context.nextval(Sequences.SAMPLE_BASE_ID_SEQUENCE).intValue();

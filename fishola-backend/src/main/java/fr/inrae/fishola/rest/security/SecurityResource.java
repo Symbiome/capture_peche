@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
+import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
@@ -49,6 +50,7 @@ import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -78,6 +80,9 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @Inject
     protected MailService mailService;
+
+    @Inject
+    protected TripsDao tripsDao;
 
     protected Optional<String> validatePassword(String password) {
         if (StringUtils.isEmpty(password)) {
@@ -607,6 +612,18 @@ public class SecurityResource extends AbstractFisholaResource {
         // On ne met volontairement pas les autres champs à jour car c'est juste pour la partie admin
         existingUser.setExcludeFromExports(user.excludeFromExports());
         usersDao.updateUser(existingUser);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/users/{userId}")
+    public Response deleteUser(@PathParam("userId") UUID userId) {
+        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
+        FisholaUser existingUser = optional.get();
+        tripsDao.unsetOwner(userId);
+        usersDao.deleteUser(existingUser);
         return Response.noContent().build();
     }
 

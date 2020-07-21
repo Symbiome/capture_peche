@@ -186,4 +186,11 @@ public class TripsDao extends AbstractFisholaDao {
                 .where(Tables.TRIP.ID.eq(tripId))
                 .execute());
     }
+
+    public void unsetOwner(UUID userId) {
+        withContext(context -> context.update(Tables.TRIP)
+                .setNull(Tables.TRIP.OWNER_ID)
+                .where(Tables.TRIP.OWNER_ID.eq(userId))
+                .execute());
+    }
 }

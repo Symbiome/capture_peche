@@ -145,7 +145,7 @@ export default class Refenretial extends Vue {
             // Ask for confirmation
             this.$buefy.dialog.confirm({
                 title: 'Suppression',
-                message: 'Êtes-vous sûr de vouloir supprimer ' + element['name'] + '?',
+                message: 'Êtes-vous sûr de vouloir supprimer ' + (element['name'] || 'cet élément') + ' ?',
                 confirmText: 'Supprimer',
                 type: 'is-danger',
                 hasIcon: true, 
@@ -153,12 +153,12 @@ export default class Refenretial extends Vue {
                     // Sends an HTTP DELETE request at url/id
                     BackendService.backendDelete(`${this.url}/${element['id']}`).then(
                     (res) => {
-                        this.$buefy.toast.open(element['name'] + ' supprimé');
+                        this.$buefy.toast.open((element['name'] || 'Élément')  + ' supprimé');
                         this.loadData();
                     },
                     (error) => {
                         this.$buefy.toast.open({
-                            message: 'Erreur lors de la supression de ' + element['name'] + ' : ' + error.message,
+                            message: 'Erreur lors de la supression de ' + (element['name'] || 'l\'élément')  + ' : ' + error.message,
                             type: 'is-danger'
                         });
                     });

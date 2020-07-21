@@ -3,7 +3,8 @@
     <Referential
       name="Utilisateurs" 
       url="/v1/security/users"
-      :columns="userColumns"></Referential>
+      :columns="userColumns"
+      :canDelete=true></Referential>
   </div>
 </template>
 
