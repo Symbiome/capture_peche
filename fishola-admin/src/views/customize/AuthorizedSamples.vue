@@ -1,6 +1,6 @@
 <template>
-  <div class="species-per-lake">
-    <h1>Espèces par lac</h1>
+  <div class="authorized-samples">
+    <h1>Autorisations de prélèvement</h1>
     <table class="table is-striped">
       <thead>
         <tr>
@@ -13,9 +13,7 @@
           <th>{{s.name}}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field">
-              <b-input v-model="speciesPerLakeAliases[l.id][s.id]"
-                       placeholder="Nom spécifique"
-                       ></b-input>
+              <b-checkbox v-model="authorizedSamplesMap[l.id][s.id]"></b-checkbox>
             </div>
           </td>
         </tr>
@@ -37,12 +35,12 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import BackendService from '@/services/BackendService.ts';
 
 @Component
-export default class SpeciesPerLakeVue extends Vue {
+export default class AuthorizedSamplesVue extends Vue {
 
     lakes = [];
     species = [];
     speciesPerLake = {};
-    speciesPerLakeAliases = {};
+    authorizedSamplesMap = {};
 
     created() {
 
@@ -63,31 +61,29 @@ export default class SpeciesPerLakeVue extends Vue {
     referentialLoaded() {
 
       this.lakes.forEach((l) => {
-        this.speciesPerLakeAliases[l.id] = {};
+        this.authorizedSamplesMap[l.id] = {};
       });
 
       Object.keys(this.speciesPerLake).forEach((lakeId) => {
         let items = this.speciesPerLake[lakeId];
         items.forEach((spl) => {
-          if (spl.alias) {
-            this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
-          }
+          this.authorizedSamplesMap[lakeId][spl.id] = spl.authorizedSample;
         });
       });
     }
 
     save() {
-      BackendService.backendPut("/v1/referential/species-aliases-per-lake", this.speciesPerLakeAliases)
+      BackendService.backendPut("/v1/referential/authorized-samples", this.authorizedSamplesMap)
         .then(
           (res) => {
               this.$buefy.toast.open({
-                  message:'Espèces par lac enregistrées',
+                  message:'Autorisations de prélèvement enregistrées',
                   type: 'is-success'
               });
           },
           (error) => {
               this.$buefy.toast.open({
-                  message: 'Erreur lors de l\'enregistrement des espèces par lac : ' + error.message,
+                  message: 'Erreur lors de l\'enregistrement des autorisations de prélèvement : ' + error.message,
                   type: 'is-danger'
               });
           }
@@ -100,7 +96,7 @@ export default class SpeciesPerLakeVue extends Vue {
 
 @import "../../less/main";
 
-.species-per-lake {
+.authorized-samples {
 
   .table {
     width: 100%;

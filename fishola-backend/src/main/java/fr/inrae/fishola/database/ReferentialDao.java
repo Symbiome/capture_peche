@@ -331,4 +331,12 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
+    public void createAuthorizedSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.insert(entity));
+    }
+
+    public void deleteAuthorizedSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.delete(entity));
+    }
+
 }

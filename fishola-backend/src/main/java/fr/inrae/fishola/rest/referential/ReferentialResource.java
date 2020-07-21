@@ -50,6 +50,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -242,7 +243,7 @@ public class ReferentialResource extends AbstractFisholaResource {
             }
         }
 
-        // On charge les alias par lac+espèce et on en fait un index
+        // On charge les alias par lac+espèce
         List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
 
         // On commence par mettre à jour ou supprimer les espèces par lac existantes
@@ -269,6 +270,46 @@ public class ReferentialResource extends AbstractFisholaResource {
                     return result;
                 })
                 .forEach(referentialDao::createSpeciesByLake);
+
+        Response response = Response.noContent().build();
+        return response;
+    }
+
+    @PUT
+    @Path("/authorized-samples")
+    public Response saveAuthorizedSamples(Map<UUID, Map<UUID, Boolean>> authorizations) {
+        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+
+        // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées
+        Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
+        for (Map.Entry<UUID, Map<UUID, Boolean>> byLakeEntry : authorizations.entrySet()) {
+            Map<UUID, Boolean> bySpeciesEntries = byLakeEntry.getValue();
+            for (Map.Entry<UUID, Boolean> entry : bySpeciesEntries.entrySet()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
+                Boolean authorized = entry.getValue();
+                if (Boolean.TRUE.equals(authorized)) {
+                    authorizationsSet.add(lakePluSpeciesId);
+                }
+            }
+        }
+
+        // On charge les autorisations par lac+espèce et on en fait un index
+        List<AuthorizedSample> existingAuthorizations = referentialDao.listAuthorizedSamples();
+
+        // On commence par supprimer les autorisations en trop
+        for (AuthorizedSample entity : existingAuthorizations) {
+            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
+            if (!authorizationsSet.contains(lakePluSpeciesId)) {
+                referentialDao.deleteAuthorizedSample(entity);
+            }
+            authorizationsSet.remove(lakePluSpeciesId);
+        }
+
+        // Puis on créé les nouvelles
+        authorizationsSet
+                .stream()
+                .map(entry -> new AuthorizedSample(entry.getKey(), entry.getValue()))
+                .forEach(referentialDao::createAuthorizedSample);
 
         Response response = Response.noContent().build();
         return response;

@@ -11,6 +11,7 @@ import Techniques from '@/views/referentials/Techniques.vue'
 import Species from '@/views/referentials/Species.vue'
 
 import SpeciesPerLake from '@/views/customize/SpeciesPerLake.vue'
+import AuthorizedSamples from '@/views/customize/AuthorizedSamples.vue'
 
 import Trips from '@/views/Trips.vue'
 
@@ -58,6 +59,11 @@ const routes: Array<RouteConfig> = [
     path: '/customize/species-per-lake',
     name: 'species-per-lake',
     component: SpeciesPerLake
+  },
+  {
+    path: '/customize/authorized-samples',
+    name: 'authorized-samples',
+    component: AuthorizedSamples
   },
   {
     path: '/trips',
