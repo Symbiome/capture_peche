@@ -188,11 +188,11 @@ public abstract class AbstractFisholaResource {
     }
 
     protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
-        System.out.println("adminToken: " + adminToken);
         if (adminToken == null) {
             throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
         }
-        // TODO Implémenter
+        boolean validToken = jwtHelper.isValidToken(adminToken);
+        AccessDeniedException.check(validToken, "Accès refusé");
     }
 
 }

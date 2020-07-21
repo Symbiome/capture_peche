@@ -188,4 +188,20 @@ public class JwtHelper {
         }
     }
 
+    public boolean isValidToken(String token) {
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+
+        try {
+            Algorithm algorithmHS = getJwtSecretAlgorithm();
+            JWT.require(algorithmHS)
+                    .withIssuer("fishola-backend")
+                    .build()
+                    .verify(token);
+            return true;
+        } catch (Exception eee) {
+            log.warn("Token invalide: " + token, eee);
+            return false;
+        }
+    }
+
 }
