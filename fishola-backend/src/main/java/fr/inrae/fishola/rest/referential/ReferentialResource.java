@@ -50,8 +50,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -231,7 +229,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response saveSpeciesAliasesPerLake(Map<UUID, Map<UUID, String>> aliases) {
         // TODO AThimel 06/07/2020 Vérifier le droit d'admin
 
-        System.out.println(aliases);
+        // On transforme la map pour avoir en clé lakeId+speciesId et en valeur les alias
         Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
         for (Map.Entry<UUID, Map<UUID, String>> byLakeEntry : aliases.entrySet()) {
             Map<UUID, String> bySpeciesEntries = byLakeEntry.getValue();
@@ -247,6 +245,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         // On charge les alias par lac+espèce et on en fait un index
         List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
 
+        // On commence par mettre à jour ou supprimer les espèces par lac existantes
         for (SpeciesByLake entity : speciesByLake) {
             Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
             if (aliasesMap.containsKey(lakePluSpeciesId)) {
@@ -259,6 +258,7 @@ public class ReferentialResource extends AbstractFisholaResource {
             aliasesMap.remove(lakePluSpeciesId);
         }
 
+        // Puis on créé les nouvelles
         aliasesMap.entrySet()
                 .stream()
                 .map(entry -> {
@@ -270,7 +270,8 @@ public class ReferentialResource extends AbstractFisholaResource {
                 })
                 .forEach(referentialDao::createSpeciesByLake);
 
-        return Response.noContent().build();
+        Response response = Response.noContent().build();
+        return response;
     }
 
     @GET
