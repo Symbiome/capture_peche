@@ -43,6 +43,7 @@ export default class TechniquesVue extends Vue {
   createTechnique(): any {
     return {
       'name': 'Nouvelle technique',
+      'builtIn': true,
       'exportAs': 'technique'
     };
   }
