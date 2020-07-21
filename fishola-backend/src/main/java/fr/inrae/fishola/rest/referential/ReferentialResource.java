@@ -78,7 +78,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
         Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
         Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.updateLake(lake);
         return Response.noContent().build();
     }
@@ -86,7 +86,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @POST
     @Path("/lakes")
     public Response createLake(Lake lake) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.createLake(lake);
         return Response.noContent().build();
     }
@@ -103,7 +103,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
         Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
         Preconditions.checkArgument(techniqueId.equals(technique.getId()), "L'identifiant ne correspond pas");
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.updateTechnique(technique);
         return Response.noContent().build();
     }
@@ -111,7 +111,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @POST
     @Path("/techniques")
     public Response createTechnique(Technique technique) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.createTechnique(technique);
         return Response.noContent().build();
     }
@@ -126,7 +126,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @DELETE
     @Path("/techniques/{techniqueId}")
     public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.deleteTechnique(techniqueId);
         return Response.noContent().build();
     }
@@ -143,7 +143,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response udpateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
         Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.updateSpecies(species);
         return Response.noContent().build();
     }
@@ -151,7 +151,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @POST
     @Path("/raw-species")
     public Response createSpecie( Species species) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.createSpecie(species);
         return Response.noContent().build();
     }
@@ -166,7 +166,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @DELETE
     @Path("/raw-species/{speciesId}")
     public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.deleteSpecie(speciesId);
         return Response.noContent().build();
     }
@@ -229,7 +229,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/species-aliases-per-lake")
     public Response saveSpeciesAliasesPerLake(Map<UUID, Map<UUID, String>> aliases) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
 
         // On transforme la map pour avoir en clé lakeId+speciesId et en valeur les alias
         Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
@@ -279,7 +279,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/authorized-samples")
     public Response saveAuthorizedSamples(Map<UUID, Map<UUID, Boolean>> authorizations) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
 
         // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
@@ -333,9 +333,9 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/weathers/{weatherId}")
     public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
+        checkIsAdmin();
         Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
         Preconditions.checkArgument(weatherId.equals(weather.getId()), "L'identifiant ne correspond pas");
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
         referentialDao.updateWeather(weather);
         return Response.noContent().build();
     }
@@ -343,7 +343,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @POST
     @Path("/weathers")
     public Response createWeather(Weather weather) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.createWeather(weather);
         return Response.noContent().build();
     }
@@ -351,7 +351,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @DELETE
     @Path("/weathers/{weatherId}")
     public Response deleteWeather(@PathParam("weatherId") UUID weatherId) {
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         referentialDao.deleteWeather(weatherId);
         return Response.noContent().build();
     }
@@ -361,7 +361,6 @@ public class ReferentialResource extends AbstractFisholaResource {
         boolean canDelete = referentialDao.canDeleteWeather(weatherId);
         return Response.ok(canDelete).build();
     }
-
 
     @GET
     @Path("/authorized-samples")

@@ -24,12 +24,14 @@ package fr.inrae.fishola.rest;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.UsersDao;
+import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -48,6 +50,8 @@ public abstract class AbstractFisholaResource {
 
     public static final String AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
+    public static final String ADMIN_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Admin-Token";
+
     @Inject
     protected JwtHelper jwtHelper;
 
@@ -56,6 +60,9 @@ public abstract class AbstractFisholaResource {
 
     @Inject
     protected FisholaConfiguration config;
+
+    @CookieParam(ADMIN_AUTHENTICATION_COOKIE_NAME)
+    protected String adminToken;
 
     protected NewCookie createTokenCookie(String token) {
         NewCookie result = newTokenCookie(token, DEFAULT_MAX_AGE);
@@ -68,7 +75,7 @@ public abstract class AbstractFisholaResource {
     }
 
     private NewCookie newTokenCookie(String token, int maxAge) {
-        // XXX AThimel 15/06/2020 Ça pourrait être problématique pour faire tourner un pautre profil que "dev" sur une IP locale
+        // XXX AThimel 15/06/2020 Ça pourrait être problématique pour faire tourner un autre profil que "dev" sur une IP locale
         boolean secure = !config.isDevMode();
         NewCookie result = new NewCookie(
                 AUTHENTICATION_COOKIE_NAME,
@@ -178,6 +185,14 @@ public abstract class AbstractFisholaResource {
                 .ifPresent(responseBuilder::cookie);
         Response result = responseBuilder.build();
         return result;
+    }
+
+    protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+        System.out.println("adminToken: " + adminToken);
+        if (adminToken == null) {
+            throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
+        }
+        // TODO Implémenter
     }
 
 }

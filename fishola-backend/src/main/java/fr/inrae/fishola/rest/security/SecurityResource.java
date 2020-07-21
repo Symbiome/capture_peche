@@ -159,7 +159,7 @@ public class SecurityResource extends AbstractFisholaResource {
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")
                     .build();
-            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+
             mailService.sendMail(mail);
         }
 
@@ -324,7 +324,7 @@ public class SecurityResource extends AbstractFisholaResource {
                     .addTos(reset.email)
                     .subject("FISHOLA - Réinitialisation de votre mot de passe")
                     .build();
-            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+
             mailService.sendMail(mail);
             return Response.ok().build();
         }
@@ -592,7 +592,7 @@ public class SecurityResource extends AbstractFisholaResource {
     @GET
     @Path("/users")
     public List<UserProfileForAdmin> listUsers() {
-        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         // TODO AThimel 07/07/2020 Pagination
         List<FisholaUser> users = usersDao.findAll();
         List<UserProfileForAdmin> result = users.stream()
@@ -604,7 +604,7 @@ public class SecurityResource extends AbstractFisholaResource {
     @PUT
     @Path("/users/{userId}")
     public Response updateUser(@PathParam("userId") UUID userId, UserProfileForAdmin user) {
-        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         Preconditions.checkArgument(userId.equals(user.id()), "L'identifiant ne correspond pas");
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
@@ -618,7 +618,7 @@ public class SecurityResource extends AbstractFisholaResource {
     @DELETE
     @Path("/users/{userId}")
     public Response deleteUser(@PathParam("userId") UUID userId) {
-        // TODO AThimel 07/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
         FisholaUser existingUser = optional.get();
