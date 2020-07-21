@@ -92,6 +92,10 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         return result;
     }
 
+    public void createDocumentation(Documentation documentation) {
+        withDaoNoResult(DocumentationDao.class, dao -> dao.insert(documentation));
+    }
+
     public void updateDocumentation(Documentation documentation) {
         withDaoNoResult(DocumentationDao.class, dao -> dao.update(documentation));
     }

@@ -30,7 +30,7 @@ export default class DocumentationVue extends Vue {
       readOnly: true
     },
     {
-      field: 'natural_id',
+      field: 'naturalId',
       label: 'Identifiant naturel',
       readOnlyEdition: true
     },
@@ -47,8 +47,10 @@ export default class DocumentationVue extends Vue {
 
   createDocumentation() {
     return {
-      'natural_id': '',
-      'name': 'Nouveau document'
+      'naturalId': '',
+      'name': 'Nouveau document',
+      'url': '',
+      'base64Content': ''
     };
   }
 }

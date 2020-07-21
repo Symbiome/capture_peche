@@ -27,9 +27,12 @@ import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
+import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
+import fr.inrae.fishola.rest.trips.DocumentationWithBase64ContentBean;
+import java.util.Base64;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -60,11 +63,11 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @GET
     @Path("/documentations")
-    public List<DocumentationLight> getDocumentation(@Context HttpServletRequest request) {
+    public List<DocumentationWithBase64ContentBean> getDocumentation(@Context HttpServletRequest request) {
         LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
-        List<DocumentationLight> result = docs.entrySet()
+        List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
-                .map(entry -> toDocumentationLight(entry, request))
+                .map(entry -> toDocumentationWithBase64Content(entry, request))
                 .collect(Collectors.toList());
         return result;
     }
@@ -76,14 +79,14 @@ public class DocumentationResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
-    protected DocumentationLight toDocumentationLight(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
+    protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
         String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
-        DocumentationLight result = ImmutableDocumentationLight.builder()
-                .id(entry.getKey())
-                .natural_id(entry.getValue().getLeft())
-                .name(entry.getValue().getRight())
-                .url(url)
-                .build();
+        DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
+        result.setId(entry.getKey());
+        result.setNaturalId(entry.getValue().getLeft());
+        result.setName(entry.getValue().getRight());
+        result.setUrl(url);
+        result.setBase64Content("");
         return result;
     }
 
@@ -106,6 +109,61 @@ public class DocumentationResource extends AbstractFisholaResource {
         return response;
     }
 
+    @PUT
+    @Path("/documentations/{docId}")
+    public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
+        Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
+        Preconditions.checkArgument(docId.equals(documentationBase64Content.id()), "L'identifiant ne correspond pas");
+        try {
+            Documentation documentation = documentationFromBase64Content(Optional.of(docId), documentationBase64Content);
+            dao.updateDocumentation(documentation);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> entity = new LinkedHashMap<>();
+            entity.put("error", "Impossible de mettre à jour la documentation : " + e.getMessage());
+            return Response.status(400).entity(entity).build();
+        }
+    }
+
+    @POST
+    @Path("/documentations")
+    public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
+        try {
+            Documentation documentation = documentationFromBase64Content(Optional.empty(), documentationBase64Content);
+            dao.createDocumentation(documentation);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> entity = new LinkedHashMap<>();
+            entity.put("error", "Impossible de créer la documentation : " + e.getMessage());
+            return Response.status(400).entity(entity).build();
+        }
+    }
+
+    protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws FisholaTechnicalException {
+        Documentation documentation = new Documentation();
+        if (docId.isPresent()) {
+            documentation.setId(docId.get());
+        }
+        documentation.setNaturalId(documentationBase64Content.naturalId());
+        documentation.setName(documentationBase64Content.name());
+        // If new documentation was sent in base64
+        if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
+            String[] contentSplitted = documentationBase64Content.base64Content().split(",");
+            String base64PDF = contentSplitted[1];
+            byte[] bytes = Base64.getDecoder().decode(base64PDF);
+            documentation.setContent(bytes);
+        } else if (docId.isPresent()) {
+            // Reuse existing content if none sent
+            Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
+            if (!existingDoc.isPresent()) {
+                throw new FisholaTechnicalException("Missing documentation " + docId.get(), new RuntimeException());
+            }
+            documentation.setContent(existingDoc.get().getContent());
+        } else {
+            throw new FisholaTechnicalException("Missing PDF file for new doc " + docId.get(), new RuntimeException());
+        }
+        return documentation;
+    }
     @Deprecated
     protected Response downloadDocumentationByNaturalId(String naturalId) {
         LinkedHashMap<UUID, Pair<String, String>> docs = dao.listDocumentations();

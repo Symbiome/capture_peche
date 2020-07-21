@@ -14,7 +14,9 @@
                          :disabled="col.readOnly || col.readOnlyEdition && item['id']"></b-input>
                 <!-- Files -->
                 <b-upload v-model="input.file"
-                    v-if="col.isFile">
+                    v-if="col.isFile"
+                    accept="application/pdf"
+                    >
                     <a class="button is-primary">
                         <b-icon icon="upload"></b-icon>
                         <span>Cliquez pour téléverser un nouveau fichier</span>
@@ -63,16 +65,37 @@ export default class RefenretialItem extends Vue {
     save(closeModal: (() => void)) {
         let onSavedCallback = () => {
             this.$emit('referential-updated');
-            this.input.file = undefined;
+            this.input.file = null;
+            this.$buefy.toast.open({
+                message: 'Modifications enregistrées',
+                type: 'is-success'
+            });
             if (closeModal) {
                 closeModal();
             }
         };
+        // Convert file in base64 (if required)
+        if (this.input.file) {
+            this.getBase64(this.input.file).then( (base64) =>  {
+                this.item['base64Content'] = base64;
+                this.doSave(onSavedCallback);                
+            }, (err) => {
+                this.$buefy.toast.open({
+                    message: 'Erreur lors de la lecture du fichier.',
+                    type: 'is-danger'
+                });
+            });
+        } else {
+            this.doSave(onSavedCallback);
+        }
+    }
+
+    doSave(onSavedCallback: () => void) {
         if (this.item.id) {
             // Update : PUT
             let url = this.backendUrl + '/' + this.item.id;
             BackendService.backendPut(url, this.item).then(onSavedCallback, (err) => {
-                this.input.file = undefined;
+                this.input.file = null;
                 this.$buefy.toast.open({
                     message: 'Erreur lors de la modification de ' + this.item['name'] + '. Veuillez vérifier vos modifications.',
                     type: 'is-danger'
@@ -82,7 +105,7 @@ export default class RefenretialItem extends Vue {
             // Create : POST
             let url = this.backendUrl;
             BackendService.backendPost(url, this.item).then(onSavedCallback, (err) => {
-                this.input.file = undefined;
+                this.input.file = null;
                 this.$buefy.toast.open({
                     message: 'Erreur lors de la création. Veuillez vérifier qu\'un élément avec ce nom n\'existe pas déjà.',
                     type: 'is-danger'
@@ -91,9 +114,23 @@ export default class RefenretialItem extends Vue {
         }
     }
 
+    getBase64(file: any): Promise<string> {
+        return new Promise<any>((resolve, reject) => {
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+               resolve(reader.result);
+            };
+            reader.onerror = function (error) {
+                reject(error);
+            };
+        });
+    }
+
+
     onSaved(closeModal: (() => void)) {
         this.$emit('referential-updated');
-        this.input.file = undefined;
+        this.input.file = null;
         if (closeModal) {
             closeModal();
         }

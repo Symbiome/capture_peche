@@ -31,8 +31,7 @@ import java.util.UUID;
 public interface DocumentationLight {
 
     UUID id();
-    String  natural_id();
+    String  naturalId();
     String  name();
     String url();
-
 }

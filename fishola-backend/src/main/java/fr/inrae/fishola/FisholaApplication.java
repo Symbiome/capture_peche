@@ -138,11 +138,11 @@ public class FisholaApplication {
                     throw new FisholaTechnicalException("Impossible de lire le fichier", ioe);
                 }
             } else {
-                log.error("Unable to find documentation in database");
+                log.error("Unable to find documentation in database : " + resourcePath);
             }
 
         } else {
-            log.error("Unable to find documentation in database");
+            log.error("Unable to find documentation in database : " + resourcePath);
         }
     }
 
