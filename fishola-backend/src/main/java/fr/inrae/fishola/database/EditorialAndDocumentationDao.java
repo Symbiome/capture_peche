@@ -27,7 +27,9 @@ import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import java.util.Set;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Record2;
+import org.jooq.Record3;
 import org.jooq.Result;
 
 import javax.inject.Singleton;
@@ -47,14 +49,14 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         return result;
     }
 
-    public LinkedHashMap<UUID, String> listDocumentations() {
+    public LinkedHashMap<UUID, Pair<String,String>> listDocumentations() {
         return withContext(context -> {
-            Result<Record2<UUID, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NAME)
+            Result<Record3<UUID, String, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NATURAL_ID, Tables.DOCUMENTATION.NAME)
                     .from(Tables.DOCUMENTATION)
                     .fetch();
 
-            LinkedHashMap<UUID, String> result = new LinkedHashMap<>();
-            tuples.forEach(record -> result.put(record.value1(), record.value2()));
+            LinkedHashMap<UUID, Pair<String, String>> result = new LinkedHashMap<>();
+            tuples.forEach(record -> result.put(record.value1(), Pair.of(record.value2(), record.value3())));
             return result;
         });
     }

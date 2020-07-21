@@ -90,7 +90,7 @@ export default class Refenretial extends Vue {
     @Prop() name!: string;
     @Prop() url!: string;
     @Prop() columns!: any[];
-    @Prop() data?: any[];
+    @Prop() data: any[] = [];
     @Prop({default: true}) editable: boolean;
     selection = {item:null};
 
@@ -103,7 +103,7 @@ export default class Refenretial extends Vue {
      * */
     @Prop({default: null}) canDeletePredicate: (elemenToDelete: any) => Promise<boolean>;
     // Cached value of all elements for which deletion is allowed
-    @Prop() allowedDeletionElements?: any[];
+    allowedDeletionElements: any[] = [];
 
     mounted() {
         this.loadData();
@@ -169,7 +169,10 @@ export default class Refenretial extends Vue {
                     // Sends an HTTP DELETE request at url/id
                     BackendService.backendDelete(`${this.url}/${element['id']}`).then(
                     (res) => {
-                        this.$buefy.toast.open((element['name'] || 'Élément')  + ' supprimé');
+                        this.$buefy.toast.open({
+                            message: (element['name'] || 'Élément') + ' supprimé',
+                            type: 'is-success'
+                        });
                         this.loadData();
                     },
                     (error) => {

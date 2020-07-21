@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.Lake;

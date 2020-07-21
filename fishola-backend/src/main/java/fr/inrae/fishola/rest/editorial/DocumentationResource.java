@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -60,7 +61,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @GET
     @Path("/documentations")
     public List<DocumentationLight> getDocumentation(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
+        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
         List<DocumentationLight> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationLight(entry, request))
@@ -75,11 +76,12 @@ public class DocumentationResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
-    protected DocumentationLight toDocumentationLight(Map.Entry<UUID, String> entry, HttpServletRequest request) {
+    protected DocumentationLight toDocumentationLight(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
         String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
         DocumentationLight result = ImmutableDocumentationLight.builder()
                 .id(entry.getKey())
-                .name(entry.getValue())
+                .natural_id(entry.getValue().getLeft())
+                .name(entry.getValue().getRight())
                 .url(url)
                 .build();
         return result;
@@ -105,17 +107,17 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     @Deprecated
-    protected Response downloadDocumentationByName(String name) {
-        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
+    protected Response downloadDocumentationByNaturalId(String naturalId) {
+        LinkedHashMap<UUID, Pair<String, String>> docs = dao.listDocumentations();
 
         // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
         Optional<UUID> docId = docs.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue().equalsIgnoreCase(name))
+                .filter(entry -> entry.getValue().getLeft().equalsIgnoreCase(naturalId))
                 .map(Map.Entry::getKey)
                 .findAny();
 
-        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", name));
+        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", naturalId));
 
         Response response = downloadDocumentation(docId.get());
         return response;
@@ -126,7 +128,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Produces("application/pdf")
     public Response downloadGCU() {
         // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Response response = downloadDocumentationByName("Conditions Générales d'Utilisation");
+        Response response = downloadDocumentationByNaturalId("cgu");
         return response;
     }
 
@@ -134,8 +136,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Path("/documentation/fixed/samples")
     @Produces("application/pdf")
     public Response downloadSamples() {
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Response response = downloadDocumentationByName("Documentation sur les prélèvements");
+        Response response = downloadDocumentationByNaturalId("prélèvements");
         return response;
     }
 

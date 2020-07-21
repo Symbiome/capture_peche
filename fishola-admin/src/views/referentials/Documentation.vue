@@ -25,9 +25,14 @@ export default class DocumentationVue extends Vue {
   docColumns:any[] = [
     {
       field: 'id',
-      label: 'Identifiant',
+      label: 'Identifiant technique',
       visible: false,
       readOnly: true
+    },
+    {
+      field: 'natural_id',
+      label: 'Identifiant naturel',
+      readOnlyEdition: true
     },
     {
       field: 'name',
@@ -42,6 +47,7 @@ export default class DocumentationVue extends Vue {
 
   createDocumentation() {
     return {
+      'natural_id': '',
       'name': 'Nouveau document'
     };
   }

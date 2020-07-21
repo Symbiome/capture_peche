@@ -28,6 +28,7 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.runtime.StartupEvent;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
@@ -101,24 +102,22 @@ public class FisholaApplication {
 
     @Transactional
     void ensureDocumentations() {
-        ensureDocumentationByName("Réglementation sur le lac d'Annecy", "/sample/reglement-annecy.pdf");
-        ensureDocumentationByName("Réglementation sur le Léman", "/sample/reglement-leman.pdf");
-        ensureDocumentationByName("Réglementation sur le lac du Bourget", "/sample/reglement-bourget.pdf");
-        ensureDocumentationByName("Réglementation sur le lac d'Aiguebelette", "/sample/reglement-aiguebelette.pdf");
-        ensureDocumentationByName("Documentation sur les espèces", "/sample/presentation-coregone-final.pdf");
-        ensureDocumentationByName("Documentation sur les prélèvements", "/sample/fiche-prelevement.pdf");
-        ensureDocumentationByName("Conditions Générales d'Utilisation", "/sample/CGU.pdf");
+        ensureDocumentationByNaturalId("annecy", "/sample/reglement-annecy.pdf");
+        ensureDocumentationByNaturalId("léman", "/sample/reglement-leman.pdf");
+        ensureDocumentationByNaturalId("bourget", "/sample/reglement-bourget.pdf");
+        ensureDocumentationByNaturalId("aiguebelette", "/sample/reglement-aiguebelette.pdf");
+        ensureDocumentationByNaturalId("espèces", "/sample/presentation-coregone-final.pdf");
+        ensureDocumentationByNaturalId("prélèvements", "/sample/fiche-prelevement.pdf");
+        ensureDocumentationByNaturalId("cgu", "/sample/CGU.pdf");
     }
 
     @Transactional
-    void ensureDocumentationByName(String name, String resourcePath) {
+    void ensureDocumentationByNaturalId(String naturalId, String resourcePath) {
+        LinkedHashMap<UUID, Pair<String, String>> docs = documentationDao.listDocumentations();
 
-        LinkedHashMap<UUID, String> docs = documentationDao.listDocumentations();
-
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
         Optional<UUID> docId = docs.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue().equalsIgnoreCase(name))
+                .filter(entry -> entry.getValue().getLeft().equalsIgnoreCase(naturalId))
                 .map(Map.Entry::getKey)
                 .findAny();
 
