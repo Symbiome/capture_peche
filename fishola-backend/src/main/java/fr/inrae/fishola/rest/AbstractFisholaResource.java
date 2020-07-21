@@ -65,20 +65,30 @@ public abstract class AbstractFisholaResource {
     protected String adminToken;
 
     protected NewCookie createTokenCookie(String token) {
-        NewCookie result = newTokenCookie(token, DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
         return result;
     }
 
     protected NewCookie dropTokenCookie() {
-        NewCookie result = newTokenCookie("invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
         return result;
     }
 
-    private NewCookie newTokenCookie(String token, int maxAge) {
+    protected NewCookie createAdminTokenCookie(String token) {
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+        return result;
+    }
+
+    protected NewCookie dropAdminTokenCookie() {
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        return result;
+    }
+
+    private NewCookie newTokenCookie(String tokenName, String token, int maxAge) {
         // XXX AThimel 15/06/2020 Ça pourrait être problématique pour faire tourner un autre profil que "dev" sur une IP locale
         boolean secure = !config.isDevMode();
         NewCookie result = new NewCookie(
-                AUTHENTICATION_COOKIE_NAME,
+                tokenName,
                 token,
                 "/api",
                 null,

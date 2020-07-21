@@ -204,4 +204,35 @@ public class JwtHelper {
         }
     }
 
+    public String createEmptyToken() {
+
+        if (log.isInfoEnabled()) {
+            log.info("Création d'un token JWT vide (pour l'admin)");
+        }
+
+//        iss issuer : qui a émis le token
+//        sub subject : identifiant unique métier
+//        aud audience : fishola mobile ?
+//        exp date d'expritration
+//        nbf not before
+//        iat issued at
+//        jti identifiant unique : uuid
+
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, config.getJwtLifetimeHours());
+        Date expiresAt = calendar.getTime();
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        String result = JWT.create()
+                .withIssuer("fishola-backend")
+                .withSubject(UUID.randomUUID().toString())
+                .withIssuedAt(now)
+                .withExpiresAt(expiresAt)
+                .withJWTId(UUID.randomUUID().toString())
+                .sign(algorithmHS);
+
+        return result;
+    }
+
 }

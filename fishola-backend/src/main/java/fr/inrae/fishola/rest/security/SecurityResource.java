@@ -627,4 +627,23 @@ public class SecurityResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    @POST
+    @Path("/admin-login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response adminLogin(String password) {
+
+        // FIXME 21/07/2020 AThimel P'tet pas 'toto' à terme ...
+        if ("toto".equals(password)) {
+
+            String token = jwtHelper.createEmptyToken();
+
+            NewCookie loginCookie = createAdminTokenCookie(token);
+            Response result = Response.ok().cookie(loginCookie).build();
+            return result;
+        } else {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+    }
+
 }
