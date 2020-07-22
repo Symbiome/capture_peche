@@ -139,9 +139,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws FisholaTechnicalException {
         Documentation documentation = new Documentation();
-        if (docId.isPresent()) {
-            documentation.setId(docId.get());
-        }
+        docId.ifPresent(documentation::setId);
         documentation.setNaturalId(documentationBase64Content.naturalId());
         documentation.setName(documentationBase64Content.name());
         // If new documentation was sent in base64
@@ -153,7 +151,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         } else if (docId.isPresent()) {
             // Reuse existing content if none sent
             Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
-            if (!existingDoc.isPresent()) {
+            if (existingDoc.isEmpty()) {
                 throw new FisholaTechnicalException("Missing documentation " + docId.get(), new RuntimeException());
             }
             documentation.setContent(existingDoc.get().getContent());
