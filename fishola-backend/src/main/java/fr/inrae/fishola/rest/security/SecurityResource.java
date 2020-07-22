@@ -188,11 +188,11 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response verifyAfterRegistrationFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
         if (doVerifyAfterRegistration(request, token)) {
             String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
-            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return success;
         } else {
             String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
-            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return error;
         }
     }
@@ -343,7 +343,7 @@ public class SecurityResource extends AbstractFisholaResource {
             return success;
         } else {
             String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
-            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return error;
         }
     }

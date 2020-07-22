@@ -140,7 +140,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/raw-species/{speciesId}")
-    public Response udpateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
+    public Response updateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
         Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
         checkIsAdmin();
