@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.CookieParam;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -48,7 +47,7 @@ public abstract class AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(AbstractFisholaResource.class);
 
-    public static final String AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
+    public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
     public static final String ADMIN_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Admin-Token";
 
@@ -61,16 +60,19 @@ public abstract class AbstractFisholaResource {
     @Inject
     protected FisholaConfiguration config;
 
+    @CookieParam(USER_AUTHENTICATION_COOKIE_NAME)
+    protected String userToken;
+
     @CookieParam(ADMIN_AUTHENTICATION_COOKIE_NAME)
     protected String adminToken;
 
-    protected NewCookie createTokenCookie(String token) {
-        NewCookie result = newTokenCookie(AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+    protected NewCookie createUserTokenCookie(String token) {
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
         return result;
     }
 
-    protected NewCookie dropTokenCookie() {
-        NewCookie result = newTokenCookie(AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+    protected NewCookie dropUserTokenCookie() {
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
         return result;
     }
 
@@ -101,30 +103,14 @@ public abstract class AbstractFisholaResource {
         return result;
     }
 
-    @Deprecated
-    protected UUID getUserId(Cookie cookie) {
-        String token = Optional.ofNullable(cookie)
-                .map(Cookie::getValue)
-                .orElse(null);
-        UUID userId = jwtHelper.tokenToUserID(token);
-        // Now we have to check that the userId is valid
-        if (!usersDao.isValidUserId(userId)) {
-            throw new NotAuthenticatedException("Utilisateur inconnu");
-        }
-        return userId;
-    }
-
     /**
-     * Vérifie le token contenu dans le cookie et tente un renouvelement le cas échéant.
-     * @param cookie le cookie envoyé par le navigateur
+     * Vérifie le token contenu dans le cookie et tente un renouvelement le cas échéant. Le cookie utilisé est celui
+     * injecté dans {@link AbstractFisholaResource#userToken} : X-Fishola-Token
      * @return L'identifiant de l'utilisateur et éventuellement le nouveau token s'il y a eu renouvellement
      */
-    protected UserIdAndRenewal getUserIdOrRenew(Cookie cookie) {
-        String token = Optional.ofNullable(cookie)
-                .map(Cookie::getValue)
-                .orElse(null);
+    protected UserIdAndRenewal getUserIdOrRenew() {
         try {
-            UUID userId = jwtHelper.verifyToken(token);
+            UUID userId = jwtHelper.verifyToken(userToken);
             // Now we have to check that the userId is valid
             if (!usersDao.isValidUserId(userId)) {
                 throw new NotAuthenticatedException("Utilisateur inconnu");
@@ -132,7 +118,7 @@ public abstract class AbstractFisholaResource {
             UserIdAndRenewal result = UserIdAndRenewal.of(userId);
             return result;
         } catch (TokenExpiredException tee) {
-            Optional<UserIdAndRenewal> renewal = tryTokenRenewal(token);
+            Optional<UserIdAndRenewal> renewal = tryTokenRenewal(userToken);
             if (renewal.isPresent()) {
                 return renewal.get();
             } else {
@@ -156,7 +142,7 @@ public abstract class AbstractFisholaResource {
                 if (log.isInfoEnabled()) {
                     log.info("Renouvellement automatique du token JWT pour l'utilisateur " + userId);
                 }
-                String newToken = jwtHelper.createToken(userId);
+                String newToken = jwtHelper.createUserToken(userId);
                 UserIdAndRenewal result = UserIdAndRenewal.of(userId, newToken);
                 return Optional.of(result);
             } else {
@@ -168,6 +154,14 @@ public abstract class AbstractFisholaResource {
             }
             return Optional.empty();
         }
+    }
+
+    protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+        if (adminToken == null) {
+            throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
+        }
+        boolean validToken = jwtHelper.isValidToken(adminToken);
+        AccessDeniedException.check(validToken, "Accès refusé");
     }
 
     protected StreamingOutput wrapAsStreamingOutput(byte[] array) {
@@ -191,18 +185,10 @@ public abstract class AbstractFisholaResource {
 
     protected Response buildResponse(Response.ResponseBuilder responseBuilder, UserIdAndRenewal userIdAndRenewal) {
         userIdAndRenewal.renewalToken()
-                .map(this::createTokenCookie)
+                .map(this::createUserTokenCookie)
                 .ifPresent(responseBuilder::cookie);
         Response result = responseBuilder.build();
         return result;
-    }
-
-    protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
-        if (adminToken == null) {
-            throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
-        }
-        boolean validToken = jwtHelper.isValidToken(adminToken);
-        AccessDeniedException.check(validToken, "Accès refusé");
     }
 
 }

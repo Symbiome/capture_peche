@@ -40,13 +40,11 @@ import org.apache.commons.logging.LogFactory;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.awt.image.BufferedImage;
@@ -76,15 +74,14 @@ public class PictureResource extends AbstractFisholaResource {
     @Path("/{catchId}")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setPicture(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie,
-                               @PathParam("catchId") UUID catchId,
+    public Response setPicture(@PathParam("catchId") UUID catchId,
                                String content) {
 
         if (log.isDebugEnabled()) {
             log.debug("Réception d'une image pour la capture : " + catchId);
         }
 
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
@@ -148,7 +145,9 @@ public class PictureResource extends AbstractFisholaResource {
     @GET
     @Path("/{catchId}")
     @Produces("image/jpeg")
-    public Response getPicture(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId) {
+    public Response getPicture(@PathParam("catchId") UUID catchId) {
+
+        // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
         Optional<byte[]> bytes = catchsDao.getPicture(catchId);
 
@@ -175,7 +174,9 @@ public class PictureResource extends AbstractFisholaResource {
     @GET
     @Path("/{catchId}/preview")
     @Produces("image/jpeg")
-    public Response getPicturePreview(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, @PathParam("catchId") UUID catchId) {
+    public Response getPicturePreview(@PathParam("catchId") UUID catchId) {
+
+        // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
         Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
 

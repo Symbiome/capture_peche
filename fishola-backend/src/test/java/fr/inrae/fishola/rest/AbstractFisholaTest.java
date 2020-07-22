@@ -62,7 +62,7 @@ public abstract class AbstractFisholaTest {
                 .post("/api/v1/security/login")
             .then()
                 .statusCode(200)
-                .cookie(AbstractFisholaResource.AUTHENTICATION_COOKIE_NAME, cookieHandler);
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }

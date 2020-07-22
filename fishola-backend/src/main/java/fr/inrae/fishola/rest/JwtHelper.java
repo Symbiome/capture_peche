@@ -25,7 +25,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -33,7 +32,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,11 +57,17 @@ public class JwtHelper {
         return result;
     }
 
-    public String createToken(UUID userId) {
+    public String createUserToken(UUID userId) {
 
         if (log.isInfoEnabled()) {
             log.info("Création d'un token JWT pour l'utilisateur " + userId);
         }
+
+        String result = createToken0(userId);
+        return result;
+    }
+
+    private String createToken0(UUID userId) {
 
 //        iss issuer : qui a émis le token
 //        sub subject : identifiant unique métier
@@ -79,15 +83,13 @@ public class JwtHelper {
         Date expiresAt = calendar.getTime();
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
-        String result = JWT.create()
+        return JWT.create()
                 .withIssuer("fishola-backend")
                 .withSubject(userId.toString())
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
                 .withJWTId(UUID.randomUUID().toString())
                 .sign(algorithmHS);
-
-        return result;
     }
 
     public UUID verifyToken(String token) {
@@ -124,31 +126,6 @@ public class JwtHelper {
 
         UUID result = UUID.fromString(subject);
         return result;
-    }
-
-    @Deprecated
-    public UUID tokenToUserID(String token) throws NotAuthenticatedException {
-
-        try {
-            if (StringUtils.isEmpty(token)) {
-                throw new NotAuthenticatedException("Cookie manquant");
-            }
-            Algorithm algorithmHS = getJwtSecretAlgorithm();
-            DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
-                    .build()
-                    .verify(token);
-            String subject = verify.getSubject();
-
-            if (StringUtils.isEmpty(subject)) {
-                throw new NotAuthenticatedException("Subject manquant");
-            }
-
-            UUID result = UUID.fromString(subject);
-            return result;
-        } catch (JWTVerificationException | IllegalArgumentException eee) {
-            throw new NotAuthenticatedException("Token invalide", eee);
-        }
     }
 
     public String createCustomToken(String subject, int expiresInHours, Map<String, String> claims) {
@@ -204,35 +181,16 @@ public class JwtHelper {
         }
     }
 
-    public String createEmptyToken() {
+    public String createAdminToken() {
 
         if (log.isInfoEnabled()) {
             log.info("Création d'un token JWT vide (pour l'admin)");
         }
 
-//        iss issuer : qui a émis le token
-//        sub subject : identifiant unique métier
-//        aud audience : fishola mobile ?
-//        exp date d'expritration
-//        nbf not before
-//        iat issued at
-//        jti identifiant unique : uuid
-
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, config.getJwtLifetimeHours());
-        Date expiresAt = calendar.getTime();
-
-        Algorithm algorithmHS = getJwtSecretAlgorithm();
-        String result = JWT.create()
-                .withIssuer("fishola-backend")
-                .withSubject(UUID.randomUUID().toString())
-                .withIssuedAt(now)
-                .withExpiresAt(expiresAt)
-                .withJWTId(UUID.randomUUID().toString())
-                .sign(algorithmHS);
-
+        // On utilise un UUID comme subject aléatoire pour ce token
+        String result = createToken0(UUID.randomUUID());
         return result;
+
     }
 
 }

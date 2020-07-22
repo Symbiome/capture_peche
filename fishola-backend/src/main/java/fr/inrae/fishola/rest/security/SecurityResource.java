@@ -49,7 +49,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -59,7 +58,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -267,9 +265,9 @@ public class SecurityResource extends AbstractFisholaResource {
             Preconditions.checkState(byEmail.isPresent(), "Impossible de trouver l'utilisateur : " + bean.email);
             UUID userId = byEmail.get().getId();
 
-            String token = jwtHelper.createToken(userId);
+            String token = jwtHelper.createUserToken(userId);
 
-            NewCookie loginCookie = createTokenCookie(token);
+            NewCookie loginCookie = createUserTokenCookie(token);
             Response result = Response.ok().cookie(loginCookie).build();
             return result;
         } else {
@@ -397,13 +395,13 @@ public class SecurityResource extends AbstractFisholaResource {
     @POST
     @Path("/password")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updatePassword(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UpdatePasswordBean bean) {
+    public Response updatePassword(UpdatePasswordBean bean) {
 
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
 
         Optional<FisholaUser> user = usersDao.findById(userId);
@@ -445,9 +443,9 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @POST
     @Path("/logout")
-    public Response logout(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+    public Response logout() {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
-        NewCookie logoutCookie = dropTokenCookie();
+        NewCookie logoutCookie = dropUserTokenCookie();
         Response result = Response.noContent().cookie(logoutCookie).build();
         return result;
     }
@@ -479,8 +477,8 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @GET
     @Path("/profile")
-    public Response getProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+    public Response getProfile() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
@@ -491,8 +489,8 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/profile")
-    public Response saveProfile(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserProfile profile) {
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+    public Response saveProfile(UserProfile profile) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
@@ -545,8 +543,8 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @GET
     @Path("/settings")
-    public Response getSettings(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+    public Response getSettings() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
@@ -561,8 +559,8 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/settings")
-    public Response saveSettings(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie, UserSettings settings) {
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+    public Response saveSettings( UserSettings settings) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
@@ -634,7 +632,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         if (config.getAdminPassword().equals(loginBean.password)) {
 
-            String token = jwtHelper.createEmptyToken();
+            String token = jwtHelper.createAdminToken();
 
             NewCookie loginCookie = createAdminTokenCookie(token);
             Response result = Response.noContent().cookie(loginCookie).build();
