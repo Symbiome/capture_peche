@@ -111,6 +111,7 @@ export interface SampleType extends Serializable {
 
 export interface DocumentationLight {
     id: string;
+    naturalId: string;
     name: string;
     url: string;
 }

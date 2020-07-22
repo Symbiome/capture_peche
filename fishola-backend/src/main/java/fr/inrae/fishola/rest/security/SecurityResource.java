@@ -23,9 +23,11 @@ package fr.inrae.fishola.rest.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
+import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
+import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
@@ -33,6 +35,7 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,10 +50,12 @@ import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -60,6 +65,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
@@ -74,6 +80,9 @@ public class SecurityResource extends AbstractFisholaResource {
 
     @Inject
     protected MailService mailService;
+
+    @Inject
+    protected TripsDao tripsDao;
 
     protected Optional<String> validatePassword(String password) {
         if (StringUtils.isEmpty(password)) {
@@ -150,7 +159,7 @@ public class SecurityResource extends AbstractFisholaResource {
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")
                     .build();
-            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+
             mailService.sendMail(mail);
         }
 
@@ -179,11 +188,11 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response verifyAfterRegistrationFromMail(@Context HttpServletRequest request, @QueryParam("t") String token) {
         if (doVerifyAfterRegistration(request, token)) {
             String verifiedUrl = config.getApiUrl("/api/verify_ok.html", request);
-            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response success = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return success;
         } else {
             String verifiedUrl = config.getApiUrl("/api/verify_fail.html", request);
-            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return error;
         }
     }
@@ -315,7 +324,7 @@ public class SecurityResource extends AbstractFisholaResource {
                     .addTos(reset.email)
                     .subject("FISHOLA - Réinitialisation de votre mot de passe")
                     .build();
-            // FIXME AThimel 20/12/2019 L'envoi de mail doit se faire en asynchrone ou bien il faut gérer les erreurs
+
             mailService.sendMail(mail);
             return Response.ok().build();
         }
@@ -334,7 +343,7 @@ public class SecurityResource extends AbstractFisholaResource {
             return success;
         } else {
             String verifiedUrl = config.getApiUrl("/api/password_reset_fail.html", request);
-            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();;
+            Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return error;
         }
     }
@@ -565,6 +574,93 @@ public class SecurityResource extends AbstractFisholaResource {
 
         Response response = noContent(userIdAndRenewal);
         return response;
+    }
+
+    protected UserProfileForAdmin toUserProfileForAdmin(FisholaUser input) {
+        ImmutableUserProfileForAdmin result = ImmutableUserProfileForAdmin.builder()
+                .id(input.getId())
+                .email(input.getEmail())
+                .firstName(input.getFirstName())
+                .lastName(Optional.ofNullable(input.getLastName()))
+                .birthYear(Optional.ofNullable(input.getBirthYear()))
+                .gender(Optional.ofNullable(input.getGender()))
+                .excludeFromExports(input.getExcludeFromExports())
+                .build();
+        return result;
+    }
+
+    @GET
+    @Path("/users")
+    public List<UserProfileForAdmin> listUsers() {
+        checkIsAdmin();
+        // TODO AThimel 07/07/2020 Pagination
+        List<FisholaUser> users = usersDao.findAll();
+        List<UserProfileForAdmin> result = users.stream()
+                .map(this::toUserProfileForAdmin)
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    @PUT
+    @Path("/users/{userId}")
+    public Response updateUser(@PathParam("userId") UUID userId, UserProfileForAdmin user) {
+        checkIsAdmin();
+        Preconditions.checkArgument(userId.equals(user.id()), "L'identifiant ne correspond pas");
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
+        FisholaUser existingUser = optional.get();
+        // On ne met volontairement pas les autres champs à jour car c'est juste pour la partie admin
+        existingUser.setExcludeFromExports(user.excludeFromExports());
+        usersDao.updateUser(existingUser);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/users/{userId}")
+    public Response deleteUser(@PathParam("userId") UUID userId) {
+        checkIsAdmin();
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
+        FisholaUser existingUser = optional.get();
+        tripsDao.unsetOwner(userId);
+        usersDao.deleteUser(existingUser);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/admin-login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response adminLogin(LoginBean loginBean) {
+
+        if (config.getAdminPassword().equals(loginBean.password)) {
+
+            String token = jwtHelper.createEmptyToken();
+
+            NewCookie loginCookie = createAdminTokenCookie(token);
+            Response result = Response.noContent().cookie(loginCookie).build();
+            return result;
+        } else {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+    }
+
+    @GET
+    @Path("/admin-check")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response adminCheck() {
+        checkIsAdmin();
+        Response result = Response.noContent().build();
+        return result;
+    }
+
+    @POST
+    @Path("/admin-logout")
+    public Response adminLogout() {
+        // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
+        NewCookie logoutCookie = dropAdminTokenCookie();
+        Response result = Response.noContent().cookie(logoutCookie).build();
+        return result;
     }
 
 }

@@ -188,4 +188,51 @@ public class JwtHelper {
         }
     }
 
+    public boolean isValidToken(String token) {
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+
+        try {
+            Algorithm algorithmHS = getJwtSecretAlgorithm();
+            JWT.require(algorithmHS)
+                    .withIssuer("fishola-backend")
+                    .build()
+                    .verify(token);
+            return true;
+        } catch (Exception eee) {
+            log.warn("Token invalide: " + token, eee);
+            return false;
+        }
+    }
+
+    public String createEmptyToken() {
+
+        if (log.isInfoEnabled()) {
+            log.info("Création d'un token JWT vide (pour l'admin)");
+        }
+
+//        iss issuer : qui a émis le token
+//        sub subject : identifiant unique métier
+//        aud audience : fishola mobile ?
+//        exp date d'expritration
+//        nbf not before
+//        iat issued at
+//        jti identifiant unique : uuid
+
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, config.getJwtLifetimeHours());
+        Date expiresAt = calendar.getTime();
+
+        Algorithm algorithmHS = getJwtSecretAlgorithm();
+        String result = JWT.create()
+                .withIssuer("fishola-backend")
+                .withSubject(UUID.randomUUID().toString())
+                .withIssuedAt(now)
+                .withExpiresAt(expiresAt)
+                .withJWTId(UUID.randomUUID().toString())
+                .sign(algorithmHS);
+
+        return result;
+    }
+
 }

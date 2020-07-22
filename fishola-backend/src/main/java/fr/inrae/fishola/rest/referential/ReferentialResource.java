@@ -21,6 +21,9 @@ package fr.inrae.fishola.rest.referential;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.database.ReferentialDao;
@@ -32,16 +35,26 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.POST;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,11 +73,102 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
+    @PUT
+    @Path("/lakes/{lakeId}")
+    public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
+        Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
+        Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
+        checkIsAdmin();
+        referentialDao.updateLake(lake);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/lakes")
+    public Response createLake(Lake lake) {
+        checkIsAdmin();
+        referentialDao.createLake(lake);
+        return Response.noContent().build();
+    }
+
     @GET
     @Path("/techniques")
     public List<Technique> getTechniques() {
         List<Technique> result = referentialDao.listBuiltInTechniques();
         return result;
+    }
+
+    @PUT
+    @Path("/techniques/{techniqueId}")
+    public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
+        Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
+        Preconditions.checkArgument(techniqueId.equals(technique.getId()), "L'identifiant ne correspond pas");
+        checkIsAdmin();
+        referentialDao.updateTechnique(technique);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/techniques")
+    public Response createTechnique(Technique technique) {
+        checkIsAdmin();
+        referentialDao.createTechnique(technique);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/techniques/can-delete/{techniqueId}")
+    public Response canDeleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
+        boolean canDelete = referentialDao.canDeleteTechnique(techniqueId);
+        return Response.ok(canDelete).build();
+    }
+
+    @DELETE
+    @Path("/techniques/{techniqueId}")
+    public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
+        checkIsAdmin();
+        referentialDao.deleteTechnique(techniqueId);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/raw-species")
+    public List<Species> getRawSpecies() {
+        List<Species> species = referentialDao.listAllSpecies();
+        return species;
+    }
+
+    @PUT
+    @Path("/raw-species/{speciesId}")
+    public Response updateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
+        Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
+        Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
+        checkIsAdmin();
+        referentialDao.updateSpecies(species);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/raw-species")
+    public Response createSpecie( Species species) {
+        checkIsAdmin();
+        referentialDao.createSpecie(species);
+        return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/raw-species/can-delete/{speciesId}")
+    public Response canDeleteSpecie(@PathParam("speciesId") UUID speciesId) {
+        boolean canDelete = referentialDao.canDeleteSpecie(speciesId);
+        return Response.ok(canDelete).build();
+    }
+
+    @DELETE
+    @Path("/raw-species/{speciesId}")
+    public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
+        checkIsAdmin();
+        referentialDao.deleteSpecie(speciesId);
+        return Response.noContent().build();
     }
 
     @GET
@@ -90,25 +194,126 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/species-per-lake")
     public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerLake() {
-        Map<UUID, Species> rawSpeciesIndex = referentialDao.speciesIndex();
 
-        List<SpeciesByLake> entities = referentialDao.listSpeciesByLake();
-        Multimap<UUID, SpeciesByLake> entitiesByLakeId = Multimaps.index(entities, SpeciesByLake::getLakeId);
+        // On récupère la liste des toutes les espèces builtIn et des lacs
+        List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
+        Set<UUID> lakeIds = referentialDao.listLakes()
+                .stream()
+                .map(Lake::getId).collect(Collectors.toSet());
 
+        // On charge les alias par lac+espèce et on en fait un index
+        List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
+        Map<Pair<UUID, UUID>, SpeciesByLake> speciesByLakeIndex = Maps.uniqueIndex(speciesByLake, sbl -> Pair.of(sbl.getLakeId(), sbl.getSpeciesId()));
+
+        // On charge les autorisations de prélèvement par lac+espèce et on en fait un index
         List<AuthorizedSample> authorizedSamples = getAuthorizedSamples();
         Set<Pair<UUID, UUID>> authorizedSamplesSet = authorizedSamples.stream()
                 .map(authorizedSample -> Pair.of(authorizedSample.getLakeId(), authorizedSample.getSpeciesId()))
                 .collect(Collectors.toSet());
 
-        Multimap<UUID, SpeciesWithAlias> result = Multimaps.transformEntries(entitiesByLakeId, (lakeId, input) -> {
-            Species rawSpecies = rawSpeciesIndex.get(input.getSpeciesId());
-            String alias = input.getAlias();
-            boolean authorizedSample = authorizedSamplesSet.contains(Pair.of(lakeId, rawSpecies.getId()));
-            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample);
-            return speciesWithAlias;
+        // On compile le tout
+        Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
+        lakeIds.forEach(lakeId -> {
+            builtInSpecies.forEach(rawSpecies -> {
+                Pair<UUID, UUID> lakePlusSpeciesIds = Pair.of(lakeId, rawSpecies.getId());
+                Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
+                boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
+                SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample);
+                result.put(lakeId, speciesWithAlias);
+            });
         });
-
+        
         return result.asMap();
+    }
+
+    @PUT
+    @Path("/species-aliases-per-lake")
+    public Response saveSpeciesAliasesPerLake(Map<UUID, Map<UUID, String>> aliases) {
+        checkIsAdmin();
+
+        // On transforme la map pour avoir en clé lakeId+speciesId et en valeur les alias
+        Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
+        for (Map.Entry<UUID, Map<UUID, String>> byLakeEntry : aliases.entrySet()) {
+            Map<UUID, String> bySpeciesEntries = byLakeEntry.getValue();
+            for (Map.Entry<UUID, String> entry : bySpeciesEntries.entrySet()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
+                String alias = entry.getValue();
+                if (StringUtils.isNotEmpty(alias)) {
+                    aliasesMap.put(lakePluSpeciesId, alias);
+                }
+            }
+        }
+
+        // On charge les alias par lac+espèce
+        List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
+
+        // On commence par mettre à jour ou supprimer les espèces par lac existantes
+        for (SpeciesByLake entity : speciesByLake) {
+            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
+            if (aliasesMap.containsKey(lakePluSpeciesId)) {
+                String newAlias = aliases.get(entity.getLakeId()).get(entity.getSpeciesId());
+                entity.setAlias(newAlias);
+                referentialDao.updateSpeciesByLake(entity);
+            } else {
+                referentialDao.deleteSpeciesByLake(entity);
+            }
+            aliasesMap.remove(lakePluSpeciesId);
+        }
+
+        // Puis on créé les nouvelles
+        aliasesMap.entrySet()
+                .stream()
+                .map(entry -> {
+                    UUID lakeId = entry.getKey().getKey();
+                    UUID speciesId = entry.getKey().getValue();
+                    String alias = entry.getValue();
+                    SpeciesByLake result = new SpeciesByLake(lakeId, speciesId, alias);
+                    return result;
+                })
+                .forEach(referentialDao::createSpeciesByLake);
+
+        Response response = Response.noContent().build();
+        return response;
+    }
+
+    @PUT
+    @Path("/authorized-samples")
+    public Response saveAuthorizedSamples(Map<UUID, Map<UUID, Boolean>> authorizations) {
+        checkIsAdmin();
+
+        // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées
+        Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
+        for (Map.Entry<UUID, Map<UUID, Boolean>> byLakeEntry : authorizations.entrySet()) {
+            Map<UUID, Boolean> bySpeciesEntries = byLakeEntry.getValue();
+            for (Map.Entry<UUID, Boolean> entry : bySpeciesEntries.entrySet()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
+                Boolean authorized = entry.getValue();
+                if (Boolean.TRUE.equals(authorized)) {
+                    authorizationsSet.add(lakePluSpeciesId);
+                }
+            }
+        }
+
+        // On charge les autorisations par lac+espèce et on en fait un index
+        List<AuthorizedSample> existingAuthorizations = referentialDao.listAuthorizedSamples();
+
+        // On commence par supprimer les autorisations en trop
+        for (AuthorizedSample entity : existingAuthorizations) {
+            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
+            if (!authorizationsSet.contains(lakePluSpeciesId)) {
+                referentialDao.deleteAuthorizedSample(entity);
+            }
+            authorizationsSet.remove(lakePluSpeciesId);
+        }
+
+        // Puis on créé les nouvelles
+        authorizationsSet
+                .stream()
+                .map(entry -> new AuthorizedSample(entry.getKey(), entry.getValue()))
+                .forEach(referentialDao::createAuthorizedSample);
+
+        Response response = Response.noContent().build();
+        return response;
     }
 
     @GET
@@ -123,6 +328,38 @@ public class ReferentialResource extends AbstractFisholaResource {
     public List<Weather> getWeathers() {
         List<Weather> result = referentialDao.listWeathers();
         return result;
+    }
+
+    @PUT
+    @Path("/weathers/{weatherId}")
+    public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
+        checkIsAdmin();
+        Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
+        Preconditions.checkArgument(weatherId.equals(weather.getId()), "L'identifiant ne correspond pas");
+        referentialDao.updateWeather(weather);
+        return Response.noContent().build();
+    }
+
+    @POST
+    @Path("/weathers")
+    public Response createWeather(Weather weather) {
+        checkIsAdmin();
+        referentialDao.createWeather(weather);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path("/weathers/{weatherId}")
+    public Response deleteWeather(@PathParam("weatherId") UUID weatherId) {
+        checkIsAdmin();
+        referentialDao.deleteWeather(weatherId);
+        return Response.noContent().build();
+    }
+    @GET
+    @Path("/weathers/can-delete/{weatherId}")
+    public Response canDeleteWeather(@PathParam("weatherId") UUID weatherId) {
+        boolean canDelete = referentialDao.canDeleteWeather(weatherId);
+        return Response.ok(canDelete).build();
     }
 
     @GET

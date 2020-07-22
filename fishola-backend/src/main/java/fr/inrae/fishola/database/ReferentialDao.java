@@ -34,15 +34,20 @@ import fr.inrae.fishola.entities.tables.daos.ReleasedFishStateDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
+import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
+import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
+import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
+import java.util.LinkedHashSet;
+import javax.ws.rs.core.Link;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,9 +71,73 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
+    public void updateLake(Lake lake) {
+        withDaoNoResult(LakeDao.class, dao -> dao.update(lake));
+    }
+
+    public void createLake(Lake lake) {
+        withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
+    }
+
+    public void createSpecie(Species species) {
+        withDaoNoResult(SpeciesDao.class, dao -> dao.insert(species));
+    }
+
+    public boolean canDeleteSpecie(UUID specieId) {
+        boolean hasReferences = withContext(context -> {
+            // Has catch
+            boolean result = context.select(Tables.CATCH.SPECIES_ID)
+                    .from(Tables.CATCH)
+                    .where(Tables.CATCH.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            // Has expected
+            result = result || context.select(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID)
+                    .from(Tables.TRIP_EXPECTED_SPECIES)
+                    .where(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID.eq(specieId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteSpecie(UUID specieId) {
+        // Delete all links between this specie and lakes
+        withContextNoResult(context -> {
+            context.deleteFrom(Tables.SPECIES_BY_LAKE).where(Tables.SPECIES_BY_LAKE.SPECIES_ID.eq(specieId)).execute();
+            context.deleteFrom(Tables.AUTHORIZED_SAMPLE).where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId)).execute();
+            withDaoNoResult(SpeciesDao.class, dao -> dao.deleteById(specieId));
+        });
+
+    }
+
+
+
     public List<Weather> listWeathers() {
         List<Weather> result = withDao(WeatherDao.class, WeatherDao::findAll);
         return result;
+    }
+
+    public void updateWeather(Weather weather) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.update(weather));
+    }
+    public void createWeather(Weather weather) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.insert(weather));
+    }
+
+    public boolean canDeleteWeather(UUID weatherId) {
+        boolean hasReferences = withContext(context -> {
+            // Has trips
+            boolean result = context.select(Tables.TRIP.WEATHER_ID)
+                    .from(Tables.TRIP)
+                    .where(Tables.TRIP.WEATHER_ID.eq(weatherId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteWeather(UUID weatherId) {
+        withDaoNoResult(WeatherDao.class, dao -> dao.deleteById(weatherId));
     }
 
     public List<Technique> listBuiltInTechniques() {
@@ -76,14 +145,45 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<Species> listBuiltInSpecies() {
-        List<Species> result = withDao(SpeciesDao.class, dao -> dao.fetchByBuiltIn(true));
+    public void updateTechnique(Technique technique) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.update(technique));
+    }
+    public void createTechnique(Technique techniques) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.insert(techniques));
+    }
+
+    public boolean canDeleteTechnique(UUID techniqueId) {
+        boolean hasReferences = withContext(context -> {
+            // Has catch
+            boolean result = context.select(Tables.CATCH.TECHNIQUE_ID)
+                    .from(Tables.CATCH)
+                    .where(Tables.CATCH.TECHNIQUE_ID.eq(techniqueId))
+                    .fetch().isNotEmpty();
+            // Has trip
+            result = result || context.select(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID)
+                    .from(Tables.TRIP_TECHNIQUES)
+                    .where(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID.eq(techniqueId))
+                    .fetch().isNotEmpty();
+            return result;
+        });
+        return !hasReferences;
+    }
+
+    public void deleteTechnique(UUID techniqueId) {
+        withDaoNoResult(TechniqueDao.class, dao -> dao.deleteById(techniqueId));
+    }
+
+    public List<Species> listAllSpecies() {
+        List<Species> result = withDao(SpeciesDao.class, SpeciesDao::findAll);
         return result;
     }
 
-    public ImmutableMap<UUID, Species> speciesIndex() {
-        List<Species> species = listBuiltInSpecies();
-        ImmutableMap<UUID, Species> result = Maps.uniqueIndex(species, Species::getId);
+    public void updateSpecies(Species species) {
+        withDaoNoResult(SpeciesDao.class, dao -> dao.update(species));
+    }
+
+    public List<Species> listBuiltInSpecies() {
+        List<Species> result = withDao(SpeciesDao.class, dao -> dao.fetchByBuiltIn(true));
         return result;
     }
 
@@ -111,6 +211,19 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .collect(ImmutableList.toImmutableList());
         return result;
     }
+
+    public void createSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.insert(sbl));
+    }
+
+    public void updateSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.update(sbl));
+    }
+
+    public void deleteSpeciesByLake(SpeciesByLake sbl) {
+        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.delete(sbl));
+    }
+
     public List<ReleasedFishState> listReleasedFishStates() {
         List<ReleasedFishState> result = withDao(ReleasedFishStateDao.class, ReleasedFishStateDao::findAll);
         return result;
@@ -216,6 +329,14 @@ public class ReferentialDao extends AbstractFisholaDao {
     public List<AuthorizedSample> listAuthorizedSamples() {
         List<AuthorizedSample> result = withDao(AuthorizedSampleDao.class, AuthorizedSampleDao::findAll);
         return result;
+    }
+
+    public void createAuthorizedSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.insert(entity));
+    }
+
+    public void deleteAuthorizedSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.delete(entity));
     }
 
 }

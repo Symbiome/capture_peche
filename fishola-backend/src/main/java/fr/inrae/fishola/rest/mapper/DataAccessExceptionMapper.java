@@ -39,7 +39,7 @@ public class DataAccessExceptionMapper implements ExceptionMapper<DataAccessExce
 
     @Override
     public Response toResponse(DataAccessException exception) {
-        Response.ResponseBuilder responseBuilder = Response.status(500);
+        Response.ResponseBuilder responseBuilder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         Map<String, String> entity = new LinkedHashMap<>();
         if (StringUtils.isNotEmpty(exception.getMessage())) {
             entity.put("error", exception.getMessage());
