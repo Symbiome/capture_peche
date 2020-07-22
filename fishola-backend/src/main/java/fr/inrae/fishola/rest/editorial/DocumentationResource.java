@@ -93,9 +93,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Produces("application/pdf")
     public Response downloadDocumentation(@PathParam("docId") UUID docId) {
         Optional<Documentation> optional = dao.getDocumentation(docId);
-        if (optional.isEmpty()) {
-            return Response.status(404).build();
-        }
+        NotFoundException.check(optional.isPresent());
 
         Documentation documentation = optional.get();
         String filename = documentation.getName()
@@ -119,7 +117,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
             entity.put("error", "Impossible de mettre à jour la documentation : " + e.getMessage());
-            return Response.status(400).entity(entity).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
     }
 
@@ -133,7 +131,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
             entity.put("error", "Impossible de créer la documentation : " + e.getMessage());
-            return Response.status(400).entity(entity).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
     }
 
@@ -210,7 +208,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     public Response getEditorial(@PathParam("name") String name) {
         Optional<Editorial> editorial = dao.findEditorial(name);
         Response response = editorial.map(Response::ok)
-                .orElseGet(() -> Response.status(404))
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
                 .build();
         return response;
     }

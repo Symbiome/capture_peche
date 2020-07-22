@@ -154,7 +154,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         Response response = bytes.map(this::wrapAsStreamingOutput)
                 .map(Response::ok)
-                .orElseGet(() -> Response.status(404))
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
                 .build();
         return response;
     }
@@ -185,9 +185,7 @@ public class PictureResource extends AbstractFisholaResource {
 
             Optional<byte[]> bytes = catchsDao.getPicture(catchId);
 
-            if (bytes.isEmpty()) {
-                return Response.status(404).build();
-            }
+            NotFoundException.check(bytes.isPresent());
 
             try {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes.get());
