@@ -149,9 +149,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         } else if (docId.isPresent()) {
             // Reuse existing content if none sent
             Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
-            if (existingDoc.isEmpty()) {
-                throw new FisholaTechnicalException("Missing documentation " + docId.get(), new RuntimeException());
-            }
+            NotFoundException.check(existingDoc.isPresent(), "Missing documentation " + docId.get());
             documentation.setContent(existingDoc.get().getContent());
         } else {
             throw new FisholaTechnicalException("Missing PDF file for new doc " + docId, new RuntimeException());
