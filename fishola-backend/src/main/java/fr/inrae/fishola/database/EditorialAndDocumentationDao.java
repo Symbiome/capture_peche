@@ -26,9 +26,7 @@ import fr.inrae.fishola.entities.tables.daos.DocumentationDao;
 import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.Result;
 
@@ -64,6 +62,17 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
     public Optional<Documentation> getDocumentation(UUID docId) {
         Documentation doc = withDao(DocumentationDao.class, dao -> dao.findById(docId));
         Optional<Documentation> result = Optional.ofNullable(doc);
+        return result;
+    }
+
+    public Optional<UUID> getDocumentationIdByNaturalId(String naturalId) {
+        Optional<UUID> result = withContext(context -> {
+            UUID uuid = context.select(Tables.DOCUMENTATION.ID)
+                    .from(Tables.DOCUMENTATION)
+                    .where(Tables.DOCUMENTATION.NATURAL_ID.eq("y" + naturalId))
+                    .fetchAny(Tables.DOCUMENTATION.ID);
+            return Optional.ofNullable(uuid);
+        });
         return result;
     }
 

@@ -25,8 +25,6 @@ import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
-import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
@@ -164,16 +162,10 @@ public class DocumentationResource extends AbstractFisholaResource {
         }
         return documentation;
     }
-    @Deprecated
-    protected Response downloadDocumentationByNaturalId(String naturalId) {
-        LinkedHashMap<UUID, Pair<String, String>> docs = dao.listDocumentations();
 
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Optional<UUID> docId = docs.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().getLeft().equalsIgnoreCase(naturalId))
-                .map(Map.Entry::getKey)
-                .findAny();
+    protected Response downloadDocumentationByNaturalId(String naturalId) {
+
+        Optional<UUID> docId = dao.getDocumentationIdByNaturalId(naturalId);
 
         NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", naturalId));
 
@@ -185,7 +177,6 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Path("/documentation/fixed/cgu")
     @Produces("application/pdf")
     public Response downloadGCU() {
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
         Response response = downloadDocumentationByNaturalId("cgu");
         return response;
     }
