@@ -145,13 +145,12 @@ public class DocumentationResource extends AbstractFisholaResource {
             String base64PDF = contentSplitted[1];
             byte[] bytes = Base64.getDecoder().decode(base64PDF);
             documentation.setContent(bytes);
-        } else if (docId.isPresent()) {
+        } else {
+            Preconditions.checkArgument(docId.isPresent(), "Pas de contenu base64 spécifié, il faut avoir donné un identifiant de documentation");
             // Reuse existing content if none sent
             Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
             NotFoundException.check(existingDoc.isPresent(), "Missing documentation " + docId.get());
             documentation.setContent(existingDoc.get().getContent());
-        } else {
-            throw new FisholaTechnicalException("Missing PDF file for new doc " + docId, new RuntimeException());
         }
         return documentation;
     }
