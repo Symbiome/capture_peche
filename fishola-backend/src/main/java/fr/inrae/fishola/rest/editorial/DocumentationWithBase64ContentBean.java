@@ -1,8 +1,7 @@
-package fr.inrae.fishola.rest.trips;
+package fr.inrae.fishola.rest.editorial;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fr.inrae.fishola.rest.editorial.DocumentationLight;
-import fr.inrae.fishola.rest.editorial.ImmutableDocumentationLight;
+
 import java.util.UUID;
 
 @JsonSerialize(as = DocumentationWithBase64ContentBean.class)

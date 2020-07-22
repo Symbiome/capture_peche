@@ -29,7 +29,6 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
-import fr.inrae.fishola.rest.trips.DocumentationWithBase64ContentBean;
 import java.util.Base64;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
