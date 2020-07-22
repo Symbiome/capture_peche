@@ -72,6 +72,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @DELETE
     @Path("/documentations/{documentId}")
     public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
+        checkIsAdmin();
         dao.deleteDocumentation(documentId);
         return Response.noContent().build();
     }
@@ -107,6 +108,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @PUT
     @Path("/documentations/{docId}")
     public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
+        checkIsAdmin();
         Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
         Preconditions.checkArgument(docId.equals(documentationBase64Content.id()), "L'identifiant ne correspond pas");
         try {
@@ -123,6 +125,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @POST
     @Path("/documentations")
     public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
+        checkIsAdmin();
         try {
             Documentation documentation = documentationFromBase64Content(Optional.empty(), documentationBase64Content);
             dao.createDocumentation(documentation);
@@ -194,7 +197,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     public Response updateEditorial(@PathParam("editorialId") UUID editorialId, Editorial editorial) {
         Preconditions.checkArgument(editorialId != null, "Identifiant de page éditoriale obligatoire");
         Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
-        // TODO AThimel 06/07/2020 Vérifier le droit d'admin
+        checkIsAdmin();
         dao.updateEditorial(editorial);
         return Response.noContent().build();
     }
