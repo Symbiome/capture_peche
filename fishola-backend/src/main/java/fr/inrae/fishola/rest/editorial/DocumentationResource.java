@@ -154,7 +154,7 @@ public class DocumentationResource extends AbstractFisholaResource {
             }
             documentation.setContent(existingDoc.get().getContent());
         } else {
-            throw new FisholaTechnicalException("Missing PDF file for new doc " + docId.get(), new RuntimeException());
+            throw new FisholaTechnicalException("Missing PDF file for new doc " + docId, new RuntimeException());
         }
         return documentation;
     }
