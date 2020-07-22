@@ -24,6 +24,8 @@
 
 <script lang="ts">
 
+import BackendService from '@/services/BackendService.ts';
+
 import router from '@/router'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -42,12 +44,14 @@ export default class DispatcherView extends Vue {
   }
 
   checkForActiveSession() {
-    let authenticated = true; // TODO AThimel 03/07/2020
-    if (authenticated) {
-      router.push('/home');
-    } else {
-      router.push('/login');
-    }
+    BackendService.backendGet("/v1/security/admin-check")
+        .then(
+            () => {
+                router.push('/home');
+            },
+            (error) => {
+                router.push("/login");
+            });
   }
 }
 </script>

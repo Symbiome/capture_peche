@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <Menu/>
+    <div v-if="!$router.currentRoute.name"><router-link to="/">Perdu ?</router-link></div>
+    <Menu v-if="$router.currentRoute.name && $router.currentRoute.name != 'login' && $router.currentRoute.name != 'dispatcher'"/>
     <router-view class="page-content"/>
   </div>
 </template>

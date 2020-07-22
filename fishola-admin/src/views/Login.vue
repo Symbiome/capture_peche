@@ -19,38 +19,22 @@
   #L%
   -->
 <template>
-  <div class="login page-with-header full-background">
-    <FisholaHeader v-bind:title="false" 
-                   v-bind:avatar="false"
-                   v-bind:menu="false"/>
-    <div class="page login-page">
-      <div class="login-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
-        <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="FISHOLA"/>
-      </div>
-      <div class="login-form">
-        <FormInput name="email"
-                    type="email"
-                    label="E-mail"
-                    placeholder="Renseignez votre E-mail"
-                    v-model="email"
-                    v-bind:error="emailError"
-                    />
-        <FormInput name="password"
-                    type="password"
-                    label="Mot de passe"
-                    placeholder="Renseignez votre mot de passe"
-                    v-model="password"
-                    v-bind:error="passwordError"
-                    />
-      </div>
-      <div class="login-buttons keyboardSensitive">
-        <div class="signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
-        <div class="signup keyboardSensitive"><button v-on:click="signUp">Créer un compte</button></div>
-        <ForgottenPassword
-            v-bind:alreadTypedEmail="email"
-            v-bind:tohideSelector="'.login-form,.signin,.signup'"/>
-      </div>
+  <div class="login">
+    <p>Interface d'administration de FISHOLA.</p>
+    <div class="field is-grouped">
+      <p class="control is-expanded">
+        <b-field :type="errorMessage ? 'is-danger' : ''" :message="errorMessage">
+            <b-input type="password"
+                v-model="password">
+            </b-input>
+        </b-field>
+      </p>
+      <p class="control">
+        <button class="button is-primary"
+            @click="doLogin()">
+            Connexion
+        </button>
+      </p>
     </div>
   </div>
 </template>
@@ -58,6 +42,8 @@
 <script lang="ts">
 
 import router from '@/router'
+
+import BackendService from '@/services/BackendService.ts';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -67,13 +53,27 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class LoginView extends Vue {
 
+  password = '';
+  errorMessage = '';
 
   constructor() {
     super();
   }
 
-  mounted() {
-    console.log('Do something');
+  doLogin() {
+    this.errorMessage = '';
+    BackendService.backendPost("/v1/security/admin-login", {password: this.password})
+      .then(
+        () => {
+          router.push('home');
+        },
+        (err) => {
+          if (err.status == 401) {
+            this.errorMessage = 'Mot de passe incorrect';
+          } else {
+            this.errorMessage = err;
+          }
+        });
   }
 
 }
@@ -85,148 +85,16 @@ export default class LoginView extends Vue {
 
 @import "../less/main";
 
-.login-page {
-
+.login {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  
-  text-align:center;
+  justify-content: center;
+  align-items: center;
 
-  .login-title {
-    height: 140px;
-    &.keyboardShowing {
-      margin-top: calc(2 * env(safe-area-inset-top));
-      height: 81px;
-    }
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    .welcome {
-      font-size: 24px;
-      line-height: 33px;
-      &.keyboardShowing {
-        font-size: 16px;
-        line-height: 18px;
-      }
-    }
-    .logo {
-      height: 100px;
-      &.keyboardShowing {
-        height: 65px;
-      }
-    }
-  }
-
-  .login-form {
-    margin-left: 30px;
-    margin-right: 30px;
-
-    display: flex;
-    flex-direction: column;
-
-    text-align:left;
-
-
-    .form-input label {
-      color: @white;
-    }
-
-    .form-input input {
-      background-color: @black-alpha-50;
-      border: 1px solid @transparent;
-      color: @white;
-
-      &:focus {
-        color: @white;
-      }
-
-      &::placeholder {
-        color: @white;
-      }
-    }
-
-    .form-input div.field-error {
-      background-color: @cardinal;
-      color: @white;
-      padding-left: 5px;
-      padding-right: 5px;
-    }
-
-  }
-
-  .login-buttons {
-    background-color: @white-smoke;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    color: @gunmetal;
-    padding-top: 20px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    
-    &.keyboardShowing {
-        padding-top: 5px;
-        background-color: @transparent;
-    }
-    .signin {
-      height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 20px;
-      &.keyboardShowing {
-          margin-bottom: -30px; 
-      }
-
-      button {
-          height: 100%;
-          width: 100%;
-          border-radius: 50px;
-
-          font-style: normal;
-          font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
-
-          border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
-
-          background-color: @terra-cotta;
-          color: @white;
-      }
-    }
-
-    .signup {
-      height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 10px;
-      &.keyboardShowing {
-         display: none;
-      }
-      button {
-
-          height: 100%;
-          width: 100%;
-          border-radius: 50px;
-
-          font-style: normal;
-          font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
-
-          border: 1px solid @pelorous;
-          padding-left: 20px;
-          padding-right: 20px;
-
-          background-color: @white-smoke;
-          color: @pelorous;
-
-      }
-    }
+  p {
+    font-size: 22px;
+    margin: 5px;
   }
 }
 

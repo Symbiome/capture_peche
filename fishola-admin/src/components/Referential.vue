@@ -84,6 +84,8 @@ import BackendService from '@/services/BackendService.ts';
 
 import ReferentialItem from '@/components/ReferentialItem.vue';
 
+import router from '@/router'
+
 @Component({
   components: {
     ReferentialItem
@@ -115,10 +117,11 @@ export default class Refenretial extends Vue {
     loadData() {
         delete this.data;
         this.allowedDeletionElements = [];
-        BackendService.backendGet(this.url).then((res) => {
-            this.data = res;
-            this.checkCanDeletePredicate();   
-        });
+        BackendService.backendGet(this.url).then(
+            (res) => {
+                this.data = res;
+                this.checkCanDeletePredicate();
+            });
     }
 
     showCreateDialog() {

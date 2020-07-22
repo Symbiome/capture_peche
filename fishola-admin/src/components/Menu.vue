@@ -57,12 +57,9 @@
       <template slot="end">
           <b-navbar-item tag="div">
               <div class="buttons">
-                  <b-button type="is-danger" outlined>
+                  <b-button type="is-danger" outlined @click="doLogout()">
                     Déconnexion
                   </b-button>
-                  <!-- <a class="button is-light">
-                      Connexion
-                  </a> -->
               </div>
           </b-navbar-item>
       </template>
@@ -72,8 +69,34 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
+import router from '@/router'
+
+import BackendService from '@/services/BackendService.ts';
+
 @Component
 export default class Menu extends Vue {
+
+    mounted() {
+        BackendService.backendGet("/v1/security/admin-check")
+            .then(
+                () => {
+                    // Rien à faire
+                },
+                (error) => {
+                    this.$buefy.toast.open({
+                        message: 'Vous n\'êtes plus connecté\u00B7e',
+                        type: 'is-danger'
+                    });
+                    router.push("/login");
+                });
+    }
+    doLogout() {
+        BackendService.backendPost("/v1/security/admin-logout")
+            .then(
+                () => {
+                    router.push("/login");
+                });
+    }
 }
 </script>
 

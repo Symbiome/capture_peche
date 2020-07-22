@@ -36,7 +36,8 @@ export default abstract class BackendService {
           } else if (this.status == 204) {
             resolve();
           } else {
-            reject(this.status);
+            const result = BackendService.wrapResponseReject(this);
+            reject(result);
           }
         };
         xhr.send();

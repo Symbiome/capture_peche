@@ -630,20 +630,37 @@ public class SecurityResource extends AbstractFisholaResource {
     @POST
     @Path("/admin-login")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminLogin(String password) {
+    public Response adminLogin(LoginBean loginBean) {
 
-        // FIXME 21/07/2020 AThimel P'tet pas 'toto' à terme ...
-        if ("toto".equals(password)) {
+        if (config.getAdminPassword().equals(loginBean.password)) {
 
             String token = jwtHelper.createEmptyToken();
 
             NewCookie loginCookie = createAdminTokenCookie(token);
-            Response result = Response.ok().cookie(loginCookie).build();
+            Response result = Response.noContent().cookie(loginCookie).build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+    }
+
+    @GET
+    @Path("/admin-check")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response adminCheck() {
+        checkIsAdmin();
+        Response result = Response.noContent().build();
+        return result;
+    }
+
+    @POST
+    @Path("/admin-logout")
+    public Response adminLogout() {
+        // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
+        NewCookie logoutCookie = dropAdminTokenCookie();
+        Response result = Response.noContent().cookie(logoutCookie).build();
+        return result;
     }
 
 }
