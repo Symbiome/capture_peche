@@ -7,9 +7,9 @@
                 <b-input v-model="item[col.field]"
                          v-if="!col.isFile && !col.isABoolean && ('' + item[col.field]).length < 200"
                          :disabled="col.readOnly || col.readOnlyEdition && item['id']"></b-input>
-                 <!-- Long strings -->
-                 <b-input v-model="item[col.field]"
-                        type="textarea"
+                <!-- Long strings -->
+                <b-input v-model="item[col.field]"
+                         type="textarea"
                          v-if="!col.isFile && !col.isABoolean && ('' + item[col.field]).length >= 200"
                          :disabled="col.readOnly || col.readOnlyEdition && item['id']"></b-input>
                 <!-- Files -->
