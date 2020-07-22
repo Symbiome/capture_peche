@@ -95,8 +95,8 @@ img.app {
 
 .message {
     width: fit-content;
-    padding-left: @margin-medium;
-    padding-right: @margin-medium;
+    padding-left: 20px;
+    padding-right: 20px;
     border-radius: 10px;
     font-size: 18px;
 }
