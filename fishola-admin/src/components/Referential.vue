@@ -29,6 +29,9 @@
                     :label="col.label" 
                     @click.native="showLink($event, props.row[col.field])"
                     :key="col.name" sortable>
+                    <span v-if="col.isUrl">
+                        {{ props.row[col.field] }}
+                    </span>
                     <button class="button is-small is-info">
                         <b-icon icon="eye" size="is-small"></b-icon>
                     </button>
