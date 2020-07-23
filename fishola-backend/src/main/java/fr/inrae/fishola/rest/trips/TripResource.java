@@ -524,7 +524,7 @@ public class TripResource extends AbstractFisholaResource {
     public Response getTripsCSV() {
         checkIsAdmin();
         String csv = tripsDao.getTripsCSV();
-        String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("YYYY-MM-dd"));
+        String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
         Response response = Response.ok(csv)
             .header("Content-Disposition", disposition)
