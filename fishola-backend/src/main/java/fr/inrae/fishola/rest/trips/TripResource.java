@@ -517,6 +517,21 @@ public class TripResource extends AbstractFisholaResource {
         return response;
     }
 
+
+    @GET
+    @Path("/export")
+    @Produces("text/csv")
+    public Response getTripsCSV() {
+        checkIsAdmin();
+        String csv = tripsDao.getTripsCSV();
+        String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
+        Response response = Response.ok(csv)
+            .header("Content-Disposition", disposition)
+            .build();
+        return response;
+    }
+
     protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {
         if (speciesId.isPresent()) {
             if (UUID_PATTERN.matcher(speciesId.get()).matches()) {
@@ -562,5 +577,6 @@ public class TripResource extends AbstractFisholaResource {
         result.sampleId = Optional.ofNullable(aCatch.getSampleId());
         return result;
     }
+
 
 }
