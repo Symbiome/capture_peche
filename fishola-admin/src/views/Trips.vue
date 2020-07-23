@@ -1,19 +1,18 @@
 <template>
   <div class="trips">
     <p>Vous pouvez exporter les sorties.</p>
-    <button class="button is-primary" @click="exportToCsv()">Lancer un export CSV</button>
+    <a :href="exportCsvURL"> <button class="button is-primary">Lancer un export CSV</button></a>
   </div>
 </template>
 
 <script lans="ts">
 
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator';
+import Constants from '@/services/Constants';
 
 @Component
 export default class TripsVue extends Vue {
-    exportToCsv() {
-        this.$buefy.dialog.alert('Not yet implemented!');
-    }
+  exportCsvURL = Constants.apiUrl("/v1/trips/export");
 }
 </script>
 
