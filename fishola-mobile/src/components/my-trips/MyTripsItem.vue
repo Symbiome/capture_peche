@@ -176,6 +176,46 @@ export default class MyTripItem extends Vue {
 
     }
 
+
+  @media(max-width:350px) {
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
+
+    .item-description {
+      margin-left: @margin-small;
+
+      .item-row {
+
+        .left-part {
+          i {
+            margin-right: @margin-x-small;
+          }
+        }
+
+        .right-part {
+          i {
+            margin-left: @margin-x-small;
+          }
+
+        }
+      }
+
+
+    }
+  }
+
+  @media(max-height:579px) {
+
+    height: 90px;
+
+    .item-description {
+
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);
+
+
+    }
+  }
+
 }
 
 </style>

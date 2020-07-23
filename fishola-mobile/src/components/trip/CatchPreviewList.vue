@@ -155,6 +155,34 @@ export default class CatchPreviewList extends Vue {
     }
   }
 
+
+  // @media(max-width:360px) {
+
+  //   padding-left: calc(@margin-large + 5px);
+  //   padding-right: calc(@margin-large + 5px);
+
+  //   .new-catch {
+
+  //     .new-catch-square-button {
+
+  //       height: 100%;
+  //       width: calc(100vw - 80px);
+
+  //       margin-left: @margin-x-small;
+  //       margin-right: @margin-x-small;
+
+  //       .pastille {
+  //         width: 50px;
+  //         height: 50px;
+  //         font-size: calc(@pastille-size * 5 / 7);
+  //         line-height: calc(@pastille-size * 5 / 7);
+  //       }
+
+  //     }
+  //   }
+
+  // }
+
   .preview-wrapper {
   }
 

@@ -179,6 +179,39 @@ export default class NewTripView extends Vue {
           }
         }
 
+        @media(max-height:579px) {
+
+          .left {
+            img {
+              width: 50px;
+              height: 50px;
+            }
+          }
+
+          .right {
+            .title {
+              font-size: @fontsize-paragraph;
+              line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+              margin-bottom: @vertical-margin-x-small;
+            }
+
+            .detail {
+              margin-bottom: @vertical-margin-x-small;
+            }
+
+            .action {
+
+              button {
+                font-size: @fontsize-button-big;
+                height: 30px;
+                padding-left: @margin-small;
+                padding-right: @margin-small;
+              }
+            }
+          }
+
+        }
+
       }
 
 

@@ -191,6 +191,36 @@ export default class MyTripsList extends Vue {
         }
       }
     }
+
+
+    @media(max-height:600px) {
+      .top {
+        img {
+          width: 30%;
+        }
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+          margin-top: @vertical-margin-medium;
+        }
+      }
+
+      .bottom {
+        height: 146px;
+
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+        }
+        i {
+          font-size: @fontsize-small-paragraph;
+          margin-top: @vertical-margin-x-small;
+        }
+      }
+
+    }
+
+
   }
 
   .offline-with-trips {
