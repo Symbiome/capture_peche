@@ -87,9 +87,6 @@ export default class MyTripsSearch extends Vue {
     .icon-magnifying-glass {
       color: @pelorous;
       margin-right: @margin-small;
-      @media(max-width:272px) {
-        display:none;
-      }
     }
 
     input {

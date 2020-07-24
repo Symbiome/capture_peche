@@ -56,7 +56,7 @@ export default class Title extends Vue {
     color: @terra-cotta;
     font-size: @fontsize-paragraph;
   }
-  @media(max-width:350px) {
+  @media(max-width:340px) {
     img {
       height: 20px;
       margin-top:5px;
@@ -66,14 +66,5 @@ export default class Title extends Vue {
     }
   }
 
-  @media(max-width:280px) {
-    img {
-      height: 15px;
-      margin-top:7px;
-    }
-    span.env {
-      display:none;
-    }
-  }
 }
 </style>
