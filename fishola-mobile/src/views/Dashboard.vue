@@ -631,10 +631,6 @@ export default class DashboardView extends Vue {
       height: 200px;
       margin-bottom: @vertical-margin-medium;
 
-      // @media(max-height:600px) {
-      //   height: 180px;
-      // }
-
     }
 
     .scroll {

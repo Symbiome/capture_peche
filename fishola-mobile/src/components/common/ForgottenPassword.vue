@@ -237,7 +237,6 @@ export default class ForgottenPassword extends Vue {
       }
       button {
           height: 100%;
-          // width:50%;
           border-radius: 50px;
 
           font-style: normal;
@@ -248,8 +247,6 @@ export default class ForgottenPassword extends Vue {
           border: 0px;
           padding-left: @margin-medium;
           padding-right: @margin-medium;
-          // margin-left: @margin-medium;
-          // margin-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;
