@@ -69,6 +69,7 @@
           <label for="register-cgu"></label>
           <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
       <div class="register-buttons keyboardSensitive">
         <div class="back hiddenWhenKeyboardShows">
@@ -176,6 +177,12 @@ export default class RegisterView extends Vue {
 
 @import "../less/main";
 
+.register.page-with-header {
+  .page.register-page  {
+    height: calc(100% - @header-height - @vertical-margin-xx-large);
+  }
+}
+
 .register-page {
 
   display: flex;
@@ -189,7 +196,6 @@ export default class RegisterView extends Vue {
   border-top-right-radius: 30px;
   margin-top: @vertical-margin-xx-large;
   padding-top: @vertical-margin-large;
-  padding-bottom: 90px;
 
   @media(max-height:579px) {
     padding-top: @vertical-margin-small;
@@ -221,6 +227,7 @@ export default class RegisterView extends Vue {
   }
 
   .register-form {
+    height: calc(100% - 55px);
     padding-left: @margin-large;
     padding-right: @margin-large;
 
