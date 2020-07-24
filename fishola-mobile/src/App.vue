@@ -287,6 +287,12 @@ html {
     color: @pelorous;
     text-align: center;
 
+    @media(max-height:579px) {
+      margin-top: calc(@fontsize-title * 1.1);
+      margin-bottom: calc(@fontsize-title * 1.1);
+      line-height: calc(@fontsize-title + @line-height-padding-large);
+    }
+
     &.keyboardShowing {
       margin-top:10px;
       margin-bottom: @vertical-margin-xx-small;
@@ -294,6 +300,7 @@ html {
       line-height: @fontsize-title-keyboardshowing;
       font-size: @fontsize-title-keyboardshowing;
     }
+
   }
 
   .pane-content {

@@ -266,6 +266,12 @@ export default class EditTripView extends Vue {
     color: @terra-cotta;
     margin-bottom: @vertical-margin-large;
 
+
+    @media(max-height:579px) {
+      margin-bottom: @vertical-margin-medium;
+    }
+
+
     i {
       font-size: @fontsize-button-big;
     }

@@ -106,6 +106,16 @@ export default class DocumentationView extends Vue {
     padding-left: @margin-x-large;
     padding-right: @margin-x-large;
     height: 56px;
+
+    @media(max-height:579px) {
+      height: 46px;
+    }
+
+    @media(max-width:350px) {
+      padding-left: @margin-large;
+      padding-right: @margin-large;
+    }
+
     border-bottom: 1px solid @solitude;
 
     display: flex;

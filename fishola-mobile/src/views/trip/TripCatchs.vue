@@ -169,6 +169,13 @@ export default class TripCatchsView extends Vue {
 
     h1 {
       color: @gunmetal;
+
+      @media(max-height:610px) {
+        margin-top: calc(@fontsize-title * 1);
+        margin-bottom: calc(@fontsize-title * 1);
+        line-height: calc(@fontsize-title + @line-height-padding-medium);
+      }
+
     }
 
     .pane-content {
@@ -190,6 +197,10 @@ export default class TripCatchsView extends Vue {
     .edit-trip-catchs-new-catch-button {
       margin-top: @vertical-margin-large;
       margin-bottom: @vertical-margin-xx-large;
+
+      @media(max-height:610px) {
+        margin-top: @vertical-margin-medium;
+      }
 
       height: 44px;
       width: 100%;

@@ -127,7 +127,7 @@ export default class ForgottenPassword extends Vue {
       case 200:
         Helpers.alert(this.$modal,
          'Votre demande de réinitialisation de mot de passe a été envoyée. Merci de vérifier votre boîte e-mail',
-         'Mot de passe réinitialisé')
+         'Demande envoyée')
         .then(() => {
           this.$root.$emit('toaster-success', 'Demande de changement de mot de passe envoyée', 10000);
           this.expandCollapse();
@@ -176,6 +176,11 @@ export default class ForgottenPassword extends Vue {
     margin-left: @margin-large;
     margin-right: @margin-large;
     margin-bottom:@margin-large;
+
+    @media(max-height:579px) {
+      margin-bottom:@margin-small;
+    }
+
     &.collapsed {
       // Hidden in collapsed mode
       &.keyboardShowing {
@@ -209,20 +214,29 @@ export default class ForgottenPassword extends Vue {
     line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
+
+    @media(max-height:579px) {
+      height: calc(@fontsize-title + @line-height-padding-large);
+      line-height: calc(@fontsize-title + @line-height-padding-large);
+      margin-top: @margin-small;
+      margin-bottom: @margin-small;
+    }
+
   }
   .sendpassword {
       height: 45px;
-      margin-left: @margin-large;
-      margin-right: @margin-large;
-      margin-bottom: @margin-medium;
-      display:flex;
-      justify-content: space-around;
+      width: 100%;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
       &.keyboardShowing {
           margin-bottom: @vertical-margin-xx-small; 
       }
       button {
           height: 100%;
-          width:50%;
           border-radius: 50px;
 
           font-style: normal;
@@ -233,8 +247,6 @@ export default class ForgottenPassword extends Vue {
           border: 0px;
           padding-left: @margin-medium;
           padding-right: @margin-medium;
-          margin-left: @margin-medium;
-          margin-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;

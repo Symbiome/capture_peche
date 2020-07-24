@@ -303,8 +303,11 @@ export default class Menu extends Vue {
       padding-right: @margin-menu-item;
 
       .item {
-        // TODO responsive
         height: 50px;
+
+        @media(max-height:600px) {
+          height: 45px;
+        }
 
         display: flex;
         flex-direction: row;

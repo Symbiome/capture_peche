@@ -146,21 +146,19 @@ export default class NewTripView extends Vue {
           flex-direction: column;
           align-items: flex-start;
 
-          * {
-            margin-bottom: @vertical-margin-small;
-          }
-
           .title {
             font-weight: bold;
             font-size: @fontsize-span-big;
             line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
             color: @pelorous;
+            margin-bottom: @vertical-margin-small;
           }
 
           .detail {
             font-size: @fontsize-header-paragraph;
             line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
             color: @gunmetal;
+            margin-bottom: @vertical-margin-small;
           }
 
           .action {
@@ -180,6 +178,40 @@ export default class NewTripView extends Vue {
             }
           }
         }
+
+        @media(max-height:579px) {
+
+          .left {
+            img {
+              width: 50px;
+              height: 50px;
+            }
+          }
+
+          .right {
+            .title {
+              font-size: @fontsize-paragraph;
+              line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+              margin-bottom: @vertical-margin-x-small;
+            }
+
+            .detail {
+              margin-bottom: @vertical-margin-x-small;
+            }
+
+            .action {
+
+              button {
+                font-size: @fontsize-button-big;
+                height: 30px;
+                padding-left: @margin-small;
+                padding-right: @margin-small;
+              }
+            }
+          }
+
+        }
+
       }
 
 

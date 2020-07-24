@@ -228,6 +228,25 @@ export default class TripTechniquesView extends Vue {
       }
 
     }
+
+    @media(max-height:600px) {
+      height: 46px;
+      padding-left: @margin-large;
+    }
+
+    @media(max-width:360px) {
+
+      padding-left: @margin-medium;
+
+      .item-description {
+        margin-left: @margin-small;
+
+        input {
+          width: 200px;
+        }
+      }
+    }
+
   }
 
   .info {

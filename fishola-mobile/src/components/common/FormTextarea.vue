@@ -113,7 +113,6 @@ export default class FormTextarea extends Vue {
     padding-right: @margin-small;
     margin-top: @vertical-margin-xx-small;
     width: 100%;
-    // TODO responsive
     height: 100px;
     border-radius: 4px;
 
