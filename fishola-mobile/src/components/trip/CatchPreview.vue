@@ -170,7 +170,6 @@ export default class CatchPreview extends Vue {
       position: absolute;
       z-index: 20;
       width: fit-content;
-      // TODO responsive
       height: calc(108px + env(safe-area-inset-top));
       background: @cyprus;
       opacity: 0.8;
@@ -180,6 +179,13 @@ export default class CatchPreview extends Vue {
       margin-left: @margin-medium;
 
       padding: @vertical-margin-medium;
+
+      @media(max-width:350px) {
+        margin-top: @vertical-margin-small;
+        margin-left: @margin-small;
+        padding: @vertical-margin-small;
+      }
+
       font-size: @fontsize-small-paragraph;
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @white;
