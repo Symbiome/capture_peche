@@ -43,7 +43,7 @@
               <span v-if="s.alias" class="real-name">({{s.name}})</span>
             </div>
           </div>
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>

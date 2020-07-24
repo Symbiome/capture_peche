@@ -33,7 +33,7 @@
                            v-on:goEditSpecies="goEditSpecies"
                            v-on:goEditTechniques="goEditTechniques"
                            />
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@
                         v-bind:error="finishedAtError"/>
           </div>
 
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>

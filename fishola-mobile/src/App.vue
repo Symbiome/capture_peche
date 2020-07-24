@@ -277,8 +277,8 @@ html {
   z-index: 10;
 
   h1 {
-    margin-top: calc(@fontsize-title * 1.5);
-    margin-bottom: calc(@fontsize-title * 1.5);
+    margin-top: @margin-large;
+    margin-bottom: @margin-large;
     height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
@@ -288,20 +288,16 @@ html {
     text-align: center;
 
     @media(max-height:579px) {
-      margin-top: calc(@fontsize-title * 1.1);
-      margin-bottom: calc(@fontsize-title * 1.1);
-      line-height: calc(@fontsize-title + @line-height-padding-large);
+      margin-top: @margin-medium;
+      margin-bottom: @margin-medium;
     }
 
-    &.keyboardShowing {
-      margin-top:10px;
-      margin-bottom: @vertical-margin-xx-small;
-      height: @fontsize-title-keyboardshowing;
-      line-height: @fontsize-title-keyboardshowing;
-      font-size: @fontsize-title-keyboardshowing;
+    @media(max-height:450px) {
+      margin-top: @margin-small;
+      margin-bottom: @margin-small;
     }
 
-  }
+}
 
   .pane-content {
 
@@ -331,6 +327,11 @@ html {
   .pane {
     // TODO responsive
     margin-top: 95px;
+
+    &.keyboardShowing {
+      margin-top: 5px;
+    }
+
   }
 }
 

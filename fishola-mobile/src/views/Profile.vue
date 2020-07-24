@@ -22,7 +22,7 @@
   <div class="profile page-with-header-and-footer shifted-background">
     <FisholaHeader v-bind:avatar="false"/>
     <div class="page profile-page">
-      <div class="profile-header">
+      <div class="profile-header keyboardSensitive">
         <Avatar v-bind:initials='profile.initials'/>
         <div class="profile-header-name">
           {{fullName}}
@@ -216,6 +216,10 @@ export default class ProfileView extends Vue {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    &.keyboardShowing {
+      display: none;
+    }
 
     .pastille {
       width: 70px;

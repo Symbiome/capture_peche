@@ -21,7 +21,7 @@
 <template>
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
-    <div class="catch-picture">
+    <div class="catch-picture keyboardSensitive">
       <PicturePreview v-bind:src="pictureSrc"
                       v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
@@ -35,7 +35,7 @@
              ref="fileInput">
     </div>
     <div class="edit-catch-page page">
-      <div class="pane">
+      <div class="pane keyboardSensitive">
         <div class="pane-content rounded" v-if="ready">
           <h1>Capture</h1>
 
@@ -132,7 +132,7 @@
             </div>
 
           </div>
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>
@@ -643,6 +643,11 @@ export default class EditCatchView extends Vue {
     position: absolute;
     top: env(safe-area-inset-top);
     background-color: @gainsboro;
+
+    &.keyboardShowing {
+      display: none;
+    }
+
   }
 
   .position-error {
