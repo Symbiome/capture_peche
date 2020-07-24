@@ -286,12 +286,9 @@ export default class TripSpeciesView extends Vue {
 
     }
 
-
     @media(max-height:600px) {
       height: 46px;
-
       padding-left: @margin-large;
-
     }
 
     @media(max-width:360px) {
@@ -306,8 +303,6 @@ export default class TripSpeciesView extends Vue {
         }
       }
     }
-
-
 
   }
 

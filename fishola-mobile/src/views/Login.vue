@@ -153,7 +153,6 @@ export default class LoginView extends Vue {
   text-align:center;
 
   .login-title {
-    // TODO responsive
     height: 140px;
     &.keyboardShowing {
       margin-top: calc(2 * env(safe-area-inset-top));
@@ -166,14 +165,24 @@ export default class LoginView extends Vue {
     .welcome {
       font-size: @fontsize-header-title;
       line-height: calc(@fontsize-header-title + @line-height-padding-xxx-large);
+      @media(max-height:579px) {
+        font-size: @fontsize-header-title-small;
+        line-height: calc(@fontsize-header-title-small + @line-height-padding-xxx-large);
+      }
+
       &.keyboardShowing {
         font-size: @fontsize-title-keyboardshowing;
         line-height: calc(@fontsize-title-keyboardshowing + @line-height-padding-small);
       }
     }
     .logo {
-      // TODO responsive
+
       height: 100px;
+
+      @media(max-height:579px) {
+        height: 80px;
+      }
+
       &.keyboardShowing {
         height: 65px;
       }

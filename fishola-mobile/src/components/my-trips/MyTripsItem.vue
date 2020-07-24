@@ -121,7 +121,6 @@ export default class MyTripItem extends Vue {
     border-bottom: 1px solid @gainsboro;
 
     width: 100%;
-    // TODO responsive
     height: 110px;
 
     .item-selection {
@@ -204,7 +203,7 @@ export default class MyTripItem extends Vue {
     }
   }
 
-  @media(max-height:579px) {
+  @media(max-height:650px) {
 
     height: 90px;
 

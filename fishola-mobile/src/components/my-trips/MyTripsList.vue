@@ -163,7 +163,6 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
-      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -191,7 +190,6 @@ export default class MyTripsList extends Vue {
         }
       }
     }
-
 
     @media(max-height:600px) {
       .top {
@@ -252,7 +250,6 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
-      // TODO responsive
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -272,6 +269,56 @@ export default class MyTripsList extends Vue {
         margin-top: @vertical-margin-small;
       }
     }
+
+    @media(max-height:730px) {
+      .top {
+        img {
+          width: 30%;
+        }
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+          margin-top: @vertical-margin-medium;
+        }
+      }
+
+      .bottom {
+        height: 146px;
+
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+        }
+        i {
+          font-size: @fontsize-small-paragraph;
+          margin-top: @vertical-margin-x-small;
+        }
+      }
+
+    }
+
+    @media(max-height:650px) {
+      .top {
+        img {
+          width: 30%;
+        }
+      }
+
+      .bottom {
+        height: 76px;
+        min-height: 76px;
+      }
+
+    }
+
+    @media(max-height:600px) {
+      .top {
+        img {
+          width: 20%;
+        }
+      }
+    }
+
   }
 
 

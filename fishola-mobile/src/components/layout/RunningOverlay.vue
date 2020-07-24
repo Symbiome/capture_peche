@@ -158,8 +158,12 @@ export default class RunningOverlay extends Vue {
   }
 
   .running-overlay-bar {
-    // TODO responsive
     height: 76px;
+
+    @media(max-height:650px) {
+      height: 56px;
+    }
+
     background-color: @cyprus;
     font-size: @fontsize-button;
     line-height: calc(@fontsize-button + @line-height-padding-x-large);
@@ -176,6 +180,13 @@ export default class RunningOverlay extends Vue {
       text-align: center;
       margin-left: @margin-large;
       margin-right: @margin-large;
+
+
+      @media(max-width:400px) {
+        margin-left: @margin-medium;
+        margin-right: @margin-medium;
+      }
+
     }
   }
 }

@@ -189,8 +189,11 @@ export default class RegisterView extends Vue {
   border-top-right-radius: 30px;
   margin-top: @vertical-margin-xx-large;
   padding-top: @vertical-margin-large;
-  // TODO responsive
   padding-bottom: 90px;
+
+  @media(max-height:579px) {
+    padding-top: @vertical-margin-small;
+  }
 
   &.keyboardShowing {
     margin-top: calc(5px + env(safe-area-inset-top));
@@ -209,6 +212,12 @@ export default class RegisterView extends Vue {
     line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
+
+    @media(max-height:579px) {
+      margin-bottom: @vertical-margin-small;
+      line-height: calc(@fontsize-title + @line-height-padding-large);
+    }
+
   }
 
   .register-form {
