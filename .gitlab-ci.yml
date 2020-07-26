@@ -40,6 +40,8 @@ build:compile-only:
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
+      - fishola-admin/target/dist-demo
+      - fishola-admin/target/dist-beta
   script:
     - mvn clean package -Dmaven.test.skip
   except:
@@ -64,6 +66,8 @@ build:compile-with-tests:
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
+      - fishola-admin/target/dist-demo
+      - fishola-admin/target/dist-beta
   script:
     - mvn clean package
   only:
@@ -214,12 +218,14 @@ package:docker-demo:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
       - fishola-mobile/target/dist-demo
+      - fishola-admin/target/dist-demo
   script:
     - ls -al fishola-backend/target
     - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
-    - docker build --no-cache --file fishola-mobile/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
+    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
@@ -235,12 +241,14 @@ package:docker-beta:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
       - fishola-mobile/target/dist-beta
+      - fishola-admin/target/dist-beta
   script:
     - ls -al fishola-backend/target
     - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:backend-beta fishola-backend
     - docker build --no-cache --file fishola-mobile/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:mobile-beta fishola-mobile
+    - docker build --no-cache --file fishola-admin/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:admin-beta fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
