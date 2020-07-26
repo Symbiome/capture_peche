@@ -389,7 +389,7 @@ export default class EditCatchView extends Vue {
     // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
     // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
     if (this.inCreation) {
-      setTimeout(this.takePicture, 500);
+      setTimeout(this.takePicture, 350);
     }
   }
 
