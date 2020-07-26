@@ -66,6 +66,12 @@
                      v-model="aCatch.size"
                      v-bind:error="sizeError"
                      v-bind:readonly="!modifiable"/>
+          <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
+            <i class="icon-info"/>
+            <span>
+              Indiquez seulement le poids total si vous avez plusieurs captures de cette même espèce
+            </span>
+          </div>
           <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
                      name="weight"
                      label="Poids en g (optionnel)"
@@ -217,6 +223,7 @@ export default class EditCatchView extends Vue {
 
   defaultSizeLabel:string = "Taille en cm";
   sizeLabel:string = this.defaultSizeLabel;
+  multipleCatchsAllowed:boolean = false;
 
   catchPositionError:string = '';
   speciesIdError:string = '';
@@ -401,8 +408,10 @@ export default class EditCatchView extends Vue {
   @Watch('aCatch.speciesId')
   speciesChanged(newValue:string, oldValue:string) {
     this.sizeLabel = this.defaultSizeLabel;
+    this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
       this.sizeLabel = this.defaultSizeLabel + ' (optionnelle)';
+      this.multipleCatchsAllowed = true;
     }
   }
 
@@ -663,6 +672,21 @@ export default class EditCatchView extends Vue {
     line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
+  }
+
+  .multiple-catchs-info {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    color: @carrot-orange;
+    i {
+      margin-right: @margin-small;
+    }
+    span {
+      font-style: italic;
+      font-weight: normal;
+      font-size: @fontsize-small-paragraph;
+    }
   }
 
   .sample-id-container {
