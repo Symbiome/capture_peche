@@ -567,6 +567,14 @@ export default class TripsService extends AbstractFisholaService {
         return;
     }
 
+    static getLatestCatchTechniques(someTrip:TripBean):string|undefined {
+        if (someTrip.catchs && someTrip.catchs.length > 0) {
+            const latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
+            return latestCatch.techniqueId;
+        }
+        return;
+    }
+
     static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
         TripsService.getTrip(tripId, (trip:TripBean) => {
             let result:CatchSummary = {id:catchId};
@@ -577,13 +585,21 @@ export default class TripsService extends AbstractFisholaService {
                     }
                 });
             }
-            if (trip.mode == 'Live' && result.id == Constants.NEW_CATCH_ID) {
-                result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+            if (result.id == Constants.NEW_CATCH_ID) {
+                if (trip.mode == 'Live') {
+                    result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+                }
 
                 // On essaye de récupérer la dernière espèce capturée pour sélectionner la même
                 const latestSpeciesId = this.getLatestCatchSpecies(trip);
                 if (latestSpeciesId) {
                     result.speciesId = latestSpeciesId;
+                }
+
+                // On essaye de récupérer la dernière technique utilisée pour sélectionner la même
+                const latestTechniqueId = this.getLatestCatchTechniques(trip);
+                if (latestTechniqueId) {
+                    result.techniqueId = latestTechniqueId;
                 }
 
             }
