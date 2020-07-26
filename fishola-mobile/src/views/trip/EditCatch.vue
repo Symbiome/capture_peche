@@ -685,7 +685,7 @@ export default class EditCatchView extends Vue {
     span {
       font-style: italic;
       font-weight: normal;
-      font-size: @fontsize-small-paragraph;
+      font-size: @fontsize-info;
     }
   }
 
