@@ -38,6 +38,7 @@ import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
+import FeedbackService from '@/services/FeedbackService';
 import KeyboardManager from '@/services/KeyboardManager';
 
 import { Component, Vue } from 'vue-property-decorator';
@@ -71,11 +72,11 @@ export default class AppView extends Vue {
       App.addListener('appUrlOpen', (data: any) => {
         // Catch any URL like %%/security/ACTION?t=TOKEN
         console.info("Opening from external url " + data.url);
-        let start = data.url.indexOf('security');
+        const start = data.url.indexOf('security');
         if (start > 0 && data.url.indexOf('?t=') > 0) {
-          let actionAndToken = data.url.substring(start + 'security'.length + 1);
-          let action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
-          let token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
+          const actionAndToken = data.url.substring(start + 'security'.length + 1);
+          const action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
+          const token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
           if ('reset-password' === action) {
             console.info("Detected reset password request");
             router.push({name:'reset-password', params: {token: token}});
@@ -105,7 +106,7 @@ export default class AppView extends Vue {
           (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
         );
       this.checkOutOfSyncTrips();
-      let syncDelay = 30000;
+      const syncDelay = 30000;
       console.debug(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
       this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
@@ -123,20 +124,22 @@ export default class AppView extends Vue {
       TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
         console.error("Apparement, il y a un pb de sync", e);
         // Même en cas d'erreur on essaye de synchro les photos
-        this.checkOutOfSyncPictures();
+        this.checkOutOfSyncPicturesAndFeedbacks();
       });
     }
 
     tripsSyncFinished(someTripsSaved:boolean) {
-      this.checkOutOfSyncPictures();
+      this.checkOutOfSyncPicturesAndFeedbacks();
       if (someTripsSaved) {
         this.$root.$emit('trips-saved');
       }
     }
 
-    checkOutOfSyncPictures() {
+    checkOutOfSyncPicturesAndFeedbacks() {
       // console.debug("SYNCHO : Recherche des photos");
       PicturesService.syncPictures();
+      // Check for out of sync feedbacks any time we check for pictures
+      FeedbackService.syncFeedbacks();
     }
 
     stopWatchingPosition() {
@@ -242,11 +245,11 @@ html {
 }
 
 .secondary-header {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  line-height: 20px;
+  padding-top: @margin-header-top;
+  padding-bottom: @margin-header-top;
+  padding-left: @margin-medium;
+  padding-right: @margin-medium;
+  line-height: @fontsize-top1;
   height: @secondary-header-height;
 }
 
@@ -262,7 +265,7 @@ html {
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   padding-top: 0px;
-  margin-top: 10px;
+  margin-top: @vertical-margin-small;
 
   height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
   &.keyboardShowing {
@@ -274,31 +277,34 @@ html {
   z-index: 10;
 
   h1 {
-    margin-top: 40px;
-    margin-bottom: 40px;
-    height: 30px;
+    margin-top: @margin-large;
+    margin-bottom: @margin-large;
+    height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
 
-    &.keyboardShowing {
-      margin-top:10px;
-      margin-bottom: 5px;
-      height: 16px;
-      line-height: 16px;
-      font-size:16px;
+    @media(max-height:579px) {
+      margin-top: @margin-medium;
+      margin-bottom: @margin-medium;
     }
-  }
+
+    @media(max-height:450px) {
+      margin-top: @margin-small;
+      margin-bottom: @margin-small;
+    }
+
+}
 
   .pane-content {
 
     overflow: auto;
 
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
     &.large {
       padding-left: unset;
@@ -312,14 +318,20 @@ html {
   }
 
   &.pane-only {
-    margin-top: 20px;
+    margin-top: @vertical-margin-medium;
   }
 
 }
 
 .picture-background {
   .pane {
+    // TODO responsive
     margin-top: 95px;
+
+    &.keyboardShowing {
+      margin-top: 5px;
+    }
+
   }
 }
 
@@ -339,14 +351,18 @@ html {
 
       .dialog-c-title {
         color: @gunmetal;
-        font-size: 17px;
-        line-height: 22px;
+        font-size: @fontsize-dialog-title;
+        line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
       }
 
       .dialog-c-text {
         color: @pale-sky;
-        font-size: 13px;
-        line-height: 18px;
+        font-size: calc(@fontsize-dialog-text);
+        line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
+      }
+
+      ul {
+        text-align: left;
       }
     }
 
@@ -355,7 +371,7 @@ html {
       border-top: 1px solid @very-light-grey;
 
       button.vue-dialog-button {
-        font-size: 17px !important;
+        font-size: @fontsize-dialog-button !important;
 
         &:not(:first-of-type) {
           border-left: 1px solid @very-light-grey;

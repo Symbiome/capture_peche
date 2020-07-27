@@ -21,7 +21,7 @@
 <template>
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
-    <div class="catch-picture">
+    <div class="catch-picture keyboardSensitive">
       <PicturePreview v-bind:src="pictureSrc"
                       v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
@@ -35,7 +35,7 @@
              ref="fileInput">
     </div>
     <div class="edit-catch-page page">
-      <div class="pane">
+      <div class="pane keyboardSensitive">
         <div class="pane-content rounded" v-if="ready">
           <h1>Capture</h1>
 
@@ -66,6 +66,12 @@
                      v-model="aCatch.size"
                      v-bind:error="sizeError"
                      v-bind:readonly="!modifiable"/>
+          <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
+            <i class="icon-info"/>
+            <span>
+              Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
+            </span>
+          </div>
           <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
                      name="weight"
                      label="Poids en g (optionnel)"
@@ -132,7 +138,7 @@
             </div>
 
           </div>
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>
@@ -217,6 +223,7 @@ export default class EditCatchView extends Vue {
 
   defaultSizeLabel:string = "Taille en cm";
   sizeLabel:string = this.defaultSizeLabel;
+  multipleCatchsAllowed:boolean = false;
 
   catchPositionError:string = '';
   speciesIdError:string = '';
@@ -265,7 +272,7 @@ export default class EditCatchView extends Vue {
   }
 
   tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
-    let lakeId:string = someTrip.lakeId;
+    const lakeId:string = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
@@ -282,7 +289,7 @@ export default class EditCatchView extends Vue {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
       if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
-        let seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
+        const seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
         this.rightShortcut = 'timer-' + seconds;
       }
     }
@@ -334,7 +341,7 @@ export default class EditCatchView extends Vue {
   }
 
   embedAlias(s:SpeciesWithAlias):SpeciesWithAlias {
-    let result:SpeciesWithAlias = {
+    const result:SpeciesWithAlias = {
       id: s.id,
       name: s.alias ? (`${s.alias} (${s.name})`) : s.name,
       builtIn: s.builtIn,
@@ -350,7 +357,7 @@ export default class EditCatchView extends Vue {
           || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
           || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
         ) {
-        let speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
+        const speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
         this.allSpeciesWithAliases.push(speciesWithAlias);
         if (s.authorizedSample) {
           this.authorizedSampleSpeciesIds.push(s.id);
@@ -362,7 +369,7 @@ export default class EditCatchView extends Vue {
       this.tripOtherSpecies
         .split(',')
         .forEach((name) => {
-          let customSpecies:SpeciesWithAlias = {
+          const customSpecies:SpeciesWithAlias = {
             id: name,
             name: name,
             builtIn: false,
@@ -382,7 +389,7 @@ export default class EditCatchView extends Vue {
     // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
     // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
     if (this.inCreation) {
-      setTimeout(this.takePicture, 500);
+      setTimeout(this.takePicture, 350);
     }
   }
 
@@ -401,8 +408,10 @@ export default class EditCatchView extends Vue {
   @Watch('aCatch.speciesId')
   speciesChanged(newValue:string, oldValue:string) {
     this.sizeLabel = this.defaultSizeLabel;
+    this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
       this.sizeLabel = this.defaultSizeLabel + ' (optionnelle)';
+      this.multipleCatchsAllowed = true;
     }
   }
 
@@ -410,7 +419,7 @@ export default class EditCatchView extends Vue {
     if (this.modifiable) {
       if (this.platform == "web") {
         // Si on est pas dans une APP on conserve le comportement avec le champ 'file'
-        let input:any = this.$refs.fileInput;
+        const input:any = this.$refs.fileInput;
         input.click();
       } else {
         Camera.getPhoto({
@@ -439,14 +448,14 @@ export default class EditCatchView extends Vue {
   readUploadedFile(file:any, callback: (fileContent:string) => void) {
     var reader = new FileReader();
     reader.onload = function readSuccess(loadEvt:any) {
-        let content:string = loadEvt.target.result;
+        const content:string = loadEvt.target.result;
         callback(content);
     };
     reader.readAsDataURL(file);
   }
 
   pictureTaken(evt:any) {
-    let file = evt.srcElement.files[0];
+    const file = evt.srcElement.files[0];
     this.readUploadedFile(file, (content:string) => {
       this.pictureSrc = content;
       this.newPictureTaken = true;
@@ -498,7 +507,7 @@ export default class EditCatchView extends Vue {
 
     }
 
-    let mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
     if (mandatorySize && !this.aCatch.size) {
       hasError = true;
       this.sizeError = 'Taille obligatoire';
@@ -540,8 +549,8 @@ export default class EditCatchView extends Vue {
 
     if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
       if (this.aCatch.size >= 25) {
-        let minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
-        let maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
+        const minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
+        const maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
         if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
           console.info(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
           hasError = true;
@@ -588,7 +597,7 @@ export default class EditCatchView extends Vue {
     if (hasError) {
       this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
     } else {
-      let aCatchBean:CatchBean = this.castToBean(this.aCatch);
+      const aCatchBean:CatchBean = this.castToBean(this.aCatch);
       if (aCatchBean.speciesId == '__other__') {
         aCatchBean.speciesId = '';
       }
@@ -643,6 +652,11 @@ export default class EditCatchView extends Vue {
     position: absolute;
     top: env(safe-area-inset-top);
     background-color: @gainsboro;
+
+    &.keyboardShowing {
+      display: none;
+    }
+
   }
 
   .position-error {
@@ -654,10 +668,25 @@ export default class EditCatchView extends Vue {
   .info {
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
+  }
+
+  .multiple-catchs-info {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    color: @carrot-orange;
+    i {
+      margin-right: @margin-small;
+    }
+    span {
+      font-style: italic;
+      font-weight: normal;
+      font-size: @fontsize-info;
+    }
   }
 
   .sample-id-container {
@@ -665,14 +694,14 @@ export default class EditCatchView extends Vue {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: @vertical-margin-medium;
+    margin-bottom: @vertical-margin-medium;
 
     .description {
-      font-size: 14px;
-      line-height: 16px;
+      font-size: @fontsize-header-paragraph;
+      line-height: calc(@fontsize-header-paragraph + @line-height-padding-small);
       color: @black;
-      margin: 10px;
+      margin: @vertical-margin-small;
     }
 
     @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
@@ -688,12 +717,12 @@ export default class EditCatchView extends Vue {
 
     .sample-id {
       font-family: monospace, sans-serif;
-      font-size: 18px;
+      font-size: @fontsize-span-big;
       background-color: @gainsboro;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 5px;
-      padding-bottom: 5px;
+      padding-left: @margin-small;
+      padding-right: @margin-small;
+      padding-top: @vertical-margin-xx-small;
+      padding-bottom: @vertical-margin-xx-small;
       border: 1px solid @gunmetal;
       border-radius: 5px;
       width: fit-content;

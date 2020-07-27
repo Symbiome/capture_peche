@@ -6,8 +6,8 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "1.0-beta-5"
+        versionCode 10
+        versionName "1.0-rc-1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
     }
@@ -50,21 +50,18 @@ android {
             // and the plugin automatically assigns all the module's flavors to
             // that dimension.
             dimension "version"
-            applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
             resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
         }
         beta {
             dimension "version"
-            applicationIdSuffix ".beta"
             versionNameSuffix "-beta"
             resValue "string", "DEEP_LINK_URL", "fishola-beta.demo.codelutin.com"
         }
         production {
             dimension "version"
-            applicationIdSuffix ".production"
             versionNameSuffix "-production"
-            resValue "string", "DEEP_LINK_URL", "fishola.inrae.fr"
+            resValue "string", "DEEP_LINK_URL", "api-fishola.inrae.fr"
         }
     }
 }

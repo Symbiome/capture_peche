@@ -1,6 +1,10 @@
 module.exports = {
   // options...
-  outputDir: 'target/dist'
+  outputDir: 'target/dist',
+  // Adding this allows to debug in firefox/chrome
+  configureWebpack: {
+    devtool: 'source-map'
+  }
 }
 const {gitDescribeSync} = require('git-describe');
 // process.env.VUE_APP_GIT_HASH = JSON.stringify(gitDescribeSync());

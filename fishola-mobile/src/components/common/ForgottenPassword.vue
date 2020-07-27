@@ -114,7 +114,7 @@ export default class ForgottenPassword extends Vue {
         this.$root.$emit('toaster-error', 'Les mots de passe ne correspondent pas');
         this.passwordConfirmationError = 'Les mots de passe ne correspondent pas';
     } else {
-      let loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
+      const loginBean =  {email: this.forgottenEmail || "", password: this.newPassword || ""};
 
       ProfileService
         .requestPasswordReset(loginBean)
@@ -127,7 +127,7 @@ export default class ForgottenPassword extends Vue {
       case 200:
         Helpers.alert(this.$modal,
          'Votre demande de réinitialisation de mot de passe a été envoyée. Merci de vérifier votre boîte e-mail',
-         'Mot de passe réinitialisé')
+         'Demande envoyée')
         .then(() => {
           this.$root.$emit('toaster-success', 'Demande de changement de mot de passe envoyée', 10000);
           this.expandCollapse();
@@ -153,7 +153,7 @@ export default class ForgottenPassword extends Vue {
   */
   hideRevealElements() {
     if (this.tohideSelector != null) {
-      let toHides = document.querySelectorAll(this.tohideSelector);
+      const toHides = document.querySelectorAll(this.tohideSelector);
       toHides.forEach( toHide => {
         if (toHide.classList.contains("hidden")) {
           toHide.classList.remove("hidden");
@@ -171,11 +171,16 @@ export default class ForgottenPassword extends Vue {
 
   @import "../../less/main";
   .forgotten-password {
-    font-size: 16px;
-    line-height: 22px;
-    margin-left: 30px;
-    margin-right: 30px;
-    margin-bottom:30px;
+    font-size: @fontsize-paragraph;
+    line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+    margin-left: @margin-large;
+    margin-right: @margin-large;
+    margin-bottom:@margin-large;
+
+    @media(max-height:579px) {
+      margin-bottom:@margin-small;
+    }
+
     &.collapsed {
       // Hidden in collapsed mode
       &.keyboardShowing {
@@ -186,55 +191,62 @@ export default class ForgottenPassword extends Vue {
       &.keyboardShowing {
         position: absolute;
         bottom: 0;
-        border-top-left-radius: 30px;
-        border-top-right-radius: 30px;
+        border-top-left-radius: @margin-large;
+        border-top-right-radius: @margin-large;
         color: @gunmetal;
         width:100vw;
-        padding-top:20px;
-        padding-left:30px;
-        padding-right:30px;
+        padding-top:@margin-medium;
+        padding-left:@margin-large;
+        padding-right:@margin-large;
         margin-left: 0px;
         margin-right: 0px;
-        margin-bottom: -10px;
+        margin-bottom: calc(-1 * @margin-small);
         background-color: @white-smoke;
       }
     }
   }
   .title {
-    margin-bottom: 20px;
-    height: 30px;
+    margin-bottom: @margin-medium;
+    height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
+
+    @media(max-height:579px) {
+      height: calc(@fontsize-title + @line-height-padding-large);
+      line-height: calc(@fontsize-title + @line-height-padding-large);
+      margin-top: @margin-small;
+      margin-bottom: @margin-small;
+    }
+
   }
   .sendpassword {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 20px;
-      display:flex;
-      justify-content: space-around;
+      width: 100%;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
       &.keyboardShowing {
-          margin-bottom: 5px; 
+          margin-bottom: @vertical-margin-xx-small; 
       }
       button {
           height: 100%;
-          width:50%;
           border-radius: 50px;
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
-          margin-left:20px;
-          margin-right:20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;

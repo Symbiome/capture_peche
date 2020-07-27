@@ -79,7 +79,7 @@ export default class PictureModal extends Vue {
     background-color: #fff5;
 
     i {
-      font-size: 15px;
+      font-size: @fontsize-header-paragraph;
       transform: rotate(45deg);
     }
   }
@@ -95,7 +95,7 @@ export default class PictureModal extends Vue {
     justify-content: center;
 
     img {
-      margin-left: 20px;
+      margin-left: @margin-medium;
     }
 
 
@@ -106,19 +106,19 @@ export default class PictureModal extends Vue {
 
       font-style: normal;
       font-weight: bold;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
       color: @white;
       background-color: @terra-cotta;
 
       border: 0px;
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
 
       i {
-        margin-right: 5px;
-        font-size: 20px;
+        margin-right: @margin-x-small;
+        font-size: @fontsize-button-big;
       }
 
       &.delete {

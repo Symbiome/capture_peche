@@ -41,7 +41,6 @@ export default class Running extends Vue {
   @import "../../less/main";
 
   .running {
-    margin: 100px auto 0;
     width: 50px;
     text-align: center;
   }

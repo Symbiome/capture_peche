@@ -43,11 +43,9 @@ import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Inject;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
@@ -75,9 +73,9 @@ public class DashboardResource extends AbstractFisholaResource {
 
     @GET
     @Path("/dashboard")
-    public Response getDashboard(@CookieParam(AUTHENTICATION_COOKIE_NAME) Cookie cookie) {
+    public Response getDashboard() {
 
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew(cookie);
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
 
         ImmutableDashboard.Builder builder = ImmutableDashboard.builder();

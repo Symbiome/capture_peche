@@ -169,6 +169,13 @@ export default class TripCatchsView extends Vue {
 
     h1 {
       color: @gunmetal;
+
+      @media(max-height:610px) {
+        margin-top: calc(@fontsize-title * 1);
+        margin-bottom: calc(@fontsize-title * 1);
+        line-height: calc(@fontsize-title + @line-height-padding-medium);
+      }
+
     }
 
     .pane-content {
@@ -188,8 +195,12 @@ export default class TripCatchsView extends Vue {
     }
 
     .edit-trip-catchs-new-catch-button {
-      margin-top: 30px;
-      margin-bottom: 50px;
+      margin-top: @vertical-margin-large;
+      margin-bottom: @vertical-margin-xx-large;
+
+      @media(max-height:610px) {
+        margin-top: @vertical-margin-medium;
+      }
 
       height: 44px;
       width: 100%;
@@ -199,20 +210,20 @@ export default class TripCatchsView extends Vue {
         height: 44px;
         font-style: normal;
         font-weight: bold;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-button;
+        line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
         color: @pelorous;
         background-color: transparent;
 
         border: 1px solid @pelorous;
         border-radius: 22px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
 
         i {
-          margin-right: 5px;
-          font-size: 20px;
+          margin-right: @margin-x-small;
+          font-size: @fontsize-button-big;
         }
       }
     }

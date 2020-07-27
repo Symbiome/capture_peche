@@ -96,9 +96,9 @@ export default class MyTripsList extends Vue {
   }
 
   scrolled() {
-    let elem = document.getElementById('scroll-container');
+    const elem = document.getElementById('scroll-container');
     if (elem) {
-      let delta = elem.scrollHeight - elem.scrollTop - elem.offsetHeight;
+      const delta = elem.scrollHeight - elem.scrollTop - elem.offsetHeight;
       // Quand on arrive à moins de 300px du bas on demande le chargement de la suite
       if (delta < 300) {
         this.moreTripsTimer();
@@ -154,11 +154,11 @@ export default class MyTripsList extends Vue {
       }
 
       span {
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @pale-sky;
         text-align: center;
-        margin-top: 30px;
+        margin-top: @vertical-margin-large;
       }
     }
 
@@ -173,13 +173,13 @@ export default class MyTripsList extends Vue {
 
       span {
         color: @pelorous;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;
-        font-size: 12px;
-        margin-top: 10px;
+        font-size: @fontsize-small-paragraph;
+        margin-top: @vertical-margin-small;
       }
     }
 
@@ -190,11 +190,40 @@ export default class MyTripsList extends Vue {
         }
       }
     }
+
+    @media(max-height:600px) {
+      .top {
+        img {
+          width: 30%;
+        }
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+          margin-top: @vertical-margin-medium;
+        }
+      }
+
+      .bottom {
+        height: 146px;
+
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+        }
+        i {
+          font-size: @fontsize-small-paragraph;
+          margin-top: @vertical-margin-x-small;
+        }
+      }
+
+    }
+
+
   }
 
   .offline-with-trips {
 
-    margin-top: 30px;
+    margin-top: @vertical-margin-large;
 
     display: flex;
     flex-direction: column;
@@ -212,11 +241,11 @@ export default class MyTripsList extends Vue {
       }
 
       span {
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
         color: @carrot-orange; 
         text-align: center;
-        margin-top: 30px;
+        margin-top: @vertical-margin-large;
       }
     }
 
@@ -231,15 +260,65 @@ export default class MyTripsList extends Vue {
 
       span {
         color: @pelorous;
-        font-size: 18px;
-        line-height: 25px;
+         font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
         color: @terra-cotta;
-        font-size: 12px;
-        margin-top: 10px;
+        font-size: @fontsize-small-paragraph;
+        margin-top: @vertical-margin-small;
       }
     }
+
+    @media(max-height:730px) {
+      .top {
+        img {
+          width: 30%;
+        }
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+          margin-top: @vertical-margin-medium;
+        }
+      }
+
+      .bottom {
+        height: 146px;
+
+        span {
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+        }
+        i {
+          font-size: @fontsize-small-paragraph;
+          margin-top: @vertical-margin-x-small;
+        }
+      }
+
+    }
+
+    @media(max-height:650px) {
+      .top {
+        img {
+          width: 30%;
+        }
+      }
+
+      .bottom {
+        height: 76px;
+        min-height: 76px;
+      }
+
+    }
+
+    @media(max-height:600px) {
+      .top {
+        img {
+          width: 20%;
+        }
+      }
+    }
+
   }
 
 

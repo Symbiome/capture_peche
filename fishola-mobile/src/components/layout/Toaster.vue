@@ -46,15 +46,15 @@ export default class Toaster extends Vue {
 
   mounted() {
     this.$root.$on('toaster-error', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newError(text, duration);
     });
     this.$root.$on('toaster-warning', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newWarning(text, duration);
     });
     this.$root.$on('toaster-success', (text:string, durationArg?:number) => {
-      let duration = durationArg || 2000;
+      const duration = durationArg || 2000;
       this.newSuccess(text, duration);
     });
   }
@@ -154,12 +154,12 @@ export default class Toaster extends Vue {
       align-items: center;
 
       div {
-        font-size: 12px;
-        line-height: 16px;
+        font-size: @fontsize-toaster;
+        line-height: calc(@fontsize-toaster + @line-height-padding-medium);
 
         i {
-          margin-right: 6px;
-          font-size: 12px;
+          margin-right: @vertical-margin-x-small;
+          font-size: @fontsize-toaster;
         }
       }
     }

@@ -26,7 +26,8 @@ import fr.inrae.fishola.entities.tables.daos.DocumentationDao;
 import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import org.jooq.Record2;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.Record3;
 import org.jooq.Result;
 
 import javax.inject.Singleton;
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jooq.impl.DAOImpl;
 
 @Singleton
 public class EditorialAndDocumentationDao extends AbstractFisholaDao {
@@ -45,14 +47,14 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         return result;
     }
 
-    public LinkedHashMap<UUID, String> listDocumentations() {
+    public LinkedHashMap<UUID, Pair<String,String>> listDocumentations() {
         return withContext(context -> {
-            Result<Record2<UUID, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NAME)
+            Result<Record3<UUID, String, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NATURAL_ID, Tables.DOCUMENTATION.NAME)
                     .from(Tables.DOCUMENTATION)
                     .fetch();
 
-            LinkedHashMap<UUID, String> result = new LinkedHashMap<>();
-            tuples.forEach(record -> result.put(record.value1(), record.value2()));
+            LinkedHashMap<UUID, Pair<String, String>> result = new LinkedHashMap<>();
+            tuples.forEach(record -> result.put(record.value1(), Pair.of(record.value2(), record.value3())));
             return result;
         });
     }
@@ -61,6 +63,31 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         Documentation doc = withDao(DocumentationDao.class, dao -> dao.findById(docId));
         Optional<Documentation> result = Optional.ofNullable(doc);
         return result;
+    }
+
+    public Optional<UUID> getDocumentationIdByNaturalId(String naturalId) {
+        Optional<UUID> result = withContext(context -> {
+            UUID uuid = context.select(Tables.DOCUMENTATION.ID)
+                    .from(Tables.DOCUMENTATION)
+                    .where(Tables.DOCUMENTATION.NATURAL_ID.eq("y" + naturalId))
+                    .fetchAny(Tables.DOCUMENTATION.ID);
+            return Optional.ofNullable(uuid);
+        });
+        return result;
+    }
+
+    public void deleteDocumentation(UUID documentId) {
+        withDaoNoResult(DocumentationDao.class, dao -> {
+            dao.deleteById(documentId);
+        });
+    }
+    public List<Editorial> getEditorials() {
+        List<Editorial> editorials = withDao(EditorialDao.class, DAOImpl::findAll);
+        return editorials;
+    }
+
+    public void updateEditorial(Editorial editorial) {
+        withDaoNoResult(EditorialDao.class, dao -> dao.update(editorial));
     }
 
     public Optional<Editorial> findEditorial(String name) {
@@ -72,6 +99,10 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
             return Optional.empty();
         });
         return result;
+    }
+
+    public void createDocumentation(Documentation documentation) {
+        withDaoNoResult(DocumentationDao.class, dao -> dao.insert(documentation));
     }
 
     public void updateDocumentation(Documentation documentation) {

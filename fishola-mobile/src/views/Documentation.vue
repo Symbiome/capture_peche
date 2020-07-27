@@ -82,7 +82,7 @@ export default class DocumentationView extends Vue {
   }
 
   documentationsLoaded(docs:DocumentationLight[]) {
-    let sortedDocs = Vue.lodash.orderBy(docs, 'name');
+    const sortedDocs = Vue.lodash.orderBy(docs, 'name');
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 
@@ -103,9 +103,19 @@ export default class DocumentationView extends Vue {
   }
 
   .documentation-row {
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
     height: 56px;
+
+    @media(max-height:579px) {
+      height: 46px;
+    }
+
+    @media(max-width:350px) {
+      padding-left: @margin-large;
+      padding-right: @margin-large;
+    }
+
     border-bottom: 1px solid @solitude;
 
     display: flex;
@@ -113,8 +123,8 @@ export default class DocumentationView extends Vue {
     align-items: center;
 
     span {
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @gunmetal;
     }
 

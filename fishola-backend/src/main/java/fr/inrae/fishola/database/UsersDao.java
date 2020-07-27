@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -67,6 +68,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
+    public List<FisholaUser> findAll() {
+        List<FisholaUser> result = withDao(FisholaUserDao.class, FisholaUserDao::findAll);
+        return result;
+    }
+
     public boolean isValidUserId(UUID userId) {
         boolean result = withDao(FisholaUserDao.class, dao -> dao.existsById(userId));
         return result;
@@ -89,6 +95,10 @@ public class UsersDao extends AbstractFisholaDao {
 
     public void updateUser(FisholaUser existingUser) {
         withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
+    }
+
+    public void deleteUser(FisholaUser existingUser) {
+        withDaoNoResult(FisholaUserDao.class, dao -> dao.delete(existingUser));
     }
 
     public void increaseSampleBaseId(UUID userId) {

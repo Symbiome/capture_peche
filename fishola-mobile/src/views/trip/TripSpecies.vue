@@ -62,7 +62,7 @@
             </div>
           </div>
           <div class="info">Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en renseigner plusieurs</div>
-          <div class="bottom-page-spacer"></div>
+          <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>
@@ -127,7 +127,7 @@ export default class TripSpeciesView extends Vue {
   tripLoaded(someTrip:TripSpecies) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
-    let lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
+    const lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
     this.species = [];
     lakeAndCustomSpecies.forEach((s) => {
       if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
@@ -140,8 +140,8 @@ export default class TripSpeciesView extends Vue {
   }
 
   toggle(s:SpeciesWithAlias) {
-    let speciesId = s.id;
-    let index = this.trip.speciesIds.indexOf(speciesId);
+    const speciesId = s.id;
+    const index = this.trip.speciesIds.indexOf(speciesId);
     if (index == -1) {
       this.trip.speciesIds.push(speciesId);
     } else {
@@ -218,7 +218,7 @@ export default class TripSpeciesView extends Vue {
   .species-item {
     height: 56px;
 
-    padding-left: 40px;
+    padding-left: @margin-x-large;
 
     display: flex;
     flex-direction: row;
@@ -245,11 +245,11 @@ export default class TripSpeciesView extends Vue {
     }
 
     .item-description {
-      margin-left: 18px;
+      margin-left: @margin-medium;
       width: 100%;
 
-      font-size: 12px;
-      line-height: 19px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
       text-align: left;
 
@@ -258,10 +258,10 @@ export default class TripSpeciesView extends Vue {
       align-items: center;
 
       input {
-        padding-left: 10px;
-        padding-right: 10px;
-        margin-top: 5px;
-        margin-left: 20px;
+        padding-left: @margin-small;
+        padding-right: @margin-small;
+        margin-top: @vertical-margin-xx-small;
+        margin-left: @margin-medium;
         height: 38px;
         border-radius: 4px;
 
@@ -272,7 +272,7 @@ export default class TripSpeciesView extends Vue {
         &::placeholder {
           font-style: italic;
           font-weight: normal;
-          font-size: 12px;
+          font-size: @fontsize-form-input;
           color: @pale-sky;
         }
 
@@ -281,17 +281,36 @@ export default class TripSpeciesView extends Vue {
       .real-name {
         font-style: italic;
         color: @pale-sky;
-        margin-left: 5px;
+        margin-left: @margin-x-small;
       }
 
     }
+
+    @media(max-height:600px) {
+      height: 46px;
+      padding-left: @margin-large;
+    }
+
+    @media(max-width:360px) {
+
+      padding-left: @margin-medium;
+
+      .item-description {
+        margin-left: @margin-small;
+
+        input {
+          width: 200px;
+        }
+      }
+    }
+
   }
 
   .info {
     font-style: italic;
     font-weight: 300;
-    font-size: 10px;
-    line-height: 14px;
+    font-size: @fontsize-info;
+    line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
   }

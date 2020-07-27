@@ -54,10 +54,10 @@ export default class GeolocationService extends AbstractFisholaService {
             Device.getInfo().then(
                 (device:DeviceInfo) => {
 
-                    let isNotSecured:boolean =
+                    const isNotSecured:boolean =
                             device.platform == "web"
                             && window.location.protocol == 'http:';
-                    let isDesktopBrowser:boolean =
+                    const isDesktopBrowser:boolean =
                             device.platform == "web"
                             && device.operatingSystem != "android"
                             && device.operatingSystem != "ios";
@@ -92,12 +92,12 @@ export default class GeolocationService extends AbstractFisholaService {
                             console.error("Il y a déjà un watcher en cours");
                             resolve(false);
                         } else {
-                            let options = {
+                            const options = {
                                 enableHighAccuracy: false,
                                 maximumAge: 20,
                                 timeout: 3000
                             };
-                            let watchId:CallbackID = Geolocation.watchPosition(options, this.receivePosition);
+                            const watchId:CallbackID = Geolocation.watchPosition(options, this.receivePosition);
                             GeolocationService.watchId = watchId;
                             resolve(true);
                         }
@@ -137,7 +137,7 @@ export default class GeolocationService extends AbstractFisholaService {
             if (this.latestError) {
                 reject(this.latestError);
             } else if (this.latestPosition) {
-                let age = new Date().getTime() - this.latestPosition.timestamp;
+                const age = new Date().getTime() - this.latestPosition.timestamp;
                 console.debug("Âge de la position", age);
                 resolve(this.latestPosition);
             } else {
@@ -153,7 +153,7 @@ export default class GeolocationService extends AbstractFisholaService {
             return Promise.reject("Timeout");
         }
         return new Promise<GeolocationPosition>((resolve, reject) => {
-            let startedAt = new Date().getTime();
+            const startedAt = new Date().getTime();
             GeolocationService.getInstantPosition()
                     .then(
                         (result) => {
@@ -167,7 +167,7 @@ export default class GeolocationService extends AbstractFisholaService {
                             } else {
                                 setTimeout(() =>
                                     {
-                                        let remaing = ms - (new Date().getTime() - startedAt);
+                                        const remaing = ms - (new Date().getTime() - startedAt);
                                         GeolocationService.getPositionWithRetryUntilTimeout(remaing)
                                             .then(resolve, reject);
                                     },
@@ -185,7 +185,7 @@ export default class GeolocationService extends AbstractFisholaService {
             this.startWatchingPosition();
             delete GeolocationService.latestError;
         }
-        let result = GeolocationService.getPositionWithRetryUntilTimeout(ms || 10000);
+        const result = GeolocationService.getPositionWithRetryUntilTimeout(ms || 10000);
         return result;
     }
 
@@ -199,12 +199,12 @@ export default class GeolocationService extends AbstractFisholaService {
                 ])
                 .then(
                     (data:[Lake[], GeolocationPosition]) => {
-                        let lakes:Lake[] = data[0];
+                        const lakes:Lake[] = data[0];
 
                         if (!lakes || lakes.length == 0) {
                             reject();
                         } else {
-                            let position:GeolocationPosition = data[1];
+                            const position:GeolocationPosition = data[1];
 
                             console.info("lakes", lakes);
                             console.info("position", position);
@@ -212,7 +212,7 @@ export default class GeolocationService extends AbstractFisholaService {
                             const latitude = position.coords.latitude;
                             const longitude = position.coords.longitude;
 
-                            let closestLake = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
+                            const closestLake = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
                             resolve(closestLake);
                         }
                     },
@@ -222,7 +222,7 @@ export default class GeolocationService extends AbstractFisholaService {
     }
 
     static computeDistance(latitudeA:number, longitudeA:number, latitudeB:number, longitudeB:number):number {
-        let result = Math.sqrt(
+        const result = Math.sqrt(
             Math.pow(latitudeB - latitudeA, 2)
             +
             Math.pow(longitudeB - longitudeA, 2)
@@ -234,7 +234,7 @@ export default class GeolocationService extends AbstractFisholaService {
         let result:Lake = lakes[0];
         let minDistance = 999999;
         lakes.forEach((lake) => {
-            let distance = this.computeDistance(lake.latitude, lake.longitude, latitude, longitude);
+            const distance = this.computeDistance(lake.latitude, lake.longitude, latitude, longitude);
             if (distance < minDistance) {
                 minDistance = distance;
                 result = lake;
@@ -247,11 +247,11 @@ export default class GeolocationService extends AbstractFisholaService {
 
     static getClosestLakeMock():Promise<Lake> {
         return new Promise<Lake>((resolve, reject) => {
-            let promises = [ReferentialService.getLakes()];
+            const promises = [ReferentialService.getLakes()];
             Promise.all(promises)
                 .then(
                     (data:any[]) => {
-                        let lakes:Lake[] = data[0];
+                        const lakes:Lake[] = data[0];
 
                         if (!lakes || lakes.length == 0) {
                             reject();
@@ -274,7 +274,7 @@ export default class GeolocationService extends AbstractFisholaService {
                             // const latitude = 45.7618;
                             // const longitude = 6.0205;
 
-                            let result = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
+                            const result = GeolocationService.chooseClosestLake(lakes, latitude, longitude);
                             resolve(result);
                         }
                     },

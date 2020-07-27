@@ -114,7 +114,7 @@ LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
-AND t.created_on < (now() - INTERVAL '${exportSafeHours} hours');
+AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 

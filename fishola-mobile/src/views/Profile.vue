@@ -22,7 +22,7 @@
   <div class="profile page-with-header-and-footer shifted-background">
     <FisholaHeader v-bind:avatar="false"/>
     <div class="page profile-page">
-      <div class="profile-header">
+      <div class="profile-header keyboardSensitive">
         <Avatar v-bind:initials='profile.initials'/>
         <div class="profile-header-name">
           {{fullName}}
@@ -127,9 +127,9 @@ export default class ProfileView extends Vue {
   }
 
   mounted() {
-    let currentYear = new Date().getFullYear();
-    let startYear = currentYear - 110;
-    let endYear = currentYear - 10;
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 110;
+    const endYear = currentYear - 10;
     for (let i=startYear; i<=endYear; i++) {
       this.years.push({id: '' + i, name: i});
     }
@@ -189,7 +189,7 @@ export default class ProfileView extends Vue {
 
   cleanValidationErros() {
     if (this.validationErrors) {
-      let keys = Object.keys(this.validationErrors);
+      const keys = Object.keys(this.validationErrors);
       keys.forEach(key => this.validationErrors[key] = '');
     }
   }
@@ -217,19 +217,33 @@ export default class ProfileView extends Vue {
     justify-content: center;
     align-items: center;
 
+    &.keyboardShowing {
+      display: none;
+    }
+
     .pastille {
       width: 70px;
       height: 70px;
-      font-size: 30px;
-      line-height: 35px;
+      font-size: @pastille-size;
+      line-height: calc(@pastille-size + @line-height-padding-large);
       color: @gunmetal;
     }
     .profile-header-name {
-      margin-top: 10px;
-      font-size: 22px;
-      line-height: 30px;
+      margin-top: @vertical-margin-small;
+      font-size: @fontsize-title;
+      line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       color: @white;
     }
+
+    @media(max-height:600px) {
+      height: 100px;
+
+      .pastille {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
   }
 }
 

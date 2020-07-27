@@ -21,15 +21,21 @@ package fr.inrae.fishola.rest.editorial;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
+import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
+import java.util.Base64;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -43,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,22 +60,31 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @GET
     @Path("/documentations")
-    public List<DocumentationLight> getDocumentation(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
-        List<DocumentationLight> result = docs.entrySet()
+    public List<DocumentationWithBase64ContentBean> getDocumentation(@Context HttpServletRequest request) {
+        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
+        List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
-                .map(entry -> toDocumentationLight(entry, request))
+                .map(entry -> toDocumentationWithBase64Content(entry, request))
                 .collect(Collectors.toList());
         return result;
     }
 
-    protected DocumentationLight toDocumentationLight(Map.Entry<UUID, String> entry, HttpServletRequest request) {
+    @DELETE
+    @Path("/documentations/{documentId}")
+    public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
+        checkIsAdmin();
+        dao.deleteDocumentation(documentId);
+        return Response.noContent().build();
+    }
+
+    protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
         String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
-        DocumentationLight result = ImmutableDocumentationLight.builder()
-                .id(entry.getKey())
-                .name(entry.getValue())
-                .url(url)
-                .build();
+        DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
+        result.setId(entry.getKey());
+        result.setNaturalId(entry.getValue().getLeft());
+        result.setName(entry.getValue().getRight());
+        result.setUrl(url);
+        result.setBase64Content("");
         return result;
     }
 
@@ -77,9 +93,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Produces("application/pdf")
     public Response downloadDocumentation(@PathParam("docId") UUID docId) {
         Optional<Documentation> optional = dao.getDocumentation(docId);
-        if (optional.isEmpty()) {
-            return Response.status(404).build();
-        }
+        NotFoundException.check(optional.isPresent());
 
         Documentation documentation = optional.get();
         String filename = documentation.getName()
@@ -91,18 +105,64 @@ public class DocumentationResource extends AbstractFisholaResource {
         return response;
     }
 
-    @Deprecated
-    protected Response downloadDocumentationByName(String name) {
-        LinkedHashMap<UUID, String> docs = dao.listDocumentations();
+    @PUT
+    @Path("/documentations/{docId}")
+    public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
+        checkIsAdmin();
+        Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
+        Preconditions.checkArgument(docId.equals(documentationBase64Content.id()), "L'identifiant ne correspond pas");
+        try {
+            Documentation documentation = documentationFromBase64Content(Optional.of(docId), documentationBase64Content);
+            dao.updateDocumentation(documentation);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> entity = new LinkedHashMap<>();
+            entity.put("error", "Impossible de mettre à jour la documentation : " + e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
+        }
+    }
 
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Optional<UUID> docId = docs.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().equalsIgnoreCase(name))
-                .map(Map.Entry::getKey)
-                .findAny();
+    @POST
+    @Path("/documentations")
+    public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
+        checkIsAdmin();
+        try {
+            Documentation documentation = documentationFromBase64Content(Optional.empty(), documentationBase64Content);
+            dao.createDocumentation(documentation);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> entity = new LinkedHashMap<>();
+            entity.put("error", "Impossible de créer la documentation : " + e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
+        }
+    }
 
-        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", name));
+    protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws FisholaTechnicalException {
+        Documentation documentation = new Documentation();
+        docId.ifPresent(documentation::setId);
+        documentation.setNaturalId(documentationBase64Content.naturalId());
+        documentation.setName(documentationBase64Content.name());
+        // If new documentation was sent in base64
+        if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
+            String[] contentSplitted = documentationBase64Content.base64Content().split(",");
+            String base64PDF = contentSplitted[1];
+            byte[] bytes = Base64.getDecoder().decode(base64PDF);
+            documentation.setContent(bytes);
+        } else {
+            Preconditions.checkArgument(docId.isPresent(), "Pas de contenu base64 spécifié, il faut avoir donné un identifiant de documentation");
+            // Reuse existing content if none sent
+            Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
+            NotFoundException.check(existingDoc.isPresent(), "Missing documentation " + docId.get());
+            documentation.setContent(existingDoc.get().getContent());
+        }
+        return documentation;
+    }
+
+    protected Response downloadDocumentationByNaturalId(String naturalId) {
+
+        Optional<UUID> docId = dao.getDocumentationIdByNaturalId(naturalId);
+
+        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", naturalId));
 
         Response response = downloadDocumentation(docId.get());
         return response;
@@ -112,8 +172,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Path("/documentation/fixed/cgu")
     @Produces("application/pdf")
     public Response downloadGCU() {
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Response response = downloadDocumentationByName("Conditions Générales d'Utilisation");
+        Response response = downloadDocumentationByNaturalId("cgu");
         return response;
     }
 
@@ -121,9 +180,26 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Path("/documentation/fixed/samples")
     @Produces("application/pdf")
     public Response downloadSamples() {
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Response response = downloadDocumentationByName("Documentation sur les prélèvements");
+        Response response = downloadDocumentationByNaturalId("prélèvements");
         return response;
+    }
+
+    @GET
+    @Path("/editorial")
+    public Response getEditorials() {
+        List<Editorial> editorials = dao.getEditorials();
+        Response response = Response.ok(editorials).build();
+        return response;
+    }
+
+    @PUT
+    @Path("/editorial/{editorialId}")
+    public Response updateEditorial(@PathParam("editorialId") UUID editorialId, Editorial editorial) {
+        Preconditions.checkArgument(editorialId != null, "Identifiant de page éditoriale obligatoire");
+        Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
+        checkIsAdmin();
+        dao.updateEditorial(editorial);
+        return Response.noContent().build();
     }
 
     @GET
@@ -131,7 +207,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     public Response getEditorial(@PathParam("name") String name) {
         Optional<Editorial> editorial = dao.findEditorial(name);
         Response response = editorial.map(Response::ok)
-                .orElseGet(() -> Response.status(404))
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
                 .build();
         return response;
     }

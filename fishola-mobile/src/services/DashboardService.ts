@@ -37,7 +37,7 @@ export default class DashboardService extends AbstractFisholaService {
     }
 
     static parseDate(input:any):Date {
-        let result = Helpers.parseLocalDate(input);
+        const result = Helpers.parseLocalDate(input);
         return result;
     }
 
@@ -55,7 +55,7 @@ export default class DashboardService extends AbstractFisholaService {
                         trip.day = this.parseDate(trip.day);
                     });
                 }
-                let result:DashboardAndSpecies = new DashboardAndSpecies(data[0], data[1]);
+                const result:DashboardAndSpecies = new DashboardAndSpecies(data[0], data[1]);
                 resolve(result);
             },
             reject);
@@ -63,7 +63,7 @@ export default class DashboardService extends AbstractFisholaService {
     }
 
     static loadDashboardOrTimeout():Promise<DashboardAndSpecies> {
-        let promise = this.loadDashboard();
+        const promise = this.loadDashboard();
         return this.timeout(5000, promise);
     }
 

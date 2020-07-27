@@ -159,14 +159,14 @@ export default class FisholaFooter extends Vue {
   };
 
   mounted() {
-    let array = this.shortcuts.split(',');
+    const array = this.shortcuts.split(',');
     array.forEach(this.activeButton);
   }
 
   activeButton(key:string) {
     if (key && key.indexOf('step-') == 0) {
-      let stepIndex = parseInt(key[5]);
-      let stepCount = parseInt(key[7]);
+      const stepIndex = parseInt(key[5]);
+      const stepCount = parseInt(key[7]);
 
       for (let i=1; i<=stepCount; i++) {
         this.steps.push({
@@ -177,7 +177,7 @@ export default class FisholaFooter extends Vue {
 
     }
     if (key && key.indexOf('timer-') == 0) {
-      let seconds:number = parseInt(key.substring(6));
+      const seconds:number = parseInt(key.substring(6));
       this.timer = Helpers.formatSecondsDurationTruncate(seconds);
     }
     this.activeButtons[key] = true;
@@ -299,7 +299,7 @@ export default class FisholaFooter extends Vue {
     text-align: center;
 
     i {
-      font-size: 19px;
+      font-size: @fontsize-footer;
     }
 
     &.timer {
@@ -322,8 +322,8 @@ export default class FisholaFooter extends Vue {
       border-radius: 50%;
       border: 1px solid @pelorous;
 
-      margin-left: 5px;
-      margin-right: 5px;
+      margin-left: @margin-x-small;
+      margin-right: @margin-x-small;
 
     }
 

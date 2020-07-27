@@ -194,7 +194,7 @@ export default class MyTripsView extends Vue {
   }
 
   tripUnselected(tripId:string) {
-    let index = this.selectedTripIds.indexOf(tripId);
+    const index = this.selectedTripIds.indexOf(tripId);
     if (index != -1) {
       this.selectedTripIds.splice(index, 1);
     }
@@ -206,8 +206,8 @@ export default class MyTripsView extends Vue {
   }
 
   tripsDeleted() {
-    let plural = this.selectedTripIds.length > 1 ? 's' : '';
-    let message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
+    const plural = this.selectedTripIds.length > 1 ? 's' : '';
+    const message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
     this.$root.$emit('toaster-success', message);
     this.loadTrips();
   }

@@ -29,12 +29,12 @@ export default class DocumentationService extends AbstractFisholaService {
     }
 
     static getSamplesDocumentationUrl():string {
-        let result = Constants.apiUrl('/v1/documentation/fixed/samples');
+        const result = Constants.apiUrl('/v1/documentation/fixed/samples');
         return result;
     }
 
     static getCGUUrl():string {
-        let result = Constants.apiUrl('/v1/documentation/fixed/cgu');
+        const result = Constants.apiUrl('/v1/documentation/fixed/cgu');
         return result;
     }
 
@@ -48,7 +48,7 @@ export default class DocumentationService extends AbstractFisholaService {
 
 
     static prepareCaches():Promise<void> {
-        let allPromises:Promise<void>[] = [
+        const allPromises:Promise<void>[] = [
             this.prepareCache('/v1/documentations'),
             this.prepareCache('/v1/editorial/credits')
         ];

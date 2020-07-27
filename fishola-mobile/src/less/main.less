@@ -1,9 +1,11 @@
 @import "_colors";
 @import "_font";
 @import "_icons";
+@import "_responsive";
 
 @header-height: calc(40px + env(safe-area-inset-top));
 @secondary-header-height: 40px;
+@average-header-height: 30px;
 @footer-height: calc(76px + env(safe-area-inset-bottom));
 @reduced-footer-height: calc(0px + env(safe-area-inset-bottom));
 @feedback-top: calc(50px + env(safe-area-inset-top));
@@ -30,8 +32,8 @@ button {
   height: 30px;
   border-radius: 50%;
   border: 0px solid;
-  line-height: 16px;
-  font-size: 14px;
+  line-height: calc(@fontsize-header-paragraph + @line-height-padding-small);
+  font-size: @fontsize-header-paragraph;
   text-align: center;
   display: flex;
   align-items: center;
@@ -164,6 +166,12 @@ button:active {
 
 .bottom-page-spacer {
   height: 30px;
+  min-height: 30px;
+
+  &.keyboardShowing {
+    height: 50px;
+    min-height: 50px;
+  }
 }
 
 /*========= iOS-specific ============ */

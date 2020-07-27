@@ -79,6 +79,7 @@ import {Feedback} from '@/pojos/BackendPojos.ts';
 import UserProfile from '@/pojos/UserProfile.ts';
 
 import ProfileService from '@/services/ProfileService';
+import FeedbackService from '@/services/FeedbackService';
 
 import html2canvas from 'html2canvas';
 
@@ -107,7 +108,7 @@ export default class FeedbackModal extends Vue {
 
   device:string = '';
 
-  model:Feedback = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
+  model:Feedback = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
   withPicture:boolean = false;
 
   categories:any[] = [
@@ -135,11 +136,11 @@ export default class FeedbackModal extends Vue {
 
   openFeedback() {
     // Hide footer to avoid having footer overlaping
-    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    const footer = document?.querySelector("#root")?.querySelector(".footer");
     if (footer != null) {
       footer.classList.add("hidden");
     }
-    this.model = { category: 'BUG', id: 'FAKE', frontendVersion: this.frontendVersion };
+    this.model = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
     this.loadProfile();
   }
 
@@ -156,7 +157,7 @@ export default class FeedbackModal extends Vue {
 
   closeFeedback() {
     // Reveal footer now that modal is closed
-    let footer = document?.querySelector("#root")?.querySelector(".footer");
+    const footer = document?.querySelector("#root")?.querySelector(".footer");
     if (footer != null) {
       footer.classList.remove("hidden");
     }
@@ -168,10 +169,10 @@ export default class FeedbackModal extends Vue {
     this.closeFeedback();
 
     if (this.withPicture) {
-      let rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
+      const rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
       html2canvas(rootElement)
         .then((canvas:any) => {
-          let pngPicture = canvas.toDataURL("image/png")
+          const pngPicture = canvas.toDataURL("image/png")
           this.model.screenshot = pngPicture;
           this.sendFeedback();
         });
@@ -196,7 +197,7 @@ export default class FeedbackModal extends Vue {
   }
 
   getOperatingSystemNameAndVersion() {
-    let userAgent = navigator.userAgent;
+    const userAgent = navigator.userAgent;
     let os = userAgent;
     if (userAgent.indexOf("Windows NT 10.0")!=-1) os="Windows 10";
     if (userAgent.indexOf("Windows NT 6.3")!=-1) os="Windows 8.1";
@@ -229,7 +230,7 @@ export default class FeedbackModal extends Vue {
     this.model.date = new Date();
     this.model.location = window.location.href;
     this.model.device = this.device;
-    ProfileService.sendFeedback(this.model)
+    FeedbackService.sendFeedback(this.model)
       .then(() => {
         this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');
       });
@@ -277,8 +278,8 @@ export default class FeedbackModal extends Vue {
       .pane-content {
 
         color: @gunmetal;
-        font-size: 12px;
-        line-height: 16px;
+        font-size: @fontsize-feedback-paragraph;
+        line-height: calc(@fontsize-feedback-paragraph + @line-height-padding-medium);
 
         p {
           text-align: center;
@@ -288,7 +289,7 @@ export default class FeedbackModal extends Vue {
           width: 100%;
 
           .real-label {
-            margin-left: 10px;
+            margin-left: @margin-small;
           }
         }
       }

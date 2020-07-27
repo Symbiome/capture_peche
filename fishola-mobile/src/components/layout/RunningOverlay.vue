@@ -143,15 +143,15 @@ export default class RunningOverlay extends Vue {
 
       font-style: normal;
       font-weight: bold;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
       color: @white;
       background-color: @terra-cotta;
 
       border: 0px;
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
 
     }
 
@@ -159,9 +159,14 @@ export default class RunningOverlay extends Vue {
 
   .running-overlay-bar {
     height: 76px;
+
+    @media(max-height:650px) {
+      height: 56px;
+    }
+
     background-color: @cyprus;
-    font-size: 18px;
-    line-height: 25px;
+    font-size: @fontsize-button;
+    line-height: calc(@fontsize-button + @line-height-padding-x-large);
     color: @white;
     width: 100%;
 
@@ -173,8 +178,15 @@ export default class RunningOverlay extends Vue {
     .right, .left {
       height: fit-content;
       text-align: center;
-      margin-left: 30px;
-      margin-right: 30px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+
+
+      @media(max-width:400px) {
+        margin-left: @margin-medium;
+        margin-right: @margin-medium;
+      }
+
     }
   }
 }

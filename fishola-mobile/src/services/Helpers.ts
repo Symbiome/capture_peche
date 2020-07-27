@@ -24,45 +24,45 @@ import moment from 'moment';
 export default class Helpers {
 
     static renderDuration(startedAt:string, finishedAt?:string):string {
-        let duration = this.computeDuration(startedAt, finishedAt);
-        let result = this.formatDuration(duration, true);
+        const duration = this.computeDuration(startedAt, finishedAt);
+        const result = this.formatDuration(duration, true);
         return result;
     }
 
     static renderDurationNoSeconds(startedAt:string, finishedAt?:string):string {
-        let duration = this.computeDuration(startedAt, finishedAt);
-        let result = this.formatDuration(duration, false);
+        const duration = this.computeDuration(startedAt, finishedAt);
+        const result = this.formatDuration(duration, false);
         return result;
     }
 
     static humanizeDuration(startedAt:string, finishedAt?:string):string {
-        let duration = this.computeDuration(startedAt, finishedAt);
-        let result = duration.humanize();
+        const duration = this.computeDuration(startedAt, finishedAt);
+        const result = duration.humanize();
         return result;
     }
 
     static humanizeDurationFromDates(startedAt:Date, finishedAt:Date):string {
-        let duration = this.computeDurationFromDates(startedAt, finishedAt);
-        let result = duration.humanize();
+        const duration = this.computeDurationFromDates(startedAt, finishedAt);
+        const result = duration.humanize();
         return result;
     }
 
     static computeDuration(startedAt:string, finishedAt?:string):moment.Duration {
-        let start = moment(startedAt, moment.HTML5_FMT.TIME_SECONDS);
+        const start = moment(startedAt, moment.HTML5_FMT.TIME_SECONDS);
         let end = moment();
         if (finishedAt) {
             end = moment(finishedAt, moment.HTML5_FMT.TIME_SECONDS);
         }
-        let diff = end.diff(start);
-        let result = moment.duration(diff)
+        const diff = end.diff(start);
+        const result = moment.duration(diff)
         return result;
     }
 
     static computeDurationFromDates(startedAt:Date, finishedAt:Date):moment.Duration {
-        let start = moment(startedAt);
-        let end = moment(finishedAt);
-        let diff = end.diff(start);
-        let result = moment.duration(diff)
+        const start = moment(startedAt);
+        const end = moment(finishedAt);
+        const diff = end.diff(start);
+        const result = moment.duration(diff)
         return result;
     }
 
@@ -90,14 +90,14 @@ export default class Helpers {
     }
 
     static formatSecondsDuration(seconds:number):string {
-        let duration:moment.Duration = moment.duration(seconds, 'seconds');
-        let result = this.formatDuration(duration);
+        const duration:moment.Duration = moment.duration(seconds, 'seconds');
+        const result = this.formatDuration(duration);
         return result;
     }
 
     static computeDurationInSeconds(startedAt:string, finishedAt?:string):number {
-        let duration:moment.Duration = this.computeDuration(startedAt, finishedAt);
-        let seconds = Math.floor(duration.asSeconds());
+        const duration:moment.Duration = this.computeDuration(startedAt, finishedAt);
+        const seconds = Math.floor(duration.asSeconds());
         return seconds;
     }
 
@@ -107,39 +107,39 @@ export default class Helpers {
             return seconds + 's';
         }
 
-        let duration:moment.Duration = moment.duration(seconds, 'seconds');
+        const duration:moment.Duration = moment.duration(seconds, 'seconds');
 
         // On tronque à la minute inférieur
         duration.subtract(duration.seconds(), 'seconds');
 
-        let result = this.formatDuration(duration);
+        const result = this.formatDuration(duration);
         return result;
     }
 
     static formatToLongDate(date:Date):string {
-        var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
-        let result = date.toLocaleDateString('fr-FR', dayOptions);
+        const dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
+        const result = date.toLocaleDateString('fr-FR', dayOptions);
         return result;
     }
 
     static formatToDate(date:Date):string {
-        let year = date.getFullYear();
-        let month = date.getMonth()+1;
-        let day = date.getDate();
-        let result = year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
+        const year = date.getFullYear();
+        const month = date.getMonth()+1;
+        const day = date.getDate();
+        const result = year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
         return result;
     }
 
     static parseDateTime(date:Date, time:string):Date {
-        let result = new Date(date);
-        let hour = parseInt(time.substring(0, 2));
-        let minute = parseInt(time.substring(3));
+        const result = new Date(date);
+        const hour = parseInt(time.substring(0, 2));
+        const minute = parseInt(time.substring(3));
         result.setHours(hour, minute);
         return result;
     }
 
     static parseLocalDate(someLocalDateTime:number[]):Date {
-        let result:Date = new Date(
+        const result:Date = new Date(
             someLocalDateTime[0],
             someLocalDateTime[1] - 1,
             someLocalDateTime[2],
@@ -148,7 +148,7 @@ export default class Helpers {
     }
 
     static parseLocalDateTime(someLocalDateTime:number[]):Date {
-        let result:Date = new Date(
+        const result:Date = new Date(
             someLocalDateTime[0],
             someLocalDateTime[1] - 1,
             someLocalDateTime[2],
@@ -163,14 +163,14 @@ export default class Helpers {
         if (!input) {
             return input;
         }
-        let m = moment(input, moment.HTML5_FMT.TIME_SECONDS);
-        let result = m.format('HH:mm');
+        const m = moment(input, moment.HTML5_FMT.TIME_SECONDS);
+        const result = m.format('HH:mm');
         return result;
     }
 
     static confirm(modal:any, text:string, title?:string, rejectText?:string, resolveText?:string):Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let params:any = {
+            const params:any = {
                 title: title,
                 text: text,
                 buttons: [
@@ -196,7 +196,7 @@ export default class Helpers {
 
     static alert(modal:any, text:string, title?:string):Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            let params:any = {
+            const params:any = {
                 title: title,
                 text: text,
                 buttons: [

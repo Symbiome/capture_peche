@@ -163,15 +163,26 @@ export default class LoginView extends Vue {
     justify-content: center;
 
     .welcome {
-      font-size: 24px;
-      line-height: 33px;
+      font-size: @fontsize-header-title;
+      line-height: calc(@fontsize-header-title + @line-height-padding-xxx-large);
+      @media(max-height:579px) {
+        font-size: @fontsize-header-title-small;
+        line-height: calc(@fontsize-header-title-small + @line-height-padding-xxx-large);
+      }
+
       &.keyboardShowing {
-        font-size: 16px;
-        line-height: 18px;
+        font-size: @fontsize-title-keyboardshowing;
+        line-height: calc(@fontsize-title-keyboardshowing + @line-height-padding-small);
       }
     }
     .logo {
+
       height: 100px;
+
+      @media(max-height:579px) {
+        height: 80px;
+      }
+
       &.keyboardShowing {
         height: 65px;
       }
@@ -179,8 +190,8 @@ export default class LoginView extends Vue {
   }
 
   .login-form {
-    margin-left: 30px;
-    margin-right: 30px;
+    margin-left: @margin-large;
+    margin-right: @margin-large;
 
     display: flex;
     flex-direction: column;
@@ -209,8 +220,8 @@ export default class LoginView extends Vue {
     .form-input div.field-error {
       background-color: @cardinal;
       color: @white;
-      padding-left: 5px;
-      padding-right: 5px;
+      padding-left: @margin-x-small;
+      padding-right: @margin-x-small;
     }
 
   }
@@ -220,7 +231,7 @@ export default class LoginView extends Vue {
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     color: @gunmetal;
-    padding-top: 20px;
+    padding-top: @vertical-margin-medium;
 
     display: flex;
     flex-direction: column;
@@ -232,9 +243,9 @@ export default class LoginView extends Vue {
     }
     .signin {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 20px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+      margin-bottom: @vertical-margin-medium;
       &.keyboardShowing {
           margin-bottom: -30px; 
       }
@@ -246,12 +257,12 @@ export default class LoginView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;
@@ -260,9 +271,9 @@ export default class LoginView extends Vue {
 
     .signup {
       height: 45px;
-      margin-left: 30px;
-      margin-right: 30px;
-      margin-bottom: 10px;
+      margin-left: @margin-large;
+      margin-right: @margin-large;
+      margin-bottom: @vertical-margin-small;
       &.keyboardShowing {
          display: none;
       }
@@ -274,12 +285,12 @@ export default class LoginView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 1px solid @pelorous;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @white-smoke;
           color: @pelorous;

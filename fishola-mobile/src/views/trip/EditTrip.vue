@@ -150,7 +150,7 @@ export default class EditTripView extends Vue {
 
   startSave() {
     // On demande au composant enfant de fournir le modèle mis à jour
-    let summaryComponent:any = this.$refs.summary;
+    const summaryComponent:any = this.$refs.summary;
     summaryComponent.emitUpdatedTrip();
   }
 
@@ -230,14 +230,14 @@ export default class EditTripView extends Vue {
     flex-direction: row;
     justify-content: center;
 
-    margin-bottom: 20px;
+    margin-bottom: @vertical-margin-medium;
 
-    font-size: 12px;
-    line-height: 16px;
+    font-size: @fontsize-small-paragraph;
+    line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     color: @pale-sky;
 
     span {
-      margin-left: 5px;
+      margin-left: @margin-x-small;
       font-style: italic;
     }
 
@@ -252,7 +252,7 @@ export default class EditTripView extends Vue {
     overflow-y: hidden;
 
     height: 200px;
-    margin-bottom: 20px;
+    margin-bottom: @vertical-margin-medium;
 
   }
 
@@ -264,21 +264,27 @@ export default class EditTripView extends Vue {
     align-items: center;
 
     color: @terra-cotta;
-    margin-bottom: 30px;
+    margin-bottom: @vertical-margin-large;
+
+
+    @media(max-height:579px) {
+      margin-bottom: @vertical-margin-medium;
+    }
+
 
     i {
-      font-size: 20px;
+      font-size: @fontsize-button-big;
     }
     div {
-      margin-left: 10px;
+      margin-left: @margin-small;
       text-align: left;
     }
 
   }
 
   .summary-pane {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
   }
 
 }

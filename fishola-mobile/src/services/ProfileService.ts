@@ -21,7 +21,7 @@
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import UserProfile from '@/pojos/UserProfile';
 import TripsService from './TripsService';
-import {UserSettings, Feedback, UpdatePasswordBean} from '@/pojos/BackendPojos';
+import {UserSettings, UpdatePasswordBean} from '@/pojos/BackendPojos';
 import UserRegister from '@/pojos/UserRegister';
 
 export class Credentials {
@@ -56,7 +56,7 @@ export default class ProfileService extends AbstractFisholaService {
     }
 
     static getProfile():Promise<UserProfile> {
-        let profile:UserProfile = UserProfile.getCurrent();
+        const profile:UserProfile = UserProfile.getCurrent();
         if (profile) {
             return Promise.resolve(profile);
         } else {
@@ -125,12 +125,12 @@ export default class ProfileService extends AbstractFisholaService {
      * @param token the password reinitialisation token
      */
     static resetPassword(token: string) {
-        let urlParams = { t: token };
+        const urlParams = { t: token };
         return this.backendGetWithArgs("/v1/security/reset-password-app", urlParams);
     }
 
     static verifyAccount(token: string) {
-        let urlParams = { t: token };
+        const urlParams = { t: token };
         return this.backendGetWithArgs("/v1/security/verify-app", urlParams);
     }
 
@@ -149,7 +149,7 @@ export default class ProfileService extends AbstractFisholaService {
                 successCallback,
                 (error) => {
                     if (error.status == 400) {
-                        let response = error.content || '{}';
+                        const response = error.content || '{}';
                         console.debug("Register response ", response);
                         validationErrorCallback(response);
                     } else {
@@ -175,7 +175,7 @@ export default class ProfileService extends AbstractFisholaService {
     }
 
     static fetchSettings():Promise<UserSettings> {
-        let promise = new Promise<UserSettings>((resolve, reject) => {
+        const promise = new Promise<UserSettings>((resolve, reject) => {
             this.backendGetOrOfflineStorage("/v1/security/settings")
                 .then(
                     (fetched) => {
@@ -209,7 +209,7 @@ export default class ProfileService extends AbstractFisholaService {
     }
 
     static prepareCaches():Promise<void> {
-        let allPromises:Promise<void>[] = [
+        const allPromises:Promise<void>[] = [
             this.prepareCache('/v1/security/settings')
         ];
         return new Promise<void>((resolve, reject) => {
@@ -217,13 +217,6 @@ export default class ProfileService extends AbstractFisholaService {
                 () => resolve()
                 ,reject
             );
-        });
-    }
-
-    static sendFeedback(feedback:Feedback):Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.backendPut("/v1/feedback", feedback)
-                .then(resolve, reject);
         });
     }
 

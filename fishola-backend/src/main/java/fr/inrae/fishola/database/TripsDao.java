@@ -29,15 +29,6 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
-import org.jooq.Condition;
-import org.jooq.SelectConditionStep;
-import org.jooq.SelectSeekStep2;
-import org.nuiton.util.pagination.PaginationOrder;
-import org.nuiton.util.pagination.PaginationParameter;
-import org.nuiton.util.pagination.PaginationResult;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -46,6 +37,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.jooq.Condition;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectSeekStep2;
+import org.nuiton.util.pagination.PaginationOrder;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
@@ -185,5 +184,16 @@ public class TripsDao extends AbstractFisholaDao {
                 .set(Tables.TRIP.HIDDEN, true)
                 .where(Tables.TRIP.ID.eq(tripId))
                 .execute());
+    }
+
+    public void unsetOwner(UUID userId) {
+        withContext(context -> context.update(Tables.TRIP)
+                .setNull(Tables.TRIP.OWNER_ID)
+                .where(Tables.TRIP.OWNER_ID.eq(userId))
+                .execute());
+    }
+
+    public String getTripsCSV() {
+        return withContext(context -> context.selectFrom("catchs_export").fetch().formatCSV(';'));
     }
 }

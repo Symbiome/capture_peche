@@ -23,10 +23,10 @@
     <FisholaHeader v-bind:title="true"
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
-    <div class="page register-page">
-      <div class="register-form">
+    <div class="page register-page keyboardSensitive">
+      <div class="register-form keyboardSensitive">
 
-        <h1>Inscription</h1>
+        <h1 class="keyboardSensitive">Inscription</h1>
 
         <FormInput name="firstName"
                     label="Prénom"
@@ -69,14 +69,15 @@
           <label for="register-cgu"></label>
           <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
         </div>
+        <div class="bottom-page-spacer"></div>
       </div>
-      <div class="register-buttons keyboardSensitive">
-        <div class="back hiddenWhenKeyboardShows">
+      <div class="register-buttons">
+        <div class="back">
           <button v-on:click="cancel">
             Retour
           </button>
         </div>
-        <div class="register keyboardSensitive">
+        <div class="register">
           <button v-on:click="register">
             S'enregistrer
           </button>
@@ -144,7 +145,7 @@ export default class RegisterView extends Vue {
 
   cleanValidationErros() {
     if (this.validationErrors) {
-      let keys = Object.keys(this.validationErrors);
+      const keys = Object.keys(this.validationErrors);
       keys.forEach(key => this.validationErrors[key] = '');
     }
   }
@@ -176,6 +177,17 @@ export default class RegisterView extends Vue {
 
 @import "../less/main";
 
+.register.page-with-header {
+  .page.register-page  {
+    height: calc(100% - @header-height - @vertical-margin-xx-large);
+
+    &.keyboardShowing {
+      height: calc(100% - @vertical-margin-xx-large);
+    }
+
+  }
+}
+
 .register-page {
 
   display: flex;
@@ -187,9 +199,7 @@ export default class RegisterView extends Vue {
   background-color: @white-smoke;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  margin-top: 50px;
-  padding-top: 30px;
-  padding-bottom: 90px;
+  margin-top: @vertical-margin-xx-large;
 
   &.keyboardShowing {
     margin-top: calc(5px + env(safe-area-inset-top));
@@ -199,20 +209,45 @@ export default class RegisterView extends Vue {
   }
 
   h1 {
-    margin-top: 0px;
-    margin-bottom: 30px;
-    height: 30px;
+    margin-top: @margin-large;
+    margin-bottom: @margin-large;
+    height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
-    font-size: 22px;
-    line-height: 30px;
+    font-size: @fontsize-title;
+    line-height: calc(@fontsize-title + @line-height-padding-xx-large);
     color: @pelorous;
     text-align: center;
+
+    // &.keyboardShowing {
+    //   margin-top: calc(@fontsize-title * 1.1);
+    //   margin-bottom: calc(@fontsize-title * 1.1);
+    //   line-height: calc(@fontsize-title + @line-height-padding-large);
+    //   padding-top: 0px;
+    //   padding-bottom:2px;
+    //   height: calc(100% - 5px);
+    // }
+
+    @media(max-height:579px) {
+      margin-top: @margin-medium;
+      margin-bottom: @margin-medium;
+    }
+
+    @media(max-height:450px) {
+      margin-top: @margin-small;
+      margin-bottom: @margin-small;
+    }
+
   }
 
   .register-form {
-    padding-left: 30px;
-    padding-right: 30px;
+    height: calc(100% - 55px);
+    padding-left: @margin-large;
+    padding-right: @margin-large;
+
+    &.keyboardShowing {
+      height: calc(100%);
+    }
 
     display: flex;
     flex-direction: column;
@@ -235,11 +270,11 @@ export default class RegisterView extends Vue {
     // }
 
     .register-cgu-label {
-      margin-left: 10px;
+      margin-left: @margin-small;
       color: @gunmetal;
-      font-size: 12px;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       font-weight: 300;
-      line-height: 16px;
 
       a {
         color: @pelorous;
@@ -255,12 +290,12 @@ export default class RegisterView extends Vue {
     bottom: 0px;
     height: 55px;
     background-color: @zircon;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
-    &.keyboardShowing {
-      height:35px;
-    }
+    // &.keyboardShowing {
+    //   padding-top: 5px;
+    // }
 
     display: flex;
     flex-direction: row;
@@ -269,10 +304,11 @@ export default class RegisterView extends Vue {
 
     .register {
       height: 45px;
-      &.keyboardShowing {
-        margin:auto;
-        margin-top: -10px;
-      }
+      // &.keyboardShowing {
+      //   margin:auto;
+      //   // margin-bottom: -30px;
+      //   // margin-top: -22px;
+      // }
       button {
 
           height: 100%;
@@ -281,12 +317,12 @@ export default class RegisterView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 0px;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: @terra-cotta;
           color: @white;
@@ -304,12 +340,12 @@ export default class RegisterView extends Vue {
 
           font-style: normal;
           font-weight: bold;
-          font-size: 18px;
-          line-height: 25px;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
           border: 1px solid @pelorous;
-          padding-left: 20px;
-          padding-right: 20px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
 
           background-color: transparent;
           color: @pelorous;

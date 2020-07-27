@@ -270,24 +270,24 @@ export default class DashboardView extends Vue {
   }
 
   loaded(data:DashboardAndSpecies) {
-    let speciesAliases = data.dashboard.speciesAliases;
+    const speciesAliases = data.dashboard.speciesAliases;
     data.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
 
-      let aliases = speciesAliases[species.id];
+      const aliases = speciesAliases[species.id];
       if (aliases) {
         species.alias = aliases.join(' ou ');
       }
     });
 
-    let speciesCount = data.dashboard.caughtSpeciesCount;
-    let distribution = data.dashboard.caughtSpeciesDistribution;
+    const speciesCount = data.dashboard.caughtSpeciesCount;
+    const distribution = data.dashboard.caughtSpeciesDistribution;
     Object.keys(distribution)
       .forEach((speciesId) => {
-        let species:SpeciesWithAlias = this.speciesIndex[speciesId];
-        let percent:number = Math.round(distribution[speciesId]);
-        let count:number = speciesCount[speciesId];
-        let entry:DistributionEntry = new DistributionEntry(species, percent, count);
+        const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+        const percent:number = Math.round(distribution[speciesId]);
+        const count:number = speciesCount[speciesId];
+        const entry:DistributionEntry = new DistributionEntry(species, percent, count);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -322,18 +322,18 @@ export default class DashboardView extends Vue {
   }
 
   parseTop(rawTop:{ [index: string]: CatchBean[] }):TopEntry[] {
-    let result:TopEntry[] = [];
-    let topSpecies:string[] = Object.keys(rawTop);
+    const result:TopEntry[] = [];
+    const topSpecies:string[] = Object.keys(rawTop);
     topSpecies.forEach((speciesId) => {
-      let species:SpeciesWithAlias = this.speciesIndex[speciesId];
-      let catchs:CatchBean[] = [];
-      let rawCatchs:any[] = rawTop[speciesId];
+      const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+      const catchs:CatchBean[] = [];
+      const rawCatchs:any[] = rawTop[speciesId];
       rawCatchs.forEach((rawCatch:any) => {
         this.catchToTripId[rawCatch.id] = rawCatch.tripId;
-        let aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
+        const aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
         catchs.push(aCatch);
       })
-      let entry:TopEntry = new TopEntry(species, catchs);
+      const entry:TopEntry = new TopEntry(species, catchs);
       result.push(entry);
     });
     return result;
@@ -364,8 +364,8 @@ export default class DashboardView extends Vue {
   }
 
   getMonth(date:number) {
-    let month = new Date(date).getMonth();
-    let result = this.months[month];
+    const month = new Date(date).getMonth();
+    const result = this.months[month];
     return result;
   }
 
@@ -421,11 +421,11 @@ export default class DashboardView extends Vue {
     height: 50px;
     span {
       font-style: italic;
-      font-size: 18px;
-      line-height: 25px;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
       color: @pale-sky;
       text-align: center;
-      margin-top: 30px;
+      margin-top: @vertical-margin-large;
     }
   }
 
@@ -435,40 +435,50 @@ export default class DashboardView extends Vue {
 
     text-align:center;
 
-    padding-top: 30px;
+    padding-top: @vertical-margin-large;
+
+    @media(max-height:579px) {
+      padding-top: @vertical-margin-small;
+    }
 
     color: @gunmetal;
 
     &.offline {
       height: 100%;
-      padding-left: 60px;
-      padding-right: 60px;
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
       display: flex;
       flex-direction: column;
       justify-content: center;
       span {
         color: @carrot-orange;
-        font-size: 18px;
-        line-height: 25px;
+        font-size: @fontsize-span-big;
+        line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
     }
 
     .shrinked {
-      padding-left: 30px;
-      padding-right: 30px;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
+
+      @media(max-width:350px) {
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
+      }
+
     }
 
     h2 {
 
       i {
         color: @pelorous;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
 
       font-style: normal;
       font-weight: normal;
-      font-size: 22px;
-      line-height: 30px;
+      font-size: @fontsize-title;
+      line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       text-align: left;
     }
 
@@ -479,16 +489,16 @@ export default class DashboardView extends Vue {
 
       .distribution-row {
 
-        margin-bottom: 10px;
+        margin-bottom: @vertical-margin-small;
 
         .distribution-row-data {
           display: flex;
           flex-direction: row;
           justify-content: space-between;
 
-          font-size: 12px;
-          line-height: 16px;
-          height: 16px;
+          font-size: @fontsize-small-paragraph;
+          line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+          height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
 
           .species {
             color: @gunmetal;
@@ -528,10 +538,10 @@ export default class DashboardView extends Vue {
     }
 
     .average-header {
-      height: 30px;
-      line-height: 30px;
+      height: @average-header-height;
+      line-height: @average-header-height;
       font-weight: bold;
-      font-size: 14px;
+      font-size: @fontsize-header-paragraph;
       color: @terra-cotta;
 
       display: flex;
@@ -542,13 +552,13 @@ export default class DashboardView extends Vue {
         border-radius: 15px;
         background-color: @terra-cotta;
         color: @white;
-        margin-right: 10px;
+        margin-right: @margin-small;
       }
     }
 
     .average {
       position: relative;
-      margin-top: 10px;
+      margin-top: @vertical-margin-small;
       width: 100%;
       display: flex;
       flex-direction: row;
@@ -569,14 +579,14 @@ export default class DashboardView extends Vue {
 
         .count {
           font-weight: bold;
-          font-size: 12px;
+          font-size: @fontsize-small-paragraph;
           color: @pelorous;
         }
 
         .average-row-bar {
           position: relative;
-          margin-top: 5px;
-          margin-bottom: 5px;
+          margin-top: @vertical-margin-xx-small;
+          margin-bottom: @vertical-margin-xx-small;
           height: 150px;
           width: 14px;
           border-radius: 7px;
@@ -601,7 +611,7 @@ export default class DashboardView extends Vue {
 
         .date {
           height: 50px;
-          font-size: 12px;
+          font-size: @fontsize-small-paragraph;
           color: @gunmetal;
           .day {
             font-weight: bold;
@@ -618,9 +628,8 @@ export default class DashboardView extends Vue {
       align-items: center;
       overflow-x: auto;
       overflow-y: hidden;
-
       height: 200px;
-      margin-bottom: 20px;
+      margin-bottom: @vertical-margin-medium;
 
     }
 
@@ -628,15 +637,15 @@ export default class DashboardView extends Vue {
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
-      margin-bottom: 10px;
+      margin-bottom: @vertical-margin-small;
 
-      padding-left: 30px;
-      padding-right: 30px;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
 
       overflow:auto;
 
       div.item {
-        margin-right: 20px;
+        margin-right: @margin-medium;
         color: @pale-sky;
         white-space: nowrap;
       }

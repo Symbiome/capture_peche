@@ -38,11 +38,8 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @ApplicationScoped
 public class FisholaApplication {
@@ -75,20 +72,31 @@ public class FisholaApplication {
 
         flyway.migrate();
 
-        ensureDocumentations();
         checkForDocumentations();
     }
 
     @Transactional
     void checkForDocumentations() {
         List<Documentation> emptyDocumentations = documentationDao.listDocumentationsWithoutContent();
+
+        ImmutableMap<String, String> defaultPDFs = ImmutableMap.<String, String>builder()
+                .put("annecy", "/sample/reglement-annecy.pdf")
+                .put("léman", "/sample/reglement-leman.pdf")
+                .put("bourget", "/sample/reglement-bourget.pdf")
+                .put("aiguebelette", "/sample/reglement-aiguebelette.pdf")
+                .put("espèces", "/sample/presentation-coregone-final.pdf")
+                .put("prélèvements", "/sample/fiche-prelevement.pdf")
+                .put("cgu", "/sample/CGU.pdf")
+                .build();
+
         if (!emptyDocumentations.isEmpty()) {
-            InputStream resource = this.getClass().getResourceAsStream("/sample/documentation.pdf");
             try {
-                byte[] bytes = IOUtils.toByteArray(resource);
                 for (Documentation documentation : emptyDocumentations) {
+                    String path = defaultPDFs.getOrDefault(documentation.getNaturalId(), "/sample/documentation.pdf");
+                    InputStream resource = this.getClass().getResourceAsStream(path);
+                    byte[] bytes = IOUtils.toByteArray(resource);
                     if (log.isInfoEnabled()) {
-                        log.info("Insertion du PDF de remplacement : " + documentation.getName());
+                        log.info("Insertion du PDF par défaut : " + documentation.getName());
                     }
                     documentation.setContent(bytes);
                     documentationDao.updateDocumentation(documentation);
@@ -96,54 +104,6 @@ public class FisholaApplication {
             } catch (IOException ioe) {
                 throw new FisholaTechnicalException("Impossible de lire le fichier par défaut", ioe);
             }
-        }
-    }
-
-    @Transactional
-    void ensureDocumentations() {
-        ensureDocumentationByName("Réglementation sur le lac d'Annecy", "/sample/reglement-annecy.pdf");
-        ensureDocumentationByName("Réglementation sur le Léman", "/sample/reglement-leman.pdf");
-        ensureDocumentationByName("Réglementation sur le lac du Bourget", "/sample/reglement-bourget.pdf");
-        ensureDocumentationByName("Réglementation sur le lac d'Aiguebelette", "/sample/reglement-aiguebelette.pdf");
-        ensureDocumentationByName("Documentation sur les espèces", "/sample/presentation-coregone-final.pdf");
-        ensureDocumentationByName("Documentation sur les prélèvements", "/sample/fiche-prelevement.pdf");
-        ensureDocumentationByName("Conditions Générales d'Utilisation", "/sample/CGU.pdf");
-    }
-
-    @Transactional
-    void ensureDocumentationByName(String name, String resourcePath) {
-
-        LinkedHashMap<UUID, String> docs = documentationDao.listDocumentations();
-
-        // TODO AThimel 09/04/2020 Améliorer ça pour éviter les problèmes en cas de renommage inopiné
-        Optional<UUID> docId = docs.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().equalsIgnoreCase(name))
-                .map(Map.Entry::getKey)
-                .findAny();
-
-        if (docId.isPresent()) {
-
-            Optional<Documentation> optional = documentationDao.getDocumentation(docId.get());
-            if (optional.isPresent()) {
-                InputStream resource = this.getClass().getResourceAsStream(resourcePath);
-                try {
-                    byte[] bytes = IOUtils.toByteArray(resource);
-                    Documentation documentation = optional.get();
-                    if (log.isInfoEnabled()) {
-                        log.info("Insertion du PDF : " + documentation.getName());
-                    }
-                    documentation.setContent(bytes);
-                    documentationDao.updateDocumentation(documentation);
-                } catch (IOException ioe) {
-                    throw new FisholaTechnicalException("Impossible de lire le fichier", ioe);
-                }
-            } else {
-                log.error("Unable to find documentation in database");
-            }
-
-        } else {
-            log.error("Unable to find documentation in database");
         }
     }
 

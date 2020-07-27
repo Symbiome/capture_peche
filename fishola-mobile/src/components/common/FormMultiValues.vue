@@ -61,18 +61,18 @@ export default class FormMultiValues extends Vue {
 @import "../../less/main";
 
 .form-multi-values {
-  margin-top: 6px;
+  margin-top: @vertical-margin-x-small;
 
-  font-size: 12px;
-  line-height: 16px;
+  font-size: @fontsize-form-input;
+  line-height: calc(@fontsize-form-input + @line-height-padding-medium);
 
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 
   border-bottom: 1px solid @solitude;
-  margin-bottom: 20px;
-  padding-bottom: 5px;
+  margin-bottom: @vertical-margin-medium;
+  padding-bottom: @vertical-margin-xx-small;
 
   .header {
 
@@ -89,8 +89,8 @@ export default class FormMultiValues extends Vue {
 
     a {
       font-weight: bold;
-      font-size: 14px;
-      line-height: 19px;
+      font-size: @fontsize-form-header;
+      line-height: calc(@fontsize-form-header + @line-height-padding-large);
       color: @pelorous;
     }
   }
@@ -102,8 +102,8 @@ export default class FormMultiValues extends Vue {
 
     li {
       list-style:none;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: @fontsize-form-input;
+      line-height: calc(@fontsize-form-input + @line-height-padding-medium);
       color: @gunmetal;
       text-align: left;
 
