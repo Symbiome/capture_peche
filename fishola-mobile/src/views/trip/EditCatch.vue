@@ -69,7 +69,7 @@
           <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
             <i class="icon-info"/>
             <span>
-              Indiquez seulement le poids total si vous avez plusieurs captures de cette même espèce
+              Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
             </span>
           </div>
           <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
