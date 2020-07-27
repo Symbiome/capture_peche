@@ -49,6 +49,7 @@ html {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
+  overflow-x: auto;
 }
 
 .page-content {
