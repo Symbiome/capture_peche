@@ -88,7 +88,7 @@ public abstract class AbstractFisholaResource {
 
     private NewCookie newTokenCookie(String tokenName, String token, int maxAge) {
         // XXX AThimel 15/06/2020 Ça pourrait être problématique pour faire tourner un autre profil que "dev" sur une IP locale
-        boolean secure = !config.isDevMode();
+        boolean secure = false;
         NewCookie result = new NewCookie(
                 tokenName,
                 token,
