@@ -178,7 +178,7 @@ export default class ForgottenPassword extends Vue {
     margin-bottom:@margin-large;
 
     @media(max-height:579px) {
-      margin-bottom:@margin-small;
+      margin-bottom:@margin-medium;
     }
 
     &.collapsed {
@@ -190,7 +190,7 @@ export default class ForgottenPassword extends Vue {
     &.expanded {
       &.keyboardShowing {
         position: absolute;
-        bottom: 0;
+        top: calc(env(safe-area-inset-top));
         border-top-left-radius: @margin-large;
         border-top-right-radius: @margin-large;
         color: @gunmetal;
@@ -218,8 +218,8 @@ export default class ForgottenPassword extends Vue {
     @media(max-height:579px) {
       height: calc(@fontsize-title + @line-height-padding-large);
       line-height: calc(@fontsize-title + @line-height-padding-large);
-      margin-top: @margin-small;
-      margin-bottom: @margin-small;
+      margin-top: @vertical-margin-xx-small;
+      margin-bottom: @vertical-margin-xx-small;
     }
 
   }
