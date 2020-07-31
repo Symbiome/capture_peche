@@ -203,6 +203,10 @@ export default class TripCatchsView extends Vue {
       }
 
       height: 44px;
+
+      @media(max-height:610px) {
+        height:80px;
+      }
       width: 100%;
 
       button {
