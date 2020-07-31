@@ -53,10 +53,18 @@
                 </b-upload>
 
                 <!-- Booleans -->
-                <b-checkbox v-model="item[col.field]"
-                            v-if="col.isABoolean">
-                    {{item[col.field]?'Oui':'Non'}}
-                </b-checkbox>
+                <div v-if="col.isABoolean">
+                    <b-radio v-model="item[col.field]"
+                        :name="col.field"
+                        :native-value="true">
+                        Oui
+                    </b-radio>
+                    <b-radio v-model="item[col.field]"
+                        :name="col.field"
+                        :native-value="false">
+                        Non
+                    </b-radio>
+                </div>
             </b-field>
         </div>
         <div class="buttons">
