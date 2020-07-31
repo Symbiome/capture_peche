@@ -24,9 +24,9 @@
                    v-bind:avatar="false"
                    v-bind:menu="false"/>
     <div class="page login-page">
-      <div class="login-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
-        <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <img class="logo keyboardSensitive" src="img/logo-big.svg" alt="FISHOLA"/>
+      <div class="login-title keyboardSensitive">
+        <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">Bienvenue sur</div>
+        <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" src="img/logo-big.svg" alt="FISHOLA"/>
       </div>
       <div class="login-form">
         <FormInput name="email"
@@ -157,6 +157,10 @@ export default class LoginView extends Vue {
     &.keyboardShowing {
       margin-top: calc(2 * env(safe-area-inset-top));
       height: 81px;
+      @media(max-height:500px) {
+        margin-top: 0px;
+        height: 0px;
+      }
     }
     display: flex;
     flex-direction: column;
