@@ -21,7 +21,7 @@ Tester l'application, à minima le login poiur vérifier les cookies et vérifie
 Une fois tous les tests effectués, cliquer sur "App" en haut du project explorer à gauche
 Dans l'éditeur, incrémenter le numéro de build
 Dans la sélection de plateforme (là où vous aviez sélectionné iPhone 8 plus pour les tests), sélectionner "Generic iOS Device" (requis pour pouvoir archiver)
-Menu Product > Archive
+Menu Product > Archive (ça dure une plombe)
 
 ## Envoyer la version sur itunesconnect
 Une fois l'archive effectuée, l'organizer apparait (vous pouvez le rouvrir avec Window > Organizer)
