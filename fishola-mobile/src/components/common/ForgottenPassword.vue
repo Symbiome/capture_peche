@@ -28,7 +28,7 @@
        <h1 class="title">Mot de passe oublié</h1>
        <FormInput name="forgottenEmail"
           type="email"
-          label="Pour quel e-mail avez-vous oublié votre mot de passe? "
+          label="Pour quel e-mail avez-vous oublié votre mot de passe ?"
           placeholder="Renseignez votre E-mail"
           v-model="forgottenEmail"
           v-bind:error="emailError"
