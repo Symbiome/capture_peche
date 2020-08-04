@@ -124,6 +124,8 @@ export default class FormInput extends Vue {
     border: 1px solid @pale-sky;
     color: @gunmetal;
 
+    font-size: @fontsize-form-input;
+
     &::placeholder {
       font-style: italic;
       font-weight: normal;
