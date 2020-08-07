@@ -195,6 +195,7 @@ export default class ForgottenPassword extends Vue {
         border-top-right-radius: @margin-large;
         color: @gunmetal;
         width:100vw;
+        height:200vh;
         padding-top:@margin-medium;
         padding-left:@margin-large;
         padding-right:@margin-large;
