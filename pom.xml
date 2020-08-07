@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.0-rc-1</version>
+  <version>1.0.2</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -60,9 +60,9 @@
     <gitlabProjectName>fishola</gitlabProjectName>
 
     <quarkusVersion>1.6.1.Final</quarkusVersion>
-    <jooqVersion>3.13.3</jooqVersion>
-    <flywayVersion>6.5.1</flywayVersion>
-    <jacksonVersion>2.11.1</jacksonVersion>
+    <jooqVersion>3.13.4</jooqVersion>
+    <flywayVersion>6.5.3</flywayVersion>
+    <jacksonVersion>2.11.2</jacksonVersion>
     <postgresqlDriverVersion>42.2.14</postgresqlDriverVersion>
     <testcontainersVersion>1.14.3</testcontainersVersion>
 

@@ -28,7 +28,7 @@
        <h1 class="title">Mot de passe oublié</h1>
        <FormInput name="forgottenEmail"
           type="email"
-          label="Pour quel e-mail avez-vous oublié votre mot de passe? "
+          label="Pour quel e-mail avez-vous oublié votre mot de passe ?"
           placeholder="Renseignez votre E-mail"
           v-model="forgottenEmail"
           v-bind:error="emailError"
@@ -178,7 +178,7 @@ export default class ForgottenPassword extends Vue {
     margin-bottom:@margin-large;
 
     @media(max-height:579px) {
-      margin-bottom:@margin-small;
+      margin-bottom:@margin-medium;
     }
 
     &.collapsed {
@@ -190,11 +190,12 @@ export default class ForgottenPassword extends Vue {
     &.expanded {
       &.keyboardShowing {
         position: absolute;
-        bottom: 0;
+        top: calc(env(safe-area-inset-top));
         border-top-left-radius: @margin-large;
         border-top-right-radius: @margin-large;
         color: @gunmetal;
         width:100vw;
+        height:200vh;
         padding-top:@margin-medium;
         padding-left:@margin-large;
         padding-right:@margin-large;
@@ -218,8 +219,8 @@ export default class ForgottenPassword extends Vue {
     @media(max-height:579px) {
       height: calc(@fontsize-title + @line-height-padding-large);
       line-height: calc(@fontsize-title + @line-height-padding-large);
-      margin-top: @margin-small;
-      margin-bottom: @margin-small;
+      margin-top: @vertical-margin-xx-small;
+      margin-bottom: @vertical-margin-xx-small;
     }
 
   }

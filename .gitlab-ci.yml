@@ -247,8 +247,8 @@ package:docker-beta:
     - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:backend-beta fishola-backend
-    - docker build --no-cache --file fishola-mobile/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:mobile-beta fishola-mobile
-    - docker build --no-cache --file fishola-admin/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:admin-beta fishola-admin
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:mobile-beta fishola-mobile
+    - docker build --no-cache --file fishola-admin/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:admin-beta fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
