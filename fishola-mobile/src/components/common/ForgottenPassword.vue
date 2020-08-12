@@ -178,7 +178,7 @@ export default class ForgottenPassword extends Vue {
     margin-bottom:@margin-large;
 
     @media(max-height:579px) {
-      margin-bottom:@margin-medium;
+      margin-bottom:@margin-xx-large;
     }
 
     &.collapsed {

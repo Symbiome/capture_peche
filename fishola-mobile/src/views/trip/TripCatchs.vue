@@ -188,8 +188,11 @@ export default class TripCatchsView extends Vue {
         overflow-x: auto;
         overflow-y: hidden;
 
-        height: calc(100vw - 80px);
+        height: calc(100vw - 120px);
 
+        @media(max-height:610px) {
+          height: calc(100vw - 100px);           
+        }
       }
 
     }
@@ -199,7 +202,7 @@ export default class TripCatchsView extends Vue {
       margin-bottom: @vertical-margin-xx-large;
 
       @media(max-height:610px) {
-        margin-top: @vertical-margin-medium;
+        margin-top: @vertical-margin-x-small;
       }
 
       height: 44px;
@@ -212,6 +215,9 @@ export default class TripCatchsView extends Vue {
       button {
 
         height: 44px;
+        @media(max-height:610px) {
+          height: 35px;
+        }
         font-style: normal;
         font-weight: bold;
         font-size: @fontsize-button;
