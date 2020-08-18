@@ -59,11 +59,11 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.6.1.Final</quarkusVersion>
+    <quarkusVersion>1.7.0.Final</quarkusVersion>
     <jooqVersion>3.13.4</jooqVersion>
-    <flywayVersion>6.5.3</flywayVersion>
+    <flywayVersion>6.5.5</flywayVersion>
     <jacksonVersion>2.11.2</jacksonVersion>
-    <postgresqlDriverVersion>42.2.14</postgresqlDriverVersion>
+    <postgresqlDriverVersion>42.2.15</postgresqlDriverVersion>
     <testcontainersVersion>1.14.3</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
