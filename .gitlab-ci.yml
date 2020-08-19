@@ -17,7 +17,7 @@ stages:
 - sonar
 
 build:dependency-tree:
-  image: maven:3.6-openjdk-11
+  image: maven:3.6-openjdk-14
   stage: build
   when: manual
   script:
@@ -26,7 +26,7 @@ build:dependency-tree:
     - sticky
 
 build:compile-only:
-  image: maven:3.6-openjdk-11
+  image: maven:3.6-openjdk-14
   stage: build
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
@@ -52,7 +52,7 @@ build:compile-only:
     - docker
 
 build:compile-with-tests:
-  image: maven:3.6-openjdk-11
+  image: maven:3.6-openjdk-14
   stage: build
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
