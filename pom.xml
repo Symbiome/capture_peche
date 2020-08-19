@@ -70,7 +70,7 @@
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>14</javaVersion>
+    <javaVersion>11</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
     <licensePluginVersion>2.0.0</licensePluginVersion>
