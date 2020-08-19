@@ -88,8 +88,8 @@
 
   <modules>
     <module>fishola-backend</module>
-    <module>fishola-mobile</module>
     <module>fishola-admin</module>
+    <module>fishola-mobile</module>
   </modules>
 
   <dependencyManagement>
