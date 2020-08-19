@@ -279,7 +279,7 @@ public class TripResource extends AbstractFisholaResource {
 
         Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
         Preconditions.checkState(existingTrip != null, "Impossible de mettre à jour une sortie qui n'existe pas : " + tripId);
-        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
+        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId), "L'utilisateur n'est pas le propriétaire de la sortie");
 
         boolean stillModifiable = isStillModifiable(existingTrip);
         if (!stillModifiable && trip.saveDelayMarker.isPresent()) {
