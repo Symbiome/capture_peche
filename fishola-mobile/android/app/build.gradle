@@ -6,8 +6,8 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 12
-        versionName "1.0.3"
+        versionCode 13
+        versionName "1.0.4"
         testInstrumentationRunner "androidx.test.runner.AndroixoJUnitRunner"
         resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
     }

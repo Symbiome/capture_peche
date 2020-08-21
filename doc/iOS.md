@@ -52,6 +52,9 @@ Ajoutez un texte indiquant les nouveautés
 Une fois la béta bien testée
 Cliquer sur l'onglet "App Store", puis dans la section build sélectionnez le build souhaité
 Assurez vous que la publication est bien en "manuelle" (ça signifie que quand Apple valide le build, c'est vous qui décidez manuellement de le promouvoir)
+A la question "votre application utilise-t-elle un un identifiant publicitaire IDFA" répondez "Non"
+Cliquez sur soumettre
+Quand l'application sera validée, vous recevrez un mail, et vous pourrez publier la version en en clic
 
 ## Troubleshooting
 

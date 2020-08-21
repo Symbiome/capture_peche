@@ -137,7 +137,10 @@ export default class FormSelect extends Vue {
 
     background: transparent;
     border: 1px solid @pale-sky;
+
     color: @gunmetal;
+    font-size: @fontsize-form-input;
+    font-family: 'Open Sans', sans-serif;
   }
 
   select.field-error {

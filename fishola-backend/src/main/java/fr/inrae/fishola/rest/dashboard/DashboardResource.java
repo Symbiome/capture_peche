@@ -110,7 +110,7 @@ public class DashboardResource extends AbstractFisholaResource {
         List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
         Multimap<UUID, SpeciesByLake> speciesWithAliasesIndex = Multimaps.index(speciesByLakes, SpeciesByLake::getSpeciesId);
         speciesWithAliasesIndex.asMap().forEach((speciesId, speciesWithAlias) -> {
-            Set<String> aliases = speciesByLakes.stream()
+            Set<String> aliases = speciesWithAlias.stream()
                     .map(SpeciesByLake::getAlias)
                     .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
             builder.putSpeciesAliases(speciesId, aliases);
