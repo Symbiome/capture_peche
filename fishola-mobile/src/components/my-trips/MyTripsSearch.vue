@@ -91,6 +91,8 @@ export default class MyTripsSearch extends Vue {
 
     input {
       border: 0px;
+      // Calcul : 16px=icone de recherche + @margin-small=margin-left de l'icône de recherche + 15px=la moitié du border radius
+      width: calc(100% - 16px - @margin-small - 15px);
     }
 
     input::placeholder {
