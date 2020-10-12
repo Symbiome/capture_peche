@@ -40,13 +40,35 @@
         imgElement.src = URL.createObjectURL(e.target.files[0]);
       }, false);
       imgElement.onload = function() {
-        let mat = cv.imread(imgElement);
-        cv.imshow('canvasOutput', mat);
-        mat.delete();
+        // load the image, convert it to grayscale, and blur it slightly
+        let src = cv.imread(imgElement);
+        let grayed = new cv.Mat();
+        let grayBlurred = new cv.Mat();
+        cv.cvtColor(src, grayed, cv.COLOR_BGR2GRAY, 0);
+        let blurSize = new cv.Size(7, 7);
+        cv.GaussianBlur(grayed, grayBlurred, blurSize, 0, 0, cv.BORDER_DEFAULT);
+        result = grayBlurred;
+        // perform edge detection, then perform a dilation + erosion to
+        // close gaps in between object edges
+        /*edged = cv.Canny(gray, 50, 100);
+        edged = cv.dilate(edged, None, iterations=1);
+        edged = cv.erode(edged, None, iterations=1);
+        // find contours in the edge map
+        //cnts = cv.findContours(edged.copy(), cv.RETR_EXTERNAL,
+          cv.CHAIN_APPROX_SIMPLE);
+        //cnts = imutils.grab_contours(cnts);
+        // sort the contours from left-to-right and initialize the
+        // 'pixels per metric' calibration variable
+        //(cnts, _) = contours.sort_contours(cnts);
+        //pixelsPerMetric = None;
+        mat.delete();*/
+        cv.imshow('canvasOutput', result);
+        src.delete();
+        dst.delete();
       };
       function onOpenCvReady() {
         document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
-}
+      }
     </script>
   </body>
 </html>
