@@ -18,15 +18,35 @@
     <noscript>
       <strong>FISHOLA est l'application pour une gestion durable de la pêche sur les lacs alpins (Léman, lacs d’Annecy, du Bourget et d’Aiguebelette).</strong>
     </noscript>
-    <div id="app"></div>
+    <!--<div id="app"></div>-->
+    <p id="status">OpenCV.js is loading...</p>
+    <div>
+      <div class="inputoutput">
+        <img style="display:none" id="imageSrc" alt="No Image" />
+        <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+      </div>
+    </div>
+    <div class="inputoutput">
+      <canvas id="canvasOutput" ></canvas>
+      <div class="caption">canvasOutput</div>
+    </div>
     <!-- built files will be auto injected -->
     <!-- Link open cv-->
     <script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
     <script type="text/javascript">
-      console.error("coucou");
+      let imgElement = document.getElementById('imageSrc');
+      let inputElement = document.getElementById('fileInput');
+      inputElement.addEventListener('change', (e) => {
+        imgElement.src = URL.createObjectURL(e.target.files[0]);
+      }, false);
+      imgElement.onload = function() {
+        let mat = cv.imread(imgElement);
+        cv.imshow('canvasOutput', mat);
+        mat.delete();
+      };
       function onOpenCvReady() {
-        console.error("openCV is ready");
-      }
+        document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+}
     </script>
   </body>
 </html>
