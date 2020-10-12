@@ -20,5 +20,13 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+    <!-- Link open cv-->
+    <script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script type="text/javascript">
+      console.error("coucou");
+      function onOpenCvReady() {
+        console.error("openCV is ready");
+      }
+    </script>
   </body>
 </html>
