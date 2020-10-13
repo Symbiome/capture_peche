@@ -13,41 +13,67 @@
         // And https://www.pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
         // Step 1: load the image, convert it to grayscale, and blur it slightly
         let src = cv.imread(imgElement);
-        let output1 = new cv.Mat();
-        let output2 = new cv.Mat();
-        cv.cvtColor(src, output1, cv.COLOR_BGR2GRAY, 0);
+        let refined1 = new cv.Mat();
+        let refined2 = new cv.Mat();
+        cv.cvtColor(src, refined1, cv.COLOR_BGR2GRAY, 0);
         let blurSize = new cv.Size(7, 7);
-        cv.GaussianBlur(output1, output2, blurSize, 0, 0, cv.BORDER_DEFAULT);
+        cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
         // Step 2: perform edge detection, then perform a dilation + erosion to
         // close gaps in between object edges
         // Step 2.1 : edge detection
-        cv.Canny(output2, output1, 50, 100, 3, false);
+        cv.Canny(refined2, refined1, 50, 100, 3, false);
         // Step 2.2 : dilation
         const kernel = cv.getStructuringElement(cv.MORPH_RECT,new cv.Size(5,5));
-        cv.dilate(output1, output2, kernel, new cv.Point(-1, 1), 1);
+        cv.dilate(refined1, refined2, kernel, new cv.Point(-1, 1), 1);
         // Step 2.3 : erosion
        /* var borderValue = cv.Scalar.all(Number.MAX_VALUE);
         var erosion_type = cv.MorphShapes.MORPH_RECT.value;
         var erosion_size = [2*Control.erosion_size+1, 2*Control.erosion_size+1];
         var element = cv.getStructuringElement(erosion_type, erosion_size, [-1, -1]);
-        cv.erode(output2, output1, element, [-1, -1], 1, cv.BORDER_CONSTANT, borderValue);*/
+        cv.erode(refined2, refined1, element, [-1, -1], 1, cv.BORDER_CONSTANT, borderValue);*/
        
         // Step 3: find coutours in the edge map
-        cv.threshold(output2, output1, 120, 200, cv.THRESH_BINARY);
-        let dst = cv.Mat.zeros(output1.cols, output1.rows, cv.CV_8UC3);
+        // Step 3.1 : find contours
+        cv.threshold(refined2, refined1, 120, 200, cv.THRESH_BINARY);
+        let dst1 = cv.Mat.zeros(refined1.cols, refined1.rows, cv.CV_8UC3);
+        let dst2 = cv.Mat.zeros(refined1.cols, refined1.rows, cv.CV_8UC3);
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        // You can try more different parameters
-        cv.findContours(output1, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+        let poly = new cv.MatVector();
+        cv.findContours(refined1, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+
+        // Step 3.2 : approximates each contour to polygon
+        for (let i = 0; i < contours.size(); ++i) {
+            let tmp = new cv.Mat();
+            let cnt = contours.get(i);
+            cv.approxPolyDP(cnt, tmp, 3, true);
+            poly.push_back(tmp);
+            cnt.delete(); tmp.delete();
+        }
+
+        // Step 4: sort contours from left to right
         // draw contours with random Scalar
         for (let i = 0; i < contours.size(); ++i) {
             let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
                                     Math.round(Math.random() * 255));
-            cv.drawContours(dst, contours, i, color, 1, cv.LINE_8, hierarchy, 100);
+            let cnt = contours.get(i);
+            let rect = cv.boundingRect(cnt);
+            let point1 = new cv.Point(rect.x, rect.y);
+            let point2 = new cv.Point(rect.x + rect.width, rect.y + rect.height);
+            cv.rectangle(dst2, point1, point2, color, 2, cv.LINE_AA, 0);
+            //cv.drawContours(dst2, poly, i, color, 1, 8, hierarchy, 0);
         }
-        cv.imshow('canvasOutput1', src);
-        cv.imshow('canvasOutput2', output1);
-        cv.imshow('canvasOutput3', dst);
+
+        // draw contours with random Scalar
+        for (let i = 0; i < contours.size(); ++i) {
+            let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
+                                    Math.round(Math.random() * 255));
+            cv.drawContours(dst1, contours, i, color, 1, cv.LINE_8, hierarchy, 100);
+        }
+
+        cv.imshow('canvasOutput1', refined1);
+        cv.imshow('canvasOutput2', dst1);
+        cv.imshow('canvasOutput3', dst2);
         // find contours in the edge map
         //cnts = cv.findContours(edged.copy(), cv.RETR_EXTERNAL,
         //  cv.CHAIN_APPROX_SIMPLE);
@@ -57,5 +83,8 @@
         //(cnts, _) = contours.sort_contours(cnts);
         //pixelsPerMetric = None;
         src.delete();
-        dst.delete();
+        refined1.delete();
+        refined2.delete();
+        dst1.delete();
+        dst2.delete();
       };
