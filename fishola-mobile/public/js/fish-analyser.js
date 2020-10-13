@@ -37,26 +37,37 @@
         cv.threshold(refined2, refined1, 120, 200, cv.THRESH_BINARY);
         let dst1 = cv.Mat.zeros(refined1.cols, refined1.rows, cv.CV_8UC3);
         let dst2 = cv.Mat.zeros(refined1.cols, refined1.rows, cv.CV_8UC3);
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
-        let poly = new cv.MatVector();
-        cv.findContours(refined1, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+        let contours1 = new cv.MatVector();
+        let contours2 = new cv.MatVector();
+        let hierarchy1 = new cv.Mat();
+        let hierarchy2 = new cv.Mat();
+        let poly1 = new cv.MatVector();
+        let poly2 = new cv.MatVector();
+        cv.findContours(refined1, contours1, hierarchy1, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+        cv.findContours(refined2, contours2, hierarchy2, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
         // Step 3.2 : approximates each contour to polygon
-        for (let i = 0; i < contours.size(); ++i) {
+        for (let i = 0; i < contours1.size(); ++i) {
             let tmp = new cv.Mat();
-            let cnt = contours.get(i);
+            let cnt = contours1.get(i);
             cv.approxPolyDP(cnt, tmp, 3, true);
-            poly.push_back(tmp);
+            poly1.push_back(tmp);
+            cnt.delete(); tmp.delete();
+        }
+        for (let i = 0; i < contours2.size(); ++i) {
+            let tmp = new cv.Mat();
+            let cnt = contours2.get(i);
+            cv.approxPolyDP(cnt, tmp, 3, true);
+            poly2.push_back(tmp);
             cnt.delete(); tmp.delete();
         }
 
         // Step 4: bounding boxes
         // Bouding rects
-        for (let i = 0; i < poly.size(); ++i) {
+        for (let i = 0; i < poly1.size(); ++i) {
             let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
                                     Math.round(Math.random() * 255));
-            let cnt = poly.get(i);
+            let cnt = poly1.get(i);
             let rect = cv.boundingRect(cnt);
             let point1 = new cv.Point(rect.x, rect.y);
             let point2 = new cv.Point(rect.x + rect.width, rect.y + rect.height);
@@ -65,10 +76,10 @@
         }
 
         // Min area rects
-        for (let i = 0; i < poly.size(); ++i) {
+        for (let i = 0; i < poly2.size(); ++i) {
             let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
                                     Math.round(Math.random() * 255));
-            let cnt = poly.get(i);
+            let cnt = poly2.get(i);
             let rotatedRect = cv.minAreaRect(cnt);
             let vertices = cv.RotatedRect.points(rotatedRect);
             for (let i = 0; i < 4; i++) {
