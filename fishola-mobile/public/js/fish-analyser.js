@@ -51,24 +51,29 @@
             cnt.delete(); tmp.delete();
         }
 
-        // Step 4: sort contours from left to right
-        // draw contours with random Scalar
-        for (let i = 0; i < contours.size(); ++i) {
+        // Step 4: bounding boxes
+        // Bouding rects
+        for (let i = 0; i < poly.size(); ++i) {
             let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
                                     Math.round(Math.random() * 255));
-            let cnt = contours.get(i);
+            let cnt = poly.get(i);
             let rect = cv.boundingRect(cnt);
             let point1 = new cv.Point(rect.x, rect.y);
             let point2 = new cv.Point(rect.x + rect.width, rect.y + rect.height);
-            cv.rectangle(dst2, point1, point2, color, 2, cv.LINE_AA, 0);
+            cv.rectangle(dst1, point1, point2, color, 2, cv.LINE_AA, 0);
             //cv.drawContours(dst2, poly, i, color, 1, 8, hierarchy, 0);
         }
 
-        // draw contours with random Scalar
-        for (let i = 0; i < contours.size(); ++i) {
+        // Min area rects
+        for (let i = 0; i < poly.size(); ++i) {
             let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
                                     Math.round(Math.random() * 255));
-            cv.drawContours(dst1, contours, i, color, 1, cv.LINE_8, hierarchy, 100);
+            let cnt = poly.get(i);
+            let rotatedRect = cv.minAreaRect(cnt);
+            let vertices = cv.RotatedRect.points(rotatedRect);
+            for (let i = 0; i < 4; i++) {
+                cv.line(dst2, vertices[i], vertices[(i + 1) % 4], color, 2, cv.LINE_AA, 0);
+            }
         }
 
         cv.imshow('canvasOutput1', refined1);
