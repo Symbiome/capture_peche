@@ -22,10 +22,11 @@ COPY target/*-runner.jar /deployments/app.jar
 WORKDIR /deployments
 EXPOSE 8080
 
-RUN adduser -G root --no-create-home 1001 \
-  && chown -R 1001 /deployments \
-  && chmod -R "g+rwX" /deployments \
-  && chown -R 1001:root /deployments
-USER 1001
+## Remove for the moment cause the command is no more available oO
+#RUN adduser -G root --no-create-home 1001 \
+#  && chown -R 1001 /deployments \
+#  && chmod -R "g+rwX" /deployments \
+#  && chown -R 1001:root /deployments
+#USER 1001
 
 CMD ["java", "-Dquarkus.profile=demo", "-jar", "app.jar"]
