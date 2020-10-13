@@ -32,43 +32,7 @@
     </div>
     <!-- built files will be auto injected -->
     <!-- Link open cv-->
-    <script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
-    <script type="text/javascript">
-      let imgElement = document.getElementById('imageSrc');
-      let inputElement = document.getElementById('fileInput');
-      inputElement.addEventListener('change', (e) => {
-        imgElement.src = URL.createObjectURL(e.target.files[0]);
-      }, false);
-      imgElement.onload = function() {
-        // load the image, convert it to grayscale, and blur it slightly
-        let src = cv.imread(imgElement);
-        let grayed = new cv.Mat();
-        let grayBlurred = new cv.Mat();
-        cv.cvtColor(src, grayed, cv.COLOR_BGR2GRAY, 0);
-        let blurSize = new cv.Size(7, 7);
-        cv.GaussianBlur(grayed, grayBlurred, blurSize, 0, 0, cv.BORDER_DEFAULT);
-        result = grayBlurred;
-        // perform edge detection, then perform a dilation + erosion to
-        // close gaps in between object edges
-        /*edged = cv.Canny(gray, 50, 100);
-        edged = cv.dilate(edged, None, iterations=1);
-        edged = cv.erode(edged, None, iterations=1);
-        // find contours in the edge map
-        //cnts = cv.findContours(edged.copy(), cv.RETR_EXTERNAL,
-          cv.CHAIN_APPROX_SIMPLE);
-        //cnts = imutils.grab_contours(cnts);
-        // sort the contours from left-to-right and initialize the
-        // 'pixels per metric' calibration variable
-        //(cnts, _) = contours.sort_contours(cnts);
-        //pixelsPerMetric = None;
-        mat.delete();*/
-        cv.imshow('canvasOutput', result);
-        src.delete();
-        dst.delete();
-      };
-      function onOpenCvReady() {
-        document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
-      }
-    </script>
+    <script src="js/fish-analyser.js" type="text/javascript"></script>
+    <script src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
   </body>
 </html>
