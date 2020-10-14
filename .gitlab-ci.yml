@@ -1,3 +1,7 @@
+include:
+  - project: 'codelutin/ci'
+    file: '/ci.yml'
+
 # DinD service is required for Testcontainers
 services:
   - docker:dind
@@ -290,6 +294,31 @@ deploy:beta:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-beta
 
+sonarqube:
+  image: maven:3.6-openjdk-11
+  stage: qa
+  variables:
+    # Instruct Testcontainers to use the daemon of DinD.
+    DOCKER_HOST: "tcp://docker:2375"
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
+      - fishola-mobile/target/dist-demo
+      - fishola-mobile/target/dist-beta
+      - fishola-mobile/target/dist-production
+      - fishola-admin/target/dist-demo
+      - fishola-admin/target/dist-beta
+  script:
+    - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.ofb:carhyce -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  tags:
+    - sticky
+    - docker
+
 #build:ios:
 #  stage: build
 #  when: manual
@@ -320,17 +349,6 @@ deploy:beta:
 #  stage: check-releasable
 #  script:
 #    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
-#    - rm * .git* -rf || true
-#  only:
-#    - schedules
-#  tags:
-#    - tmpfs
-#
-#sonar_job:
-#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
-#  stage: sonar
-#  script:
-#    - mvn -e -U clean verify -Dmaven.test.skip -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar -Dsonar.host.url=https://qa.codelutin.com -Dsonar.projectKey=fr.afb:sispea -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
 #    - rm * .git* -rf || true
 #  only:
 #    - schedules
