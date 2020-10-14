@@ -296,7 +296,7 @@ deploy:beta:
 
 sonarqube:
   image: maven:3.6-openjdk-11
-  stage: qa
+  stage: sonar
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
