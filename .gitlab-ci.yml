@@ -23,7 +23,9 @@ stages:
 build:dependency-tree:
   image: maven:3.6-openjdk-11
   stage: build
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   script:
     - mvn dependency:tree
   tags:
@@ -74,7 +76,7 @@ build:compile-with-tests:
   script:
     - mvn clean package
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
   tags:
     - sticky
     - docker
@@ -83,7 +85,9 @@ build:compile-with-tests:
 package:android-demo:
   image: openjdk:9-jdk
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-mobile/node
@@ -127,7 +131,9 @@ package:android-demo:
 package:android-beta:
   image: openjdk:9-jdk
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-mobile/node
@@ -171,7 +177,9 @@ package:android-beta:
 package:android-production:
   image: openjdk:9-jdk
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-mobile/node
@@ -214,7 +222,9 @@ package:android-production:
 package:docker-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-backend/target/lib
@@ -237,7 +247,9 @@ package:docker-demo:
 package:docker-beta:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-backend/target/lib
@@ -260,7 +272,9 @@ package:docker-beta:
 package:backend:
   image: debian:latest
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-backend/target/lib
@@ -281,7 +295,9 @@ package:backend:
 deploy:demo:
   image: debian:latest
   stage: deploy
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
@@ -289,7 +305,9 @@ deploy:demo:
 deploy:beta:
   image: debian:latest
   stage: deploy
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-beta
