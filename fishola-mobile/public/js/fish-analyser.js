@@ -9,7 +9,7 @@
     imgElement.src = URL.createObjectURL(e.target.files[0]);
     }, false);
     imgElement.onload = function() {
-        calculateSizes(imgElement, 0.15, 133);
+        calculateSizes(imgElement, 0.05, 150);
     };
 
 
@@ -66,40 +66,41 @@
                                     Math.round(Math.random() * 255));
             let cnt = poly.get(i);
             let rotatedRect = cv.minAreaRect(cnt);
+            console.log(rotatedRect.center);
             let vertices = cv.RotatedRect.points(rotatedRect);
             let rectangleSize = Math.max(rotatedRect.size.width, rotatedRect.size.height);
             // If rectangle width or height is at least minSizeRatio% of full image size
             if (rectangleSize / imgSize >= minSizeRatio) {
-                console.log(vertices);
-                console.log("=> ", rectangleSize);
-                for (let i = 0; i < 4; i++) {
-                    cv.line(dst, vertices[i], vertices[(i + 1) % 4], color, 2, cv.LINE_AA, 0);
+                let minX = 100000;
+                for (let j = 0; j < 4; j++) {
+                    cv.line(dst, vertices[j], vertices[(j + 1) % 4], color, 2, cv.LINE_AA, 0);
+                    minX = Math.min(vertices[j].x, minX);
                 }
-                results.push({'x': vertices[0].x, 'y': vertices[0].y, 'size': rectangleSize});
+                console.log(Math.round(rectangleSize) + " " + minX);
+                results.push({'left_x': minX, 'center_x': rotatedRect.center.x, 'center_y': rotatedRect.center.y, 'size': rectangleSize});
             }
         }
-        console.log(results);
-
         // Step 5: sort from left to right
-        results = results.sort((a,b) =>  a.x - b.x);
-        console.log(results.length, results.size, results);
+        let sorted = results.sort((a,b) =>  a.left_x - b.left_x);
+        console.log(sorted);
 
         // Step 6: compute sizes
         let ratio = -1;
-        let html1 =  "Size in pixels : ";
-        let html2 =  "If leftmost object is " + leftSizeObjectSizeMm + "mm, then here are the sizes from left to right : ";
-        for (let i = 0; i < results.length; ++i) {
-            let rectangleSize = results[i].size;
-            html1 += Math.round(rectangleSize) + "px,";
+        let html1 =  "<table style='margin-left:50px;border:1px solid black'><tr><td style='border:1px solid black'>Size in pixels</td>";
+        let html2 =  "<tr><td style='border:1px solid black'>Size in mm </td>";
+        for (let i = 0; i < sorted.length; ++i) {
+            let item = sorted[i];
+            html1 += "<td style='border:1px solid black'>" + Math.round(item.size) + "px</td>";
             if (ratio == -1) {
-                ratio = (rectangleSize / leftSizeObjectSizeMm); 
-            } else {
-                html2 += Math.round(ratio * rectangleSize) + "mm,";
-            }
+                ratio = (leftSizeObjectSizeMm / item.size); 
+            } 
+            let calculatedSize = Math.round(item.size * ratio);
+            html2 += "<td style='border:1px solid black'>" + calculatedSize + "mm </td>";
+            cv.putText(dst, calculatedSize + "mm", {x: item.center_x, y: item.center_y},  cv.FONT_HERSHEY_SIMPLEX, 1.0, [0, 255, 0, 255]);
+            
         };
-
-
-        document.getElementById('status').innerHTML = html1 + "<br/>" + html2;
+        html = html1 + '</tr>' + html2 + '</tr></table>';
+        document.getElementById('status').innerHTML = html;
         cv.imshow('canvasOutput1', src);
         cv.imshow('canvasOutput2', refined1);
         cv.imshow('canvasOutput3', dst);
