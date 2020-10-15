@@ -9,7 +9,7 @@
     imgElement.src = URL.createObjectURL(e.target.files[0]);
     }, false);
     imgElement.onload = function() {
-        calculateSizes(imgElement, 0.05, 150);
+        calculateSizes(imgElement, document.getElementById('minCoverrage').value, document.getElementById('leftSizeObjectSizeMm').value);
     };
 
 
@@ -96,8 +96,8 @@
             } 
             let calculatedSize = Math.round(item.size * ratio);
             html2 += "<td style='border:1px solid black'>" + calculatedSize + "mm </td>";
-            cv.putText(dst, calculatedSize + "mm", {x: item.center_x, y: item.center_y},  cv.FONT_HERSHEY_SIMPLEX, 1.0, [0, 255, 0, 255]);
-            
+            cv.putText(dst, calculatedSize + "mm", {x: (item.left_x + item.center_x) /2, y: item.center_y},  cv.FONT_HERSHEY_SIMPLEX, 0.8, [0, 0, 0, 255], 3);  
+            cv.putText(dst, calculatedSize + "mm", {x: (item.left_x + item.center_x) /2, y: item.center_y},  cv.FONT_HERSHEY_SIMPLEX, 0.8, [255, 255, 255, 255], 1);            
         };
         html = html1 + '</tr>' + html2 + '</tr></table>';
         document.getElementById('status').innerHTML = html;

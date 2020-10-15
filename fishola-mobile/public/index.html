@@ -14,30 +14,36 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>FISHOLA</title>
   </head>
-  <body>
+  <body style="overflow-y:scroll;overflow-x:scroll;">
     <noscript>
       <strong>FISHOLA est l'application pour une gestion durable de la pêche sur les lacs alpins (Léman, lacs d’Annecy, du Bourget et d’Aiguebelette).</strong>
     </noscript>
     <!--<div id="app"></div>-->
-    <p id="status">OpenCV.js is loading...</p>
-    <div>
-      <div class="inputoutput">
-        <img style="display:none" id="imageSrc" alt="No Image" />
-        <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
-      </div>
+    Lefmost object size(mm)
+    <input type="text" id="leftSizeObjectSizeMm" value="133"/><br/>
+    Min proportion of image size
+    <input type="text" id="minCoverrage" value="0.15"/>
+    <br/>
+    <div class="inputoutput">
+      <img style="display:none" id="imageSrc" alt="No Image" />
+      <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
     </div>
+    <p id="status">OpenCV.js is loading...</p>
     <div class="inputoutput">
       <div style="float:left;background-color:yellow;">
           <canvas  id="canvasOutput1" ></canvas><br/>
-          <caption>Après traitement</caption>
+          <caption>Photo originale</caption>
       </div>
+      <div style="clear:both"/>
         <div style="float:left;background-color:green;">
           <canvas  id="canvasOutput2" ></canvas><br/>
-          <caption>Vision programmative 1 </caption>
+          <caption>Photo traitée</caption>
       </div>
+
+      <div style="clear:both"/>
       <div style="float:left;background-color:green;">
           <canvas  id="canvasOutput3" ></canvas><br/>
-          <caption>Vision programmative 2</caption>
+          <caption>Calcul</caption>
       </div>
     </div>
     <!-- built files will be auto injected -->
