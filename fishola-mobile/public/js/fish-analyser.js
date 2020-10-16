@@ -9,11 +9,13 @@
     imgElement.src = URL.createObjectURL(e.target.files[0]);
     }, false);
     imgElement.onload = function() {
-        calculateSizes(imgElement, document.getElementById('minCoverrage').value, document.getElementById('leftSizeObjectSizeMm').value);
+        calculateSizes(imgElement, document.getElementById('minCoverrage').value, 
+        document.getElementById('leftSizeObjectSizeMm').value, 
+        parseInt(document.getElementById('fixedSize').value));
     };
 
 
-    function calculateSizes(imgElement, minSizeRatio, leftSizeObjectSizeMm) {
+    function calculateSizes(imgElement, minSizeRatio, leftSizeObjectSizeMm, fixedSize) {
         /*let empty = new cv.Mat();
         cv.imshow('canvasOutput1', empty);
         cv.imshow('canvasOutput2', empty);
@@ -21,7 +23,7 @@
         // See https://github.com/ucisysarch/opencvjs/blob/master/test/img_proc.html
         // And https://www.pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
         // Step 1: load the image & resize it
-        let src = resize(imgElement);
+        let src = resize(imgElement, fixedSize);
         //  Step 2 : convert it to grayscale, and blur it slightly
         let imgSize = Math.max(src.cols, src.rows);
         let refined1 = new cv.Mat();
@@ -47,7 +49,7 @@
         // Step 4: find coutours in the edge map
         // Step 4.1 : find contours
         cv.threshold(refined2, refined1, 120, 200, cv.THRESH_BINARY);
-        let dst = resize(imgElement);
+        let dst = resize(imgElement, fixedSize);
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         let poly = new cv.MatVector();
@@ -114,19 +116,19 @@
         dst.delete();
     }
 
-    function resize(imgElement) {
+    function resize(imgElement, fixedSize) {
         let original = cv.imread(imgElement);
         let src = new cv.Mat();
         // Vertical images
         if (original.cols < original.rows) {
-            // Fix with to 300
-            let reducedWidth = 300;
+            // Fix with
+            let reducedWidth = fixedSize;
             let ratioWith = (reducedWidth/ original.cols);
             let dsize = new cv.Size(reducedWidth, ratioWith * original.rows);
             cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
         } else {
-            // Fix height to 300
-            let reduceHeight = 300;
+            // Fix height
+            let reduceHeight = fixedSize;
             let ratioHeight = (reduceHeight/ original.rows);
             let dsize = new cv.Size(ratioHeight * original.cols, reduceHeight);
             cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
