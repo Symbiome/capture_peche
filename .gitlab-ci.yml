@@ -330,7 +330,7 @@ sonarqube:
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-beta
   script:
-    - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.ofb:carhyce -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
+    - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   tags:
