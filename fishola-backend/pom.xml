@@ -261,15 +261,18 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -284,6 +287,7 @@
     <dependency>
       <groupId>io.quarkus.gizmo</groupId>
       <artifactId>gizmo</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -492,6 +496,8 @@
         <executions>
           <execution>
             <goals>
+              <goal>generate-code</goal>
+              <goal>generate-code-tests</goal>
               <goal>build</goal>
             </goals>
           </execution>
