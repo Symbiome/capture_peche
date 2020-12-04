@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 
 import javax.inject.Singleton;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -88,8 +89,8 @@ public class UsersDao extends AbstractFisholaDao {
     public void create(String firstName, String lastName, String rawEmail, String passwordHashed) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
-                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD)
-                .values(firstName, lastName, email, passwordHashed)
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON)
+                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now())
                 .execute());
     }
 
