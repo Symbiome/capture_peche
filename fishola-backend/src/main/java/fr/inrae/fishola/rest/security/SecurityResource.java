@@ -583,6 +583,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 .birthYear(Optional.ofNullable(input.getBirthYear()))
                 .gender(Optional.ofNullable(input.getGender()))
                 .excludeFromExports(input.getExcludeFromExports())
+                .createdOn(input.getCreatedOn())
                 .build();
         return result;
     }

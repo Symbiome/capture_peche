@@ -25,13 +25,19 @@
             <b-field :label="col.label">
                 <!-- Short strings -->
                 <b-input v-model="item[col.field]"
-                         v-if="!col.isFile && !col.isABoolean && ('' + item[col.field]).length < 200"
+                         v-if="!col.isFile && !col.isABoolean && !col.isADate && ('' + item[col.field]).length < 200"
                          :disabled="col.readOnly || col.readOnlyEdition && item['id']"></b-input>
                 <!-- Long strings -->
                 <b-input v-model="item[col.field]"
                          type="textarea"
-                         v-if="!col.isFile && !col.isABoolean && ('' + item[col.field]).length >= 200"
+                         v-if="!col.isFile && !col.isABoolean && !col.isADate && ('' + item[col.field]).length >= 200"
                          :disabled="col.readOnly || col.readOnlyEdition && item['id']"></b-input>
+
+                <!-- DateTime -->
+                <div v-if="col.isADate">
+                    {{formatDate(item[col.field])}}
+                </div>
+
                 <!-- Files -->
                 <b-upload v-model="input.file"
                     v-if="col.isFile"
@@ -65,6 +71,7 @@
                         Non
                     </b-radio>
                 </div>
+
             </b-field>
         </div>
         <div class="buttons">
@@ -140,6 +147,25 @@ export default class RefenretialItem extends Vue {
                 });
             });
         }
+    }
+
+    parseLocalDateTime(someLocalDateTime:number[]):Date {
+        const result:Date = new Date(
+            someLocalDateTime[0],
+            someLocalDateTime[1] - 1,
+            someLocalDateTime[2],
+            someLocalDateTime[3],
+            someLocalDateTime[4],
+            someLocalDateTime[5],
+        );
+        return result;
+    }
+
+    formatDate(puet:number[]):string {
+        let theDate:Date = this.parseLocalDateTime(puet);
+        var hourOptions = {month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric"};
+        let result:string = theDate.toLocaleTimeString('fr-FR', hourOptions);
+        return result;
     }
 
     getBase64(file: any): Promise<string> {
