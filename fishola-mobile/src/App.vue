@@ -64,6 +64,14 @@ export default class AppView extends Vue {
     interval?:number;
 
     created() {
+      console.log("router.currentRoute.name: ", router.currentRoute.name);
+      if (router.currentRoute.name != 'dispatcher' && router.currentRoute.name != 'about' && router.currentRoute.name != 'login') {
+        this.initApp();
+      }
+    }
+
+    // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
+    initApp() {
        // Configure Keyboard & Status bar
       KeyboardManager.setupKeyboardConfiguration();
       StatusBar.setBackgroundColor({"color": "#1E9BC4"});
@@ -157,9 +165,13 @@ body {
   background-color: @pelorous;
   margin: 0px;
   height: 100%;
-  overflow: hidden;
-  overflow-x: hidden;
   width: 100vw;
+
+  // On doit toujours pouvoir scroller en web
+  @media (max-width: 1000px) {
+    overflow: hidden;
+    overflow-x: hidden;
+  }
 }
 
 html {
