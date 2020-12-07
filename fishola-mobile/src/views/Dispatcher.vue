@@ -34,7 +34,7 @@ import ProfileService from '@/services/ProfileService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar} = Plugins;
+const { SplashScreen, StatusBar, Device } = Plugins;
 
 @Component({
   components: {}
@@ -65,7 +65,17 @@ export default class DispatcherView extends Vue {
         (status) => {
           // Only push route if no route has already been pushed (typically when opening from external url)
           if (router.currentRoute.name == "dispatcher") {
-            router.push('/login');
+
+            // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
+            Device.getInfo()
+              .then(info => {
+                if (info.platform == "web") {
+                  router.push('/about');
+                } else {
+                  router.push('/login');
+                }
+              });
+
           }
           SplashScreen.hide();
           StatusBar.show();
