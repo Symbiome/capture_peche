@@ -99,8 +99,56 @@
             <!-- \\ Begin About Section \\ -->
             <div class="About_sec" id="about">
                 <div class="Center">
-                    Carte
+                    <h3>Carte</h3>
                     <div class="Line"></div>
+                    <div style="height: 600px; width: 100%" class="map">
+                      <l-map
+                        :zoom="9"
+                        :center="center"
+                        :options="{
+                          zoomSnap: 0.5
+                        }"
+                        style="height: 100%; width: 100%;"
+                      >
+                        <l-tile-layer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        />
+
+                        <l-marker :lat-lng="lemanPos">
+                          <l-popup>
+                            <div >
+                              Léman
+                            </div>
+                          </l-popup>
+                        </l-marker>
+
+                        <l-marker :lat-lng="annecyPos">
+                          <l-popup>
+                            <div >
+                              Lac d'Annecy
+                            </div>
+                          </l-popup>
+                        </l-marker>
+
+                        <l-marker :lat-lng="bourgetPos">
+                          <l-popup>
+                            <div >
+                              Lac du Bourget
+                            </div>
+                          </l-popup>
+                        </l-marker>
+
+                        <l-marker :lat-lng="aiguebelettePos">
+                          <l-popup>
+                            <div >
+                              Lac d'Aiguebelette
+                            </div>
+                          </l-popup>
+                        </l-marker>
+
+                      </l-map>
+                    </div>
                     <!-- // End Tab Side // -->
                 </div>
             </div>
@@ -199,12 +247,37 @@ import Constants from '@/services/Constants';
 import ProfileService from '@/services/ProfileService';
 import router from '@/router';
 
+import { latLng, Icon } from 'leaflet';
+
+delete Icon.Default.prototype._getIconUrl;
+Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
+@Component({
+  components: {
+    LMap,
+    LTileLayer,
+    LMarker,
+    LPopup
+  }
+})
 export default class AboutView extends Vue {
 
-  constructor() {
+  center = latLng(46.051623, 5.890511);
+
+  lemanPos = latLng(46.439783, 6.480641);
+  bourgetPos = latLng(45.7249, 5.8684);
+  annecyPos = latLng(45.856166, 6.173468);
+  aiguebelettePos = latLng(45.5508, 5.8015);
+
+constructor() {
     super();
   }
 
@@ -230,14 +303,28 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november";
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
+@import url("~leaflet/dist/leaflet.css");
 
 body {
   background-color: @white-smoke !important;
 }
 
-.Banner_sec .rightside iframe.youtube { margin-left: calc(50% - 280px); }
+header {
+  z-index: 9999;
+}
 
-.Pricing_sec h3 { color: @gunmetal; }
+.Banner_sec .rightside iframe.youtube {
+  margin-left: calc(50% - 280px);
+}
+
+.map {
+  margin-top: 30px;
+}
+
+.Pricing_sec h3,
+.About_sec h3 {
+  color: @gunmetal;
+}
 
   .credits-logos {
     display: flex;
