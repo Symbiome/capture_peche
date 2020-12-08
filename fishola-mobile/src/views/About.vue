@@ -27,8 +27,8 @@
         <header class="smaller">
             <div class="Center">
                 <div class="site-logo">
-                <h1><a href="#about">FISHOLA</a></h1>
-              </div>
+                  <h1><a href="#about">FISHOLA</a></h1>
+                </div>
               <div id="mobile_sec">
                 <div class="menumobile">
                     <!-- \\ Begin Navigation \\ -->
@@ -195,15 +195,29 @@
 
 <script lang="ts">
 
-import Constants from '@/services/Constants'
-import ProfileService from '@/services/ProfileService'
-import router from '@/router'
+import Constants from '@/services/Constants';
+import ProfileService from '@/services/ProfileService';
+import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+@Component
 export default class AboutView extends Vue {
 
+  constructor() {
+    super();
+  }
+
   mounted() {
+    var jquery = document.createElement('script');
+    jquery.type = 'text/javascript';
+    jquery.src = '/js/jquery-1.11.0.min.js';
+    jquery.async = false;
+    document.body.appendChild(jquery);
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = '/js/global.js';
+    document.body.appendChild(script);
   }
 
 }
@@ -223,8 +237,7 @@ body {
 
 .Banner_sec .rightside iframe.youtube { margin-left: calc(50% - 280px); }
 
-.About_sec h3 { color: @gunmetal; }
-
+.Pricing_sec h3 { color: @gunmetal; }
 
   .credits-logos {
     display: flex;
