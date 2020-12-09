@@ -273,7 +273,7 @@
                     <!-- \\ Begin Footer \\-->
                     <footer>
                         <div class="Cntr">                
-                            <p>COPYRIGHT © 2020 UMR CARRTEL</p>
+                            <p>COPYRIGHT © 2020 INRAE UMR CARRTEL</p>
                         </div>
                     </footer>
                     <!-- // End Footer // -->
@@ -497,6 +497,10 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   }
 }
 
+.Contribute_sec p,
+.Contact_sec p, {
+  font-size: 18px;
+}
 .Pricing_sec h3,
 .About_sec h3 {
   color: @gunmetal;
