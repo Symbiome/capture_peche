@@ -80,22 +80,15 @@
 
         <!-- \\ Begin Banner Section \\ -->
         <div class="Banner_sec" id="presentation">
-            <!--  \\ Begin banner Side -->
-            <div class="bannerside">
-              <div class="Center">
-                <div class="leftside">
-                  <h3><span>FISHOLA</span></h3>
-                  <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
-                  <!-- <a href="#about">MORE DETAILS</a> -->
-                </div>
-                <div class="rightside">
-                <img src="/img/dashboard.png" alt="Tableau de bord" />
-                </div>
-              </div>
-            </div>
-
-            <!--  // End banner Side // -->
-            <div class="clear"></div>
+          <!--  \\ Begin banner Side -->
+          <div class="left-panel">
+            <h3><span>FISHOLA</span></h3>
+            <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
+            <!-- <a href="#about">MORE DETAILS</a> -->
+          </div>
+          <div class="right-panel">
+            <img src="/img/dashboard.png" alt="Tableau de bord" />
+          </div>
         </div>
         <!-- // End Banner Section // -->
 
@@ -417,12 +410,44 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   }
 }
 
-.Banner_sec { height: 620px; background: @white-smoke; }
-.Banner_sec .leftside p { color: @gunmetal; }
-.Banner_sec .rightside img {
-  margin-left: calc(50% - 115px);
+.Banner_sec {
+  height: 620px;
+  background: @white-smoke;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 20px;
+
+  .left-panel {
+    width:  25%;
+    h3 {
+      font-size: 36px; color: #fff; font-family: 'Open Sans', sans-serif; font-weight: 800; text-transform: uppercase; margin: 0px; line-height: 34px;
+      span {
+        color:#E17055; font-family: 'Open Sans', sans-serif; font-weight: 600; display: block;
+      }
+    }
+    p {
+      padding: 16px 0px 26px 0px;
+      font-size: 16px;
+      color: @gunmetal;
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 600; font-style: italic;
+      margin: 0px;
+      word-spacing: 2px;
+      line-height: 22px;
+    }
+
+  }
+  .right-panel {
+    width: 25%;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
 }
-.Banner_sec .bannerside { width: 100%; position: absolute; top: 61px; left: 0px; }
 
 .Video_sec {
   width: 100%;
