@@ -71,7 +71,7 @@
                     <!--  \\ Begin Left Side -->
                     <div class="leftside">
                         <h3><span>FISHOLA</span></h3>
-                        <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette)</p>
+                        <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
                         <!-- <a href="#about">MORE DETAILS</a> -->
                     </div>                                        
                     <!--  // End Left Side // -->
@@ -106,8 +106,33 @@
             <!-- \\ Begin About Section \\ -->
             <div class="About_sec" id="about">
                 <div class="Center">
-                    <h3>Carte</h3>
-                    <div class="Line"></div>
+                  <div class="key-figures">
+                    <div class="kf-item">
+                      <div class="kf-number">
+                        123
+                      </div>
+                      <div class="kf-label">
+                        sorties
+                      </div>
+                    </div>
+                    <div class="kf-item">
+                      <div class="kf-number">
+                        666
+                      </div>
+                      <div class="kf-label">
+                        captures
+                      </div>
+                    </div>
+                    <div class="kf-item">
+                      <div class="kf-number">
+                        42
+                      </div>
+                      <div class="kf-label">
+                        photos
+                      </div>
+                    </div>
+                  </div>
+                    <!-- <div class="Line"></div> -->
                     <div style="height: 600px; width: 100%" class="map">
                       <l-map
                         :zoom="9"
@@ -164,7 +189,7 @@
         <div class="Contribute_sec" id="contribute">
             <div class="Center">
                 <h2>Comment participer ?</h2>
-                <p>Morbi accumsan ipsum velit. Nam nec tellus a odio tincidunt auctor a ornare odio. Sed non  mauris vitae erat consequat auctor eu in elit. Class aptent<br> taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>    
+                <p>Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration.</p>
                 <!-- <div class="Line"></div> -->
             </div>                
         </div>
@@ -330,23 +355,26 @@ constructor() {
 }
 
 .Producted_by_sec {
-  background-color: @solitude;
-  height: 200px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
 
-h3 {
-  text-align: center;
-  font-weight: lighter;
-  color: @gunmetal;
-}
+  background-color: @solitude;
+  height: 300px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  h3 {
+    text-align: center;
+    font-weight: lighter;
+    color: @gunmetal;
+  }
+
   .credits-logos {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+
     img {
       width: 200px;
       margin-left: 20px;
@@ -354,8 +382,40 @@ h3 {
     }
   }
 }
-.map {
-  margin-top: 30px;
+.About_sec {
+  padding-top: 40px;
+  .key-figures {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 30px;
+    padding-bottom: 30px;
+
+    .kf-item {
+      width: 33%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin-left: 50px;
+      margin-right: 50px;
+      .kf-number {
+        color: #E67E22;
+        font-size: 50px;
+        font-weight: 530;
+        height: 59px;
+      }
+      .kf-label {
+        color: @gunmetal;
+        font-size: 18px;
+      }
+    }
+  }
+  .map {
+    margin-top: 30px;
+  }
 }
 
 .Pricing_sec h3,
