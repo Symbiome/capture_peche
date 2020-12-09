@@ -83,23 +83,25 @@
             <!--  \\ Begin banner Side -->
             <div class="bannerside">
               <div class="Center">
-                    <!--  \\ Begin Left Side -->
-                    <div class="leftside">
-                        <h3><span>FISHOLA</span></h3>
-                        <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
-                        <!-- <a href="#about">MORE DETAILS</a> -->
-                    </div>                                        
-                    <!--  // End Left Side // -->
-                    <!--  \\ Begin Right Side -->
-                    <div class="rightside">
-                      <iframe class="youtube" width="560" height="315" src="https://www.youtube-nocookie.com/embed/HNl9-I-Wqcg" frameborder="10" allow="encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <!--  // End Right Side // -->
+                <div class="leftside">
+                  <h3><span>FISHOLA</span></h3>
+                  <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
+                  <!-- <a href="#about">MORE DETAILS</a> -->
+                </div>
+                <div class="rightside">
+                <img src="/img/dashboard.png" alt="Tableau de bord" />
+                </div>
               </div>
             </div>
 
             <!--  // End banner Side // -->
             <div class="clear"></div>
+        </div>
+        <!-- // End Banner Section // -->
+
+        <!-- \\ Begin Banner Section \\ -->
+        <div class="Video_sec">
+          <iframe class="youtube" width="560" height="315" src="https://www.youtube-nocookie.com/embed/HNl9-I-Wqcg" frameborder="10" allow="encrypted-media" allowfullscreen></iframe>
         </div>
         <!-- // End Banner Section // -->
 
@@ -378,6 +380,7 @@ constructor() {
 .Navigation li:hover a, .Navigation li.active a {
   color: @white;
 }
+
 .Title_sec {
 	width: 100%;
 	background: url(/img/fishes.png) top center no-repeat;
@@ -406,11 +409,21 @@ constructor() {
     }
   }
 }
-  
-.Banner_sec { height: 620px; }
-.Banner_sec .bannerside { width: 100%; position: absolute; top: 150px; left: 0px; }
-.Banner_sec .rightside iframe.youtube {
-  margin-left: calc(50% - 280px);
+
+.Banner_sec { height: 620px; background: @white-smoke; }
+.Banner_sec .leftside p { color: @gunmetal; }
+.Banner_sec .rightside img {
+  margin-left: calc(50% - 115px);
+}
+.Banner_sec .bannerside { width: 100%; position: absolute; top: 61px; left: 0px; }
+
+.Video_sec {
+  width: 100%;
+  background: @pelorous;
+  height: 315px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .Producted_by_sec {
