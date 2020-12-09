@@ -63,6 +63,21 @@
           </div>
         </header>
         <!-- // End Header // -->
+
+        <!-- \\ Begin Banner Section \\ -->
+        <div class="Title_sec" id="title">
+            <!--  \\ Begin banner Side -->
+            <div class="title-banner">
+              <div class="main-title">
+                La science tous ensemble
+              </div>
+              <div class="sub-title">
+                En utilisant FISHOLA vous participez à la compréhension et la préservation des lacs
+              </div>
+            </div>
+        </div>
+        <!-- // End Banner Section // -->
+
         <!-- \\ Begin Banner Section \\ -->
         <div class="Banner_sec" id="presentation">
             <!--  \\ Begin banner Side -->
@@ -350,6 +365,37 @@ constructor() {
   z-index: 9999;
 }
 
+.Title_sec {
+	width: 100%;
+	background: url(/img/fishes.png) top center no-repeat;
+	height: 680px;
+	position: relative;
+  background-size: cover;
+  
+  .title-banner {
+    color: @white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .main-title {
+      font-weight: bold;
+      font-size: 64px;
+      line-height: 87px;
+      margin: 20px;
+    }
+    .sub-title {
+      font-size: 22px;
+      line-height: 30px;
+      margin: 20px;
+    }
+  }
+}
+  
+.Banner_sec { height: 620px; }
+.Banner_sec .bannerside { width: 100%; position: absolute; top: 150px; left: 0px; }
 .Banner_sec .rightside iframe.youtube {
   margin-left: calc(50% - 280px);
 }
@@ -402,7 +448,7 @@ constructor() {
       margin-left: 50px;
       margin-right: 50px;
       .kf-number {
-        color: #E67E22;
+        color: #E17055;
         font-size: 50px;
         font-weight: 530;
         height: 59px;
