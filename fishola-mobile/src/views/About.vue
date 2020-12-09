@@ -27,7 +27,7 @@
         <header class="smaller">
             <div class="Center">
                 <div class="site-logo">
-                  <h1><a href="#about">FISHOLA</a></h1>
+                  <h1><a href="#about"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
                 </div>
               <div id="mobile_sec">
                 <div class="menumobile">
@@ -366,7 +366,14 @@ constructor() {
 .LayoutFrame header {
   z-index: 9999;
   background: @white;
+
+  &.smaller {
+    height: 73px;
+  }
 }
+header.smaller .Navigation li { height: 73px; }
+
+header.smaller .Navigation li a { padding: 22px 41px; }
 
 .Navigation li a {
   color: @gunmetal;
