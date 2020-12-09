@@ -105,7 +105,7 @@
             <div class="credits-logos">
               <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
               <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
-              <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.png'/></a>
+              <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ constructor() {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
 
 @import "../less/libs/473-november";
 @import "../less/libs/473-november-media";
