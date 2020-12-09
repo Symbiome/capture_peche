@@ -363,8 +363,21 @@ constructor() {
 
 .LayoutFrame header {
   z-index: 9999;
+  background: @white;
 }
 
+.Navigation li a {
+  color: @gunmetal;
+}
+.Navigation li span {
+	background: @pelorous;
+}
+.Navigation li:hover span, .Navigation li.active span {
+  opacity: 1;
+}
+.Navigation li:hover a, .Navigation li.active a {
+  color: @white;
+}
 .Title_sec {
 	width: 100%;
 	background: url(/img/fishes.png) top center no-repeat;
@@ -412,7 +425,7 @@ constructor() {
   h3 {
     text-align: center;
     font-weight: lighter;
-    color: @gunmetal;
+    color: @pelorous;
   }
 
   .credits-logos {
