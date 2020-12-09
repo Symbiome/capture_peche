@@ -249,7 +249,12 @@ import router from '@/router';
 
 import { latLng, Icon } from 'leaflet';
 
-delete Icon.Default.prototype._getIconUrl;
+type D = Icon.Default & {
+  _getIconUrl?: string;
+};
+
+delete (Icon.Default.prototype as D)._getIconUrl;
+
 Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
@@ -270,7 +275,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class AboutView extends Vue {
 
-  center = latLng(46.051623, 5.890511);
+  center = latLng(46.071623, 5.890511);
 
   lemanPos = latLng(46.439783, 6.480641);
   bourgetPos = latLng(45.7249, 5.8684);
