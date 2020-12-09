@@ -83,17 +83,24 @@
               </div>
             </div>
 
-                <h3>FISHOLA est produit par </h3>
-                <div class="credits-logos">
-                  <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
-                  <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
-                  <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.png'/></a>
-                </div>
-
             <!--  // End banner Side // -->
             <div class="clear"></div>
         </div>
         <!-- // End Banner Section // -->
+
+        <!-- \\ Begin Producted_by Section \\ -->
+        <div class="Producted_by_sec" id="producted_by">
+          <div class="Center">
+            <h3>FISHOLA est produit par </h3>
+            <div class="credits-logos">
+              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
+              <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
+              <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.png'/></a>
+            </div>
+          </div>
+        </div>
+        <!-- // End Producted_by Section // -->
+
         <!-- \\ Begin Container \\ -->
         <div id="Container">
             <!-- \\ Begin About Section \\ -->
@@ -310,11 +317,11 @@ constructor() {
 @import "../less/_colors";
 @import url("~leaflet/dist/leaflet.css");
 
-body {
+.DesignHolder {
   background-color: @white-smoke !important;
 }
 
-header {
+.LayoutFrame header {
   z-index: 9999;
 }
 
@@ -322,6 +329,31 @@ header {
   margin-left: calc(50% - 280px);
 }
 
+.Producted_by_sec {
+  background-color: @solitude;
+  height: 200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+h3 {
+  text-align: center;
+  font-weight: lighter;
+  color: @gunmetal;
+}
+  .credits-logos {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    img {
+      width: 200px;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+  }
+}
 .map {
   margin-top: 30px;
 }
@@ -331,18 +363,6 @@ header {
   color: @gunmetal;
 }
 
-  .credits-logos {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 50px;
-    img {
-      width: 200px;
-      margin-left: 20px;
-      margin-right: 20px;
-    }
-  }
   .welcome-apps {
     display: flex;
     flex-direction: row;
