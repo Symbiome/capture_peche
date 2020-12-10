@@ -383,7 +383,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 
 .Title_sec {
 	width: 100%;
-	background: url(/img/fishes.png) top center no-repeat;
+	background: url(/img/fishes.jpg) top center no-repeat;
 	height: 680px;
 	position: relative;
   background-size: cover;
