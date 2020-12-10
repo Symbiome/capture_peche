@@ -383,7 +383,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 
 .Title_sec {
 	width: 100%;
-	background: url(/img/fishes.jpg) top center no-repeat;
+	background: url(/img/about-fishes.jpg) top center no-repeat;
 	height: 680px;
 	position: relative;
   background-size: cover;
@@ -486,6 +486,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
     }
   }
 }
+
 .About_sec {
   padding-top: 40px;
   .key-figures {
@@ -521,6 +522,8 @@ header.smaller .Navigation li a { padding: 22px 41px; }
     margin-top: 30px;
   }
 }
+.Contribute_sec{ background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
+.Get_sec { background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
 
 .Contribute_sec p,
 .Contact_sec p, {
