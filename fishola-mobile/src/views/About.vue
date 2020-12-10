@@ -83,7 +83,7 @@
           <!--  \\ Begin banner Side -->
           <div class="left-panel">
             <h3><span>FISHOLA</span></h3>
-            <p>est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). Ce texte sera modifiable dans l'interface d'administration.</p>
+            <p>{{titleText}}</p>
             <!-- <a href="#about">MORE DETAILS</a> -->
           </div>
           <div class="right-panel">
@@ -157,34 +157,10 @@
                           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         />
 
-                        <l-marker :lat-lng="lemanPos">
+                        <l-marker v-for="l in lakes" v-bind:key="l.id" :lat-lng="asLatLng(l)">
                           <l-popup>
                             <div >
-                              Léman
-                            </div>
-                          </l-popup>
-                        </l-marker>
-
-                        <l-marker :lat-lng="annecyPos">
-                          <l-popup>
-                            <div >
-                              Lac d'Annecy
-                            </div>
-                          </l-popup>
-                        </l-marker>
-
-                        <l-marker :lat-lng="bourgetPos">
-                          <l-popup>
-                            <div >
-                              Lac du Bourget
-                            </div>
-                          </l-popup>
-                        </l-marker>
-
-                        <l-marker :lat-lng="aiguebelettePos">
-                          <l-popup>
-                            <div >
-                              Lac d'Aiguebelette
+                              {{l.name}}
                             </div>
                           </l-popup>
                         </l-marker>
@@ -199,7 +175,7 @@
         <div class="Contribute_sec" id="contribute">
             <div class="Center">
                 <h2>Comment participer ?</h2>
-                <p>Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration. Ce texte sera modifiable dans l'interface d'administration.</p>
+                <p>{{contributeText}}</p>
                 <!-- <div class="Line"></div> -->
             </div>                
         </div>
@@ -287,9 +263,10 @@
 
 import Constants from '@/services/Constants';
 import ProfileService from '@/services/ProfileService';
+import AboutService from '@/services/AboutService';
 import router from '@/router';
 
-import { latLng, Icon } from 'leaflet';
+import { latLng, LatLng, Icon } from 'leaflet';
 
 type D = Icon.Default & {
   _getIconUrl?: string;
@@ -306,6 +283,7 @@ Icon.Default.mergeOptions({
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Lake } from '@/pojos/BackendPojos';
 
 @Component({
   components: {
@@ -324,9 +302,12 @@ export default class AboutView extends Vue {
   annecyPos = latLng(45.856166, 6.173468);
   aiguebelettePos = latLng(45.5508, 5.8015);
 
+  titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
+  contributeText:string = "";
   tripsCount:number = 125;
   catchsCount:number = 633;
   picturesCount:number = 72;
+  lakes:Lake[] = [];
 
   constructor() {
     super();
@@ -342,6 +323,32 @@ export default class AboutView extends Vue {
     script.type = 'text/javascript';
     script.src = '/js/global.js';
     document.body.appendChild(script);
+
+    AboutService.getKeyFigures()
+    .then(
+      (kf) => {
+        console.log("Chiffres clés", kf);
+        this.tripsCount = kf.tripsCount;
+        this.catchsCount = kf.catchsCount;
+        this.picturesCount = kf.picturesCount;
+        this.titleText = kf.titleText;
+        this.contributeText = kf.contributeText;
+        kf.lakes.forEach((l) => this.lakes.push(l));
+      },
+      (error) => {
+        // TODO AThimel 10/12/2020 Fallback sur les lacs en dur
+        // lemanPos = latLng(46.439783, 6.480641);
+        // bourgetPos = latLng(45.7249, 5.8684);
+        // annecyPos = latLng(45.856166, 6.173468);
+        // aiguebelettePos = latLng(45.5508, 5.8015);
+
+      }
+    );
+  }
+
+  asLatLng(lake:Lake):LatLng {
+    let result = latLng(lake.latitude, lake.longitude);
+    return result;
   }
 
 }

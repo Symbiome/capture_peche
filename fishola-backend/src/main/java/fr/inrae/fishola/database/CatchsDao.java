@@ -121,4 +121,16 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public int countCatchs() {
+        // TODO AThimel 12/10/2020 Il faut exclure les captures des utilisateurs exclude_from_exports=true
+        int result = withDao(CatchDao.class, CatchDao::count).intValue();
+        return result;
+    }
+
+    public int countPictures() {
+        // TODO AThimel 12/10/2020 Il faut exclure les photos des utilisateurs exclude_from_exports=true
+        int result = withDao(CatchPictureDao.class, CatchPictureDao::count).intValue();
+        return result;
+    }
+
 }
