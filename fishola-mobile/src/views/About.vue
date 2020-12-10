@@ -119,7 +119,7 @@
                   <div class="key-figures">
                     <div class="kf-item">
                       <div class="kf-number">
-                        123
+                        {{tripsCount}}
                       </div>
                       <div class="kf-label">
                         sorties
@@ -127,7 +127,7 @@
                     </div>
                     <div class="kf-item">
                       <div class="kf-number">
-                        666
+                        {{catchsCount}}
                       </div>
                       <div class="kf-label">
                         captures
@@ -135,7 +135,7 @@
                     </div>
                     <div class="kf-item">
                       <div class="kf-number">
-                        42
+                        {{picturesCount}}
                       </div>
                       <div class="kf-label">
                         photos
@@ -324,11 +324,15 @@ export default class AboutView extends Vue {
   annecyPos = latLng(45.856166, 6.173468);
   aiguebelettePos = latLng(45.5508, 5.8015);
 
-constructor() {
+  tripsCount:number = 125;
+  catchsCount:number = 633;
+  picturesCount:number = 72;
+
+  constructor() {
     super();
   }
 
-  mounted() {
+  created() {
     var jquery = document.createElement('script');
     jquery.type = 'text/javascript';
     jquery.src = '/js/jquery-1.11.0.min.js';
@@ -422,16 +426,23 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   .left-panel {
     width:  25%;
     h3 {
-      font-size: 36px; color: #fff; font-family: 'Open Sans', sans-serif; font-weight: 800; text-transform: uppercase; margin: 0px; line-height: 34px;
+      font-size: 36px;
+      color: @white;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 0px;
+      line-height: 34px;
+
       span {
-        color:#E17055; font-family: 'Open Sans', sans-serif; font-weight: 600; display: block;
+        color: @terra-cotta;
+        font-weight: 600;
+        display: block;
       }
     }
     p {
       padding: 16px 0px 26px 0px;
       font-size: 16px;
       color: @gunmetal;
-      font-family: 'Open Sans', sans-serif;
       font-weight: 600; font-style: italic;
       margin: 0px;
       word-spacing: 2px;
@@ -507,7 +518,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
       margin-left: 50px;
       margin-right: 50px;
       .kf-number {
-        color: #E17055;
+        color: @terra-cotta;
         font-size: 50px;
         font-weight: 530;
         height: 59px;
@@ -526,7 +537,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 .Get_sec { background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
 
 .Contribute_sec p,
-.Contact_sec p, {
+.Contact_sec p {
   font-size: 18px;
 }
 .Pricing_sec h3,
