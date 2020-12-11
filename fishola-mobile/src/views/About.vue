@@ -211,9 +211,9 @@
                         <div class="Leftside">
                             <form action="#">
                                 <fieldset>
-                                    <p><input type="email" value="" placeholder="Votre e-mail" class="field"></p>
-                                    <p><textarea cols="2"  rows="2" placeholder="Votre message"></textarea></p>
-                                    <p><input type="submit" value="Envoyer" class="button"></p>
+                                    <p><input type="email" v-model="contactEmail" placeholder="Votre e-mail" class="field"></p>
+                                    <p><textarea cols="2"  rows="2" v-model="contactMessage"  placeholder="Votre message"></textarea></p>
+                                    <p><input type="button" value="Envoyer" class="button" v-on:click="sendContact"></p>
                                 </fieldset>
                             </form>
                         </div>
@@ -264,6 +264,7 @@
 import Constants from '@/services/Constants';
 import ProfileService from '@/services/ProfileService';
 import AboutService from '@/services/AboutService';
+import FeedbackService from '@/services/FeedbackService';
 import router from '@/router';
 
 import { latLng, LatLng, Icon } from 'leaflet';
@@ -283,7 +284,7 @@ Icon.Default.mergeOptions({
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Lake } from '@/pojos/BackendPojos';
+import { Lake, Feedback } from '@/pojos/BackendPojos';
 
 @Component({
   components: {
@@ -303,6 +304,14 @@ export default class AboutView extends Vue {
   catchsCount:number = 633;
   picturesCount:number = 72;
   lakes:Lake[] = [];
+
+  contactEmail:string = '';
+  contactMessage:string = '';
+
+  // version:string = process.env.VUE_APP_VERSION;
+  projectVersion:string = process.env.VUE_APP_PROJECT_VERSION;
+  gitRevision:string = process.env.VUE_APP_GIT_REVISION;
+  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`;
 
   constructor() {
     super();
@@ -345,6 +354,33 @@ export default class AboutView extends Vue {
     return result;
   }
 
+  sendContact() {
+    if (!this.contactEmail) {
+      // TODO 11/12/2020 À améliorer
+      window.alert('L\'email est obligatoire');
+      return;
+    }
+    if (!this.contactMessage) {
+      // TODO 11/12/2020 À améliorer
+      window.alert('Le message est obligatoire');
+      return;
+    }
+
+    let feedback:Feedback = { 
+      id: '' + new Date().getTime(),
+      category: 'CONTACT',
+      date: new Date(),
+      frontendVersion: this.frontendVersion,
+      email: this.contactEmail,
+      description: this.contactMessage
+    };
+
+    FeedbackService.sendFeedbackNoAsync(feedback)
+      .then(() => {
+      // TODO 11/12/2020 À améliorer
+        window.alert('Votre message a bien été envoyé à l\'équipe projet, merci');
+      });
+  }
 }
 
 </script>
@@ -546,16 +582,21 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   color: @gunmetal;
 }
 
-  .welcome-apps {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-top: 50px;
-    img {
-      width: 200px;
-      margin-left: 20px;
-      margin-right: 20px;
-    }
+.Get_sec .Leftside textarea,
+.Get_sec .Leftside input.field {
+  color: @gunmetal;
+}
+
+.welcome-apps {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+  img {
+    width: 200px;
+    margin-left: 20px;
+    margin-right: 20px;
   }
+}
 </style>

@@ -159,4 +159,9 @@ export default class FeedbackService extends AbstractFisholaService {
   private static deleteStoredFeedback(feedbackId: string) {
     this.getDatabase().offlineFeedbacks.delete(feedbackId);
   }
+
+  static sendFeedbackNoAsync(feedback: Feedback): Promise<void> {
+    return this.backendPut("/v1/feedback", feedback);
+  }
+
 }
