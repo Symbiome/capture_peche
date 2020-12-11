@@ -164,4 +164,7 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "53cr37")
     String getAdminPassword();
 
+    @ConfigProperty(defaultValue = "24")
+    long getKeyFiguresTimeoutHours();
+
 }

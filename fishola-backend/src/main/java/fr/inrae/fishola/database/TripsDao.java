@@ -198,7 +198,6 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public int countTrips() {
-        // TODO AThimel 12/10/2020 Il faut exclure les sorties des utilisateurs exclude_from_exports=true
         int result = withDao(TripDao.class, TripDao::count).intValue();
         return result;
     }

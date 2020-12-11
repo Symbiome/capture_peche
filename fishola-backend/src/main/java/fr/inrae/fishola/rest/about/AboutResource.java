@@ -1,8 +1,10 @@
 package fr.inrae.fishola.rest.about;
 
 import fr.inrae.fishola.database.CatchsDao;
+import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
+import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import org.apache.commons.logging.Log;
@@ -16,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,7 +29,15 @@ public class AboutResource extends AbstractFisholaResource {
 
     private static final Log log = LogFactory.getLog(AboutResource.class);
 
+    /**
+     * Dernière instance de KeyFigures calculée. Celle-ci va rester en mémoire jusqu'à ce qu'elle expire (cf délai dans
+     * la configuration).
+     */
     protected static KeyFigures latestKeyFigures;
+
+    /**
+     * Permet de ne pas faire plusieurs fois le calcul en même temps.
+     */
     protected static AtomicBoolean runningRefresh = new AtomicBoolean(false);
 
     @Inject
@@ -35,30 +46,42 @@ public class AboutResource extends AbstractFisholaResource {
     protected TripsDao tripsDao;
     @Inject
     protected CatchsDao catchsDao;
+    @Inject
+    protected EditorialAndDocumentationDao editorialAndDocumentationDao;
 
+    /**
+     * Procède au calcul d'une nouvelle instance de KeyFigures
+     *
+     * @return l'instance fraichement calculée
+     */
     protected KeyFigures computeKeyFigures() {
-        if (log.isDebugEnabled()) {
-            log.debug("Nouveau calcul en cours");
-        }
         ImmutableKeyFigures.Builder builder = ImmutableKeyFigures.builder();
-        List<Lake> lakes = referentialDao.listLakes();
         int tripsCount = tripsDao.countTrips();
         int catchsCount = catchsDao.countCatchs();
         int picturesCount = catchsDao.countPictures();
+        List<Lake> lakes = referentialDao.listLakes();
+        Optional<Editorial> title = editorialAndDocumentationDao.findEditorial("about_title");
+        Optional<Editorial> contribute = editorialAndDocumentationDao.findEditorial("about_contribute");
+
         builder.tripsCount(tripsCount)
                 .catchsCount(catchsCount)
                 .picturesCount(picturesCount)
                 .lakes(lakes)
-                .titleText("TITLE TEXT") // TODO AThimel 10/12/2020 est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).
-                .contributeText("CONTRIBUTE TEXT")// TODO AThimel 10/12/2020
+                .titleText(title.map(Editorial::getContent).orElse("N/A"))
+                .contributeText(contribute.map(Editorial::getContent).orElse("N/A"))
                 .computedOn(LocalDateTime.now());
         KeyFigures result = builder.build();
+
         if (log.isDebugEnabled()) {
             log.debug("Nouvelle instance: " + result);
         }
         return result;
     }
 
+    /**
+     * Méthode non bloquante qui déclenche la mise à jour de l'instance de KeyFigures mais qui n'attend pas que son
+     * calcul soit terminé avant de rendre la main
+     */
     protected void asyncRefreshKeyFigures() {
         boolean isCurrentlyRunning = runningRefresh.compareAndExchange(false, true);
         if (!isCurrentlyRunning) {
@@ -67,8 +90,6 @@ public class AboutResource extends AbstractFisholaResource {
                 latestKeyFigures = computeKeyFigures();
                 runningRefresh.set(false);
             });
-        } else {
-            System.out.println("Refresh already pending, skipping");
         }
     }
 
@@ -80,13 +101,16 @@ public class AboutResource extends AbstractFisholaResource {
             latestKeyFigures = computeKeyFigures();
         }
 
+        // On calcule l'age de l'instance actuelle.
         Duration age = Duration.between(latestKeyFigures.computedOn(), LocalDateTime.now());
-        if (age.toSeconds() > 6) {
-            // TODO AThimel 10/12/2020 Mettre un vrai délai + conf
+        // Si elle a expiré on demandé son calcul en arrière-plan
+        if (age.toHours() >= config.getKeyFiguresTimeoutHours()) {
             asyncRefreshKeyFigures();
         }
 
+        // Dans tous les cas on renvoie l'instance partagée (même si elle est peut-être expirée)
         final KeyFigures result = latestKeyFigures;
         return result;
     }
+
 }
