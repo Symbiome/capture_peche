@@ -187,8 +187,8 @@
                 <!-- // End Pricing Side // -->
                 <h3>Applications</h3>
                 <div class="welcome-apps">
-                    <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"><img class="app" src="/img/473-november/GooglePlay.png" alt="GooglePlay" /></a>
-                    <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank"><img class="app" src="/img/473-november/AppStore.png" alt="AppStore" /></a>
+                    <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
+                    <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank"><img class="app" src="/img/AppStore.png" alt="AppStore" /></a>
                 </div>
             </div>
         </div>
@@ -231,9 +231,9 @@
                                 </address>  
                                 <div class="clear"></div>
                                 <ul>
-                                    <li><a rel="nofollow" href="https://www.facebook.com/UMR-Carrtel-1625760484103771/" target="_blank"><img src="/img/473-november/facebook-icn.png" alt="Facebook"></a></li>
-                                    <li><a rel="nofollow" href="https://twitter.com/UmrCarrtel" target="_blank"><img src="/img/473-november/twitter-icn.png" alt="Twitter"></a></li>
-                                    <li><a rel="nofollow" href="https://www.youtube.com/c/UmrCarrtel" target="_blank"><img src="/img/473-november/youtube-icn.png" alt="Youtube"></a></li>
+                                    <li><a rel="nofollow" href="https://www.facebook.com/UMR-Carrtel-1625760484103771/" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
+                                    <li><a rel="nofollow" href="https://twitter.com/UmrCarrtel" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
+                                    <li><a rel="nofollow" href="https://www.youtube.com/c/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
                                 </ul>
                         </div>
                         <!-- // End Right Side // -->
@@ -297,13 +297,8 @@ export default class AboutView extends Vue {
 
   center = latLng(46.071623, 5.890511);
 
-  lemanPos = latLng(46.439783, 6.480641);
-  bourgetPos = latLng(45.7249, 5.8684);
-  annecyPos = latLng(45.856166, 6.173468);
-  aiguebelettePos = latLng(45.5508, 5.8015);
-
   titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
-  contributeText:string = "";
+  contributeText:string = "Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.";
   tripsCount:number = 125;
   catchsCount:number = 633;
   picturesCount:number = 72;
@@ -316,7 +311,7 @@ export default class AboutView extends Vue {
   created() {
     var jquery = document.createElement('script');
     jquery.type = 'text/javascript';
-    jquery.src = '/js/jquery-1.11.0.min.js';
+    jquery.src = '/js/jquery-1.11.3.min.js';
     jquery.async = false;
     document.body.appendChild(jquery);
     var script = document.createElement('script');
@@ -336,12 +331,11 @@ export default class AboutView extends Vue {
         kf.lakes.forEach((l) => this.lakes.push(l));
       },
       (error) => {
-        // TODO AThimel 10/12/2020 Fallback sur les lacs en dur
-        // lemanPos = latLng(46.439783, 6.480641);
-        // bourgetPos = latLng(45.7249, 5.8684);
-        // annecyPos = latLng(45.856166, 6.173468);
-        // aiguebelettePos = latLng(45.5508, 5.8015);
-
+        // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
+        this.lakes.push({id:'leman', name:"Léman", exportAs:'whatever', latitude:46.439783, longitude:6.480641});
+        this.lakes.push({id:'bourget', name:"Lac du Bourget", exportAs:'whatever', latitude:45.7249, longitude:5.8684});
+        this.lakes.push({id:'annecy', name:"Lac d'Annecy", exportAs:'whatever', latitude:45.856166, longitude:6.173468});
+        this.lakes.push({id:'aiguebelette', name:"Lac dAiguebelette", exportAs:'whatever', latitude:45.5508, longitude:5.8015});
       }
     );
   }
