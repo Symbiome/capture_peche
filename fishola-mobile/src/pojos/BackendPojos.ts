@@ -126,6 +126,16 @@ export interface UpdatePasswordBean {
     newPassword: string;
 }
 
+export interface KeyFigures {
+    tripsCount: number;
+    catchsCount: number;
+    picturesCount: number;
+    lakes: Lake[];
+    titleText: string;
+    contributeText: string;
+    computedOn: Date;
+}
+
 export interface Feedback {
     id: string;
     category: string;

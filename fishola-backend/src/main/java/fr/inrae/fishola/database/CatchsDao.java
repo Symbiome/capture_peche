@@ -121,4 +121,14 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public int countCatchs() {
+        int result = withDao(CatchDao.class, CatchDao::count).intValue();
+        return result;
+    }
+
+    public int countPictures() {
+        int result = withDao(CatchPictureDao.class, CatchPictureDao::count).intValue();
+        return result;
+    }
+
 }

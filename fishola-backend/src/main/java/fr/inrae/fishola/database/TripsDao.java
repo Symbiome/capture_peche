@@ -196,4 +196,10 @@ public class TripsDao extends AbstractFisholaDao {
     public String getTripsCSV() {
         return withContext(context -> context.selectFrom("catchs_export").fetch().formatCSV(';'));
     }
+
+    public int countTrips() {
+        int result = withDao(TripDao.class, TripDao::count).intValue();
+        return result;
+    }
+
 }

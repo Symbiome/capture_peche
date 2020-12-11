@@ -127,16 +127,21 @@ export default class Menu extends Vue {
   }
 
   loadProfile() {
-    ProfileService.getProfile()
-      .then(
-        this.profileLoaded
-        // XXX AThimel 09/04/2020 À cause de la page Register, on désactive la redirection à partir du Menu
-        /*,
-        () => {
-          this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-          router.push('/login');
-        }*/
-        );
+
+    console.log("router.currentRoute.name: ", router.currentRoute.name);
+    if (router.currentRoute.name != 'dispatcher' && router.currentRoute.name != 'about' && router.currentRoute.name != 'login') {
+        
+      ProfileService.getProfile()
+        .then(
+          this.profileLoaded
+          // XXX AThimel 09/04/2020 À cause de la page Register, on désactive la redirection à partir du Menu
+          /*,
+          () => {
+            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
+            router.push('/login');
+          }*/
+          );
+    }
   }
 
   profileLoaded(profile:UserProfile) {
