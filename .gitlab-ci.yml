@@ -12,6 +12,8 @@ variables:
   ANDROID_COMPILE_SDK: "29"
   ANDROID_BUILD_TOOLS: "29.0.3"
   ANDROID_SDK_TOOLS:   "6200805"
+  MAVEN_REPO_PATH: "/var/local/shared-m2-repository"
+  MAVEN_OPTS: "-Dmaven.repo.local=${MAVEN_REPO_PATH}"
 
 stages:
 - build
@@ -74,7 +76,11 @@ build:compile-with-tests:
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-beta
   script:
+    - ls -al /var/local/
+    - du --si --max-depth=1 /var/local/
     - mvn clean package
+    - ls -al /var/local/
+    - du --si --max-depth=1 /var/local/
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
   tags:
