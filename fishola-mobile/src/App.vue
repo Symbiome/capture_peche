@@ -167,11 +167,11 @@ body {
   height: 100%;
   width: 100vw;
 
-  // On doit toujours pouvoir scroller en web
-  @media (max-width: 1000px) {
-    overflow: hidden;
-    overflow-x: hidden;
-  }
+  // // On doit toujours pouvoir scroller en web
+  // @media (max-width: 1000px) {
+  //   overflow: hidden;
+  //   overflow-x: hidden;
+  // }
 }
 
 html {
