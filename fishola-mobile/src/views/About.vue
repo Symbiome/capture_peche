@@ -92,11 +92,17 @@
         </div>
         <!-- // End Banner Section // -->
 
-        <!-- \\ Begin Banner Section \\ -->
+        <!-- \\ Begin Video Section \\ -->
         <div class="Video_sec">
-          <iframe class="youtube" width="560" height="315" src="https://www.youtube-nocookie.com/embed/HNl9-I-Wqcg" frameborder="10" allow="encrypted-media" allowfullscreen></iframe>
+          <iframe class="youtube"
+                  width="640"
+                  height="360"
+                  src="https://www.youtube-nocookie.com/embed/HNl9-I-Wqcg"
+                  frameborder="10"
+                  allow="encrypted-media"
+                  allowfullscreen></iframe>
         </div>
-        <!-- // End Banner Section // -->
+        <!-- // End Video Section // -->
 
         <!-- \\ Begin Container \\ -->
         <div id="Container">
@@ -497,7 +503,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   .left-panel {
     width:  25%;
     h3 {
-      font-size: 36px;
+      font-size: 42px;
       color: @white;
       font-weight: 800;
       text-transform: uppercase;
@@ -512,9 +518,10 @@ header.smaller .Navigation li a { padding: 22px 41px; }
     }
     p {
       padding: 16px 0px 26px 0px;
-      font-size: 16px;
+      font-size: 22px;
       color: @gunmetal;
-      font-weight: 600; font-style: italic;
+      font-weight: 400;
+      font-style: italic;
       margin: 0px;
       word-spacing: 2px;
       line-height: 22px;
@@ -534,7 +541,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 .Video_sec {
   width: 100%;
   background: @pelorous;
-  height: 315px;
+  height: 360px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -567,7 +574,8 @@ header.smaller .Navigation li a { padding: 22px 41px; }
       }
       .kf-label {
         color: @gunmetal;
-        font-size: 18px;
+        font-size: 22px;
+        font-weight: 400;
       }
     }
   }
