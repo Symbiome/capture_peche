@@ -98,34 +98,6 @@
         </div>
         <!-- // End Banner Section // -->
 
-        <!-- \\ Begin Producted_by Section \\ -->
-        <div class="Producted_by_sec" id="producted_by">
-          <div class="Center">
-            <h3>Un projet :</h3>
-            <div class="credits-logos">
-              <a href="" target="_blank"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
-              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
-              <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
-            </div>
-          </div>
-          <div class="Center">
-            <h3>Partenaires :</h3>
-            <div class="credits-logos">
-              <a href="" target="_blank"><img src='/img/credits/88b994/ALP.jpg' alt="ALP"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/FIPAL.jpg' alt="FIPAL"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA-pecheurs-chamberiens"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA-Bourget"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA-Aiguebelette"/></a>
-            </div>
-          </div>
-        </div>
-        <!-- // End Producted_by Section // -->
-
         <!-- \\ Begin Container \\ -->
         <div id="Container">
             <!-- \\ Begin About Section \\ -->
@@ -253,18 +225,50 @@
                         <!-- // End Right Side // -->
                     </div>
 
-                    <!-- \\ Begin Footer \\-->
-                    <footer>
-                        <div class="Cntr">                
-                            <p>COPYRIGHT © 2020 INRAE UMR CARRTEL</p>
-                        </div>
-                    </footer>
-                    <!-- // End Footer // -->
                 </div>
                 <!-- // End Get Section // -->
             
             </div>
             <!-- // End Contact Section // -->
+
+
+            <!-- \\ Begin Producted_by Section \\ -->
+            <div class="Producted_by_sec" id="producted_by">
+              <div class="partners">
+                <h3>Nos partenaires</h3>
+                <div class="credits-logos">
+                  <a href="" target="_blank"><img src='/img/credits/88b994/ALP.jpg' alt="ALP"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/FIPAL.jpg' alt="FIPAL"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA-pecheurs-chamberiens"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA-Bourget"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA-Aiguebelette"/></a>
+                </div>
+              </div>
+              <div class="Line"></div>
+              <div class="producers">
+                <h3>FISHOLA est produit par</h3>
+                <div class="credits-logos">
+                  <a href="" target="_blank"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
+                  <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/ofb.png' alt="OFB"/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
+                  <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
+                  <a href="" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
+                </div>
+              </div>
+            </div>
+            <!-- // End Producted_by Section // -->
+
+            <!-- \\ Begin Footer \\-->
+            <footer>
+                <div class="Cntr">
+                    <p>COPYRIGHT © 2020 INRAE UMR CARRTEL</p>
+                </div>
+            </footer>
+            <!-- // End Footer // -->
         </div>
         <!-- // End Container // -->
   </div>
@@ -536,36 +540,6 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   justify-content: center;
 }
 
-.Producted_by_sec {
-
-  background-color: @solitude;
-  height: 500px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-
-  h3 {
-    text-align: center;
-    font-weight: lighter;
-    color: @pelorous;
-  }
-
-  .credits-logos {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-
-    img {
-      width: auto;
-      height: 90px;
-      margin-left: 20px;
-      margin-right: 20px;
-    }
-  }
-}
-
 .About_sec {
   padding-top: 40px;
   .key-figures {
@@ -634,4 +608,64 @@ header.smaller .Navigation li a { padding: 22px 41px; }
     margin-right: 20px;
   }
 }
+
+.Producted_by_sec {
+
+  background-color: @solitude;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .partners, .producers {
+    h3 {
+      text-align: center;
+      font-weight: lighter;
+      color: @pelorous;
+    }
+
+    .credits-logos {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      img {
+        margin-left: 20px;
+        margin-right: 20px;
+      }
+    }
+  }
+
+  .partners {
+    h3 {
+      font-size: 42px;
+    }
+    img {
+      max-height: 140px;
+      max-width: 240px;
+    }
+  }
+
+  .producers {
+    h3 {
+      font-size: 24px;
+    }
+    img {
+      min-height: 50px;
+      min-width: 90px;
+      max-height: 90px;
+      max-width: 150px;
+    }
+  }
+
+  .Line { border: solid 1px #E17055; height: 2px; width: 252px; margin: 30px; }
+
+}
+
+footer {
+  background: #0c2b34;
+}
+
 </style>
