@@ -101,11 +101,26 @@
         <!-- \\ Begin Producted_by Section \\ -->
         <div class="Producted_by_sec" id="producted_by">
           <div class="Center">
-            <h3>FISHOLA est produit par </h3>
+            <h3>Un projet :</h3>
             <div class="credits-logos">
-              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
-              <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/CARRTEL.jpg' alt="CARRTEL"/></a>
+              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/88b994/INRAE.jpg' alt="INRAE"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/USMB.jpg' alt="USMB"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/OLA.jpg' alt="OLA"/></a>
               <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
+            </div>
+          </div>
+          <div class="Center">
+            <h3>Partenaires :</h3>
+            <div class="credits-logos">
+              <a href="" target="_blank"><img src='/img/credits/88b994/ALP.jpg' alt="ALP"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/FIPAL.jpg' alt="FIPAL"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA-pecheurs-chamberiens"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA-Bourget"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA-Aiguebelette"/></a>
             </div>
           </div>
         </div>
@@ -509,10 +524,10 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 .Producted_by_sec {
 
   background-color: @solitude;
-  height: 300px;
+  height: 500px;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-evenly;
   align-items: center;
 
   h3 {
@@ -528,7 +543,8 @@ header.smaller .Navigation li a { padding: 22px 41px; }
     align-items: center;
 
     img {
-      width: 200px;
+      width: auto;
+      height: 90px;
       margin-left: 20px;
       margin-right: 20px;
     }
