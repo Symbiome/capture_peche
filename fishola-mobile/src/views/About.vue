@@ -103,11 +103,11 @@
           <div class="Center">
             <h3>Un projet :</h3>
             <div class="credits-logos">
-              <a href="" target="_blank"><img src='/img/credits/88b994/CARRTEL.jpg' alt="CARRTEL"/></a>
-              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/88b994/INRAE.jpg' alt="INRAE"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/USMB.jpg' alt="USMB"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
+              <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
               <a href="" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
-              <a href="" target="_blank"><img src='/img/credits/88b994/OLA.jpg' alt="OLA"/></a>
+              <a href="" target="_blank"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
               <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
               <a href="" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
             </div>
