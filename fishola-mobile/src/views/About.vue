@@ -195,7 +195,7 @@
                 <div class="Get_sec">
                     <div class="Center">
                         <h2>Nous contacter</h2>
-                        <p>La communication et l'échange sont au coeur de l'application FISHOLA. Vous pouvez nous suivre sur les différents réseaux sociaux ou nous contacter par l'intermédiaire du formulaire ci-dessous.</p>
+                        <p>La communication et l'échange sont au c&oelig;ur de l'application FISHOLA. Vous pouvez nous suivre sur les différents réseaux sociaux ou nous contacter par l'intermédiaire du formulaire ci-dessous.</p>
                         <div class="Line"></div>
                     </div>  
                     <div class="Mid">          
