@@ -601,7 +601,7 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 }
 
 .Get_sec .Rightside {
-  padding-top: 0px;
+  padding-top: 2px;
 }
 
 .welcome-apps {
