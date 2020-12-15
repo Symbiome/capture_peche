@@ -40,6 +40,7 @@ import EditTrip from '../views/trip/EditTrip.vue'
 
 import EditCatch from '../views/trip/EditCatch.vue'
 
+import Faq from '../views/Faq.vue'
 import Documentation from '../views/Documentation.vue'
 import Credits from '../views/Credits.vue'
 
@@ -134,6 +135,11 @@ const routes = [
     path: '/documentation',
     name: 'documentation',
     component: Documentation
+  },
+  {
+    path: '/faq',
+    name: 'faq',
+    component: Faq
   },
   {
     path: '/settings',
