@@ -230,7 +230,6 @@ package:docker-demo:
   stage: package
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
   cache:
     paths:
       - fishola-backend/target/lib
