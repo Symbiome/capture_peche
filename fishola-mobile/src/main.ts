@@ -34,7 +34,7 @@ moment.locale('fr');
 Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy, moment } })
 Vue.use(VModal, { dialog: true });
 Vue.use(VueScrollTo, {
-     container: "body",
+     container: "#about-scroll-container",
      duration: 500,
      easing: "ease",
      offset: 0,

@@ -17,4 +17,4 @@ function onScroll(event){
   });
 }
 
-$(document).on("scroll", onScroll);
+// $(document).on("scroll", onScroll);

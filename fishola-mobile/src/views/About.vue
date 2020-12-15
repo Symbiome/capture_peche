@@ -20,21 +20,21 @@
   -->
 <template>
 <!-- \\ Begin Holder \\ -->
-<div class="DesignHolder">
+<div class="DesignHolder" v-on:scroll="scrolled" id="about-scroll-container">
   <!-- \\ Begin Frame \\ -->
-  <div class="LayoutFrame">
+  <div class="LayoutFrame" id="top">
         <!-- \\ Begin Header \\ -->
         <header class="smaller">
             <div class="Center">
                 <div class="site-logo">
-                  <h1><a href="#/about" v-scroll-to="'#presentation'"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
+                  <h1><a href="#/about" v-scroll-to="'#top'"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
                 </div>
               <div id="mobile_sec">
                 <div class="menumobile">
                     <!-- \\ Begin Navigation \\ -->
                     <nav class="Navigation">
                         <ul>
-                            <li class="active">                                
+                            <li>
                                 <a href="#/about" v-scroll-to="'#presentation'">Présentation</a>
                                 <span class="menu-item-bg"></span>
                             </li>
@@ -396,6 +396,17 @@ export default class AboutView extends Vue {
         window.alert('Votre message a bien été envoyé à l\'équipe projet, merci');
       });
   }
+
+  scrolled() {
+// console.log("SCROLL");
+//     const elem = document.getElementById('about-scroll-container');
+//     if (elem) {
+// console.log("elem.scrollHeight", elem.scrollHeight);
+// console.log("elem.scrollTop", elem.scrollTop);
+// console.log("elem.offsetHeight", elem.offsetHeight);
+//     }
+  }
+
 }
 
 </script>
@@ -408,6 +419,11 @@ export default class AboutView extends Vue {
 @import "../less/_colors";
 @import url("~leaflet/dist/leaflet.css");
 
+#about-scroll-container {
+  overflow: auto;
+  height: 100%;
+  overflow-x: hidden;
+}
 .DesignHolder {
   background-color: @white-smoke !important;
 }
