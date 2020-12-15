@@ -225,7 +225,7 @@
                                 <ul>
                                     <li><a rel="nofollow" href="https://www.facebook.com/UMR-Carrtel-1625760484103771/" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
                                     <li><a rel="nofollow" href="https://twitter.com/UmrCarrtel" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
-                                    <li><a rel="nofollow" href="https://www.youtube.com/c/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
+                                    <li><a rel="nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
                                 </ul>
                         </div>
                         <!-- // End Right Side // -->
