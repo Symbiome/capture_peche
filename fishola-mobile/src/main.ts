@@ -27,11 +27,25 @@ import throttle from 'lodash/throttle'
 import orderBy from 'lodash/orderBy'
 import moment from 'moment'
 import VModal from 'vue-js-modal'
+import VueScrollTo from 'vue-scrollto';
 
 moment.locale('fr');
 
 Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy, moment } })
 Vue.use(VModal, { dialog: true });
+Vue.use(VueScrollTo, {
+     container: "body",
+     duration: 500,
+     easing: "ease",
+     offset: 0,
+     force: true,
+     cancelable: true,
+     onStart: false,
+     onDone: false,
+     onCancel: false,
+     x: false,
+     y: true
+ });
 Vue.config.productionTip = false
 
 new Vue({
