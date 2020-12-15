@@ -217,8 +217,7 @@
                 <div class="Get_sec">
                     <div class="Center">
                         <h2>Nous contacter</h2>
-                        <p>Sed non neque elit. Sed ut imperdiet nisi. Proin condimentum fermentum nunc. Etiam pharetra, erat sed fermentum<br>
-                        feugiat velit mauris egestas quamut aliquam massa nisl quis neque. Suspendisse in orci enim.</p>
+                        <p>La communication et l'échange sont au coeur de l'application FISHOLA. Vous pouvez nous suivre sur les différents réseaux sociaux ou nous contacter par l'intermédiaire du formulaire ci-dessous.</p>
                         <div class="Line"></div>
                     </div>  
                     <div class="Mid">          
@@ -617,6 +616,10 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 .Get_sec .Leftside textarea,
 .Get_sec .Leftside input.field {
   color: @gunmetal;
+}
+
+.Get_sec .Rightside {
+  padding-top: 0px;
 }
 
 .welcome-apps {
