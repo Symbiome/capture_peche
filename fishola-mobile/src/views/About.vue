@@ -47,11 +47,11 @@
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
-                                <a href="#faq">FAQ</a>
+                                <a href="#/faq">FAQ</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
-                                <a href="#infos">Infos</a>
+                                <a href="#/documentation">Infos</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                         </ul>
