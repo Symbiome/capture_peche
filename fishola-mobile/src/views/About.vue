@@ -27,7 +27,7 @@
         <header class="smaller">
             <div class="Center">
                 <div class="site-logo">
-                  <h1><a href="#/about" v-scroll-to="'#top'"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
+                  <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
                 </div>
               <div id="mobile_sec">
                 <div class="menumobile">
@@ -35,15 +35,15 @@
                     <nav class="Navigation">
                         <ul>
                             <li>
-                                <a href="#/about" v-scroll-to="'#presentation'">Présentation</a>
+                                <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}">Présentation</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
-                                <a href="#/about" v-scroll-to="'#contribute'">Comment participer ?</a>
+                                <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}">Comment participer ?</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
-                                <a href="#/about" v-scroll-to="'#contact'">Contact</a>
+                                <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}">Contact</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
