@@ -28,6 +28,7 @@ import orderBy from 'lodash/orderBy'
 import moment from 'moment'
 import VModal from 'vue-js-modal'
 import VueScrollTo from 'vue-scrollto';
+import VueObserveVisibility from 'vue-observe-visibility'
 
 moment.locale('fr');
 
@@ -46,6 +47,7 @@ Vue.use(VueScrollTo, {
      x: false,
      y: true
  });
+Vue.use(VueObserveVisibility);
 Vue.config.productionTip = false
 
 new Vue({

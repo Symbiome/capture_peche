@@ -109,7 +109,7 @@
             <!-- \\ Begin About Section \\ -->
             <div class="About_sec" id="about">
                 <div class="Center">
-                  <div class="key-figures">
+                  <div class="key-figures" v-observe-visibility="keyFiguresItemsVisibilityChanged">
                     <div class="kf-item">
                       <div class="kf-number">
                         <Counter :n="tripsCount"></Counter>
@@ -326,9 +326,12 @@ export default class AboutView extends Vue {
 
   titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
   contributeText:string = "Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.";
-  tripsCount:number = 125;
-  catchsCount:number = 633;
-  picturesCount:number = 72;
+  tripsCount:number = 0;
+  realTripsCount:number = 125;
+  catchsCount:number = 0;
+  realCatchsCount:number = 633;
+  picturesCount:number = 0;
+  realPicturesCount:number = 72;
   lakes:Lake[] = [];
 
   contactEmail:string = '';
@@ -349,9 +352,9 @@ export default class AboutView extends Vue {
     .then(
       (kf) => {
         console.log("Chiffres clés", kf);
-        this.tripsCount = kf.tripsCount;
-        this.catchsCount = kf.catchsCount;
-        this.picturesCount = kf.picturesCount;
+        this.realTripsCount = kf.tripsCount;
+        this.realCatchsCount = kf.catchsCount;
+        this.realPicturesCount = kf.picturesCount;
         this.titleText = kf.titleText;
         this.contributeText = kf.contributeText;
         kf.lakes.forEach((l) => this.lakes.push(l));
@@ -425,6 +428,13 @@ export default class AboutView extends Vue {
     }
   }
 
+  keyFiguresItemsVisibilityChanged (isVisible:boolean) {
+    if (isVisible) {
+      this.tripsCount = this.realTripsCount;
+      this.catchsCount = this.realCatchsCount;
+      this.picturesCount = this.realPicturesCount;
+    }
+  }
 }
 
 </script>
