@@ -54,6 +54,7 @@ build:compile-only:
     - mvn clean package -Dmaven.test.skip
   rules:
     - if: $CI_COMMIT_BRANCH != "develop"
+      when: manual
   tags:
     - sticky
     - docker
@@ -83,6 +84,7 @@ build:compile-with-tests:
     - du --si --max-depth=1 /var/local/
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
+      when: always
   tags:
     - sticky
     - docker
@@ -230,6 +232,7 @@ package:docker-demo:
   stage: package
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: always
   cache:
     paths:
       - fishola-backend/target/lib
