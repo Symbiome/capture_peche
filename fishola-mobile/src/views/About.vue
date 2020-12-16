@@ -421,7 +421,7 @@ export default class AboutView extends Vue {
   refreshSelectedSection() {
     const elem = document.getElementById('about-scroll-container');
     if (elem) {
-      let foundSection:string;
+      let foundSection:string = '';
       this.sectionIds.forEach((sectionId) => {
         const sectionElem = document.getElementById(sectionId);
         if (sectionElem && elem.scrollTop >= sectionElem.offsetTop) {
