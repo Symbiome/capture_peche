@@ -420,7 +420,7 @@ export default class AboutView extends Vue {
       let foundSection:string = '';
       this.sectionIds.forEach((sectionId) => {
         const sectionElem = document.getElementById(sectionId);
-        if (sectionElem && elem.scrollTop >= sectionElem.offsetTop) {
+        if (sectionElem && elem.scrollTop >= (sectionElem.offsetTop - 73)) { // 73 étant la hauteur du header
           foundSection = sectionId;
         }
       });
