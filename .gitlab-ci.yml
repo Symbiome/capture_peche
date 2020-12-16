@@ -22,16 +22,16 @@ stages:
 - check-releasable
 - sonar
 
-build:dependency-tree:
-  image: maven:3.6-openjdk-11
-  stage: build
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
-  script:
-    - mvn dependency:tree
-  tags:
-    - sticky
+#build:dependency-tree:
+#  image: maven:3.6-openjdk-11
+#  stage: build
+#  rules:
+#    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+#      when: manual
+#  script:
+#    - mvn dependency:tree
+#  tags:
+#    - sticky
 
 build:compile-only:
   image: maven:3.6-openjdk-11
