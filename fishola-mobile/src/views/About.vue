@@ -408,8 +408,17 @@ export default class AboutView extends Vue {
 
   sectionIds:string[] = ['presentation', 'contribute', 'contact'];
   activeSection:string = '';
+  refreshSelectedSectionTimer:any = undefined;
 
   scrolled() {
+    if (this.refreshSelectedSectionTimer) {
+      this.refreshSelectedSectionTimer.cancel();
+    }
+    this.refreshSelectedSectionTimer = Vue.lodash.debounce(this.refreshSelectedSection, 100);
+    this.refreshSelectedSectionTimer();
+  }
+
+  refreshSelectedSection() {
     const elem = document.getElementById('about-scroll-container');
     if (elem) {
       let foundSection:string;
