@@ -342,15 +342,6 @@ export default class AboutView extends Vue {
   }
 
   created() {
-    var jquery = document.createElement('script');
-    jquery.type = 'text/javascript';
-    jquery.src = '/js/jquery-1.11.3.min.js';
-    jquery.async = false;
-    document.body.appendChild(jquery);
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = '/js/global.js';
-    document.body.appendChild(script);
 
     AboutService.getKeyFigures()
     .then(
