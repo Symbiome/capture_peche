@@ -112,7 +112,7 @@
                   <div class="key-figures">
                     <div class="kf-item">
                       <div class="kf-number">
-                        {{tripsCount}}
+                        <Counter :n="tripsCount"></Counter>
                       </div>
                       <div class="kf-label">
                         sorties
@@ -120,7 +120,7 @@
                     </div>
                     <div class="kf-item">
                       <div class="kf-number">
-                        {{catchsCount}}
+                        <Counter :n="catchsCount"></Counter>
                       </div>
                       <div class="kf-label">
                         captures
@@ -128,7 +128,7 @@
                     </div>
                     <div class="kf-item">
                       <div class="kf-number">
-                        {{picturesCount}}
+                        <Counter :n="picturesCount"></Counter>
                       </div>
                       <div class="kf-label">
                         photos
@@ -286,6 +286,7 @@
 <script lang="ts">
 
 import Constants from '@/services/Constants';
+import Counter from '@/components/common/Counter.vue'
 import ProfileService from '@/services/ProfileService';
 import AboutService from '@/services/AboutService';
 import FeedbackService from '@/services/FeedbackService';
@@ -315,7 +316,8 @@ import { Lake, Feedback } from '@/pojos/BackendPojos';
     LMap,
     LTileLayer,
     LMarker,
-    LPopup
+    LPopup,
+    Counter
   }
 })
 export default class AboutView extends Vue {
