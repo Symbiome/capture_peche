@@ -34,15 +34,15 @@
                     <!-- \\ Begin Navigation \\ -->
                     <nav class="Navigation">
                         <ul>
-                            <li>
+                            <li v-bind:class="activeSection=='presentation'?'active':''">
                                 <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}">Présentation</a>
                                 <span class="menu-item-bg"></span>
                             </li>
-                            <li>
+                            <li v-bind:class="activeSection=='contribute'?'active':''">
                                 <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}">Comment participer ?</a>
                                 <span class="menu-item-bg"></span>
                             </li>
-                            <li>
+                            <li v-bind:class="activeSection=='contact'?'active':''">
                                 <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}">Contact</a>
                                 <span class="menu-item-bg"></span>
                             </li>
@@ -406,14 +406,21 @@ export default class AboutView extends Vue {
       });
   }
 
+  sectionIds:string[] = ['presentation', 'contribute', 'contact'];
+  activeSection:string = '';
+
   scrolled() {
-// console.log("SCROLL");
-//     const elem = document.getElementById('about-scroll-container');
-//     if (elem) {
-// console.log("elem.scrollHeight", elem.scrollHeight);
-// console.log("elem.scrollTop", elem.scrollTop);
-// console.log("elem.offsetHeight", elem.offsetHeight);
-//     }
+    const elem = document.getElementById('about-scroll-container');
+    if (elem) {
+      let foundSection:string;
+      this.sectionIds.forEach((sectionId) => {
+        const sectionElem = document.getElementById(sectionId);
+        if (sectionElem && elem.scrollTop >= sectionElem.offsetTop) {
+          foundSection = sectionId;
+        }
+      });
+      this.activeSection = foundSection;
+    }
   }
 
 }
