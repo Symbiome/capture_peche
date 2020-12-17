@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import fr.inrae.fishola.rest.about.KeyFiguresHolder;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
@@ -199,6 +201,8 @@ public class DocumentationResource extends AbstractFisholaResource {
         Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
         checkIsAdmin();
         dao.updateEditorial(editorial);
+        // On veut une mise à jour immédiate sur la page d'accueil
+        KeyFiguresHolder.unset();
         return Response.noContent().build();
     }
 

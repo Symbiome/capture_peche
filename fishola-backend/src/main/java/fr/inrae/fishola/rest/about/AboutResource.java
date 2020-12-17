@@ -32,12 +32,6 @@ public class AboutResource extends AbstractFisholaResource {
     private static final Log log = LogFactory.getLog(AboutResource.class);
 
     /**
-     * Dernière instance de KeyFigures calculée. Celle-ci va rester en mémoire jusqu'à ce qu'elle expire (cf délai dans
-     * la configuration).
-     */
-    protected static KeyFigures latestKeyFigures;
-
-    /**
      * Permet de ne pas faire plusieurs fois le calcul en même temps.
      */
     protected static AtomicBoolean runningRefresh = new AtomicBoolean(false);
@@ -91,29 +85,38 @@ public class AboutResource extends AbstractFisholaResource {
         if (!isCurrentlyRunning) {
             ExecutorService executor = Executors.newSingleThreadExecutor();
             executor.submit(() -> {
-                latestKeyFigures = computeKeyFigures();
+                computeAndSaveKeyFigures();
                 runningRefresh.set(false);
             });
         }
+    }
+
+    /**
+     * Combinaison des méthodes de calcul et de stockage d'une nouvelle instance de KeyFigures
+     * @return une nouvelle instance qui aurait été stockée en cache.
+     * @see #computeKeyFigures()
+     * @see KeyFiguresHolder#set(KeyFigures)
+     */
+    protected KeyFigures computeAndSaveKeyFigures() {
+        KeyFigures newInstance = computeKeyFigures();
+        KeyFiguresHolder.set(newInstance);
+        return newInstance;
     }
 
     @GET
     @Path("/key-figures")
     public KeyFigures getKeyFigures() {
 
-        if (latestKeyFigures == null) {
-            latestKeyFigures = computeKeyFigures();
-        }
+        final KeyFigures result = KeyFiguresHolder.get()
+                .orElseGet(this::computeAndSaveKeyFigures);
 
-        // On calcule l'age de l'instance actuelle.
-        Duration age = Duration.between(latestKeyFigures.computedOn(), LocalDateTime.now());
-        // Si elle a expiré on demandé son calcul en arrière-plan
+        // On calcule l'age de l'instance actuelle
+        Duration age = Duration.between(result.computedOn(), LocalDateTime.now());
+        // Si elle a expiré on demandé son calcul en arrière-plan mais on renvoie quand même la valeur expirée
         if (age.toHours() >= config.getKeyFiguresTimeoutHours()) {
             asyncRefreshKeyFigures();
         }
 
-        // Dans tous les cas on renvoie l'instance partagée (même si elle est peut-être expirée)
-        final KeyFigures result = latestKeyFigures;
         return result;
     }
 
