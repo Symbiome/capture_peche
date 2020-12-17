@@ -7,14 +7,14 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jdk14 -t inrae/fishola-backend .
+# docker build -f src/main/docker/Dockerfile.jdk15 -t inrae/fishola-backend .
 #
 # Then run the container using:
 #
 # docker run -i --rm -p 8080:8080 --name fishola-backend inrae/fishola-backend
 #
 ###
-FROM openjdk:14
+FROM openjdk:15
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
 COPY target/lib/* /deployments/lib/

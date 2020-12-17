@@ -305,7 +305,7 @@ deploy:demo:
   stage: deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
+      when: always
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
