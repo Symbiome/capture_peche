@@ -131,6 +131,7 @@ export interface KeyFigures {
     catchsCount: number;
     picturesCount: number;
     lakes: Lake[];
+    catchsCountPerLakeId: { [index: string]: number };
     titleText: string;
     contributeText: string;
     computedOn: Date;

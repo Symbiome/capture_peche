@@ -21,18 +21,25 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.tables.Lake;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
+import org.jooq.Record2;
+import org.jooq.Result;
 
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.jooq.impl.DSL.count;
 
 @Singleton
 public class CatchsDao extends AbstractFisholaDao {
@@ -128,6 +135,23 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public int countPictures() {
         int result = withDao(CatchPictureDao.class, CatchPictureDao::count).intValue();
+        return result;
+    }
+
+    public Map<UUID, Integer> countCatchsByLakeId() {
+        Map<UUID, Integer> result = withContext(context -> {
+            Result<Record2<UUID, Integer>> fetched =
+                    context.select(Lake.LAKE.ID, count())
+                    .from(Tables.CATCH)
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .innerJoin(Tables.LAKE).on(Tables.LAKE.ID.eq(Tables.TRIP.LAKE_ID))
+                    .groupBy(Lake.LAKE.ID)
+                    .fetch();
+            ImmutableMap.Builder<UUID, Integer> builder = ImmutableMap.builder();
+            fetched.forEach(tuple -> builder.put(tuple.value1(), tuple.value2()));
+            ImmutableMap<UUID, Integer> map = builder.build();
+            return map;
+        });
         return result;
     }
 

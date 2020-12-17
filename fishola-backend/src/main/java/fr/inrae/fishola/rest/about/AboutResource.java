@@ -18,7 +18,9 @@ import javax.ws.rs.core.MediaType;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +60,7 @@ public class AboutResource extends AbstractFisholaResource {
         ImmutableKeyFigures.Builder builder = ImmutableKeyFigures.builder();
         int tripsCount = tripsDao.countTrips();
         int catchsCount = catchsDao.countCatchs();
+        Map<UUID, Integer> countCatchsByLakeId = catchsDao.countCatchsByLakeId();
         int picturesCount = catchsDao.countPictures();
         List<Lake> lakes = referentialDao.listLakes();
         Optional<Editorial> title = editorialAndDocumentationDao.findEditorial("about_title");
@@ -67,6 +70,7 @@ public class AboutResource extends AbstractFisholaResource {
                 .catchsCount(catchsCount)
                 .picturesCount(picturesCount)
                 .lakes(lakes)
+                .catchsCountPerLakeId(countCatchsByLakeId)
                 .titleText(title.map(Editorial::getContent).orElse("N/A"))
                 .contributeText(contribute.map(Editorial::getContent).orElse("N/A"))
                 .computedOn(LocalDateTime.now());

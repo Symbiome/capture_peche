@@ -6,6 +6,8 @@ import org.immutables.value.Value;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableKeyFigures.class)
@@ -18,6 +20,8 @@ public interface KeyFigures {
     int picturesCount();
 
     List<Lake> lakes();
+
+    Map<UUID, Integer> catchsCountPerLakeId();
 
     String titleText();
 
