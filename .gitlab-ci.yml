@@ -248,7 +248,6 @@ package:docker-demo:
     - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
-    - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
   tags:
     - sticky
     - docker
