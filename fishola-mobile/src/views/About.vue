@@ -154,6 +154,9 @@
                           <l-popup>
                             <div >
                               {{l.name}}
+                              <span v-if="catchsCountPerLakeId[l.id]">
+                               : {{catchsCountPerLakeId[l.id]}} captures
+                              </span>
                             </div>
                           </l-popup>
                         </l-marker>
@@ -333,6 +336,7 @@ export default class AboutView extends Vue {
   picturesCount:number = 0;
   realPicturesCount:number = 72;
   lakes:Lake[] = [];
+  catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail:string = '';
   contactMessage:string = '';
@@ -358,6 +362,7 @@ export default class AboutView extends Vue {
         this.titleText = kf.titleText;
         this.contributeText = kf.contributeText;
         kf.lakes.forEach((l) => this.lakes.push(l));
+        this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
       (error) => {
         // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
