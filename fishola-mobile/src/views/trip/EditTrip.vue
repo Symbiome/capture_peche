@@ -115,6 +115,7 @@ export default class EditTripView extends Vue {
   trip:TripBean = {
     id: '',
     mode: 'Live',
+    source: 'application',
     type: 'Craft',
     name: '',
     lakeId: '',

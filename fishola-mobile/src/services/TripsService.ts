@@ -61,7 +61,7 @@ export default class TripsService extends AbstractFisholaService {
 
         const newTrip:TripMeta = {
             id: Constants.NEW_TRIP_ID,
-            mode: mode,
+            mode: mode
         }
 
         if (mode == 'Live') {
@@ -260,6 +260,7 @@ export default class TripsService extends AbstractFisholaService {
             }
 
             const tripBean:TripBean = <TripBean>trip;
+            tripBean.source = 'application';
             if (!tripBean.techniqueIds) {
                 tripBean.techniqueIds = [];
             }

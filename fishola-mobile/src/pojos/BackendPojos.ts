@@ -38,6 +38,7 @@ export interface TripBean {
     beginLongitude?: number;
     endLatitude?: number;
     endLongitude?: number;
+    source: DeviceType;
     saveDelayMarker?: Date;
     modifiableUntil?: Date;
 }
@@ -181,3 +182,5 @@ export interface DashboardLastTrip {
 export type TripMode = "Live" | "Afterwards";
 
 export type TripType = "Border" | "Craft";
+
+export type DeviceType = "web" | "application";
