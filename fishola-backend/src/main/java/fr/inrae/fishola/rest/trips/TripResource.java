@@ -200,6 +200,7 @@ public class TripResource extends AbstractFisholaResource {
         entity.setType(trip.type);
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
+        entity.setSource(trip.source);
 
         trip.weatherId.ifPresent(entity::setWeatherId);
         trip.beginLatitude.ifPresent(entity::setBeginLatitude);

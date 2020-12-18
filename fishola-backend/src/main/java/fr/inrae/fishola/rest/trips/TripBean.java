@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.trips;
  * #L%
  */
 
+import fr.inrae.fishola.entities.enums.DeviceType;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,6 +53,7 @@ public class TripBean {
     public Optional<Double> beginLongitude = Optional.empty();
     public Optional<Double> endLatitude = Optional.empty();
     public Optional<Double> endLongitude = Optional.empty();
+    public DeviceType source;
 
     public Optional<LocalDateTime> saveDelayMarker = Optional.empty();
 
@@ -86,6 +88,7 @@ public class TripBean {
                 ", beginLongitude=" + beginLongitude +
                 ", endLatitude=" + endLatitude +
                 ", endLongitude=" + endLongitude +
+                ", source=" + source +
                 ", saveDelayMarker=" + saveDelayMarker +
                 ", modifiableUntil=" + modifiableUntil +
                 '}';
