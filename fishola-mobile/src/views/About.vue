@@ -207,7 +207,7 @@
                             <form action="#">
                                 <fieldset>
                                     <p><input type="email" v-model="contactEmail" placeholder="Votre e-mail" class="field"></p>
-                                    <p><textarea cols="2"  rows="2" v-model="contactMessage"  placeholder="Votre message"></textarea></p>
+                                    <p><textarea cols="2"  rows="4" v-model="contactMessage"  placeholder="Votre message"></textarea></p>
                                     <p><input type="button" value="Envoyer" class="button" v-on:click="sendContact"></p>
                                 </fieldset>
                             </form>
@@ -216,6 +216,7 @@
                         <!-- \\ Begin Right Side \\ -->
                         <div class="Rightside">
                             <h3>Get in touch !</h3>
+                            <p>Une suggestion, une question ou une envie de démarrer un projet avec nous, n'hésitez pas à nous contacter !</p>
                                 <address>
                                     UMR CARRTEL<br/>
                                     75 bis Avenue de Corzent<br/>
@@ -225,6 +226,7 @@
                                     +33 (0)4 50 26 78 00
                                 </address>  
                                 <div class="clear"></div>
+                                <p>Retrouvez-nous sur :</p>
                                 <ul>
                                     <li><a rel="nofollow" href="https://www.facebook.com/UMR-Carrtel-1625760484103771/" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
                                     <li><a rel="nofollow" href="https://twitter.com/UmrCarrtel" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
@@ -624,8 +626,22 @@ header.smaller .Navigation li a { padding: 22px 41px; }
   color: @gunmetal;
 }
 
+.Get_sec .Leftside textarea {
+  height: 205px;
+}
+
 .Get_sec .Rightside {
   padding-top: 2px;
+  h3 {
+    padding-bottom: 5px;
+  }
+  p {
+    padding: 10px 0px 10px 0px;
+    font-size: 16px;
+  }
+  ul {
+    padding-top: 0px;
+  }
 }
 
 .welcome-apps {
