@@ -64,10 +64,7 @@ export default class AppView extends Vue {
     interval?:number;
 
     created() {
-      console.log("router.currentRoute.name: ", router.currentRoute.name);
-      if (router.currentRoute.name != 'dispatcher' && router.currentRoute.name != 'about' && router.currentRoute.name != 'login') {
-        this.initApp();
-      }
+      this.initApp();
     }
 
     // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application

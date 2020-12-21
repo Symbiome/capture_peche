@@ -64,12 +64,7 @@ export default class FisholaHeader extends Vue {
   created() {
     if (this.avatar) {
       ProfileService.getProfile()
-        .then(
-          this.profileLoaded,
-          () => {
-            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-            router.push('/login');
-          });
+        .then(this.profileLoaded);
     }
   }
 

@@ -51,6 +51,8 @@ import ProfilePassword from '../views/ProfilePassword.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 import VerifyAccount from '../views/VerifyAccount.vue'
 
+import ProfileService from '@/services/ProfileService';
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -185,6 +187,33 @@ const routes = [
 
 const router = new VueRouter({
   routes
+})
+
+const publicRouteNames:string[] = [
+  'dispatcher',
+  'about',
+  'faq',
+  'documentation',
+  'login',
+  'register'
+];
+
+// Protect routes according to authentication status
+router.beforeEach((to, from, next) => {
+  if (to.name && publicRouteNames.indexOf(to.name) != -1) {
+    next();
+  } else {
+    ProfileService.getProfile()
+    .then(
+      (profile) => {
+        next();
+      },
+      (status) => {
+        console.error("VOUS NE PASSEREZ PAS !", to.name);
+        next('/');
+      }
+    );
+  }
 })
 
 export default router
