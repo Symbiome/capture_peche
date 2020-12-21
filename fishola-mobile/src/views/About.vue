@@ -475,7 +475,7 @@ export default class AboutView extends Vue {
 }
 header.smaller .Navigation li { height: 73px; }
 
-header.smaller .Navigation li a { padding: 22px 41px; }
+header.smaller .Navigation li a { padding: 22px 30px; }
 
 .Navigation li a {
   color: @gunmetal;
