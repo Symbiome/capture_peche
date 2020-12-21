@@ -51,7 +51,7 @@
                                 <span class="menu-item-bg"></span>
                             </li>
                             <li>
-                                <a href="#/documentation">Infos</a>
+                                <a href="#/news">Actualités</a>
                                 <span class="menu-item-bg"></span>
                             </li>
                         </ul>

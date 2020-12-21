@@ -62,12 +62,20 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @GET
     @Path("/documentations")
-    public List<DocumentationWithBase64ContentBean> getDocumentation(@Context HttpServletRequest request) {
+    public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
         LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
                 .collect(Collectors.toList());
+        return result;
+    }
+
+    @GET
+    @Path("/documentations/news")
+    public List<DocumentationWithBase64ContentBean> getNews(@Context HttpServletRequest request) {
+        // TODO AThimel 21/12/2020 Implémenter la séparation entre les documentations et news
+        List<DocumentationWithBase64ContentBean> result = getDocumentations(request);
         return result;
     }
 

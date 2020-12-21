@@ -42,6 +42,7 @@ import EditCatch from '@/views/trip/EditCatch.vue'
 
 import Faq from '@/views/Faq.vue'
 import Documentation from '@/views/Documentation.vue'
+import News from '@/views/News.vue'
 import Credits from '@/views/Credits.vue'
 
 import Settings from '@/views/Settings.vue'
@@ -139,6 +140,11 @@ const routes = [
     component: Documentation
   },
   {
+    path: '/news',
+    name: 'news',
+    component: News
+  },
+  {
     path: '/faq',
     name: 'faq',
     component: Faq
@@ -195,6 +201,7 @@ const publicRouteNames:string[] = [
   'faq',
   'credits',
   'documentation',
+  'news',
   'login',
   'register'
 ];
