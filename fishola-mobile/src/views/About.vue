@@ -88,6 +88,8 @@
           </div>
           <div class="right-panel">
             <img src="/img/dashboard.png" alt="Tableau de bord" />
+            <img src="/img/trip.png" alt="Sortie" />
+            <!-- <img src="/img/trips.png" alt="Liste des sorties" /> -->
           </div>
         </div>
         <!-- // End Banner Section // -->
@@ -555,12 +557,16 @@ header.smaller .Navigation li a { padding: 22px 41px; }
 
   }
   .right-panel {
-    width: 25%;
+    width: 50%;
 
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
+
+    img {
+      border-radius: 20px;
+    }
   }
 }
 
