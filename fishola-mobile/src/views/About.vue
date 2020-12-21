@@ -248,7 +248,7 @@
               <div class="partners">
                 <h3>Nos partenaires</h3>
                 <div class="credits-logos">
-                  <a href="https://www.annecylacpeche.com" target="_blank"><img src='/img/credits/88b994/ALP.jpg' alt="AAPPMA - Annecy Lac Pêche"/></a>
+                  <a href="https://www.annecylacpeche.com" target="_blank"><img src='/img/credits/88b994/ALP.png' alt="AAPPMA - Annecy Lac Pêche"/></a>
                   <a href="https://www.peche-leman-apallf.com" target="_blank"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
                   <a href="https://fipal.ch" target="_blank"><img src='/img/credits/88b994/FIPAL.jpg' alt="Fédération Internationale des Pêcheurs Amateurs du Léman"/></a>
                   <a href="http://www.pecheurs-chamberiens.fr" target="_blank"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA - Pêcheurs chambériens"/></a>
