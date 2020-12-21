@@ -357,7 +357,7 @@ export default class AboutView extends Vue {
     AboutService.getKeyFigures()
     .then(
       (kf) => {
-        console.log("Chiffres clés", kf);
+        console.debug("Chiffres clés", kf);
         this.realTripsCount = kf.tripsCount;
         this.realCatchsCount = kf.catchsCount;
         this.realPicturesCount = kf.picturesCount;
