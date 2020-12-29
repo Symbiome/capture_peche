@@ -167,8 +167,7 @@
         <div class="Contribute_sec" id="contribute">
             <div class="Center">
                 <h2>Comment participer ?</h2>
-                <p>{{contributeText}}</p>
-                <!-- <div class="Line"></div> -->
+                <div class="contribute-editable" v-html="contributeText"></div>
             </div>                
         </div>
         <!-- // End Contribute Section // -->
@@ -326,7 +325,7 @@ export default class AboutView extends Vue {
   center = latLng(46.071623, 5.890511);
 
   titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
-  contributeText:string = "Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.";
+  contributeText:string = "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount:number = 0;
   realTripsCount:number = 125;
   catchsCount:number = 0;
@@ -786,6 +785,45 @@ export default class AboutView extends Vue {
   .Line { border: solid 1px #E17055; height: 2px; width: 252px; margin: 30px; }
 
 }
+
+.contribute-editable {
+  margin-top: 50px;
+
+  /** /deep/ permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
+  /deep/ .cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+
+    .card {
+      height: fit-content;
+      width: 350px;
+      margin: 15px;
+      padding: 30px;
+      border-radius: 15px;
+      background-color: @white-smoke-alpha-20;
+      box-shadow: 5px 5px 5px @gunmetal;
+
+      h4 {
+        margin: 5px;
+      }
+
+      p {
+        text-align: left;
+      }
+
+      &:hover {
+        background-color: @white-smoke;
+        color: @gunmetal;
+        // cursor: pointer;
+      }
+    }
+  }
+
+}
+
+
 
 footer {
   background: #0c2b34;
