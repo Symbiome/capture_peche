@@ -289,7 +289,7 @@ export default class DashboardView extends Vue {
     this.averageCatchsPerTrip = data.dashboard.averageCatchsPerTrip || 0;
     this.averageCatchsPerTripRounded = Math.round(10 * this.averageCatchsPerTrip) / 10;
 
-    this.maxCatchsCount = 0;
+    this.maxCatchsCount = 1;
     data.dashboard.latestTripsCatchs.forEach((trip) => {
       this.latestTrips.push(trip);
       if (trip.catchsCount > this.maxCatchsCount) {
@@ -298,9 +298,6 @@ export default class DashboardView extends Vue {
     });
     while ((this.latestTrips.length + this.emptylatestTrips.length) < 9) {
       this.emptylatestTrips.push({});
-    }
-    if (this.maxCatchsCount == 0) {
-      this.maxCatchsCount = 100;
     }
 
     this.topBySize = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
