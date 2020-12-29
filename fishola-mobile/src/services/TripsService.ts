@@ -59,7 +59,7 @@ export default class TripsService extends AbstractFisholaService {
         return this.instance;
     }
 
-    static newTrip(mode:TripMode, callback:(id:string)=>any) {
+    static newTrip(mode:TripMode):Promise<string> {
 
         const newTrip:TripMeta = {
             id: Constants.NEW_TRIP_ID,
@@ -75,18 +75,20 @@ export default class TripsService extends AbstractFisholaService {
             newTrip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
         }
 
-        this.getDatabase()
-            .onCreationTrip
-            .put(newTrip)
-            .then(id => callback(id));
+        return new Promise<string>((resolve, reject) => {
+            this.getDatabase()
+                .onCreationTrip
+                .put(newTrip)
+                .then(id => resolve(id), reject);
+        });
     }
 
-    static newLiveTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('Live', callback);
+    static newLiveTrip():Promise<string> {
+        return TripsService.newTrip('Live');
     }
 
-    static newAfterwardsTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('Afterwards', callback);
+    static newAfterwardsTrip():Promise<string> {
+        return TripsService.newTrip('Afterwards');
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
