@@ -123,16 +123,8 @@
             <div class="not-enough-data" v-if="topBySize.length == 0">
               <span>Pas assez de données</span>
             </div>
-            <div class="scroll">
-              <div class="item"
-                  v-bind:class="((topSizeSelected && t == topSizeSelected) ? 'selected':'')"
-                  v-for="t in topBySize"
-                  v-bind:key="'size-' + t.species.id"
-                  v-on:click="selectTopSize(t)">
-                {{t.species.name}}
-                <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
-              </div>
-            </div>
+            <OptionsList :items="topBySizeItems"
+                         v-on:item-selected="onTopSizeSelected"></OptionsList>
             <div class="dashboard-top-catchs catch-preview-list-scrollable"
                 v-if="topSizeSelected">
               <CatchPreviewList v-bind:modifiable="false"
@@ -151,16 +143,8 @@
             <div class="not-enough-data" v-if="topByWeight.length == 0">
               <span>Pas assez de données</span>
             </div>
-            <div class="scroll">
-              <div class="item"
-                  v-bind:class="((topWeightSelected && t == topWeightSelected) ? 'selected':'')"
-                  v-for="t in topByWeight"
-                  v-bind:key="'weight-' + t.species.id"
-                  v-on:click="selectTopWeight(t)">
-                {{t.species.name}}
-                <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
-              </div>
-            </div>
+            <OptionsList :items="topByWeightItems"
+                         v-on:item-selected="onTopWeightSelected"></OptionsList>
             <div class="dashboard-top-catchs catch-preview-list-scrollable"
                 v-if="topWeightSelected">
               <CatchPreviewList v-bind:modifiable="false"
@@ -191,6 +175,8 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
 import CatchPreviewList from '@/components/trip/CatchPreviewList.vue';
 
+import OptionsList from '@/components/common/OptionsList.vue';
+
 import DistributionChart from '@/components/charts/DistributionChart.vue';
 import HistogramChart from '@/components/charts/HistogramChart.vue';
 
@@ -198,6 +184,7 @@ import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
 import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean} from '@/pojos/BackendPojos';
 import DistributionEntry from '@/pojos/DistributionEntry';
+import OptionItem from '@/pojos/OptionItem';
 import {DashboardAndSpecies} from '@/services/DashboardService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -220,6 +207,7 @@ export class TopEntry {
     RunningOverlay,
     FisholaFooter,
     DistributionChart,
+    OptionsList,
     HistogramChart,
     CatchPreviewList
   }
@@ -241,8 +229,10 @@ export default class DashboardView extends Vue {
   emptylatestTrips:any[] = [];
   maxCatchsCount:number = 100;
   topBySize:TopEntry[] = [];
+  topBySizeItems:OptionItem[] = [];
   topSizeSelected:TopEntry | null = null;
   topByWeight:TopEntry[] = [];
+  topByWeightItems:OptionItem[] = [];
   topWeightSelected:TopEntry | null = null;
 
   // On a besoin de maintenir un index de capture -> sortie
@@ -308,14 +298,24 @@ export default class DashboardView extends Vue {
     }
 
     this.topBySize = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
-    this.topByWeight = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
+    this.topBySize.forEach((top) => {
+      this.topBySizeItems.push({
+        id: top.species.id,
+        name: top.species.name,
+        alias: top.species.alias,
+        whatever: top
+      });
+    });
 
-    if (this.topBySize && this.topBySize.length >= 1) {
-      this.selectTopSize(this.topBySize[0]);
-    }
-    if (this.topByWeight && this.topByWeight.length >= 1) {
-      this.selectTopWeight(this.topByWeight[0]);
-    }
+    this.topByWeight = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
+    this.topByWeight.forEach((top) => {
+      this.topByWeightItems.push({
+        id: top.species.id,
+        name: top.species.name,
+        alias: top.species.alias,
+        whatever: top
+      });
+    });
 
     this.ready = true;
   }
@@ -338,12 +338,12 @@ export default class DashboardView extends Vue {
     return result;
   }
 
-  selectTopSize(top:TopEntry) {
-    this.topSizeSelected = top;
+  onTopSizeSelected(item:OptionItem) {
+    this.topSizeSelected = item.whatever;
   }
 
-  selectTopWeight(top:TopEntry) {
-    this.topWeightSelected = top;
+  onTopWeightSelected(item:OptionItem) {
+    this.topWeightSelected = item.whatever;
   }
 
   openCatch(catchId:string) {
@@ -594,27 +594,6 @@ export default class DashboardView extends Vue {
 
     }
 
-    .scroll {
-      display: flex;
-      flex-direction: row;
-      justify-content: flex-start;
-      margin-bottom: @vertical-margin-small;
-
-      padding-left: @margin-large;
-      padding-right: @margin-large;
-
-      overflow:auto;
-
-      div.item {
-        margin-right: @margin-medium;
-        color: @pale-sky;
-        white-space: nowrap;
-      }
-      div.item.selected {
-        color: @gunmetal;
-        border-bottom: 2px solid @pelorous;
-      }
-    }
   }
 
 }
