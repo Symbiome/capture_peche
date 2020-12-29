@@ -36,12 +36,27 @@
 
           <h1>Tableau de bord</h1>
 
-          <div class="shrinked">
+          <div class="dashboard-modes">
+            <div class="dashboard-mode"
+                 v-bind:class="globalMode ? '' : 'selected'"
+                 v-on:click="globalMode = false"
+                 >
+              Personnel
+            </div>
+            <div class="dashboard-mode"
+                 v-bind:class="globalMode ? 'selected' : ''"
+                 v-on:click="globalMode = true"
+                 >
+              Global
+            </div>
+          </div>
+
+          <div class="shrinked" v-if="!globalMode">
             <h2><i class="icon-fish" />Mes poissons</h2>
             <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
           </div>
 
-          <div class="shrinked">
+          <div class="shrinked" v-if="!globalMode">
             <h2><i class="icon-fishing" />Mes captures</h2>
             <div class="not-enough-data" v-if="latestTrips.length == 0">
               <span>Pas assez de données</span>
@@ -96,57 +111,61 @@
             </div>
           </div>
 
-          <div class="shrinked">
-            <h2><i class="icon-size" />Top 5 tailles</h2>
-          </div>
-          <div class="not-enough-data" v-if="topBySize.length == 0">
-            <span>Pas assez de données</span>
-          </div>
-          <div class="scroll">
-            <div class="item"
-                 v-bind:class="((topSizeSelected && t == topSizeSelected) ? 'selected':'')"
-                 v-for="t in topBySize"
-                 v-bind:key="'size-' + t.species.id"
-                 v-on:click="selectTopSize(t)">
-              {{t.species.name}}
-              <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
+          <div v-if="!globalMode">
+            <div class="shrinked">
+              <h2><i class="icon-size" />Top 5 tailles</h2>
             </div>
-          </div>
-          <div class="dashboard-top-catchs catch-preview-list-scrollable"
-               v-if="topSizeSelected">
-            <CatchPreviewList v-bind:modifiable="false"
-                              v-bind:reverse="false"
-                              lakeId=""
-                              v-bind:catchs="topSizeSelected.catchs"
-                              v-on:openCatchFromId="openCatch($event)"
-                              bottomMode="index"/>
+            <div class="not-enough-data" v-if="topBySize.length == 0">
+              <span>Pas assez de données</span>
+            </div>
+            <div class="scroll">
+              <div class="item"
+                  v-bind:class="((topSizeSelected && t == topSizeSelected) ? 'selected':'')"
+                  v-for="t in topBySize"
+                  v-bind:key="'size-' + t.species.id"
+                  v-on:click="selectTopSize(t)">
+                {{t.species.name}}
+                <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
+              </div>
+            </div>
+            <div class="dashboard-top-catchs catch-preview-list-scrollable"
+                v-if="topSizeSelected">
+              <CatchPreviewList v-bind:modifiable="false"
+                                v-bind:reverse="false"
+                                lakeId=""
+                                v-bind:catchs="topSizeSelected.catchs"
+                                v-on:openCatchFromId="openCatch($event)"
+                                bottomMode="index"/>
+            </div>
           </div>
 
-          <div class="shrinked">
-            <h2><i class="icon-weight" />Top 5 poids</h2>
-          </div>
-          <div class="not-enough-data" v-if="topByWeight.length == 0">
-            <span>Pas assez de données</span>
-          </div>
-          <div class="scroll">
-            <div class="item"
-                 v-bind:class="((topWeightSelected && t == topWeightSelected) ? 'selected':'')"
-                 v-for="t in topByWeight"
-                 v-bind:key="'weight-' + t.species.id"
-                 v-on:click="selectTopWeight(t)">
-              {{t.species.name}}
-              <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
+          <div v-if="!globalMode">
+            <div class="shrinked">
+              <h2><i class="icon-weight" />Top 5 poids</h2>
             </div>
-          </div>
-          <div class="dashboard-top-catchs catch-preview-list-scrollable"
-               v-if="topWeightSelected">
-            <CatchPreviewList v-bind:modifiable="false"
-                              v-bind:reverse="false"
-                              lakeId=""
-                              v-bind:catchs="topWeightSelected.catchs"
-                              v-on:openCatchFromId="openCatch($event)"
-                              metaMode="weight"
-                              bottomMode="index"/>
+            <div class="not-enough-data" v-if="topByWeight.length == 0">
+              <span>Pas assez de données</span>
+            </div>
+            <div class="scroll">
+              <div class="item"
+                  v-bind:class="((topWeightSelected && t == topWeightSelected) ? 'selected':'')"
+                  v-for="t in topByWeight"
+                  v-bind:key="'weight-' + t.species.id"
+                  v-on:click="selectTopWeight(t)">
+                {{t.species.name}}
+                <span class="alias" v-if="t.species.alias">({{t.species.alias}})</span>
+              </div>
+            </div>
+            <div class="dashboard-top-catchs catch-preview-list-scrollable"
+                v-if="topWeightSelected">
+              <CatchPreviewList v-bind:modifiable="false"
+                                v-bind:reverse="false"
+                                lakeId=""
+                                v-bind:catchs="topWeightSelected.catchs"
+                                v-on:openCatchFromId="openCatch($event)"
+                                metaMode="weight"
+                                bottomMode="index"/>
+            </div>
           </div>
 
         </div>
@@ -202,6 +221,8 @@ export default class DashboardView extends Vue {
 
   speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
   months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
+  globalMode:boolean = false;
 
   ready:boolean = false;
   offline:boolean = false;
@@ -424,6 +445,27 @@ export default class DashboardView extends Vue {
         color: @carrot-orange;
         font-size: @fontsize-span-big;
         line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
+      }
+    }
+
+    .dashboard-modes {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      margin-bottom: 40px;
+
+      .dashboard-mode {
+        color: @pale-sky;
+        padding-bottom: 5px;
+        padding-left: 20px;
+        padding-right: 20px;
+        cursor: pointer;
+
+        &.selected {
+          color: @gunmetal;
+          border-bottom: 2px solid @pelorous;
+        }
       }
     }
 
