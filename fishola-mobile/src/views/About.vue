@@ -25,41 +25,35 @@
   <div class="LayoutFrame" id="top">
         <!-- \\ Begin Header \\ -->
         <header class="smaller">
-            <div class="Center">
-                <div class="site-logo">
-                  <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
-                </div>
-              <div id="mobile_sec">
-                <div class="menumobile">
-                    <!-- \\ Begin Navigation \\ -->
-                    <nav class="Navigation">
-                        <ul>
-                            <li v-bind:class="activeSection=='presentation'?'active':''">
-                                <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}">Présentation</a>
-                                <span class="menu-item-bg"></span>
-                            </li>
-                            <li v-bind:class="activeSection=='contribute'?'active':''">
-                                <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}">Comment participer ?</a>
-                                <span class="menu-item-bg"></span>
-                            </li>
-                            <li v-bind:class="activeSection=='contact'?'active':''">
-                                <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}">Contact</a>
-                                <span class="menu-item-bg"></span>
-                            </li>
-                            <li>
-                                <a href="#/faq">FAQ</a>
-                                <span class="menu-item-bg"></span>
-                            </li>
-                            <li>
-                                <a href="#/news">Actualités</a>
-                                <span class="menu-item-bg"></span>
-                            </li>
-                        </ul>
-                    </nav>
-                    <!-- // End Navigation // -->
-                </div>
-              </div>
-            <div class="clear"></div>
+          <div class="site-logo">
+            <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
+          </div>
+          <nav class="Navigation">
+            <ul>
+              <li v-bind:class="activeSection=='presentation'?'active':''">
+                <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}">Présentation</a>
+                <span class="menu-item-bg"></span>
+              </li>
+              <li v-bind:class="activeSection=='contribute'?'active':''">
+                <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}">Comment participer ?</a>
+                <span class="menu-item-bg"></span>
+              </li>
+              <li v-bind:class="activeSection=='contact'?'active':''">
+                <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}">Contact</a>
+                <span class="menu-item-bg"></span>
+              </li>
+              <li>
+                <a href="#/faq">FAQ</a>
+                <span class="menu-item-bg"></span>
+              </li>
+              <li>
+                <a href="#/news">Actualités</a>
+                <span class="menu-item-bg"></span>
+              </li>
+            </ul>
+          </nav>
+          <div class="authentication">
+            <button v-on:click="goToLogin">Connexion</button>
           </div>
         </header>
         <!-- // End Header // -->
@@ -444,6 +438,18 @@ export default class AboutView extends Vue {
       this.picturesCount = this.realPicturesCount;
     }
   }
+
+  goToLogin () {
+    ProfileService.fetchProfile()
+      .then(
+        (profile) => {
+          router.push('/trips');
+        },
+        (status) => {
+          router.push('/login');
+        }
+      );
+  }
 }
 
 </script>
@@ -454,6 +460,7 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november";
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
+@import "../less/_responsive";
 @import url("~leaflet/dist/leaflet.css");
 
 #about-scroll-container {
@@ -469,13 +476,75 @@ export default class AboutView extends Vue {
   z-index: 9999;
   background: @white;
 
+  padding-left: 20px;
+  padding-right: 20px;
+
   &.smaller {
     height: 73px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .site-logo {
+      @media only screen and (max-width: 1023px) {
+        width: 150px;
+      }
+    }
+
+    .Navigation {
+      width: unset;
+      float: initial;
+
+      li { height: 73px; }
+
+      li a {
+        padding: 22px 30px; 
+
+        @media only screen and (min-width: 1024px) and (max-width: 1200px) {
+          padding: 22px 20px; 
+        }
+        @media only screen and (max-width: 1023px) {
+          padding: 22px 10px;
+          font-size: 14px;
+        }
+      }
+
+    }
+
+    .authentication {
+      height: 100%;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      button {
+        height: 41px;
+        border-radius: 20px;
+
+        font-style: normal;
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 25px;
+
+        color: @white;
+        background-color: @terra-cotta;
+
+        border: 0px;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
+
+
+        @media only screen and (max-width: 1023px) {
+          height: 31px;
+          font-size: 14px;
+        }
+      }
+    }
+
   }
 }
-header.smaller .Navigation li { height: 73px; }
-
-header.smaller .Navigation li a { padding: 22px 30px; }
 
 .Navigation li a {
   color: @gunmetal;
