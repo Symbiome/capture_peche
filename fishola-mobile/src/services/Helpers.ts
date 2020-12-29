@@ -19,6 +19,11 @@
  * #L%
  */
 
+import { DeviceType } from '@/pojos/BackendPojos';
+
+import { Plugins } from '@capacitor/core';
+const { Device } = Plugins;
+
 import moment from 'moment';
 
 export default class Helpers {
@@ -212,4 +217,21 @@ export default class Helpers {
             modal.show('dialog', params);
         });
     }
+
+    static getDeviceType():Promise<DeviceType> {
+        return new Promise<DeviceType>((resolve, reject) => {
+            Device.getInfo()
+                .then(info => {
+                    let source:DeviceType;
+                    if (info.platform == "web") {
+                        source = 'web';
+                    } else {
+                        source = 'application';
+                    }
+                    resolve(source);
+                },
+                reject);
+        });
+    }
+
 }
