@@ -111,6 +111,11 @@
             </div>
           </div>
 
+          <div class="shrinked" v-if="!globalMode">
+            <h2><i class="icon-size" />Historique des tailles</h2>
+            <HistogramChart :distribution="caughtSpeciesDistribution"></HistogramChart>
+          </div>
+
           <div v-if="!globalMode">
             <div class="shrinked">
               <h2><i class="icon-size" />Top 5 tailles</h2>
@@ -187,6 +192,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 import CatchPreviewList from '@/components/trip/CatchPreviewList.vue';
 
 import DistributionChart from '@/components/charts/DistributionChart.vue';
+import HistogramChart from '@/components/charts/HistogramChart.vue';
 
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
@@ -214,6 +220,7 @@ export class TopEntry {
     RunningOverlay,
     FisholaFooter,
     DistributionChart,
+    HistogramChart,
     CatchPreviewList
   }
 })
