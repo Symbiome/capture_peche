@@ -86,19 +86,6 @@
           </execution>
 
           <execution>
-            <id>npm run build:beta</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run build:beta</arguments>
-              <environmentVariables>
-                <MAVEN_PROJECT_VERSION>${project.version}</MAVEN_PROJECT_VERSION>
-              </environmentVariables>
-            </configuration>
-          </execution>
-
-          <execution>
             <id>npm run build:production</id>
             <goals>
               <goal>npm</goal>
