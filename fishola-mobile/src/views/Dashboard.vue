@@ -38,29 +38,7 @@
 
           <div class="shrinked">
             <h2><i class="icon-fish" />Mes poissons</h2>
-            <div class="distribution">
-              <div class="not-enough-data" v-if="caughtSpeciesDistribution.length == 0">
-                <span>Pas assez de données</span>
-              </div>
-              <div v-for="(f, index) in orderedCaughtSpeciesDistribution()"
-                  v-bind:key="f.species.id"
-                  class="distribution-row">
-                <div class="distribution-row-data">
-                  <div class="species">
-                    {{f.species.name}}
-                    <span class="alias" v-if="f.species.alias">({{f.species.alias}})</span>
-                  </div>
-                  <div class="percent">
-                    {{f.count}}
-                  </div>
-                </div>
-                <div class="distribution-row-bar">
-                  <div class="distribution-row-bar-filled"
-                      v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                      v-bind:style="'width: ' + f.percent + '%;'"></div>
-                </div>
-              </div>
-            </div>
+            <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
           </div>
 
           <div class="shrinked">
@@ -189,9 +167,12 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
 import CatchPreviewList from '@/components/trip/CatchPreviewList.vue';
 
+import DistributionChart from '@/components/charts/DistributionChart.vue';
+
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
 import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean} from '@/pojos/BackendPojos';
+import DistributionEntry from '@/pojos/DistributionEntry';
 import {DashboardAndSpecies} from '@/services/DashboardService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
@@ -199,14 +180,6 @@ import router from '../router';
 
 import moment from 'moment';
 
-export class DistributionEntry {
-    constructor (
-        public species:SpeciesWithAlias,
-        public percent:number,
-        public count:number
-        ) {
-    }
-}
 
 export class TopEntry {
     constructor (
@@ -221,6 +194,7 @@ export class TopEntry {
     FisholaHeader,
     RunningOverlay,
     FisholaFooter,
+    DistributionChart,
     CatchPreviewList
   }
 })
@@ -287,7 +261,7 @@ export default class DashboardView extends Vue {
         const species:SpeciesWithAlias = this.speciesIndex[speciesId];
         const percent:number = Math.round(distribution[speciesId]);
         const count:number = speciesCount[speciesId];
-        const entry:DistributionEntry = new DistributionEntry(species, percent, count);
+        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, count, species.alias);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -349,10 +323,6 @@ export default class DashboardView extends Vue {
 
   openCatch(catchId:string) {
     router.push({name:'catch', params: {tripId: this.catchToTripId[catchId], catchId:catchId}});
-  }
-
-  orderedCaughtSpeciesDistribution() {
-    return Vue.lodash.orderBy(this.caughtSpeciesDistribution, 'species.name');
   }
 
   openTrip(tripId:string) {
@@ -480,61 +450,6 @@ export default class DashboardView extends Vue {
       font-size: @fontsize-title;
       line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       text-align: left;
-    }
-
-    .distribution {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-
-      .distribution-row {
-
-        margin-bottom: @vertical-margin-small;
-
-        .distribution-row-data {
-          display: flex;
-          flex-direction: row;
-          justify-content: space-between;
-
-          font-size: @fontsize-small-paragraph;
-          line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
-          height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
-
-          .species {
-            color: @gunmetal;
-          }
-
-          .percent {
-            font-weight: bold;
-            color: @pelorous;
-          }
-        }
-
-        .distribution-row-bar {
-          position: relative;
-          margin-top: 4px;
-          height: 14px;
-          border-radius: 7px;
-          background: @solitude;
-
-          .distribution-row-bar-filled {
-            position: absolute;
-            height: 14px;
-            border-radius: 7px;
-
-            &.even {
-              background: @pelorous;
-            }
-
-            &.odd {
-              background: @summer-sky;
-            }
-          }
-
-        }
-
-      }
-
     }
 
     .average-header {
