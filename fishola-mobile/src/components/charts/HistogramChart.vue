@@ -55,16 +55,25 @@ export default class HistogramChart extends Vue {
 
   maxValue:number = 50;
 
+  mounted() {
+    this.maxValue = this.findMaxValue(this.values);
+  }
+
   @Watch('values')
   onValuesChanged(newValue:{ [P in Month]?: number }, oldValue:{ [P in Month]?: number }) {
-    const numbers:(number|undefined)[] = Object.values(newValue);
+    this.maxValue = this.findMaxValue(newValue);
+  }
+
+  findMaxValue(someValues:{ [P in Month]?: number }):number {
+    const numbers:(number|undefined)[] = Object.values(someValues);
     let newMax:number = 0;
     numbers.forEach((n) => {
       if (n && n > newMax) {
         newMax = n;
       }
-    })
-    this.maxValue = Math.max(newMax, 50);
+    });
+    let result = Math.max(newMax, 50);
+    return result;
   }
 
 }
