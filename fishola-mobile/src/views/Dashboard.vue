@@ -111,14 +111,20 @@
             </div>
           </div>
 
-          <div class="shrinked" v-if="!globalMode">
-            <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+          <div v-if="!globalMode">
+            <div class="shrinked">
+              <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+            </div>
+            <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
+              <span>Pas assez de données</span>
+            </div>
             <OptionsList :items="monthlySizesOptions"
                          v-if="monthlySizesOptions.length > 0"
                          v-on:item-selected="onMonthlySizeSelected"></OptionsList>
-            <HistogramChart :values="monthlySizes"
-                            v-if="monthlySizes"
-                            :orderedMonths="orderedMonths"></HistogramChart>
+            <div class="shrinked" v-if="monthlySizes">
+              <HistogramChart :values="monthlySizes"
+                              :orderedMonths="orderedMonths"></HistogramChart>
+            </div>
           </div>
 
           <div v-if="!globalMode">
@@ -301,11 +307,12 @@ export default class DashboardView extends Vue {
         this.maxCatchsCount = trip.catchsCount;
       }
     });
+    this.maxCatchsCount = Math.max(this.maxCatchsCount, this.averageCatchsPerTripRounded);
     while ((this.latestTrips.length + this.emptylatestTrips.length) < 9) {
       this.emptylatestTrips.push({});
     }
 
-    const topBySize:TopEntry[] = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
+    const topBySize:TopEntry[] = this.parseTop(data.dashboard.topBySize);
     topBySize.forEach((top) => {
       this.topBySizeOptions.push({
         id: top.species.id,
@@ -314,8 +321,9 @@ export default class DashboardView extends Vue {
         whatever: top.catchs
       });
     });
+    this.topBySizeOptions = Vue.lodash.orderBy(this.topBySizeOptions, 'name');
 
-    const topByWeight:TopEntry[] = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
+    const topByWeight:TopEntry[] = this.parseTop(data.dashboard.topByWeight);
     topByWeight.forEach((top) => {
       this.topByWeightOptions.push({
         id: top.species.id,
@@ -324,6 +332,7 @@ export default class DashboardView extends Vue {
         whatever: top.catchs
       });
     });
+    this.topByWeightOptions = Vue.lodash.orderBy(this.topByWeightOptions, 'name');
 
     this.orderedMonths = data.dashboard.orderedMonths;
     const monthlySizesSpecies:string[] = Object.keys(data.dashboard.monthlySizes);
@@ -336,6 +345,7 @@ export default class DashboardView extends Vue {
         whatever: data.dashboard.monthlySizes[speciesId]
       });
     });
+    this.monthlySizesOptions = Vue.lodash.orderBy(this.monthlySizesOptions, 'name');
 
     this.ready = true;
   }
