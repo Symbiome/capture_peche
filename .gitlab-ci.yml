@@ -75,11 +75,7 @@ build:compile-with-tests:
       - fishola-mobile/target/dist-production
       - fishola-admin/target/dist-demo
   script:
-    - ls -al /var/local/
-    - du --si --max-depth=1 /var/local/
     - mvn clean package
-    - ls -al /var/local/
-    - du --si --max-depth=1 /var/local/
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
@@ -190,8 +186,6 @@ package:docker-demo:
       - fishola-mobile/target/dist-demo
       - fishola-admin/target/dist-demo
   script:
-    - ls -al fishola-backend/target
-    - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
     - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
