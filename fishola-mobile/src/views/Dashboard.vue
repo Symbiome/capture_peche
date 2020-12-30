@@ -117,6 +117,7 @@
                          v-if="monthlySizesOptions.length > 0"
                          v-on:item-selected="onMonthlySizeSelected"></OptionsList>
             <HistogramChart :values="monthlySizes"
+                            v-if="monthlySizes"
                             :orderedMonths="orderedMonths"></HistogramChart>
           </div>
 

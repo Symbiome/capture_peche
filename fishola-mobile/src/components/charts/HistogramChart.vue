@@ -50,10 +50,23 @@ import { Month } from '@/pojos/BackendPojos';
 @Component
 export default class HistogramChart extends Vue {
 
- @Prop() orderedMonths:Month[];
- @Prop() values:{ [P in Month]?: number };
+  @Prop() orderedMonths:Month[];
+  @Prop() values:{ [P in Month]?: number };
 
-  maxValue:number = 100;
+  maxValue:number = 50;
+
+  @Watch('values')
+  onValuesChanged(newValue:{ [P in Month]?: number }, oldValue:{ [P in Month]?: number }) {
+    const numbers:(number|undefined)[] = Object.values(newValue);
+    let newMax:number = 0;
+    numbers.forEach((n) => {
+      if (n && n > newMax) {
+        newMax = n;
+      }
+    })
+    this.maxValue = Math.max(newMax, 50);
+  }
+
 }
 </script>
 
