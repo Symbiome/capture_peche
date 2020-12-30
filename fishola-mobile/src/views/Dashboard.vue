@@ -120,17 +120,18 @@
             <div class="shrinked">
               <h2><i class="icon-size" />Top 5 tailles</h2>
             </div>
-            <div class="not-enough-data" v-if="topBySize.length == 0">
+            <div class="not-enough-data" v-if="topBySizeOptions.length == 0">
               <span>Pas assez de données</span>
             </div>
-            <OptionsList :items="topBySizeItems"
+            <OptionsList :items="topBySizeOptions"
+                         v-if="topBySizeOptions.length > 0"
                          v-on:item-selected="onTopSizeSelected"></OptionsList>
             <div class="dashboard-top-catchs catch-preview-list-scrollable"
-                v-if="topSizeSelected">
+                v-if="topBySizeCatchs">
               <CatchPreviewList v-bind:modifiable="false"
                                 v-bind:reverse="false"
                                 lakeId=""
-                                v-bind:catchs="topSizeSelected.catchs"
+                                v-bind:catchs="topBySizeCatchs"
                                 v-on:openCatchFromId="openCatch($event)"
                                 bottomMode="index"/>
             </div>
@@ -140,17 +141,18 @@
             <div class="shrinked">
               <h2><i class="icon-weight" />Top 5 poids</h2>
             </div>
-            <div class="not-enough-data" v-if="topByWeight.length == 0">
+            <div class="not-enough-data" v-if="topByWeightOptions.length == 0">
               <span>Pas assez de données</span>
             </div>
-            <OptionsList :items="topByWeightItems"
+            <OptionsList :items="topByWeightOptions"
+                         v-if="topByWeightOptions.length > 0"
                          v-on:item-selected="onTopWeightSelected"></OptionsList>
             <div class="dashboard-top-catchs catch-preview-list-scrollable"
-                v-if="topWeightSelected">
+                v-if="topByWeightCatchs">
               <CatchPreviewList v-bind:modifiable="false"
                                 v-bind:reverse="false"
                                 lakeId=""
-                                v-bind:catchs="topWeightSelected.catchs"
+                                v-bind:catchs="topByWeightCatchs"
                                 v-on:openCatchFromId="openCatch($event)"
                                 metaMode="weight"
                                 bottomMode="index"/>
@@ -228,12 +230,10 @@ export default class DashboardView extends Vue {
   latestTrips:DashboardLastTrip[] = [];
   emptylatestTrips:any[] = [];
   maxCatchsCount:number = 100;
-  topBySize:TopEntry[] = [];
-  topBySizeItems:OptionItem[] = [];
-  topSizeSelected:TopEntry | null = null;
-  topByWeight:TopEntry[] = [];
-  topByWeightItems:OptionItem[] = [];
-  topWeightSelected:TopEntry | null = null;
+  topBySizeOptions:OptionItem[] = [];
+  topBySizeCatchs:CatchBean[] | null = null;
+  topByWeightOptions:OptionItem[] = [];
+  topByWeightCatchs:CatchBean[] | null = null;
 
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId:{ [index: string]: string } = {};
@@ -297,23 +297,23 @@ export default class DashboardView extends Vue {
       this.emptylatestTrips.push({});
     }
 
-    this.topBySize = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
-    this.topBySize.forEach((top) => {
-      this.topBySizeItems.push({
+    const topBySize:TopEntry[] = Vue.lodash.orderBy(this.parseTop(data.dashboard.topBySize), 'species.name');
+    topBySize.forEach((top) => {
+      this.topBySizeOptions.push({
         id: top.species.id,
         name: top.species.name,
         alias: top.species.alias,
-        whatever: top
+        whatever: top.catchs
       });
     });
 
-    this.topByWeight = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
-    this.topByWeight.forEach((top) => {
-      this.topByWeightItems.push({
+    const topByWeight:TopEntry[] = Vue.lodash.orderBy(this.parseTop(data.dashboard.topByWeight), 'species.name');
+    topByWeight.forEach((top) => {
+      this.topByWeightOptions.push({
         id: top.species.id,
         name: top.species.name,
         alias: top.species.alias,
-        whatever: top
+        whatever: top.catchs
       });
     });
 
@@ -339,11 +339,11 @@ export default class DashboardView extends Vue {
   }
 
   onTopSizeSelected(item:OptionItem) {
-    this.topSizeSelected = item.whatever;
+    this.topBySizeCatchs = item.whatever;
   }
 
   onTopWeightSelected(item:OptionItem) {
-    this.topWeightSelected = item.whatever;
+    this.topByWeightCatchs = item.whatever;
   }
 
   openCatch(catchId:string) {
