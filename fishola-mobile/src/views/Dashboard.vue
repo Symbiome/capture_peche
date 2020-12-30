@@ -51,12 +51,12 @@
             </div>
           </div>
 
-          <div class="shrinked" v-if="!globalMode">
+          <div class="section shrinked" v-if="!globalMode">
             <h2><i class="icon-fish" />Mes poissons</h2>
             <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
           </div>
 
-          <div class="shrinked" v-if="!globalMode">
+          <div class="section shrinked" v-if="!globalMode">
             <h2><i class="icon-fishing" />Mes captures</h2>
             <div class="not-enough-data" v-if="latestTrips.length == 0">
               <span>Pas assez de données</span>
@@ -111,7 +111,7 @@
             </div>
           </div>
 
-          <div v-if="!globalMode">
+          <div v-if="!globalMode" class="section">
             <div class="shrinked">
               <h2><i class="icon-size" />Historique des tailles (cm)</h2>
             </div>
@@ -127,7 +127,7 @@
             </div>
           </div>
 
-          <div v-if="!globalMode">
+          <div v-if="!globalMode" class="section">
             <div class="shrinked">
               <h2><i class="icon-size" />Top 5 tailles</h2>
             </div>
@@ -148,7 +148,7 @@
             </div>
           </div>
 
-          <div v-if="!globalMode">
+          <div v-if="!globalMode" class="section">
             <div class="shrinked">
               <h2><i class="icon-weight" />Top 5 poids</h2>
             </div>
@@ -507,6 +507,10 @@ export default class DashboardView extends Vue {
       }
     }
 
+    .section {
+      margin-top: 50px;
+    }
+
     .shrinked {
       padding-left: @margin-large;
       padding-right: @margin-large;
@@ -605,7 +609,7 @@ export default class DashboardView extends Vue {
         }
 
         .date {
-          height: 50px;
+          height: 60px;
           font-size: @fontsize-small-paragraph;
           color: @gunmetal;
           .day {
