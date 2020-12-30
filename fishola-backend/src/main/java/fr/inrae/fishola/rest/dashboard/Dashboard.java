@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import org.immutables.value.Value;
 
+import java.time.Month;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,5 +50,9 @@ public interface Dashboard {
     Map<UUID, List<CatchBean>> topByWeight();
 
     Map<UUID, Set<String>> speciesAliases();
+
+    List<Month> orderedMonths();
+
+    Map<UUID, Map<Month, Double>> monthlySizes();
 
 }

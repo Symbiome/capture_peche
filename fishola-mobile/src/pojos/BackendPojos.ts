@@ -168,6 +168,8 @@ export interface Dashboard {
     topBySize: { [index: string]: CatchBean[] };
     topByWeight: { [index: string]: CatchBean[] };
     speciesAliases: { [index: string]: string[] };
+    orderedMonths: Month[];
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
 }
 
 export interface Serializable {
@@ -184,3 +186,5 @@ export type TripMode = "Live" | "Afterwards";
 export type TripType = "Border" | "Craft";
 
 export type DeviceType = "web" | "application";
+
+export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";

@@ -20,7 +20,24 @@
   -->
 <template>
   <div class="histogram">
-    HistogramChart
+    <div class="values">
+      <div class="value" v-for="m in orderedMonths" v-bind:key="'value-' + m">
+        {{values[m]}}
+      </div>
+    </div>
+    <div class="bars">
+      <div class="bar" v-for="(m, index) in orderedMonths" v-bind:key="'bar-' + m">
+        <div class="bar-filled"
+              v-if="values[m]"
+              v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+              v-bind:style="'height: ' + (values[m] * 100 / maxValue) + '%;'"></div>
+      </div>
+    </div>
+    <div class="labels">
+      <div class="label" v-for="m in orderedMonths" v-bind:key="'label-' +m">
+        {{m.substring(0,1)}}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -28,9 +45,15 @@
 
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
+import { Month } from '@/pojos/BackendPojos';
+
 @Component
 export default class HistogramChart extends Vue {
 
+ @Prop() orderedMonths:Month[];
+ @Prop() values:{ [P in Month]?: number };
+
+  maxValue:number = 100;
 }
 </script>
 
@@ -41,12 +64,75 @@ export default class HistogramChart extends Vue {
 
 .histogram {
   width: 100%;
-  border: 1px solid red;
-  color: red;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   height: 250px;
+
+  .values {
+    width: 100%;
+    height: 18px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+    .value {
+      width: 8%;
+      font-weight: bold;
+      font-size: @fontsize-smallest-paragraph;
+      color: @pelorous;
+      text-align: center;
+    }
+  }
+  .bars {
+    width: 100%;
+    height: calc(100% - 18px - 25px);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+    .bar {
+      width: 6%;
+      margin-left: 1%;
+      margin-right: 1%;
+      height: 100%;
+      background-color: @solitude;
+      border-radius: 2px;
+
+      position: relative;
+
+
+      .bar-filled {
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        border-radius: 2px;
+
+        &.even {
+          background: @pelorous;
+        }
+
+        &.odd {
+          background: @summer-sky;
+        }
+
+      }
+    }
+  }
+
+  .labels {
+    width: 100%;
+    height: 25px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+    .label {
+      width: 8%;
+      color: @gunmetal;
+      text-align: center;
+    }
+  }
 }
 
 </style>

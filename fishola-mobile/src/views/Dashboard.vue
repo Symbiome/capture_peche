@@ -112,8 +112,12 @@
           </div>
 
           <div class="shrinked" v-if="!globalMode">
-            <h2><i class="icon-size" />Historique des tailles</h2>
-            <HistogramChart :distribution="caughtSpeciesDistribution"></HistogramChart>
+            <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+            <OptionsList :items="monthlySizesOptions"
+                         v-if="monthlySizesOptions.length > 0"
+                         v-on:item-selected="onMonthlySizeSelected"></OptionsList>
+            <HistogramChart :values="monthlySizes"
+                            :orderedMonths="orderedMonths"></HistogramChart>
           </div>
 
           <div v-if="!globalMode">
@@ -184,7 +188,7 @@ import HistogramChart from '@/components/charts/HistogramChart.vue';
 
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
-import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean} from '@/pojos/BackendPojos';
+import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean, Month} from '@/pojos/BackendPojos';
 import DistributionEntry from '@/pojos/DistributionEntry';
 import OptionItem from '@/pojos/OptionItem';
 import {DashboardAndSpecies} from '@/services/DashboardService';
@@ -234,6 +238,9 @@ export default class DashboardView extends Vue {
   topBySizeCatchs:CatchBean[] | null = null;
   topByWeightOptions:OptionItem[] = [];
   topByWeightCatchs:CatchBean[] | null = null;
+  orderedMonths: Month[] | null = null;
+  monthlySizesOptions: OptionItem[] = [];
+  monthlySizes: { [P in Month]?: number } | null = null;
 
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId:{ [index: string]: string } = {};
@@ -317,6 +324,18 @@ export default class DashboardView extends Vue {
       });
     });
 
+    this.orderedMonths = data.dashboard.orderedMonths;
+    const monthlySizesSpecies:string[] = Object.keys(data.dashboard.monthlySizes);
+    monthlySizesSpecies.forEach((speciesId) => {
+      const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+      this.monthlySizesOptions.push({
+        id: species.id,
+        name: species.name,
+        alias: species.alias,
+        whatever: data.dashboard.monthlySizes[speciesId]
+      });
+    });
+
     this.ready = true;
   }
 
@@ -344,6 +363,10 @@ export default class DashboardView extends Vue {
 
   onTopWeightSelected(item:OptionItem) {
     this.topByWeightCatchs = item.whatever;
+  }
+
+  onMonthlySizeSelected(item:OptionItem) {
+    this.monthlySizes = item.whatever;
   }
 
   openCatch(catchId:string) {

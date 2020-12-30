@@ -22,6 +22,7 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -48,11 +49,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.Month;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -116,9 +120,79 @@ public class DashboardResource extends AbstractFisholaResource {
             builder.putSpeciesAliases(speciesId, aliases);
         });
 
+        builder.addOrderedMonths(Month.values());
+
+        List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
+
+        Map<UUID, Map<Month, Double>> monthlySizes = computeMonthlySizes(userId, mostCaughtSpecies, allCatches);
+        builder.monthlySizes(monthlySizes);
+
         Dashboard result = builder.build();
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
+    }
+
+    /**
+     * Calcule la moyenne mensuelle des tailles de poissons pour les espèces spécifiées
+     */
+    protected Map<UUID, Map<Month, Double>> computeMonthlySizes(UUID userId, List<UUID> mostCaughtSpecies, List<Catch> allCatches) {
+        Map<UUID, Month> tripsMonths = getTripsMonths(userId);
+        // On garde uniquement les captures avec une taille
+        List<Catch> catchsWithSize = allCatches.stream()
+                .filter(c -> c.getSize() != null)
+                .collect(Collectors.toList());
+        ImmutableMap.Builder<UUID, Map<Month, Double>> builder = ImmutableMap.builder();
+        for (UUID speciesId : mostCaughtSpecies) {
+            // On prend les captures de la bonne espèce
+            List<Catch> catchs = catchsWithSize.stream()
+                    .filter(c -> c.getSpeciesId().equals(speciesId))
+                    .collect(Collectors.toList());
+            Map<Month, Double> speciesMonthlySizes = new HashMap<>();
+            for (Month month : Month.values()) {
+                OptionalDouble average = catchs.stream()
+                        .filter(c -> month.equals(tripsMonths.get(c.getTripId())))
+                        .mapToInt(Catch::getSize)
+                        .average();
+                average.ifPresent(val -> speciesMonthlySizes.put(month, val));
+            }
+            if (!speciesMonthlySizes.isEmpty()) {
+                builder.put(speciesId, speciesMonthlySizes);
+            }
+        }
+        Map<UUID, Map<Month, Double>> result = builder.build();
+        return result;
+    }
+
+    /**
+     * Calcule les 5 espèces les plus capturées à partir de la distribution fournie
+     */
+    protected List<UUID> get5MostCaughtSpecies(Map<UUID, Integer> caughtSpeciesCount) {
+        Map<UUID, Integer> copy = new HashMap<>(caughtSpeciesCount);
+        List<UUID> result = new LinkedList<>();
+        while (result.size() < 5 && !copy.isEmpty()) {
+            List<UUID> subList = getMostCaughtSpecies(copy);
+            result.addAll(subList);
+            subList.forEach(copy::remove);
+        }
+        return result;
+    }
+
+    /**
+     * Calcule la (ou les si ex-aequo) espèce(s) la(es) plus capturée(s)
+     */
+    protected List<UUID> getMostCaughtSpecies(Map<UUID, Integer> caughtSpeciesCount) {
+        List<UUID> result = new LinkedList<>();
+        int max = 0;
+        for (Map.Entry<UUID, Integer> entry : caughtSpeciesCount.entrySet()) {
+            if (entry.getValue() > max) {
+                max = entry.getValue();
+                result.clear();
+                result.add(entry.getKey());
+            } else if (entry.getValue() == max) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
     }
 
     protected List<CatchBean> toDashboardTopCatchs(Collection<Catch> catches,
@@ -170,6 +244,17 @@ public class DashboardResource extends AbstractFisholaResource {
                 .build();
         PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty());
         PaginationResult<DashboardLastTrip> result = latestTripsEntities.transform(trip -> toDashboardLastTrip(trip, allCatchsIndex));
+        return result;
+    }
+
+    protected Map<UUID, Month> getTripsMonths(UUID userId) {
+        PaginationResult<Trip> tripEntities = tripsDao.listMyTrips(userId, PaginationParameter.ALL, Optional.empty());
+        Map<UUID, Month> result = tripEntities.getElements()
+                .stream()
+                .collect(Collectors.toMap(
+                        Trip::getId,
+                        t -> t.getDay().getMonth()
+                ));
         return result;
     }
 
