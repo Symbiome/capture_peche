@@ -172,6 +172,14 @@ export interface Dashboard {
     monthlySizes: { [index: string]: { [P in Month]?: number } };
 }
 
+export interface GlobalDashboard {
+    caughtSpeciesCount: { [index: string]: number };
+    caughtSpeciesDistribution: { [index: string]: number };
+    speciesAliases: { [index: string]: string[] };
+    orderedMonths: Month[];
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
+}
+
 export interface Serializable {
 }
 

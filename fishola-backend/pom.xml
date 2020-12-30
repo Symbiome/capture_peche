@@ -380,6 +380,7 @@
             <class>fr.inrae.fishola.rest.about.KeyFigures</class>
             <class>fr.inrae.fishola.rest.feedback.Feedback</class>
             <class>fr.inrae.fishola.rest.dashboard.Dashboard</class>
+            <class>fr.inrae.fishola.rest.dashboard.GlobalDashboard</class>
           </classes>
           <outputKind>module</outputKind>
           <outputFileType>implementationFile</outputFileType>

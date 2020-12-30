@@ -340,8 +340,6 @@ export default class PersonalDashboard extends Vue {
 
 @import "../../less/main";
 
-@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
-
 .average-header {
   height: @average-header-height;
   line-height: @average-header-height;

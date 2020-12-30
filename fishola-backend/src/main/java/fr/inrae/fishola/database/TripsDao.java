@@ -202,4 +202,9 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public List<Trip> findAll() {
+        List<Trip> result = withDao(TripDao.class, TripDao::findAll);
+        return result;
+    }
+
 }

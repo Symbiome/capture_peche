@@ -54,6 +54,9 @@
           <PersonalDashboard v-if="!globalMode && personalDashboard"
                              :dashboardData="personalDashboard"></PersonalDashboard>
 
+          <GlobalDashboardComponent v-if="globalMode && globalDashboard"
+                                    :dashboardData="globalDashboard"></GlobalDashboardComponent>
+
         </div>
 
       </div>
@@ -72,10 +75,11 @@ import RunningOverlay from '@/components/layout/RunningOverlay.vue';
 import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
 import PersonalDashboard from '@/components/charts/PersonalDashboard.vue';
+import GlobalDashboardComponent from '@/components/charts/GlobalDashboardComponent.vue';
 
 import DashboardService from '@/services/DashboardService';
 import TripsService from '@/services/TripsService';
-import {DashboardAndSpecies} from '@/services/DashboardService';
+import {DashboardAndSpecies, GlobalDashboardAndSpecies} from '@/services/DashboardService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import router from '../router';
@@ -88,7 +92,8 @@ import moment from 'moment';
     FisholaHeader,
     RunningOverlay,
     FisholaFooter,
-    PersonalDashboard
+    PersonalDashboard,
+    GlobalDashboardComponent
   }
 })
 export default class DashboardView extends Vue {
@@ -99,6 +104,7 @@ export default class DashboardView extends Vue {
   offline:boolean = false;
 
   personalDashboard:DashboardAndSpecies|null = null;
+  globalDashboard:GlobalDashboardAndSpecies|null = null;
 
   hasRunningTrip:boolean = false;
 
@@ -137,8 +143,17 @@ export default class DashboardView extends Vue {
 
   showGlobalDashboard() {
     this.globalMode = true;
-    this.ready = false;
-    // Chargement
+
+    if (!this.globalDashboard) {
+      this.ready = false;
+      DashboardService.loadGlobalDashboardOrTimeout()
+        .then(this.globalDashboardLoaded, this.cannotLoad);
+   }
+  }
+
+  globalDashboardLoaded(data:GlobalDashboardAndSpecies) {
+    this.globalDashboard = data;
+    this.ready = true;
   }
 
 }
