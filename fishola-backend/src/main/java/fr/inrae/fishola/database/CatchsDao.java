@@ -128,6 +128,11 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public List<Catch> findAll() {
+        List<Catch> result = withDao(CatchDao.class, CatchDao::findAll);
+        return result;
+    }
+
     public int countCatchs() {
         int result = withDao(CatchDao.class, CatchDao::count).intValue();
         return result;

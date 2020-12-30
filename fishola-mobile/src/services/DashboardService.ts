@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {Dashboard, SpeciesWithAlias} from '@/pojos/BackendPojos';
+import {Dashboard, SpeciesWithAlias, GlobalDashboard} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from './ReferentialService';
 import Helpers from '@/services/Helpers';
@@ -26,6 +26,13 @@ import Helpers from '@/services/Helpers';
 export class DashboardAndSpecies {
     constructor (
         public dashboard:Dashboard,
+        public species:SpeciesWithAlias[]) {
+    }
+}
+
+export class GlobalDashboardAndSpecies {
+    constructor (
+        public dashboard:GlobalDashboard,
         public species:SpeciesWithAlias[]) {
     }
 }
@@ -64,6 +71,27 @@ export default class DashboardService extends AbstractFisholaService {
 
     static loadDashboardOrTimeout():Promise<DashboardAndSpecies> {
         const promise = this.loadDashboard();
+        return this.timeout(5000, promise);
+    }
+
+    static loadGlobalDashboard():Promise<GlobalDashboardAndSpecies> {
+        return new Promise<GlobalDashboardAndSpecies>((resolve, reject) => {
+            Promise
+            .all(
+                [
+                    this.backendGet('/v1/global-dashboard'),
+                    ReferentialService.getAllSpeciesNoCache()
+                ])
+            .then((data:[GlobalDashboard, SpeciesWithAlias[]]) => {
+                const result:GlobalDashboardAndSpecies = new GlobalDashboardAndSpecies(data[0], data[1]);
+                resolve(result);
+            },
+            reject);
+        });
+    }
+
+    static loadGlobalDashboardOrTimeout():Promise<GlobalDashboardAndSpecies> {
+        const promise = this.loadGlobalDashboard();
         return this.timeout(5000, promise);
     }
 
