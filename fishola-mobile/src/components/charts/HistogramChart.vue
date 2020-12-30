@@ -22,7 +22,7 @@
   <div class="histogram">
     <div class="values">
       <div class="value" v-for="m in orderedMonths" v-bind:key="'value-' + m">
-        {{values[m]}}
+        {{values[m] ? Math.round(values[m]) : ''}}
       </div>
     </div>
     <div class="bars">
