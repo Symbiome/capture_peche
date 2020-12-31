@@ -147,7 +147,7 @@
             </div>
             <div class="map" v-if="gpsLocation">
               <l-map
-                :zoom="15"
+                :zoom="16"
                 :center="gpsLocation"
                 :options="{
                   zoomSnap: 0.5
