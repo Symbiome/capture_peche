@@ -32,6 +32,7 @@ import Techniques from '@/views/referentials/Techniques.vue'
 import Species from '@/views/referentials/Species.vue'
 import EditorialPagesVue from '@/views/referentials/EditorialPages.vue'
 import DocumentationVue from '@/views/referentials/Documentation.vue'
+import NewsVue from '@/views/referentials/News.vue'
 
 import SpeciesPerLake from '@/views/customize/SpeciesPerLake.vue'
 import AuthorizedSamples from '@/views/customize/AuthorizedSamples.vue'
@@ -107,6 +108,11 @@ const routes: Array<RouteConfig> = [
     path: '/documentation',
     name: 'documentation',
     component: DocumentationVue
+  },
+  {
+    path: '/news',
+    name: 'news',
+    component: NewsVue
   },
   
 ]

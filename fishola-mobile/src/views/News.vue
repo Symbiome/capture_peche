@@ -26,6 +26,10 @@
         <div class="pane-content rounded">
           <h1>Actualités</h1>
 
+          <div v-if="!elements || elements.length == 0" class="empty">
+            Il n'y a pas encore d'actualités ...
+          </div>
+
           <div class="documentation-row"
                v-for="doc in elements"
                v-bind:key="doc.id">
@@ -100,6 +104,13 @@ export default class NewsView extends Vue {
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
+  }
+
+  .empty {
+    color: @pale-sky;
+    text-align: center;
+    font-style: italic;
+    font-size: @fontsize-button;
   }
 
   .documentation-row {

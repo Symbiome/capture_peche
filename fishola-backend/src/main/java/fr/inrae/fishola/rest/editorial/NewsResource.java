@@ -24,12 +24,11 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
-import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Base64;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -42,7 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,20 +49,17 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import fr.inrae.fishola.rest.about.KeyFiguresHolder;
-import org.apache.commons.lang3.tuple.Pair;
-
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
-public class DocumentationResource extends AbstractFisholaResource {
+public class NewsResource extends AbstractFisholaResource {
 
-    public static final boolean IS_NEWS = false;
+    public static final boolean IS_NEWS = true;
 
     @Inject
     protected EditorialAndDocumentationDao dao;
 
     @GET
-    @Path("/documentations")
+    @Path("/news")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
         LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
@@ -74,7 +70,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     @DELETE
-    @Path("/documentations/{documentId}")
+    @Path("/news/{documentId}")
     public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
         checkIsAdmin();
         dao.deleteDocumentation(documentId);
@@ -92,25 +88,8 @@ public class DocumentationResource extends AbstractFisholaResource {
         return result;
     }
 
-    @GET
-    @Path("/documentation/{docId}")
-    @Produces("application/pdf")
-    public Response downloadDocumentation(@PathParam("docId") UUID docId) {
-        Optional<Documentation> optional = dao.getDocumentation(docId);
-        NotFoundException.check(optional.isPresent());
-
-        Documentation documentation = optional.get();
-        String filename = documentation.getName()
-                .replaceAll("[ ]", "_");
-        StreamingOutput output = this.wrapAsStreamingOutput(documentation.getContent());
-        Response response = Response.ok(output)
-                .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))
-                .build();
-        return response;
-    }
-
     @PUT
-    @Path("/documentations/{docId}")
+    @Path("/news/{docId}")
     public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
         checkIsAdmin();
         Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
@@ -127,7 +106,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     @POST
-    @Path("/documentations")
+    @Path("/news")
     public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
         checkIsAdmin();
         try {
@@ -161,62 +140,6 @@ public class DocumentationResource extends AbstractFisholaResource {
             documentation.setContent(existingDoc.get().getContent());
         }
         return documentation;
-    }
-
-    protected Response downloadDocumentationByNaturalId(String naturalId) {
-
-        Optional<UUID> docId = dao.getDocumentationIdByNaturalId(naturalId);
-
-        NotFoundException.check(docId.isPresent(), String.format("Impossible de trouver le document « %s »", naturalId));
-
-        Response response = downloadDocumentation(docId.get());
-        return response;
-    }
-
-    @GET
-    @Path("/documentation/fixed/cgu")
-    @Produces("application/pdf")
-    public Response downloadGCU() {
-        Response response = downloadDocumentationByNaturalId("cgu");
-        return response;
-    }
-
-    @GET
-    @Path("/documentation/fixed/samples")
-    @Produces("application/pdf")
-    public Response downloadSamples() {
-        Response response = downloadDocumentationByNaturalId("prélèvements");
-        return response;
-    }
-
-    @GET
-    @Path("/editorial")
-    public Response getEditorials() {
-        List<Editorial> editorials = dao.getEditorials();
-        Response response = Response.ok(editorials).build();
-        return response;
-    }
-
-    @PUT
-    @Path("/editorial/{editorialId}")
-    public Response updateEditorial(@PathParam("editorialId") UUID editorialId, Editorial editorial) {
-        Preconditions.checkArgument(editorialId != null, "Identifiant de page éditoriale obligatoire");
-        Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
-        checkIsAdmin();
-        dao.updateEditorial(editorial);
-        // On veut une mise à jour immédiate sur la page d'accueil
-        KeyFiguresHolder.unset();
-        return Response.noContent().build();
-    }
-
-    @GET
-    @Path("/editorial/{name}")
-    public Response getEditorial(@PathParam("name") String name) {
-        Optional<Editorial> editorial = dao.findEditorial(name);
-        Response response = editorial.map(Response::ok)
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
-                .build();
-        return response;
     }
 
 }

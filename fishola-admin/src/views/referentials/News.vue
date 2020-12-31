@@ -21,10 +21,10 @@
 <template>
   <div class="pages">
     <Referential
-      name="Documentations en téléchargement"
-      url="/v1/documentations"
+      name="Actualités"
+      url="/v1/news"
       :columns="docColumns"
-      :createElement=createDocumentation 
+      :createElement=createDocumentation
       :canDelete=true
       ></Referential>
   </div>
@@ -68,7 +68,7 @@ export default class DocumentationVue extends Vue {
   createDocumentation() {
     return {
       'naturalId': '',
-      'name': 'Nouvelle documentation',
+      'name': 'Nouvelle actualité',
       'url': '',
       'base64Content': ''
     };
