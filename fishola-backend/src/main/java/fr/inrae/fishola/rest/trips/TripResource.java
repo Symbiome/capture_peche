@@ -521,7 +521,6 @@ public class TripResource extends AbstractFisholaResource {
         return response;
     }
 
-
     @GET
     @Path("/export")
     @Produces("text/csv")

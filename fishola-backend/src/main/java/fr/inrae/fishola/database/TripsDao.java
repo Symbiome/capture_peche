@@ -194,7 +194,22 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public String getTripsCSV() {
-        return withContext(context -> context.selectFrom("catchs_export").fetch().formatCSV(';'));
+        return withContext(context -> {
+            String result = context.selectFrom("catchs_export")
+                    .fetch()
+                    .formatCSV(';');
+            return result;
+        });
+    }
+
+    public String getPersonalTripsCSV(UUID userId) {
+        return withContext(context -> {
+            String result = context.selectFrom("personal_catchs_export")
+                    .where("id_login = ?", userId)
+                    .fetch()
+                    .formatCSV(';');
+            return result;
+        });
     }
 
     public int countTrips() {

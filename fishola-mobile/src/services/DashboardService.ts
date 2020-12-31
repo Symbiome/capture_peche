@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import Constants from '@/services/Constants';
 import {Dashboard, SpeciesWithAlias, GlobalDashboard} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import ReferentialService from './ReferentialService';
@@ -41,6 +42,10 @@ export default class DashboardService extends AbstractFisholaService {
 
     constructor () {
         super();
+    }
+
+    static getExportUrl():string {
+        return Constants.apiUrl('/v1/dashboard/export');
     }
 
     static parseDate(input:any):Date {

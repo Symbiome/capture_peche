@@ -49,7 +49,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -329,6 +331,24 @@ public class DashboardResource extends AbstractFisholaResource {
 
         GlobalDashboard result = builder.build();
         return result;
+    }
+
+    @GET
+    @Path("/dashboard/export")
+    @Produces("text/csv")
+    public Response exportAsCSV() {
+
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+
+        String csv = tripsDao.getPersonalTripsCSV(userId);
+        String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
+
+        Response.ResponseBuilder responseBuilder = Response.ok(csv)
+                .header("Content-Disposition", disposition);
+        Response response = buildResponse(responseBuilder, userIdAndRenewal);
+        return response;
     }
 
 }

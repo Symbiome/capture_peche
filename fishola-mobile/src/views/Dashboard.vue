@@ -26,7 +26,12 @@
 
         <div class="pane-content large rounded">
 
-          <h1>Tableau de bord</h1>
+          <h1>
+            Tableau de bord
+            <a v-bind:href="exportUrl" class="export" title="Exporter">
+              <i class="icon-download"/>
+            </a>
+          </h1>
 
           <div class="dashboard-modes">
             <div class="dashboard-mode"
@@ -100,6 +105,8 @@ export default class DashboardView extends Vue {
 
   globalMode:boolean = false;
 
+  exportUrl:string = '';
+
   ready:boolean = false;
   offline:boolean = false;
 
@@ -117,6 +124,7 @@ export default class DashboardView extends Vue {
       .then((result:boolean) => this.hasRunningTrip = result);
     DashboardService.loadDashboardOrTimeout()
       .then(this.personalDashboardLoaded, this.cannotLoad);
+    this.exportUrl = DashboardService.getExportUrl();
   }
 
   personalDashboardLoaded(data:DashboardAndSpecies) {
@@ -239,6 +247,11 @@ export default class DashboardView extends Vue {
     }
 
     color: @gunmetal;
+
+    h1 a {
+      margin-left: 50px;
+      color: @pale-sky;
+    }
 
     .dashboard-modes {
       width: 100%;
