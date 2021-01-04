@@ -26,13 +26,7 @@
         <div class="pane-content rounded">
           <h1>FAQ</h1>
 
-          <div class="faq-row">
-            <p v-for="p in paragraphs"
-               v-bind:key="p"
-               class="faq-p">
-              {{p}}
-            </p>
-          </div>
+          <div class="faq-rows" v-html="faqRows"></div>
 
           <div class="bottom-page-spacer"></div>
         </div>
@@ -64,7 +58,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class CreditsView extends Vue {
 
-  paragraphs:string[] = [];
+  faqRows:string = '';
 
   hasRunningTrip:boolean = false;
 
@@ -80,11 +74,7 @@ export default class CreditsView extends Vue {
   }
 
   faqLoaded(editorial:Editorial) {
-    editorial.content
-      .split("<br/>")
-      .forEach((p:string) => {
-        this.paragraphs.push(p);
-      });
+    this.faqRows = editorial.content;
   }
 
 }
@@ -92,7 +82,7 @@ export default class CreditsView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
 
 @import "../less/main";
 
@@ -103,6 +93,29 @@ export default class CreditsView extends Vue {
     line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
     color: @pale-sky;
     text-align: left;
+  }
+
+  .faq-rows {
+    display: flex;
+    flex-direction: column;
+    /deep/ .faq {
+      margin-top: 10px;
+      margin-bottom: 10px;
+
+      h4 {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        font-size: 18px;
+        font-weight: normal;
+      }
+
+      p {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        font-size: 16px;
+        color: @pale-sky;
+      }
+    }
   }
 
 }
