@@ -21,7 +21,10 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.Lake;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
@@ -29,10 +32,14 @@ import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
+import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.SelectConditionStep;
 
 import javax.inject.Singleton;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.trueCondition;
 
 @Singleton
 public class CatchsDao extends AbstractFisholaDao {
@@ -114,22 +122,40 @@ public class CatchsDao extends AbstractFisholaDao {
                 .forEach(this::delete);
     }
 
-    public List<Catch> findAllByUserId(UUID userId) {
-        List<Catch> result = withContext(context -> {
-            Set<UUID> tripIds = context.select(Tables.TRIP.ID)
-                    .from(Tables.TRIP)
-                    .where(Tables.TRIP.OWNER_ID.eq(userId))
-                    .fetchSet(Tables.TRIP.ID);
-            List<Catch> catches = context.selectFrom(Tables.CATCH)
-                    .where(Tables.CATCH.TRIP_ID.in(tripIds))
-                    .fetchInto(Catch.class);
-            return catches;
+    protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year) {
+        Multimap<Month, Catch> result = withContext(context -> {
+            SelectConditionStep<Record> selectStep = context
+                    .select(Tables.TRIP.DAY)
+                    .select(Tables.CATCH.fields())
+                    .from(Tables.CATCH)
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .where(trueCondition());
+            if (userId.isPresent()) {
+                selectStep = selectStep.and(Tables.TRIP.OWNER_ID.eq(userId.get()));
+            }
+            if (year.isPresent()) {
+                LocalDate min = LocalDate.of(year.get(), Month.JANUARY, 1);
+                LocalDate max = LocalDate.of(year.get(), Month.DECEMBER, 31);
+                selectStep = selectStep.and(Tables.TRIP.DAY.between(min, max));
+            }
+            Multimap<Month, Catch> multimap = selectStep
+                    .stream()
+                    .collect(Multimaps.toMultimap(
+                            r -> r.into(Tables.TRIP.DAY).component1().getMonth(),
+                            r -> r.into(Tables.CATCH).into(Catch.class),
+                            ArrayListMultimap::create));
+            return multimap;
         });
         return result;
     }
 
-    public List<Catch> findAll() {
-        List<Catch> result = withDao(CatchDao.class, CatchDao::findAll);
+    public Multimap<Month, Catch> findMonthlyByUserId(UUID userId, Optional<Integer> year) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.of(userId), year);
+        return result;
+    }
+
+    public Multimap<Month, Catch> findAll(Optional<Integer> year) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.empty(), year);
         return result;
     }
 

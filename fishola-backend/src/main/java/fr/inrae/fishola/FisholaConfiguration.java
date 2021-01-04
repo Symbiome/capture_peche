@@ -167,4 +167,7 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "24")
     long getKeyFiguresTimeoutHours();
 
+    @ConfigProperty(defaultValue = "true")
+    boolean isDashboardOnlyCurrentYear();
+
 }
