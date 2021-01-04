@@ -63,6 +63,7 @@ import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Path("/api/v1")
@@ -93,11 +94,15 @@ public class DashboardResource extends AbstractFisholaResource {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
+
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
+        builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
         PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches);
         builder.latestTripsCatchs(latestTrips.getElements());
@@ -244,8 +249,9 @@ public class DashboardResource extends AbstractFisholaResource {
         return result;
     }
 
-    protected Map<UUID, Integer> computeDistribution(Collection<Catch> allCatches) {
+    protected Map<UUID, Integer> computeDistribution(Collection<Catch> allCatches, Predicate<Catch> predicate) {
         ImmutableMultiset<UUID> caughtSpeciesDistributionSet = allCatches.stream()
+                .filter(predicate)
                 .map(Catch::getSpeciesId)
                 .collect(ImmutableMultiset.toImmutableMultiset());
         Map<UUID, Integer> result = caughtSpeciesDistributionSet.entrySet()
@@ -289,11 +295,15 @@ public class DashboardResource extends AbstractFisholaResource {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
+
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
+        builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
         List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
         Multimap<UUID, SpeciesByLake> speciesWithAliasesIndex = Multimaps.index(speciesByLakes, SpeciesByLake::getSpeciesId);

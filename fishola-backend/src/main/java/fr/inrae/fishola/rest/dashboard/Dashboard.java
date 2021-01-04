@@ -41,6 +41,8 @@ public interface Dashboard {
 
     Map<UUID, Double> caughtSpeciesDistribution();
 
+    Map<UUID, Double> caughtAndReleasedSpeciesDistribution();
+
     List<DashboardLastTrip> latestTripsCatchs();
 
     Optional<Double> averageCatchsPerTrip();

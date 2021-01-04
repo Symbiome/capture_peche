@@ -37,8 +37,11 @@
       </div>
       <div class="distribution-row-bar">
         <div class="distribution-row-bar-filled"
-            v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-            v-bind:style="'width: ' + f.percent + '%;'"></div>
+             v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+             v-bind:style="'width: ' + f.percent + '%;'"></div>
+        <div v-if="f.greenPercent"
+             class="distribution-row-bar-filled green"
+             v-bind:style="'width: ' + f.greenPercent + '%;'"></div>
       </div>
     </div>
   </div>
@@ -113,6 +116,10 @@ export default class DistributionChart extends Vue {
 
         &.odd {
           background: @summer-sky;
+        }
+
+        &.green {
+          background: @lime-green;
         }
       }
 

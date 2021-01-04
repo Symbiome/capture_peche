@@ -218,12 +218,14 @@ export default class PersonalDashboard extends Vue {
 
     const speciesCount = this.dashboardData.dashboard.caughtSpeciesCount;
     const distribution = this.dashboardData.dashboard.caughtSpeciesDistribution;
+    const releasedDistribution = this.dashboardData.dashboard.caughtAndReleasedSpeciesDistribution;
     Object.keys(distribution)
       .forEach((speciesId) => {
         const species:SpeciesWithAlias = this.speciesIndex[speciesId];
         const percent:number = Math.round(distribution[speciesId]);
+        const releasedPercent:number = Math.round(releasedDistribution[speciesId]) | 0;
         const count:number = speciesCount[speciesId];
-        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, count, species.alias);
+        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, releasedPercent, count, species.alias);
         this.caughtSpeciesDistribution.push(entry);
     });
 

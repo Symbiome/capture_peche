@@ -40,6 +40,8 @@ public interface GlobalDashboard {
 
     Map<UUID, Double> caughtSpeciesDistribution();
 
+    Map<UUID, Double> caughtAndReleasedSpeciesDistribution();
+
     Map<UUID, Set<String>> speciesAliases();
 
     List<Month> orderedMonths();

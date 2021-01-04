@@ -163,6 +163,7 @@ export interface Feedback {
 export interface Dashboard {
     caughtSpeciesCount: { [index: string]: number };
     caughtSpeciesDistribution: { [index: string]: number };
+    caughtAndReleasedSpeciesDistribution: { [index: string]: number };
     latestTripsCatchs: DashboardLastTrip[];
     averageCatchsPerTrip?: number;
     topBySize: { [index: string]: CatchBean[] };
@@ -175,6 +176,7 @@ export interface Dashboard {
 export interface GlobalDashboard {
     caughtSpeciesCount: { [index: string]: number };
     caughtSpeciesDistribution: { [index: string]: number };
+    caughtAndReleasedSpeciesDistribution: { [index: string]: number };
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
