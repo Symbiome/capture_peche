@@ -21,17 +21,19 @@
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
-import {TripLight, TripMode, TripBean, CatchBean} from '@/pojos/BackendPojos';
+import {TripLight, TripMode, TripBean, CatchBean, DeviceType} from '@/pojos/BackendPojos';
+import CatchSummary from '@/pojos/CatchSummary';
+
 import Helpers from '@/services/Helpers';
 import Constants from '@/services/Constants';
+
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import PicturesService from '@/services/PicturesService';
-import CatchSummary from '@/pojos/CatchSummary';
-import ReferentialService from './ReferentialService';
+import ReferentialService from '@/services/ReferentialService';
+import ProfileService from '@/services/ProfileService';
+import GeolocationService from '@/services/GeolocationService';
 
 import moment from 'moment';
-import ProfileService from './ProfileService';
-import GeolocationService from './GeolocationService';
 
 export class TripsAndCount {
     offlineMarker:boolean = false;
@@ -57,11 +59,11 @@ export default class TripsService extends AbstractFisholaService {
         return this.instance;
     }
 
-    static newTrip(mode:TripMode, callback:(id:string)=>any) {
+    static newTrip(mode:TripMode):Promise<string> {
 
         const newTrip:TripMeta = {
             id: Constants.NEW_TRIP_ID,
-            mode: mode,
+            mode: mode
         }
 
         if (mode == 'Live') {
@@ -73,18 +75,20 @@ export default class TripsService extends AbstractFisholaService {
             newTrip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
         }
 
-        this.getDatabase()
-            .onCreationTrip
-            .put(newTrip)
-            .then(id => callback(id));
+        return new Promise<string>((resolve, reject) => {
+            this.getDatabase()
+                .onCreationTrip
+                .put(newTrip)
+                .then(id => resolve(id), reject);
+        });
     }
 
-    static newLiveTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('Live', callback);
+    static newLiveTrip():Promise<string> {
+        return TripsService.newTrip('Live');
     }
 
-    static newAfterwardsTrip(callback:(id:string)=>any) {
-        TripsService.newTrip('Afterwards', callback);
+    static newAfterwardsTrip():Promise<string> {
+        return TripsService.newTrip('Afterwards');
     }
 
     static getTrip(id:any, callback:(trip:any)=>any) {
@@ -253,31 +257,36 @@ export default class TripsService extends AbstractFisholaService {
     /**
      * Termine la phase d'ajout de captures sur une sortie (trip.id == Constants.RUNNING_ID)
      */
-    static finishTripCatchs(trip:TripMain, callback: () => void) {
+    static async finishTripCatchs(trip:TripMain):Promise<void> {
+
         if (trip.id == Constants.RUNNING_ID) {
-            if (trip.mode == 'Live') {
-                trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
-            }
+            const source:DeviceType = await Helpers.getDeviceType();
 
-            const tripBean:TripBean = <TripBean>trip;
-            if (!tripBean.techniqueIds) {
-                tripBean.techniqueIds = [];
-            }
-            if (trip.catchs) {
-                trip.catchs.forEach((c) => {
-                    if (tripBean.techniqueIds.indexOf(c.techniqueId) == -1) {
-                        tripBean.techniqueIds.push(c.techniqueId);
-                    }
-                });
-            }
+            return new Promise<void>((resolve, reject) => {
+                if (trip.mode == 'Live') {
+                    trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+                }
 
-            this.getDatabase()
-                .onCreationTrip
-                .put(tripBean)
-                .then((aaa) => {
-                    console.debug(aaa);
-                    callback();
-                });
+                const tripBean:TripBean = <TripBean>trip;
+                tripBean.source = source;
+                if (!tripBean.techniqueIds) {
+                    tripBean.techniqueIds = [];
+                }
+                if (trip.catchs) {
+                    trip.catchs.forEach((c) => {
+                        if (tripBean.techniqueIds.indexOf(c.techniqueId) == -1) {
+                            tripBean.techniqueIds.push(c.techniqueId);
+                        }
+                    });
+                }
+
+                this.getDatabase()
+                    .onCreationTrip
+                    .put(tripBean)
+                    .then(() => {
+                        resolve();
+                    }, reject);
+            });
         } else {
             throw 'Ne doit être appelé que sur une sortie en cours de création. Id=' + trip.id;
         }

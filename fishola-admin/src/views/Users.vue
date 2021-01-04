@@ -76,6 +76,12 @@ export default class UsersVue extends Vue {
       field: 'excludeFromExports',
       label: 'Exclu des exports',
       isABoolean: true
+    },
+    {
+      field: 'createdOn',
+      label: 'Date de création',
+      isADate: true,
+      readOnly: true
     }
   ];
 }

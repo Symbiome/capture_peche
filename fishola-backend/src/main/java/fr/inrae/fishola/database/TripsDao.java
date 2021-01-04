@@ -31,6 +31,7 @@ import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +83,7 @@ public class TripsDao extends AbstractFisholaDao {
         return techniques.size();
     }
 
-    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter) {
         List<Trip> result = withContext(context -> {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
@@ -90,6 +91,11 @@ public class TripsDao extends AbstractFisholaDao {
             searchTerm.map(term -> String.format("%%%s%%", term))
                     .map(Tables.TRIP.NAME::likeIgnoreCase)
                     .ifPresent(conditions::add);
+            yearFilter.ifPresent(year -> {
+                LocalDate min = LocalDate.of(year, Month.JANUARY, 1);
+                LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
+                conditions.add(Tables.TRIP.DAY.between(min, max));
+            });
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
             SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
@@ -115,15 +121,20 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
         if (!page.getOrderClauses().isEmpty()) {
             PaginationOrder order = page.getOrderClauses().get(0);
             orderDesc = order.isDesc();
         }
-        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm);
+        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year);
         PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
+        return result;
+    }
+
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
+        PaginationResult<Trip> result = listMyTrips(userId, page, searchTerm, Optional.empty());
         return result;
     }
 
@@ -194,6 +205,32 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public String getTripsCSV() {
-        return withContext(context -> context.selectFrom("catchs_export").fetch().formatCSV(';'));
+        return withContext(context -> {
+            String result = context.selectFrom("catchs_export")
+                    .fetch()
+                    .formatCSV(';');
+            return result;
+        });
     }
+
+    public String getPersonalTripsCSV(UUID userId) {
+        return withContext(context -> {
+            String result = context.selectFrom("personal_catchs_export")
+                    .where("id_login = ?", userId)
+                    .fetch()
+                    .formatCSV(';');
+            return result;
+        });
+    }
+
+    public int countTrips() {
+        int result = withDao(TripDao.class, TripDao::count).intValue();
+        return result;
+    }
+
+    public List<Trip> findAll() {
+        List<Trip> result = withDao(TripDao.class, TripDao::findAll);
+        return result;
+    }
+
 }

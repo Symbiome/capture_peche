@@ -88,22 +88,26 @@ export default class FeedbackService extends AbstractFisholaService {
 
           // Step3: deleting old feedbacks
           feedbackIds.forEach((feedbackId) => {
-            FeedbackService.getStoredFeedback(feedbackId).then((result) => {
-              if (result.date) {
-                const dirtySinceInMillis =
-                  new Date().getTime() - result.date.getTime();
-                if (
-                  dirtySinceInMillis >
-                  FeedbackService.FEEDBACK_DELETION_DELAY_MS
-                ) {
-                  console.info(
-                    `Deleting ${feedbackId} which was not send since ${result.date}`
-                  );
-                  FeedbackService.deleteStoredFeedback(feedbackId);
-                  return;
+            FeedbackService.getStoredFeedback(feedbackId).then(
+              (result) => {
+                if (result.date) {
+                  const dirtySinceInMillis =
+                    new Date().getTime() - result.date.getTime();
+                  if (
+                    dirtySinceInMillis >
+                    FeedbackService.FEEDBACK_DELETION_DELAY_MS
+                  ) {
+                    console.info(
+                      `Deleting ${feedbackId} which was not send since ${result.date}`
+                    );
+                    FeedbackService.deleteStoredFeedback(feedbackId);
+                    return;
+                  }
                 }
-              }
-            });
+              },
+              (error) => {
+                console.error("Impossible de charger le feedback", error);
+              });
           });
 
           if (allPromises.length > 0) {
@@ -122,23 +126,27 @@ export default class FeedbackService extends AbstractFisholaService {
 
   static sendFeedbackToServer(feedbackId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      FeedbackService.getStoredFeedback(feedbackId).then((feedback) => {
-        // Check if feedback is too old to be sent
-        if (feedback.date) {
-          const dirtySinceInMillis =
-            new Date().getTime() - feedback.date.getTime();
-          if (dirtySinceInMillis > FeedbackService.FEEDBACK_DELETION_DELAY_MS) {
-            console.info(
-              `Deleting ${feedbackId} which was not send since ${feedback.date}`
-            );
-            FeedbackService.deleteStoredFeedback(feedbackId);
-            reject("Feedback is too old");
-            return;
+      FeedbackService.getStoredFeedback(feedbackId).then(
+        (feedback) => {
+          // Check if feedback is too old to be sent
+          if (feedback.date) {
+            const dirtySinceInMillis =
+              new Date().getTime() - feedback.date.getTime();
+            if (dirtySinceInMillis > FeedbackService.FEEDBACK_DELETION_DELAY_MS) {
+              console.info(
+                `Deleting ${feedbackId} which was not send since ${feedback.date}`
+              );
+              FeedbackService.deleteStoredFeedback(feedbackId);
+              reject("Feedback is too old");
+              return;
+            }
+          } else {
+            console.error("Date is missing", feedback);
           }
           // Send feedback
           this.backendPut("/v1/feedback", feedback).then(resolve, reject);
-        }
-      }, reject);
+        },
+        reject);
     });
   }
 
@@ -159,4 +167,9 @@ export default class FeedbackService extends AbstractFisholaService {
   private static deleteStoredFeedback(feedbackId: string) {
     this.getDatabase().offlineFeedbacks.delete(feedbackId);
   }
+
+  static sendFeedbackNoAsync(feedback: Feedback): Promise<void> {
+    return this.backendPut("/v1/feedback", feedback);
+  }
+
 }

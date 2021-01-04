@@ -1,6 +1,6 @@
-# DinD service is required for Testcontainers
-services:
-  - docker:dind
+include:
+  - project: 'codelutin/ci'
+    file: '/ci.yml'
 
 variables:
   # Improve performance with overlayfs.
@@ -8,6 +8,8 @@ variables:
   ANDROID_COMPILE_SDK: "29"
   ANDROID_BUILD_TOOLS: "29.0.3"
   ANDROID_SDK_TOOLS:   "6200805"
+  MAVEN_REPO_PATH: "/var/local/shared-m2-repository"
+  MAVEN_OPTS: "-Dmaven.repo.local=${MAVEN_REPO_PATH}"
 
 stages:
 - build
@@ -16,18 +18,23 @@ stages:
 - check-releasable
 - sonar
 
-build:dependency-tree:
-  image: maven:3.6-openjdk-11
-  stage: build
-  when: manual
-  script:
-    - mvn dependency:tree
-  tags:
-    - sticky
+#build:dependency-tree:
+#  image: maven:3.6-openjdk-15
+#  stage: build
+#  rules:
+#    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+#      when: manual
+#  script:
+#    - mvn dependency:tree
+#  tags:
+#    - sticky
 
 build:compile-only:
-  image: maven:3.6-openjdk-11
+  image: maven:3.6-openjdk-15
   stage: build
+  services:
+    # DinD service is required for Testcontainers
+    - docker:dind
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
@@ -38,22 +45,23 @@ build:compile-only:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
       - fishola-admin/target/dist-demo
-      - fishola-admin/target/dist-beta
   script:
     - mvn clean package -Dmaven.test.skip
-  except:
-    refs:
-    - develop
+  rules:
+    - if: $CI_COMMIT_BRANCH != "develop"
+      when: manual
   tags:
     - sticky
     - docker
 
 build:compile-with-tests:
-  image: maven:3.6-openjdk-11
+  image: maven:3.6-openjdk-15
   stage: build
+  services:
+    # DinD service is required for Testcontainers
+    - docker:dind
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
@@ -64,15 +72,13 @@ build:compile-with-tests:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
       - fishola-admin/target/dist-demo
-      - fishola-admin/target/dist-beta
   script:
     - mvn clean package
-  only:
-    refs:
-    - develop
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
+      when: always
   tags:
     - sticky
     - docker
@@ -81,13 +87,14 @@ build:compile-with-tests:
 package:android-demo:
   image: openjdk:9-jdk
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
   script:
     - apt-get --quiet update --yes
@@ -122,60 +129,17 @@ package:android-demo:
     - sticky
 
 # must be run after the build stage
-package:android-beta:
-  image: openjdk:9-jdk
-  stage: package
-  when: manual
-  cache:
-    paths:
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-beta
-      - fishola-mobile/target/dist-production
-  script:
-    - apt-get --quiet update --yes
-    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-    - unzip -d android-sdk-linux android-sdk.zip
-    - export ANDROID_HOME=$PWD/android-sdk-linux
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
-    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
-    - chmod +x fishola-mobile/android/gradlew
-    # temporarily disable checking for EPIPE error and use yes to accept all licenses
-    - set +o pipefail
-    - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-    - set -o pipefail
-    - cd fishola-mobile
-    - mv target/dist-beta target/dist
-    - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
-    - cd android
-    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} > app/signin.properties
-    - ./gradlew clean
-    - ./gradlew assembleBeta
-    - cp app/build/outputs/apk/beta/release/*.apk ../../
-  artifacts:
-    name: "fishola-android-beta-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - ./*.apk
-    expire_in: 2 weeks
-  tags:
-    - sticky
-
-# must be run after the build stage
 package:android-production:
   image: openjdk:9-jdk
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-beta
       - fishola-mobile/target/dist-production
   script:
     - apt-get --quiet update --yes
@@ -202,7 +166,7 @@ package:android-production:
     - ./gradlew assembleProduction
     - cp app/build/outputs/apk/production/release/*.apk ../../
   artifacts:
-    name: "fishola-android-beta-$CI_COMMIT_SHORT_SHA"
+    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
     paths:
       - ./*.apk
     expire_in: 2 weeks
@@ -212,7 +176,9 @@ package:android-production:
 package:docker-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: always
   cache:
     paths:
       - fishola-backend/target/lib
@@ -220,8 +186,6 @@ package:docker-demo:
       - fishola-mobile/target/dist-demo
       - fishola-admin/target/dist-demo
   script:
-    - ls -al fishola-backend/target
-    - ls -al fishola-mobile/target
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
     - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
@@ -232,33 +196,12 @@ package:docker-demo:
     - sticky
     - docker
 
-package:docker-beta:
-  image: registry.nuiton.org/codelutin/dockerfiles:docker
-  stage: package
-  when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-beta
-      - fishola-admin/target/dist-beta
-  script:
-    - ls -al fishola-backend/target
-    - ls -al fishola-mobile/target
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
-    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:backend-beta fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:mobile-beta fishola-mobile
-    - docker build --no-cache --file fishola-admin/docker/Dockerfile.beta -t registry.nuiton.org/inrae/fishola:admin-beta fishola-admin
-    - docker push registry.nuiton.org/inrae/fishola
-    - docker logout registry.nuiton.org
-  tags:
-    - sticky
-    - docker
-
 package:backend:
   image: debian:latest
   stage: package
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
   cache:
     paths:
       - fishola-backend/target/lib
@@ -267,7 +210,7 @@ package:backend:
     - apt update && apt install -y zip && apt clean
     - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
     - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
-    - cp doc/application.properties.sample fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
+    - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
   artifacts:
     name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
     paths:
@@ -279,18 +222,38 @@ package:backend:
 deploy:demo:
   image: debian:latest
   stage: deploy
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: always
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
-deploy:beta:
-  image: debian:latest
-  stage: deploy
-  when: manual
+sonarqube:
+  image: maven:3.6-openjdk-15
+  stage: sonar
+  services:
+    # DinD service is required for Testcontainers
+    - docker:dind
+  variables:
+    # Instruct Testcontainers to use the daemon of DinD.
+    DOCKER_HOST: "tcp://docker:2375"
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
+      - fishola-mobile/target/dist-demo
+      - fishola-mobile/target/dist-production
+      - fishola-admin/target/dist-demo
   script:
-    - apt update && apt install -y curl && apt clean
-    - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-beta
+    - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  tags:
+    - sticky
+    - docker
 
 #build:ios:
 #  stage: build
@@ -322,17 +285,6 @@ deploy:beta:
 #  stage: check-releasable
 #  script:
 #    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
-#    - rm * .git* -rf || true
-#  only:
-#    - schedules
-#  tags:
-#    - tmpfs
-#
-#sonar_job:
-#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
-#  stage: sonar
-#  script:
-#    - mvn -e -U clean verify -Dmaven.test.skip -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:3.4.0.905:sonar -Dsonar.host.url=https://qa.codelutin.com -Dsonar.projectKey=fr.afb:sispea -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
 #    - rm * .git* -rf || true
 #  only:
 #    - schedules

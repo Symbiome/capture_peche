@@ -65,6 +65,9 @@
               <b-navbar-item tag="router-link" :to="{ name: 'documentation' }">
                   En téléchargement
               </b-navbar-item>
+              <b-navbar-item tag="router-link" :to="{ name: 'news' }">
+                  Actualités
+              </b-navbar-item>
           </b-navbar-dropdown>
           <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
               Sorties

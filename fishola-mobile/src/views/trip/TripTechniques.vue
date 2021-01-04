@@ -80,6 +80,7 @@ export default class TripTechniquesView extends Vue {
   trip:TripBean = {
     id: '',
     mode: 'Live',
+    source: 'application',
     type: 'Craft',
     name: '',
     lakeId: '',

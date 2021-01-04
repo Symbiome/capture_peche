@@ -39,7 +39,10 @@
                     <span v-if="col.isABoolean && !props.row[col.field]">
                         Non
                     </span>
-                    <span v-if="!col.isABoolean">
+                    <span v-if="col.isADate && props.row[col.field]">
+                        {{ formatDate(props.row[col.field]) }}
+                    </span>
+                    <span v-if="!col.isABoolean && !col.isADate">
                         {{ props.row[col.field] }}
                     </span>
                 </b-table-column>
@@ -132,6 +135,25 @@ export default class Refenretial extends Vue {
 
     mounted() {
         this.loadData();
+    }
+
+    parseLocalDateTime(someLocalDateTime:number[]):Date {
+        const result:Date = new Date(
+            someLocalDateTime[0],
+            someLocalDateTime[1] - 1,
+            someLocalDateTime[2],
+            someLocalDateTime[3],
+            someLocalDateTime[4],
+            someLocalDateTime[5],
+        );
+        return result;
+    }
+
+    formatDate(puet:number[]):string {
+        let theDate:Date = this.parseLocalDateTime(puet);
+        var hourOptions = {month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric"};
+        let result:string = theDate.toLocaleTimeString('fr-FR', hourOptions);
+        return result;
     }
 
     loadData() {

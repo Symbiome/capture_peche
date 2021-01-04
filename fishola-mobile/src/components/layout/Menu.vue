@@ -26,7 +26,7 @@
       </div>
       <div class="items">
 
-        <div class="item" v-on:click="goProfile">
+        <div class="item" v-if="connected" v-on:click="goProfile">
           <span>
             {{fullName}}
           </span>
@@ -40,14 +40,14 @@
           <i class="icon-home"/>
         </div>
 
-        <div class="item" v-on:click="goDashboard">
+        <div class="item" v-if="connected" v-on:click="goDashboard">
           <span>
             Tableau de bord
           </span>
           <i class="icon-dashboard"/>
         </div>
 
-        <div class="item" v-on:click="goSettings">
+        <div class="item" v-if="connected" v-on:click="goSettings">
           <span>
             Paramètres
           </span>
@@ -75,7 +75,7 @@
           <i class="icon-faq"/>
         </div>
 
-        <div class="item" v-on:click="logout">
+        <div class="item" v-if="connected" v-on:click="logout">
           <span>
             Déconnexion
           </span>
@@ -109,6 +109,8 @@ export default class Menu extends Vue {
 
   visibility:string = 'menu-hidden';
 
+  connected:boolean = false;
+
   fullName:string = '';
   initials:string = '';
 
@@ -128,20 +130,13 @@ export default class Menu extends Vue {
 
   loadProfile() {
     ProfileService.getProfile()
-      .then(
-        this.profileLoaded
-        // XXX AThimel 09/04/2020 À cause de la page Register, on désactive la redirection à partir du Menu
-        /*,
-        () => {
-          this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-          router.push('/login');
-        }*/
-        );
+      .then(this.profileLoaded);
   }
 
   profileLoaded(profile:UserProfile) {
     this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
+    this.connected = true;
   }
 
   openMenu() {
@@ -160,7 +155,7 @@ export default class Menu extends Vue {
 
   goHome() {
     this.closeMenu();
-    router.push('/trips');
+    router.push({name:'dispatcher'});
   }
 
   goProfile() {

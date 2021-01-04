@@ -138,6 +138,33 @@
             </div>
 
           </div>
+
+          <div v-if="!inCreation" class="location">
+            <div class="separator"></div>
+            <p>Emplacement de la capture</p>
+            <div class="empty" v-if="!gpsLocation">
+              <i class="icon icon-warning"></i> Aucune position enregistrée pour cette prise
+            </div>
+            <div class="map" v-if="gpsLocation">
+              <l-map
+                :zoom="16"
+                :center="gpsLocation"
+                :options="{
+                  zoomSnap: 0.5
+                }"
+                style="height: 100%; width: 100%;"
+              >
+                <l-tile-layer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                />
+
+                <l-marker :lat-lng="gpsLocation"></l-marker>
+
+              </l-map>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
@@ -185,6 +212,22 @@ import { Plugins, CameraResultType } from '@capacitor/core';
 const { Camera } = Plugins;
 const { Device } = Plugins;
 
+import { latLng, LatLng, Icon } from 'leaflet';
+
+type D = Icon.Default & {
+  _getIconUrl?: string;
+};
+
+delete (Icon.Default.prototype as D)._getIconUrl;
+
+Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
+
 @Component({
   components: {
     FisholaHeader,
@@ -194,6 +237,9 @@ const { Device } = Plugins;
     FormSelect,
     FormToggle,
     PicturePreview,
+    LMap,
+    LTileLayer,
+    LMarker,
     FisholaFooter
   }
 })
@@ -248,6 +294,8 @@ export default class EditCatchView extends Vue {
   samplesDocumentationUrl:string = '';
   sampleIdReady:boolean = false;
   authorizedSampleSpeciesIds:string[] = [];
+
+  gpsLocation:LatLng|null = null;
 
   created() {
     TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
@@ -327,6 +375,10 @@ export default class EditCatchView extends Vue {
 
           }
         );
+    }
+
+    if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
+      this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
     }
   }
 
@@ -728,6 +780,29 @@ export default class EditCatchView extends Vue {
       width: fit-content;
     }
   }
+
+  .location {
+    font-size: 14px;
+    padding-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .separator {
+      height: 1px;
+      border-top: 1px solid @very-light-grey;
+      border-radius: 1px;
+      width: 80%;
+    }
+    .empty {
+      color: @carrot-orange;
+      font-style: italic;
+    }
+    .map {
+      width: 100%;
+      height: 200px;
+    }
+  }
+
 }
 
 </style>

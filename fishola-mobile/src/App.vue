@@ -64,6 +64,11 @@ export default class AppView extends Vue {
     interval?:number;
 
     created() {
+      this.initApp();
+    }
+
+    // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
+    initApp() {
        // Configure Keyboard & Status bar
       KeyboardManager.setupKeyboardConfiguration();
       StatusBar.setBackgroundColor({"color": "#1E9BC4"});
@@ -157,9 +162,10 @@ body {
   background-color: @pelorous;
   margin: 0px;
   height: 100%;
+  width: 100vw;
+
   overflow: hidden;
   overflow-x: hidden;
-  width: 100vw;
 }
 
 html {

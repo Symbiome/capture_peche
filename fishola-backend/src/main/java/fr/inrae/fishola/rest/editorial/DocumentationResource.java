@@ -49,19 +49,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import fr.inrae.fishola.rest.about.KeyFiguresHolder;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DocumentationResource extends AbstractFisholaResource {
 
+    public static final boolean IS_NEWS = false;
+
     @Inject
     protected EditorialAndDocumentationDao dao;
 
     @GET
     @Path("/documentations")
-    public List<DocumentationWithBase64ContentBean> getDocumentation(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
+    public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
+        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
@@ -142,6 +146,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         docId.ifPresent(documentation::setId);
         documentation.setNaturalId(documentationBase64Content.naturalId());
         documentation.setName(documentationBase64Content.name());
+        documentation.setNews(IS_NEWS);
         // If new documentation was sent in base64
         if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
             String[] contentSplitted = documentationBase64Content.base64Content().split(",");
@@ -199,6 +204,8 @@ public class DocumentationResource extends AbstractFisholaResource {
         Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
         checkIsAdmin();
         dao.updateEditorial(editorial);
+        // On veut une mise à jour immédiate sur la page d'accueil
+        KeyFiguresHolder.unset();
         return Response.noContent().build();
     }
 

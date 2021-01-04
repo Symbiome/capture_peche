@@ -19,6 +19,11 @@
  * #L%
  */
 
+import { DeviceType } from '@/pojos/BackendPojos';
+
+import { Plugins } from '@capacitor/core';
+const { Device } = Plugins;
+
 import moment from 'moment';
 
 export default class Helpers {
@@ -212,4 +217,28 @@ export default class Helpers {
             modal.show('dialog', params);
         });
     }
+
+    static getDeviceType():Promise<DeviceType> {
+
+        if (process.env.VUE_APP_FORCE_DEVICE_TYPE) {
+            console.warn("Device type is forced to", process.env.VUE_APP_FORCE_DEVICE_TYPE);
+            return Promise.resolve(process.env.VUE_APP_FORCE_DEVICE_TYPE);
+        }
+
+        return new Promise<DeviceType>((resolve, reject) => {
+            Device.getInfo()
+                .then(info => {
+                    let source:DeviceType;
+                    if (info.platform == "web") {
+                        source = 'web';
+                    } else {
+                        source = 'application';
+                    }
+                    console.debug("Device type is", source);
+                    resolve(source);
+                },
+                reject);
+        });
+    }
+
 }

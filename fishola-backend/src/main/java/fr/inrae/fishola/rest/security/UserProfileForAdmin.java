@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.entities.enums.Gender;
 import org.immutables.value.Value;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,5 +46,7 @@ public interface UserProfileForAdmin {
     Optional<Integer> birthYear();
 
     boolean excludeFromExports();
+
+    LocalDateTime createdOn();
 
 }

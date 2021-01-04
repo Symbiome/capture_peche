@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.0.4</version>
+  <version>1.1.0-beta-1</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -59,18 +59,19 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.7.0.Final</quarkusVersion>
-    <jooqVersion>3.13.4</jooqVersion>
-    <flywayVersion>6.5.5</flywayVersion>
-    <jacksonVersion>2.11.2</jacksonVersion>
-    <postgresqlDriverVersion>42.2.15</postgresqlDriverVersion>
-    <testcontainersVersion>1.14.3</testcontainersVersion>
+    <quarkusVersion>1.10.5.Final</quarkusVersion>
+    <jooqVersion>3.14.4</jooqVersion>
+    <flywayVersion>7.3.2</flywayVersion>
+    <postgresqlDriverVersion>42.2.18</postgresqlDriverVersion>
+    <testcontainersVersion>1.15.1</testcontainersVersion>
+
+    <gitCommitIdPluginVersion>4.0.3</gitCommitIdPluginVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>11</javaVersion>
+    <javaVersion>15</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
     <licensePluginVersion>2.0.0</licensePluginVersion>
@@ -97,62 +98,10 @@
 
       <dependency>
         <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-core</artifactId>
+        <artifactId>quarkus-universe-bom</artifactId>
         <version>${quarkusVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.transaction</groupId>
-        <artifactId>jakarta.transaction-api</artifactId>
-        <version>1.3.3</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jacksonVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>${jacksonVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-core</artifactId>
-        <version>${jacksonVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jboss.spec.javax.ws.rs</groupId>
-        <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
-        <version>2.0.1.Final</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.agroal</groupId>
-        <artifactId>agroal-api</artifactId>
-        <version>1.8</version>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.servlet</groupId>
-        <artifactId>jakarta.servlet-api</artifactId>
-        <version>4.0.3</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-arc</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-jackson</artifactId>
-        <version>${quarkusVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -171,33 +120,8 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.6.2</version>
+        <version>5.7.0</version>
         <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.errorprone</groupId>
-        <artifactId>error_prone_annotations</artifactId>
-        <version>2.4.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.microprofile.config</groupId>
-        <artifactId>microprofile-config-api</artifactId>
-        <version>1.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.sun.activation</groupId>
-        <artifactId>jakarta.activation</artifactId>
-        <version>1.2.1</version>
-        <scope>runtime</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>jakarta.enterprise</groupId>
-        <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        <version>2.0.2</version>
       </dependency>
 
       <dependency>
@@ -207,79 +131,15 @@
       </dependency>
 
       <dependency>
-        <groupId>jakarta.inject</groupId>
-        <artifactId>jakarta.inject-api</artifactId>
-        <version>1.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-ide-launcher</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-resteasy</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-undertow</artifactId>
-        <version>${quarkusVersion}</version>
-        <exclusions>
-          <exclusion>
-            <!--
-              quarkus-undertow a en dépendance quarkus-security qui tire la version 0.4.3 de io.smallrye.reactive:mutiny
-              alors que quarkus-mutiny tire la version 0.5.4. En excluant la dépendance ici, c'est bien la 0.5.4 qui est
-              inclue dans les dépendances du projet.
-              Sans cette exclusion, on a :
-              java.lang.NoSuchMethodError: 'void io.smallrye.mutiny.infrastructure.Infrastructure.setDefaultExecutor(java.util.concurrent.Executor)'
-            -->
-            <groupId>io.smallrye.reactive</groupId>
-            <artifactId>mutiny</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-resteasy-jackson</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-      <!-- Transaction Manager extension -->
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-narayana-jta</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-      <!-- Transaction Manager extension -->
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-agroal</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-jdbc-postgresql</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.immutables</groupId>
         <artifactId>value</artifactId>
         <version>2.8.8</version>
       </dependency>
 
       <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>29.0-jre</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.nuiton</groupId>
         <artifactId>nuiton-utils</artifactId>
-        <version>3.1-rc-1</version>
+        <version>3.1</version>
       </dependency>
 
       <dependency>
@@ -295,15 +155,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>${postgresqlDriverVersion}</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.10.3</version>
+        <version>3.12.0</version>
       </dependency>
 
       <dependency>
@@ -319,12 +173,6 @@
       </dependency>
 
       <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>2.7</version>
-      </dependency>
-
-      <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>1.2</version>
@@ -337,41 +185,15 @@
       </dependency>
 
       <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-scheduler</artifactId>
-        <version>${quarkusVersion}</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
-        <version>0.9.6</version>
+        <version>0.9.7</version>
       </dependency>
 
       <dependency>
         <groupId>com.mortennobel</groupId>
         <artifactId>java-image-scaling</artifactId>
         <version>0.8.6</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-junit5</artifactId>
-        <version>${quarkusVersion}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.rest-assured</groupId>
-        <artifactId>rest-assured</artifactId>
-        <version>4.3.1</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.12</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -384,14 +206,6 @@
         <groupId>org.testcontainers</groupId>
         <artifactId>postgresql</artifactId>
         <version>${testcontainersVersion}</version>
-        <scope>test</scope>
-      </dependency>
-
-      <!-- FIXME AThimel 04/06/2020 : Pas besoin de tirer cette dépendance, mais on est obligée de forcer la version en 1.0.2 car la 1.0.3 tire ASM 8 qui fait planter les tests : Unsupported api 524288 -->
-      <dependency>
-        <groupId>io.quarkus.gizmo</groupId>
-        <artifactId>gizmo</artifactId>
-        <version>1.0.4.Final</version>
         <scope>test</scope>
       </dependency>
 
@@ -411,7 +225,7 @@
         <plugin>
           <groupId>cz.habarta.typescript-generator</groupId>
           <artifactId>typescript-generator-maven-plugin</artifactId>
-          <version>2.25.695</version>
+          <version>2.27.744</version>
         </plugin>
 
         <plugin>
@@ -435,7 +249,7 @@
         <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
-          <version>1.10.0</version>
+          <version>1.11.0</version>
         </plugin>
 
         <plugin>

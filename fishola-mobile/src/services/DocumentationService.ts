@@ -42,15 +42,23 @@ export default class DocumentationService extends AbstractFisholaService {
         return this.backendGetWithCache('/v1/documentations');
     }
 
+    static getNews():Promise<DocumentationLight[]> {
+        return this.backendGetWithCache('/v1/news');
+    }
+
     static getCredits():Promise<Editorial> {
         return this.backendGetWithCache('/v1/editorial/credits');
     }
 
+    static getFaq():Promise<Editorial> {
+        return this.backendGetWithCache('/v1/editorial/faq');
+    }
 
     static prepareCaches():Promise<void> {
         const allPromises:Promise<void>[] = [
             this.prepareCache('/v1/documentations'),
-            this.prepareCache('/v1/editorial/credits')
+            this.prepareCache('/v1/editorial/credits'),
+            this.prepareCache('/v1/editorial/faq')
         ];
         return new Promise<void>((resolve, reject) => {
             Promise.all(allPromises).then(

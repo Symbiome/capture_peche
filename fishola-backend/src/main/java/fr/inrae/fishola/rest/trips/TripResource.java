@@ -30,6 +30,7 @@ import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
+import fr.inrae.fishola.entities.enums.DeviceType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
@@ -200,6 +201,9 @@ public class TripResource extends AbstractFisholaResource {
         entity.setType(trip.type);
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
+
+        // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des application <= 1.0.4
+        entity.setSource(Optional.ofNullable(trip.source).orElse(DeviceType.application));
 
         trip.weatherId.ifPresent(entity::setWeatherId);
         trip.beginLatitude.ifPresent(entity::setBeginLatitude);
@@ -516,7 +520,6 @@ public class TripResource extends AbstractFisholaResource {
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
     }
-
 
     @GET
     @Path("/export")

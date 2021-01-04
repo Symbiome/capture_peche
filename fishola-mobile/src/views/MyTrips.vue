@@ -186,7 +186,16 @@ export default class MyTripsView extends Vue {
   }
 
   newTrip() {
-    router.push('/trips/new');
+    Helpers.getDeviceType()
+      .then((source) => {
+        if (source == 'web') {
+          TripsService.newAfterwardsTrip().then((id:string) => {
+            router.push({name:'trip-meta', params: {id: id}});
+          });
+        } else {
+          router.push('/trips/new');
+        }
+      })
   }
 
   tripSelected(tripId:string) {

@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -58,6 +58,7 @@ export interface TripBean {
     beginLongitude?: number;
     endLatitude?: number;
     endLongitude?: number;
+    source: DeviceType;
     saveDelayMarker?: Date;
     modifiableUntil?: Date;
 }
@@ -146,6 +147,17 @@ export interface UpdatePasswordBean {
     newPassword: string;
 }
 
+export interface KeyFigures {
+    tripsCount: number;
+    catchsCount: number;
+    picturesCount: number;
+    lakes: Lake[];
+    catchsCountPerLakeId: { [index: string]: number };
+    titleText: string;
+    contributeText: string;
+    computedOn: Date;
+}
+
 export interface Feedback {
     id: string;
     category: string;
@@ -171,11 +183,23 @@ export interface Feedback {
 export interface Dashboard {
     caughtSpeciesCount: { [index: string]: number };
     caughtSpeciesDistribution: { [index: string]: number };
+    caughtAndReleasedSpeciesDistribution: { [index: string]: number };
     latestTripsCatchs: DashboardLastTrip[];
     averageCatchsPerTrip?: number;
     topBySize: { [index: string]: CatchBean[] };
     topByWeight: { [index: string]: CatchBean[] };
     speciesAliases: { [index: string]: string[] };
+    orderedMonths: Month[];
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
+}
+
+export interface GlobalDashboard {
+    caughtSpeciesCount: { [index: string]: number };
+    caughtSpeciesDistribution: { [index: string]: number };
+    caughtAndReleasedSpeciesDistribution: { [index: string]: number };
+    speciesAliases: { [index: string]: string[] };
+    orderedMonths: Month[];
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
 }
 
 export interface Serializable {
@@ -190,3 +214,7 @@ export interface DashboardLastTrip {
 export type TripMode = "Live" | "Afterwards";
 
 export type TripType = "Border" | "Craft";
+
+export type DeviceType = "web" | "application";
+
+export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";

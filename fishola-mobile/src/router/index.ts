@@ -21,31 +21,38 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import Dispatcher from '../views/Dispatcher.vue'
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
-import MyTrips from '../views/MyTrips.vue'
-import Dashboard from '../views/Dashboard.vue'
+import Dispatcher from '@/views/Dispatcher.vue'
 
-import NewTrip from '../views/trip/NewTrip.vue'
-import TripMeta from '../views/trip/TripMeta.vue'
-import TripSpecies from '../views/trip/TripSpecies.vue'
-import TripTechniques from '../views/trip/TripTechniques.vue'
-import TripCatchs from '../views/trip/TripCatchs.vue'
-import TripSummary from '../views/trip/TripSummary.vue'
-import EditTrip from '../views/trip/EditTrip.vue'
+import About from '@/views/About.vue'
 
-import EditCatch from '../views/trip/EditCatch.vue'
+import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
+import MyTrips from '@/views/MyTrips.vue'
+import Dashboard from '@/views/Dashboard.vue'
 
-import Documentation from '../views/Documentation.vue'
-import Credits from '../views/Credits.vue'
+import NewTrip from '@/views/trip/NewTrip.vue'
+import TripMeta from '@/views/trip/TripMeta.vue'
+import TripSpecies from '@/views/trip/TripSpecies.vue'
+import TripTechniques from '@/views/trip/TripTechniques.vue'
+import TripCatchs from '@/views/trip/TripCatchs.vue'
+import TripSummary from '@/views/trip/TripSummary.vue'
+import EditTrip from '@/views/trip/EditTrip.vue'
 
-import Settings from '../views/Settings.vue'
-import Profile from '../views/Profile.vue'
-import ProfilePassword from '../views/ProfilePassword.vue'
+import EditCatch from '@/views/trip/EditCatch.vue'
 
-import ResetPassword from '../views/ResetPassword.vue'
-import VerifyAccount from '../views/VerifyAccount.vue'
+import Faq from '@/views/Faq.vue'
+import Documentation from '@/views/Documentation.vue'
+import News from '@/views/News.vue'
+import Credits from '@/views/Credits.vue'
+
+import Settings from '@/views/Settings.vue'
+import Profile from '@/views/Profile.vue'
+import ProfilePassword from '@/views/ProfilePassword.vue'
+
+import ResetPassword from '@/views/ResetPassword.vue'
+import VerifyAccount from '@/views/VerifyAccount.vue'
+
+import ProfileService from '@/services/ProfileService';
 
 Vue.use(VueRouter)
 
@@ -54,6 +61,11 @@ const routes = [
     path: '/',
     name: 'dispatcher',
     component: Dispatcher
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: About
   },
   {
     path: '/login',
@@ -128,6 +140,16 @@ const routes = [
     component: Documentation
   },
   {
+    path: '/news',
+    name: 'news',
+    component: News
+  },
+  {
+    path: '/faq',
+    name: 'faq',
+    component: Faq
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: Settings
@@ -165,12 +187,41 @@ const routes = [
   //   // route level code-splitting
   //   // this generates a separate chunk (about.[hash].js) for this route
   //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+  //   component: () => import(/* webpackChunkName: "about" */ '@/views/About.vue')
   // }
 ]
 
 const router = new VueRouter({
   routes
+})
+
+const publicRouteNames:string[] = [
+  'dispatcher',
+  'about',
+  'faq',
+  'credits',
+  'documentation',
+  'news',
+  'login',
+  'register'
+];
+
+// Protect routes according to authentication status
+router.beforeEach((to, from, next) => {
+  if (to.name && publicRouteNames.indexOf(to.name) != -1) {
+    next();
+  } else {
+    ProfileService.getProfile()
+    .then(
+      (profile) => {
+        next();
+      },
+      (status) => {
+        console.error("VOUS NE PASSEREZ PAS !", to.name);
+        next('/');
+      }
+    );
+  }
 })
 
 export default router
