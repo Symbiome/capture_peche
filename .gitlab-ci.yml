@@ -210,7 +210,7 @@ package:backend:
     - apt update && apt install -y zip && apt clean
     - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
     - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
-    - cp doc/application.properties.sample fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
+    - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
   artifacts:
     name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
     paths:
