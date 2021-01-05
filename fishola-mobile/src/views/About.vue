@@ -210,12 +210,12 @@
                         <!-- // End Left Side // -->
                         <!-- \\ Begin Right Side \\ -->
                         <div class="Rightside">
-                            <h3>Get in touch !</h3>
+                            <h3>Contactez-nous !</h3>
                             <p>Une suggestion, une question ou une envie de démarrer un projet avec nous, n'hésitez pas à nous contacter !</p>
                                 <address>
-                                    UMR CARRTEL<br/>
-                                    75 bis Avenue de Corzent<br/>
-                                    74200 Thonon les Bains
+                                    UMR CARRTEL (INRAE - USMB)<br/>
+                                    75bis Avenue de Corzent<br/>
+                                    74200 Thonon-les-Bains (France)
                                 </address>  
                                 <address class="Number">
                                     +33 (0)4 50 26 78 00
@@ -271,7 +271,7 @@
             <!-- \\ Begin Footer \\-->
             <footer>
                 <div class="Cntr">
-                    <p>COPYRIGHT © 2020 INRAE UMR CARRTEL</p>
+                    <p>COPYRIGHT © 2021 UMR CARRTEL (INRAE - USMB) - Pôle ECLA</p>
                 </div>
             </footer>
             <!-- // End Footer // -->
