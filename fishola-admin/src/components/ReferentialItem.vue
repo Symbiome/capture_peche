@@ -2,18 +2,18 @@
   #%L
   Fishola :: Admin
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU Affero General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #L%
@@ -47,12 +47,12 @@
                         <b-icon icon="upload"></b-icon>
                         <span>Cliquez pour téléverser un nouveau fichier</span>
                     </a>
-                    <a 
-                        v-if="!input.file && item[col.field] && item[col.field].length > 10" 
+                    <a
+                        v-if="!input.file && item[col.field] && item[col.field].length > 10"
                         :href="item[col.field]" target="blank"> Voir le fichier actuel
                     </a>
-                    <span 
-                        v-if="input.file" 
+                    <span
+                        v-if="input.file"
                         :href="item[col.field]" target="blank">
                         {{ input.file.name }}
                     </span>
@@ -113,7 +113,7 @@ export default class RefenretialItem extends Vue {
         if (this.input.file) {
             this.getBase64(this.input.file).then( (base64) =>  {
                 this.item['base64Content'] = base64;
-                this.doSave(onSavedCallback);                
+                this.doSave(onSavedCallback);
             }, (err) => {
                 this.$buefy.toast.open({
                     message: 'Erreur lors de la lecture du fichier.',
