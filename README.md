@@ -5,14 +5,14 @@ Application smartphone en sciences participatives pour la pêche amateur sur les
 ## Pré-requis
 
 Les prérequis sont :
-* OpenJDK 14+
+* OpenJDK 15+
 * Maven 3.6.2+
-* Node v12.16.1
-* NPM 6.13.4
+* Node v12.18.3
+* NPM 6.14.6
 * Docker
 
 À noter qu'il est possible de construire le front sans installer `Node` & `NPM`, mais il ne sera pas possible de
-démarrer le projet en mode dev
+démarrer le projet en mode dev.
 
 ## Démarer le projet (mode dev)
 
@@ -25,12 +25,13 @@ mvn clean install
 Ensuite il faut démarrer :
 * [le backend (avec sa base de données)](/fishola-backend/README.md)
 * [le front](/fishola-mobile/README.md)
+* [l'interface d'administration](/fishola-admin/README.md)
 
 ## Déploiement sur démo
 
 Sur chaque pipeline il y a une tâche permettant de construire les images Docker contenant l'application : `package:docker-demo`.
 Une fois que les images sont construites, elles sont disponibles dans le registry. Il suffit ensuite d'utiliser la tâche `deploy:demo` pour déclencher un rechargement de l'application.
-Quelques instannts plus tard, l'application nouvellement déployée sera utilisable à l'adresse : https://fishola.demo.codelutin.com.
+Quelques instants plus tard, l'application nouvellement déployée sera utilisable à l'adresse : https://fishola-mobile.demo.codelutin.com.
 
 ## Mise en production
 

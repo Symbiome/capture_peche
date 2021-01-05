@@ -73,7 +73,7 @@ la [configuration des logs](https://quarkus.io/guides/all-config#quarkus-core_qu
 
 ### Démarrage du backend
 
-Il est recommandé d'utiliser le dernier JDK disponible (14).
+Il est recommandé d'utiliser le dernier JDK disponible (15).
 Toutefois si son utilisation n'est pas envisageable, il est possible de d'utiliser un JDK 11.
 
 Une fois le JDK installé, il faut lancer l'application depuis le dossier contenant le JAR , le dossier lib et le dossier config.

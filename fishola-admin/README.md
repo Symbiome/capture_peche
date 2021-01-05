@@ -1,24 +1,12 @@
-# fishola-admin
+# Module admin de Fishola
 
-## Project setup
-```
-npm install
-```
+## Démarrer en mode dev
 
-### Compiles and hot-reloads for development
-```
+Il suffit de lancer la commande suivante :
+
+```bash
 npm run serve
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
+L'application tourne sur le port `8082` : [http://localhost:8082](http://localhost:8082).
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
