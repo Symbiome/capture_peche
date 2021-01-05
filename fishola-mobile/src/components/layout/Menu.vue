@@ -116,6 +116,7 @@ export default class Menu extends Vue {
 
   created() {
     this.$root.$on('profile-updated', this.loadProfile);
+    this.$root.$on('loggued-out', this.onLogguedOut);
     this.loadProfile();
   }
 
@@ -125,6 +126,7 @@ export default class Menu extends Vue {
 
   beforeDestroy() {
     this.$root.$off('profile-updated');
+    this.$root.$off('loggued-out');
     this.$root.$off('open-menu');
   }
 
@@ -217,6 +219,13 @@ export default class Menu extends Vue {
 
   logguedOut() {
     router.push('/login');
+    this.onLogguedOut();
+  }
+
+  onLogguedOut() {
+    this.connected = false;
+    this.fullName = '';
+    this.initials = '';
   }
 
 }

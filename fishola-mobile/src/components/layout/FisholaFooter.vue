@@ -216,6 +216,7 @@ export default class FisholaFooter extends Vue {
 
   logguedOut() {
     router.push('/login');
+    this.$root.$emit('loggued-out');
   }
 
   goBack() {

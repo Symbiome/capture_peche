@@ -22,7 +22,7 @@
   <div class="login page-with-header full-background">
     <FisholaHeader v-bind:title="false" 
                    v-bind:avatar="false"
-                   v-bind:menu="false"/>
+                   v-bind:menu="true"/>
     <div class="page login-page">
       <div class="login-title keyboardSensitive">
         <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">Bienvenue sur</div>

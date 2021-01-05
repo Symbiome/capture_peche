@@ -31,10 +31,11 @@ import Constants from '@/services/Constants';
 import router from '@/router'
 
 import ProfileService from '@/services/ProfileService';
+import Helpers from '@/services/Helpers';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar, Device } = Plugins;
+const { SplashScreen, StatusBar } = Plugins;
 
 @Component({
   components: {}
@@ -67,9 +68,9 @@ export default class DispatcherView extends Vue {
           if (router.currentRoute.name == "dispatcher") {
 
             // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
-            Device.getInfo()
-              .then(info => {
-                if (info.platform == "web") {
+            Helpers.getDeviceType()
+              .then(type => {
+                if (type == "web") {
                   router.push('/about');
                 } else {
                   router.push('/login');
