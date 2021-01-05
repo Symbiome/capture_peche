@@ -149,6 +149,8 @@ export default class CreditsView extends Vue {
   .credits-logos {
     margin-top: @vertical-margin-large;
     text-align: center;
+    display: flex;
+    flex-direction: column;
     img {
       width: 200px;
       margin-bottom: @vertical-margin-small;
