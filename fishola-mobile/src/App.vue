@@ -185,11 +185,22 @@ html {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
+
+  @media screen and (min-width: 600px) {
+    display: flex;
+    flex-direction: row;
+  }
+
 }
 
 #root {
   height: 100%;
   width: 100%;
+
+  @media screen and (min-width: 600px) {
+    width: calc(100% - @desktop-menu-width);
+  }
+
 }
 
 .page-with-header {

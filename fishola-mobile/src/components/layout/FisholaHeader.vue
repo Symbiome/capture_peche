@@ -87,6 +87,10 @@ export default class FisholaHeader extends Vue {
 
 .header {
 
+  @media screen and (min-width: 600px) {
+    display: none;
+  }
+
   display: flex;
   justify-content: space-between;
 

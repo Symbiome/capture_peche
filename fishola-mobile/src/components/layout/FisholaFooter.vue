@@ -280,6 +280,10 @@ export default class FisholaFooter extends Vue {
 
 .footer {
 
+  @media screen and (min-width: 600px) {
+    display: none;
+  }
+
   display: flex;
   justify-content: space-around;
   align-items: center;

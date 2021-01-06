@@ -20,6 +20,12 @@
   -->
 <template>
   <div class="menu" v-bind:class="visibility">
+      <div class="menu-title" v-on:click="goHome">
+        <div>
+          <img src="img/logo-small.svg" alt="FISHOLA" />
+          <span v-if="envName" class="env">({{envName}})</span>
+        </div>
+      </div>
       <div class="close"
            v-on:click="closeMenu">
            <div class="plus">+</div> 
@@ -106,6 +112,8 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class Menu extends Vue {
+
+  envName?:string = process.env.VUE_APP_ENV;
 
   visibility:string = 'menu-hidden';
 
@@ -236,39 +244,72 @@ export default class Menu extends Vue {
 
   @import "../../less/main";
 
-  .menu-hidden {
-    left: calc(100vw);
-  }
 
-  .menu-disappears {
-    animation-duration: 0.2s;
-    animation-name: disappear;
-
-    left: calc(100vw);
-
-    @keyframes disappear {
-      from {left: 0px;}
-      to {left: calc(100vw);}
+  @media screen and (max-width: 599px) {
+    .menu-hidden {
+      left: calc(100vw);
     }
-  }
 
-  .menu-visible {
-    animation-duration: 0.2s;
-    animation-name: appear;
+    .menu-disappears {
+      animation-duration: 0.2s;
+      animation-name: disappear;
 
-    left: 0px;
+      left: calc(100vw);
 
-    @keyframes appear {
-      from {left: calc(100vw);}
-      to {left: 0px;}
+      @keyframes disappear {
+        from {left: 0px;}
+        to {left: calc(100vw);}
+      }
+    }
+
+    .menu-visible {
+      animation-duration: 0.2s;
+      animation-name: appear;
+
+      left: 0px;
+
+      @keyframes appear {
+        from {left: calc(100vw);}
+        to {left: 0px;}
+      }
     }
   }
 
   .menu {
     background-color: @pelorous;
-    position: fixed;
-    top: 0px;
-    width: 100vw;
+
+    @media screen and (max-width: 599px) {
+      position: fixed;
+      top: 0px;
+      width: 100vw;
+
+      .menu-title {
+        display: none;
+      }
+    }
+
+    @media screen and (min-width: 600px) {
+      width: @desktop-menu-width;
+
+      .menu-title {
+        height: 96px;
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          height: calc(@fontsize-header-title + 20px);
+        }
+        span.env {
+          color: @terra-cotta;
+          font-size: @fontsize-paragraph;
+        }
+      }
+    }
+
     height: 100vh;
     z-index: 100;
 
@@ -281,6 +322,11 @@ export default class Menu extends Vue {
     padding: @margin-menu-item;
 
     .close {
+
+      @media screen and (min-width: 600px) {
+        display: none;
+      }
+
       display: flex;
       flex-direction: row-reverse;
       align-items: center;
@@ -304,6 +350,10 @@ export default class Menu extends Vue {
       // justify-content: center;
       align-items: flex-end;
 
+      @media screen and (min-width: 600px) {
+        align-items: flex-start;
+      }
+
       padding-right: @margin-menu-item;
 
       .item {
@@ -318,6 +368,12 @@ export default class Menu extends Vue {
         // justify-content: center;
         align-items: center;
 
+        @media screen and (min-width: 600px) {
+          border: 1px solid red;
+          flex-direction: row-reverse;
+          height: 72px;
+        }
+
         width: fit-content;
 
         span {
@@ -325,12 +381,23 @@ export default class Menu extends Vue {
 
           font-size: @fonsize-menu-item-span;
           font-weight: bold;
+
+          @media screen and (min-width: 600px) {
+            margin-left: 13px;
+            font-weight: normal;
+          }
+
           line-height: calc(@fonsize-menu-item + @line-height-padding-large);
         }
 
         i {
           font-size: @fonsize-menu-item;
           width: 30px;
+
+          @media screen and (min-width: 600px) {
+            width: 40px;
+          }
+
           text-align: center;
         }
 
