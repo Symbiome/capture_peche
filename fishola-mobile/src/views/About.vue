@@ -378,13 +378,11 @@ export default class AboutView extends Vue {
 
   sendContact() {
     if (!this.contactEmail) {
-      // TODO 11/12/2020 À améliorer
-      window.alert('L\'email est obligatoire');
+      this.$root.$emit('toaster-error', 'L\'email est obligatoire');
       return;
     }
     if (!this.contactMessage) {
-      // TODO 11/12/2020 À améliorer
-      window.alert('Le message est obligatoire');
+      this.$root.$emit('toaster-error', 'Le message est obligatoire');
       return;
     }
 
@@ -398,10 +396,13 @@ export default class AboutView extends Vue {
     };
 
     FeedbackService.sendFeedbackNoAsync(feedback)
-      .then(() => {
-      // TODO 11/12/2020 À améliorer
-        window.alert('Votre message a bien été envoyé à l\'équipe projet, merci');
-      });
+      .then(
+        () => {
+          this.$root.$emit('toaster-success', 'Votre message a bien été envoyé à l\'équipe projet, merci', 10000);
+        },
+        (error) => {
+          this.$root.$emit('toaster-error', 'Une erreur est survenue, merci de réessayer ultérieurement');
+        });
   }
 
   sectionIds:string[] = ['presentation', 'contribute', 'contact'];
@@ -472,7 +473,7 @@ export default class AboutView extends Vue {
 }
 
 .LayoutFrame header {
-  z-index: 9999;
+  z-index: 998; // Juste en dessous du toaster
   background: @white;
 
   padding-left: 20px;
