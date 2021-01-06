@@ -30,6 +30,11 @@ import VModal from 'vue-js-modal'
 import VueScrollTo from 'vue-scrollto';
 import VueObserveVisibility from 'vue-observe-visibility'
 
+import NoMenuLayout from '@/layouts/NoMenuLayout.vue';
+Vue.component('no-menu-layout', NoMenuLayout);
+import DefaultLayout from '@/layouts/DefaultLayout.vue';
+Vue.component('default-layout', DefaultLayout);
+
 moment.locale('fr');
 
 Vue.use(VueLodash, { name: 'custom' , lodash: { debounce, throttle, orderBy, moment } })

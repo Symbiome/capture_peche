@@ -20,21 +20,13 @@
   -->
 <template>
   <div id="app">
-    <v-dialog :width="270"/>
-    <Toaster/>
-    <Menu/>
-    <FeedbackModal/>
-    <div id="root">
+    <component :is="layout()" class="layout">
       <router-view/>
-    </div>
+    </component>
   </div>
 </template>
 
 <script lang="ts">
-
-import Toaster from '@/components/layout/Toaster.vue'
-import Menu from '@/components/layout/Menu.vue'
-import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -52,19 +44,17 @@ import router from '@/router';
 
 const { App } = Plugins;
 
-@Component({
-  components: {
-    Toaster,
-    Menu,
-    FeedbackModal
-  }
-})
+@Component
 export default class AppView extends Vue {
 
     interval?:number;
 
     created() {
       this.initApp();
+    }
+
+    layout() {
+      return (this.$route.meta.layout || 'default') + '-layout';
     }
 
     // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
@@ -185,20 +175,15 @@ html {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
-
-  @media screen and (min-width: 600px) {
-    display: flex;
-    flex-direction: row;
-  }
-
 }
 
-#root {
+.layout {
   height: 100%;
   width: 100%;
 
   @media screen and (min-width: 600px) {
-    width: calc(100% - @desktop-menu-width);
+    display: flex;
+    flex-direction: row;
   }
 
 }

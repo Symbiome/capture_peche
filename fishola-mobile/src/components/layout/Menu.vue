@@ -32,60 +32,82 @@
       </div>
       <div class="items">
 
-        <div class="item" v-if="connected" v-on:click="goProfile">
+        <div class="item" v-if="connected" v-on:click="goProfile" :class="isActive('profile') ? 'active' : ''">
           <span>
             {{fullName}}
           </span>
           <Avatar v-if="initials" v-bind:initials="initials"/>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-on:click="goHome">
+        <div class="item" v-on:click="goHome" :class="isActive('trips') ? 'active' : ''">
           <span>
             Accueil
           </span>
-          <i class="icon-home"/>
+          <div class="pastille">
+            <i class="icon-home"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-if="connected" v-on:click="goDashboard">
+        <div class="item" v-if="connected" v-on:click="goDashboard" :class="isActive('dashboard') ? 'active' : ''">
           <span>
             Tableau de bord
           </span>
-          <i class="icon-dashboard"/>
+          <div class="pastille">
+            <i class="icon-dashboard"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-if="connected" v-on:click="goSettings">
+        <div class="item" v-if="connected" v-on:click="goSettings" :class="isActive('settings') ? 'active' : ''">
           <span>
             Paramètres
           </span>
-          <i class="icon-settings"/>
+          <div class="pastille">
+            <i class="icon-settings"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-on:click="goDocumentation">
+        <div class="item" v-on:click="goDocumentation" :class="isActive('documentation') ? 'active' : ''">
           <span>
             Documentation
           </span>
-          <i class="icon-files"/>
+          <div class="pastille">
+            <i class="icon-files"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-on:click="goCredits">
+        <div class="item" v-on:click="goCredits" :class="isActive('credits') ? 'active' : ''">
           <span>
             Infos / Crédits
           </span>
-          <i class="icon-info"/>
+          <div class="pastille">
+            <i class="icon-info"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
         <div class="item" v-on:click="openFeedback">
           <span>
             Des retours ?
           </span>
-          <i class="icon-faq"/>
+          <div class="pastille">
+            <i class="icon-faq"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
         <div class="item" v-if="connected" v-on:click="logout">
           <span>
             Déconnexion
           </span>
-          <i class="icon-logout"/>
+          <div class="pastille">
+            <i class="icon-logout"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
       </div>
@@ -236,6 +258,9 @@ export default class Menu extends Vue {
     this.initials = '';
   }
 
+  isActive(name:string):boolean {
+    return this.$route.name == name;
+  }
 }
 </script>
 
@@ -321,6 +346,10 @@ export default class Menu extends Vue {
 
     padding: @margin-menu-item;
 
+    @media screen and (min-width: 600px) {
+      padding: 0px;
+    }
+
     .close {
 
       @media screen and (min-width: 600px) {
@@ -347,7 +376,6 @@ export default class Menu extends Vue {
 
       display: flex;
       flex-direction: column;
-      // justify-content: center;
       align-items: flex-end;
 
       @media screen and (min-width: 600px) {
@@ -368,14 +396,46 @@ export default class Menu extends Vue {
         // justify-content: center;
         align-items: center;
 
-        @media screen and (min-width: 600px) {
-          border: 1px solid red;
-          flex-direction: row-reverse;
-          height: 72px;
-        }
+        cursor: pointer;
 
         width: fit-content;
 
+        .active-marker {
+          height: 100%;
+          width: 4px;
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+          margin-right: 23px;
+
+          @media screen and (max-width: 599px) {
+            display: none;
+          }
+
+        }
+
+        @media screen and (min-width: 600px) {
+          flex-direction: row-reverse;
+          height: 72px;
+
+          .pastille {
+            width: 40px;
+            height: 40px;
+          }
+          &.active {
+            .active-marker {
+              background-color: @white;
+            }
+            .pastille {
+              color: @pelorous;
+              background: @white;
+            }
+          }
+          &:hover {
+            span {
+              font-weight: bold;
+            }
+          }
+        }
         span {
           margin-right: @margin-medium;
 
@@ -384,6 +444,8 @@ export default class Menu extends Vue {
 
           @media screen and (min-width: 600px) {
             margin-left: 13px;
+            margin-right: unset;
+            font-size: 18px;
             font-weight: normal;
           }
 
