@@ -24,13 +24,13 @@
     <div class="page documentation-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1>Documentation</h1>
+          <h1 class="no-margin-pane">Documentation</h1>
 
           <div class="documentation-row"
                v-for="doc in elements"
                v-bind:key="doc.id">
             <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url">
+            <a v-bind:href="doc.url" title="Télécharger">
               <i class="icon-download"/>
             </a>
           </div>
@@ -130,7 +130,24 @@ export default class DocumentationView extends Vue {
 
     a {
       color: @pelorous;
+      font-size: @fontsize-paragraph;
     }
+
+    @media screen and (min-width: 600px) {
+      span {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+      a {
+        font-size: @fontsize-paragraph-desktop;
+      }
+    }
+
+    @media screen and (min-width: 800px) {
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
+    }
+
   }
 }
 

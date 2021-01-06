@@ -332,19 +332,26 @@ html {
 
     border-top-left-radius: unset;
     border-top-right-radius: unset;
-    padding-top: @vertical-margin-small;
+    padding-top: 0px;
     margin-top: 0px;
 
     h1 {
-      margin-top: @margin-xx-large;
+      margin-top: @margin-medium;
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
+      height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
       line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      text-align: left;
+
+      &.no-margin-pane {
+        margin-left: @margin-large-desktop;
+        margin-right: @margin-large-desktop;
+      }
     }
 
     .pane-content {
-      padding-left: @margin-xx-large;
-      padding-right: @margin-xx-large;
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
     }
 
     &.pane-only {
