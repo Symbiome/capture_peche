@@ -156,6 +156,35 @@ export default class CreditsView extends Vue {
       margin-bottom: @vertical-margin-small;
     }
   }
+
+  @media screen and (min-width: 600px) {
+
+    p.credits-p {
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+    }
+
+    .credits-link {
+
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+
+      button {
+        width: 38px;
+        height: 24px;
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+      }
+    }
+
+    .credits-logos {
+      margin-top: @vertical-margin-xx-large;
+      img {
+        width: 240px;
+      }
+    }
+  }
+
 }
 
 </style>
