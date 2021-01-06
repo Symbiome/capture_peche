@@ -40,72 +40,16 @@
           <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-on:click="goHome" :class="isActive('trips') ? 'active' : ''">
+        <div class="item"
+             v-for="i in availableMenuItems()"
+             :key="'menu-item-' + i.name"
+             v-on:click="i.clickHandler"
+             :class="isActive(i.name) ? 'active' : ''">
           <span>
-            Accueil
+            {{i.label}}
           </span>
           <div class="pastille">
-            <i class="icon-home"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="goDashboard" :class="isActive('dashboard') ? 'active' : ''">
-          <span>
-            Tableau de bord
-          </span>
-          <div class="pastille">
-            <i class="icon-dashboard"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="goSettings" :class="isActive('settings') ? 'active' : ''">
-          <span>
-            Paramètres
-          </span>
-          <div class="pastille">
-            <i class="icon-settings"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-on:click="goDocumentation" :class="isActive('documentation') ? 'active' : ''">
-          <span>
-            Documentation
-          </span>
-          <div class="pastille">
-            <i class="icon-files"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-on:click="goCredits" :class="isActive('credits') ? 'active' : ''">
-          <span>
-            Infos / Crédits
-          </span>
-          <div class="pastille">
-            <i class="icon-info"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-on:click="openFeedback">
-          <span>
-            Des retours ?
-          </span>
-          <div class="pastille">
-            <i class="icon-faq"/>
-          </div>
-          <div class="active-marker"></div>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="logout">
-          <span>
-            Déconnexion
-          </span>
-          <div class="pastille">
-            <i class="icon-logout"/>
+            <i :class="'icon-' + i.iconName"/>
           </div>
           <div class="active-marker"></div>
         </div>
@@ -128,6 +72,16 @@ import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+export class MenuItem {
+    constructor (
+        public name:string,
+        public label:string,
+        public iconName:string,
+        public clickHandler:any,
+        public onlyConnected:boolean) {
+    }
+}
+
 @Component({
   components: {
     Avatar
@@ -141,6 +95,16 @@ export default class Menu extends Vue {
 
   connected:boolean = false;
 
+  menuItems:MenuItem[] = [
+    {name:'trips',         label:'Accueil',         iconName:'home',      clickHandler:this.goHome,          onlyConnected:false},
+    {name:'dashboard',     label:'Tableau de bord', iconName:'dashboard', clickHandler:this.goDashboard,     onlyConnected:true},
+    {name:'settings',      label:'Paramètres',      iconName:'settings',  clickHandler:this.goSettings,      onlyConnected:true},
+    {name:'documentation', label:'Documentation',   iconName:'files',     clickHandler:this.goDocumentation, onlyConnected:false},
+    {name:'credits',       label:'Infos / Crédits', iconName:'info',      clickHandler:this.goCredits,       onlyConnected:false},
+    {name:'feedback',      label:'Des retours ?',   iconName:'faq',       clickHandler:this.openFeedback,    onlyConnected:false},
+    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true}
+  ];
+
   fullName:string = '';
   initials:string = '';
 
@@ -152,6 +116,11 @@ export default class Menu extends Vue {
 
   mounted() {
     this.$root.$on('open-menu', this.openMenu);
+  }
+
+  availableMenuItems() {
+    let result = this.menuItems.filter((item) => this.connected || !item.onlyConnected);
+    return result;
   }
 
   beforeDestroy() {
