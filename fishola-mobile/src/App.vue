@@ -219,6 +219,10 @@ html {
       // Take reduced footer height into account
       height: calc(100%  - env(safe-area-inset-top) - @reduced-footer-height);
     }
+
+    @media screen and (min-width: 600px) {
+      height: 100%;
+    }
   }
 }
 
@@ -299,7 +303,7 @@ html {
       margin-bottom: @margin-small;
     }
 
-}
+  }
 
   .pane-content {
 
@@ -322,6 +326,33 @@ html {
   &.pane-only {
     margin-top: @vertical-margin-medium;
   }
+
+
+  @media screen and (min-width: 600px) {
+
+    border-top-left-radius: unset;
+    border-top-right-radius: unset;
+    padding-top: @vertical-margin-small;
+    margin-top: 0px;
+
+    h1 {
+      margin-top: @margin-xx-large;
+      margin-bottom: @margin-xx-large;
+      font-size: @fontsize-title-desktop;
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+    }
+
+    .pane-content {
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
+    }
+
+    &.pane-only {
+      margin-top: 0px;
+    }
+
+  }
+
 
 }
 
