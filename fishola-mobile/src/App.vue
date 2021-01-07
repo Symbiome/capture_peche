@@ -197,6 +197,10 @@ html {
 
   .page {
     height: calc(100% - @header-height);
+
+    @media screen and (min-width: 600px) {
+      height: 100%;
+    }
   }
 }
 

@@ -24,7 +24,8 @@
     <Toaster/>
     <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
     <FeedbackModal/>
-    <div id="root">
+    <div id="root"
+         :class="{'full-width': isLoginPage()}">
       <slot />
     </div>
   </div>
@@ -65,6 +66,10 @@ export default class NoMenuLayout extends Vue {
 
   @media screen and (min-width: 600px) {
     width: calc(100% - @desktop-menu-width);
+  }
+
+  &.full-width {
+    width: 100%;
   }
 
 }
