@@ -184,7 +184,7 @@ export default class ForgottenPassword extends Vue {
     &.collapsed {
       // Hidden in collapsed mode
       &.keyboardShowing {
-        display:none;
+        display: none;
       }
     }
     &.expanded {

@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="footer keyboardSensitive">
+  <div class="footer keyboardSensitive hide-on-desktop">
     <FooterButton class="keyboardSensitive" v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
@@ -279,10 +279,6 @@ export default class FisholaFooter extends Vue {
 @import "../../less/main";
 
 .footer {
-
-  @media screen and (min-width: 600px) {
-    display: none;
-  }
 
   display: flex;
   justify-content: space-around;

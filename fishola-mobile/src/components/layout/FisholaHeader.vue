@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="header hiddenWhenKeyboardShows">
+  <div class="header hiddenWhenKeyboardShows hide-on-desktop">
     <div>
       <Title v-if="title"/>
     </div>
@@ -86,10 +86,6 @@ export default class FisholaHeader extends Vue {
 @import "../../less/main";
 
 .header {
-
-  @media screen and (min-width: 600px) {
-    display: none;
-  }
 
   display: flex;
   justify-content: space-between;

@@ -31,7 +31,7 @@
              id="cameraInput"
              name="cameraInput"
              v-on:change="pictureTaken"
-             style="display:none;"
+             style="display: none;"
              ref="fileInput">
     </div>
     <div class="edit-catch-page page">

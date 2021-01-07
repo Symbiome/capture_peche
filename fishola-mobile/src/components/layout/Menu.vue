@@ -19,24 +19,32 @@
   #L%
   -->
 <template>
-  <div class="menu" v-bind:class="visibility">
-      <div class="menu-title" v-on:click="goHome">
+  <div class="menu"
+       :class="visibility">
+      <div class="menu-title"
+           v-on:click="goHome">
         <div>
-          <img src="img/logo-small.svg" alt="FISHOLA" />
-          <span v-if="envName" class="env">({{envName}})</span>
+          <img src="img/logo-small.svg"
+               alt="FISHOLA" />
+          <span v-if="envName"
+                class="env">({{envName}})</span>
         </div>
       </div>
-      <div class="close"
+      <div class="close hide-on-desktop"
            v-on:click="closeMenu">
            <div class="plus">+</div> 
       </div>
       <div class="items">
 
-        <div class="item" v-if="connected" v-on:click="goProfile" :class="isActive('profile') ? 'active' : ''">
+        <div class="item"
+             v-if="connected"
+             v-on:click="goProfile"
+             :class="isActive('profile') ? 'active' : ''">
           <span>
             {{fullName}}
           </span>
-          <Avatar v-if="initials" v-bind:initials="initials"/>
+          <Avatar v-if="initials"
+                  v-bind:initials="initials"/>
           <div class="active-marker"></div>
         </div>
 
@@ -230,6 +238,7 @@ export default class Menu extends Vue {
   isActive(name:string):boolean {
     return this.$route.name == name;
   }
+
 }
 </script>
 
@@ -320,10 +329,6 @@ export default class Menu extends Vue {
     }
 
     .close {
-
-      @media screen and (min-width: 600px) {
-        display: none;
-      }
 
       display: flex;
       flex-direction: row-reverse;
