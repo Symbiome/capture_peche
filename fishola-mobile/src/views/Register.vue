@@ -72,12 +72,12 @@
         <div class="bottom-page-spacer"></div>
       </div>
       <div class="register-buttons">
-        <div class="back">
+        <div class="register-button back">
           <button v-on:click="cancel">
             Retour
           </button>
         </div>
-        <div class="register">
+        <div class="register-button register">
           <button v-on:click="register">
             S'enregistrer
           </button>
@@ -185,6 +185,10 @@ export default class RegisterView extends Vue {
       height: calc(100% - @vertical-margin-xx-large);
     }
 
+    @media screen and (min-width: 600px) {
+      height: 100%;
+    }
+
   }
 }
 
@@ -250,7 +254,7 @@ export default class RegisterView extends Vue {
     }
 
     display: flex;
-    flex-direction: column;
+    flex-direction: column;;
 
     text-align:left;
     overflow: auto;
@@ -350,6 +354,52 @@ export default class RegisterView extends Vue {
           background-color: transparent;
           color: @pelorous;
 
+      }
+    }
+
+  }
+
+
+  @media screen and (min-width: 600px) {
+
+    justify-content: flex-start;
+
+    border-top-left-radius: unset;
+    border-top-right-radius: unset;
+    padding-top: 0px;
+    margin-top: 0px;
+
+    padding-left: @margin-large-desktop;
+    padding-right: @margin-large-desktop;
+
+    h1 {
+      margin-top: @margin-medium;
+      margin-bottom: @margin-xx-large;
+      font-size: @fontsize-title-desktop;
+      height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      text-align: left;
+    }
+
+    .register-form {
+      height: unset;
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+
+    .register-buttons {
+      position: unset;
+      width: 100%;
+      bottom: unset;
+      margin-top: @margin-large;
+      background-color: transparent;
+      flex-direction: row-reverse;
+      justify-content: center;
+
+      .register-button {
+        width: @desktop-button-width;
+        margin-left: @margin-small;
+        margin-right: @margin-small;
       }
     }
 
