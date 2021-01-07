@@ -177,7 +177,7 @@ package:docker-demo:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
   cache:
     paths:
@@ -190,6 +190,29 @@ package:docker-demo:
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
     - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
     - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo fishola-admin
+    - docker push registry.nuiton.org/inrae/fishola
+    - docker logout registry.nuiton.org
+  tags:
+    - sticky
+    - docker
+
+package:docker-demo-branch:
+  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  stage: package
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+      when: manual
+  cache:
+    paths:
+      - fishola-backend/target/lib
+      - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-demo
+      - fishola-admin/target/dist-demo
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
+    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo-$CI_COMMIT_REF_NAME fishola-backend
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo-$CI_COMMIT_REF_NAME fishola-mobile
+    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo-$CI_COMMIT_REF_NAME fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
