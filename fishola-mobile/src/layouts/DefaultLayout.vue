@@ -22,7 +22,7 @@
   <div>
     <v-dialog :width="270"/>
     <Toaster/>
-    <Menu/>
+    <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
     <FeedbackModal/>
     <div id="root">
       <slot />
@@ -46,6 +46,10 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class NoMenuLayout extends Vue {
+
+  isLoginPage():boolean {
+    return this.$route.name == 'login';
+  }
 
 }
 
