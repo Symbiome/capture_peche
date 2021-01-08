@@ -22,9 +22,11 @@
   <div class="toaster" v-bind:class="visibility">
       <div class="toaster-box" v-bind:class="level">
         <div>
-          <i class="icon-error" v-if="level == 'error'"/>
-          <i class="icon-warning" v-if="level == 'warning'"/>
-          <i class="icon-success" v-if="level == 'success'"/>
+          <i :class="{
+            'icon-success': level == 'success',
+            'icon-warning': level == 'warning',
+            'icon-error':   level == 'error'
+            }"/>
           {{message}}
         </div>
       </div>
@@ -181,4 +183,44 @@ export default class Toaster extends Vue {
 
   }
 
+@media screen and (min-width: 600px) {
+
+  .toaster-hidden {
+    top: calc(-1 * @toaster-height-desktop);
+  }
+
+  .toaster-disappears {
+    top: calc(-1 * @toaster-height-desktop);
+
+    @keyframes disappear {
+      from {top: 0px;}
+      to {top: calc(-1 * @toaster-height-desktop);}
+    }
+  }
+
+  .toaster-visible {
+    @keyframes appear {
+      from {top: calc(-1 * @toaster-height-desktop);}
+      to {top: 0px;}
+    }
+  }
+
+
+  .toaster {
+    height: @toaster-height-desktop;
+
+    .toaster-box {
+      div {
+        font-size: @fontsize-toaster-desktop;
+        line-height: calc(@fontsize-toaster-desktop + @line-height-padding-medium);
+
+        i {
+          font-size: @fontsize-toaster-desktop;
+        }
+      }
+    }
+
+  }
+
+}
 </style>
