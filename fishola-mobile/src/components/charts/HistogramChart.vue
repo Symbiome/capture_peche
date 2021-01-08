@@ -34,10 +34,14 @@
       </div>
     </div>
     <div class="labels">
-      <div class="label-short" v-for="m in orderedMonths" v-bind:key="'label-short-' + m">
+      <div class="label-short"
+           v-for="m in orderedMonths"
+           v-bind:key="'label-short-' + m">
         {{m.substring(0,1)}}
       </div>
-      <div class="label-mid" v-for="m in orderedMonths" v-bind:key="'label-mid-' + m">
+      <div class="label-mid"
+           v-for="m in orderedMonths"
+           v-bind:key="'label-mid-' + m">
         {{midMonth(m)}}
       </div>
     </div>
@@ -167,7 +171,7 @@ export default class HistogramChart extends Vue {
       text-align: center;
     }
 
-    @media screen and (min-width: @desktop-min-width) and (max-width: 900px) {
+    @media screen and (max-width: 900px) {
       .label-mid {
         display: none;
       }
