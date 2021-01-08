@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="footer keyboardSensitive">
+  <div class="footer keyboardSensitive hide-on-desktop">
     <FooterButton class="keyboardSensitive" v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"

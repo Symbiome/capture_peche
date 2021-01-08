@@ -19,22 +19,22 @@
   #L%
   -->
 <template>
-  <div class="documentation page-with-header-and-footer shifted-background">
+  <div class="news page-with-header-and-footer shifted-background">
     <FisholaHeader/>
-    <div class="page documentation-page">
+    <div class="page news-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1>Actualités</h1>
+          <h1 class="no-margin-pane">Actualités</h1>
 
           <div v-if="!elements || elements.length == 0" class="empty">
             Il n'y a pas encore d'actualités ...
           </div>
 
-          <div class="documentation-row"
+          <div class="news-row"
                v-for="doc in elements"
                v-bind:key="doc.id">
             <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url">
+            <a v-bind:href="doc.url" title="Télécharger">
               <i class="icon-download"/>
             </a>
           </div>
@@ -99,7 +99,7 @@ export default class NewsView extends Vue {
 
 @import "../less/main";
 
-.documentation-page {
+.news-page {
 
   .pane .pane-content {
     padding-left: 0px;
@@ -113,7 +113,7 @@ export default class NewsView extends Vue {
     font-size: @fontsize-button;
   }
 
-  .documentation-row {
+  .news-row {
     padding-left: @margin-x-large;
     padding-right: @margin-x-large;
     height: 56px;
@@ -141,7 +141,24 @@ export default class NewsView extends Vue {
 
     a {
       color: @pelorous;
+      font-size: @fontsize-paragraph;
     }
+
+    @media screen and (min-width: @desktop-min-width) {
+      span {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+      a {
+        font-size: @fontsize-paragraph-desktop;
+      }
+    }
+
+    @media screen and (min-width: 800px) {
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
+    }
+
   }
 }
 

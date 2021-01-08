@@ -19,52 +19,59 @@
   #L%
   -->
 <template>
-  <div class="header-title" v-on:click="goHome">
-    <img src="img/logo-small.svg" alt="FISHOLA" />
-    <span v-if="envName" class="env">({{envName}})</span>
+  <div>
+    <v-dialog :width="270"/>
+    <Toaster/>
+    <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
+    <FeedbackModal/>
+    <div id="root"
+         :class="{'full-width': isLoginPage()}">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+
+import Toaster from '@/components/layout/Toaster.vue'
+import Menu from '@/components/layout/Menu.vue'
+import FeedbackModal from '@/components/layout/FeedbackModal.vue'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-import router from '@/router';
+@Component({
+  components: {
+    Toaster,
+    Menu,
+    FeedbackModal
+  }
+})
+export default class NoMenuLayout extends Vue {
 
-@Component
-export default class Title extends Vue {
-
-  envName?:string = process.env.VUE_APP_ENV;
-
-  goHome() {
-    router.push('/trips');
+  isLoginPage():boolean {
+    return this.$route.name == 'login';
   }
 
 }
+
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 
-@import "../../less/main";
+@import "../less/_responsive";
 
-.header-title {    
-  font-size: @fontsize-header-title;
-  img {
-    height: calc(@fontsize-header-title + 6px);
+#root {
+  height: 100%;
+  width: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    width: calc(100% - @desktop-menu-width);
   }
-  span.env {
-    color: @terra-cotta;
-    font-size: @fontsize-paragraph;
-  }
-  @media(max-width:340px) {
-    img {
-      height: 20px;
-      margin-top:5px;
-    }
-    span.env {
-      font-size: @fontsize-small-paragraph;
-    }
+
+  &.full-width {
+    width: 100%;
   }
 
 }
+
 </style>

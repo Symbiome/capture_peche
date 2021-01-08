@@ -24,32 +24,40 @@
                    v-bind:avatar="false"
                    v-bind:menu="true"/>
     <div class="page login-page">
-      <div class="login-title keyboardSensitive">
-        <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">Bienvenue sur</div>
-        <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" src="img/logo-big.svg" alt="FISHOLA"/>
-      </div>
-      <div class="login-form">
-        <FormInput name="email"
-                    type="email"
-                    label="E-mail"
-                    placeholder="Renseignez votre E-mail"
-                    v-model="email"
-                    v-bind:error="emailError"
-                    />
-        <FormInput name="password"
-                    type="password"
-                    label="Mot de passe"
-                    placeholder="Renseignez votre mot de passe"
-                    v-model="password"
-                    v-bind:error="passwordError"
-                    />
-      </div>
-      <div class="login-buttons keyboardSensitive">
-        <div class="signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
-        <div class="signup keyboardSensitive"><button v-on:click="signUp">Créer un compte</button></div>
-        <ForgottenPassword
-            v-bind:alreadTypedEmail="email"
-            v-bind:tohideSelector="'.login-form,.signin,.signup'"/>
+      <div class="login-pane">
+        <div class="login-title keyboardSensitive">
+          <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">Bienvenue sur</div>
+          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-desktop" src="img/logo-big.svg" alt="FISHOLA"/>
+          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-mobile" src="img/logo-big-positif.svg" alt="FISHOLA"/>
+        </div>
+        <div class="login-form">
+          <FormInput name="email"
+                      type="email"
+                      label="E-mail"
+                      placeholder="Renseignez votre E-mail"
+                      v-model="email"
+                      v-bind:error="emailError"
+                      />
+          <FormInput name="password"
+                      type="password"
+                      label="Mot de passe"
+                      placeholder="Renseignez votre mot de passe"
+                      v-model="password"
+                      v-bind:error="passwordError"
+                      />
+          <ForgottenPassword
+              v-bind:alreadTypedEmail="email"
+              v-bind:tohideSelector="'.login-form,.signin,.signup'"
+              class="hide-on-mobile"/>
+        </div>
+        <div class="login-buttons keyboardSensitive">
+          <div class="login-button signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
+          <div class="login-button signup keyboardSensitive"><button v-on:click="signUp">Créer un compte</button></div>
+          <ForgottenPassword
+              v-bind:alreadTypedEmail="email"
+              v-bind:tohideSelector="'.login-form,.signin,.signup'"
+              class="hide-on-desktop"/>
+        </div>
       </div>
     </div>
   </div>
@@ -145,6 +153,15 @@ export default class LoginView extends Vue {
 @import "../less/main";
 
 .login-page {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.login-pane {
+
+  height: 100%;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
@@ -200,7 +217,7 @@ export default class LoginView extends Vue {
     display: flex;
     flex-direction: column;
 
-    text-align:left;
+    text-align:right;
 
 
     .form-input label {
@@ -245,16 +262,19 @@ export default class LoginView extends Vue {
         padding-top: 5px;
         background-color: @transparent;
     }
-    .signin {
+    .login-button {
+
       height: 45px;
       margin-left: @margin-large;
       margin-right: @margin-large;
       margin-bottom: @vertical-margin-medium;
-      &.keyboardShowing {
-          margin-bottom: -30px; 
-      }
 
-      button {
+      &.signin {
+        &.keyboardShowing {
+          margin-bottom: -30px; 
+        }
+
+        button {
           height: 100%;
           width: 100%;
           border-radius: 50px;
@@ -270,18 +290,15 @@ export default class LoginView extends Vue {
 
           background-color: @terra-cotta;
           color: @white;
+        }
       }
-    }
 
-    .signup {
-      height: 45px;
-      margin-left: @margin-large;
-      margin-right: @margin-large;
-      margin-bottom: @vertical-margin-small;
-      &.keyboardShowing {
-         display: none;
-      }
-      button {
+      &.signup {
+        &.keyboardShowing {
+          display: none;
+        }
+
+        button {
 
           height: 100%;
           width: 100%;
@@ -299,8 +316,57 @@ export default class LoginView extends Vue {
           background-color: @white-smoke;
           color: @pelorous;
 
+        }
       }
     }
+
+  }
+
+
+  @media screen and (min-width: @desktop-min-width) {
+    width: 640px;
+    background-color: @white-smoke;
+    justify-content: space-evenly;
+
+    .login-title {
+      color: @pelorous;
+
+      .welcome {
+        font-size: @fontsize-header-title-desktop;
+        line-height: calc(@fontsize-header-title-desktop + @line-height-padding-xxx-large);
+        margin-bottom: @margin-small;
+      }
+    }
+
+    .login-form {
+      margin-left: @margin-xx-large-desktop;
+      margin-right: @margin-xx-large-desktop;
+      color: @pelorous;
+
+      .form-input label {
+        color: @black;
+      }
+
+    }
+
+
+  .login-buttons {
+    margin-left: @margin-xx-large-desktop;
+    margin-right: @margin-xx-large-desktop;
+    background-color: @white-smoke;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .login-button {
+      height: 45px;
+      margin-left: 0px;
+      margin-right: 0px;
+      margin-bottom: @vertical-margin-medium;
+    }
+  }
+
   }
 }
 

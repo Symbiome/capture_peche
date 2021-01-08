@@ -60,8 +60,9 @@ export default class DispatcherView extends Vue {
             this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
           }
           router.push('trips');
-          SplashScreen.hide();
-          StatusBar.show();
+
+          this.startupFinished();
+
         },
         (status) => {
           // Only push route if no route has already been pushed (typically when opening from external url)
@@ -78,10 +79,18 @@ export default class DispatcherView extends Vue {
               });
 
           }
-          SplashScreen.hide();
-          StatusBar.show();
+
+          this.startupFinished();
+
         }
       );
+  }
+
+  startupFinished() {
+    Helpers.ifApplication(() => {
+      SplashScreen.hide();
+      StatusBar.show();
+    });
   }
 }
 </script>

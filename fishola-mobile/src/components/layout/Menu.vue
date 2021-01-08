@@ -19,67 +19,47 @@
   #L%
   -->
 <template>
-  <div class="menu" v-bind:class="visibility">
-      <div class="close"
+  <div class="menu"
+       :class="visibility">
+      <div class="menu-title"
+           v-on:click="goHome">
+        <div>
+          <img src="img/logo-small.svg"
+               alt="FISHOLA" />
+          <span v-if="envName"
+                class="env">({{envName}})</span>
+        </div>
+      </div>
+      <div class="close hide-on-desktop"
            v-on:click="closeMenu">
            <div class="plus">+</div> 
       </div>
       <div class="items">
 
-        <div class="item" v-if="connected" v-on:click="goProfile">
+        <div class="item"
+             v-if="connected"
+             v-on:click="goProfile"
+             :class="isActive('profile') ? 'active' : ''">
           <span>
             {{fullName}}
           </span>
-          <Avatar v-if="initials" v-bind:initials="initials"/>
+          <Avatar v-if="initials"
+                  v-bind:initials="initials"/>
+          <div class="active-marker"></div>
         </div>
 
-        <div class="item" v-on:click="goHome">
+        <div class="item"
+             v-for="i in availableMenuItems()"
+             :key="'menu-item-' + i.name"
+             v-on:click="i.clickHandler"
+             :class="isActive(i.name) ? 'active' : ''">
           <span>
-            Accueil
+            {{i.label}}
           </span>
-          <i class="icon-home"/>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="goDashboard">
-          <span>
-            Tableau de bord
-          </span>
-          <i class="icon-dashboard"/>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="goSettings">
-          <span>
-            Paramètres
-          </span>
-          <i class="icon-settings"/>
-        </div>
-
-        <div class="item" v-on:click="goDocumentation">
-          <span>
-            Documentation
-          </span>
-          <i class="icon-files"/>
-        </div>
-
-        <div class="item" v-on:click="goCredits">
-          <span>
-            Infos / Crédits
-          </span>
-          <i class="icon-info"/>
-        </div>
-
-        <div class="item" v-on:click="openFeedback">
-          <span>
-            Des retours ?
-          </span>
-          <i class="icon-faq"/>
-        </div>
-
-        <div class="item" v-if="connected" v-on:click="logout">
-          <span>
-            Déconnexion
-          </span>
-          <i class="icon-logout"/>
+          <div class="pastille">
+            <i :class="'icon-' + i.iconName"/>
+          </div>
+          <div class="active-marker"></div>
         </div>
 
       </div>
@@ -100,6 +80,16 @@ import router from '@/router';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
+export class MenuItem {
+    constructor (
+        public name:string,
+        public label:string,
+        public iconName:string,
+        public clickHandler:any,
+        public onlyConnected:boolean) {
+    }
+}
+
 @Component({
   components: {
     Avatar
@@ -107,9 +97,21 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class Menu extends Vue {
 
+  envName?:string = process.env.VUE_APP_ENV;
+
   visibility:string = 'menu-hidden';
 
   connected:boolean = false;
+
+  menuItems:MenuItem[] = [
+    {name:'trips',         label:'Accueil',         iconName:'home',      clickHandler:this.goHome,          onlyConnected:false},
+    {name:'dashboard',     label:'Tableau de bord', iconName:'dashboard', clickHandler:this.goDashboard,     onlyConnected:true},
+    {name:'settings',      label:'Paramètres',      iconName:'settings',  clickHandler:this.goSettings,      onlyConnected:true},
+    {name:'documentation', label:'Documentation',   iconName:'files',     clickHandler:this.goDocumentation, onlyConnected:false},
+    {name:'credits',       label:'Infos / Crédits', iconName:'info',      clickHandler:this.goCredits,       onlyConnected:false},
+    {name:'feedback',      label:'Des retours ?',   iconName:'faq',       clickHandler:this.openFeedback,    onlyConnected:false},
+    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true}
+  ];
 
   fullName:string = '';
   initials:string = '';
@@ -122,6 +124,11 @@ export default class Menu extends Vue {
 
   mounted() {
     this.$root.$on('open-menu', this.openMenu);
+  }
+
+  availableMenuItems() {
+    let result = this.menuItems.filter((item) => this.connected || !item.onlyConnected);
+    return result;
   }
 
   beforeDestroy() {
@@ -157,7 +164,7 @@ export default class Menu extends Vue {
 
   goHome() {
     this.closeMenu();
-    router.push({name:'dispatcher'});
+    router.push('/trips');
   }
 
   goProfile() {
@@ -228,6 +235,10 @@ export default class Menu extends Vue {
     this.initials = '';
   }
 
+  isActive(name:string):boolean {
+    return this.$route.name == name;
+  }
+
 }
 </script>
 
@@ -236,39 +247,74 @@ export default class Menu extends Vue {
 
   @import "../../less/main";
 
-  .menu-hidden {
-    left: calc(100vw);
-  }
 
-  .menu-disappears {
-    animation-duration: 0.2s;
-    animation-name: disappear;
-
-    left: calc(100vw);
-
-    @keyframes disappear {
-      from {left: 0px;}
-      to {left: calc(100vw);}
+  @media screen and (max-width: @mobile-max-width) {
+    .menu-hidden {
+      left: calc(100vw);
     }
-  }
 
-  .menu-visible {
-    animation-duration: 0.2s;
-    animation-name: appear;
+    .menu-disappears {
+      animation-duration: 0.2s;
+      animation-name: disappear;
 
-    left: 0px;
+      left: calc(100vw);
 
-    @keyframes appear {
-      from {left: calc(100vw);}
-      to {left: 0px;}
+      @keyframes disappear {
+        from {left: 0px;}
+        to {left: calc(100vw);}
+      }
+    }
+
+    .menu-visible {
+      animation-duration: 0.2s;
+      animation-name: appear;
+
+      left: 0px;
+
+      @keyframes appear {
+        from {left: calc(100vw);}
+        to {left: 0px;}
+      }
     }
   }
 
   .menu {
     background-color: @pelorous;
-    position: fixed;
-    top: 0px;
-    width: 100vw;
+
+    @media screen and (max-width: @mobile-max-width) {
+      position: fixed;
+      top: 0px;
+      width: 100vw;
+
+      .menu-title {
+        display: none;
+      }
+    }
+
+    @media screen and (min-width: @desktop-min-width) {
+      width: @desktop-menu-width;
+
+      .menu-title {
+        height: 96px;
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        cursor: pointer;
+
+        img {
+          height: calc(@fontsize-header-title + 20px);
+        }
+        span.env {
+          color: @terra-cotta;
+          font-size: @fontsize-paragraph;
+        }
+      }
+    }
+
     height: 100vh;
     z-index: 100;
 
@@ -280,7 +326,12 @@ export default class Menu extends Vue {
 
     padding: @margin-menu-item;
 
+    @media screen and (min-width: @desktop-min-width) {
+      padding: 0px;
+    }
+
     .close {
+
       display: flex;
       flex-direction: row-reverse;
       align-items: center;
@@ -301,8 +352,11 @@ export default class Menu extends Vue {
 
       display: flex;
       flex-direction: column;
-      // justify-content: center;
       align-items: flex-end;
+
+      @media screen and (min-width: @desktop-min-width) {
+        align-items: flex-start;
+      }
 
       padding-right: @margin-menu-item;
 
@@ -318,19 +372,70 @@ export default class Menu extends Vue {
         // justify-content: center;
         align-items: center;
 
+        cursor: pointer;
+
         width: fit-content;
 
+        .active-marker {
+          height: 100%;
+          width: 4px;
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+          margin-right: 23px;
+
+          @media screen and (max-width: @mobile-max-width) {
+            display: none;
+          }
+
+        }
+
+        @media screen and (min-width: @desktop-min-width) {
+          flex-direction: row-reverse;
+          height: 72px;
+
+          .pastille {
+            width: 40px;
+            height: 40px;
+          }
+          &.active {
+            .active-marker {
+              background-color: @white;
+            }
+            .pastille {
+              color: @pelorous;
+              background: @white;
+            }
+          }
+          &:hover {
+            span {
+              font-weight: bold;
+            }
+          }
+        }
         span {
           margin-right: @margin-medium;
 
           font-size: @fonsize-menu-item-span;
           font-weight: bold;
+
+          @media screen and (min-width: @desktop-min-width) {
+            margin-left: 13px;
+            margin-right: unset;
+            font-size: 18px;
+            font-weight: normal;
+          }
+
           line-height: calc(@fonsize-menu-item + @line-height-padding-large);
         }
 
         i {
           font-size: @fonsize-menu-item;
           width: 30px;
+
+          @media screen and (min-width: @desktop-min-width) {
+            width: 40px;
+          }
+
           text-align: center;
         }
 

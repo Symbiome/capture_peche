@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="header hiddenWhenKeyboardShows">
+  <div class="header hiddenWhenKeyboardShows hide-on-desktop">
     <div>
       <Title v-if="title"/>
     </div>

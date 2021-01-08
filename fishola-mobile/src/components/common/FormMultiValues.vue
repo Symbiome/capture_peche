@@ -24,7 +24,8 @@
       <label>
         {{label}}
       </label>
-      <a v-if="!readonly" v-on:click="clicked">Modifier</a>
+      <a v-if="!readonly"
+         v-on:click="clicked">Modifier</a>
     </div>
     <ul>
       <li v-for="v in values"
@@ -92,6 +93,7 @@ export default class FormMultiValues extends Vue {
       font-size: @fontsize-form-header;
       line-height: calc(@fontsize-form-header + @line-height-padding-large);
       color: @pelorous;
+      cursor: pointer;
     }
   }
 

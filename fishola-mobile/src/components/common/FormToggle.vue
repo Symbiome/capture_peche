@@ -102,6 +102,7 @@ export default class FormToggle extends Vue {
 
     img {
       height: 25px;
+      cursor: pointer;
     }
   }
 
