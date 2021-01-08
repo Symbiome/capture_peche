@@ -28,6 +28,8 @@
 
 <script lang="ts">
 
+import Helpers from '@/services/Helpers';
+
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
 import FeedbackService from '@/services/FeedbackService';
@@ -59,9 +61,12 @@ export default class AppView extends Vue {
 
     // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
     initApp() {
-       // Configure Keyboard & Status bar
-      KeyboardManager.setupKeyboardConfiguration();
-      StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+
+      // Configure Keyboard & Status bar
+      Helpers.ifApplication(() => {
+        KeyboardManager.setupKeyboardConfiguration();
+        StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+      });
 
       // If app is opened externally (typically from mails when validating account or password forgotten)
       App.addListener('appUrlOpen', (data: any) => {
@@ -79,9 +84,13 @@ export default class AppView extends Vue {
             console.info("Detected verify request");
             router.push({name:'verify', params: {token: token}});
           }
+
           // Hide splashscreen
-          SplashScreen.hide();
-          StatusBar.show();
+          Helpers.ifApplication(() => {
+            SplashScreen.hide();
+            StatusBar.show();
+          });
+
         }
       });
 

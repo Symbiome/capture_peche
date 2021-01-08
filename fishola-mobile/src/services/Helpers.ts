@@ -234,11 +234,21 @@ export default class Helpers {
                     } else {
                         source = 'application';
                     }
-                    console.debug("Device type is", source);
                     resolve(source);
                 },
                 reject);
         });
+    }
+
+    static ifApplication(callback:()=>any) {
+
+        this.getDeviceType()
+            .then((type) => {
+                if (type == "application") {
+                    callback();
+                }
+            });
+
     }
 
 }

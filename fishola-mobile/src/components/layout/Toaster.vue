@@ -35,6 +35,8 @@
 
 <script lang="ts">
 
+import Helpers from '@/services/Helpers';
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Plugins } from '@capacitor/core';
 const { StatusBar} = Plugins;
@@ -90,13 +92,17 @@ export default class Toaster extends Vue {
     } else if (level === 'error') {
       statusBarColor = "#D62137";
     }
-    StatusBar.setBackgroundColor({"color": statusBarColor});
+    Helpers.ifApplication(() => {
+      StatusBar.setBackgroundColor({"color": statusBarColor});
+    });
     setTimeout(this.resetToaster, (2*500) + duration);
   }
 
   resetToaster() {
     this.visibility = "toaster-disappears";
-    StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+    Helpers.ifApplication(() => {
+      StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+    });
   }
 
 }
