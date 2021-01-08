@@ -166,6 +166,8 @@ export default class CatchPreview extends Vue {
 
     position:relative;
 
+    cursor: pointer;
+
     .meta {
       position: absolute;
       z-index: 20;
@@ -229,6 +231,8 @@ export default class CatchPreview extends Vue {
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 
+    cursor: pointer;
+
     .bottom-left {   
       font-size: @fontsize-span-big;
       margin-left: @margin-medium;
@@ -253,5 +257,10 @@ export default class CatchPreview extends Vue {
       }
     }
   }
+
+  @media screen and (min-width: @desktop-min-width) {
+    width: 295px;
+  }
+
 }
 </style>

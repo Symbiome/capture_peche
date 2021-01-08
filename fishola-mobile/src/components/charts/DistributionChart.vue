@@ -88,6 +88,12 @@ export default class DistributionChart extends Vue {
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
 
+      @media screen and (min-width: @desktop-min-width) {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+        height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+
       .species {
         color: @gunmetal;
       }

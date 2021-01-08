@@ -155,7 +155,9 @@ export default class CatchPreviewList extends Vue {
     }
   }
 
-  .preview-wrapper {
+  @media screen and (min-width: @desktop-min-width) {
+    padding-left: calc(@margin-large-desktop + 5px);
+    padding-right: calc(@margin-large-desktop + 5px);
   }
 
 }

@@ -26,7 +26,7 @@
 
         <div class="pane-content large rounded">
 
-          <h1>
+          <h1 class="no-margin-pane">
             Tableau de bord
             <a v-bind:href="exportUrl" class="export" title="Exporter">
               <i class="icon-download"/>
@@ -258,7 +258,6 @@ export default class DashboardView extends Vue {
       display: flex;
       flex-direction: row;
       justify-content: space-evenly;
-      margin-bottom: 40px;
 
       .dashboard-mode {
         color: @pale-sky;
@@ -274,6 +273,30 @@ export default class DashboardView extends Vue {
       }
     }
 
+    .two-sections {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      @media screen and (min-width: 1074px) {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        padding-left: @margin-large;
+        padding-right: @margin-large;
+
+        .section {
+          width: 50%;
+
+          &.shrinked {
+            padding-left: @margin-large;
+            padding-right: @margin-large;
+          }
+        }
+      }
+
+    }
+
     .section {
       margin-top: 50px;
     }
@@ -285,6 +308,11 @@ export default class DashboardView extends Vue {
       @media(max-width:350px) {
         padding-left: @margin-medium;
         padding-right: @margin-medium;
+      }
+
+      @media screen and (min-width: @desktop-min-width) {
+        padding-left: @margin-large-desktop;
+        padding-right: @margin-large-desktop;
       }
 
     }
