@@ -62,6 +62,13 @@
                            label="Mot de passe"
                            v-bind:values="['********']"
                            v-on:clicked="editPassword"/>
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="saveProfile">
+                Modifier
+              </button>
+            </div>
+          </div>
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -245,6 +252,16 @@ export default class ProfileView extends Vue {
     }
 
   }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .profile-header {
+      height: 200px;
+    }
+    .buttons-bar {
+      margin-top: @margin-xx-large;
+    }
+  }
+
 }
 
 </style>
