@@ -27,8 +27,13 @@
         <div class="pane-content large rounded">
 
           <h1 class="no-margin-pane">
-            Tableau de bord
-            <a v-bind:href="exportUrl" class="export" title="Exporter">
+            <span>
+              Tableau de bord
+            </span>
+            <a v-bind:href="exportUrl"
+               class="export"
+               title="Exporter">
+              <span>Exporter</span>
               <i class="icon-download"/>
             </a>
           </h1>
@@ -252,7 +257,8 @@ export default class DashboardView extends Vue {
 
     color: @gunmetal;
 
-    h1 a {
+    h1 a.export {
+      font-size: 18px;
       margin-left: 50px;
       color: @pale-sky;
     }
@@ -338,6 +344,58 @@ export default class DashboardView extends Vue {
 
   }
 
+  @media screen and (min-width: @desktop-min-width) {
+    .pane-content {
+      h1 {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        a.export {
+          font-size: 30px;
+          margin-left: 0px;
+        }
+
+      }
+    }
+  }
+
+  @media screen and (max-width: 899px) {
+    .pane-content {
+      h1 {
+        a.export {
+          span {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  @media screen and (min-width: 900px) {
+    .pane-content {
+      h1 {
+        a.export {
+          font-weight: bold;
+          line-height: 22px;
+          height: 33px;
+          padding: 5px;
+          border-radius: 16px;
+          padding-left: 16px;
+          padding-right: 16px;
+          border: 0px;
+          text-decoration: none;
+          color: @white;
+          background-color: @carrot-orange;
+          font-size: 16px;
+          span {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
 }
 
 </style>
