@@ -323,7 +323,7 @@ export default class LoginView extends Vue {
   }
 
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
     width: 640px;
     background-color: @white-smoke;
     justify-content: space-evenly;

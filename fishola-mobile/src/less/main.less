@@ -196,13 +196,13 @@ body {
 }
 
 .hide-on-desktop {
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
     display: none !important;
   }
 }
 
 .hide-on-mobile {
-  @media screen and (max-width: 599px) {
+  @media screen and (max-width: @mobile-max-width) {
     display: none !important;
   }
 }

@@ -214,7 +214,7 @@ export default class SettingsView extends Vue {
   }
 
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
     .pane .pane-content {
       align-items: center;
     }

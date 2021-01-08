@@ -185,7 +185,7 @@ export default class RegisterView extends Vue {
       height: calc(100% - @vertical-margin-xx-large);
     }
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       height: 100%;
     }
 
@@ -360,7 +360,7 @@ export default class RegisterView extends Vue {
   }
 
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
 
     justify-content: flex-start;
 

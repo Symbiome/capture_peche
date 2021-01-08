@@ -157,7 +157,7 @@ export default class CreditsView extends Vue {
     }
   }
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
 
     p.credits-p {
       font-size: @fontsize-paragraph;

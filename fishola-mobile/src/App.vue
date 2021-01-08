@@ -190,7 +190,7 @@ html {
   height: 100%;
   width: 100%;
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
     display: flex;
     flex-direction: row;
   }
@@ -207,7 +207,7 @@ html {
   .page {
     height: calc(100% - @header-height);
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       height: 100%;
     }
   }
@@ -233,7 +233,7 @@ html {
       height: calc(100%  - env(safe-area-inset-top) - @reduced-footer-height);
     }
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       height: 100%;
     }
   }
@@ -341,7 +341,7 @@ html {
   }
 
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
 
     border-top-left-radius: unset;
     border-top-right-radius: unset;

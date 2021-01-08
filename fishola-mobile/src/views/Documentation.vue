@@ -133,7 +133,7 @@ export default class DocumentationView extends Vue {
       font-size: @fontsize-paragraph;
     }
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       span {
         font-size: @fontsize-paragraph;
         line-height: calc(@fontsize-paragraph + @line-height-padding-medium);

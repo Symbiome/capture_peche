@@ -189,7 +189,7 @@ export default class Toaster extends Vue {
 
   }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: @desktop-min-width) {
 
   .toaster-hidden {
     top: calc(-1 * @toaster-height-desktop);

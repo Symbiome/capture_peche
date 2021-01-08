@@ -64,7 +64,7 @@ export default class NoMenuLayout extends Vue {
   height: 100%;
   width: 100%;
 
-  @media screen and (min-width: 600px) {
+  @media screen and (min-width: @desktop-min-width) {
     width: calc(100% - @desktop-menu-width);
   }
 

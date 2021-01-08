@@ -248,7 +248,7 @@ export default class Menu extends Vue {
   @import "../../less/main";
 
 
-  @media screen and (max-width: 599px) {
+  @media screen and (max-width: @mobile-max-width) {
     .menu-hidden {
       left: calc(100vw);
     }
@@ -281,7 +281,7 @@ export default class Menu extends Vue {
   .menu {
     background-color: @pelorous;
 
-    @media screen and (max-width: 599px) {
+    @media screen and (max-width: @mobile-max-width) {
       position: fixed;
       top: 0px;
       width: 100vw;
@@ -291,7 +291,7 @@ export default class Menu extends Vue {
       }
     }
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       width: @desktop-menu-width;
 
       .menu-title {
@@ -326,7 +326,7 @@ export default class Menu extends Vue {
 
     padding: @margin-menu-item;
 
-    @media screen and (min-width: 600px) {
+    @media screen and (min-width: @desktop-min-width) {
       padding: 0px;
     }
 
@@ -354,7 +354,7 @@ export default class Menu extends Vue {
       flex-direction: column;
       align-items: flex-end;
 
-      @media screen and (min-width: 600px) {
+      @media screen and (min-width: @desktop-min-width) {
         align-items: flex-start;
       }
 
@@ -383,13 +383,13 @@ export default class Menu extends Vue {
           border-bottom-right-radius: 4px;
           margin-right: 23px;
 
-          @media screen and (max-width: 599px) {
+          @media screen and (max-width: @mobile-max-width) {
             display: none;
           }
 
         }
 
-        @media screen and (min-width: 600px) {
+        @media screen and (min-width: @desktop-min-width) {
           flex-direction: row-reverse;
           height: 72px;
 
@@ -418,7 +418,7 @@ export default class Menu extends Vue {
           font-size: @fonsize-menu-item-span;
           font-weight: bold;
 
-          @media screen and (min-width: 600px) {
+          @media screen and (min-width: @desktop-min-width) {
             margin-left: 13px;
             margin-right: unset;
             font-size: 18px;
@@ -432,7 +432,7 @@ export default class Menu extends Vue {
           font-size: @fonsize-menu-item;
           width: 30px;
 
-          @media screen and (min-width: 600px) {
+          @media screen and (min-width: @desktop-min-width) {
             width: 40px;
           }
 
