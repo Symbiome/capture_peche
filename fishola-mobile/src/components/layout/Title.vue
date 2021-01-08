@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -43,7 +43,7 @@ export default class Title extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 
 @import "../../less/main";
 

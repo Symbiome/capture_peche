@@ -19,25 +19,59 @@
   #L%
   -->
 <template>
-  <div class="pastille filled" v-on:click="openMenu">
-    <i class="icon-menu"></i>
+  <div>
+    <v-dialog :width="270"/>
+    <Toaster/>
+    <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
+    <FeedbackModal/>
+    <div id="root"
+         :class="{'full-width': isLoginPage()}">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+
+import Toaster from '@/components/layout/Toaster.vue'
+import Menu from '@/components/layout/Menu.vue'
+import FeedbackModal from '@/components/layout/FeedbackModal.vue'
+
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component
-export default class MenuAnchor extends Vue {
+@Component({
+  components: {
+    Toaster,
+    Menu,
+    FeedbackModal
+  }
+})
+export default class NoMenuLayout extends Vue {
 
-  openMenu() {
-    this.$root.$emit('open-menu');
+  isLoginPage():boolean {
+    return this.$route.name == 'login';
   }
 
 }
+
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
+
+@import "../less/_responsive";
+
+#root {
+  height: 100%;
+  width: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    width: calc(100% - @desktop-menu-width);
+  }
+
+  &.full-width {
+    width: 100%;
+  }
+
+}
 
 </style>

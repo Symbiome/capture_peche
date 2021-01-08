@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -29,6 +29,11 @@ import moment from 'moment'
 import VModal from 'vue-js-modal'
 import VueScrollTo from 'vue-scrollto';
 import VueObserveVisibility from 'vue-observe-visibility'
+
+import NoMenuLayout from '@/layouts/NoMenuLayout.vue';
+Vue.component('no-menu-layout', NoMenuLayout);
+import DefaultLayout from '@/layouts/DefaultLayout.vue';
+Vue.component('default-layout', DefaultLayout);
 
 moment.locale('fr');
 

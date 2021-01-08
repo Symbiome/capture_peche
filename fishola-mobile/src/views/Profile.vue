@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -62,6 +62,15 @@
                            label="Mot de passe"
                            v-bind:values="['********']"
                            v-on:clicked="editPassword"/>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="saveProfile">
+                Modifier
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -245,6 +254,13 @@ export default class ProfileView extends Vue {
     }
 
   }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .profile-header {
+      height: 200px;
+    }
+  }
+
 }
 
 </style>

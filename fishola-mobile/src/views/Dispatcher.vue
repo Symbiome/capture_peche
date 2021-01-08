@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -31,10 +31,11 @@ import Constants from '@/services/Constants';
 import router from '@/router'
 
 import ProfileService from '@/services/ProfileService';
+import Helpers from '@/services/Helpers';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar, Device } = Plugins;
+const { SplashScreen, StatusBar } = Plugins;
 
 @Component({
   components: {}
@@ -59,17 +60,18 @@ export default class DispatcherView extends Vue {
             this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
           }
           router.push('trips');
-          SplashScreen.hide();
-          StatusBar.show();
+
+          this.startupFinished();
+
         },
         (status) => {
           // Only push route if no route has already been pushed (typically when opening from external url)
           if (router.currentRoute.name == "dispatcher") {
 
             // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
-            Device.getInfo()
-              .then(info => {
-                if (info.platform == "web") {
+            Helpers.getDeviceType()
+              .then(type => {
+                if (type == "web") {
                   router.push('/about');
                 } else {
                   router.push('/login');
@@ -77,10 +79,18 @@ export default class DispatcherView extends Vue {
               });
 
           }
-          SplashScreen.hide();
-          StatusBar.show();
+
+          this.startupFinished();
+
         }
       );
+  }
+
+  startupFinished() {
+    Helpers.ifApplication(() => {
+      SplashScreen.hide();
+      StatusBar.show();
+    });
   }
 }
 </script>

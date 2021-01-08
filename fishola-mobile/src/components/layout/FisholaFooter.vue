@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="footer keyboardSensitive">
+  <div class="footer keyboardSensitive hide-on-desktop">
     <FooterButton class="keyboardSensitive" v-if="!hideButton && (buttonIcon || buttonText)"
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
@@ -216,6 +216,7 @@ export default class FisholaFooter extends Vue {
 
   logguedOut() {
     router.push('/login');
+    this.$root.$emit('loggued-out');
   }
 
   goBack() {

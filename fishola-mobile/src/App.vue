@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -20,21 +20,15 @@
   -->
 <template>
   <div id="app">
-    <v-dialog :width="270"/>
-    <Toaster/>
-    <Menu/>
-    <FeedbackModal/>
-    <div id="root">
+    <component :is="layout()" class="layout">
       <router-view/>
-    </div>
+    </component>
   </div>
 </template>
 
 <script lang="ts">
 
-import Toaster from '@/components/layout/Toaster.vue'
-import Menu from '@/components/layout/Menu.vue'
-import FeedbackModal from '@/components/layout/FeedbackModal.vue'
+import Helpers from '@/services/Helpers';
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -52,13 +46,7 @@ import router from '@/router';
 
 const { App } = Plugins;
 
-@Component({
-  components: {
-    Toaster,
-    Menu,
-    FeedbackModal
-  }
-})
+@Component
 export default class AppView extends Vue {
 
     interval?:number;
@@ -67,11 +55,18 @@ export default class AppView extends Vue {
       this.initApp();
     }
 
+    layout() {
+      return (this.$route.meta.layout || 'default') + '-layout';
+    }
+
     // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
     initApp() {
-       // Configure Keyboard & Status bar
-      KeyboardManager.setupKeyboardConfiguration();
-      StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+
+      // Configure Keyboard & Status bar
+      Helpers.ifApplication(() => {
+        KeyboardManager.setupKeyboardConfiguration();
+        StatusBar.setBackgroundColor({"color": "#1E9BC4"});
+      });
 
       // If app is opened externally (typically from mails when validating account or password forgotten)
       App.addListener('appUrlOpen', (data: any) => {
@@ -89,9 +84,13 @@ export default class AppView extends Vue {
             console.info("Detected verify request");
             router.push({name:'verify', params: {token: token}});
           }
+
           // Hide splashscreen
-          SplashScreen.hide();
-          StatusBar.show();
+          Helpers.ifApplication(() => {
+            SplashScreen.hide();
+            StatusBar.show();
+          });
+
         }
       });
 
@@ -187,9 +186,15 @@ html {
   max-width: 100%;
 }
 
-#root {
+.layout {
   height: 100%;
   width: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    display: flex;
+    flex-direction: row;
+  }
+
 }
 
 .page-with-header {
@@ -201,6 +206,10 @@ html {
 
   .page {
     height: calc(100% - @header-height);
+
+    @media screen and (min-width: @desktop-min-width) {
+      height: 100%;
+    }
   }
 }
 
@@ -222,6 +231,10 @@ html {
       margin-top: env(safe-area-inset-top);
       // Take reduced footer height into account
       height: calc(100%  - env(safe-area-inset-top) - @reduced-footer-height);
+    }
+
+    @media screen and (min-width: @desktop-min-width) {
+      height: 100%;
     }
   }
 }
@@ -303,7 +316,7 @@ html {
       margin-bottom: @margin-small;
     }
 
-}
+  }
 
   .pane-content {
 
@@ -326,6 +339,40 @@ html {
   &.pane-only {
     margin-top: @vertical-margin-medium;
   }
+
+
+  @media screen and (min-width: @desktop-min-width) {
+
+    border-top-left-radius: unset;
+    border-top-right-radius: unset;
+    padding-top: 0px;
+    margin-top: 0px;
+
+    h1 {
+      margin-top: @margin-medium;
+      margin-bottom: @margin-xx-large;
+      font-size: @fontsize-title-desktop;
+      height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      text-align: left;
+
+      &.no-margin-pane {
+        margin-left: @margin-large-desktop;
+        margin-right: @margin-large-desktop;
+      }
+    }
+
+    .pane-content {
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
+    }
+
+    &.pane-only {
+      margin-top: 0px;
+    }
+
+  }
+
 
 }
 

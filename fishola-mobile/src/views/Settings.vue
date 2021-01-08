@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -33,7 +33,7 @@
         </div>
 
         <div class="pane-content rounded" v-if="!loading && !offline">
-          <h1>Paramètres</h1>
+          <h1 class="no-margin-pane">Paramètres</h1>
 
           <div class="settings-row" v-if="settings">
             <span>Renseigner le poids des captures</span>
@@ -211,6 +211,33 @@ export default class SettingsView extends Vue {
     line-height: calc(@fontsize-info + @line-height-padding-medium);
     color: @pale-sky;
     text-align: center;
+  }
+
+
+  @media screen and (min-width: @desktop-min-width) {
+    .pane .pane-content {
+      align-items: center;
+    }
+    .settings-row {
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
+
+      span {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+    }
+
+    .info {
+      margin-top: 50px;
+      margin-left: @margin-large-desktop;
+      margin-right: @margin-large-desktop;
+      padding-left: @margin-xx-large;
+      padding-right: @margin-xx-large;
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+    }
+
   }
 
 }

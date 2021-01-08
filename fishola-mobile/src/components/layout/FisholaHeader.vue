@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="header hiddenWhenKeyboardShows">
+  <div class="header hiddenWhenKeyboardShows hide-on-desktop">
     <div>
       <Title v-if="title"/>
     </div>

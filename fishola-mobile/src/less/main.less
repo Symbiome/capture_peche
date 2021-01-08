@@ -10,6 +10,10 @@
 @reduced-footer-height: calc(0px + env(safe-area-inset-bottom));
 @feedback-top: calc(50px + env(safe-area-inset-top));
 @toaster-height: calc(50px + env(safe-area-inset-top));
+@toaster-height-desktop: 73px; // Coïncide avec la hauteur du header sur la page d'accueil
+
+@desktop-button-width: 283px;
+
 button {
   cursor: pointer;
 }
@@ -189,4 +193,65 @@ body {
 // with hiddenWhenKeyboardShows or hiddenWhenKeyboardShows_SmallScreensOnly class
 .hidden {
   display: none !important;
+}
+
+.hide-on-desktop {
+  @media screen and (min-width: @desktop-min-width) {
+    display: none !important;
+  }
+}
+
+.hide-on-mobile {
+  @media screen and (max-width: @mobile-max-width) {
+    display: none !important;
+  }
+}
+
+/*========== Buttons ============ */
+
+.buttons-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: @margin-xx-large;
+
+  .button {
+    height: 45px;
+    width: @desktop-button-width;
+    margin-left: @margin-small;
+    margin-right: @margin-small;
+
+    button {
+      height: 100%;
+      width: 100%;
+      border-radius: 38px;
+
+      font-style: normal;
+      font-weight: bold;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+      border: 0px;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
+
+    }
+
+    &.button-primary {
+      button {
+        background-color: @terra-cotta;
+        color: @white;
+      }
+    }
+
+    &.button-secondary {
+      button {
+        background-color: transparent;
+        color: @pelorous;
+        border: 1px solid @pelorous;
+      }
+    }
+
+  }
 }

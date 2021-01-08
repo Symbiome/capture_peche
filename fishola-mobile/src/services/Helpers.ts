@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -234,11 +234,21 @@ export default class Helpers {
                     } else {
                         source = 'application';
                     }
-                    console.debug("Device type is", source);
                     resolve(source);
                 },
                 reject);
         });
+    }
+
+    static ifApplication(callback:()=>any) {
+
+        this.getDeviceType()
+            .then((type) => {
+                if (type == "application") {
+                    callback();
+                }
+            });
+
     }
 
 }

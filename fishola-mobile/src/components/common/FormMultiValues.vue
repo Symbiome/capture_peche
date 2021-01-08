@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -24,7 +24,8 @@
       <label>
         {{label}}
       </label>
-      <a v-if="!readonly" v-on:click="clicked">Modifier</a>
+      <a v-if="!readonly"
+         v-on:click="clicked">Modifier</a>
     </div>
     <ul>
       <li v-for="v in values"
@@ -92,6 +93,7 @@ export default class FormMultiValues extends Vue {
       font-size: @fontsize-form-header;
       line-height: calc(@fontsize-form-header + @line-height-padding-large);
       color: @pelorous;
+      cursor: pointer;
     }
   }
 

@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -210,12 +210,12 @@
                         <!-- // End Left Side // -->
                         <!-- \\ Begin Right Side \\ -->
                         <div class="Rightside">
-                            <h3>Get in touch !</h3>
+                            <h3>Contactez-nous !</h3>
                             <p>Une suggestion, une question ou une envie de démarrer un projet avec nous, n'hésitez pas à nous contacter !</p>
                                 <address>
-                                    UMR CARRTEL<br/>
-                                    75 bis Avenue de Corzent<br/>
-                                    74200 Thonon les Bains
+                                    UMR CARRTEL (INRAE - USMB)<br/>
+                                    75bis Avenue de Corzent<br/>
+                                    74200 Thonon-les-Bains (France)
                                 </address>  
                                 <address class="Number">
                                     +33 (0)4 50 26 78 00
@@ -271,7 +271,7 @@
             <!-- \\ Begin Footer \\-->
             <footer>
                 <div class="Cntr">
-                    <p>COPYRIGHT © 2020 INRAE UMR CARRTEL</p>
+                    <p>COPYRIGHT © 2021 UMR CARRTEL (INRAE - USMB) - Pôle ECLA</p>
                 </div>
             </footer>
             <!-- // End Footer // -->
@@ -378,13 +378,11 @@ export default class AboutView extends Vue {
 
   sendContact() {
     if (!this.contactEmail) {
-      // TODO 11/12/2020 À améliorer
-      window.alert('L\'email est obligatoire');
+      this.$root.$emit('toaster-error', 'L\'email est obligatoire');
       return;
     }
     if (!this.contactMessage) {
-      // TODO 11/12/2020 À améliorer
-      window.alert('Le message est obligatoire');
+      this.$root.$emit('toaster-error', 'Le message est obligatoire');
       return;
     }
 
@@ -398,10 +396,13 @@ export default class AboutView extends Vue {
     };
 
     FeedbackService.sendFeedbackNoAsync(feedback)
-      .then(() => {
-      // TODO 11/12/2020 À améliorer
-        window.alert('Votre message a bien été envoyé à l\'équipe projet, merci');
-      });
+      .then(
+        () => {
+          this.$root.$emit('toaster-success', 'Votre message a bien été envoyé à l\'équipe projet, merci', 10000);
+        },
+        (error) => {
+          this.$root.$emit('toaster-error', 'Une erreur est survenue, merci de réessayer ultérieurement');
+        });
   }
 
   sectionIds:string[] = ['presentation', 'contribute', 'contact'];
@@ -472,7 +473,7 @@ export default class AboutView extends Vue {
 }
 
 .LayoutFrame header {
-  z-index: 9999;
+  z-index: 998; // Juste en dessous du toaster
   background: @white;
 
   padding-left: 20px;

@@ -2,7 +2,7 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2020 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
@@ -149,11 +149,42 @@ export default class CreditsView extends Vue {
   .credits-logos {
     margin-top: @vertical-margin-large;
     text-align: center;
+    display: flex;
+    flex-direction: column;
     img {
       width: 200px;
       margin-bottom: @vertical-margin-small;
     }
   }
+
+  @media screen and (min-width: @desktop-min-width) {
+
+    p.credits-p {
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+    }
+
+    .credits-link {
+
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+
+      button {
+        width: 38px;
+        height: 24px;
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+      }
+    }
+
+    .credits-logos {
+      margin-top: @vertical-margin-xx-large;
+      img {
+        width: 240px;
+      }
+    }
+  }
+
 }
 
 </style>
