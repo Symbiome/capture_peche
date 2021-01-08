@@ -303,6 +303,8 @@ export default class Menu extends Vue {
         align-items: center;
         justify-content: center;
 
+        cursor: pointer;
+
         img {
           height: calc(@fontsize-header-title + 20px);
         }
