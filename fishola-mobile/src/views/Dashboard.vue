@@ -246,6 +246,10 @@ export default class DashboardView extends Vue {
       padding-top: @vertical-margin-small;
     }
 
+    @media screen and (min-width: @desktop-min-width) {
+      padding-top: 0px;
+    }
+
     color: @gunmetal;
 
     h1 a {
