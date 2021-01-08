@@ -356,8 +356,14 @@ export default class DashboardView extends Vue {
           font-size: 30px;
           margin-left: 0px;
         }
-
       }
+
+      .dashboard-modes {
+        .dashboard-mode {
+          width: 40%;
+        }
+      }
+
     }
   }
 
