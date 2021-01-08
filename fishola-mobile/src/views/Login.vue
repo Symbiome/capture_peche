@@ -330,6 +330,12 @@ export default class LoginView extends Vue {
 
     .login-title {
       color: @pelorous;
+
+      .welcome {
+        font-size: @fontsize-header-title-desktop;
+        line-height: calc(@fontsize-header-title-desktop + @line-height-padding-xxx-large);
+        margin-bottom: @margin-small;
+      }
     }
 
     .login-form {
