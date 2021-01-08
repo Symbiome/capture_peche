@@ -60,23 +60,29 @@ const routes = [
   {
     path: '/',
     name: 'dispatcher',
+    meta: { public: true },
     // meta: { layout: 'no-menu' }, // FIXME AThimel 08/01/2021 Si je met le layout no-menu, le toaster déclenché par le dispatcher ne s'affiche plus
     component: Dispatcher
   },
   {
     path: '/about',
     name: 'about',
-    meta: { layout: 'no-menu' },
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: About
   },
   {
     path: '/login',
     name: 'login',
+    meta: { public: true },
     component: Login
   },
   {
     path: '/register',
     name: 'register',
+    meta: { public: true },
     component: Register
   },
   {
@@ -139,16 +145,19 @@ const routes = [
   {
     path: '/documentation',
     name: 'documentation',
+    meta: { public: true },
     component: Documentation
   },
   {
     path: '/news',
     name: 'news',
+    meta: { public: true },
     component: News
   },
   {
     path: '/faq',
     name: 'faq',
+    meta: { public: true },
     component: Faq
   },
   {
@@ -159,6 +168,7 @@ const routes = [
   {
     path: '/credits',
     name: 'credits',
+    meta: { public: true },
     component: Credits
   },
   {
@@ -174,12 +184,20 @@ const routes = [
   {
     path: '/reset-password/:token',
     name: 'reset-password',
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: ResetPassword,
     props: true
   },
   {
     path: '/verify/:token',
     name: 'verify',
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: VerifyAccount,
     props: true
   }
@@ -197,20 +215,9 @@ const router = new VueRouter({
   routes
 })
 
-const publicRouteNames:string[] = [
-  'dispatcher',
-  'about',
-  'faq',
-  'credits',
-  'documentation',
-  'news',
-  'login',
-  'register'
-];
-
 // Protect routes according to authentication status
 router.beforeEach((to, from, next) => {
-  if (to.name && publicRouteNames.indexOf(to.name) != -1) {
+  if (to.meta && to.meta.public) {
     next();
   } else {
     ProfileService.getProfile()
