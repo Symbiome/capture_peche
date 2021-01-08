@@ -220,7 +220,7 @@ router.beforeEach((to, from, next) => {
       },
       (status) => {
         console.error("VOUS NE PASSEREZ PAS !", to.name);
-        next('/');
+        next('/login');
       }
     );
   }

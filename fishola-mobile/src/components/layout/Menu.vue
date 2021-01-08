@@ -164,7 +164,7 @@ export default class Menu extends Vue {
 
   goHome() {
     this.closeMenu();
-    router.push({name:'dispatcher'});
+    router.push('/trips');
   }
 
   goProfile() {
