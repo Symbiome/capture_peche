@@ -20,9 +20,7 @@
   -->
 <template>
   <div>
-    <v-dialog :width="270"/>
-    <Toaster/>
-    <div id="root">
+    <div id="root-without-menu">
       <slot />
     </div>
   </div>
@@ -30,15 +28,9 @@
 
 <script lang="ts">
 
-import Toaster from '@/components/layout/Toaster.vue'
-
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
-@Component({
-  components: {
-    Toaster
-  }
-})
+@Component
 export default class NoMenuLayout extends Vue {
 
 }
@@ -47,7 +39,7 @@ export default class NoMenuLayout extends Vue {
 
 <style scoped lang="less">
 
-#root {
+#root-without-menu {
   height: 100%;
   width: 100%;
 }

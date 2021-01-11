@@ -20,6 +20,8 @@
   -->
 <template>
   <div id="app">
+    <v-dialog :width="270"/>
+    <Toaster/>
     <component :is="layout()" class="layout">
       <router-view/>
     </component>
@@ -29,6 +31,8 @@
 <script lang="ts">
 
 import Helpers from '@/services/Helpers';
+
+import Toaster from '@/components/layout/Toaster.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -46,7 +50,11 @@ import router from '@/router';
 
 const { App } = Plugins;
 
-@Component
+@Component({
+  components: {
+    Toaster
+  }
+})
 export default class AppView extends Vue {
 
     interval?:number;
