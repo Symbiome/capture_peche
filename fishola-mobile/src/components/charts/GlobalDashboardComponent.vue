@@ -22,7 +22,7 @@
   <div>
     <div class="disclaimer">
       <span>
-        Ces statistiques concernent les captures de l'ensemble des pêcheurs utilisant FISHOLA sur les 4 lacs alpins
+        Statistiques de l’ensemble des utilisateurs
       </span>
     </div>
 
