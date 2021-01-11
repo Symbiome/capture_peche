@@ -60,8 +60,10 @@ const routes = [
   {
     path: '/',
     name: 'dispatcher',
-    meta: { public: true },
-    // meta: { layout: 'no-menu' }, // FIXME AThimel 08/01/2021 Si je met le layout no-menu, le toaster déclenché par le dispatcher ne s'affiche plus
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: Dispatcher
   },
   {
