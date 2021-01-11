@@ -215,43 +215,43 @@ body {
   flex-direction: row;
   justify-content: center;
   margin-top: @margin-xx-large;
+}
 
-  .button {
-    height: 45px;
-    width: @desktop-button-width;
-    margin-left: @margin-small;
-    margin-right: @margin-small;
+.button {
+  height: 45px;
+  width: @desktop-button-width;
+  margin-left: @margin-small;
+  margin-right: @margin-small;
 
-    button {
-      height: 100%;
-      width: 100%;
-      border-radius: 38px;
+  button {
+    height: 100%;
+    width: 100%;
+    border-radius: 38px;
 
-      font-style: normal;
-      font-weight: bold;
-      font-size: @fontsize-button;
-      line-height: calc(@fontsize-button + @line-height-padding-x-large);
+    font-style: normal;
+    font-weight: bold;
+    font-size: @fontsize-button;
+    line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-      border: 0px;
-      padding-left: @margin-medium;
-      padding-right: @margin-medium;
-
-    }
-
-    &.button-primary {
-      button {
-        background-color: @terra-cotta;
-        color: @white;
-      }
-    }
-
-    &.button-secondary {
-      button {
-        background-color: transparent;
-        color: @pelorous;
-        border: 1px solid @pelorous;
-      }
-    }
+    border: 0px;
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
 
   }
+
+  &.button-primary {
+    button {
+      background-color: @terra-cotta;
+      color: @white;
+    }
+  }
+
+  &.button-secondary {
+    button {
+      background-color: transparent;
+      color: @pelorous;
+      border: 1px solid @pelorous;
+    }
+  }
+
 }

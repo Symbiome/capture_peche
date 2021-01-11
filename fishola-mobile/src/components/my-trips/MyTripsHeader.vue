@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="my-trips-header secondary-header hiddenWhenKeyboardShows">
-    <div>
+    <div class="hide-on-desktop">
       <span>Mes sorties</span>
     </div>
     <div class="header-icons">
@@ -81,6 +81,14 @@ export default class MyTripsHeader extends Vue {
         margin-top: calc(@fontsize-small-chevron - 1px);
         font-size:@fontsize-small-chevron;
       }
+    }
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    color: @gunmetal;
+    font-size: @fontsize-paragraph-desktop;
+    .header-icons {
+      flex-direction: row-reverse;
     }
   }
 }

@@ -115,6 +115,11 @@ export default class MyTripsSearch extends Vue {
       }
     }
 
+
+    @media screen and (min-width: @desktop-min-width) {
+      border: 1px solid @link-water;
+    }
+
   }
 }
 
