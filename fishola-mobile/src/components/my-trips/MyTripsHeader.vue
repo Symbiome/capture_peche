@@ -24,7 +24,9 @@
       <span>Mes sorties</span>
     </div>
     <div class="header-icons">
-      <div class="header-icons-group" v-on:click="$emit('reverseSortOrder')">
+      <div class="header-icons-group clickable"
+           v-on:click="$emit('reverseSortOrder')"
+           title="Inverser le tri">
         <i class="icon-calendar"></i>
         <i class="icon-chevron" v-if="sortDown"></i>
         <i class="icon-chevron icon-chevron-up" v-if="!sortDown"></i>
@@ -80,6 +82,9 @@ export default class MyTripsHeader extends Vue {
       .icon-chevron {
         margin-top: calc(@fontsize-small-chevron - 1px);
         font-size:@fontsize-small-chevron;
+      }
+      &.clickable {
+        cursor: pointer;
       }
     }
   }

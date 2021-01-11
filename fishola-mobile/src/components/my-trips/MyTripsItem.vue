@@ -31,7 +31,9 @@
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
-          <i v-if="trip.modifiable" class="icon-edit warning"/>
+          <i v-if="trip.modifiable"
+             class="icon-edit warning"
+             title="La sortie est encore modifiable"/>
         </div>
       </div>
       <div class="item-row">
