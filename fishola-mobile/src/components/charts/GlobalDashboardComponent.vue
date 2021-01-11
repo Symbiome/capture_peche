@@ -104,8 +104,19 @@ export default class GlobalDashboardComponent extends Vue {
         const species:SpeciesWithAlias = this.speciesIndex[speciesId];
         const percent:number = Math.round(distribution[speciesId]);
         const releasedPercent:number = Math.round(releasedDistribution[speciesId]) | 0;
+        const keptPercent:number = percent - releasedPercent;
         const count:number = speciesCount[speciesId];
-        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, releasedPercent, count, species.alias);
+        const keptCount:number = percent == 0 ? 0 : Math.round(count * keptPercent / percent);
+        const keptLabel:string = 'conservé' + (keptCount > 1 ? 's':'');
+        const entry:DistributionEntry = new DistributionEntry(
+          speciesId,
+          species.name,
+          percent,
+          keptPercent,
+          count,
+          species.alias,
+          keptCount,
+          keptLabel);
         this.caughtSpeciesDistribution.push(entry);
     });
 

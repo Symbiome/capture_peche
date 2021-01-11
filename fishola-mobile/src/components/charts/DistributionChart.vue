@@ -33,6 +33,9 @@
         </div>
         <div class="percent">
           {{f.count}}
+          <span class="green-label" v-if="f.greenCount">
+            (<span class="hide-if-small">dont </span>{{f.greenCount}}<span class="hide-if-small"> {{f.greenLabel}}</span>)
+          </span>
         </div>
       </div>
       <div class="distribution-row-bar">
@@ -101,6 +104,15 @@ export default class DistributionChart extends Vue {
       .percent {
         font-weight: bold;
         color: @pelorous;
+        .green-label {
+          color: @lime-green;
+
+          @media screen and (max-width: 430px) {
+            span.hide-if-small {
+              display: none;
+            }
+          }
+        }
       }
     }
 
