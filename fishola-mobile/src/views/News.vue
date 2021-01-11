@@ -34,7 +34,9 @@
                v-for="doc in elements"
                v-bind:key="doc.id">
             <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url" title="Télécharger">
+            <a v-bind:href="doc.url"
+               title="Télécharger"
+               target="_blank">
               <i class="icon-download"/>
             </a>
           </div>

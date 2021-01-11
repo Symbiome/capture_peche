@@ -32,7 +32,8 @@
             </span>
             <a v-bind:href="exportUrl"
                class="export"
-               title="Exporter">
+               title="Exporter"
+               target="_blank">
               <span>Exporter</span>
               <i class="icon-download"/>
             </a>
