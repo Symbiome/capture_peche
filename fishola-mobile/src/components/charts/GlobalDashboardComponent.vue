@@ -20,6 +20,11 @@
   -->
 <template>
   <div>
+    <div class="disclaimer">
+      <span>
+        Ces statistiques concernent les captures de l'ensemble des pêcheurs utilisant FISHOLA sur les 4 lacs alpins
+      </span>
+    </div>
 
     <div class="section shrinked">
       <h2><i class="icon-fish" />Espèces pêchées</h2>
@@ -131,5 +136,16 @@ export default class GlobalDashboardComponent extends Vue {
 <style lang="less">
 
 @import "../../less/main";
+
+.disclaimer {
+  font-style: italic;
+  font-size: @fontsize-button;
+  line-height: calc(@fontsize-button + @line-height-padding-x-large);
+  color: @pale-sky;
+  text-align: center;
+  margin-top: @vertical-margin-large;
+  padding-left: @margin-large;
+  padding-right: @margin-large;
+}
 
 </style>
