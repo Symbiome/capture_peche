@@ -344,6 +344,14 @@ export default class MyTripsList extends Vue {
 
   }
 
+
+  @media screen and (min-width: @desktop-min-width) {
+    .pane-content {
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+    }
+  }
+
 }
 
 </style>
