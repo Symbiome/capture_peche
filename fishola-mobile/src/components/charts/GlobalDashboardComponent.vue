@@ -33,7 +33,7 @@
 
     <div class="section">
       <div class="shrinked">
-        <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+        <h2><i class="icon-size" />Taille moyenne <span class="hide-if-small">par espèce</span> (cm)</h2>
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>

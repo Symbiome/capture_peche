@@ -339,6 +339,12 @@ export default class DashboardView extends Vue {
       font-size: @fontsize-title;
       line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       text-align: left;
+
+      @media screen and (max-width: 430px) {
+        span.hide-if-small {
+          display: none;
+        }
+      }
     }
 
 
