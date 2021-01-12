@@ -364,7 +364,6 @@ export default class TripSpeciesView extends Vue {
       margin-top: 20px;
       font-size: @fontsize-paragraph;
       line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
-
     }
 
   }
