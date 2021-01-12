@@ -19,62 +19,82 @@
   #L%
   -->
 <template>
-  <div class="form" v-if="ready">
-    <FormInput name="name"
-                label="Nom de la sortie"
-                placeholder="Nommez votre sortie"
-                v-model="trip.name"
-                v-bind:error="nameError"
-                v-bind:readonly="readonly"/>
-    <FormSelect name="lake"
-                label="Lac"
-                v-bind:options="allLakes"
-                orderBy="name"
-                v-model="trip.lakeId"
-                v-bind:error="lakeIdError"
-                v-bind:readonly="readonly"/>
-    <FormInput name="date"
-                label="Date"
-                type="date"
-                v-model="date"
-                v-bind:error="dateError"
-                v-bind:readonly="readonly"/>
-    <FormInput name="startAt"
-                label="Heure de début"
-                type="time"
-                v-model="startedAt"
-                v-bind:error="startedAtError"
-                v-bind:readonly="readonly"/>
-    <FormInput name="finishedat"
-                label="Heure de fin"
-                type="time"
-                v-model="finishedAt"
-                v-bind:error="finishedAtError"
-                v-bind:readonly="readonly"/>
-    <FormSelect name="weather"
-                label="Météo (optionnelle)"
-                v-bind:options="allWeathers"
-                orderBy="name"
-                v-model="trip.weatherId"
-                v-bind:error="weatherIdError"
-                v-bind:readonly="readonly"/>
-    <FormSelect name="type"
-                label="Type de pêche"
-                v-bind:options="allTripTypes"
-                orderBy="name"
-                v-model="trip.type"
-                v-bind:readonly="readonly"/>
-    <FormMultiValues name="species"
-                      v-bind:label="speciesLabel"
-                      v-bind:values="species"
-                      v-bind:readonly="readonly"
-                      v-on:clicked="$emit('goEditSpecies')"/>
-    <FormMultiValues name="techniques"
-                      v-bind:label="techniquesLabel"
-                      v-bind:values="techniques"
-                      v-bind:readonly="readonly"
-                      v-on:clicked="$emit('goEditTechniques')"/>
-
+  <div class="some-trip-summary" v-if="ready">
+    <div class="part-1-and-2">
+      <div class="part1 left">
+        <FormInput name="name"
+                    label="Nom de la sortie"
+                    placeholder="Nommez votre sortie"
+                    v-model="trip.name"
+                    v-bind:error="nameError"
+                    v-bind:readonly="readonly"/>
+        <FormSelect name="lake"
+                    label="Lac"
+                    v-bind:options="allLakes"
+                    orderBy="name"
+                    v-model="trip.lakeId"
+                    v-bind:error="lakeIdError"
+                    v-bind:readonly="readonly"/>
+        <FormSelect class="hide-on-mobile"
+                    name="type"
+                    label="Type de pêche"
+                    v-bind:options="allTripTypes"
+                    orderBy="name"
+                    v-model="trip.type"
+                    v-bind:readonly="readonly"/>
+      </div>
+      <div class="part2 right">
+        <FormInput name="date"
+                    label="Date"
+                    type="date"
+                    v-model="date"
+                    v-bind:error="dateError"
+                    v-bind:readonly="readonly"/>
+        <FormInput name="startAt"
+                    label="Heure de début"
+                    type="time"
+                    v-model="startedAt"
+                    v-bind:error="startedAtError"
+                    v-bind:readonly="readonly"/>
+        <FormInput name="finishedat"
+                    label="Heure de fin"
+                    type="time"
+                    v-model="finishedAt"
+                    v-bind:error="finishedAtError"
+                    v-bind:readonly="readonly"/>
+      </div>
+    </div>
+    <div class="part3">
+      <FormSelect name="weather"
+                  class="left"
+                  label="Météo (optionnelle)"
+                  v-bind:options="allWeathers"
+                  orderBy="name"
+                  v-model="trip.weatherId"
+                  v-bind:error="weatherIdError"
+                  v-bind:readonly="readonly"/>
+      <FormSelect class="hide-on-desktop"
+                  name="type"
+                  label="Type de pêche"
+                  v-bind:options="allTripTypes"
+                  orderBy="name"
+                  v-model="trip.type"
+                  v-bind:readonly="readonly"/>
+    </div>
+    <div class="part4">
+      <FormMultiValues name="species"
+                       class="left"
+                       v-bind:label="speciesLabel"
+                       v-bind:values="species"
+                       v-bind:readonly="readonly"
+                       v-on:clicked="$emit('goEditSpecies')"/>
+      <FormMultiValues name="techniques"
+                       class="right"
+                       v-bind:label="techniquesLabel"
+                       v-bind:values="techniques"
+                       v-bind:readonly="readonly"
+                       v-on:clicked="$emit('goEditTechniques')"/>
+    </div>
   </div>
 </template>
 
@@ -295,4 +315,28 @@ export default class SomeTripSummary extends Vue {
 
 @import "../../less/main";
 
+.some-trip-summary {
+
+  @media screen and (min-width: @desktop-min-width) {
+    .part-1-and-2,
+    .part4 {
+      display: flex;
+      flex-direction: row;
+      .part1, .part2 {
+        width: 100%;
+      }
+    }
+    .part3,
+    .form-multi-values {
+        width: 50%;
+    }
+    .left {
+      margin-right: @margin-medium;
+    }
+    .right {
+      margin-left: @margin-medium;
+    }
+  }
+
+}
 </style>
