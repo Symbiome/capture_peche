@@ -37,7 +37,10 @@
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
         <div class="pane-content rounded" v-if="ready">
-          <h1>Capture</h1>
+          <h1>
+            <BackButton class="hide-on-mobile"/>
+            Capture
+          </h1>
 
           <span v-if="catchPositionError" class="position-error">
             <i class="icon-warning"/>
@@ -165,6 +168,24 @@
             </div>
           </div>
 
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary" v-if="modifiable">
+              <button v-on:click="validateClicked">
+                <i class="icon-fish"/> {{inCreation ? 'Valider' : 'Enregistrer'}}
+              </button>
+            </div>
+            <div class="button button-secondary" v-if="inCreation">
+              <button v-on:click="cancel">
+                Annuler
+              </button>
+            </div>
+            <div class="button button-danger" v-if="!inCreation && modifiable">
+              <button v-on:click="deleteCatch">
+                <i class="icon-delete"/> Supprimer
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
@@ -195,6 +216,7 @@ import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
+import BackButton from '@/components/common/BackButton.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormInput from '@/components/common/FormInput.vue'
@@ -231,6 +253,7 @@ import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
 @Component({
   components: {
     FisholaHeader,
+    BackButton,
     FormInput,
     FormYesNo,
     FormTextarea,
@@ -678,6 +701,10 @@ export default class EditCatchView extends Vue {
       .then(() => {
         TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
       });
+  }
+
+  cancel() {
+    TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
   }
 
   leavePage() {
