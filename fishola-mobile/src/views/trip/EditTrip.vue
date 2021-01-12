@@ -23,16 +23,25 @@
     <FisholaHeader />
     <div class="edit-trip-page page">
       <SomeTripHeader v-if="ready"
-                      v-bind:trip="trip"/>
+                      v-bind:trip="trip"
+                      class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content large">
-          <h1>{{duration}}</h1>
-          <div v-if="modifiable"
-              class="edit-trip-modifiable-until">
-            <i class="icon-edit"/>
-            <div>
-              Vous avez encore {{modifiableDuration}}<br/>
-              pour modifier cette sortie
+          <div class="edit-trip-header">
+            <h1 class="hide-on-desktop">
+              {{duration}}
+            </h1>
+            <h1 class="no-margin-pane hide-on-mobile">
+              <BackButton/>
+              {{trip.name}}
+            </h1>
+            <div v-if="modifiable"
+                class="edit-trip-modifiable-until">
+              <i class="icon-edit"/>
+              <div>
+                Vous avez encore {{modifiableDuration}}<br/>
+                pour modifier cette sortie
+              </div>
             </div>
           </div>
           <div class="edit-trip-catchs catch-preview-list-scrollable"
@@ -57,6 +66,20 @@
                            v-on:goEditSpecies="goEditSpecies"
                            v-on:goEditTechniques="goEditTechniques"
                            class="summary-pane"/>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary" v-if="modifiable">
+              <button v-on:click="startSave">
+                Enregistrer
+              </button>
+            </div>
+            <div class="button button-danger">
+              <button v-on:click="deleteTrip">
+                Supprimer
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -83,6 +106,7 @@ import TripsService from '@/services/TripsService';
 import Constants from '@/services/Constants';
 import Helpers from '@/services/Helpers';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import SomeTripSummary from '@/components/trip/SomeTripSummary.vue'
@@ -98,6 +122,7 @@ export type ActionType = "UpdateTrip" | "EditSpecies" | "EditTechniques";
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     SomeTripSummary,
     CatchPreviewList,
     FisholaFooter
@@ -288,6 +313,20 @@ export default class EditTripView extends Vue {
     padding-right: @margin-large;
   }
 
+  @media screen and (min-width: @desktop-min-width) {
+    .edit-trip-header {
+      display: flex;
+      flex-direction: row;
+      br {
+        display: none;
+      }
+    }
+
+    .summary-pane {
+      padding-left: @margin-large-desktop;
+      padding-right: @margin-large-desktop;
+    }
+  }
 }
 
 </style>
