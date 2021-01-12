@@ -26,7 +26,10 @@
                       class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1 class="no-margin-pane">Espèce recherchée</h1>
+          <h1 class="no-margin-pane">
+            <BackButton class="hide-on-mobile"/>
+            Espèce recherchée
+          </h1>
           <div v-for="s in sortedSpecies()"
                v-bind:key="s.id"
                class="species-item"
@@ -95,6 +98,7 @@ import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
@@ -104,6 +108,7 @@ import router from '../../router';
   
 @Component({
   components: {
+    BackButton,
     FisholaHeader,
     SomeTripHeader,
     FisholaFooter

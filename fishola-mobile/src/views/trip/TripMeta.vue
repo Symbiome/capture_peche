@@ -25,7 +25,10 @@
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Information de pêche</h1>
+          <h1>
+            <BackButton class="hide-on-mobile"/>
+            Information de pêche
+          </h1>
           <div class="edit-trip-meta-form">
             <div class="form-block">
               <FormInput name="name"
@@ -108,6 +111,7 @@ import ReferentialService from '@/services/ReferentialService';
 import {CoordsAndLake} from '@/services/GeolocationService';
 import GeolocationService from '@/services/GeolocationService';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 
@@ -122,6 +126,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     FormInput,
     FormSelect,
     FisholaFooter
