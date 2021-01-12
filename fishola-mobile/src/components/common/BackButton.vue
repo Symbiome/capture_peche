@@ -30,8 +30,14 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 @Component
 export default class Counter extends Vue {
 
+  @Prop() backEvent?: string;
+
   goBack() {
-    window.history.back();
+    if (this.backEvent) {
+      this.$emit(this.backEvent);
+    } else {
+      window.history.back();
+    }
   }
 
 }

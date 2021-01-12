@@ -158,6 +158,22 @@ export default class CatchPreviewList extends Vue {
   @media screen and (min-width: @desktop-min-width) {
     padding-left: calc(@margin-large-desktop + 5px);
     padding-right: calc(@margin-large-desktop + 5px);
+
+    .new-catch {
+
+      .new-catch-square-button {
+        width: 295px;
+
+        .pastille {
+          width: 35px;
+          height: 35px;
+          font-size: 15px;
+          line-height: calc(15px);
+        }
+
+      }
+    }
+
   }
 
 }

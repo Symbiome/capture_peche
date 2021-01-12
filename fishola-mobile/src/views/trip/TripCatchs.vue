@@ -22,11 +22,17 @@
   <div class="edit-trip-catchs page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-catchs-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-bind:trip="trip"
+                      class="hide-on-desktop"/>
       <div class="pane">
-        <h1>
+        <h1 class="hide-on-desktop">
           {{duration}}
           <Running v-if="liveRunning"/>
+        </h1>
+        <h1 class="hide-on-mobile no-margin-pane">
+          <BackButton back-event="backButtonClicked"
+                      v-on:backButtonClicked="editSpecies"/>
+          {{trip.name}}
         </h1>
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
@@ -43,6 +49,20 @@
               Nouvelle capture
             </button>
           </div>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="finish">
+                Fin de pêche
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="giveup">
+                Abandon
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -62,6 +82,7 @@ import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/services/Helpers';
 
+import BackButton from '@/components/common/BackButton.vue'
 import Running from '@/components/common/Running.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
@@ -75,6 +96,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     Running,
     CatchPreviewList,
     FisholaFooter
@@ -144,6 +166,16 @@ export default class TripCatchsView extends Vue {
 
   tripSaved() {
     router.push({name:'trip-summary', params: {id: this.id}});
+  }
+
+  giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
   }
 
   newCatch() {
@@ -240,6 +272,23 @@ export default class TripCatchsView extends Vue {
 
 
   }
+
+
+  @media screen and (min-width: @desktop-min-width) {
+    .pane {
+
+      h1 {
+        color: @pelorous;
+      }
+
+      .pane-content {
+        .catchs-list {
+          height: 200px;
+        }
+      }
+    }
+  }
+
 
 }
 
