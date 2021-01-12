@@ -147,6 +147,8 @@ export default class FormYesNo extends Vue {
       align-items: center;
       justify-content: center;
 
+      cursor: pointer;
+
       input {
         height: 16px;
         margin-right: @margin-small;
@@ -183,6 +185,11 @@ export default class FormYesNo extends Vue {
     color: @cardinal;
     font-size: @fontsize-form-error;
     line-height: calc(@fontsize-form-error + @line-height-padding-medium);
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    font-size: @fontsize-form-input-desktop;
+    line-height: calc(@fontsize-form-input-desktop + @line-height-padding-medium);
   }
 }
 

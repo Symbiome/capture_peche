@@ -145,6 +145,20 @@ export default class FormTextarea extends Vue {
     font-size: @fontsize-form-error;
     line-height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
+
+  @media screen and (min-width: @desktop-min-width) {
+    font-size: @fontsize-form-input-desktop;
+    line-height: calc(@fontsize-form-input-desktop + @line-height-padding-medium);
+
+    textarea {
+      font-size: @fontsize-form-input-desktop;
+
+      &::placeholder {
+        font-size: @fontsize-form-input-desktop;
+      }
+
+    }
+  }
 }
 
 </style>
