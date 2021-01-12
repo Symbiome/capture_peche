@@ -183,6 +183,7 @@ LEFT JOIN catch c ON t.id = c.trip_id
 LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+WHERE t.hidden = false
 ;
 
 COMMENT ON VIEW personal_catchs_export IS 'Génère le CSV pour les exports (sans filtre) : À filtrer ensuite sur l''utilisateur';
