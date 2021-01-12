@@ -80,7 +80,7 @@
             </div>
             <div class="button button-secondary">
               <button v-on:click="giveup">
-                Annuler
+                Abandon
               </button>
             </div>
           </div>
@@ -270,9 +270,15 @@ export default class TripMetaView extends Vue {
   }
 
   giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
     TripsService.cancelCreations();
     router.push('/trips');
   }
+
 }
 
 </script>
