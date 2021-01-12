@@ -407,19 +407,37 @@ html {
   .v--modal-box {
     top: calc(100vh / 2 - 80px) !important;
 
+    @media screen and (min-width: @desktop-min-width) {
+      width: 350px !important;
+    }
+
     .dialog-content {
       text-align: center;
+
+      @media screen and (min-width: @desktop-min-width) {
+        padding: 20px;
+      }
 
       .dialog-c-title {
         color: @gunmetal;
         font-size: @fontsize-dialog-title;
         line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
+
+        @media screen and (min-width: @desktop-min-width) {
+          font-size: calc(@fontsize-dialog-title-desktop);
+          line-height: calc(@fontsize-dialog-title-desktop + @line-height-padding-large);
+        }
       }
 
       .dialog-c-text {
         color: @pale-sky;
         font-size: calc(@fontsize-dialog-text);
         line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
+
+        @media screen and (min-width: @desktop-min-width) {
+          font-size: calc(@fontsize-dialog-text-desktop);
+          line-height: calc(@fontsize-dialog-text-desktop + @line-height-padding-large);
+        }
       }
 
       ul {
