@@ -735,11 +735,12 @@ export default class AboutView extends Vue {
 .Producted_by_sec {
 
   background-color: @solitude;
-  height: 500px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-top: 30px;
+  padding-bottom: 30px;
 
   .partners, .producers {
     h3 {
@@ -753,6 +754,7 @@ export default class AboutView extends Vue {
       flex-direction: row;
       justify-content: center;
       align-items: center;
+      flex-wrap: wrap;
 
       img {
         margin-left: 20px;
@@ -823,8 +825,6 @@ export default class AboutView extends Vue {
   }
 
 }
-
-
 
 footer {
   background: #0c2b34;
