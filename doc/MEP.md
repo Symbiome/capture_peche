@@ -40,6 +40,8 @@ quarkus.datasource.password | Le mot de passe pour la base de données | -
 quarkus.datasource.jdbc.min-size | Taille minimale du pool de connexions JDBC | 3
 quarkus.datasource.jdbc.max-size | Taille maximale du pool de connexions JDBC | 20
 quarkus.http.port | Port sur lequel le backend doit tourner | 8080
+quarkus.http.http2 | Active ou non l'utilisation de HTTP/2 | false
+quarkus.http.limits.max-body-size | Taille maximale des requêtes HTTP | 20M
 fishola.jwt-secret | La clé utilisée pour les token JWT | -
 fishola.jwt-lifetime-hours | Durée (en heures) des tokens JWT | 24
 fishola.Jwt-renewal-hours | Durée (en heures) pendant laquelle les renouvellements de tokens JWT sont acceptés | 168
@@ -60,6 +62,9 @@ fishola.raw-image-quality | Qualité des images stockées en base (Pourcentage) 
 fishola.pictures-preview-folder-path | Chemin où sont stockées les miniatures | /tmp/fishola-pictures
 fishola.feedback-mail-to | Adresse de destination pour les feedbacks | fishola-lutins@list.forge.codelutin.com
 fishola.auto-verify-accounts | Faut-il vérifier automatiquement les nouveaux comptes ? | false
+fishola.admin-password | Mot de passe de l'interface d'admin | -
+fishola.dashboard-only-current-year | Permet de restreindre l'affichage à l'année en cours sur le tableau de bord | true
+fishola.key-figures-timeout-hours | Temps d'expiration (heures) des chiffres clés et données affichées sur la page d'accueil | 24
 quarkus.log.console.enable | Faut-il activer les logs en console ? | false
 quarkus.log.file.enable | Faut-il activer les logs en fichier ? | true
 quarkus.log.file.path | Chemin + nom du fichier de logs | fishola-backend.log
