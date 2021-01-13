@@ -47,6 +47,9 @@
              v-bind:style="'width: ' + f.greenPercent + '%;'"></div>
       </div>
     </div>
+    <div class="legend show-if-small" v-if="distribution.length > 0 && legend && greenLegend">
+      {{legend}} <span>(dont {{greenLegend}})</span>
+    </div>
   </div>
 </template>
 
@@ -60,6 +63,8 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 export default class DistributionChart extends Vue {
 
   @Prop() distribution:DistributionEntry[];
+  @Prop() legend?:string;
+  @Prop() greenLegend?:string;
 
   orderedCaughtSpeciesDistribution() {
     return Vue.lodash.orderBy(this.distribution, 'name');
@@ -145,6 +150,15 @@ export default class DistributionChart extends Vue {
 
   }
 
+  .legend {
+    color: @pelorous;
+    text-align: right;
+    font-weight: bold;
+    font-style: italic;
+    span {
+      color: @lime-green;
+    }
+  }
 }
 
 </style>

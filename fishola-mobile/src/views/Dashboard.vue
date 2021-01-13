@@ -409,6 +409,12 @@ export default class DashboardView extends Vue {
       }
     }
   }
+
+  @media screen and (min-width: 431px) {
+    .show-if-small {
+      display: none;
+    }
+  }
 }
 
 </style>

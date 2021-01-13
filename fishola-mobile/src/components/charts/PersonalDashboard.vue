@@ -23,7 +23,9 @@
     <div class="two-sections">
       <div class="section shrinked">
         <h2><i class="icon-fish" />Mes poissons</h2>
-        <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
+        <DistributionChart :distribution="caughtSpeciesDistribution"
+                           legend="Capturés"
+                           greenLegend="conservés"></DistributionChart>
       </div>
 
       <div class="section shrinked">
