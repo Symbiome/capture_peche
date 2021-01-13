@@ -20,8 +20,8 @@
   -->
 <template>
   <div class="some-trip-summary" v-if="ready">
-    <div class="part-1-and-2">
-      <div class="part1 left">
+    <div class="two-columns-row-on-desktop">
+      <div>
         <FormInput name="name"
                     label="Nom de la sortie"
                     placeholder="Nommez votre sortie"
@@ -43,7 +43,7 @@
                     v-model="trip.type"
                     v-bind:readonly="readonly"/>
       </div>
-      <div class="part2 right">
+      <div>
         <FormInput name="date"
                     label="Date"
                     type="date"
@@ -64,9 +64,8 @@
                     v-bind:readonly="readonly"/>
       </div>
     </div>
-    <div class="part3">
+    <div class="two-columns-row-on-desktop">
       <FormSelect name="weather"
-                  class="left"
                   label="Météo (optionnelle)"
                   v-bind:options="allWeathers"
                   orderBy="name"
@@ -81,15 +80,13 @@
                   v-model="trip.type"
                   v-bind:readonly="readonly"/>
     </div>
-    <div class="part4">
+    <div class="two-columns-row-on-desktop">
       <FormMultiValues name="species"
-                       class="left"
                        v-bind:label="speciesLabel"
                        v-bind:values="species"
                        v-bind:readonly="readonly"
                        v-on:clicked="$emit('goEditSpecies')"/>
       <FormMultiValues name="techniques"
-                       class="right"
                        v-bind:label="techniquesLabel"
                        v-bind:values="techniques"
                        v-bind:readonly="readonly"
@@ -315,28 +312,4 @@ export default class SomeTripSummary extends Vue {
 
 @import "../../less/main";
 
-.some-trip-summary {
-
-  @media screen and (min-width: @desktop-min-width) {
-    .part-1-and-2,
-    .part4 {
-      display: flex;
-      flex-direction: row;
-      .part1, .part2 {
-        width: 100%;
-      }
-    }
-    .part3,
-    .form-multi-values {
-        width: 50%;
-    }
-    .left {
-      margin-right: @margin-medium;
-    }
-    .right {
-      margin-left: @margin-medium;
-    }
-  }
-
-}
 </style>

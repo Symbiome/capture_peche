@@ -47,16 +47,14 @@
             {{catchPositionError}}
           </span>
 
-          <div class="row">
+          <div :class="{'two-columns-row-on-desktop': aCatch.speciesId == '__other__'}">
             <FormSelect name="species"
-                        class="left"
                         label="Espèce"
                         v-bind:options="allSpeciesWithAliases"
                         v-model="aCatch.speciesId"
                         v-bind:error="speciesIdError"
                         v-bind:readonly="!modifiable"/>
             <FormInput name="otherSpecies"
-                       class="right"
                        label="Si autre"
                        type="text"
                        placeholder="Renseigner l’espèce"
@@ -65,8 +63,8 @@
                        v-bind:readonly="!modifiable"
                        v-if="aCatch.speciesId == '__other__'"/>
           </div>
-          <div class="row">
-            <div class="left">
+          <div class="two-columns-row-on-desktop">
+            <div>
               <FormInput name="size"
                         :label="sizeLabel"
                         type="number"
@@ -84,7 +82,6 @@
             </div>
             <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
                        name="weight"
-                       class="right"
                        label="Poids en g (optionnel)"
                        type="number"
                        :min="1"
@@ -93,9 +90,8 @@
                        v-bind:error="weightError"
                        v-bind:readonly="!modifiable"/>
           </div>
-          <div class="row">
+          <div class="two-columns-row-on-desktop">
             <FormYesNo name="keep"
-                       class="left"
                        v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
                        v-model="aCatch.keep"
                        v-bind:error="keepError"
@@ -108,22 +104,19 @@
                         v-bind:error="releasedStateIdError"
                         v-bind:readonly="!modifiable"/-->
             <FormSelect name="technique"
-                        class="right"
                         label="Technique de pêche"
                         v-bind:options="allTechniques"
                         v-model="aCatch.techniqueId"
                         v-bind:error="techniqueIdError"
                         v-bind:readonly="!modifiable"/>
           </div>
-          <div class="row">
+          <div class="two-columns-row-on-desktop">
             <FormTextarea name="description"
-                          class="left"
                           label="Observation (optionnelle)"
                           placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
                           v-model="aCatch.description"
                           v-bind:readonly="!modifiable"/>
             <FormInput name="caughtAt"
-                       class="right"
                        label="Heure de la capture (optionnelle)"
                        type="time"
                        v-model="caughtAt"
@@ -844,24 +837,6 @@ export default class EditCatchView extends Vue {
     .map {
       width: 100%;
       height: 200px;
-    }
-  }
-
-  @media screen and (min-width: @desktop-min-width) {
-    .row {
-      display: flex;
-      flex-direction: row;
-      width: 100%;
-      .left,
-      .right {
-        width: calc(50% - @margin-medium);
-      }
-      .left {
-        margin-right: @margin-medium;
-      }
-      .right {
-        margin-left: @margin-medium;
-      }
     }
   }
 
