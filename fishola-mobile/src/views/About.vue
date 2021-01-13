@@ -58,6 +58,10 @@
         </header>
         <!-- // End Header // -->
 
+        <div class="under-header-zone">
+          FISHOLA : La science tous ensemble
+        </div>
+
         <!-- \\ Begin Banner Section \\ -->
         <div class="Title_sec" id="title">
             <!--  \\ Begin banner Side -->
@@ -559,9 +563,16 @@ export default class AboutView extends Vue {
   color: @white;
 }
 
+.under-header-zone {
+  height: 73px;
+  text-align: center;
+  color: @gunmetal;
+  font-size: 48px;
+}
+
 .Title_sec {
 	width: 100%;
-	background: url(/img/about-fishes.jpg) top center no-repeat;
+	background: url(/img/about-coregones5.jpg) top center no-repeat;
 	height: 680px;
 	position: relative;
   background-size: cover;
