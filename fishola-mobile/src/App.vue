@@ -20,6 +20,8 @@
   -->
 <template>
   <div id="app">
+    <v-dialog :width="270"/>
+    <Toaster/>
     <component :is="layout()" class="layout">
       <router-view/>
     </component>
@@ -29,6 +31,8 @@
 <script lang="ts">
 
 import Helpers from '@/services/Helpers';
+
+import Toaster from '@/components/layout/Toaster.vue'
 
 import TripsService from '@/services/TripsService';
 import PicturesService from '@/services/PicturesService';
@@ -46,7 +50,11 @@ import router from '@/router';
 
 const { App } = Plugins;
 
-@Component
+@Component({
+  components: {
+    Toaster
+  }
+})
 export default class AppView extends Vue {
 
     interval?:number;
@@ -399,19 +407,37 @@ html {
   .v--modal-box {
     top: calc(100vh / 2 - 80px) !important;
 
+    @media screen and (min-width: @desktop-min-width) {
+      width: 350px !important;
+    }
+
     .dialog-content {
       text-align: center;
+
+      @media screen and (min-width: @desktop-min-width) {
+        padding: 20px;
+      }
 
       .dialog-c-title {
         color: @gunmetal;
         font-size: @fontsize-dialog-title;
         line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
+
+        @media screen and (min-width: @desktop-min-width) {
+          font-size: calc(@fontsize-dialog-title-desktop);
+          line-height: calc(@fontsize-dialog-title-desktop + @line-height-padding-large);
+        }
       }
 
       .dialog-c-text {
         color: @pale-sky;
         font-size: calc(@fontsize-dialog-text);
         line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
+
+        @media screen and (min-width: @desktop-min-width) {
+          font-size: calc(@fontsize-dialog-text-desktop);
+          line-height: calc(@fontsize-dialog-text-desktop + @line-height-padding-large);
+        }
       }
 
       ul {

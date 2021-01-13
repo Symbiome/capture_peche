@@ -161,7 +161,7 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "false")
     boolean isAutoVerifyAccounts();
 
-    @ConfigProperty(defaultValue = "53cr37")
+    @ConfigProperty
     String getAdminPassword();
 
     @ConfigProperty(defaultValue = "24")

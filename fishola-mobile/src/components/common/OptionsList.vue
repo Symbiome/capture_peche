@@ -74,6 +74,9 @@ export default class OptionsList extends Vue {
   overflow:auto;
 
   div.item {
+
+    font-size: @fontsize-small-paragraph;
+
     margin-right: @margin-medium;
     color: @pale-sky;
     white-space: nowrap;
@@ -81,6 +84,17 @@ export default class OptionsList extends Vue {
     &.selected {
       color: @gunmetal;
       border-bottom: 2px solid @pelorous;
+    }
+  }
+
+
+  @media screen and (min-width: @desktop-min-width) {
+
+    padding-left: @margin-large-desktop;
+    padding-right: @margin-large-desktop;
+
+    div.item {
+      font-size: @fontsize-paragraph;
     }
   }
 

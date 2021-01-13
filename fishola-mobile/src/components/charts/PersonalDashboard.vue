@@ -20,69 +20,73 @@
   -->
 <template>
   <div>
-    <div class="section shrinked">
-      <h2><i class="icon-fish" />Mes poissons</h2>
-      <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
-    </div>
+    <div class="two-sections">
+      <div class="section shrinked">
+        <h2><i class="icon-fish" />Mes poissons</h2>
+        <DistributionChart :distribution="caughtSpeciesDistribution"
+                           legend="Capturés"
+                           greenLegend="conservés"></DistributionChart>
+      </div>
 
-    <div class="section shrinked">
-      <h2><i class="icon-fishing" />Mes captures</h2>
-      <div class="not-enough-data" v-if="latestTrips.length == 0">
-        <span>Pas assez de données</span>
-      </div>
-      <div class="average-header" v-if="latestTrips.length > 0">
-        <div class="count">{{averageCatchsPerTripRounded}}</div>
-        captures en moyenne / sortie
-      </div>
-      <div class="average">
-        <div v-for="(f, index) in latestTrips"
-              v-bind:key="f.tripId"
-              class="average-column"
-              v-on:click="openTrip(f.tripId)">
-          <div class="count">
-            {{f.catchsCount}}
-          </div>
-          <div class="average-row-bar">
-            <div class="average-row-bar-filled"
-                  v-if="f.catchsCount > 0"
-                  v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                  v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
-          </div>
-          <div class="date">
-            <div class="day">
-              {{getDay(f.day)}}
-            </div>
-            <div class="month">
-              {{getMonth(f.day)}}
-            </div>
-            <div class="year">
-              {{getYear(f.day)}}
-            </div>
-          </div>
+      <div class="section shrinked">
+        <h2><i class="icon-fishing" />Mes captures</h2>
+        <div class="not-enough-data" v-if="latestTrips.length == 0">
+          <span>Pas assez de données</span>
         </div>
-        <div v-for="(f, index) in emptylatestTrips"
-              v-bind:key="'empty-' + index"
-              class="average-column">
-          <div class="count">
-            -
+        <div class="average-header" v-if="latestTrips.length > 0">
+          <div class="count">{{averageCatchsPerTripRounded}}</div>
+          captures en moyenne / sortie
+        </div>
+        <div class="average">
+          <div v-for="(f, index) in latestTrips"
+                v-bind:key="f.tripId"
+                class="average-column"
+                v-on:click="openTrip(f.tripId)">
+            <div class="count">
+              {{f.catchsCount}}
+            </div>
+            <div class="average-row-bar">
+              <div class="average-row-bar-filled"
+                    v-if="f.catchsCount > 0"
+                    v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                    v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+            </div>
+            <div class="date">
+              <div class="day">
+                {{getDay(f.day)}}
+              </div>
+              <div class="month">
+                {{getMonth(f.day)}}
+              </div>
+              <div class="year">
+                {{getYear(f.day)}}
+              </div>
+            </div>
           </div>
-          <div class="average-row-bar">
-          </div>
-          <div class="date">
-            <div class="day">
+          <div v-for="(f, index) in emptylatestTrips"
+                v-bind:key="'empty-' + index"
+                class="average-column">
+            <div class="count">
               -
             </div>
+            <div class="average-row-bar">
+            </div>
+            <div class="date">
+              <div class="day">
+                -
+              </div>
+            </div>
           </div>
+          <div class="average-threshold"
+                v-if="latestTrips.length > 0"
+                v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
         </div>
-        <div class="average-threshold"  
-              v-if="latestTrips.length > 0" 
-              v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
       </div>
     </div>
 
     <div class="section">
       <div class="shrinked">
-        <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+        <h2><i class="icon-size" />Taille moyenne <span class="hide-if-small">par espèce</span> (cm)</h2>
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
@@ -150,6 +154,7 @@ import OptionsList from '@/components/common/OptionsList.vue';
 import DistributionChart from '@/components/charts/DistributionChart.vue';
 import HistogramChart from '@/components/charts/HistogramChart.vue';
 
+import Constants from '@/services/Constants';
 import TripsService from '@/services/TripsService';
 import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean, Month} from '@/pojos/BackendPojos';
 import DistributionEntry from '@/pojos/DistributionEntry';
@@ -180,7 +185,6 @@ export class TopEntry {
 export default class PersonalDashboard extends Vue {
 
   speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
-  months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
   caughtSpeciesDistribution:DistributionEntry[] = [];
   averageCatchsPerTripRounded:number = 0;
@@ -224,8 +228,19 @@ export default class PersonalDashboard extends Vue {
         const species:SpeciesWithAlias = this.speciesIndex[speciesId];
         const percent:number = Math.round(distribution[speciesId]);
         const releasedPercent:number = Math.round(releasedDistribution[speciesId]) | 0;
+        const keptPercent:number = percent - releasedPercent;
         const count:number = speciesCount[speciesId];
-        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, releasedPercent, count, species.alias);
+        const keptCount:number = percent == 0 ? 0 : Math.round(count * keptPercent / percent);
+        const keptLabel:string = 'conservé' + (keptCount > 1 ? 's':'');
+        const entry:DistributionEntry = new DistributionEntry(
+          speciesId,
+          species.name,
+          percent,
+          keptPercent,
+          count,
+          species.alias,
+          keptCount,
+          keptLabel);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -325,7 +340,7 @@ export default class PersonalDashboard extends Vue {
 
   getMonth(date:number) {
     const month = new Date(date).getMonth();
-    const result = this.months[month];
+    const result = Constants.MONTHS[month];
     return result;
   }
 
@@ -371,11 +386,17 @@ export default class PersonalDashboard extends Vue {
 
   .average-threshold {
     position: absolute;
-    width: calc(100% + 60px);
-    left: -30px;
+    width: calc(100% + 2 * @margin-large);
+    left: calc(-1 * @margin-large);
     height: 0px;
     border: 1px solid @terra-cotta;
-  }
+
+    @media screen and (min-width: @desktop-min-width) and (max-width: 1073px) {
+      width: calc(100% + 2 * @margin-large-desktop);
+      left: calc(-1 * @margin-large-desktop);
+    }
+
+}
 
   .average-column {
     display: flex;

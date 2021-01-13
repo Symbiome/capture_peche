@@ -31,7 +31,9 @@
       <div class="item-row">
         <div class="name">{{trip.name}}</div>
         <div class="right-part">
-          <i v-if="trip.modifiable" class="icon-edit warning"/>
+          <i v-if="trip.modifiable"
+             class="icon-edit warning"
+             title="La sortie est encore modifiable"/>
         </div>
       </div>
       <div class="item-row">
@@ -195,7 +197,6 @@ export default class MyTripItem extends Vue {
           i {
             margin-left: @margin-x-small;
           }
-
         }
       }
 
@@ -208,13 +209,36 @@ export default class MyTripItem extends Vue {
     height: 90px;
 
     .item-description {
-
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);
-
-
     }
   }
 
+
+  @media screen and (min-width: @desktop-min-width) {
+    height: 110px;
+    padding-left: @margin-large-desktop;
+    padding-right: @margin-large-desktop;
+    &:hover {
+      background-color: @gainsboro;
+    }
+
+    .item-description {
+      cursor: pointer;
+      margin-left: @margin-medium;
+      width: 100%;
+
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+
+      .item-row {
+        .name {
+          font-size: @fontsize-paragraph-desktop;
+        }
+      }
+
+    }
+
+  }
 }
 
 </style>

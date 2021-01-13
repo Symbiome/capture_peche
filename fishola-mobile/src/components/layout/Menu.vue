@@ -22,7 +22,7 @@
   <div class="menu"
        :class="visibility">
       <div class="menu-title"
-           v-on:click="goHome">
+           v-on:click="goDispatcher">
         <div>
           <img src="img/logo-small.svg"
                alt="FISHOLA" />
@@ -160,6 +160,11 @@ export default class Menu extends Vue {
   openFeedback() {
     this.closeMenu();
     this.$root.$emit('open-feedback');
+  }
+
+  goDispatcher() {
+    this.closeMenu();
+    router.push('/');
   }
 
   goHome() {

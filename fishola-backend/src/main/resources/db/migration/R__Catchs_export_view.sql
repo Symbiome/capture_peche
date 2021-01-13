@@ -130,29 +130,19 @@ COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 DROP VIEW IF EXISTS personal_catchs_export;
 CREATE VIEW personal_catchs_export AS
 SELECT
-    'FISHOLA' AS nom_du_projet,
     l.export_as AS nom_du_site,
-    (l.export_as || ' : peche amateur') AS nom_de_la_plateforme,
     to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
-    u.id AS id_login,
-    u.birth_year AS annee_naissance_utilisateur,
-    CASE u.gender WHEN 'Male' THEN 'H'
-                  WHEN 'Female' THEN 'F'
-                  WHEN 'NonBinary' THEN '?'
-                  END AS sexe_utilisateur,
     to_char(t.day, 'MM') AS mois_de_la_sortie,
     to_char(t.day, 'YYYY') AS annee_de_la_sortie,
     CASE t.type WHEN 'Craft' THEN 'Embarcation'
                 WHEN 'Border' THEN 'Bord'
                 END AS type_de_peche,
     t.name AS nom_de_la_sortie,
-    t.id AS id_sortie,
     tsn.species AS espece_recherchee,
     to_char(t.start_time, 'HH24:MI:SS') AS debut_de_peche,
     to_char(t.end_time, 'HH24:MI:SS') AS fin_de_peche,
     (t.end_time - t.start_time) AS duree_de_la_sortie,
     ttn.techniques AS technique_de_peche_par_sortie,
-    c.id AS id_capture,
     ct.export_as AS technique_de_peche_par_capture,
     s.export_as AS espece_capturee,
     c.size * 10 AS longueur_totale_du_poisson,
@@ -183,6 +173,7 @@ LEFT JOIN catch c ON t.id = c.trip_id
 LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+WHERE t.hidden = false
 ;
 
 COMMENT ON VIEW personal_catchs_export IS 'Génère le CSV pour les exports (sans filtre) : À filtrer ensuite sur l''utilisateur';

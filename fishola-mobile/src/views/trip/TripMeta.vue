@@ -22,49 +22,70 @@
   <div class="edit-trip-meta page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-meta-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Information de pêche</h1>
-          <FormInput name="name"
-                      label="Nom de la sortie"
-                      placeholder="Nommez votre sortie"
-                      v-model="trip.name"
-                      v-bind:error="nameError" />
-          <FormSelect name="lake"
-                      label="Lac"
-                      v-bind:options="lakes"
-                      orderBy="name"
-                      v-model="trip.lakeId"
-                      v-bind:error="lakeIdError"/>
+          <h1>
+            <BackButton class="hide-on-mobile"/>
+            Information de pêche
+          </h1>
+          <div class="edit-trip-meta-form">
+            <div class="form-block">
+              <FormInput name="name"
+                          label="Nom de la sortie"
+                          placeholder="Nommez votre sortie"
+                          v-model="trip.name"
+                          v-bind:error="nameError" />
+              <FormSelect name="lake"
+                          label="Lac"
+                          v-bind:options="lakes"
+                          orderBy="name"
+                          v-model="trip.lakeId"
+                          v-bind:error="lakeIdError"/>
 
-          <span v-if="hereIAmError" class="position-error">
-            <i class="icon-warning"/>
-            {{hereIAmError}}
-          </span>
+              <span v-if="hereIAmError" class="position-error">
+                <i class="icon-warning"/>
+                {{hereIAmError}}
+              </span>
 
-          <FormSelect name="type"
-                      label="Type de pêche"
-                      v-bind:options="types"
-                      orderBy="name"
-                      v-model="trip.type"
-                      v-bind:error="typeError" />
-          <div v-if="trip.mode == 'Afterwards'">
-            <FormInput name="date"
-                        label="Date"
-                        type="date"
-                        v-model="date"
-                        v-bind:error="dateError"/>
-            <FormInput name="startAt"
-                        label="Heure de début"
-                        type="time"
-                        v-model="startedAt"
-                        v-bind:error="startedAtError"/>
-            <FormInput name="finishedat"
-                        label="Heure de fin"
-                        type="time"
-                        v-model="finishedAt"
-                        v-bind:error="finishedAtError"/>
+              <FormSelect name="type"
+                          label="Type de pêche"
+                          v-bind:options="types"
+                          orderBy="name"
+                          v-model="trip.type"
+                          v-bind:error="typeError" />
+            </div>
+            <div v-if="trip.mode == 'Afterwards'"
+                 class="form-block">
+              <FormInput name="date"
+                          label="Date"
+                          type="date"
+                          v-model="date"
+                          v-bind:error="dateError"/>
+              <FormInput name="startAt"
+                          label="Heure de début"
+                          type="time"
+                          v-model="startedAt"
+                          v-bind:error="startedAtError"/>
+              <FormInput name="finishedat"
+                          label="Heure de fin"
+                          type="time"
+                          v-model="finishedAt"
+                          v-bind:error="finishedAtError"/>
+            </div>
+          </div>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="next">
+                Suivant
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="giveup">
+                Abandon
+              </button>
+            </div>
           </div>
 
           <div class="bottom-page-spacer keyboardSensitive"></div>
@@ -72,8 +93,8 @@
       </div>
     </div>
     <FisholaFooter button-text="Suivant"
-                    v-on:buttonClicked="next"
-                    shortcuts="back,step-1-4,giveup"/>
+                   v-on:buttonClicked="next"
+                   shortcuts="back,step-1-4,giveup"/>
   </div>
 </template>
 
@@ -90,6 +111,7 @@ import ReferentialService from '@/services/ReferentialService';
 import {CoordsAndLake} from '@/services/GeolocationService';
 import GeolocationService from '@/services/GeolocationService';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FormInput from '@/components/common/FormInput.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 
@@ -104,6 +126,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     FormInput,
     FormSelect,
     FisholaFooter
@@ -251,6 +274,16 @@ export default class TripMetaView extends Vue {
     router.push({name:'trip-species', params: {id: this.id}});
   }
 
+  giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
+  }
+
 }
 
 </script>
@@ -265,5 +298,29 @@ export default class TripMetaView extends Vue {
   color: @carrot-orange;
   font-style: italic;
 }
+
+.edit-trip-meta-form {
+  display: flex;
+  flex-direction: column;
+  div.form-block {
+    width: 100%;
+  }
+}
+
+
+@media screen and (min-width: @desktop-min-width) {
+  .edit-trip-meta-form {
+    flex-direction: row;
+    div.form-block {
+      &:nth-child(odd) {
+        margin-right: @margin-medium;
+      }
+      &:nth-child(even) {
+        margin-left: @margin-medium;
+      }
+    }
+  }
+}
+
 
 </style>

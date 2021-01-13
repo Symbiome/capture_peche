@@ -152,6 +152,16 @@ export default class LoginView extends Vue {
 
 @import "../less/main";
 
+@media screen and (min-width: @desktop-min-width) {
+  div.login {
+    &.full-background {
+      background-position: left;
+      background-position-x: 640px;
+      background-position-y: 60%;
+    }
+  }
+}
+
 .login-page {
   display: flex;
   flex-direction: row;

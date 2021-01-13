@@ -26,9 +26,15 @@
 
         <div class="pane-content large rounded">
 
-          <h1>
-            Tableau de bord
-            <a v-bind:href="exportUrl" class="export" title="Exporter">
+          <h1 class="no-margin-pane">
+            <span>
+              Tableau de bord
+            </span>
+            <a v-bind:href="exportUrl"
+               class="export"
+               title="Exporter"
+               target="_blank">
+              <span>Exporter</span>
               <i class="icon-download"/>
             </a>
           </h1>
@@ -246,9 +252,14 @@ export default class DashboardView extends Vue {
       padding-top: @vertical-margin-small;
     }
 
+    @media screen and (min-width: @desktop-min-width) {
+      padding-top: 0px;
+    }
+
     color: @gunmetal;
 
-    h1 a {
+    h1 a.export {
+      font-size: 18px;
       margin-left: 50px;
       color: @pale-sky;
     }
@@ -258,7 +269,6 @@ export default class DashboardView extends Vue {
       display: flex;
       flex-direction: row;
       justify-content: space-evenly;
-      margin-bottom: 40px;
 
       .dashboard-mode {
         color: @pale-sky;
@@ -274,6 +284,30 @@ export default class DashboardView extends Vue {
       }
     }
 
+    .two-sections {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      @media screen and (min-width: 1074px) {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        padding-left: @margin-large;
+        padding-right: @margin-large;
+
+        .section {
+          width: 50%;
+
+          &.shrinked {
+            padding-left: @margin-large;
+            padding-right: @margin-large;
+          }
+        }
+      }
+
+    }
+
     .section {
       margin-top: 50px;
     }
@@ -285,6 +319,11 @@ export default class DashboardView extends Vue {
       @media(max-width:350px) {
         padding-left: @margin-medium;
         padding-right: @margin-medium;
+      }
+
+      @media screen and (min-width: @desktop-min-width) {
+        padding-left: @margin-large-desktop;
+        padding-right: @margin-large-desktop;
       }
 
     }
@@ -301,11 +340,81 @@ export default class DashboardView extends Vue {
       font-size: @fontsize-title;
       line-height: calc(@fontsize-title + @line-height-padding-xx-large);
       text-align: left;
+
+      @media screen and (max-width: 430px) {
+        span.hide-if-small {
+          display: none;
+        }
+      }
     }
 
 
   }
 
+  @media screen and (min-width: @desktop-min-width) {
+    .pane-content {
+      h1 {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        a.export {
+          font-size: 30px;
+          margin-left: 0px;
+        }
+      }
+
+      .dashboard-modes {
+        .dashboard-mode {
+          width: 40%;
+        }
+      }
+
+    }
+  }
+
+  @media screen and (max-width: 899px) {
+    .pane-content {
+      h1 {
+        a.export {
+          span {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  @media screen and (min-width: 900px) {
+    .pane-content {
+      h1 {
+        a.export {
+          font-weight: bold;
+          line-height: 22px;
+          height: 33px;
+          padding: 5px;
+          border-radius: 16px;
+          padding-left: 16px;
+          padding-right: 16px;
+          border: 0px;
+          text-decoration: none;
+          color: @white;
+          background-color: @carrot-orange;
+          font-size: 16px;
+          span {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
+
+  @media screen and (min-width: 431px) {
+    .show-if-small {
+      display: none;
+    }
+  }
 }
 
 </style>

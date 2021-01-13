@@ -22,10 +22,14 @@
   <div class="edit-trip-techniques page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-techniques-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-bind:trip="trip"
+                      class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Technique utilisée</h1>
+          <h1 class="no-margin-pane">
+            <BackButton class="hide-on-mobile"/>
+            Technique utilisée
+          </h1>
           <div v-for="s in techniques"
                v-bind:key="s.id"
                class="techniques-item"
@@ -43,6 +47,20 @@
               <span v-if="s.alias" class="real-name">({{s.name}})</span>
             </div>
           </div>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="saveTechniques">
+                Enregistrer
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="giveup">
+                Abandon
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
@@ -56,9 +74,11 @@
 <script lang="ts">
 import {Technique, TripBean} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
+import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
@@ -70,6 +90,7 @@ import router from '../../router';
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     FisholaFooter
   }
 })
@@ -142,6 +163,16 @@ export default class TripTechniquesView extends Vue {
     } else {
       router.push({name:'trip', params: {id: this.id}});
     }
+  }
+
+  giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
   }
 
 }
@@ -250,15 +281,18 @@ export default class TripTechniquesView extends Vue {
 
   }
 
-  .info {
-    font-style: italic;
-    font-weight: 300;
-    font-size: @fontsize-info;
-    line-height: calc(@fontsize-info + @line-height-padding-medium);
-    color: @pale-sky;
-    text-align: center;
-  }
+  @media screen and (min-width: @desktop-min-width) {
 
+    .techniques-item {
+      height: 65px;
+      padding-left: @margin-large-desktop;
+      .item-description {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+      }
+    }
+
+  }
 }
 
 </style>

@@ -26,7 +26,9 @@ export default class DistributionEntry {
         public percent:number,
         public greenPercent:number,
         public count:number,
-        public alias?:string
+        public alias?:string,
+        public greenCount?:number,
+        public greenLabel?:string,
         ) {
     }
 }

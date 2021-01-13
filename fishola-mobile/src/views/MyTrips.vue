@@ -22,12 +22,24 @@
   <div class="my-trips page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
-      <MyTripsHeader v-bind:count="count"
-                     v-bind:offline="offline"
-                     v-bind:sortDown="sortDown"
-                     v-on:reverseSortOrder="reverseSortOrder"/>
-      <MyTripsSearch v-model="term"
-                     v-bind:offline="offline"/>
+      <h1 class="hide-on-mobile">Mes sorties</h1>
+      <div class="my-trips-top">
+        <MyTripsHeader v-bind:count="count"
+                      v-bind:offline="offline"
+                      v-bind:sortDown="sortDown"
+                      v-on:reverseSortOrder="reverseSortOrder"/>
+        <div class="search-and-new">
+          <div class="button button-primary hide-on-mobile"
+               :class="{'delete': selectedTripIds.length > 0}">
+            <button v-on:click="footerButtonClicked">
+              <i v-bind:class="getButtonIcon()"/>
+              {{getButtonText()}}
+            </button>
+          </div>
+          <MyTripsSearch v-model="term"
+                        v-bind:offline="offline"/>
+        </div>
+      </div>
       <MyTripsList v-bind:trips="trips"
                    v-bind:hasSearchTerm="!!currentSearchTerm"
                    v-bind:noTripYet="totalCount == 0"
@@ -40,8 +52,8 @@
     </div>
     <FisholaFooter shortcuts="logout,dashboard,home"
                    v-bind:hideButton="hasRunningTrip"
-                   v-bind:button-icon="selectedTripIds.length == 0 ? (totalCount == 0 ? 'icon-fishing':'icon-plus'): 'icon-delete'"
-                   v-bind:button-text="selectedTripIds.length == 0 ? (totalCount == 0 ? 'Commencer':'Nouvelle sortie') : 'Supprimer'"
+                   v-bind:button-icon="getButtonIcon()"
+                   v-bind:button-text="getButtonText()"
                    v-on:buttonClicked="footerButtonClicked"
                    selected="home"/>
   </div>
@@ -172,6 +184,18 @@ export default class MyTripsView extends Vue {
     this.loadTrips();
   }
 
+  getButtonIcon() {
+    return this.selectedTripIds.length == 0
+      ? (this.totalCount == 0 ? 'icon-fishing':'icon-plus')
+      : 'icon-delete'
+  }
+
+  getButtonText() {
+    return this.selectedTripIds.length == 0
+      ? (this.totalCount == 0 ? 'Commencer':'Nouvelle sortie')
+      : 'Supprimer';
+  }
+
   footerButtonClicked() {
     if (this.selectedTripIds.length == 0) {
       this.newTrip();
@@ -238,6 +262,53 @@ export default class MyTripsView extends Vue {
   .my-trips-list {
     flex-grow: 1;
     overflow: auto;
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    background-color: @white-smoke;
+
+    h1 {
+      font-style: normal;
+      font-weight: normal;
+
+      color: @pelorous;
+      margin-top: @margin-medium;
+      margin-bottom: @margin-xx-large;
+      font-size: @fontsize-title-desktop;
+      height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      text-align: left;
+
+      margin-left: @margin-large-desktop;
+      margin-right: @margin-large-desktop;
+    }
+
+    .my-trips-top {
+      color: @pelorous;
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: space-between;
+      align-items: center;
+      margin-left: @margin-large-desktop;
+      margin-right: @margin-large-desktop;
+
+      .search-and-new {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        .button {
+          margin-left: 0px;
+          margin-right: 0px;
+
+          &.delete {
+            button {
+              background-color: @cardinal;
+            }
+          }
+        }
+      }
+    }
+
   }
 
 }

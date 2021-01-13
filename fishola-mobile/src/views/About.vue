@@ -58,6 +58,10 @@
         </header>
         <!-- // End Header // -->
 
+        <div class="under-header-zone">
+          FISHOLA : La science tous ensemble
+        </div>
+
         <!-- \\ Begin Banner Section \\ -->
         <div class="Title_sec" id="title">
             <!--  \\ Begin banner Side -->
@@ -559,9 +563,16 @@ export default class AboutView extends Vue {
   color: @white;
 }
 
+.under-header-zone {
+  height: 73px;
+  text-align: center;
+  color: @gunmetal;
+  font-size: 48px;
+}
+
 .Title_sec {
 	width: 100%;
-	background: url(/img/about-fishes.jpg) top center no-repeat;
+	background: url(/img/about-coregones5.jpg) top center no-repeat;
 	height: 680px;
 	position: relative;
   background-size: cover;
@@ -735,11 +746,12 @@ export default class AboutView extends Vue {
 .Producted_by_sec {
 
   background-color: @solitude;
-  height: 500px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-top: 30px;
+  padding-bottom: 30px;
 
   .partners, .producers {
     h3 {
@@ -753,6 +765,7 @@ export default class AboutView extends Vue {
       flex-direction: row;
       justify-content: center;
       align-items: center;
+      flex-wrap: wrap;
 
       img {
         margin-left: 20px;
@@ -823,8 +836,6 @@ export default class AboutView extends Vue {
   }
 
 }
-
-
 
 footer {
   background: #0c2b34;

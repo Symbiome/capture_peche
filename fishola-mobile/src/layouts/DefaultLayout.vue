@@ -20,8 +20,6 @@
   -->
 <template>
   <div>
-    <v-dialog :width="270"/>
-    <Toaster/>
     <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
     <FeedbackModal/>
     <div id="root"
@@ -33,7 +31,6 @@
 
 <script lang="ts">
 
-import Toaster from '@/components/layout/Toaster.vue'
 import Menu from '@/components/layout/Menu.vue'
 import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
@@ -41,7 +38,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
-    Toaster,
     Menu,
     FeedbackModal
   }

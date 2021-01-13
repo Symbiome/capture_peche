@@ -22,10 +22,14 @@
   <div class="edit-trip-species page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-species-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-bind:trip="trip"
+                      class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Espèce recherchée</h1>
+          <h1 class="no-margin-pane">
+            <BackButton class="hide-on-mobile"/>
+            Espèce recherchée
+          </h1>
           <div v-for="s in sortedSpecies()"
                v-bind:key="s.id"
                class="species-item"
@@ -62,6 +66,20 @@
             </div>
           </div>
           <div class="info">Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en renseigner plusieurs</div>
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="next">
+                Suivant
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="giveup">
+                Abandon
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
@@ -76,9 +94,11 @@
 import TripSpecies from '@/pojos/TripSpecies';
 import {SpeciesWithAlias} from '@/pojos/BackendPojos';
 import Constants from '@/services/Constants';
+import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import ReferentialService from '@/services/ReferentialService';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
@@ -88,6 +108,7 @@ import router from '../../router';
   
 @Component({
   components: {
+    BackButton,
     FisholaHeader,
     SomeTripHeader,
     FisholaFooter
@@ -184,6 +205,16 @@ export default class TripSpeciesView extends Vue {
     }
   }
 
+  giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
+  }
+
   summaryNotYetSaved(tripAsAny:any) {
     // Si on a pas encore la liste des techniques c'est qu'on est pas
     // encore passé par la sauvegarde sur l'écran de résumé #JoeLaBidouille
@@ -226,7 +257,7 @@ export default class TripSpeciesView extends Vue {
 
     border-top: 1px solid @gainsboro;
 
-    &.selected {
+    &.selected, &:hover {
       background-color: @solitude;
     }
 
@@ -246,6 +277,7 @@ export default class TripSpeciesView extends Vue {
 
     .item-description {
       margin-left: @margin-medium;
+      height: 100%;
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
@@ -256,6 +288,8 @@ export default class TripSpeciesView extends Vue {
       display: flex;
       flex-direction: row;
       align-items: center;
+
+      cursor: pointer;
 
       input {
         padding-left: @margin-small;
@@ -315,6 +349,24 @@ export default class TripSpeciesView extends Vue {
     text-align: center;
   }
 
+  @media screen and (min-width: @desktop-min-width) {
+
+    .species-item {
+      height: 65px;
+      padding-left: @margin-large-desktop;
+      .item-description {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+      }
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: @fontsize-paragraph;
+      line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+    }
+
+  }
 }
 
 </style>

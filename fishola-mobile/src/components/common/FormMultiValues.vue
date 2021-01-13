@@ -115,6 +115,31 @@ export default class FormMultiValues extends Vue {
     }
   }
 
+  @media screen and (min-width: @desktop-min-width) {
+    font-size: @fontsize-form-input-desktop;
+    line-height: calc(@fontsize-form-input-desktop + @line-height-padding-medium);
+
+    select {
+      font-size: @fontsize-form-input-desktop;
+      height: 42px;
+    }
+
+    .header {
+      a {
+        font-size: @fontsize-form-header-desktop;
+        line-height: calc(@fontsize-form-header-desktop + @line-height-padding-large);
+      }
+    }
+
+    ul {
+
+      li {
+        font-size: @fontsize-form-input-desktop;
+        line-height: calc(@fontsize-form-input-desktop + @line-height-padding-medium);
+      }
+    }
+
+  }
 }
 
 </style>

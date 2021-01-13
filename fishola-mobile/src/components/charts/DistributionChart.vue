@@ -33,6 +33,9 @@
         </div>
         <div class="percent">
           {{f.count}}
+          <span class="green-label" v-if="f.greenCount">
+            (<span class="hide-if-small">dont </span>{{f.greenCount}}<span class="hide-if-small"> {{f.greenLabel}}</span>)
+          </span>
         </div>
       </div>
       <div class="distribution-row-bar">
@@ -43,6 +46,9 @@
              class="distribution-row-bar-filled green"
              v-bind:style="'width: ' + f.greenPercent + '%;'"></div>
       </div>
+    </div>
+    <div class="legend show-if-small" v-if="distribution.length > 0 && legend && greenLegend">
+      {{legend}} <span>(dont {{greenLegend}})</span>
     </div>
   </div>
 </template>
@@ -57,6 +63,8 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 export default class DistributionChart extends Vue {
 
   @Prop() distribution:DistributionEntry[];
+  @Prop() legend?:string;
+  @Prop() greenLegend?:string;
 
   orderedCaughtSpeciesDistribution() {
     return Vue.lodash.orderBy(this.distribution, 'name');
@@ -88,6 +96,12 @@ export default class DistributionChart extends Vue {
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
 
+      @media screen and (min-width: @desktop-min-width) {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+        height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+
       .species {
         color: @gunmetal;
       }
@@ -95,6 +109,15 @@ export default class DistributionChart extends Vue {
       .percent {
         font-weight: bold;
         color: @pelorous;
+        .green-label {
+          color: @lime-green;
+
+          @media screen and (max-width: 430px) {
+            span.hide-if-small {
+              display: none;
+            }
+          }
+        }
       }
     }
 
@@ -127,6 +150,15 @@ export default class DistributionChart extends Vue {
 
   }
 
+  .legend {
+    color: @pelorous;
+    text-align: right;
+    font-weight: bold;
+    font-style: italic;
+    span {
+      color: @lime-green;
+    }
+  }
 }
 
 </style>

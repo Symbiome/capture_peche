@@ -131,7 +131,8 @@ public class CatchsDao extends AbstractFisholaDao {
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .where(trueCondition());
             if (userId.isPresent()) {
-                selectStep = selectStep.and(Tables.TRIP.OWNER_ID.eq(userId.get()));
+                selectStep = selectStep.and(Tables.TRIP.OWNER_ID.eq(userId.get()))
+                        .and(Tables.TRIP.HIDDEN.eq(false));
             }
             if (year.isPresent()) {
                 LocalDate min = LocalDate.of(year.get(), Month.JANUARY, 1);

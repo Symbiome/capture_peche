@@ -20,15 +20,22 @@
   -->
 <template>
   <div>
+    <div class="disclaimer">
+      <span>
+        Statistiques de l’ensemble des utilisateurs
+      </span>
+    </div>
 
     <div class="section shrinked">
       <h2><i class="icon-fish" />Espèces pêchées</h2>
-      <DistributionChart :distribution="caughtSpeciesDistribution"></DistributionChart>
+      <DistributionChart :distribution="caughtSpeciesDistribution"
+                          legend="Capturés"
+                          greenLegend="conservés"></DistributionChart>
     </div>
 
     <div class="section">
       <div class="shrinked">
-        <h2><i class="icon-size" />Historique des tailles (cm)</h2>
+        <h2><i class="icon-size" />Taille moyenne <span class="hide-if-small">par espèce</span> (cm)</h2>
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
@@ -99,8 +106,19 @@ export default class GlobalDashboardComponent extends Vue {
         const species:SpeciesWithAlias = this.speciesIndex[speciesId];
         const percent:number = Math.round(distribution[speciesId]);
         const releasedPercent:number = Math.round(releasedDistribution[speciesId]) | 0;
+        const keptPercent:number = percent - releasedPercent;
         const count:number = speciesCount[speciesId];
-        const entry:DistributionEntry = new DistributionEntry(speciesId, species.name, percent, releasedPercent, count, species.alias);
+        const keptCount:number = percent == 0 ? 0 : Math.round(count * keptPercent / percent);
+        const keptLabel:string = 'conservé' + (keptCount > 1 ? 's':'');
+        const entry:DistributionEntry = new DistributionEntry(
+          speciesId,
+          species.name,
+          percent,
+          keptPercent,
+          count,
+          species.alias,
+          keptCount,
+          keptLabel);
         this.caughtSpeciesDistribution.push(entry);
     });
 
@@ -131,5 +149,16 @@ export default class GlobalDashboardComponent extends Vue {
 <style lang="less">
 
 @import "../../less/main";
+
+.disclaimer {
+  font-style: italic;
+  font-size: @fontsize-button;
+  line-height: calc(@fontsize-button + @line-height-padding-x-large);
+  color: @pale-sky;
+  text-align: center;
+  margin-top: @vertical-margin-large;
+  padding-left: @margin-large;
+  padding-right: @margin-large;
+}
 
 </style>

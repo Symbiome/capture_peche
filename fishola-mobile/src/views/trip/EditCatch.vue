@@ -21,7 +21,7 @@
 <template>
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
-    <div class="catch-picture keyboardSensitive">
+    <div class="catch-picture keyboardSensitive hide-on-desktop">
       <PicturePreview v-bind:src="pictureSrc"
                       v-bind:modifiable="modifiable"
                       noPictureText="Appuyer pour ajouter une photo"
@@ -37,133 +37,176 @@
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
         <div class="pane-content rounded" v-if="ready">
-          <h1>Capture</h1>
+          <h1>
+            <BackButton class="hide-on-mobile"/>
+            Capture
+          </h1>
 
           <span v-if="catchPositionError" class="position-error">
             <i class="icon-warning"/>
             {{catchPositionError}}
           </span>
 
-          <FormSelect name="species"
-                      label="Espèce"
-                      v-bind:options="allSpeciesWithAliases"
-                      v-model="aCatch.speciesId"
-                      v-bind:error="speciesIdError"
-                      v-bind:readonly="!modifiable"/>
-          <FormInput name="otherSpecies"
-                     label="Si autre"
-                     type="text"
-                     placeholder="Renseigner l’espèce"
-                     v-model="aCatch.otherSpecies"
-                     v-bind:error="otherSpeciesError"
-                     v-bind:readonly="!modifiable"
-                     v-if="aCatch.speciesId == '__other__'"/>
-          <FormInput name="size"
-                     :label="sizeLabel"
-                     type="number"
-                     :min="1"
-                     placeholder="Entrez une taille en centimètres"
-                     v-model="aCatch.size"
-                     v-bind:error="sizeError"
-                     v-bind:readonly="!modifiable"/>
-          <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
-            <i class="icon-info"/>
-            <span>
-              Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
-            </span>
-          </div>
-          <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
-                     name="weight"
-                     label="Poids en g (optionnel)"
-                     type="number"
-                     :min="1"
-                     placeholder="Entrez un poids en grammes"
-                     v-model="aCatch.weight"
-                     v-bind:error="weightError"
-                     v-bind:readonly="!modifiable"/>
-          <FormYesNo name="keep"
-                     v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
-                     v-model="aCatch.keep"
-                     v-bind:error="keepError"
-                     v-bind:readonly="!modifiable"/>
-          <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
-          <!--FormSelect name="releaseState"
-                      label="État du poisson relâché"
-                      v-bind:options="allReleasedFishStates"
-                      v-model="aCatch.releasedStateId"
-                      v-bind:error="releasedStateIdError"
-                      v-bind:readonly="!modifiable"/-->
-          <FormSelect name="technique"
-                      label="Technique de pêche"
-                      v-bind:options="allTechniques"
-                      v-model="aCatch.techniqueId"
-                      v-bind:error="techniqueIdError"
-                      v-bind:readonly="!modifiable"/>
-          <FormTextarea name="description"
-                        label="Observation (optionnelle)"
-                        placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
-                        v-model="aCatch.description"
-                        v-bind:readonly="!modifiable"/>
-          <FormInput name="caughtAt"
-                     label="Heure de la capture (optionnelle)"
-                     type="time"
-                     v-model="caughtAt"
-                     v-bind:readonly="!modifiable"/>
-          <FormToggle v-if="withSample
-                            || ( settings
-                                 && settings.promptSamples
-                                 && (authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-                               )"
-                      label="Prélèvement (optionnel)"
-                      v-model="withSample"
-                      v-bind:readonly="!modifiable"/>
-          <div v-if="withSample">
-
-            <div class="info"
-                v-if="samplesDocumentationUrl">
-              Pour pouvoir effectuer des prélèvements, vous devez vous munir
-              d'un kit dans un des points de collecte :
-              <a :href="samplesDocumentationUrl">consulter la liste</a>
+          <div class="catch-picture-desktop-and-form">
+            <div class="catch-picture-desktop hide-on-mobile">
+              <PicturePreview v-bind:src="pictureSrc"
+                              v-bind:modifiable="modifiable"
+                              noPictureText="Appuyer pour ajouter une photo"
+                              v-on:take-picture="takePicture" />
             </div>
 
-            <div class="sample-id-container">
-              <div class="description">
-                Numéro d'échantillon à reporter :
+            <div class="edit-catch-form">
+              <div :class="{'two-columns-row-on-desktop': aCatch.speciesId == '__other__'}">
+                <FormSelect name="species"
+                            label="Espèce"
+                            v-bind:options="allSpeciesWithAliases"
+                            v-model="aCatch.speciesId"
+                            v-bind:error="speciesIdError"
+                            v-bind:readonly="!modifiable"/>
+                <FormInput name="otherSpecies"
+                          label="Si autre"
+                          type="text"
+                          placeholder="Renseigner l’espèce"
+                          v-model="aCatch.otherSpecies"
+                          v-bind:error="otherSpeciesError"
+                          v-bind:readonly="!modifiable"
+                          v-if="aCatch.speciesId == '__other__'"/>
               </div>
-              <div v-if="!sampleIdReady" class="spinner">&nbsp;</div>
-              <div class="sample-id"
-                   v-if="sampleIdReady">
-                {{aCatch.sampleId}}
+              <div class="two-columns-row-on-desktop">
+                <div>
+                  <FormInput name="size"
+                            :label="sizeLabel"
+                            type="number"
+                            :min="1"
+                            placeholder="Entrez une taille en centimètres"
+                            v-model="aCatch.size"
+                            v-bind:error="sizeError"
+                            v-bind:readonly="!modifiable"/>
+                  <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
+                    <i class="icon-info"/>
+                    <span>
+                      Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
+                    </span>
+                  </div>
+                </div>
+                <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
+                          name="weight"
+                          label="Poids en g (optionnel)"
+                          type="number"
+                          :min="1"
+                          placeholder="Entrez un poids en grammes"
+                          v-model="aCatch.weight"
+                          v-bind:error="weightError"
+                          v-bind:readonly="!modifiable"/>
               </div>
-            </div>
+              <div class="two-columns-row-on-desktop">
+                <FormYesNo name="keep"
+                          v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
+                          v-model="aCatch.keep"
+                          v-bind:error="keepError"
+                          v-bind:readonly="!modifiable"/>
+                <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
+                <!--FormSelect name="releaseState"
+                            label="État du poisson relâché"
+                            v-bind:options="allReleasedFishStates"
+                            v-model="aCatch.releasedStateId"
+                            v-bind:error="releasedStateIdError"
+                            v-bind:readonly="!modifiable"/-->
+                <FormSelect name="technique"
+                            label="Technique de pêche"
+                            v-bind:options="allTechniques"
+                            v-model="aCatch.techniqueId"
+                            v-bind:error="techniqueIdError"
+                            v-bind:readonly="!modifiable"/>
+              </div>
+              <div class="two-columns-row-on-desktop">
+                <FormTextarea name="description"
+                              label="Observation (optionnelle)"
+                              placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
+                              v-model="aCatch.description"
+                              v-bind:readonly="!modifiable"/>
+                <FormInput name="caughtAt"
+                          label="Heure de la capture (optionnelle)"
+                          type="time"
+                          v-model="caughtAt"
+                          v-bind:readonly="!modifiable"/>
+              </div>
+              <FormToggle v-if="withSample
+                                || ( settings
+                                    && settings.promptSamples
+                                    && (authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
+                                  )"
+                          label="Prélèvement (optionnel)"
+                          v-model="withSample"
+                          v-bind:readonly="!modifiable"/>
+              <div class="sample two-columns-row-on-desktop" v-if="withSample">
 
-          </div>
+                <div class="info"
+                    v-if="samplesDocumentationUrl">
+                  Pour pouvoir effectuer des prélèvements, vous devez vous munir
+                  d'un kit dans un des points de collecte :
+                  <a :href="samplesDocumentationUrl">consulter la liste</a>
+                </div>
 
-          <div v-if="!inCreation" class="location">
-            <div class="separator"></div>
-            <p>Emplacement de la capture</p>
-            <div class="empty" v-if="!gpsLocation">
-              <i class="icon icon-warning"></i> Aucune position enregistrée pour cette prise
-            </div>
-            <div class="map" v-if="gpsLocation">
-              <l-map
-                :zoom="16"
-                :center="gpsLocation"
-                :options="{
-                  zoomSnap: 0.5
-                }"
-                style="height: 100%; width: 100%;"
-              >
-                <l-tile-layer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                />
+                <div class="sample-id-container">
+                  <div class="description">
+                    Numéro d'échantillon à reporter :
+                  </div>
+                  <div v-if="!sampleIdReady" class="spinner">&nbsp;</div>
+                  <div class="sample-id"
+                      v-if="sampleIdReady">
+                    {{aCatch.sampleId}}
+                  </div>
+                </div>
 
-                <l-marker :lat-lng="gpsLocation"></l-marker>
+              </div>
 
-              </l-map>
-            </div>
-          </div>
+              <div v-if="!inCreation" class="location">
+                <!-- <div class="separator"></div>
+                <p>Emplacement de la capture</p> -->
+                <div class="empty" v-if="!gpsLocation">
+                  <i class="icon icon-warning"></i> Aucune position enregistrée pour cette prise
+                </div>
+                <div class="map" v-if="gpsLocation">
+                  <l-map
+                    :zoom="16"
+                    :center="gpsLocation"
+                    :options="{
+                      zoomSnap: 0.5
+                    }"
+                    style="height: 100%; width: 100%;"
+                  >
+                    <l-tile-layer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+
+                    <l-marker :lat-lng="gpsLocation"></l-marker>
+
+                  </l-map>
+                </div>
+              </div>
+
+              <div class="buttons-bar hide-on-mobile">
+                <div class="button button-primary" v-if="modifiable">
+                  <button v-on:click="validateClicked">
+                    <i class="icon-fish"/> {{inCreation ? 'Valider' : 'Enregistrer'}}
+                  </button>
+                </div>
+                <div class="button button-secondary" v-if="inCreation">
+                  <button v-on:click="cancel">
+                    Annuler
+                  </button>
+                </div>
+                <div class="button button-danger" v-if="!inCreation && modifiable">
+                  <button v-on:click="deleteCatch">
+                    <i class="icon-delete"/> Supprimer
+                  </button>
+                </div>
+              </div>
+
+            </div> <!-- edit-catch-form -->
+          </div> <!-- catch-picture-desktop-and-form -->
 
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
@@ -195,6 +238,7 @@ import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
+import BackButton from '@/components/common/BackButton.vue'
 import FormSelect from '@/components/common/FormSelect.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormInput from '@/components/common/FormInput.vue'
@@ -231,6 +275,7 @@ import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
 @Component({
   components: {
     FisholaHeader,
+    BackButton,
     FormInput,
     FormYesNo,
     FormTextarea,
@@ -680,6 +725,10 @@ export default class EditCatchView extends Vue {
       });
   }
 
+  cancel() {
+    TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
+  }
+
   leavePage() {
     if (this.inTripCreation) {
       router.push({name:'trip-catchs', params: {id: this.tripId}});
@@ -800,6 +849,78 @@ export default class EditCatchView extends Vue {
     .map {
       width: 100%;
       height: 200px;
+    }
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    &.picture-background .edit-catch-page {
+      .pane {
+        margin-top: unset;
+        .pane-content {
+          height: 100%;
+          .catch-picture-desktop-and-form {
+            display: flex;
+            flex-direction: column;
+          }
+        }
+      }
+    }
+    .catch-picture-desktop {
+      width: 100%;
+      height: 220px;
+    }
+
+    .sample {
+      &.two-columns-row-on-desktop {
+        align-items: center;
+      }
+      .info {
+        font-size: @fontsize-info-desktop;
+        line-height: calc(@fontsize-info-desktop + @line-height-padding-medium);
+      }
+
+      .sample-id-container {
+        margin-top: 0px;
+        margin-bottom: 0px;
+      }
+    }
+
+  }
+
+  @media screen and (min-width: 1264px) {
+    &.picture-background .edit-catch-page .pane .pane-content .catch-picture-desktop-and-form {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+
+  @media screen and (min-width: 1264px) and (max-width: 1407px) {
+    .catch-picture-desktop {
+      width: 339px;
+      height: 437px;
+    }
+    .edit-catch-form {
+      width: calc(100% - 339px - @margin-large);
+    }
+  }
+
+  @media screen and (min-width: 1408px) and (max-width: 1599px) {
+    .catch-picture-desktop {
+      width: 424px;
+      height: 547px;
+    }
+    .edit-catch-form {
+      width: calc(100% - 424px - @margin-large);
+    }
+  }
+
+  @media screen and (min-width: 1600px) {
+    .catch-picture-desktop {
+      width: 530px;
+      height: 684px;
+    }
+    .edit-catch-form {
+      width: calc(100% - 530px - @margin-large);
     }
   }
 

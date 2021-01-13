@@ -34,14 +34,23 @@
       </div>
     </div>
     <div class="labels">
-      <div class="label" v-for="m in orderedMonths" v-bind:key="'label-' +m">
+      <div class="label-short"
+           v-for="m in orderedMonths"
+           v-bind:key="'label-short-' + m">
         {{m.substring(0,1)}}
+      </div>
+      <div class="label-mid"
+           v-for="m in orderedMonths"
+           v-bind:key="'label-mid-' + m">
+        {{midMonth(m)}}
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+
+import Constants from '@/services/Constants';
 
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
@@ -57,6 +66,12 @@ export default class HistogramChart extends Vue {
 
   mounted() {
     this.maxValue = this.findMaxValue(this.values);
+  }
+
+  midMonth(m:Month) {
+    let index = this.orderedMonths.indexOf(m);
+    let result = Constants.MONTHS[index];
+    return result;
   }
 
   @Watch('values')
@@ -149,11 +164,25 @@ export default class HistogramChart extends Vue {
     flex-direction: row;
     justify-content: space-evenly;
 
-    .label {
+    .label-short,
+    .label-mid {
       width: 8%;
       color: @gunmetal;
       text-align: center;
     }
+
+    @media screen and (max-width: 900px) {
+      .label-mid {
+        display: none;
+      }
+    }
+
+    @media screen and (min-width: 901px) {
+      .label-short {
+        display: none;
+      }
+    }
+
   }
 }
 

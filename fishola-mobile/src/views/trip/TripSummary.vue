@@ -22,10 +22,14 @@
   <div class="edit-trip-summary page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-summary-page page">
-      <SomeTripHeader v-bind:trip="trip"/>
+      <SomeTripHeader v-bind:trip="trip"
+                      class="hide-on-desktop"/>
       <div class="pane">
         <div class="pane-content rounded">
-          <h1>Récapitulatif</h1>
+          <h1>
+            <BackButton class="hide-on-mobile"/>
+            Récapitulatif
+          </h1>
           <SomeTripSummary ref="summary"
                            v-if="trip.lakeId"
                            v-bind:trip="trip"
@@ -33,6 +37,20 @@
                            v-on:goEditSpecies="goEditSpecies"
                            v-on:goEditTechniques="goEditTechniques"
                            />
+
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="startSave">
+                <i class="icon-send"/> Terminer
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="giveup">
+                Abandon
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
@@ -52,6 +70,7 @@ import TripsService from '@/services/TripsService';
 
 import Helpers from '@/services/Helpers';
 
+import BackButton from '@/components/common/BackButton.vue'
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
 import SomeTripSummary from '@/components/trip/SomeTripSummary.vue'
@@ -67,6 +86,7 @@ export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
   components: {
     FisholaHeader,
     SomeTripHeader,
+    BackButton,
     SomeTripSummary,
     FisholaFooter
   }
@@ -96,6 +116,16 @@ export default class TripSummaryView extends Vue {
     // On demande au composant enfant de fournir le modèle mis à jour
     const summaryComponent:any = this.$refs.summary;
     summaryComponent.emitUpdatedTrip();
+  }
+
+  giveup() {
+    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
+      .then(this.giveupConfirmed);
+  }
+
+  giveupConfirmed() {
+    TripsService.cancelCreations();
+    router.push('/trips');
   }
 
   onUpdatedTrip(trip:any) {

@@ -25,6 +25,8 @@ export default class Constants {
     static RUNNING_ID:string = 'RUNNING';
     static NEW_CATCH_ID:string = 'NEW';
 
+    static MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
     static baseApiUrl():string {
         let result = process.env.VUE_APP_API_URL;
         if (!result) {
