@@ -47,71 +47,88 @@
             {{catchPositionError}}
           </span>
 
-          <FormSelect name="species"
-                      label="Espèce"
-                      v-bind:options="allSpeciesWithAliases"
-                      v-model="aCatch.speciesId"
-                      v-bind:error="speciesIdError"
-                      v-bind:readonly="!modifiable"/>
-          <FormInput name="otherSpecies"
-                     label="Si autre"
-                     type="text"
-                     placeholder="Renseigner l’espèce"
-                     v-model="aCatch.otherSpecies"
-                     v-bind:error="otherSpeciesError"
-                     v-bind:readonly="!modifiable"
-                     v-if="aCatch.speciesId == '__other__'"/>
-          <FormInput name="size"
-                     :label="sizeLabel"
-                     type="number"
-                     :min="1"
-                     placeholder="Entrez une taille en centimètres"
-                     v-model="aCatch.size"
-                     v-bind:error="sizeError"
-                     v-bind:readonly="!modifiable"/>
-          <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
-            <i class="icon-info"/>
-            <span>
-              Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
-            </span>
-          </div>
-          <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
-                     name="weight"
-                     label="Poids en g (optionnel)"
-                     type="number"
-                     :min="1"
-                     placeholder="Entrez un poids en grammes"
-                     v-model="aCatch.weight"
-                     v-bind:error="weightError"
-                     v-bind:readonly="!modifiable"/>
-          <FormYesNo name="keep"
-                     v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
-                     v-model="aCatch.keep"
-                     v-bind:error="keepError"
-                     v-bind:readonly="!modifiable"/>
-          <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
-          <!--FormSelect name="releaseState"
-                      label="État du poisson relâché"
-                      v-bind:options="allReleasedFishStates"
-                      v-model="aCatch.releasedStateId"
-                      v-bind:error="releasedStateIdError"
-                      v-bind:readonly="!modifiable"/-->
-          <FormSelect name="technique"
-                      label="Technique de pêche"
-                      v-bind:options="allTechniques"
-                      v-model="aCatch.techniqueId"
-                      v-bind:error="techniqueIdError"
-                      v-bind:readonly="!modifiable"/>
-          <FormTextarea name="description"
-                        label="Observation (optionnelle)"
-                        placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
-                        v-model="aCatch.description"
+          <div class="row">
+            <FormSelect name="species"
+                        class="left"
+                        label="Espèce"
+                        v-bind:options="allSpeciesWithAliases"
+                        v-model="aCatch.speciesId"
+                        v-bind:error="speciesIdError"
                         v-bind:readonly="!modifiable"/>
-          <FormInput name="caughtAt"
-                     label="Heure de la capture (optionnelle)"
-                     type="time"
-                     v-model="caughtAt"
-                     v-bind:readonly="!modifiable"/>
+            <FormInput name="otherSpecies"
+                       class="right"
+                       label="Si autre"
+                       type="text"
+                       placeholder="Renseigner l’espèce"
+                       v-model="aCatch.otherSpecies"
+                       v-bind:error="otherSpeciesError"
+                       v-bind:readonly="!modifiable"
+                       v-if="aCatch.speciesId == '__other__'"/>
+          </div>
+          <div class="row">
+            <div class="left">
+              <FormInput name="size"
+                        :label="sizeLabel"
+                        type="number"
+                        :min="1"
+                        placeholder="Entrez une taille en centimètres"
+                        v-model="aCatch.size"
+                        v-bind:error="sizeError"
+                        v-bind:readonly="!modifiable"/>
+              <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
+                <i class="icon-info"/>
+                <span>
+                  Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
+                </span>
+              </div>
+            </div>
+            <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
+                       name="weight"
+                       class="right"
+                       label="Poids en g (optionnel)"
+                       type="number"
+                       :min="1"
+                       placeholder="Entrez un poids en grammes"
+                       v-model="aCatch.weight"
+                       v-bind:error="weightError"
+                       v-bind:readonly="!modifiable"/>
+          </div>
+          <div class="row">
+            <FormYesNo name="keep"
+                       class="left"
+                       v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
+                       v-model="aCatch.keep"
+                       v-bind:error="keepError"
+                       v-bind:readonly="!modifiable"/>
+            <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
+            <!--FormSelect name="releaseState"
+                        label="État du poisson relâché"
+                        v-bind:options="allReleasedFishStates"
+                        v-model="aCatch.releasedStateId"
+                        v-bind:error="releasedStateIdError"
+                        v-bind:readonly="!modifiable"/-->
+            <FormSelect name="technique"
+                        class="right"
+                        label="Technique de pêche"
+                        v-bind:options="allTechniques"
+                        v-model="aCatch.techniqueId"
+                        v-bind:error="techniqueIdError"
+                        v-bind:readonly="!modifiable"/>
+          </div>
+          <div class="row">
+            <FormTextarea name="description"
+                          class="left"
+                          label="Observation (optionnelle)"
+                          placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
+                          v-model="aCatch.description"
+                          v-bind:readonly="!modifiable"/>
+            <FormInput name="caughtAt"
+                       class="right"
+                       label="Heure de la capture (optionnelle)"
+                       type="time"
+                       v-model="caughtAt"
+                       v-bind:readonly="!modifiable"/>
+          </div>
           <FormToggle v-if="withSample
                             || ( settings
                                  && settings.promptSamples
@@ -827,6 +844,24 @@ export default class EditCatchView extends Vue {
     .map {
       width: 100%;
       height: 200px;
+    }
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .row {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      .left,
+      .right {
+        width: calc(50% - @margin-medium);
+      }
+      .left {
+        margin-right: @margin-medium;
+      }
+      .right {
+        margin-left: @margin-medium;
+      }
     }
   }
 
