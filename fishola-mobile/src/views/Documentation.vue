@@ -31,7 +31,8 @@
                v-bind:key="doc.id">
             <span>{{doc.name}}</span>
             <a v-bind:href="doc.url"
-               title="Télécharger">
+               title="Télécharger"
+               target="_blank">
               <i class="icon-download"/>
             </a>
           </div>
