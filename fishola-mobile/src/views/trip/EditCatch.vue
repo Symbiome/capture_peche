@@ -139,7 +139,7 @@
                           label="Prélèvement (optionnel)"
                           v-model="withSample"
                           v-bind:readonly="!modifiable"/>
-              <div v-if="withSample">
+              <div class="sample two-columns-row-on-desktop" v-if="withSample">
 
                 <div class="info"
                     v-if="samplesDocumentationUrl">
@@ -162,8 +162,8 @@
               </div>
 
               <div v-if="!inCreation" class="location">
-                <div class="separator"></div>
-                <p>Emplacement de la capture</p>
+                <!-- <div class="separator"></div>
+                <p>Emplacement de la capture</p> -->
                 <div class="empty" v-if="!gpsLocation">
                   <i class="icon icon-warning"></i> Aucune position enregistrée pour cette prise
                 </div>
@@ -869,6 +869,22 @@ export default class EditCatchView extends Vue {
       width: 100%;
       height: 220px;
     }
+
+    .sample {
+      &.two-columns-row-on-desktop {
+        align-items: center;
+      }
+      .info {
+        font-size: @fontsize-info-desktop;
+        line-height: calc(@fontsize-info-desktop + @line-height-padding-medium);
+      }
+
+      .sample-id-container {
+        margin-top: 0px;
+        margin-bottom: 0px;
+      }
+    }
+
   }
 
   @media screen and (min-width: 1264px) {
