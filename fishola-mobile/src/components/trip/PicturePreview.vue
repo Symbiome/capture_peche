@@ -27,10 +27,10 @@
       <span>{{noPictureText}}</span>
     </div>
     <div class="picture"
+         v-if="src"
          v-on:click="openModal">
-      <img v-if="src"
-          class="picture"
-          v-bind:src="src"/>
+      <img class="picture"
+           v-bind:src="src"/>
     </div>
     <PictureModal v-if="src && showModal && enableModal"
                   v-bind:src="src"
@@ -107,12 +107,21 @@ export default class PicturePreview extends Vue {
     align-items: center;
     justify-content: center;
 
+    cursor: pointer;
+
     span {
       margin-top: @vertical-margin-small;
       color: @pale-sky;
       font-weight: 300;
       font-size: @fontsize-small-paragraph;
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+    }
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .no-picture {
+      border: 1px dashed @pale-sky;
+      border-radius: 8px;
     }
   }
 }
