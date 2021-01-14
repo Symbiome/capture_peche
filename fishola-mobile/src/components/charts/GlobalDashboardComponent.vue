@@ -182,7 +182,11 @@ export default class GlobalDashboardComponent extends Vue {
   color: @pale-sky;
   text-align: right;
   margin-top: @vertical-margin-large;
-  padding-right: @margin-large-desktop;
+  padding-right: @margin-large;
+
+  @media screen and (min-width: @desktop-min-width) {
+    padding-right: @margin-large-desktop;
+  }
 }
 
 </style>
