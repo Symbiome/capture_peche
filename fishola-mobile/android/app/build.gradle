@@ -51,7 +51,7 @@ android {
             // that dimension.
             dimension "version"
             versionNameSuffix "-demo"
-            resValue "string", "DEEP_LINK_URL", "fishola-web.demo.codelutin.com"
+            resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
         }
         beta {
             dimension "version"

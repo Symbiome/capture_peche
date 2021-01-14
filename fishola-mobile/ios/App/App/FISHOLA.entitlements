@@ -4,8 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:fishola-web.demo.codelutin.com</string>
-		<string>applinks:fishola-mobile.demo.codelutin.com</string>
+		<string>applinks:fishola.demo.codelutin.com</string>
 		<string>applinks:fishola-beta.demo.codelutin.com</string>
 		<string>applinks:fishola.fr</string>
 	</array>
