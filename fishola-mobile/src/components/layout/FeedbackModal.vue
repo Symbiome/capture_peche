@@ -52,6 +52,19 @@
                      readonly="true"
                      v-model="model.frontendVersion"/>
 
+          <div class="buttons-bar hide-on-mobile">
+            <div class="button button-primary">
+              <button v-on:click="sendClicked">
+                <i class="icon-send"/> Envoyer
+              </button>
+            </div>
+            <div class="button button-secondary">
+              <button v-on:click="closeFeedback">
+                Annuler
+              </button>
+            </div>
+          </div>
+
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
@@ -295,6 +308,28 @@ export default class FeedbackModal extends Vue {
       }
     }
 
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    top: 0px;
+    z-index: 101; // Juste au dessus du menu
+    height: 100%;
+    .feedback-page {
+      height: 100%;
+      .pane {
+        background-color: @black-alpha-60;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .pane-content {
+          background-color: #F7F7F7;
+          width: @desktop-min-width;
+          border-bottom-left-radius: 30px;
+          border-bottom-right-radius: 30px;
+        }
+      }
+    }
   }
 }
 
