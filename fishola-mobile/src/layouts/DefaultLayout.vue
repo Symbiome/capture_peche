@@ -20,11 +20,13 @@
   -->
 <template>
   <div>
-    <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
     <FeedbackModal/>
-    <div id="root"
-         :class="{'full-width': isLoginPage()}">
-      <slot />
+    <div id="default-layout">
+      <Menu :class="{'hide-on-desktop': isLoginPage()}"/>
+      <div id="root"
+          :class="{'full-width': isLoginPage()}">
+        <slot />
+      </div>
     </div>
   </div>
 </template>
@@ -55,6 +57,17 @@ export default class NoMenuLayout extends Vue {
 <style lang="less">
 
 @import "../less/_responsive";
+
+#default-layout {
+  height: 100%;
+  width: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    display: flex;
+    flex-direction: row;
+  }
+}
+
 
 #root {
   height: 100%;

@@ -182,7 +182,7 @@ export default class FeedbackModal extends Vue {
     this.closeFeedback();
 
     if (this.withPicture) {
-      const rootElement:HTMLElement = this.castRootElement(document.querySelector("#root"));
+      const rootElement:HTMLElement = this.castRootElement(document.querySelector("#default-layout"));
       html2canvas(rootElement)
         .then((canvas:any) => {
           const pngPicture = canvas.toDataURL("image/png")
