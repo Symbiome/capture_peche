@@ -146,8 +146,7 @@ public class SecurityResource extends AbstractFisholaResource {
             }
         } else {
 
-            String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
-            String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
+            String verifyUrl = String.format("%s/#/verify/%s", config.getFrontendBaseUrl(), token);
 
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/email-validation.html",
@@ -284,7 +283,7 @@ public class SecurityResource extends AbstractFisholaResource {
     @POST
     @Path("/request-password-reset")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response requestPasswordReset(LoginBean reset, @Context HttpServletRequest request) {
+    public Response requestPasswordReset(LoginBean reset) {
         Optional<FisholaUser> correspondingUser = usersDao.findByEmail(reset.email);
         if (correspondingUser.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -310,8 +309,7 @@ public class SecurityResource extends AbstractFisholaResource {
             claims.put(CLAIM_EMAIL, reset.email);
             claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
             String token = jwtHelper.createCustomToken("reset-password", 1, claims);
-            String apiBaseUrl = config.getApiUrl("/api/v1/security/reset-password", request);
-            String resetUrl = String.format("%s?t=%s", apiBaseUrl, token);
+            String resetUrl = String.format("%s/#/reset-password/%s", config.getFrontendBaseUrl(), token);
 
             // Step 4: send mail
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(

@@ -104,6 +104,8 @@ public interface FisholaConfiguration {
         return result;
     }
 
+    String getFrontendBaseUrl();
+
     @ConfigProperty(defaultValue = "fishola@codelutin.com")
     String getMailFrom();
 
