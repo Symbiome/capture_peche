@@ -47,7 +47,7 @@
                       />
           <ForgottenPassword
               v-bind:alreadTypedEmail="email"
-              v-bind:tohideSelector="'.login-form,.signin,.signup'"
+              v-bind:tohideSelector="'.login-form .form-input,.login-buttons'"
               class="hide-on-mobile"/>
         </div>
         <div class="login-buttons keyboardSensitive">
