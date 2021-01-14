@@ -185,7 +185,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @Path("/documentation/fixed/samples")
     @Produces("application/pdf")
     public Response downloadSamples() {
-        Response response = downloadDocumentationByNaturalId("prélèvements");
+        Response response = downloadDocumentationByNaturalId("points-de-prélèvements");
         return response;
     }
 
