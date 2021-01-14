@@ -146,7 +146,7 @@
                     </div>
                   </div>
                     <!-- <div class="Line"></div> -->
-                    <div style="height: 600px; width: 100%" class="map">
+                    <div class="map">
                       <l-map
                         :zoom="9"
                         :center="center"
@@ -810,6 +810,15 @@ export default class AboutView extends Vue {
   }
   .map {
     margin-top: 30px;
+    height: 600px;
+
+    @media only screen and (min-width: 600px) and (max-width: 899px) {
+      height: 400px;
+    }
+
+    @media only screen and (max-width: 599px) {
+      height: 300px;
+    }
   }
 }
 .Contribute_sec{ background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
@@ -847,6 +856,10 @@ export default class AboutView extends Vue {
   }
 }
 
+.Pricing_sec {
+  padding-top: 50px;
+}
+
 .welcome-apps {
   display: flex;
   flex-direction: row;
@@ -855,8 +868,12 @@ export default class AboutView extends Vue {
   margin-top: 50px;
   img {
     width: 200px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin: 20px;
+  }
+
+  @media only screen and (max-width: 499px) {
+    margin-top: 30px;
+    flex-direction: column;
   }
 }
 
