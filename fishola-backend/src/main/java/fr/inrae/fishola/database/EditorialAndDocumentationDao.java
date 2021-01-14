@@ -70,7 +70,7 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         Optional<UUID> result = withContext(context -> {
             UUID uuid = context.select(Tables.DOCUMENTATION.ID)
                     .from(Tables.DOCUMENTATION)
-                    .where(Tables.DOCUMENTATION.NATURAL_ID.eq("y" + naturalId))
+                    .where(Tables.DOCUMENTATION.NATURAL_ID.eq(naturalId))
                     .fetchAny(Tables.DOCUMENTATION.ID);
             return Optional.ofNullable(uuid);
         });
