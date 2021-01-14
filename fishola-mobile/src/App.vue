@@ -79,8 +79,10 @@ export default class AppView extends Vue {
       // If app is opened externally (typically from mails when validating account or password forgotten)
       App.addListener('appUrlOpen', (data: any) => {
         // Catch any URL like %%/security/ACTION?t=TOKEN
-        console.info("Opening from external url " + data.url);
-        const start = data.url.indexOf('security');
+        // Catch any URL like %%/#/ROUTE/TOKEN
+        console.error("Opening from external url " + data.url);
+        window.alert("URL is : " + data.url);
+        const start = data.url.indexOf('#/');
         if (start > 0 && data.url.indexOf('?t=') > 0) {
           const actionAndToken = data.url.substring(start + 'security'.length + 1);
           const action = actionAndToken.substring(0, actionAndToken.indexOf('?'));

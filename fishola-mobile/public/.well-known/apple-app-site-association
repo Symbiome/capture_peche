@@ -1,0 +1,12 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "9JVWTHXDQ4.fr.inrae.carrtel.fishola",
+                "paths": ["*"]
+            }
+        ]
+    }
+}
+

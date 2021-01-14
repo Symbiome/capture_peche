@@ -61,7 +61,7 @@ android {
         production {
             dimension "version"
             versionNameSuffix "-production"
-            resValue "string", "DEEP_LINK_URL", "api-fishola.inrae.fr"
+            resValue "string", "DEEP_LINK_URL", "fishola.fr"
         }
     }
 }
