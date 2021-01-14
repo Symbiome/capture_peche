@@ -86,6 +86,7 @@ public class FisholaApplication {
                 .put("aiguebelette", "/sample/reglement-aiguebelette.pdf")
                 .put("espèces", "/sample/presentation-coregone-final.pdf")
                 .put("prélèvements", "/sample/fiche-prelevement.pdf")
+                .put("points-de-collecte", "/sample/points-de-collecte.pdf")
                 .put("cgu", "/sample/CGU.pdf")
                 .build();
 
