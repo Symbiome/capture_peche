@@ -81,11 +81,12 @@ export default class AppView extends Vue {
         // Catch any URL like %%/security/ACTION?t=TOKEN
         // Catch any URL like %%/#/ROUTE/TOKEN
         console.error("Opening from external url " + data.url);
-        const start = data.url.indexOf('/#/');
-        if (start > 0) {
-          const actionAndToken = data.url.substring(start + 3);
-          const action = actionAndToken.substring(0, actionAndToken.indexOf('/'));
-          const token = actionAndToken.substring(actionAndToken.indexOf('/') + 1);
+        window.alert("URL is : " + data.url);
+        const start = data.url.indexOf('#/');
+        if (start > 0 && data.url.indexOf('?t=') > 0) {
+          const actionAndToken = data.url.substring(start + 'security'.length + 1);
+          const action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
+          const token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
           if ('reset-password' === action) {
             console.info("Detected reset password request");
             router.push({name:'reset-password', params: {token: token}});
