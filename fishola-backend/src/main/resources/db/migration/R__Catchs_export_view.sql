@@ -132,6 +132,7 @@ CREATE VIEW personal_catchs_export AS
 SELECT
     l.export_as AS nom_du_site,
     to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
+    u.id AS id_login,
     to_char(t.day, 'MM') AS mois_de_la_sortie,
     to_char(t.day, 'YYYY') AS annee_de_la_sortie,
     CASE t.type WHEN 'Craft' THEN 'Embarcation'

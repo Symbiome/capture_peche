@@ -30,7 +30,15 @@
             <span>
               Tableau de bord
             </span>
+            <a @click="askForAsyncExport"
+               v-if="asyncExport"
+               class="export"
+               title="Exporter par email">
+              <span>Exporter</span>
+              <i class="icon-download"/>
+            </a>
             <a v-bind:href="exportUrl"
+               v-if="!asyncExport"
                class="export"
                title="Exporter"
                target="_blank">
@@ -89,6 +97,7 @@ import PersonalDashboard from '@/components/charts/PersonalDashboard.vue';
 import GlobalDashboardComponent from '@/components/charts/GlobalDashboardComponent.vue';
 
 import DashboardService from '@/services/DashboardService';
+import Helpers from '@/services/Helpers';
 import TripsService from '@/services/TripsService';
 import {DashboardAndSpecies, GlobalDashboardAndSpecies} from '@/services/DashboardService';
 
@@ -116,6 +125,8 @@ export default class DashboardView extends Vue {
   ready:boolean = false;
   offline:boolean = false;
 
+  asyncExport:boolean = false;
+
   personalDashboard:DashboardAndSpecies|null = null;
   globalDashboard:GlobalDashboardAndSpecies|null = null;
 
@@ -131,6 +142,7 @@ export default class DashboardView extends Vue {
     DashboardService.loadDashboardOrTimeout()
       .then(this.personalDashboardLoaded, this.cannotLoad);
     this.exportUrl = DashboardService.getExportUrl();
+    Helpers.ifApplication(() => this.asyncExport = true);
   }
 
   personalDashboardLoaded(data:DashboardAndSpecies) {
@@ -170,6 +182,17 @@ export default class DashboardView extends Vue {
     this.ready = true;
   }
 
+  askForAsyncExport() {
+    DashboardService.asyncExport()
+      .then(
+        () => {
+          this.$root.$emit('toaster-success', 'Export envoyé par e-mail');
+        },
+        () => {
+          this.$root.$emit('toaster-error', 'Une erreur est survenue pendant l\'export');
+        }
+      );
+  }
 }
 
 </script>

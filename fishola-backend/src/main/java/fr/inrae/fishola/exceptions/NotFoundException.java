@@ -39,21 +39,21 @@ public class NotFoundException extends AbstractFisholaRuntimeException {
         super(message);
     }
 
-    public static void check(boolean expression) throws AccessDeniedException {
+    public static void check(boolean expression) throws NotFoundException {
         check(expression, DEFAULT_MESSAGE);
     }
 
-    public static void check(boolean expression, String message) throws AccessDeniedException {
+    public static void check(boolean expression, String message) throws NotFoundException {
         if (!expression) {
             throwNew(message);
         }
     }
 
-    public static void throwNew(String message) throws AccessDeniedException {
+    public static void throwNew(String message) throws NotFoundException {
         if (log.isDebugEnabled()) {
             log.warn("NotFoundException: " + message);
         }
-        throw new AccessDeniedException(message);
+        throw new NotFoundException(message);
     }
 
     @Override

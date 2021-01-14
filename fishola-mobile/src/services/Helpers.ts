@@ -135,6 +135,13 @@ export default class Helpers {
         return result;
     }
 
+    static formatToHour(date:Date):string {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const result = (hours < 10 ? '0' : '') + hours + 'h' + (minutes < 10 ? '0' : '') + minutes;
+        return result;
+    }
+
     static parseDateTime(date:Date, time:string):Date {
         const result = new Date(date);
         const hour = parseInt(time.substring(0, 2));

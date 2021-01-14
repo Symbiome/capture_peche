@@ -49,6 +49,12 @@
       </div>
     </div>
 
+    <div class="update-hour">
+      <span>
+        Heure de dernière mise à jour : {{updateHour}}
+      </span>
+    </div>
+
   </div>
 </template>
 
@@ -58,6 +64,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 
 import {GlobalDashboard, SpeciesWithAlias, Month} from '@/pojos/BackendPojos';
 import {GlobalDashboardAndSpecies} from '@/services/DashboardService';
+import Helpers from '@/services/Helpers';
 import DistributionEntry from '@/pojos/DistributionEntry';
 import OptionItem from '@/pojos/OptionItem';
 
@@ -80,6 +87,7 @@ export default class GlobalDashboardComponent extends Vue {
   orderedMonths: Month[] | null = null;
   monthlySizesOptions: OptionItem[] = [];
   monthlySizes: { [P in Month]?: number } | null = null;
+  updateHour:string = '';
 
   @Prop() dashboardData:GlobalDashboardAndSpecies;
 
@@ -135,10 +143,16 @@ export default class GlobalDashboardComponent extends Vue {
     });
     this.monthlySizesOptions = Vue.lodash.orderBy(this.monthlySizesOptions, 'name');
 
+    let date = this.parseLocalDateTime(this.dashboardData.dashboard.computedOn);
+    this.updateHour = Helpers.formatToHour(date);
   }
 
   onMonthlySizeSelected(item:OptionItem) {
     this.monthlySizes = item.whatever;
+  }
+
+  parseLocalDateTime(input:any):Date {
+    return Helpers.parseLocalDateTime(input);
   }
 
 }
@@ -159,6 +173,20 @@ export default class GlobalDashboardComponent extends Vue {
   margin-top: @vertical-margin-large;
   padding-left: @margin-large;
   padding-right: @margin-large;
+}
+
+.update-hour {
+  font-style: italic;
+  font-size: @fontsize-paragraph;
+  line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+  color: @pale-sky;
+  text-align: right;
+  margin-top: @vertical-margin-large;
+  padding-right: @margin-large;
+
+  @media screen and (min-width: @desktop-min-width) {
+    padding-right: @margin-large-desktop;
+  }
 }
 
 </style>

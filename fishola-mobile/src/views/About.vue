@@ -25,35 +25,45 @@
   <div class="LayoutFrame" id="top">
         <!-- \\ Begin Header \\ -->
         <header class="smaller">
-          <div class="site-logo">
+          <div class="site-logo site-logo-smartphone">
             <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
           </div>
-          <nav class="Navigation">
-            <ul>
-              <li v-bind:class="activeSection=='presentation'?'active':''">
-                <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}">Présentation</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li v-bind:class="activeSection=='contribute'?'active':''">
-                <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}">Comment participer ?</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li v-bind:class="activeSection=='contact'?'active':''">
-                <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}">Contact</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li>
-                <a href="#/faq">FAQ</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li>
-                <a href="#/news">Actualités</a>
-                <span class="menu-item-bg"></span>
-              </li>
-            </ul>
-          </nav>
-          <div class="authentication">
-            <button v-on:click="goToLogin">Connexion</button>
+
+          <div class="burger" v-if="closed" @click="closed = !closed">
+            <i class="icon-menu"></i>
+          </div>
+
+          <div class="whatever" :class="{'closed':closed}">
+            <div class="site-logo site-logo-desktop">
+              <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"  @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
+            </div>
+            <nav class="Navigation">
+              <ul>
+                <li v-bind:class="activeSection=='presentation'?'active':''">
+                  <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}" @click="closed = !closed">Présentation</a>
+                  <span class="menu-item-bg"></span>
+                </li>
+                <li v-bind:class="activeSection=='contribute'?'active':''">
+                  <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}" @click="closed = !closed">Comment participer ?</a>
+                  <span class="menu-item-bg"></span>
+                </li>
+                <li v-bind:class="activeSection=='contact'?'active':''">
+                  <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}" @click="closed = !closed">Contact</a>
+                  <span class="menu-item-bg"></span>
+                </li>
+                <li>
+                  <a href="#/faq" @click="closed = !closed">FAQ</a>
+                  <span class="menu-item-bg"></span>
+                </li>
+                <li>
+                  <a href="#/news" @click="closed = !closed">Actualités</a>
+                  <span class="menu-item-bg"></span>
+                </li>
+              </ul>
+            </nav>
+            <div class="authentication">
+              <button v-on:click="goToLogin">Connexion</button>
+            </div>
           </div>
         </header>
         <!-- // End Header // -->
@@ -136,7 +146,7 @@
                     </div>
                   </div>
                     <!-- <div class="Line"></div> -->
-                    <div style="height: 600px; width: 100%" class="map">
+                    <div class="map">
                       <l-map
                         :zoom="9"
                         :center="center"
@@ -227,8 +237,8 @@
                                 <div class="clear"></div>
                                 <p>Retrouvez-nous sur :</p>
                                 <ul>
-                                    <li><a rel="nofollow" href="https://www.facebook.com/UMR-Carrtel-1625760484103771/" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
-                                    <li><a rel="nofollow" href="https://twitter.com/UmrCarrtel" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
+                                    <li><a rel="nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
+                                    <li><a rel="nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
                                     <li><a rel="nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
                                 </ul>
                         </div>
@@ -347,6 +357,7 @@ export default class AboutView extends Vue {
   gitRevision:string = process.env.VUE_APP_GIT_REVISION;
   frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`;
 
+  closed:boolean = true;
   constructor() {
     super();
   }
@@ -444,6 +455,7 @@ export default class AboutView extends Vue {
   }
 
   goToLogin () {
+    this.closed = true;
     ProfileService.fetchProfile()
       .then(
         (profile) => {
@@ -484,69 +496,133 @@ export default class AboutView extends Vue {
   padding-right: 20px;
 
   &.smaller {
+    width: 100%;
     height: 73px;
 
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 
-    .site-logo {
-      @media only screen and (max-width: 1023px) {
-        width: 150px;
+
+    .site-logo-smartphone {
+      @media only screen and (min-width: 900px) {
+        display: none;
       }
     }
 
-    .Navigation {
-      width: unset;
-      float: initial;
-
-      li { height: 73px; }
-
-      li a {
-        padding: 22px 30px; 
-
-        @media only screen and (min-width: 1024px) and (max-width: 1200px) {
-          padding: 22px 20px; 
-        }
-        @media only screen and (max-width: 1023px) {
-          padding: 22px 10px;
-          font-size: 14px;
-        }
-      }
-
-    }
-
-    .authentication {
-      height: 100%;
-
+    .burger {
+      color: @gunmetal;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      cursor: pointer;
+      font-weight: 300;
 
-      button {
-        height: 41px;
-        border-radius: 20px;
-
-        font-style: normal;
-        font-weight: bold;
-        font-size: 18px;
-        line-height: 25px;
-
-        color: @white;
-        background-color: @terra-cotta;
-
-        border: 0px;
-        padding-left: @margin-medium;
-        padding-right: @margin-medium;
-
-
-        @media only screen and (max-width: 1023px) {
-          height: 31px;
-          font-size: 14px;
-        }
+      @media only screen and (min-width: 900px) {
+        display: none;
       }
     }
 
+    .whatever {
+      width: 100%;
+      height: 73px;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+
+      .site-logo-desktop {
+        @media only screen and (max-width: 899px) {
+          display: none;
+        }
+      }
+
+      .Navigation {
+        width: unset;
+        float: initial;
+
+        li { height: 73px; }
+
+        li a {
+          padding: 22px 30px; 
+
+          @media only screen and (min-width: 1024px) and (max-width: 1200px) {
+            padding: 22px 20px; 
+          }
+          @media only screen and (min-width: 900px) and (max-width: 1023px) {
+            padding: 22px 10px;
+            font-size: 14px;
+          }
+        }
+
+      }
+
+      .authentication {
+        height: 100%;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        button {
+          height: 41px;
+          border-radius: 20px;
+
+          font-style: normal;
+          font-weight: bold;
+          font-size: 18px;
+          line-height: 25px;
+
+          color: @white;
+          background-color: @terra-cotta;
+
+          border: 0px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
+
+
+          @media only screen and (max-width: 1023px) {
+            height: 31px;
+            font-size: 14px;
+          }
+        }
+      }
+
+      @media only screen and (max-width: 899px) {
+
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        right: 0;
+        width: 250px;
+        height: 100vh;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: right;
+        background-color: @white-smoke;
+
+        &.closed {
+          display: none;
+        }
+        .Navigation {
+          li {
+            width: 100%;
+            text-align: right;
+          }
+        }
+
+
+        .authentication {
+          height: 81px;
+
+          padding: 20px;
+        }
+
+      }
+
+    }
   }
 }
 
@@ -646,8 +722,46 @@ export default class AboutView extends Vue {
 
     img {
       border-radius: 20px;
+        max-width: calc(50% - 20px);
     }
   }
+
+
+  @media only screen and (max-width: 899px) {
+    height: unset;
+    flex-direction: column;
+    justify-content: flex-start;
+
+
+    .left-panel {
+      width: 80%;
+
+    }
+    .right-panel {
+      width: 100%;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      align-items: center;
+
+      img {
+        border-radius: 20px;
+      }
+    }
+
+  }
+
+  @media only screen and (max-width: 630px) {
+    .right-panel {
+      img {
+        width: calc(50% - 20px);
+        border-radius: 10px;
+      }
+    }
+
+  }
+
 }
 
 .Video_sec {
@@ -670,6 +784,9 @@ export default class AboutView extends Vue {
     padding-top: 30px;
     padding-bottom: 30px;
 
+    @media only screen and (max-width: 530px) {
+      flex-direction: column;
+    }
     .kf-item {
       width: 33%;
       display: flex;
@@ -693,6 +810,15 @@ export default class AboutView extends Vue {
   }
   .map {
     margin-top: 30px;
+    height: 600px;
+
+    @media only screen and (min-width: 600px) and (max-width: 899px) {
+      height: 400px;
+    }
+
+    @media only screen and (max-width: 599px) {
+      height: 300px;
+    }
   }
 }
 .Contribute_sec{ background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
@@ -730,6 +856,10 @@ export default class AboutView extends Vue {
   }
 }
 
+.Pricing_sec {
+  padding-top: 50px;
+}
+
 .welcome-apps {
   display: flex;
   flex-direction: row;
@@ -738,8 +868,12 @@ export default class AboutView extends Vue {
   margin-top: 50px;
   img {
     width: 200px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin: 20px;
+  }
+
+  @media only screen and (max-width: 499px) {
+    margin-top: 30px;
+    flex-direction: column;
   }
 }
 
@@ -833,6 +967,24 @@ export default class AboutView extends Vue {
         // cursor: pointer;
       }
     }
+
+    @media only screen and (max-width: 700px) {
+      flex-direction: column;
+      align-items: center;
+
+      .card {
+        height: fit-content;
+        width: 80%;
+        padding: 20px;
+
+        p {
+          margin-top: 5px;
+          margin-bottom: 5px;
+        }
+
+      }
+    }
+
   }
 
 }

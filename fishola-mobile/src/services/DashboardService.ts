@@ -95,6 +95,10 @@ export default class DashboardService extends AbstractFisholaService {
         });
     }
 
+    static asyncExport():Promise<void> {
+        return this.backendPost('/v1/dashboard/async-export');
+    }
+
     static loadGlobalDashboardOrTimeout():Promise<GlobalDashboardAndSpecies> {
         const promise = this.loadGlobalDashboard();
         return this.timeout(5000, promise);
