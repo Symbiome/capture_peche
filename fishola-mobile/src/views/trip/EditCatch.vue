@@ -868,6 +868,11 @@ export default class EditCatchView extends Vue {
     .catch-picture-desktop {
       width: 100%;
       height: 220px;
+
+      .no-picture {
+        border: 1px dashed @pale-sky;
+        border-radius: 8px;
+      }
     }
 
     .sample {

@@ -118,11 +118,5 @@ export default class PicturePreview extends Vue {
     }
   }
 
-  @media screen and (min-width: @desktop-min-width) {
-    .no-picture {
-      border: 1px dashed @pale-sky;
-      border-radius: 8px;
-    }
-  }
 }
 </style>
