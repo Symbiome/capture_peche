@@ -50,6 +50,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
@@ -320,6 +321,8 @@ public class DashboardResource extends AbstractFisholaResource {
 
         Map<UUID, Map<Month, Double>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizes(monthlySizes);
+
+        builder.computedOn(LocalDateTime.now());
 
         GlobalDashboard result = builder.build();
         return result;

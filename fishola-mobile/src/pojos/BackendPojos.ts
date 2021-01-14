@@ -180,6 +180,7 @@ export interface GlobalDashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
+    computedOn: Date;
 }
 
 export interface Serializable {
