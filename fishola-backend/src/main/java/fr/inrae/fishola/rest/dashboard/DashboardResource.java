@@ -21,6 +21,8 @@ package fr.inrae.fishola.rest.dashboard;
  * #L%
  */
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
@@ -34,8 +36,14 @@ import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
+import fr.inrae.fishola.mails.FisholaMail;
+import fr.inrae.fishola.mails.FisholaMailAttachment;
+import fr.inrae.fishola.mails.ImmutableFisholaMail;
+import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
+import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
@@ -45,6 +53,7 @@ import org.nuiton.util.pagination.PaginationResult;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -70,6 +79,9 @@ import java.util.stream.Collectors;
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractFisholaResource {
+
+    @Inject
+    protected MailService mailService;
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -344,6 +356,53 @@ public class DashboardResource extends AbstractFisholaResource {
                 .header("Content-Disposition", disposition);
         Response response = buildResponse(responseBuilder, userIdAndRenewal);
         return response;
+    }
+
+    @POST
+    @Path("/dashboard/async-export")
+    public Response asyncExportAsCSV() {
+
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+
+        String csv = tripsDao.getPersonalTripsCSV(userId);
+
+        String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String fileName = String.format("Fishola_Export_%s.csv", dateFormatted);
+
+        FisholaMail fisholaMail = toFisholaMail(userId, fileName, csv);
+        mailService.sendMail(fisholaMail);
+
+        Response.ResponseBuilder responseBuilder = Response.ok();
+        Response response = buildResponse(responseBuilder, userIdAndRenewal);
+        return response;
+    }
+
+    protected FisholaMail toFisholaMail(UUID userId, String fileName, String csv) {
+
+        Optional<FisholaUser> user = usersDao.findById(userId);
+        Preconditions.checkState(user.isPresent());
+
+        ImmutableMap<String, Object> args = ImmutableMap.of(
+                "firstName", user.get().getFirstName()
+        );
+
+        ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+                "emails/personal-export.html",
+                args);
+        builder.subject("Export de données personnelles");
+        builder.addTos(user.get().getEmail());
+
+        byte[] bytes = csv.getBytes(Charsets.UTF_8);
+        FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
+                .bytes(bytes)
+                .name(fileName)
+                .type(com.google.common.net.MediaType.CSV_UTF_8)
+                .build();
+        builder.addAttachments(attachment);
+
+        FisholaMail result = builder.build();
+        return result;
     }
 
 }
