@@ -145,7 +145,7 @@
                     v-if="samplesDocumentationUrl">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
                   d'un kit dans un des points de collecte :
-                  <a :href="samplesDocumentationUrl">consulter la liste</a>
+                  <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
                 </div>
 
                 <div class="sample-id-container">

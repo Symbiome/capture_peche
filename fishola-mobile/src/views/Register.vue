@@ -67,7 +67,9 @@
                   class="pelorous-checkbox"
                   v-model="cgu" />
           <label for="register-cgu"></label>
-          <label for="register-cgu" class="register-cgu-label">J'ai lu et j'accepte les <a :href="cguUrl">Conditions Générales d'Utilisation</a></label>
+          <label for="register-cgu" class="register-cgu-label">
+            J'ai lu et j'accepte les <a :href="cguUrl" target="_blank">Conditions Générales d'Utilisation</a>
+          </label>
         </div>
         <div class="bottom-page-spacer"></div>
       </div>
