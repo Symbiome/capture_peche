@@ -47,6 +47,7 @@ build:compile-only:
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-production
       - fishola-admin/target/dist-demo
+      - fishola-admin/target/dist-production
   script:
     - mvn clean package -Dmaven.test.skip
   rules:
@@ -74,6 +75,7 @@ build:compile-with-tests:
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-production
       - fishola-admin/target/dist-demo
+      - fishola-admin/target/dist-production
   script:
     - mvn clean package
   rules:
