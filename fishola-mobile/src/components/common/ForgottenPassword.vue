@@ -32,6 +32,7 @@
           placeholder="Renseignez votre E-mail"
           v-model="forgottenEmail"
           v-bind:error="emailError"
+          v-on:keyupEnter="sendPasswordReinitialisationRequest"
         />
         <FormInput name="newPassword"
           type="password"
@@ -39,6 +40,7 @@
           placeholder="Nouveau mot de passe"
           v-model="newPassword"
           v-bind:error="passwordError"
+          v-on:keyupEnter="sendPasswordReinitialisationRequest"
         />
         <FormInput name="newPasswordConfirmation"
           type="password"
@@ -46,6 +48,7 @@
           placeholder="Nouveau mot de passe"
           v-model="newPasswordConfirmation"
           v-bind:error="passwordConfirmationError"
+          v-on:keyupEnter="sendPasswordReinitialisationRequest"
         />
         <div class="sendpassword">
           <button class="cancel" v-on:click="expandCollapse">Annuler</button>
