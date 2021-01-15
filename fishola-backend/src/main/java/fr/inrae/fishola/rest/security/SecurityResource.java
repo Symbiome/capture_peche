@@ -268,9 +268,7 @@ public class SecurityResource extends AbstractFisholaResource {
             String token = jwtHelper.createUserToken(userId);
 
             NewCookie loginCookie = createUserTokenCookie(token);
-            Response.ResponseBuilder responseBuilder = Response.ok();
-            setCookie(responseBuilder, loginCookie);
-            Response result = responseBuilder.build();
+            Response result = Response.ok().cookie(loginCookie).build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -448,9 +446,7 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response logout() {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
         NewCookie logoutCookie = dropUserTokenCookie();
-        Response.ResponseBuilder responseBuilder = Response.noContent();
-        setCookie(responseBuilder, logoutCookie);
-        Response result = responseBuilder.build();
+        Response result = Response.noContent().cookie(logoutCookie).build();
         return result;
     }
 
@@ -640,9 +636,7 @@ public class SecurityResource extends AbstractFisholaResource {
             String token = jwtHelper.createAdminToken();
 
             NewCookie loginCookie = createAdminTokenCookie(token);
-            Response.ResponseBuilder responseBuilder = Response.noContent();
-            setCookie(responseBuilder, loginCookie);
-            Response result = responseBuilder.build();
+            Response result = Response.noContent().cookie(loginCookie).build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -664,9 +658,7 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response adminLogout() {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
         NewCookie logoutCookie = dropAdminTokenCookie();
-        Response.ResponseBuilder responseBuilder = Response.noContent();
-        setCookie(responseBuilder, logoutCookie);
-        Response result = responseBuilder.build();
+        Response result = Response.noContent().cookie(logoutCookie).build();
         return result;
     }
 
