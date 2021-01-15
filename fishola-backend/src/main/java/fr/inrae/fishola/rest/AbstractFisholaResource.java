@@ -186,9 +186,28 @@ public abstract class AbstractFisholaResource {
     protected Response buildResponse(Response.ResponseBuilder responseBuilder, UserIdAndRenewal userIdAndRenewal) {
         userIdAndRenewal.renewalToken()
                 .map(this::createUserTokenCookie)
-                .ifPresent(responseBuilder::cookie);
+                .ifPresent(cookie -> setCookie(responseBuilder, cookie));
         Response result = responseBuilder.build();
         return result;
+    }
+
+    protected void setCookie(Response.ResponseBuilder responseBuilder, NewCookie cookie) {
+        if (USER_AUTHENTICATION_COOKIE_NAME.equals(cookie.getName())) {
+            String headerValue = String.format("%s=%s", USER_AUTHENTICATION_COOKIE_NAME, cookie.getValue());
+            headerValue += String.format(";Version=%s", cookie.getVersion());
+            headerValue += String.format(";Path=%s", cookie.getPath());
+            if (cookie.isSecure()) {
+                headerValue += ";SameSite=None";
+                headerValue += ";Secure";
+            }
+            if (cookie.isHttpOnly()) {
+                headerValue += ";HttpOnly";
+            }
+            responseBuilder.header("set-cookie", headerValue);
+        } else {
+            responseBuilder.cookie(cookie);
+        }
+
     }
 
 }
