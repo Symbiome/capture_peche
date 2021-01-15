@@ -219,7 +219,7 @@ package:docker-demo-feature:
     - sticky
     - docker
 
-package:backend:
+package:deliverables:
   image: debian:latest
   stage: package
   rules:
@@ -229,15 +229,21 @@ package:backend:
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
+      - fishola-mobile/target/dist-production
+      - fishola-admin/target/dist-production
   script:
     - apt update && apt install -y zip && apt clean
     - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
     - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
     - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
+    - cp -r fishola-mobile/target/dist-production fishola-web-$CI_COMMIT_SHORT_SHA
+    - cp -r fishola-admin/target/dist-production fishola-admin-$CI_COMMIT_SHORT_SHA
   artifacts:
-    name: "fishola-backend-$CI_COMMIT_SHORT_SHA"
+    name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend-$CI_COMMIT_SHORT_SHA
+      - fishola-web-$CI_COMMIT_SHORT_SHA
+      - fishola-admin-$CI_COMMIT_SHORT_SHA
     expire_in: 2 weeks
   tags:
     - sticky
