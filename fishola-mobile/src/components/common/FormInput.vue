@@ -36,7 +36,8 @@
              v-bind:value="value"
              v-bind:min="min"
              v-on:input="$emit('input', $event.target.value)"
-             v-bind:class="error?'field-error':''" />
+             v-bind:class="error?'field-error':''"
+             @keyup.enter="$emit('keyupEnter')" />
       <div v-bind:class="error?'field-error':''" >
         <span v-if="error">
           {{error}}

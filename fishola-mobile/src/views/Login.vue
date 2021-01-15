@@ -37,6 +37,7 @@
                       placeholder="Renseignez votre E-mail"
                       v-model="email"
                       v-bind:error="emailError"
+                      v-on:keyupEnter="signIn"
                       />
           <FormInput name="password"
                       type="password"
@@ -44,6 +45,7 @@
                       placeholder="Renseignez votre mot de passe"
                       v-model="password"
                       v-bind:error="passwordError"
+                      v-on:keyupEnter="signIn"
                       />
           <ForgottenPassword
               v-bind:alreadTypedEmail="email"
