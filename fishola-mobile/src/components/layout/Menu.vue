@@ -169,7 +169,20 @@ export default class Menu extends Vue {
 
   goHome() {
     this.closeMenu();
-    router.push('/trips');
+    // Si on est sur application -> toujours trips
+    Helpers.ifApplication(() => {
+      router.push('/trips');
+    });
+
+    // Si on est sur navigateur et qu'on est connecté -> trips
+    // Si on est sur navigateur et qu'on est pas connecté -> about
+    Helpers.ifWeb(() => {
+      if (this.connected) {
+        router.push('/trips');
+      } else {
+        router.push('/about');
+      }
+    });
   }
 
   goProfile() {

@@ -258,4 +258,15 @@ export default class Helpers {
 
     }
 
+    static ifWeb(callback:()=>any) {
+
+        this.getDeviceType()
+            .then((type) => {
+                if (type == "web") {
+                    callback();
+                }
+            });
+
+    }
+
 }
