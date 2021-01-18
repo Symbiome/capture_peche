@@ -45,6 +45,7 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
@@ -75,9 +76,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -100,10 +98,7 @@ public class DashboardResource extends AbstractFisholaResource {
     @Inject
     protected TripsDao tripsDao;
 
-    /**
-     * Permet de ne pas faire plusieurs fois le calcul en même temps.
-     */
-    protected static AtomicBoolean runningRefresh = new AtomicBoolean(false);
+    protected static final ComputedDataHolder<GlobalDashboard> GLOBAL_DASHBOARD_HOLDER = new ComputedDataHolder<>();
 
     @GET
     @Path("/dashboard")
@@ -310,51 +305,17 @@ public class DashboardResource extends AbstractFisholaResource {
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard() {
 
-        final GlobalDashboard result = GlobalDashboardHolder.get()
-                .orElseGet(this::computeAndSaveGlobalDashboard);
-
-        // On calcule l'age de l'instance actuelle
-        Duration age = Duration.between(result.computedOn(), LocalDateTime.now());
-        // Si elle a expiré on demandé son calcul en arrière-plan mais on renvoie quand même la valeur expirée
-        if (age.toMinutes() >= config.getGlobalDashboardTimeoutMinutes()) {
-            asyncRefreshGlobalDashboard();
-        }
+        final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
+                this::computeNewGlobalDashboard,
+                GlobalDashboard::computedOn,
+                Duration.ofMinutes(config.getGlobalDashboardTimeoutMinutes()),
+                false
+        );
 
         return result;
     }
 
-    /**
-     * Méthode non bloquante qui déclenche la mise à jour de l'instance de GlobalDashboard mais qui n'attend pas que son
-     * calcul soit terminé avant de rendre la main
-     */
-    protected void asyncRefreshGlobalDashboard() {
-        boolean isCurrentlyRunning = runningRefresh.compareAndExchange(false, true);
-        if (!isCurrentlyRunning) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                computeAndSaveGlobalDashboard();
-                runningRefresh.set(false);
-            });
-        }
-    }
-
-    /**
-     * Combinaison des méthodes de calcul et de stockage d'une nouvelle instance de GlobalDashboard
-     * @return une nouvelle instance qui aurait été stockée en cache.
-     * @see #computeNewGlobalDashboard()
-     * @see GlobalDashboardHolder#set(GlobalDashboard)
-     */
-    protected GlobalDashboard computeAndSaveGlobalDashboard() {
-        GlobalDashboard newInstance = computeNewGlobalDashboard();
-        GlobalDashboardHolder.set(newInstance);
-        return newInstance;
-    }
-
     protected GlobalDashboard computeNewGlobalDashboard() {
-
-        if (log.isDebugEnabled()) {
-            log.debug("Calcul d'une nouvelle instance de GlobalDashboard");
-        }
 
         ImmutableGlobalDashboard.Builder builder = ImmutableGlobalDashboard.builder();
 
@@ -393,6 +354,10 @@ public class DashboardResource extends AbstractFisholaResource {
         builder.computedOn(LocalDateTime.now());
 
         GlobalDashboard result = builder.build();
+
+        if (log.isDebugEnabled()) {
+            log.debug("Nouvelle instance: " + result);
+        }
         return result;
     }
 

@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import fr.inrae.fishola.rest.about.KeyFiguresHolder;
+import fr.inrae.fishola.rest.about.AboutResource;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
@@ -205,7 +205,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         checkIsAdmin();
         dao.updateEditorial(editorial);
         // On veut une mise à jour immédiate sur la page d'accueil
-        KeyFiguresHolder.unset();
+        AboutResource.KEY_FIGURES_HOLDER.unset();
         return Response.noContent().build();
     }
 
