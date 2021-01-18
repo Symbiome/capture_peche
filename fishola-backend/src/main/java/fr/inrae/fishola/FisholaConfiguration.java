@@ -170,4 +170,7 @@ public interface FisholaConfiguration {
     @ConfigProperty(defaultValue = "true")
     boolean isDashboardOnlyCurrentYear();
 
+    @ConfigProperty(defaultValue = "15")
+    long getGlobalDashboardTimeoutMinutes();
+
 }
