@@ -23,14 +23,16 @@
     <div v-if="!src"
          class="no-picture"
          v-on:click="$emit('take-picture')">
-      <img src="/img/camera.svg"/>
+      <img src="/img/camera.svg"
+            alt="Pas de photo"/>
       <span>{{noPictureText}}</span>
     </div>
     <div class="picture"
          v-if="src"
          v-on:click="openModal">
       <img class="picture"
-           v-bind:src="src"/>
+           v-bind:src="src"
+           alt="Photo de la capture"/>
     </div>
     <PictureModal v-if="src && showModal && enableModal"
                   v-bind:src="src"
