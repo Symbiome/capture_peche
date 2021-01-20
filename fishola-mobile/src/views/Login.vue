@@ -32,13 +32,13 @@
         </div>
         <div class="login-form">
           <FormInput name="email"
-                      type="email"
-                      label="E-mail"
-                      placeholder="Renseignez votre E-mail"
-                      v-model="email"
-                      v-bind:error="emailError"
-                      v-on:keyupEnter="signIn"
-                      />
+                     type="email"
+                     label="E-mail"
+                     placeholder="Renseignez votre E-mail"
+                     v-model="email"
+                     v-bind:error="emailError"
+                     v-on:keyupEnter="signIn"
+                     />
           <FormInput name="password"
                       type="password"
                       label="Mot de passe"
@@ -99,6 +99,9 @@ export default class LoginView extends Vue {
     this.emailError = '';
     this.password = '';
     this.passwordError = '';
+    if (localStorage && localStorage.latestEmail) {
+      this.email = localStorage.latestEmail;
+    }
   }
 
   signIn() {
@@ -112,6 +115,11 @@ export default class LoginView extends Vue {
   signInResult(status:number) {
     switch(status) {
       case 200:
+
+        if (localStorage) {
+          localStorage.latestEmail = this.email;
+        }
+
         this.$root.$emit('profile-updated');
         router.push('trips');
 
