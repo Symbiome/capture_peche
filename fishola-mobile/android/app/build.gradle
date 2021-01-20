@@ -6,8 +6,8 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 16
-        versionName "1.1.0"
+        versionCode 17
+        versionName "1.1.1"
         testInstrumentationRunner "androidx.test.runner.AndroixoJUnitRunner"
         resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
     }
@@ -60,7 +60,7 @@ android {
         }
         production {
             dimension "version"
-            versionNameSuffix "-production"
+            versionNameSuffix ""
             resValue "string", "DEEP_LINK_URL", "api-fishola.inrae.fr"
         }
     }
