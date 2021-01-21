@@ -82,7 +82,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
-        String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
+        String url = config.getDeeplinkSafeApiUrl("/api/v1/documentation/" + entry.getKey(), request);
         DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
         result.setId(entry.getKey());
         result.setNaturalId(entry.getValue().getLeft());

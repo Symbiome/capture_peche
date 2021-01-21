@@ -29,12 +29,12 @@ export default class DocumentationService extends AbstractFisholaService {
     }
 
     static getSamplesDocumentationUrl():string {
-        const result = Constants.apiUrl('/v1/documentation/fixed/samples');
+        const result = Constants.deeplinkSafeApiUrl('/v1/documentation/fixed/samples');
         return result;
     }
 
     static getCGUUrl():string {
-        const result = Constants.apiUrl('/v1/documentation/fixed/cgu');
+        const result = Constants.deeplinkSafeApiUrl('/v1/documentation/fixed/cgu');
         return result;
     }
 

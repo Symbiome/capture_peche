@@ -76,6 +76,8 @@ public interface FisholaConfiguration {
 
     Optional<String> getBackendBaseUrl();
 
+    Optional<String> getBackendDeeplinkSafeBaseUrl();
+
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = getBackendBaseUrl();
         String result;
@@ -102,6 +104,16 @@ public interface FisholaConfiguration {
         String backendBaseUrl = computeBackendBaseUrl(httpServletRequest);
         String result = String.format("%s%s", backendBaseUrl, path);
         return result;
+    }
+
+    default String getDeeplinkSafeApiUrl(String path, HttpServletRequest httpServletRequest) {
+        Optional<String> deeplinkSafeBaseUrl = getBackendDeeplinkSafeBaseUrl();
+        if (deeplinkSafeBaseUrl.isPresent()) {
+            String result = String.format("%s%s", deeplinkSafeBaseUrl.get(), path);
+            return result;
+        } else {
+            return getApiUrl(path, httpServletRequest);
+        }
     }
 
     @ConfigProperty(defaultValue = "fishola@codelutin.com")

@@ -39,8 +39,21 @@ export default class Constants {
         return result;
     }
 
+    static baseDeeplinkSafeApiUrl():string {
+        let result = process.env.VUE_APP_DEEPLINK_SAFE_API_URL;
+        if (!result) {
+            result = Constants.baseApiUrl();
+        }
+        return result;
+    }
+
     static apiUrl(path:string):string {
         const result = Constants.baseApiUrl() + path;
+        return result;
+    }
+
+    static deeplinkSafeApiUrl(path:string):string {
+        const result = Constants.baseDeeplinkSafeApiUrl() + path;
         return result;
     }
 
