@@ -44,9 +44,9 @@
           </div>
 
           <div class="credits-logos">
-            <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg'/></a>
-            <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png'/></a>
-            <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
+            <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
+            <a href="https://ofb.gouv.fr/" target="_blank"><img src='/img/credits/ofb.png' alt="OFB"/></a>
+            <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
           </div>
 
           <div class="bottom-page-spacer"></div>

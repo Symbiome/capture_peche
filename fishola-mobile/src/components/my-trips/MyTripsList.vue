@@ -31,7 +31,7 @@
       </div>
       <div v-if="offline" class="offline-with-trips">
         <div class="top">
-          <img src="/img/illustration_fish_wire.svg"/>
+          <img src="/img/illustration_fish_wire.svg" alt="Pas de connexion"/>
           <span>Pas de connexion internet</span>
         </div>
         <div class="bottom">
@@ -43,7 +43,7 @@
     </div>
     <div v-if="!loading && !offline && trips.length == 0" class="pane-content no-trips">
       <div class="top">
-        <img src="/img/illustration_fish.svg"/>
+        <img src="/img/illustration_fish.svg" alt="Aucune sortie"/>
         <span v-if="hasSearchTerm">Aucune sortie de pêche trouvée</span>
         <span v-if="!hasSearchTerm">Aucune sortie de pêche</span>
       </div>
@@ -54,7 +54,7 @@
     </div>
     <div v-if="!loading && offline && trips.length == 0" class="pane-content no-trips offline">
       <div class="top">
-        <img src="/img/illustration_fish_wire.svg"/>
+        <img src="/img/illustration_fish_wire.svg" alt="Pas de connexion"/>
         <span>Pas de connexion internet</span>
       </div>
       <div class="bottom">

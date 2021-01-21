@@ -27,7 +27,7 @@
         <div class="new-trip-option">
           <div class="item">
             <div class="left">
-              <img src="img/illustration_live.svg"/>
+              <img src="img/illustration_live.svg" alt="En direct"/>
             </div>
             <div class="right">
               <div class="title">En direct</div>
@@ -39,7 +39,7 @@
         <div class="new-trip-option">
           <div class="item">
             <div class="left">
-              <img src="img/illustration_house.svg"/>
+              <img src="img/illustration_house.svg" alt="À la maison"/>
             </div>
             <div class="right">
               <div class="title">À la maison</div>

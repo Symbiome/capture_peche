@@ -28,7 +28,8 @@
          v-on:click="$emit('closeModal')">
       <div class="picture-content">
         <img class="picture"
-            v-bind:src="src">
+            v-bind:src="src"
+            alt="Photo de la capture">
       </div>
     </div>
     <div class="replace"

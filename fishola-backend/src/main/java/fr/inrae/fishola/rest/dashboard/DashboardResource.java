@@ -45,9 +45,12 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -58,6 +61,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -80,6 +84,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractFisholaResource {
 
+    private static final Log log = LogFactory.getLog(DashboardResource.class);
+
     @Inject
     protected MailService mailService;
 
@@ -91,6 +97,8 @@ public class DashboardResource extends AbstractFisholaResource {
 
     @Inject
     protected TripsDao tripsDao;
+
+    protected static final ComputedDataHolder<GlobalDashboard> GLOBAL_DASHBOARD_HOLDER = new ComputedDataHolder<>();
 
     @GET
     @Path("/dashboard")
@@ -293,12 +301,21 @@ public class DashboardResource extends AbstractFisholaResource {
         return result;
     }
 
-
     @GET
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard() {
 
-        // TODO AThimel 30/12/2020 À mettre en cache
+        final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
+                this::computeNewGlobalDashboard,
+                GlobalDashboard::computedOn,
+                Duration.ofMinutes(config.getGlobalDashboardTimeoutMinutes()),
+                false
+        );
+
+        return result;
+    }
+
+    protected GlobalDashboard computeNewGlobalDashboard() {
 
         ImmutableGlobalDashboard.Builder builder = ImmutableGlobalDashboard.builder();
 
@@ -337,6 +354,10 @@ public class DashboardResource extends AbstractFisholaResource {
         builder.computedOn(LocalDateTime.now());
 
         GlobalDashboard result = builder.build();
+
+        if (log.isDebugEnabled()) {
+            log.debug("Nouvelle instance: " + result);
+        }
         return result;
     }
 

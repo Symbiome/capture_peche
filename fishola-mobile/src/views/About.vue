@@ -275,7 +275,7 @@
                   <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
                   <a href="https://ofb.gouv.fr" target="_blank"><img src='/img/credits/ofb.png' alt="OFB"/></a>
                   <a href="https://si-ola.inra.fr" target="_blank"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
-                  <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg'/></a>
+                  <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
                   <a href="https://www.cisalb.fr" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
                 </div>
               </div>
@@ -654,6 +654,7 @@ export default class AboutView extends Vue {
   background-size: cover;
   
   .title-banner {
+    background: #020a3058;
     color: @white;
     width: 100%;
     height: 100%;
@@ -668,7 +669,7 @@ export default class AboutView extends Vue {
       margin: 20px;
     }
     .sub-title {
-      font-size: 22px;
+      font-size: 26px;
       line-height: 30px;
       margin: 20px;
     }

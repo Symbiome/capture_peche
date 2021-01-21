@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import fr.inrae.fishola.rest.about.KeyFiguresHolder;
+import fr.inrae.fishola.rest.about.AboutResource;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
@@ -82,7 +82,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
-        String url = config.getApiUrl("/api/v1/documentation/" + entry.getKey(), request);
+        String url = config.getDeeplinkSafeApiUrl("/api/v1/documentation/" + entry.getKey(), request);
         DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
         result.setId(entry.getKey());
         result.setNaturalId(entry.getValue().getLeft());
@@ -205,7 +205,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         checkIsAdmin();
         dao.updateEditorial(editorial);
         // On veut une mise à jour immédiate sur la page d'accueil
-        KeyFiguresHolder.unset();
+        AboutResource.KEY_FIGURES_HOLDER.unset();
         return Response.noContent().build();
     }
 
