@@ -36,7 +36,9 @@
   <name>Fishola :: Mobile</name>
   <packaging>pom</packaging>
 
-  <properties/>
+  <properties>
+    <sonar.sources>src,public</sonar.sources>
+  </properties>
 
   <dependencies>
   </dependencies>

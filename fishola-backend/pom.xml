@@ -36,6 +36,8 @@
   <name>Fishola :: Backend</name>
 
   <properties>
+    <sonar.sources>src/main/java</sonar.sources>
+    <sonar.java.source>14</sonar.java.source>
   </properties>
 
   <dependencies>
