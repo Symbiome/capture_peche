@@ -31,14 +31,14 @@
               Tableau de bord
             </span>
             <a @click="askForAsyncExport"
-               v-if="asyncExport"
+               v-if="!globalMode && asyncExport"
                class="export"
                title="Exporter par email">
               <span>Exporter</span>
               <i class="icon-download"/>
             </a>
             <a v-bind:href="exportUrl"
-               v-if="!asyncExport"
+               v-if="!globalMode && !asyncExport"
                class="export"
                title="Exporter"
                target="_blank">

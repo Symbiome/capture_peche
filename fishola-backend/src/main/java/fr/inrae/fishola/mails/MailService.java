@@ -24,6 +24,7 @@ package fr.inrae.fishola.mails;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.MediaType;
@@ -104,7 +105,7 @@ public class MailService {
             for (String to : fisholaMail.getTos()) {
                 message.addRecipients(Message.RecipientType.TO, to);
             }
-            message.setSubject(fisholaMail.getSubject());
+            message.setSubject(fisholaMail.getSubject(), Charsets.UTF_8.name());
 
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
             mimeBodyPart.setContent(fisholaMail.getBody(), "text/html;charset=utf-8");
