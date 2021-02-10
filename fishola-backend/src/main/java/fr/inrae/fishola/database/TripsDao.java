@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jooq.Condition;
+import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectSeekStep2;
 import org.nuiton.util.pagination.PaginationOrder;
@@ -224,7 +225,22 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public int countTrips() {
-        int result = withDao(TripDao.class, TripDao::count).intValue();
+        int result = withContext(context -> {
+            // On compte les sorties des utilisateurs non exclus
+            SelectConditionStep<Record1<UUID>> selectNonExcludedUsers = context.select(Tables.TRIP.ID)
+                    .from(Tables.TRIP)
+                    .innerJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
+                    .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
+            int countFromNonExcludedUsers = context.fetchCount(selectNonExcludedUsers);
+
+            // On compte aussi les sorties dont l'utilisateur a été supprimé
+            SelectConditionStep<Record1<UUID>> selectNoUser = context.select(Tables.TRIP.ID)
+                    .from(Tables.TRIP)
+                    .where(Tables.TRIP.OWNER_ID.isNull());
+            int countNoUser = context.fetchCount(selectNoUser);
+
+            return countFromNonExcludedUsers + countNoUser;
+        });
         return result;
     }
 

@@ -33,6 +33,7 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
@@ -161,12 +162,48 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public int countCatchs() {
-        int result = withDao(CatchDao.class, CatchDao::count).intValue();
+        int result = withContext(context -> {
+            // On compte les sorties des utilisateurs non exclus
+            SelectConditionStep<Record1<UUID>> selectNonExcludedUsers = context.select(Tables.CATCH.ID)
+                    .from(Tables.CATCH)
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .innerJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
+                    .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
+            int countFromNonExcludedUsers = context.fetchCount(selectNonExcludedUsers);
+
+            // On compte aussi les sorties dont l'utilisateur a été supprimé
+            SelectConditionStep<Record1<UUID>> selectNoUser = context.select(Tables.CATCH.ID)
+                    .from(Tables.CATCH)
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .where(Tables.TRIP.OWNER_ID.isNull());
+            int countNoUser = context.fetchCount(selectNoUser);
+
+            return countFromNonExcludedUsers + countNoUser;
+        });
         return result;
     }
 
     public int countPictures() {
-        int result = withDao(CatchPictureDao.class, CatchPictureDao::count).intValue();
+        int result = withContext(context -> {
+            // On compte les sorties des utilisateurs non exclus
+            SelectConditionStep<Record1<UUID>> selectNonExcludedUsers = context.select(Tables.CATCH_PICTURE.CATCH_ID)
+                    .from(Tables.CATCH_PICTURE)
+                    .innerJoin(Tables.CATCH).on(Tables.CATCH.ID.eq(Tables.CATCH_PICTURE.CATCH_ID))
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .innerJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
+                    .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
+            int countFromNonExcludedUsers = context.fetchCount(selectNonExcludedUsers);
+
+            // On compte aussi les sorties dont l'utilisateur a été supprimé
+            SelectConditionStep<Record1<UUID>> selectNoUser = context.select(Tables.CATCH_PICTURE.CATCH_ID)
+                    .from(Tables.CATCH_PICTURE)
+                    .innerJoin(Tables.CATCH).on(Tables.CATCH.ID.eq(Tables.CATCH_PICTURE.CATCH_ID))
+                    .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .where(Tables.TRIP.OWNER_ID.isNull());
+            int countNoUser = context.fetchCount(selectNoUser);
+
+            return countFromNonExcludedUsers + countNoUser;
+        });
         return result;
     }
 
