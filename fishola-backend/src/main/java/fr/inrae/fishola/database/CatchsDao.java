@@ -32,6 +32,7 @@ import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
+import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -48,6 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.or;
 import static org.jooq.impl.DSL.trueCondition;
 
 @Singleton
@@ -130,10 +132,18 @@ public class CatchsDao extends AbstractFisholaDao {
                     .select(Tables.CATCH.fields())
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                    .leftJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
                     .where(trueCondition());
             if (userId.isPresent()) {
+                // Si on précise l'utilisateur, on ne prend que ses sorties non masquées
                 selectStep = selectStep.and(Tables.TRIP.OWNER_ID.eq(userId.get()))
                         .and(Tables.TRIP.HIDDEN.eq(false));
+            } else {
+                // Sinon on inclut seulement les sorties dont les utilisateurs ne sont pas à exclure
+                Condition nonExcludedUserCondition = Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false);
+                // ... ou les sorties où il n'y a pas d'utilisateur
+                Condition noUserCondition = Tables.TRIP.OWNER_ID.isNull();
+                selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));
             }
             if (year.isPresent()) {
                 LocalDate min = LocalDate.of(year.get(), Month.JANUARY, 1);
