@@ -18,17 +18,6 @@ stages:
 - check-releasable
 - sonar
 
-#build:dependency-tree:
-#  image: maven:3.6-openjdk-15
-#  stage: build
-#  rules:
-#    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-#      when: manual
-#  script:
-#    - mvn dependency:tree
-#  tags:
-#    - sticky
-
 build:compile-only:
   image: maven:3.6-openjdk-15
   stage: build
@@ -38,17 +27,21 @@ build:compile-only:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
+  artifacts:
+    name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-mobile
       - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
+    expire_in: 1 day
+  cache:
+    paths:
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
   script:
     - mvn clean package -Dmaven.test.skip
   rules:
@@ -102,9 +95,6 @@ package:android-demo:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-mobile
-      - fishola-mobile/target/dist-web
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -148,9 +138,6 @@ package:android-production:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-mobile
-      - fishola-mobile/target/dist-web
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -197,7 +184,6 @@ package:docker-demo:
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
-    - sticky
     - docker
 
 package:docker-demo-feature:
@@ -206,12 +192,6 @@ package:docker-demo-feature:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
       when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-demo
-      - fishola-admin/target/dist-demo
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo-${CI_COMMIT_REF_NAME#feature/} fishola-backend
@@ -220,37 +200,7 @@ package:docker-demo-feature:
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
-    - sticky
     - docker
-
-package:deliverables:
-  image: debian:latest
-  stage: package
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-web
-      - fishola-admin/target/dist-production
-  script:
-    - apt update && apt install -y zip && apt clean
-    - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
-    - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
-    - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
-    - cp -r fishola-mobile/target/dist-web fishola-web-$CI_COMMIT_SHORT_SHA
-    - cp -r fishola-admin/target/dist-production fishola-admin-$CI_COMMIT_SHORT_SHA
-  artifacts:
-    name: "fishola-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - fishola-backend-$CI_COMMIT_SHORT_SHA
-      - fishola-web-$CI_COMMIT_SHORT_SHA
-      - fishola-admin-$CI_COMMIT_SHORT_SHA
-    expire_in: 2 weeks
-  tags:
-    - sticky
 
 deploy:demo:
   image: debian:latest
@@ -258,6 +208,8 @@ deploy:demo:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
       when: always
+  dependencies:
+    - package:docker-demo
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
@@ -276,7 +228,6 @@ sonarqube:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   tags:
-    - sticky
     - docker
 
 #build:ios:
