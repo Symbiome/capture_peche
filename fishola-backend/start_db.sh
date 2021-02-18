@@ -8,4 +8,5 @@ docker run \
   -v ${DBdir}/${DB}:/var/lib/postgresql/data \
   -e POSTGRES_DB=${DB} \
   -e POSTGRES_PASSWORD=whatever \
+  -p 15432:5432 \
   -d postgres:12
