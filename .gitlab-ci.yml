@@ -45,7 +45,8 @@ build:compile-only:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
   script:
@@ -73,7 +74,8 @@ build:compile-with-tests:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
   script:
@@ -97,7 +99,8 @@ package:android-demo:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -142,7 +145,8 @@ package:android-production:
       - fishola-mobile/node
       - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -159,7 +163,7 @@ package:android-production:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - mv target/dist-production target/dist
+    - mv target/dist-mobile target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
@@ -231,14 +235,14 @@ package:deliverables:
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-production
   script:
     - apt update && apt install -y zip && apt clean
     - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
     - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
     - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
-    - cp -r fishola-mobile/target/dist-production fishola-web-$CI_COMMIT_SHORT_SHA
+    - cp -r fishola-mobile/target/dist-web fishola-web-$CI_COMMIT_SHORT_SHA
     - cp -r fishola-admin/target/dist-production fishola-admin-$CI_COMMIT_SHORT_SHA
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
@@ -269,15 +273,6 @@ sonarqube:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
-      - fishola-admin/target/dist-demo
   script:
     - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
   rules:
