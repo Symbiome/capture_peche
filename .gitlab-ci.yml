@@ -67,17 +67,21 @@ build:compile-with-tests:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
+  artifacts:
+    name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
       - fishola-mobile/target/dist-mobile
       - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
+    expire_in: 1 day
+  cache:
+    paths:
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
   script:
     - mvn clean package
   rules:
@@ -185,12 +189,6 @@ package:docker-demo:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-demo
-      - fishola-admin/target/dist-demo
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
