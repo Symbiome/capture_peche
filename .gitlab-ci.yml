@@ -37,7 +37,7 @@ build:compile:
       - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
-    expire_in: 1 day
+    expire_in: 2 hours
   cache:
     paths:
       - fishola-mobile/node
@@ -121,7 +121,7 @@ package:android-demo:
     name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
     paths:
       - ./*.apk
-    expire_in: 1 day
+    expire_in: 2 hours
   tags:
     - sticky
 
