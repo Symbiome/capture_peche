@@ -88,18 +88,30 @@
           </execution>
 
           <execution>
-            <id>npm run build:production</id>
+            <id>npm run build:mobile</id>
             <goals>
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>run build:production</arguments>
+              <arguments>run build:mobile</arguments>
               <environmentVariables>
                 <MAVEN_PROJECT_VERSION>${project.version}</MAVEN_PROJECT_VERSION>
               </environmentVariables>
             </configuration>
           </execution>
 
+          <execution>
+            <id>npm run build:web</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run build:web</arguments>
+              <environmentVariables>
+                <MAVEN_PROJECT_VERSION>${project.version}</MAVEN_PROJECT_VERSION>
+              </environmentVariables>
+            </configuration>
+          </execution>
         </executions>
 
       </plugin>
