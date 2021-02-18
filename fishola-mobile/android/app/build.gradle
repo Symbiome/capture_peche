@@ -33,7 +33,9 @@ android {
             applicationVariants.all { variant ->
                 variant.outputs.each { output ->
                     def versionName = variant.versionName
-                    output.outputFileName = "fishola-${versionName}.apk"
+                    def versionCode = variant.versionCode
+                    def gitRevision = "git rev-parse --short HEAD".execute().text.trim()
+                    output.outputFileName = "fishola-v${versionName}-c${versionCode}-${gitRevision}.apk"
                 }
             }
         }
