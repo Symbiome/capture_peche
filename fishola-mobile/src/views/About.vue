@@ -56,7 +56,7 @@
                   <span class="menu-item-bg"></span>
                 </li>
                 <li>
-                  <a href="#/news" @click="closed = !closed">On en parle ...</a>
+                  <a href="#/news" @click="closed = !closed">On en parle</a>
                   <span class="menu-item-bg"></span>
                 </li>
               </ul>

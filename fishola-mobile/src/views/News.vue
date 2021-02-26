@@ -24,7 +24,7 @@
     <div class="page news-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1 class="no-margin-pane">On en parle ...</h1>
+          <h1 class="no-margin-pane">On en parle</h1>
 
           <div v-if="!elements || elements.length == 0" class="empty">
             Il n'y a pas encore d'actualités ...
