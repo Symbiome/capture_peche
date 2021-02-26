@@ -32,12 +32,10 @@ android {
             signingConfig signingConfigs.signing
             applicationVariants.all { variant ->
                 variant.outputs.each { output ->
-                    def date = new Date();
-                    def formattedDate = date.format('yyyy-MM-dd')
-                    def flavor = variant.name
-                    def versionName = variant.versionName.replace(".", "_")
+                    def versionName = variant.versionName
                     def versionCode = variant.versionCode
-                    output.outputFileName = "Fishola-${flavor}-${versionName}-${versionCode}-${formattedDate}.apk"
+                    def gitRevision = "git rev-parse --short HEAD".execute().text.trim()
+                    output.outputFileName = "fishola-v${versionName}-c${versionCode}-r${gitRevision}.apk"
                 }
             }
         }

@@ -56,7 +56,7 @@
                   <span class="menu-item-bg"></span>
                 </li>
                 <li>
-                  <a href="#/news" @click="closed = !closed">Actualités</a>
+                  <a href="#/news" @click="closed = !closed">On en parle</a>
                   <span class="menu-item-bg"></span>
                 </li>
               </ul>
@@ -107,7 +107,7 @@
           <iframe class="youtube"
                   width="640"
                   height="360"
-                  src="https://www.youtube-nocookie.com/embed/HNl9-I-Wqcg"
+                  src="https://www.youtube-nocookie.com/embed/4wdQ-8hiVLQ"
                   frameborder="10"
                   allow="encrypted-media"
                   allowfullscreen></iframe>
@@ -192,8 +192,8 @@
                 <!-- // End Pricing Side // -->
                 <h3>Applications</h3>
                 <div class="welcome-apps">
-                    <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
-                    <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank"><img class="app" src="/img/AppStore.png" alt="AppStore" /></a>
+                    <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank" rel="noopener"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
+                    <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank" rel="noopener"><img class="app" src="/img/AppStore.png" alt="AppStore" /></a>
                 </div>
             </div>
         </div>
@@ -237,9 +237,9 @@
                                 <div class="clear"></div>
                                 <p>Retrouvez-nous sur :</p>
                                 <ul>
-                                    <li><a rel="nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
-                                    <li><a rel="nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
-                                    <li><a rel="nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
+                                    <li><a rel="noopener, nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
+                                    <li><a rel="noopener, nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
+                                    <li><a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
                                 </ul>
                         </div>
                         <!-- // End Right Side // -->
@@ -257,26 +257,26 @@
               <div class="partners">
                 <h3>Nos partenaires</h3>
                 <div class="credits-logos">
-                  <a href="https://www.annecylacpeche.com" target="_blank"><img src='/img/credits/88b994/ALP.png' alt="AAPPMA - Annecy Lac Pêche"/></a>
-                  <a href="https://www.peche-leman-apallf.com" target="_blank"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
-                  <a href="https://fipal.ch" target="_blank"><img src='/img/credits/88b994/FIPAL.jpg' alt="Fédération Internationale des Pêcheurs Amateurs du Léman"/></a>
-                  <a href="http://www.pecheurs-chamberiens.fr" target="_blank"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA - Pêcheurs chambériens"/></a>
-                  <a href="https://aappma-aix-les-bains.fr" target="_blank"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA - Aix-les-Bains"/></a>
-                  <a href="http://www.aappma-aiguebelette.org" target="_blank"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA - Aiguebelette"/></a>
+                  <a href="https://www.annecylacpeche.com" target="_blank" rel="noopener"><img src='/img/credits/88b994/ALP.png' alt="AAPPMA - Annecy Lac Pêche"/></a>
+                  <a href="https://www.peche-leman-apallf.com" target="_blank" rel="noopener"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
+                  <a href="https://fipal.ch" target="_blank" rel="noopener"><img src='/img/credits/88b994/FIPAL.jpg' alt="Fédération Internationale des Pêcheurs Amateurs du Léman"/></a>
+                  <a href="http://www.pecheurs-chamberiens.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA - Pêcheurs chambériens"/></a>
+                  <a href="https://aappma-aix-les-bains.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA - Aix-les-Bains"/></a>
+                  <a href="http://www.aappma-aiguebelette.org" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA - Aiguebelette"/></a>
                 </div>
               </div>
               <div class="Line"></div>
               <div class="producers">
                 <h3>FISHOLA est produit par</h3>
                 <div class="credits-logos">
-                  <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
-                  <a href="https://www.inrae.fr" target="_blank"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
-                  <a href="https://www.univ-smb.fr" target="_blank"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
-                  <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
-                  <a href="https://ofb.gouv.fr" target="_blank"><img src='/img/credits/ofb.png' alt="OFB"/></a>
-                  <a href="https://si-ola.inra.fr" target="_blank"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
-                  <a href="https://www.codelutin.com" target="_blank"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
-                  <a href="https://www.cisalb.fr" target="_blank"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
+                  <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
+                  <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
+                  <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
+                  <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank" rel="noopener"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
+                  <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"><img src='/img/credits/ofb.png' alt="OFB"/></a>
+                  <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
+                  <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
+                  <a href="https://www.cisalb.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
                 </div>
               </div>
             </div>

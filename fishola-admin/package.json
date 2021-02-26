@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --port 8082",
-    "build:demo": "vue-cli-service build --mode demo && mv target/dist target/dist-demo",
-    "build:production": "vue-cli-service build && mv target/dist target/dist-production",
+    "build:demo": "vue-cli-service build --mode demo",
+    "build:production": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

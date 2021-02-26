@@ -18,18 +18,7 @@ stages:
 - check-releasable
 - sonar
 
-#build:dependency-tree:
-#  image: maven:3.6-openjdk-15
-#  stage: build
-#  rules:
-#    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-#      when: manual
-#  script:
-#    - mvn dependency:tree
-#  tags:
-#    - sticky
-
-build:compile-only:
+build:compile:
   image: maven:3.6-openjdk-15
   stage: build
   services:
@@ -38,26 +27,31 @@ build:compile-only:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
+  artifacts:
+    name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
+    expire_in: 2 hours
+  cache:
+    paths:
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
   script:
-    - mvn clean package -Dmaven.test.skip
+    - mvn clean package
   rules:
-    - if: $CI_COMMIT_BRANCH != "develop"
-      when: manual
+    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_TAG =~ "/^$/"'
+      when: always
   tags:
     - sticky
     - docker
 
-build:compile-with-tests:
+build:compile-stable:
   image: maven:3.6-openjdk-15
   stage: build
   services:
@@ -66,20 +60,25 @@ build:compile-with-tests:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
+  artifacts:
+    name: "fishola-$CI_COMMIT_SHORT_SHA"
     paths:
       - fishola-backend/target/lib
       - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
       - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
+      - fishola-mobile/target/dist-mobile
+      - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
+    expire_in: 2 weeks
+  cache:
+    paths:
+      - fishola-mobile/node
+      - fishola-mobile/node_modules
   script:
     - mvn clean package
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
+    - if: $CI_COMMIT_TAG
       when: always
   tags:
     - sticky
@@ -89,15 +88,11 @@ build:compile-with-tests:
 package:android-demo:
   image: openjdk:9-jdk
   stage: package
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
+  when: manual
   cache:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -126,7 +121,7 @@ package:android-demo:
     name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
     paths:
       - ./*.apk
-    expire_in: 2 weeks
+    expire_in: 2 hours
   tags:
     - sticky
 
@@ -135,14 +130,11 @@ package:android-production:
   image: openjdk:9-jdk
   stage: package
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
+    - if: $CI_COMMIT_TAG
   cache:
     paths:
       - fishola-mobile/node
       - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
   script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
@@ -159,7 +151,7 @@ package:android-production:
     - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
     - set -o pipefail
     - cd fishola-mobile
-    - mv target/dist-production target/dist
+    - mv target/dist-mobile target/dist
     - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
@@ -181,74 +173,31 @@ package:docker-demo:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-demo
-      - fishola-admin/target/dist-demo
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo fishola-mobile
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-demo fishola-mobile
     - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
-    - sticky
     - docker
 
 package:docker-demo-feature:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
+    - if: '$CI_COMMIT_BRANCH != "develop"'
       when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-demo
-      - fishola-admin/target/dist-demo
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
     - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo-${CI_COMMIT_REF_NAME#feature/} fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:mobile-demo-${CI_COMMIT_REF_NAME#feature/} fishola-mobile
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-demo-${CI_COMMIT_REF_NAME#feature/} fishola-mobile
     - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo-${CI_COMMIT_REF_NAME#feature/} fishola-admin
     - docker push registry.nuiton.org/inrae/fishola
     - docker logout registry.nuiton.org
   tags:
-    - sticky
     - docker
-
-package:deliverables:
-  image: debian:latest
-  stage: package
-  rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule"'
-      when: manual
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/target/dist-production
-      - fishola-admin/target/dist-production
-  script:
-    - apt update && apt install -y zip && apt clean
-    - mkdir -p fishola-backend-$CI_COMMIT_SHORT_SHA/config
-    - cp -r fishola-backend/target/lib fishola-backend/target/fishola-backend-*-runner.jar  fishola-backend-$CI_COMMIT_SHORT_SHA/
-    - cp doc/application.sample.properties fishola-backend-$CI_COMMIT_SHORT_SHA/config/application.properties
-    - cp -r fishola-mobile/target/dist-production fishola-web-$CI_COMMIT_SHORT_SHA
-    - cp -r fishola-admin/target/dist-production fishola-admin-$CI_COMMIT_SHORT_SHA
-  artifacts:
-    name: "fishola-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - fishola-backend-$CI_COMMIT_SHORT_SHA
-      - fishola-web-$CI_COMMIT_SHORT_SHA
-      - fishola-admin-$CI_COMMIT_SHORT_SHA
-    expire_in: 2 weeks
-  tags:
-    - sticky
 
 deploy:demo:
   image: debian:latest
@@ -256,6 +205,8 @@ deploy:demo:
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule"'
       when: always
+  dependencies:
+    - package:docker-demo
   script:
     - apt update && apt install -y curl && apt clean
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
@@ -269,21 +220,11 @@ sonarqube:
   variables:
     # Instruct Testcontainers to use the daemon of DinD.
     DOCKER_HOST: "tcp://docker:2375"
-  cache:
-    paths:
-      - fishola-backend/target/lib
-      - fishola-backend/target/fishola-backend-*-runner.jar
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-production
-      - fishola-admin/target/dist-demo
   script:
     - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   tags:
-    - sticky
     - docker
 
 #build:ios:
