@@ -59,11 +59,11 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>1.10.5.Final</quarkusVersion>
-    <jooqVersion>3.14.4</jooqVersion>
+    <quarkusVersion>1.12.0.Final</quarkusVersion>
+    <jooqVersion>3.14.8</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
-    <postgresqlDriverVersion>42.2.18</postgresqlDriverVersion>
-    <testcontainersVersion>1.15.1</testcontainersVersion>
+    <postgresqlDriverVersion>42.2.19</postgresqlDriverVersion>
+    <testcontainersVersion>1.15.2</testcontainersVersion>
 
     <gitCommitIdPluginVersion>4.0.3</gitCommitIdPluginVersion>
 
@@ -157,7 +157,7 @@
       <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.12.0</version>
+        <version>3.13.0</version>
       </dependency>
 
       <dependency>
@@ -169,7 +169,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.11</version>
+        <version>3.12.0</version>
       </dependency>
 
       <dependency>
