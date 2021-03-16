@@ -341,11 +341,11 @@ export default class AboutView extends Vue {
   titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
   contributeText:string = "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount:number = 0;
-  realTripsCount:number = 125;
+  realTripsCount:number = 302;
   catchsCount:number = 0;
-  realCatchsCount:number = 633;
+  realCatchsCount:number = 1242;
   picturesCount:number = 0;
-  realPicturesCount:number = 72;
+  realPicturesCount:number = 172;
   lakes:Lake[] = [];
   catchsCountPerLakeId: { [index: string]: number } = {};
 
