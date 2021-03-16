@@ -153,13 +153,19 @@ const routes = [
   {
     path: '/news',
     name: 'news',
-    meta: { public: true },
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: News
   },
   {
     path: '/faq',
     name: 'faq',
-    meta: { public: true },
+    meta: {
+      layout: 'no-menu',
+      public: true
+    },
     component: Faq
   },
   {
