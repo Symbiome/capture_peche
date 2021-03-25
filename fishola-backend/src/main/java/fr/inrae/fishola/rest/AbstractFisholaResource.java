@@ -104,7 +104,7 @@ public abstract class AbstractFisholaResource {
     }
 
     /**
-     * Vérifie le token contenu dans le cookie et tente un renouvelement le cas échéant. Le cookie utilisé est celui
+     * Vérifie le token contenu dans le cookie et tente un renouvellement le cas échéant. Le cookie utilisé est celui
      * injecté dans {@link AbstractFisholaResource#userToken} : X-Fishola-Token
      * @return L'identifiant de l'utilisateur et éventuellement le nouveau token s'il y a eu renouvellement
      */
