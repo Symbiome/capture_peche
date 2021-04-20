@@ -22,27 +22,28 @@
     Lefmost object size(mm)
     <input type="text"  style="width:100px"  id="leftSizeObjectSizeMm" value="133"/>
     Resize image size
-    <input type="text"  style="width:100px"  id="fixedSize" value="800"/><br/>
+    <input type="text"  style="width:100px"  id="fixedSize" value="150"/><br/>
     Min % of detected forms (between 0 and 1)
     <input type="text" style="width:100px" id="minCoverrage" value="0.15"/>
     <br/>
     <div class="inputoutput">
-      <img style="display:none" id="imageSrc" src="img/cb2.jpg" alt="No Image" />
-      <div class="caption">target <input type="file" id="markerFile" name="file" /></div>
-      <img src="img/marqueur2.jpg" id="marker" alt="" />
-      <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div><br/>
+      <img style="display:none" id="imageSrc" alt="No Image" />
+      <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
     </div>
     <p id="status">OpenCV.js is loading...</p>
     <div class="inputoutput">
-      <div style="float:left;display:none;background-color:orange;">
+      <div style="float:left;background-color:yellow;">
           <canvas  id="canvasOutput1" ></canvas><br/>
           <caption>Photo originale</caption>
       </div>
-        <div style="float:left;display:none;margin-left:10px;background-color:yellow;">
+      <div style="clear:both"/>
+        <div style="float:left;background-color:green;">
           <canvas  id="canvasOutput2" ></canvas><br/>
           <caption>Photo traitée</caption>
       </div>
-      <div style="float:left;margin-left: 10px; background-color:green;">
+
+      <div style="clear:both"/>
+      <div style="float:left;background-color:green;">
           <canvas  id="canvasOutput3" ></canvas><br/>
           <caption>Calcul</caption>
       </div>
