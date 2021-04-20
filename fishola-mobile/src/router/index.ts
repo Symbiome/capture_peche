@@ -45,6 +45,9 @@ import Documentation from '@/views/Documentation.vue'
 import News from '@/views/News.vue'
 import Credits from '@/views/Credits.vue'
 
+
+import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
+
 import Settings from '@/views/Settings.vue'
 import Profile from '@/views/Profile.vue'
 import ProfilePassword from '@/views/ProfilePassword.vue'
@@ -58,151 +61,154 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'dispatcher',
+    path: "/",
+    name: "dispatcher",
     meta: {
-      layout: 'no-menu',
-      public: true
+      layout: "no-menu",
+      public: true,
     },
-    component: Dispatcher
+    component: Dispatcher,
   },
   {
-    path: '/about',
-    name: 'about',
+    path: "/about",
+    name: "about",
     meta: {
-      layout: 'no-menu',
-      public: true
+      layout: "no-menu",
+      public: true,
     },
-    component: About
+    component: About,
   },
   {
-    path: '/login',
-    name: 'login',
+    path: "/login",
+    name: "login",
     meta: { public: true },
-    component: Login
+    component: Login,
   },
   {
-    path: '/register',
-    name: 'register',
+    path: "/register",
+    name: "register",
     meta: { public: true },
-    component: Register
+    component: Register,
   },
   {
-    path: '/trips',
-    name: 'trips',
-    component: MyTrips
+    path: "/trips",
+    name: "trips",
+    component: MyTrips,
   },
   {
-    path: '/trips/new',
-    name: 'new-trip',
-    component: NewTrip
+    path: "/trips/new",
+    name: "new-trip",
+    component: NewTrip,
   },
   {
-    path: '/trips/:id/meta',
-    name: 'trip-meta',
+    path: "/trips/:id/meta",
+    name: "trip-meta",
     component: TripMeta,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:id/species',
-    name: 'trip-species',
+    path: "/trips/:id/species",
+    name: "trip-species",
     component: TripSpecies,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:id/catchs',
-    name: 'trip-catchs',
+    path: "/trips/:id/catchs",
+    name: "trip-catchs",
     component: TripCatchs,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:id/techniques',
-    name: 'trip-techniques',
+    path: "/trips/:id/techniques",
+    name: "trip-techniques",
     component: TripTechniques,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:tripId/catchs/:catchId',
-    name: 'catch',
+    path: "/trips/:tripId/catchs/:catchId",
+    name: "catch",
     component: EditCatch,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:id/summary',
-    name: 'trip-summary',
+    path: "/trips/:id/summary",
+    name: "trip-summary",
     component: TripSummary,
-    props: true
+    props: true,
   },
   {
-    path: '/trips/:id',
-    name: 'trip',
+    path: "/trips/:id",
+    name: "trip",
     component: EditTrip,
-    props: true
+    props: true,
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: Dashboard
+    path: "/dashboard",
+    name: "dashboard",
+    component: Dashboard,
   },
   {
-    path: '/documentation',
-    name: 'documentation',
+    path: "/documentation",
+    name: "documentation",
     meta: { public: true },
-    component: Documentation
+    component: Documentation,
   },
   {
-    path: '/news',
-    name: 'news',
+    path: "/news",
+    name: "news",
     meta: { public: true },
-    component: News
+    component: News,
   },
   {
-    path: '/faq',
-    name: 'faq',
+    path: "/faq",
+    name: "faq",
     meta: { public: true },
-    component: Faq
+    component: Faq,
   },
   {
-    path: '/settings',
-    name: 'settings',
-    component: Settings
+    path: "/settings",
+    name: "settings",
+    component: Settings,
   },
   {
-    path: '/credits',
-    name: 'credits',
+    path: "/credits",
+    name: "credits",
     meta: { public: true },
-    component: Credits
+    component: Credits,
   },
   {
-    path: '/profile',
-    name: 'profile',
-    component: Profile
+    path: "/profile",
+    name: "profile",
+    component: Profile,
   },
   {
-    path: '/profile-password',
-    name: 'profile-password',
-    component: ProfilePassword
+    path: "/profile-password",
+    name: "profile-password",
+    component: ProfilePassword,
   },
   {
-    path: '/reset-password/:token',
-    name: 'reset-password',
+    path: "/reset-password/:token",
+    name: "reset-password",
     meta: {
-      layout: 'no-menu',
-      public: true
+      layout: "no-menu",
+      public: true,
     },
     component: ResetPassword,
-    props: true
+    props: true,
   },
   {
-    path: '/verify/:token',
-    name: 'verify',
+    path: "/verify/:token",
+    name: "verify",
     meta: {
-      layout: 'no-menu',
-      public: true
+      public: true,
     },
     component: VerifyAccount,
-    props: true
-  }
+  },
+  {
+    path: "/fish-measure",
+    name: "fish-measure",
+    component: OpenCVSizeComputation,
+  },
   // ,{
   //   path: '/about',
   //   name: 'about',
@@ -211,7 +217,7 @@ const routes = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '@/views/About.vue')
   // }
-]
+];
 
 const router = new VueRouter({
   routes

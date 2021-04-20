@@ -110,7 +110,8 @@ export default class Menu extends Vue {
     {name:'documentation', label:'Documentation',   iconName:'files',     clickHandler:this.goDocumentation, onlyConnected:false},
     {name:'credits',       label:'Infos / Crédits', iconName:'info',      clickHandler:this.goCredits,       onlyConnected:false},
     {name:'feedback',      label:'Des retours ?',   iconName:'faq',       clickHandler:this.openFeedback,    onlyConnected:false},
-    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true}
+    {name:'fish-measure',  label:'Mesure Poisson',   iconName:'settings', clickHandler:this.openFishMeasure, onlyConnected:false},
+    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true},
   ];
 
   fullName:string = '';
@@ -188,6 +189,11 @@ export default class Menu extends Vue {
   goProfile() {
     this.closeMenu();
     router.push('/profile');
+  }
+
+  openFishMeasure() {
+    this.closeMenu();
+    router.push('/fish-measure');
   }
 
   goDashboard() {
