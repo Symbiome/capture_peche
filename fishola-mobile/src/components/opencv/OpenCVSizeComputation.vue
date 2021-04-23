@@ -101,8 +101,8 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Vue } from "vue-property-decorator";
-import FisholaOpenCVService from "@/services/opencv/fish-analyser.js";
-import cv from "@/services/opencv/opencv.js";
+import FisholaOpenCVService from "@/services/opencv/fish-analyser";
+import * as cv from "@/services/opencv/opencv.js";
 
 @Component({
   components: {
@@ -136,8 +136,9 @@ export default class OpenCVSizeComputation extends Vue {
 
   onNewImageSourceLoad(e: Event): void {
     console.error("onNewImageSourceLoad ", e.target);
+    const imageElement = e.target as HTMLElement
     FisholaOpenCVService.INSTANCE.calculateSizes(cv, 
-      e.target,
+      imageElement,
       this.minCoverrage,
       this.leftSizeObjectSizeMm,
       this.fixedSize

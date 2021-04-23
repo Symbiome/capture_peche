@@ -3,6 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
+    "allowJs": true,
     "strictPropertyInitialization": false,
     "jsx": "preserve",
     "importHelpers": true,
@@ -33,7 +34,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "src/services/opencv/fish-analyser.ts"  ],
   "exclude": [
     "node_modules"
   ]
