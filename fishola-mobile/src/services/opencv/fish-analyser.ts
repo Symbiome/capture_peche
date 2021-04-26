@@ -165,6 +165,36 @@ export default class FisholaOpenCVService {
     dst.delete();
   }
 
+  detectMarker(cv: any, imgElement: HTMLElement, imgMarker: HTMLElement) {
+    const src = cv.imread(imgElement); //resize(imgElement, fixedSize);
+    const marker = cv.imread(imgMarker); //resize(imgMarker, fixedSize / 2);
+    const dst = cv.imread(imgElement); //resize(imgElement, fixedSize);
+
+    // Step 2: match template
+    const matchedDst = new cv.Mat();
+    const mask = new cv.Mat();
+    cv.matchTemplate(src, marker, matchedDst, cv.TM_CCOEFF, mask);
+    const result = cv.minMaxLoc(matchedDst, mask);
+    const maxPoint = result.maxLoc;
+    const color = new cv.Scalar(255, 0, 0, 255);
+    console.log("=====>", result);
+    const matchedPoints = new cv.Point(
+      maxPoint.x + marker.cols,
+      maxPoint.y + marker.rows
+    );
+
+    cv.rectangle(dst, maxPoint, matchedPoints, color, 2, cv.LINE_8, 0);
+
+    cv.imshow("canvasOutput1", src);
+    //cv.imshow('canvasOutput2', refined1);
+    cv.imshow("canvasOutput3", dst);
+
+    src.delete();
+    //refined1.delete();
+    //refined2.delete();
+    dst.delete();
+  }
+
   resize(cv: any, imgElement: HTMLElement, fixedSize: number) {
     const original = cv.imread(imgElement);
     const src = new cv.Mat();

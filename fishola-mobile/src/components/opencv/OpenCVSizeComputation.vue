@@ -24,29 +24,53 @@
     <div class="page">
       <div class="pane pane-only">
         <div class="pane-content large rounded">
-          <h1 class="no-margin-pane">OpenCV - Mesure de poissons (Test)</h1>
+          <h1 class="no-margin-pane">
+            OpenCV -
+            <span v-if="detectMarker">Détection de marqueur</span>
+            <span v-else>Mesure automatique de poisson</span>
+            <button @click="detectMarker = !detectMarker">Switch</button>
+          </h1>
           <div class="measure-tests">
-            Lefmost object size(mm)
-            <input
-              type="text"
-              style="width:100px"
-              id="leftSizeObjectSizeMm"
-              :value="leftSizeObjectSizeMm"
-            />
-            Resize image size
-            <input
-              type="text"
-              style="width:100px"
-              id="fixedSize"
-              :value="fixedSize"
-            /><br />
-            Min % of detected forms (between 0 and 1)
-            <input
-              type="text"
-              style="width:100px"
-              id="minCoverrage"
-              :value="minCoverrage"
-            />
+            <div v-if="!detectMarker">
+              Lefmost object size(mm)
+              <input
+                type="text"
+                style="width:100px"
+                id="leftSizeObjectSizeMm"
+                :value="leftSizeObjectSizeMm"
+              />
+              Resize image size
+              <input
+                type="text"
+                style="width:100px"
+                id="fixedSize"
+                :value="fixedSize"
+              /><br />
+              Min % of detected forms (between 0 and 1)
+              <input
+                type="text"
+                style="width:100px"
+                id="minCoverrage"
+                :value="minCoverrage"
+              />
+            </div>
+            <div v-else>
+              <div class="caption">
+                target
+                <input
+                  type="file"
+                  id="markerFile"
+                  name="file"
+                  @change="changeMarkerImage"
+                />
+              </div>
+              <img
+                id="marker"
+                alt=""
+                @load="onNewMarkerSourceLoad"
+                :src="markerSourceSRC"
+              />
+            </div>
             <br />
             <div class="inputoutput">
               <img
@@ -69,14 +93,14 @@
             <p id="status" v-if="!openCVLoaded">OpenCV.js is loading...</p>
             <p id="status" v-else>OpenCV.js is ready</p>
             <div class="inputoutput">
-              <div style="float:left;background-color:yellow;">
+              <div style="float:left;background-color:orange;">
                 <canvas id="canvasOutput1"></canvas><br />
                 <caption>
                   Photo originale
                 </caption>
               </div>
               <div style="clear:both" />
-              <div style="float:left;background-color:green;">
+              <div style="float:left;background-color:yellow;">
                 <canvas id="canvasOutput2"></canvas><br />
                 <caption>
                   Photo traitée
@@ -112,10 +136,12 @@ import FisholaOpenCVService from "@/services/opencv/fish-analyser";
 })
 export default class OpenCVSizeComputation extends Vue {
   imageSourceSRC = "";
+  markerSourceSRC = "";
   minCoverrage = 0.15;
   leftSizeObjectSizeMm = 133;
   fixedSize = 150;
-  openCVLoaded = false
+  detectMarker = true;
+  openCVLoaded = false;
   cv: any;
 
   created(): void {
@@ -163,7 +189,6 @@ export default class OpenCVSizeComputation extends Vue {
     this.openCVLoaded = true;
   }
 
-
   changeSourceImage(e: Event): void {
     console.error("changedSourceImage", e);
     let eventTaget = e.target;
@@ -174,16 +199,48 @@ export default class OpenCVSizeComputation extends Vue {
     }
   }
 
+  changeMarkerImage(e: Event): void {
+    console.error("changeMarkerImage", e);
+    let eventTaget = e.target;
+    // @ts-ignore
+    if (eventTaget != null && eventTaget["files"]) {
+      // @ts-ignore
+      this.markerSourceSRC = URL.createObjectURL(eventTaget["files"][0]);
+    }
+  }
+
+  onNewMarkerSourceLoad(e: Event): void {
+    console.error("onNewMarkerSourceLoad", e);
+    let eventTaget = e.target;
+    // @ts-ignore
+    if (eventTaget != null && eventTaget["files"]) {
+      // @ts-ignore
+      this.markerSourceSRC = URL.createObjectURL(eventTaget["files"][0]);
+    }
+  }
+
   onNewImageSourceLoad(e: Event): void {
-    console.error("onNewImageSourceLoad ", e.target);
     const imageElement = e.target as HTMLElement;
-    FisholaOpenCVService.INSTANCE.calculateSizes(
-      this.cv,
-      imageElement,
-      this.minCoverrage,
-      this.leftSizeObjectSizeMm,
-      this.fixedSize
-    );
+    if (this.detectMarker) {
+      const markerElement = document.getElementById("marker");
+      console.error("Detect marker ", markerElement);
+      if (markerElement) {
+        FisholaOpenCVService.INSTANCE.detectMarker(
+          this.cv,
+          imageElement,
+          markerElement
+        );
+      }
+    } else {
+      console.error("Calculate size", e);
+      FisholaOpenCVService.INSTANCE.calculateSizes(
+        this.cv,
+        imageElement,
+        this.minCoverrage,
+        this.leftSizeObjectSizeMm,
+        this.fixedSize
+      );
+    }
   }
 }
 </script>
