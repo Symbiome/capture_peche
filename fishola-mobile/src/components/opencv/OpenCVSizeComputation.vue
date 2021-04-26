@@ -66,7 +66,8 @@
                 />
               </div>
             </div>
-            <p id="status">OpenCV.js is loading...</p>
+            <p id="status" v-if="!openCVLoaded">OpenCV.js is loading...</p>
+            <p id="status" v-else>OpenCV.js is ready</p>
             <div class="inputoutput">
               <div style="float:left;background-color:yellow;">
                 <canvas id="canvasOutput1"></canvas><br />
@@ -102,7 +103,6 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Vue } from "vue-property-decorator";
 import FisholaOpenCVService from "@/services/opencv/fish-analyser";
-import * as cv from "@/services/opencv/opencv.js";
 
 @Component({
   components: {
@@ -115,14 +115,54 @@ export default class OpenCVSizeComputation extends Vue {
   minCoverrage = 0.15;
   leftSizeObjectSizeMm = 133;
   fixedSize = 150;
+  openCVLoaded = false
+  cv: any;
 
   created(): void {
-    this.loadOpenCV();
+    this.loadOpenCVIfNeeded();
   }
 
-  async loadOpenCV() {
-    console.error("loadOpenCV");
+  /**
+   * Loads the opencv.js library if required (i.e. was never loaded).
+   */
+  async loadOpenCVIfNeeded() {
+    // @ts-ignore : if OpenCV is loaded, window.cv is defined
+    if (!window.cv) {
+      // If not, let's create an async script to load it
+      const callbackTarget = this;
+      var head = document.getElementsByTagName("head").item(0);
+      var script = document.createElement("script");
+      script.setAttribute("type", "text/javascript");
+      script.setAttribute("src", "/js/opencv.js");
+      script.setAttribute("async", "");
+      // Add a callback allowing this.openCVReady() to be called when OpenCV Is ready
+      script.setAttribute(
+        "onLoad",
+        "document.dispatchEvent(new Event('open-cv-loaded'))"
+      );
+      document.addEventListener(
+        "open-cv-loaded",
+        function(e) {
+          callbackTarget.openCVReady();
+        },
+        false
+      );
+      // @ts-ignore
+      head.appendChild(script);
+    } else {
+      this.openCVReady();
+    }
   }
+
+  /**
+   * Callback called when OpenCV has done loading and is ready
+   */
+  openCVReady(): void {
+    // @ts-ignore Get OpenCV instance from window.cv
+    this.cv = window.cv;
+    this.openCVLoaded = true;
+  }
+
 
   changeSourceImage(e: Event): void {
     console.error("changedSourceImage", e);
@@ -136,8 +176,9 @@ export default class OpenCVSizeComputation extends Vue {
 
   onNewImageSourceLoad(e: Event): void {
     console.error("onNewImageSourceLoad ", e.target);
-    const imageElement = e.target as HTMLElement
-    FisholaOpenCVService.INSTANCE.calculateSizes(cv, 
+    const imageElement = e.target as HTMLElement;
+    FisholaOpenCVService.INSTANCE.calculateSizes(
+      this.cv,
       imageElement,
       this.minCoverrage,
       this.leftSizeObjectSizeMm,
