@@ -1,0 +1,51 @@
+/*-
+ * #%L
+ * Fishola :: Mobile
+ * %%
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+import MarkerTestPicture from "./MarkerTestPicture";
+const markerTestPictures = new Array<MarkerTestPicture>();
+markerTestPictures.push(
+  new MarkerTestPicture("marker/IMG_20210427_103107.jpg", true)
+);
+markerTestPictures.push(
+  new MarkerTestPicture("marker/IMG_20210427_103121.jpg", true)
+);
+markerTestPictures.push(
+  new MarkerTestPicture("marker/IMG_20210427_103130.jpg", true)
+);
+markerTestPictures.push(
+  new MarkerTestPicture("fish-measures/b99in367.jpg", false)
+);
+markerTestPictures.push(
+  new MarkerTestPicture("fish-measures/95ch67.sep.jpg", false)
+);
+
+// Test suite related to automatic marker detection from picture with opencv
+
+describe("Marker detection", () => {
+  for (let i = 0; i < markerTestPictures.length; i++) {
+    const markerTestPicture = markerTestPictures[i];
+    it("File " + markerTestPicture.fileName, () => {
+      fail(
+        "TODO : marker expected to be detected on file " +
+          markerTestPicture.fileName
+      );
+    });
+  }
+});
