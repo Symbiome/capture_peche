@@ -100,7 +100,7 @@
                 </caption>
               </div>
               <div style="clear:both" />
-              <div style="float:left;background-color:yellow;">
+              <div style="float:left;background-color:yellow;" v-if="!detectMarker">
                 <canvas id="canvasOutput2"></canvas><br />
                 <caption>
                   Photo traitée
