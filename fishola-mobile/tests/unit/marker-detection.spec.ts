@@ -19,21 +19,40 @@
  * #L%
  */
 import MarkerTestPicture from "./MarkerTestPicture";
+import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
+
+const defaultMarkerPath = "marker/marker.png";
 const markerTestPictures = new Array<MarkerTestPicture>();
 markerTestPictures.push(
-  new MarkerTestPicture("marker/IMG_20210427_103107.jpg", true)
+  new MarkerTestPicture(
+    defaultMarkerPath,
+    "marker/IMG_20210427_103107.jpg",
+    true
+  )
 );
 markerTestPictures.push(
-  new MarkerTestPicture("marker/IMG_20210427_103121.jpg", true)
+  new MarkerTestPicture(
+    defaultMarkerPath,
+    "marker/IMG_20210427_103121.jpg",
+    true
+  )
 );
 markerTestPictures.push(
-  new MarkerTestPicture("marker/IMG_20210427_103130.jpg", true)
+  new MarkerTestPicture(
+    defaultMarkerPath,
+    "marker/IMG_20210427_103130.jpg",
+    true
+  )
 );
 markerTestPictures.push(
-  new MarkerTestPicture("fish-measures/b99in367.jpg", false)
+  new MarkerTestPicture(defaultMarkerPath, "fish-measures/b99in367.jpg", false)
 );
 markerTestPictures.push(
-  new MarkerTestPicture("fish-measures/95ch67.sep.jpg", false)
+  new MarkerTestPicture(
+    defaultMarkerPath,
+    "fish-measures/95ch67.sep.jpg",
+    false
+  )
 );
 
 // Test suite related to automatic marker detection from picture with opencv
@@ -41,11 +60,12 @@ markerTestPictures.push(
 describe("Marker detection", () => {
   for (let i = 0; i < markerTestPictures.length; i++) {
     const markerTestPicture = markerTestPictures[i];
-    it("File " + markerTestPicture.fileName, () => {
-      fail(
-        "TODO : marker expected to be detected on file " +
-          markerTestPicture.fileName
-      );
+    it("File " + markerTestPicture.filePath, () => {
+
+      const markerDetected = !markerTestPicture.hasMarker
+
+      // Check that marker is detected (or not) as expected
+      expect(markerDetected).toEqual(markerTestPicture.hasMarker);
     });
   }
 });

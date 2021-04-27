@@ -23,11 +23,13 @@
  * Represents a picture to test.
  */
 export default class MarkerTestPicture {
-  fileName: string;
+  markerPath: string;
+  filePath: string;
   hasMarker: boolean;
 
-  constructor(fileName: string, hasMarker: boolean) {
-    this.fileName = fileName;
+  constructor(markerPath: string, filePath: string, hasMarker: boolean) {
+    this.markerPath = markerPath;
+    this.filePath = filePath;
     this.hasMarker = hasMarker;
   }
 }

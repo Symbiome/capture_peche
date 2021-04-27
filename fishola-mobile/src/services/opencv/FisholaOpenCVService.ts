@@ -1,13 +1,22 @@
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
+  private cv: any;
 
-  calculateSizes(
-    cv: any,
+  /**
+   * Indicates if the opencv.js library has done loaded.
+   */
+  isOpenCVReady(): boolean {
+    return this.cv;
+  }
+
+  async calculateSizes(
     imgElement: HTMLElement,
     minSizeRatio: number,
     leftSizeObjectSizeMm: number,
     fixedSize: number
   ) {
+    await this.loadOpenCVIfNeeded();
+    const cv = this.cv;
     /*let empty = new cv.Mat();
         cv.imshow('canvasOutput1', empty);
         cv.imshow('canvasOutput2', empty);
@@ -165,7 +174,9 @@ export default class FisholaOpenCVService {
     dst.delete();
   }
 
-  detectMarker(cv: any, imgElement: HTMLElement, imgMarker: HTMLElement) {
+  async detectMarker(imgElement: HTMLElement, imgMarker: HTMLElement) {
+    await this.loadOpenCVIfNeeded();
+    const cv = this.cv;
     const src = cv.imread(imgElement); //resize(imgElement, fixedSize);
     const marker = cv.imread(imgMarker); //resize(imgMarker, fixedSize / 2);
     const dst = cv.imread(imgElement); //resize(imgElement, fixedSize);
@@ -213,5 +224,45 @@ export default class FisholaOpenCVService {
       cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
     }
     return src;
+  }
+
+  /**
+   * Loads the opencv.js library if required (i.e. was never loaded).
+   */
+  async loadOpenCVIfNeeded(): Promise<void> {
+    const result = new Promise<void>((resolve, _reject) => {
+      console.error("loadOpenCVIfNeeded ", this.cv);
+      // Check whether OpenCV is loaded or not
+      if (!this.cv) {
+        // If not, let's create an async script to load it
+        const callbackTarget = this;
+        const head = document.getElementsByTagName("head").item(0);
+        const script = document.createElement("script");
+        script.setAttribute("type", "text/javascript");
+        script.setAttribute("src", "/js/opencv.js");
+        script.setAttribute("async", "");
+        // Add a callback allowing this.openCVReady() to be called when OpenCV Is ready
+        script.setAttribute(
+          "onLoad",
+          "document.dispatchEvent(new Event('open-cv-loaded'))"
+        );
+        document.addEventListener(
+          "open-cv-loaded",
+          function(e) {
+            // @ts-ignore
+            FisholaOpenCVService.INSTANCE.cv = window.cv;
+            console.error("loaded !", FisholaOpenCVService.INSTANCE.cv);
+            resolve();
+          },
+          false
+        );
+        console.error("read to load...");
+        // @ts-ignore
+        head.appendChild(script);
+      } else {
+        resolve();
+      }
+    });
+    return result;
   }
 }

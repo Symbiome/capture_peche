@@ -31,6 +31,8 @@
             <button @click="detectMarker = !detectMarker">Switch</button>
           </h1>
           <div class="measure-tests">
+            <p id="status" v-if="!openCVLoaded">OpenCV.js is loading...</p>
+            <p id="status" v-else>OpenCV.js is ready</p>
             <div v-if="!detectMarker">
               Lefmost object size(mm)
               <input
@@ -90,8 +92,6 @@
                 />
               </div>
             </div>
-            <p id="status" v-if="!openCVLoaded">OpenCV.js is loading...</p>
-            <p id="status" v-else>OpenCV.js is ready</p>
             <div class="inputoutput">
               <div style="float:left;background-color:orange;">
                 <canvas id="canvasOutput1"></canvas><br />
@@ -126,7 +126,7 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Vue } from "vue-property-decorator";
-import FisholaOpenCVService from "@/services/opencv/fish-analyser";
+import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 
 @Component({
   components: {
@@ -142,51 +142,13 @@ export default class OpenCVSizeComputation extends Vue {
   fixedSize = 150;
   detectMarker = true;
   openCVLoaded = false;
-  cv: any;
 
-  created(): void {
-    this.loadOpenCVIfNeeded();
-  }
-
-  /**
-   * Loads the opencv.js library if required (i.e. was never loaded).
-   */
-  async loadOpenCVIfNeeded() {
-    // @ts-ignore : if OpenCV is loaded, window.cv is defined
-    if (!window.cv) {
-      // If not, let's create an async script to load it
-      const callbackTarget = this;
-      var head = document.getElementsByTagName("head").item(0);
-      var script = document.createElement("script");
-      script.setAttribute("type", "text/javascript");
-      script.setAttribute("src", "/js/opencv.js");
-      script.setAttribute("async", "");
-      // Add a callback allowing this.openCVReady() to be called when OpenCV Is ready
-      script.setAttribute(
-        "onLoad",
-        "document.dispatchEvent(new Event('open-cv-loaded'))"
-      );
-      document.addEventListener(
-        "open-cv-loaded",
-        function(e) {
-          callbackTarget.openCVReady();
-        },
-        false
-      );
-      // @ts-ignore
-      head.appendChild(script);
-    } else {
-      this.openCVReady();
-    }
-  }
-
-  /**
-   * Callback called when OpenCV has done loading and is ready
-   */
-  openCVReady(): void {
-    // @ts-ignore Get OpenCV instance from window.cv
-    this.cv = window.cv;
-    this.openCVLoaded = true;
+  mounted(): void {
+    console.error("OPENCV-mounted")
+     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
+       console.error("LOADED")
+       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady()
+     });
   }
 
   changeSourceImage(e: Event): void {
@@ -226,7 +188,6 @@ export default class OpenCVSizeComputation extends Vue {
       console.error("Detect marker ", markerElement);
       if (markerElement) {
         FisholaOpenCVService.INSTANCE.detectMarker(
-          this.cv,
           imageElement,
           markerElement
         );
@@ -234,7 +195,6 @@ export default class OpenCVSizeComputation extends Vue {
     } else {
       console.error("Calculate size", e);
       FisholaOpenCVService.INSTANCE.calculateSizes(
-        this.cv,
         imageElement,
         this.minCoverrage,
         this.leftSizeObjectSizeMm,
