@@ -20,6 +20,7 @@
  */
 import MarkerTestPicture from "./MarkerTestPicture";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
+
 // Explicitely load opencv (would normally be loaded lazily by FisholaOpenCVService)
 import opencv from "./opencv.js";
 FisholaOpenCVService.INSTANCE.cv = opencv;
@@ -60,26 +61,22 @@ markerTestPictures.push(
 
 // Test suite related to automatic marker detection from picture with opencv
 describe("Marker detection", () => {
-
-  // Setup: create marker and load openCV
-  const marker = document.createElement("img");
-  marker.setAttribute(
-    "src",
-    "blob:http://localhost:8081/f41b7aff-c980-4194-9104-8046497250cb"
-  );
-
   for (let i = 0; i < markerTestPictures.length; i++) {
     const expectedResult = markerTestPictures[i];
+
+    // One test per picture to test
     test("File " + expectedResult.filePath, async () => {
+
+      const marker = document.createElement("img");
+      marker.setAttribute("src", "img/GooglePlay.png");
+      const picture = document.createElement("img");
+      picture.setAttribute("src", "img/GooglePlay.png");
+      picture.setAttribute("id", "picture-" + i);
+
       // Check that open cv service is correctly loaded
       expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
 
       try {
-        const picture = document.createElement("picture-" + i);
-        picture.setAttribute(
-          "src",
-          "blob:http://localhost:8081/f41b7aff-c980-4194-9104-8046497250cb"
-        );
         const markerDetectionResult = await FisholaOpenCVService.INSTANCE.detectMarker(
           picture,
           marker
