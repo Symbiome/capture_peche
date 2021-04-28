@@ -93,7 +93,7 @@
               </div>
             </div>
             <div class="inputoutput">
-              <div style="float:left;background-color:orange;">
+              <div style="float:left;background-color:orange;" v-if="!detectMarker">
                 <canvas id="canvasOutput1"></canvas><br />
                 <caption>
                   Photo originale
@@ -136,7 +136,7 @@ import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 })
 export default class OpenCVSizeComputation extends Vue {
   imageSourceSRC = "";
-  markerSourceSRC = "";
+  markerSourceSRC = "/tests/unit/assets/markers/marker.jpg";
   minCoverrage = 0.15;
   leftSizeObjectSizeMm = 133;
   fixedSize = 150;
@@ -144,15 +144,12 @@ export default class OpenCVSizeComputation extends Vue {
   openCVLoaded = false;
 
   mounted(): void {
-    console.error("OPENCV-mounted")
      FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
-       console.error("LOADED")
        this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady()
      });
   }
 
   changeSourceImage(e: Event): void {
-    console.error("changedSourceImage", e);
     let eventTaget = e.target;
     // @ts-ignore
     if (eventTaget != null && eventTaget["files"]) {
@@ -162,17 +159,16 @@ export default class OpenCVSizeComputation extends Vue {
   }
 
   changeMarkerImage(e: Event): void {
-    console.error("changeMarkerImage", e);
     let eventTaget = e.target;
     // @ts-ignore
     if (eventTaget != null && eventTaget["files"]) {
       // @ts-ignore
       this.markerSourceSRC = URL.createObjectURL(eventTaget["files"][0]);
+      console.error(this.markerSourceSRC);
     }
   }
 
   onNewMarkerSourceLoad(e: Event): void {
-    console.error("onNewMarkerSourceLoad", e);
     let eventTaget = e.target;
     // @ts-ignore
     if (eventTaget != null && eventTaget["files"]) {

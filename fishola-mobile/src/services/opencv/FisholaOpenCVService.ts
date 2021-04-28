@@ -1,12 +1,48 @@
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
-  private cv: any;
+  public cv: any;
 
   /**
    * Indicates if the opencv.js library has done loaded.
    */
   isOpenCVReady(): boolean {
     return this.cv;
+  }
+
+  /**
+   * Detects if the given marker is inside the given picture
+   * @param imgElement
+   * @param imgMarker
+   */
+  async detectMarker(
+    imgElement: HTMLElement,
+    imgMarker: HTMLElement
+  ): Promise<MarkerDetectionResult> {
+    await this.loadOpenCVIfNeeded();
+    const cv = this.cv;
+    const src = cv.imread(imgElement); //resize(imgElement, fixedSize);
+    const marker = cv.imread(imgMarker); //resize(imgMarker, fixedSize / 2);
+    const dst = cv.imread(imgElement); //resize(imgElement, fixedSize);
+
+    // Step 2: match template
+    const matchedDst = new cv.Mat();
+    const mask = new cv.Mat();
+    cv.matchTemplate(src, marker, matchedDst, cv.TM_CCOEFF, mask);
+    const result = cv.minMaxLoc(matchedDst, mask);
+    const maxPoint = result.maxLoc;
+    const color = new cv.Scalar(255, 0, 0, 255);
+    console.log("=====>", result);
+    const matchedPoints = new cv.Point(
+      maxPoint.x + marker.cols,
+      maxPoint.y + marker.rows
+    );
+
+    cv.rectangle(dst, maxPoint, matchedPoints, color, 2, cv.LINE_8, 0);
+    cv.imshow("canvasOutput3", dst);
+
+    src.delete();
+    dst.delete();
+    return new MarkerDetectionResult(true, 0)
   }
 
   async calculateSizes(
@@ -174,39 +210,7 @@ export default class FisholaOpenCVService {
     dst.delete();
   }
 
-  async detectMarker(imgElement: HTMLElement, imgMarker: HTMLElement) {
-    await this.loadOpenCVIfNeeded();
-    const cv = this.cv;
-    const src = cv.imread(imgElement); //resize(imgElement, fixedSize);
-    const marker = cv.imread(imgMarker); //resize(imgMarker, fixedSize / 2);
-    const dst = cv.imread(imgElement); //resize(imgElement, fixedSize);
-
-    // Step 2: match template
-    const matchedDst = new cv.Mat();
-    const mask = new cv.Mat();
-    cv.matchTemplate(src, marker, matchedDst, cv.TM_CCOEFF, mask);
-    const result = cv.minMaxLoc(matchedDst, mask);
-    const maxPoint = result.maxLoc;
-    const color = new cv.Scalar(255, 0, 0, 255);
-    console.log("=====>", result);
-    const matchedPoints = new cv.Point(
-      maxPoint.x + marker.cols,
-      maxPoint.y + marker.rows
-    );
-
-    cv.rectangle(dst, maxPoint, matchedPoints, color, 2, cv.LINE_8, 0);
-
-    cv.imshow("canvasOutput1", src);
-    //cv.imshow('canvasOutput2', refined1);
-    cv.imshow("canvasOutput3", dst);
-
-    src.delete();
-    //refined1.delete();
-    //refined2.delete();
-    dst.delete();
-  }
-
-  resize(cv: any, imgElement: HTMLElement, fixedSize: number) {
+  private resize(cv: any, imgElement: HTMLElement, fixedSize: number) {
     const original = cv.imread(imgElement);
     const src = new cv.Mat();
     // Vertical images
@@ -231,7 +235,6 @@ export default class FisholaOpenCVService {
    */
   async loadOpenCVIfNeeded(): Promise<void> {
     const result = new Promise<void>((resolve, _reject) => {
-      console.error("loadOpenCVIfNeeded ", this.cv);
       // Check whether OpenCV is loaded or not
       if (!this.cv) {
         // If not, let's create an async script to load it
@@ -251,12 +254,10 @@ export default class FisholaOpenCVService {
           function(e) {
             // @ts-ignore
             FisholaOpenCVService.INSTANCE.cv = window.cv;
-            console.error("loaded !", FisholaOpenCVService.INSTANCE.cv);
             resolve();
           },
           false
         );
-        console.error("read to load...");
         // @ts-ignore
         head.appendChild(script);
       } else {
@@ -264,5 +265,16 @@ export default class FisholaOpenCVService {
       }
     });
     return result;
+  }
+}
+
+export class MarkerDetectionResult {
+  markerDetected: boolean;
+  // % of the target image taken by the marker
+  markerRelativeSize: number;
+
+  constructor(markerDetected: boolean, markerRelativeSize: number) {
+    this.markerDetected = markerDetected;
+    this.markerRelativeSize = markerRelativeSize;
   }
 }
