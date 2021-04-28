@@ -20,8 +20,6 @@
  */
 import MarkerTestPicture from "./MarkerTestPicture";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-import { mount } from "@vue/test-utils";
-import MarkerDetectionMocker from "@/components/opencv/MarkerDetectionMocker.vue";
 
 // Explicitely load opencv (would normally be loaded lazily by FisholaOpenCVService)
 import opencv from "./opencv.js";
@@ -63,25 +61,33 @@ markerTestPictures.push(
 
 // Test suite related to automatic marker detection from picture with opencv
 describe("Marker detection", () => {
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < markerTestPictures.length; i++) {
     const expectedResult = markerTestPictures[i];
 
     // One test per picture to test
     test("File " + expectedResult.filePath, async () => {
+
+      const marker = document.createElement("img");
+      marker.setAttribute("src", "img/GooglePlay.png");
+      const picture = document.createElement("img");
+      picture.setAttribute("src", "img/GooglePlay.png");
+      picture.setAttribute("id", "picture-" + i);
+
       // Check that open cv service is correctly loaded
       expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
 
-      const markerDetectionMocker = mount(MarkerDetectionMocker, {
-        propsData: {
-          markerSrc: "img/GooglePlay.png",
-        },
-      });
-
-      console.error(markerDetectionMocker.text());
-      // Check that marker is detected (or not) as expected
-      expect(markerDetectionMocker.text()).toEqual(
-        expectedResult.hasMarker
-      );
+      try {
+        const markerDetectionResult = await FisholaOpenCVService.INSTANCE.detectMarker(
+          picture,
+          marker
+        );
+        // Check that marker is detected (or not) as expected
+        expect(markerDetectionResult.markerDetected).toEqual(
+          expectedResult.hasMarker
+        );
+      } catch (e) {
+        fail(e);
+      }
     });
   }
 });
