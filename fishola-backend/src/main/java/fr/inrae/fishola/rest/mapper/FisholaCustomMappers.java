@@ -305,6 +305,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
             builder.excludeFromExports(excludeFromExports);
 
+            // Le champ est nécessaire côté Java mais on attend rien de la part du front
+            builder.createdOn(LocalDateTime.now());
+
             UserProfileForAdmin result = builder.build();
             return result;
         }
