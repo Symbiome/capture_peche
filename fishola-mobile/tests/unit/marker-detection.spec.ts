@@ -61,12 +61,11 @@ markerTestPictures.push(
 
 // Test suite related to automatic marker detection from picture with opencv
 describe("Marker detection", () => {
-  for (let i = 0; i < markerTestPictures.length; i++) {
+  for (let i = 0; i < 1; i++) {
     const expectedResult = markerTestPictures[i];
 
     // One test per picture to test
-    test("File " + expectedResult.filePath, async () => {
-
+    test("File " + expectedResult.filePath, (done) => {
       const marker = document.createElement("img");
       marker.setAttribute("src", "img/GooglePlay.png");
       const picture = document.createElement("img");
@@ -76,18 +75,21 @@ describe("Marker detection", () => {
       // Check that open cv service is correctly loaded
       expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
 
-      try {
-        const markerDetectionResult = await FisholaOpenCVService.INSTANCE.detectMarker(
-          picture,
-          marker
+      console.error("------------------ waiting for image to load...")
+      setTimeout(() => {
+        console.error("------------------ say partay...");
+        FisholaOpenCVService.INSTANCE.detectMarker(picture, marker).then(
+          (markerDetectionResult) => {
+
+            console.error("------------------ done", markerDetectionResult);
+            // Check that marker is detected (or not) as expected
+            expect(markerDetectionResult.markerDetected).toEqual(
+              expectedResult.hasMarker
+            );
+            done();
+          }
         );
-        // Check that marker is detected (or not) as expected
-        expect(markerDetectionResult.markerDetected).toEqual(
-          expectedResult.hasMarker
-        );
-      } catch (e) {
-        fail(e);
-      }
+      }, 8000);
     });
   }
 });
