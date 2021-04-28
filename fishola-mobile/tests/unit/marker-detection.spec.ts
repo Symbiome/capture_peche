@@ -66,7 +66,16 @@ describe("Marker detection", () => {
 
     // One test per picture to test
     test("File " + expectedResult.filePath, async () => {
+      // Set up : install dom mocker
+      const JSDOM = require("jsdom");
+      // Create a false dom
+      const dom = new JSDOM.JSDOM();
+      // @ts-ignore
+      global.document = dom.window.document;
+      // @ts-ignore
+      global.window = dom.window;
 
+      // Create img
       const marker = document.createElement("img");
       marker.setAttribute("src", "img/GooglePlay.png");
       const picture = document.createElement("img");
