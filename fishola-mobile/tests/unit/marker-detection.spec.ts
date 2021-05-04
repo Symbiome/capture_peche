@@ -18,78 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import MarkerTestPicture from "./MarkerTestPicture";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-
-// Explicitely load opencv (would normally be loaded lazily by FisholaOpenCVService)
-import opencv from "./opencv.js";
-FisholaOpenCVService.INSTANCE.cv = opencv;
-
-const defaultMarkerPath = "marker/marker.png";
-const markerTestPictures = new Array<MarkerTestPicture>();
-markerTestPictures.push(
-  new MarkerTestPicture(
-    defaultMarkerPath,
-    "marker/IMG_20210427_103107.jpg",
-    true
-  )
-);
-markerTestPictures.push(
-  new MarkerTestPicture(
-    defaultMarkerPath,
-    "marker/IMG_20210427_103121.jpg",
-    true
-  )
-);
-markerTestPictures.push(
-  new MarkerTestPicture(
-    defaultMarkerPath,
-    "marker/IMG_20210427_103130.jpg",
-    true
-  )
-);
-markerTestPictures.push(
-  new MarkerTestPicture(defaultMarkerPath, "fish-measures/b99in367.jpg", false)
-);
-markerTestPictures.push(
-  new MarkerTestPicture(
-    defaultMarkerPath,
-    "fish-measures/95ch67.sep.jpg",
-    false
-  )
-);
 
 // Test suite related to automatic marker detection from picture with opencv
 describe("Marker detection", () => {
-  for (let i = 0; i < 1; i++) {
-    const expectedResult = markerTestPictures[i];
-
-    // One test per picture to test
-    test("File " + expectedResult.filePath, (done) => {
-      const marker = document.createElement("img");
-      marker.setAttribute("src", "img/GooglePlay.png");
-      const picture = document.createElement("img");
-      picture.setAttribute("src", "img/GooglePlay.png");
-      picture.setAttribute("id", "picture-" + i);
-
-      // Check that open cv service is correctly loaded
-      expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
-
-      console.error("------------------ waiting for image to load...")
-      setTimeout(() => {
-        console.error("------------------ say partay...");
-        FisholaOpenCVService.INSTANCE.detectMarker(picture, marker).then(
-          (markerDetectionResult) => {
-
-            console.error("------------------ done", markerDetectionResult);
-            // Check that marker is detected (or not) as expected
-            expect(markerDetectionResult.markerDetected).toEqual(
-              expectedResult.hasMarker
-            );
-            done();
-          }
-        );
-      }, 8000);
-    });
-  }
+  fail("TODO")
 });
