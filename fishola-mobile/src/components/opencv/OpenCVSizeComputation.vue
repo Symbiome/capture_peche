@@ -64,6 +64,13 @@
                 />
               </div>
               <div v-else class="params-item">
+                 Resize image size
+                <input
+                  type="text"
+                  style="width:100px"
+                  id="fixedSize"
+                  :value="fixedSize"
+                />
                 <div class="caption">
                   Marqueur
                   <input
@@ -103,7 +110,8 @@
 
             <div id="calculating">
               <span v-if="calculating">Calcul en cours...</span>
-              <span v-if="!calculating">Aucun calcul en cours</span>
+              <span v-if="!calculating && !calculated">Aucun calcul en cours</span>
+              <span v-if="!calculating && calculated">Calcul terminé</span>
             </div>
 
             <div class="result">
@@ -152,15 +160,16 @@ import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
   },
 })
 export default class OpenCVSizeComputation extends Vue {
-  @Prop({ default: "marker" }) mode;
+  @Prop({ default: "marker" }) mode: string;
   imageSourceSRC = "";
   markerSourceSRC = "/tests/unit/assets/markers/marker.jpg";
   minCoverrage = 0.15;
   leftSizeObjectSizeMm = 133;
-  fixedSize = 150;
+  fixedSize = 250;
   detectMarker = true;
 
   openCVLoaded = false;
+  calculated = false;
   calculating = false;
 
   mounted(): void {
@@ -207,18 +216,24 @@ export default class OpenCVSizeComputation extends Vue {
       if (markerElement) {
         await FisholaOpenCVService.INSTANCE.detectMarker(
           imageElement,
-          markerElement
+          markerElement,
+          this.fixedSize
         );
+        this.calculated = true;
         this.calculating = false;
       }
     } else {
       console.error("Calculate size", e);
-      await FisholaOpenCVService.INSTANCE.calculateSizes(
+      await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
         imageElement,
         this.minCoverrage,
+        0.1,
+        0.9,
+        this.fixedSize,
         this.leftSizeObjectSizeMm,
-        this.fixedSize
+        true
       );
+      this.calculated = true;
       this.calculating = false;
     }
   }

@@ -1,3 +1,26 @@
+import { OpenCVUtils } from "./OpenCVUtils";
+/*-
+ * #%L
+ * Fishola :: Mobile
+ * %%
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+import { MarkerDetectionResult } from "./MarkerDetectionResult";
+import { DetectedShape } from "./DetectedShape";
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -10,64 +33,143 @@ export default class FisholaOpenCVService {
   }
 
   /**
-   * Detects if the given marker is inside the given picture
-   * @param imgElement
-   * @param imgMarker
+   * - Finds all closed shapes in the given picture
+   * - Tries to identify a marker amoung them
+   * - Evaluates the other shapes size according to marker size
+   * - Draws result in a picture
+   *
+   * @param imgElement the <img> in wich shapes should be searched
+   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
+   * @param markerSizeInCm the marker size "in real world" - float (in cm)
+   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
+   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
+   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
+   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
    */
-  async detectMarker(
-    imgElement: HTMLElement,
-    imgMarker: HTMLElement
-  ): Promise<MarkerDetectionResult> {
-    await this.loadOpenCVIfNeeded();
-    const cv = this.cv;
-    const src = cv.imread(imgElement); //resize(imgElement, fixedSize);
-    const marker = cv.imread(imgMarker); //resize(imgMarker, fixedSize / 2);
-    const dst = cv.imread(imgElement); //resize(imgElement, fixedSize);
-
-    // Step 2: match template
-    const matchedDst = new cv.Mat();
-    const mask = new cv.Mat();
-    cv.matchTemplate(src, marker, matchedDst, cv.TM_CCOEFF, mask);
-    const result = cv.minMaxLoc(matchedDst, mask);
-    const maxPoint = result.maxLoc;
-    const color = new cv.Scalar(255, 0, 0, 255);
-    console.log("=====>", result);
-    const matchedPoints = new cv.Point(
-      maxPoint.x + marker.cols,
-      maxPoint.y + marker.rows
-    );
-
-    cv.rectangle(dst, maxPoint, matchedPoints, color, 2, cv.LINE_8, 0);
-    cv.imshow("canvasOutput3", dst);
-
-    src.delete();
-    dst.delete();
-    return new MarkerDetectionResult(true, 0)
-  }
-
-  async calculateSizes(
+  async calculateAndDrawFishSizes(
     imgElement: HTMLElement,
     minSizeRatio: number,
-    leftSizeObjectSizeMm: number,
-    fixedSize: number
-  ) {
+    minWidthLengthRatio: number,
+    maxWithLengthRatio: number,
+    resizeSize: number,
+    markerSizeInCm: number,
+    drawDebugCanvas: boolean
+  ): Promise<Array<DetectedShape>> {
+    // Step 1: load open cv and prepare output image
     await this.loadOpenCVIfNeeded();
     const cv = this.cv;
-    /*let empty = new cv.Mat();
-        cv.imshow('canvasOutput1', empty);
-        cv.imshow('canvasOutput2', empty);
-        cv.imshow('canvasOutput3', empty);*/
-    // See https://github.com/ucisysarch/opencvjs/blob/master/test/img_proc.html
-    // And https://www.pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
+    const output = this.readAndResize(cv, imgElement, resizeSize);
+
+    // Step 2: detect fishes and calculate sizes
+    const markerAndPotentialFishes = await this.calculateFishSizes(
+      cv,
+      imgElement,
+      minSizeRatio,
+      minWidthLengthRatio,
+      maxWithLengthRatio,
+      resizeSize,
+      markerSizeInCm,
+      drawDebugCanvas
+    );
+
+    // Step 3: draw result in output pictures
+    markerAndPotentialFishes.forEach((shape) => {
+      OpenCVUtils.drawShape(cv, output, shape, drawDebugCanvas);
+    });
+    cv.imshow("canvasOutput3", output);
+    output.delete();
+    return markerAndPotentialFishes;
+  }
+  /**
+   * - Finds all closed shapes in the given picture
+   * - Tries to identify a marker amoung them
+   * - Evaluates the other shapes size according to marker size
+   * @param cv the openCV instance
+   * @param imgElement the <img> in wich shapes should be searched
+   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
+   * @param markerSizeInCm the marker size "in real world" - float (in cm)
+   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
+   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
+   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
+   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
+   */
+  calculateFishSizes(
+    cv: any,
+    imgElement: HTMLElement,
+    minSizeRatio: number,
+    minWidthLengthRatio: number,
+    maxWithLengthRatio: number,
+    resizeSize: number,
+    markerSizeInCm: number,
+    drawDebugCanvas: boolean
+  ) {
+    // Step 1: find all closed shapes withing the picture
+    const closedShapes = this.detectClosedShapesAndMarker(
+      cv,
+      imgElement,
+      resizeSize,
+      minSizeRatio,
+      minWidthLengthRatio,
+      maxWithLengthRatio,
+      drawDebugCanvas
+    );
+
+    // Step 2: extract marker form detected shapes
+    // TODO change this fixed value
+    let ratioBetweenMarkerInCmndMarkerInPx: number = 0.15;
+    let marker: DetectedShape | null = null;
+    const markerShapes = closedShapes.filter((shape: DetectedShape) => {
+      shape.isMarker;
+    });
+    if (markerShapes.length > 0) {
+      marker = markerShapes[0];
+      ratioBetweenMarkerInCmndMarkerInPx =
+        markerSizeInCm / markerShapes[0].width;
+    }
+
+    // Step 3: calculate "real-world" size for each detected shape
+    closedShapes.forEach((shape: DetectedShape) => {
+      // We simple deduct "real-world" size from ratio between marker size in px and marker known cm size
+      shape.calculatedLenght = Math.round(
+        shape.width * ratioBetweenMarkerInCmndMarkerInPx
+      );
+    });
+    return closedShapes;
+  }
+
+  /**
+   * Returns all detected closed shapes in the given picture, and indicates if some of them are markers.
+   *
+   * See https://github.com/ucisysarch/opencvjs/blob/master/test/img_proc.html
+   * and https://www.pyimagesearch.com/2016/03/28/measuring-size-of-objects-in-an-image-with-opencv/
+   *
+   * @param cv the openCV instance
+   * @param imgElement the <img> in wich shapes should be searched
+   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
+   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
+   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
+   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
+   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
+   */
+  detectClosedShapesAndMarker(
+    cv: any,
+    imgElement: HTMLElement,
+    resizeSize: number,
+    minSizeRatio: number,
+    minWidthLengthRatio: number,
+    maxWithLengthRatio: number,
+    drawDebugCanvas: boolean
+  ): Array<DetectedShape> {
     // Step 1: load the image & resize it
-    const src = this.resize(cv, imgElement, fixedSize);
+    const src = this.readAndResize(cv, imgElement, resizeSize);
+
     //  Step 2 : convert it to grayscale, and blur it slightly
-    const imgSize = Math.max(src.cols, src.rows);
     const refined1 = new cv.Mat();
     const refined2 = new cv.Mat();
     cv.cvtColor(src, refined1, cv.COLOR_BGR2GRAY, 0);
     const blurSize = new cv.Size(7, 7);
     cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
+
     // Step 3: perform edge detection, then perform a dilation + erosion to
     // close gaps in between object edges
     // Step 3.1 : edge detection
@@ -83,10 +185,9 @@ export default class FisholaOpenCVService {
         var element = cv.getStructuringElement(erosion_type, erosion_size, [-1, -1]);
         cv.erode(refined2, refined1, element, [-1, -1], 1, cv.BORDER_CONSTANT, borderValue);*/
 
-    // Step 4: find coutours in the edge map
+    // Step 4: find contours in the edge map
     // Step 4.1 : find contours
     cv.threshold(refined2, refined1, 120, 200, cv.THRESH_BINARY);
-    const dst = this.resize(cv, imgElement, fixedSize);
     const contours = new cv.MatVector();
     const hierarchy = new cv.Mat();
     const poly = new cv.MatVector();
@@ -108,121 +209,163 @@ export default class FisholaOpenCVService {
       tmp.delete();
     }
 
-    // Step 5: bounding boxes (min area rects)
-    // Only keep "big" bounding boxes
-    const results = [];
+    // Step 5: return detected shapes
+    const detectedShapes = [];
     for (let i = 0; i < poly.size(); ++i) {
-      const color = new cv.Scalar(
-        Math.round(Math.random() * 255),
-        Math.round(Math.random() * 255),
-        Math.round(Math.random() * 255)
-      );
       const cnt = poly.get(i);
       const rotatedRect = cv.minAreaRect(cnt);
       const vertices = cv.RotatedRect.points(rotatedRect);
-      const rectangleSize = Math.max(
-        rotatedRect.size.width,
-        rotatedRect.size.height
-      );
-      // If rectangle width or height is at least minSizeRatio% of full image size
-      if (rectangleSize / imgSize >= minSizeRatio) {
-        let minX = 100000;
-        for (let j = 0; j < 4; j++) {
-          cv.line(
-            dst,
-            vertices[j],
-            vertices[(j + 1) % 4],
-            color,
-            2,
-            cv.LINE_AA,
-            0
-          );
-          minX = Math.min(vertices[j].x, minX);
-        }
-        console.log(Math.round(rectangleSize) + " " + minX);
-        results.push({
-          left_x: minX,
-          center_x: rotatedRect.center.x,
-          center_y: rotatedRect.center.y,
-          size: rectangleSize,
-        });
+      let leftX = 100000;
+      let topY = 100000;
+      for (let j = 0; j < 4; j++) {
+        leftX = Math.min(vertices[j].x, leftX);
+        topY = Math.min(vertices[j].y, topY);
       }
+      const detectedShape = new DetectedShape(
+        rotatedRect.center.x,
+        rotatedRect.center.y,
+        leftX,
+        topY,
+        // By convention we will define width as the greater value compared to height.
+        Math.max(rotatedRect.size.width, rotatedRect.size.height),
+        Math.min(rotatedRect.size.width, rotatedRect.size.height),
+        vertices
+      );
+      detectedShape.isMarker = this.isMarker(cv, src, detectedShape);
+      detectedShape.isFish = this.isShapePotentialFish(
+        detectedShape,
+        minSizeRatio,
+        minWidthLengthRatio,
+        maxWithLengthRatio,
+        resizeSize
+      );
+      detectedShapes.push(detectedShape);
+      console.error("Raw detected shape", detectedShape);
     }
-    // Step 6: sort from left to right
-    const sorted = results.sort((a, b) => a.left_x - b.left_x);
-    console.log(sorted);
 
-    // Step 7: compute sizes
-    let ratio = -1;
-    let html1 =
-      "<table style='margin-left:50px;border:1px solid black'><tr><td style='border:1px solid black'>Size in pixels</td>";
-    let html2 = "<tr><td style='border:1px solid black'>Size in mm </td>";
-    for (let i = 0; i < sorted.length; ++i) {
-      const item = sorted[i];
-      html1 +=
-        "<td style='border:1px solid black'>" +
-        Math.round(item.size) +
-        "px</td>";
-      if (ratio == -1) {
-        ratio = leftSizeObjectSizeMm / item.size;
-      }
-      const calculatedSize = Math.round(item.size * ratio);
-      html2 +=
-        "<td style='border:1px solid black'>" + calculatedSize + "mm </td>";
-      cv.putText(
-        dst,
-        calculatedSize + "mm",
-        {
-          x: (item.left_x + item.center_x) / 2,
-          y: item.center_y,
-        },
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        [0, 0, 0, 255],
-        3
-      );
-      cv.putText(
-        dst,
-        calculatedSize + "mm",
-        {
-          x: (item.left_x + item.center_x) / 2,
-          y: item.center_y,
-        },
-        cv.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        [255, 255, 255, 255],
-        1
-      );
+    if (drawDebugCanvas) {
+      cv.imshow("canvasOutput1", src);
+      cv.imshow("canvasOutput2", refined1);
     }
-    const html = html1 + "</tr>" + html2 + "</tr></table>";
-    const statutHTML = document.getElementById("status");
-    if (statutHTML) {
-      statutHTML.innerHTML = html;
-    }
-    cv.imshow("canvasOutput1", src);
-    origin;
-    cv.imshow("canvasOutput2", refined1);
-    cv.imshow("canvasOutput3", dst);
 
     src.delete();
     refined1.delete();
     refined2.delete();
-    dst.delete();
+
+    return detectedShapes;
   }
 
-  private resize(cv: any, imgElement: HTMLElement, fixedSize: number) {
+  /**
+   * Indicates if the given shape can be considered as a potential fish or should be ignored.
+   * If too "small", "liny" or "squary", the shape will be dismissed (we known it cannot be a fish)
+   * @param shape the Shape to consider
+   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
+   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
+   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
+   */
+  isShapePotentialFish(
+    shape: DetectedShape,
+    minSizeRatio: number,
+    minWidthLengthRatio: number,
+    maxWithLengthRatio: number,
+    imgSize: number
+  ): boolean {
+    // Shape bust occuppy a certain % of the full image
+    if (shape.width / imgSize >= minSizeRatio) {
+      const widthLengthRatio = shape.height / shape.width;
+      /// Ration height/widht must indicate a shape that is not "squary" neither "linny"
+      if (
+        widthLengthRatio >= minWidthLengthRatio &&
+        widthLengthRatio <= maxWithLengthRatio
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Indicates if the given detected shape is a marker or a random shape.
+   * @param cv the openCV instance
+   * @param picture the picture in which the marker has been detected
+   * @param markerCandidate the sahpe which is potentially a marker
+   */
+  isMarker(_cv: any, _picture: any, markerCandidate: DetectedShape) {
+    const diffBetweenWidthAndHeight = Math.abs(
+      markerCandidate.width - markerCandidate.height
+    );
+    // Only square-like shapes can be potential markers
+    if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
+      // TODO perform actual marker recognition
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Detects if the given marker is inside the given picture
+   * @param imgElement
+   * @param imgMarker
+   */
+  async detectMarker(
+    imgElement: HTMLElement,
+    imgMarker: HTMLElement,
+    resizeSize: number
+  ): Promise<MarkerDetectionResult> {
+    await this.loadOpenCVIfNeeded();
+    const cv = this.cv;
+    const src = this.readAndResize(cv, imgElement, resizeSize);
+    const marker = this.readAndResize(cv, imgMarker, resizeSize / 2);
+    const dst = this.readAndResize(cv, imgElement, resizeSize);
+
+    // Step 2: match template
+    const matchedDst = new cv.Mat();
+    const mask = new cv.Mat();
+    const match_method = cv.TM_CCOEFF_NORMED; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
+    cv.matchTemplate(src, marker, matchedDst, match_method, mask);
+    console.log("=====> matchedDst ", matchedDst);
+    const result = cv.minMaxLoc(matchedDst, mask);
+    // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
+    let matchedPoint = result.maxLoc;
+    if (match_method == cv.TM_SQDIFF || match_method == cv.TM_SQDIFF_NORMED) {
+      matchedPoint = result.minLoc;
+    }
+
+    const color = new cv.Scalar(255, 0, 0, 255);
+    console.log("=====> result ", result);
+    const matchedPointEnd = new cv.Point(
+      matchedPoint.x + marker.cols,
+      matchedPoint.y + marker.rows
+    );
+
+    cv.rectangle(dst, matchedPoint, matchedPointEnd, color, 2, cv.LINE_8, 0);
+    cv.imshow("canvasOutput3", dst);
+
+    src.delete();
+    dst.delete();
+    return new MarkerDetectionResult(true, 0);
+  }
+
+  /**
+   * Uses openCV to read & resize the picture contained in the given <img> Element to the given resizeSize.
+   * @param cv the openCV instance
+   * @param imgElement the <img> in wich shapes should be searched
+   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
+   * @returns the resized picture, exploitable by openCV for further manipulation
+   */
+  private readAndResize(cv: any, imgElement: HTMLElement, resizeSize: number) {
     const original = cv.imread(imgElement);
     const src = new cv.Mat();
     // Vertical images
     if (original.cols < original.rows) {
       // Fix with
-      const reducedWidth = fixedSize;
+      const reducedWidth = resizeSize;
       const ratioWith = reducedWidth / original.cols;
       const dsize = new cv.Size(reducedWidth, ratioWith * original.rows);
       cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
     } else {
       // Fix height
-      const reduceHeight = fixedSize;
+      const reduceHeight = resizeSize;
       const ratioHeight = reduceHeight / original.rows;
       const dsize = new cv.Size(ratioHeight * original.cols, reduceHeight);
       cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
@@ -265,16 +408,5 @@ export default class FisholaOpenCVService {
       }
     });
     return result;
-  }
-}
-
-export class MarkerDetectionResult {
-  markerDetected: boolean;
-  // % of the target image taken by the marker
-  markerRelativeSize: number;
-
-  constructor(markerDetected: boolean, markerRelativeSize: number) {
-    this.markerDetected = markerDetected;
-    this.markerRelativeSize = markerRelativeSize;
   }
 }
