@@ -48,6 +48,7 @@
     "@vue/cli-service": "^4.5.9",
     "@vue/eslint-config-typescript": "^5.1.0",
     "cypress": "^7.2.0",
+    "cypress-file-upload": "^5.0.7",
     "eslint": "^7.17.0",
     "eslint-plugin-vue": "^6.2.2",
     "git-describe": "^4.0.4",

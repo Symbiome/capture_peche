@@ -19,8 +19,13 @@
  * #L%
  */
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
+// Pre-load opencv (would normally be loaded lazily by FisholaOpenCVService)
+import opencv from "./opencv.js";
+FisholaOpenCVService.INSTANCE.cv = opencv;
 
 // Test suite related to automatic marker detection from picture with opencv
 describe("Marker detection", () => {
-  fail("TODO")
+  // OpenCV should be ready (has already been loaded)
+  expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
+  fail("TODO");
 });

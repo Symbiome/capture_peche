@@ -20,12 +20,12 @@
  */
 /* eslint-disable no-undef */
 /**
- * Test suite related to automatic marker detection from picture with opencv
+ * Test suite related to fish measurement using opencv
  */
 const defaultMarkerPath = "markers/marker.jpg";
 import MarkerTestPicture from "../../commons/MarkerTestPicture";
 
-describe("Marker detection tests", () => {
+describe("Fish measurement tests", () => {
   // Get Test Data
   const markerTestPictures = getMarkerPicturesToTest();
 
@@ -33,14 +33,13 @@ describe("Marker detection tests", () => {
     const markerTestPicture = markerTestPictures[i];
 
     // One test per picture to test
-    it("Marker " + markerTestPicture.filePath, () => {
+    it("Picture " + markerTestPicture.filePath, () => {
       // Go to fish measurement page
-      cy.visit("/#/fish-measure-test/marker");
+      cy.visit("/#/fish-measure-test/measure");
       // Make sure OpenCV is ready
       cy.get("div[id=status").contains("OpenCV.js is ready");
 
       // Attach marker file
-      cy.get("[id=markerFile]").attachFile(markerTestPicture.markerPath);
       cy.get("[id=fileInput]").attachFile(markerTestPicture.filePath);
 
       // Wait for result

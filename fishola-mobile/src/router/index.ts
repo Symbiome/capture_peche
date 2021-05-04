@@ -205,8 +205,12 @@ const routes = [
     component: VerifyAccount,
   },
   {
-    path: "/fish-measure",
-    name: "fish-measure",
+    path: "/fish-measure-test/:mode",
+    name: "fish-measure-test",
+    props: true,
+    meta: {
+      public: true,
+    },
     component: OpenCVSizeComputation,
   },
   // ,{

@@ -24,91 +24,108 @@
     <div class="page">
       <div class="pane pane-only">
         <div class="pane-content large rounded">
-          <h1 class="no-margin-pane">
-            OpenCV -
-            <span v-if="detectMarker">Détection de marqueur</span>
-            <span v-else>Mesure automatique de poisson</span>
-            <button @click="detectMarker = !detectMarker">Switch</button>
-          </h1>
           <div class="measure-tests">
-            <p id="status" v-if="!openCVLoaded">OpenCV.js is loading...</p>
-            <p id="status" v-else>OpenCV.js is ready</p>
-            <div v-if="!detectMarker">
-              Lefmost object size(mm)
-              <input
-                type="text"
-                style="width:100px"
-                id="leftSizeObjectSizeMm"
-                :value="leftSizeObjectSizeMm"
-              />
-              Resize image size
-              <input
-                type="text"
-                style="width:100px"
-                id="fixedSize"
-                :value="fixedSize"
-              /><br />
-              Min % of detected forms (between 0 and 1)
-              <input
-                type="text"
-                style="width:100px"
-                id="minCoverrage"
-                :value="minCoverrage"
-              />
+            <h4 class="title">
+              OpenCV -
+              <span v-if="detectMarker">Détection de marqueur</span>
+              <span v-else>Mesure automatique de poisson</span>
+              <button @click="detectMarker = !detectMarker">
+                <span v-if="detectMarker">Mesures</span>
+                <span v-else>Marqueur</span>
+              </button>
+            </h4>
+            <div id="status">
+              <span v-if="!openCVLoaded">OpenCV.js is loading...</span>
+              <span v-else>OpenCV.js is ready</span>
             </div>
-            <div v-else>
-              <div class="caption">
-                target
+
+            <div class="params">
+              <div v-if="!detectMarker" class="params-item">
+                Lefmost object size(mm)
                 <input
-                  type="file"
-                  id="markerFile"
-                  name="file"
-                  @change="changeMarkerImage"
+                  type="text"
+                  style="width:100px"
+                  id="leftSizeObjectSizeMm"
+                  :value="leftSizeObjectSizeMm"
+                />
+                Resize image size
+                <input
+                  type="text"
+                  style="width:100px"
+                  id="fixedSize"
+                  :value="fixedSize"
+                /><br />
+                Min % of detected forms (between 0 and 1)
+                <input
+                  type="text"
+                  style="width:100px"
+                  id="minCoverrage"
+                  :value="minCoverrage"
                 />
               </div>
-              <img
-                id="marker"
-                alt=""
-                @load="onNewMarkerSourceLoad"
-                :src="markerSourceSRC"
-              />
+              <div v-else class="params-item">
+                <div class="caption">
+                  Marqueur
+                  <input
+                    type="file"
+                    id="markerFile"
+                    name="file"
+                    @change="changeMarkerImage"
+                  />
+                </div>
+                <img
+                  id="marker"
+                  alt=""
+                  @load="onNewMarkerSourceLoad"
+                  :src="markerSourceSRC"
+                />
+              </div>
+              <div class="inputoutput">
+                <img
+                  style="display:none"
+                  id="imageSrc"
+                  alt="No Image"
+                  @load="onNewImageSourceLoad"
+                  :src="imageSourceSRC"
+                />
+                <div class="caption">
+                  Photo de prise
+                  <input
+                    type="file"
+                    id="fileInput"
+                    name="file"
+                    @change="changeSourceImage"
+                  />
+                </div>
+              </div>
             </div>
             <br />
-            <div class="inputoutput">
-              <img
-                style="display:none"
-                id="imageSrc"
-                alt="No Image"
-                @load="onNewImageSourceLoad"
-                :src="imageSourceSRC"
-              />
-              <div class="caption">
-                imageSrc
-                <input
-                  type="file"
-                  id="fileInput"
-                  name="file"
-                  @change="changeSourceImage"
-                />
-              </div>
+
+            <div id="calculating">
+              <span v-if="calculating">Calcul en cours...</span>
+              <span v-if="!calculating">Aucun calcul en cours</span>
             </div>
-            <div class="inputoutput">
-              <div style="float:left;background-color:orange;" v-if="!detectMarker">
+
+            <div class="result">
+              <div
+                class="result-item"
+                v-if="!detectMarker"
+              >
                 <canvas id="canvasOutput1"></canvas><br />
                 <caption>
                   Photo originale
                 </caption>
               </div>
-              <div style="clear:both" />
-              <div style="float:left;background-color:yellow;" v-if="!detectMarker">
+              <div
+                class="result-item"
+                v-if="!detectMarker"
+              >
                 <canvas id="canvasOutput2"></canvas><br />
                 <caption>
                   Photo traitée
                 </caption>
               </div>
-
-              <div style="clear:both" />
-              <div style="float:left;background-color:green;">
+              <div  class="result-item">
                 <canvas id="canvasOutput3"></canvas><br />
                 <caption>
                   Calcul
@@ -125,7 +142,7 @@
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 
 @Component({
@@ -135,18 +152,22 @@ import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
   },
 })
 export default class OpenCVSizeComputation extends Vue {
+  @Prop({ default: "marker" }) mode;
   imageSourceSRC = "";
   markerSourceSRC = "/tests/unit/assets/markers/marker.jpg";
   minCoverrage = 0.15;
   leftSizeObjectSizeMm = 133;
   fixedSize = 150;
   detectMarker = true;
+
   openCVLoaded = false;
+  calculating = false;
 
   mounted(): void {
-     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
-       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady()
-     });
+    this.detectMarker = this.mode == "marker";
+    FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
+      this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
+    });
   }
 
   changeSourceImage(e: Event): void {
@@ -177,25 +198,28 @@ export default class OpenCVSizeComputation extends Vue {
     }
   }
 
-  onNewImageSourceLoad(e: Event): void {
+  async onNewImageSourceLoad(e: Event): Promise<void> {
     const imageElement = e.target as HTMLElement;
+    this.calculating = true;
     if (this.detectMarker) {
       const markerElement = document.getElementById("marker");
       console.error("Detect marker ", markerElement);
       if (markerElement) {
-        FisholaOpenCVService.INSTANCE.detectMarker(
+        await FisholaOpenCVService.INSTANCE.detectMarker(
           imageElement,
           markerElement
         );
+        this.calculating = false;
       }
     } else {
       console.error("Calculate size", e);
-      FisholaOpenCVService.INSTANCE.calculateSizes(
+      await FisholaOpenCVService.INSTANCE.calculateSizes(
         imageElement,
         this.minCoverrage,
         this.leftSizeObjectSizeMm,
         this.fixedSize
       );
+      this.calculating = false;
     }
   }
 }
@@ -206,5 +230,23 @@ export default class OpenCVSizeComputation extends Vue {
 .measure-tests {
   padding: 20px;
   padding-left: 30px;
+}
+.params {
+  display: flex;
+  align-items: flex-start;
+}
+.params-item {
+  width: 400px;
+}
+.result {
+  display: flex;
+  align-items: flex-start;
+}
+.result-item {
+  width: 300px;
+  height: 300px;
+  canvas {
+    background-color: green;
+  }
 }
 </style>
