@@ -59,6 +59,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
+    <!-- Quarkus ne peut pas être mis à jour en 1.13.x à cause d'un formattage de date mal cadré. Cf fr.inrae.fishola.rest.mapper.LocalDateTimeFormatterTest -->
     <quarkusVersion>1.12.2.Final</quarkusVersion>
     <jooqVersion>3.14.9</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
