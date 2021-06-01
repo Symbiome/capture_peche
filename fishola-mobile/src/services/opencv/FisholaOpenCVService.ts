@@ -119,15 +119,15 @@ export default class FisholaOpenCVService {
     let ratioBetweenMarkerInCmndMarkerInPx: number = 0.15;
     let marker: DetectedShape | null = null;
     const markerShapes = closedShapes.filter((shape: DetectedShape) => {
-      return shape.isMarker
+      return shape.isMarker;
     });
     if (markerShapes.length > 0) {
       marker = markerShapes[0];
       ratioBetweenMarkerInCmndMarkerInPx =
         markerSizeInMm / markerShapes[0].width;
-      console.error("Marker size in MM", markerSizeInMm)
-      console.error("Marker size in Px ", markerShapes[0].width)
-      console.error("=> ratio = " + ratioBetweenMarkerInCmndMarkerInPx)
+      console.error("Marker size in MM", markerSizeInMm);
+      console.error("Marker size in Px ", markerShapes[0].width);
+      console.error("=> ratio = " + ratioBetweenMarkerInCmndMarkerInPx);
     }
 
     // Step 3: calculate "real-world" size for each detected shape
@@ -236,7 +236,13 @@ export default class FisholaOpenCVService {
         Math.min(rotatedRect.size.width, rotatedRect.size.height),
         vertices
       );
-      detectedShape.isMarker = this.isMarker(cv, src, detectedShape);
+      detectedShape.isMarker = this.isMarker(
+        cv,
+        src,
+        detectedShape,
+        minSizeRatio,
+        resizeSize
+      );
       detectedShape.isFish = this.isShapePotentialFish(
         detectedShape,
         minSizeRatio,
@@ -293,16 +299,26 @@ export default class FisholaOpenCVService {
    * Indicates if the given detected shape is a marker or a random shape.
    * @param cv the openCV instance
    * @param picture the picture in which the marker has been detected
+   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
    * @param markerCandidate the sahpe which is potentially a marker
    */
-  isMarker(_cv: any, _picture: any, markerCandidate: DetectedShape) {
-    const diffBetweenWidthAndHeight = Math.abs(
-      markerCandidate.width - markerCandidate.height
-    );
-    // Only square-like shapes can be potential markers
-    if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
-      // TODO perform actual marker recognition
-      return true;
+  isMarker(
+    _cv: any,
+    _picture: any,
+    markerCandidate: DetectedShape,
+    minSizeRatio: number,
+    imgSize: number
+  ) {
+    // Shape bust occuppy a certain % of the full image
+    if (markerCandidate.width / imgSize >= minSizeRatio) {
+      const diffBetweenWidthAndHeight = Math.abs(
+        markerCandidate.width - markerCandidate.height
+      );
+      // Only square-like shapes can be potential markers
+      if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
+        // TODO perform actual marker recognition
+        return true;
+      }
     }
     return false;
   }
