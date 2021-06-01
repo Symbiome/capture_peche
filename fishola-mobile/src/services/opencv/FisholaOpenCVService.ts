@@ -40,7 +40,7 @@ export default class FisholaOpenCVService {
    *
    * @param imgElement the <img> in wich shapes should be searched
    * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
-   * @param markerSizeInCm the marker size "in real world" - float (in cm)
+   * @param markerSizeInMm the marker size "in real world" - float (in cm)
    * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
    * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
    * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
@@ -52,7 +52,7 @@ export default class FisholaOpenCVService {
     minWidthLengthRatio: number,
     maxWithLengthRatio: number,
     resizeSize: number,
-    markerSizeInCm: number,
+    markerSizeInMm: number,
     drawDebugCanvas: boolean
   ): Promise<Array<DetectedShape>> {
     // Step 1: load open cv and prepare output image
@@ -68,7 +68,7 @@ export default class FisholaOpenCVService {
       minWidthLengthRatio,
       maxWithLengthRatio,
       resizeSize,
-      markerSizeInCm,
+      markerSizeInMm,
       drawDebugCanvas
     );
 
@@ -87,7 +87,7 @@ export default class FisholaOpenCVService {
    * @param cv the openCV instance
    * @param imgElement the <img> in wich shapes should be searched
    * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
-   * @param markerSizeInCm the marker size "in real world" - float (in cm)
+   * @param markerSizeInMm the marker size "in real world" - float (in cm)
    * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
    * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
    * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
@@ -100,7 +100,7 @@ export default class FisholaOpenCVService {
     minWidthLengthRatio: number,
     maxWithLengthRatio: number,
     resizeSize: number,
-    markerSizeInCm: number,
+    markerSizeInMm: number,
     drawDebugCanvas: boolean
   ) {
     // Step 1: find all closed shapes withing the picture
@@ -119,12 +119,15 @@ export default class FisholaOpenCVService {
     let ratioBetweenMarkerInCmndMarkerInPx: number = 0.15;
     let marker: DetectedShape | null = null;
     const markerShapes = closedShapes.filter((shape: DetectedShape) => {
-      shape.isMarker;
+      return shape.isMarker
     });
     if (markerShapes.length > 0) {
       marker = markerShapes[0];
       ratioBetweenMarkerInCmndMarkerInPx =
-        markerSizeInCm / markerShapes[0].width;
+        markerSizeInMm / markerShapes[0].width;
+      console.error("Marker size in MM", markerSizeInMm)
+      console.error("Marker size in Px ", markerShapes[0].width)
+      console.error("=> ratio = " + ratioBetweenMarkerInCmndMarkerInPx)
     }
 
     // Step 3: calculate "real-world" size for each detected shape
@@ -133,6 +136,8 @@ export default class FisholaOpenCVService {
       shape.calculatedLenght = Math.round(
         shape.width * ratioBetweenMarkerInCmndMarkerInPx
       );
+      console.error("Pic size in MM", shape.width);
+      console.error("=> " + shape.calculatedLenght);
     });
     return closedShapes;
   }

@@ -193,7 +193,7 @@ export default class Menu extends Vue {
 
   openFishMeasure() {
     this.closeMenu();
-    router.push('/fish-measure-test/marker');
+    router.push('/fish-measure-test/measure');
   }
 
   goDashboard() {
