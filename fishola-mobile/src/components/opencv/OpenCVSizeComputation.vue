@@ -48,7 +48,7 @@
                 >Aucun calcul en cours</span
               >
               <span v-if="!calculating && calculated">Calcul terminé</span>
-              <span v-html="resultText"/>
+              <span v-html="resultText" />
             </div>
 
             <div class="result" v-show="calculated && !calculating">
@@ -87,7 +87,7 @@
                   style="width:100px"
                   id="markerSizeInCm"
                   @change="launchSizeComputation"
-                  v-model.number="markerSizeInCm"
+                  v-model.number="config.markerSizeInMm"
                 />
                 <br />
                 Redimensionnement (px)
@@ -96,7 +96,7 @@
                   style="width:100px"
                   id="resizeSize"
                   @change="launchSizeComputation"
-                  v-model.number="resizeSize"
+                  v-model.number="config.resizeSize"
                 /><br />
               </div>
               <div v-if="!detectMarker" class="params-item">
@@ -107,7 +107,7 @@
                   id="minSizeRatio"
                   step="0.1"
                   @change="launchSizeComputation"
-                  v-model.number="minSizeRatio"
+                  v-model.number="config.minSizeRatio"
                 />
                 <br />
                 Ratio hauteur/largeur min (0 à 1)
@@ -117,7 +117,7 @@
                   id="minWithLengthRatio"
                   step="0.1"
                   @change="launchSizeComputation"
-                  v-model.number="minWithLengthRatio"
+                  v-model.number="config.minWidthLengthRatio"
                 />
                 <br />
                 Ratio hauteur/largeur min (0 à 1)
@@ -127,7 +127,7 @@
                   id="maxWithLengthRatio"
                   step="0.1"
                   @change="launchSizeComputation"
-                  v-model.number="maxWithLengthRatio"
+                  v-model.number="config.maxWidthLengthRatio"
                 />
               </div>
               <div v-else class="params-item">
@@ -137,7 +137,7 @@
                   style="width:100px"
                   id="resizeSize"
                   @change="launchSizeComputation"
-                  v-model.number="resizeSize"
+                  v-model.number="config.resizeSize"
                 />
                 <div class="caption">
                   Marqueur
@@ -172,7 +172,8 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-import { DetectedShape } from  "@/services/opencv/DetectedShape";
+import { DetectedShape } from "@/services/opencv/DetectedShape";
+import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 
 @Component({
   components: {
@@ -184,13 +185,10 @@ export default class OpenCVSizeComputation extends Vue {
   @Prop({ default: "measure" }) mode: string;
   imageSourceSRC = "";
   markerSourceSRC = "/tests/unit/assets/markers/marker.jpg";
-  minSizeRatio = 0.15;
-  minWithLengthRatio = 0.1;
-  maxWithLengthRatio = 0.8;
-  markerSizeInCm = 133;
-  resizeSize = 250;
+  config: OpenCVDetectionConfig = new OpenCVDetectionConfig();
+
   detectMarker = true;
-  resultText = ""
+  resultText = "";
 
   openCVLoaded = false;
   calculated = false;
@@ -238,44 +236,65 @@ export default class OpenCVSizeComputation extends Vue {
   async launchSizeComputation(): Promise<void> {
     const imageElement = document.getElementById("sourcePicture");
     this.calculating = true;
-    if (this.detectMarker) {
-      const markerElement = document.getElementById("marker");
-      if (markerElement) {
-        await FisholaOpenCVService.INSTANCE.detectMarker(
+    if (imageElement) {
+      if (this.detectMarker) {
+        const markerElement = document.getElementById("marker");
+        if (markerElement) {
+          await FisholaOpenCVService.INSTANCE.detectMarker(
+            imageElement,
+            markerElement,
+            this.config.resizeSize
+          );
+          this.calculated = true;
+          this.calculating = false;
+        }
+      } else {
+        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
           imageElement,
-          markerElement,
-          this.resizeSize
+          this.config
         );
         this.calculated = true;
         this.calculating = false;
-      }
-    } else {
-      const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-        imageElement,
-        this.minSizeRatio,
-        this.minWithLengthRatio,
-        this.maxWithLengthRatio,
-        this.resizeSize,
-        this.markerSizeInCm,
-        true
-      );
-      this.calculated = true;
-      this.calculating = false;
 
-      const markers = detectedShapes.filter((shape: DetectedShape) => shape.isMarker).length
-      const ignored = detectedShapes.filter((shape: DetectedShape) => !shape.isMarker && !shape.isFish).length
-      const notIgnored = detectedShapes.filter((shape: DetectedShape) => shape.isFish || shape.isMarker)
-      let result = ": " + detectedShapes.length + " formes (" + markers + " marqueurs, " + (notIgnored.length - markers) + " poissons, " + ignored + " ignorées)"
-      notIgnored.forEach((shape: DetectedShape) => {
-        result += "<br/>- "
-        if (shape.isFish) {
-          result +=" Poisson "
-        } else {
-          result += " Marqueur "
-        }
-        result += shape.calculatedLenght + "mm (" + Math.round(shape.width) + "px * " + Math.round(shape.height) + " px) - left " + Math.round(shape.leftX) + " top " + Math.round(shape.topY)
-      })
-      this.resultText = result
+        const markers = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isMarker
+        ).length;
+        const ignored = detectedShapes.filter(
+          (shape: DetectedShape) => !shape.isMarker && !shape.isFish
+        ).length;
+        const notIgnored = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isFish || shape.isMarker
+        );
+        let result =
+          ": " +
+          detectedShapes.length +
+          " formes (" +
+          markers +
+          " marqueurs, " +
+          (notIgnored.length - markers) +
+          " poissons, " +
+          ignored +
+          " ignorées)";
+        notIgnored.forEach((shape: DetectedShape) => {
+          result += "<br/>- ";
+          if (shape.isFish) {
+            result += " Poisson ";
+          } else {
+            result += " Marqueur ";
+          }
+          result +=
+            shape.calculatedLenght +
+            "mm (" +
+            Math.round(shape.width) +
+            "px * " +
+            Math.round(shape.height) +
+            " px) - left " +
+            Math.round(shape.leftX) +
+            " top " +
+            Math.round(shape.topY);
+        });
+        this.resultText = result;
+      }
     }
   }
 }

@@ -1,4 +1,3 @@
-import { OpenCVUtils } from "./OpenCVUtils";
 /*-
  * #%L
  * Fishola :: Mobile
@@ -19,8 +18,10 @@ import { OpenCVUtils } from "./OpenCVUtils";
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+import { OpenCVUtils } from "./OpenCVUtils";
 import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
+import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -37,44 +38,28 @@ export default class FisholaOpenCVService {
    * - Tries to identify a marker amoung them
    * - Evaluates the other shapes size according to marker size
    * - Draws result in a picture
-   *
    * @param imgElement the <img> in wich shapes should be searched
-   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
-   * @param markerSizeInMm the marker size "in real world" - float (in cm)
-   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
-   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
-   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
-   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
+   * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    */
   async calculateAndDrawFishSizes(
     imgElement: HTMLElement,
-    minSizeRatio: number,
-    minWidthLengthRatio: number,
-    maxWithLengthRatio: number,
-    resizeSize: number,
-    markerSizeInMm: number,
-    drawDebugCanvas: boolean
+    config: OpenCVDetectionConfig
   ): Promise<Array<DetectedShape>> {
     // Step 1: load open cv and prepare output image
     await this.loadOpenCVIfNeeded();
     const cv = this.cv;
-    const output = this.readAndResize(cv, imgElement, resizeSize);
+    const output = this.readAndResize(cv, imgElement, config.resizeSize);
 
     // Step 2: detect fishes and calculate sizes
     const markerAndPotentialFishes = await this.calculateFishSizes(
       cv,
       imgElement,
-      minSizeRatio,
-      minWidthLengthRatio,
-      maxWithLengthRatio,
-      resizeSize,
-      markerSizeInMm,
-      drawDebugCanvas
+      config
     );
 
     // Step 3: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
-      OpenCVUtils.drawShape(cv, output, shape, drawDebugCanvas);
+      OpenCVUtils.drawShape(cv, output, shape, config.drawDebugCanvas);
     });
     cv.imshow("canvasOutput3", output);
     output.delete();
@@ -86,32 +71,18 @@ export default class FisholaOpenCVService {
    * - Evaluates the other shapes size according to marker size
    * @param cv the openCV instance
    * @param imgElement the <img> in wich shapes should be searched
-   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
-   * @param markerSizeInMm the marker size "in real world" - float (in cm)
-   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
-   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
-   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
-   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
+   * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    */
   calculateFishSizes(
     cv: any,
     imgElement: HTMLElement,
-    minSizeRatio: number,
-    minWidthLengthRatio: number,
-    maxWithLengthRatio: number,
-    resizeSize: number,
-    markerSizeInMm: number,
-    drawDebugCanvas: boolean
+    config: OpenCVDetectionConfig
   ) {
     // Step 1: find all closed shapes withing the picture
     const closedShapes = this.detectClosedShapesAndMarker(
       cv,
       imgElement,
-      resizeSize,
-      minSizeRatio,
-      minWidthLengthRatio,
-      maxWithLengthRatio,
-      drawDebugCanvas
+      config
     );
 
     // Step 2: extract marker form detected shapes
@@ -124,10 +95,7 @@ export default class FisholaOpenCVService {
     if (markerShapes.length > 0) {
       marker = markerShapes[0];
       ratioBetweenMarkerInCmndMarkerInPx =
-        markerSizeInMm / markerShapes[0].width;
-      console.error("Marker size in MM", markerSizeInMm);
-      console.error("Marker size in Px ", markerShapes[0].width);
-      console.error("=> ratio = " + ratioBetweenMarkerInCmndMarkerInPx);
+        config.markerSizeInMm / markerShapes[0].width;
     }
 
     // Step 3: calculate "real-world" size for each detected shape
@@ -136,8 +104,6 @@ export default class FisholaOpenCVService {
       shape.calculatedLenght = Math.round(
         shape.width * ratioBetweenMarkerInCmndMarkerInPx
       );
-      console.error("Pic size in MM", shape.width);
-      console.error("=> " + shape.calculatedLenght);
     });
     return closedShapes;
   }
@@ -150,23 +116,15 @@ export default class FisholaOpenCVService {
    *
    * @param cv the openCV instance
    * @param imgElement the <img> in wich shapes should be searched
-   * @param resizeSize picture to analyse will first be resized to this given size (for performance considerations) - int in px
-   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
-   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
-   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
-   * @param drawDebugCanvas indicates if we should draw debug shapes in dedicated canvas
+   * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    */
   detectClosedShapesAndMarker(
     cv: any,
     imgElement: HTMLElement,
-    resizeSize: number,
-    minSizeRatio: number,
-    minWidthLengthRatio: number,
-    maxWithLengthRatio: number,
-    drawDebugCanvas: boolean
+    config: OpenCVDetectionConfig
   ): Array<DetectedShape> {
     // Step 1: load the image & resize it
-    const src = this.readAndResize(cv, imgElement, resizeSize);
+    const src = this.readAndResize(cv, imgElement, config.resizeSize);
 
     //  Step 2 : convert it to grayscale, and blur it slightly
     const refined1 = new cv.Mat();
@@ -236,25 +194,12 @@ export default class FisholaOpenCVService {
         Math.min(rotatedRect.size.width, rotatedRect.size.height),
         vertices
       );
-      detectedShape.isMarker = this.isMarker(
-        cv,
-        src,
-        detectedShape,
-        minSizeRatio,
-        resizeSize
-      );
-      detectedShape.isFish = this.isShapePotentialFish(
-        detectedShape,
-        minSizeRatio,
-        minWidthLengthRatio,
-        maxWithLengthRatio,
-        resizeSize
-      );
+      detectedShape.isMarker = this.isMarker(cv, src, detectedShape, config);
+      detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
-      console.error("Raw detected shape", detectedShape);
     }
 
-    if (drawDebugCanvas) {
+    if (config.drawDebugCanvas) {
       cv.imshow("canvasOutput1", src);
       cv.imshow("canvasOutput2", refined1);
     }
@@ -270,24 +215,19 @@ export default class FisholaOpenCVService {
    * Indicates if the given shape can be considered as a potential fish or should be ignored.
    * If too "small", "liny" or "squary", the shape will be dismissed (we known it cannot be a fish)
    * @param shape the Shape to consider
-   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
-   * @param minWidthLengthRatio the minimum width/length ratio each shape should respect (trims "line" shapes) - float between 0 & 1
-   * @param maxWithLengthRatio the maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1
+   * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    */
   isShapePotentialFish(
     shape: DetectedShape,
-    minSizeRatio: number,
-    minWidthLengthRatio: number,
-    maxWithLengthRatio: number,
-    imgSize: number
+    config: OpenCVDetectionConfig
   ): boolean {
     // Shape bust occuppy a certain % of the full image
-    if (shape.width / imgSize >= minSizeRatio) {
+    if (shape.width / config.resizeSize >= config.minSizeRatio) {
       const widthLengthRatio = shape.height / shape.width;
       /// Ration height/widht must indicate a shape that is not "squary" neither "linny"
       if (
-        widthLengthRatio >= minWidthLengthRatio &&
-        widthLengthRatio <= maxWithLengthRatio
+        widthLengthRatio >= config.minWidthLengthRatio &&
+        widthLengthRatio <= config.maxWidthLengthRatio
       ) {
         return true;
       }
@@ -299,18 +239,17 @@ export default class FisholaOpenCVService {
    * Indicates if the given detected shape is a marker or a random shape.
    * @param cv the openCV instance
    * @param picture the picture in which the marker has been detected
-   * @param minSizeRatio the minimum % of the screen each shape should cover - float between 0 & 1
+   * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    * @param markerCandidate the sahpe which is potentially a marker
    */
   isMarker(
     _cv: any,
     _picture: any,
     markerCandidate: DetectedShape,
-    minSizeRatio: number,
-    imgSize: number
+    config: OpenCVDetectionConfig
   ) {
     // Shape bust occuppy a certain % of the full image
-    if (markerCandidate.width / imgSize >= minSizeRatio) {
+    if (markerCandidate.width / config.resizeSize >= config.minSizeRatio) {
       const diffBetweenWidthAndHeight = Math.abs(
         markerCandidate.width - markerCandidate.height
       );
