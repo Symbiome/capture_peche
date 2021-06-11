@@ -25,11 +25,18 @@
 export default class MarkerTestPicture {
   markerPath: string;
   filePath: string;
-  hasMarker: boolean;
+  shouldHaveMarker: boolean;
+  expectedFishOnImageRatio: number;
 
-  constructor(markerPath: string, filePath: string, hasMarker: boolean) {
+  constructor(
+    markerPath: string,
+    filePath: string,
+    shouldHaveMarker: boolean,
+    expectedFishMeasure: number
+  ) {
     this.markerPath = markerPath;
     this.filePath = filePath;
-    this.hasMarker = hasMarker;
+    this.shouldHaveMarker = shouldHaveMarker;
+    this.expectedFishOnImageRatio = expectedFishMeasure;
   }
 }

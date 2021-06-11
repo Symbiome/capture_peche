@@ -27,6 +27,7 @@ import MarkerTestPicture from "../../commons/MarkerTestPicture";
 
 describe("Fish measurement tests", () => {
   // Get Test Data
+  const allowedRationDiff = 0.01;
   const markerTestPictures = getMarkerPicturesToTest();
 
   for (let i = 0; i < markerTestPictures.length; i++) {
@@ -39,17 +40,69 @@ describe("Fish measurement tests", () => {
       // Make sure OpenCV is ready
       cy.get("div[id=status").contains("OpenCV.js is ready");
 
-      // Attach marker file
+      // Attach picture file
       cy.get("[id=fileInput]").attachFile(markerTestPicture.filePath);
 
       // Wait for result
       cy.get("div[id=calculating]").contains("Calcul terminé");
+
+      // Test if we detected fish and marker as expected
+      let expectedShapesNumber = 1;
+      cy.get("span[id=resultText]").contains("Détecté : Poisson");
+      if (markerTestPicture.shouldHaveMarker) {
+        expectedShapesNumber++;
+        cy.get("span[id=resultText]").contains("Détecté : Marqueur");
+      }
+      // Make sure we did not detect other shapes
+      cy.get("span[id=shapesNumber").contains(expectedShapesNumber);
+
+      // Compare expected vs actual fish/picture ratio
+      cy.get("span[id=resultText]")
+        .invoke("text")
+        .then((rawMeasureText) => {
+          const fishSize = rawMeasureText
+            .split("Détecté : Poisson")[1]
+            .split("mm (")[1]
+            .split("px")[0]
+            .trim();
+          cy.get("input[id=resizeSize]")
+            .invoke("val")
+            .then((imageSize) => {
+              const actualFishOnPictureSizeRatio =
+                parseInt(fishSize) / parseInt(imageSize);
+              const ratioDiff = Math.abs(
+                actualFishOnPictureSizeRatio -
+                  markerTestPicture.expectedFishOnImageRatio
+              );
+              assert.isBelow(
+                ratioDiff,
+                allowedRationDiff,
+                "La taille du poisson (" +
+                  parseInt(fishSize) +
+                  "px = " +
+                  actualFishOnPictureSizeRatio * 100 +
+                  "% de l'image totale) doit être proche de la taille attendue (" +
+                  markerTestPicture.expectedFishOnImageRatio * 100 +
+                  "%)"
+              );
+            });
+        });
     });
   }
 });
 
 function getMarkerPicturesToTest() {
   const markerPics = [];
+
+  markerPics.push(
+    new MarkerTestPicture(
+      defaultMarkerPath,
+      "markers/IMG_20210427_103130.jpg",
+      true,
+      0.62
+    )
+  );
+  /*
   markerPics.push(
     new MarkerTestPicture(
       defaultMarkerPath,
@@ -67,16 +120,9 @@ function getMarkerPicturesToTest() {
   markerPics.push(
     new MarkerTestPicture(
       defaultMarkerPath,
-      "markers/IMG_20210427_103130.jpg",
-      true
-    )
-  );
-  markerPics.push(
-    new MarkerTestPicture(
-      defaultMarkerPath,
       "fish-measures/b99in367.jpg",
       false
     )
-  );
+  );*/
   return markerPics;
 }

@@ -27,5 +27,4 @@ FisholaOpenCVService.INSTANCE.cv = opencv;
 describe("Marker detection", () => {
   // OpenCV should be ready (has already been loaded)
   expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
-  fail("TODO");
 });

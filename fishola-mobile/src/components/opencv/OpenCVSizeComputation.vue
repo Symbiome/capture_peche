@@ -48,7 +48,7 @@
                 >Aucun calcul en cours</span
               >
               <span v-if="!calculating && calculated">Calcul terminé</span>
-              <span v-html="resultText" />
+              <span id="resultText" v-html="resultText" />
             </div>
 
             <div class="result" v-show="calculated && !calculating">
@@ -266,9 +266,9 @@ export default class OpenCVSizeComputation extends Vue {
           (shape: DetectedShape) => shape.isFish || shape.isMarker
         );
         let result =
-          ": " +
-          detectedShapes.length +
-          " formes (" +
+          ": <span id='shapesNumber'>" +
+          (detectedShapes.length - ignored) +
+          "</span> formes (" +
           markers +
           " marqueurs, " +
           (notIgnored.length - markers) +
@@ -278,9 +278,9 @@ export default class OpenCVSizeComputation extends Vue {
         notIgnored.forEach((shape: DetectedShape) => {
           result += "<br/>- ";
           if (shape.isFish) {
-            result += " Poisson ";
+            result += " Détecté : Poisson ";
           } else {
-            result += " Marqueur ";
+            result += " Détecté : Marqueur ";
           }
           result +=
             shape.calculatedLenght +

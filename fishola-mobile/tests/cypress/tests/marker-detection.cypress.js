@@ -50,34 +50,6 @@ describe("Marker detection tests", () => {
 });
 
 function getMarkerPicturesToTest() {
-  const markerPics = [];
-  markerPics.push(
-    new MarkerTestPicture(
-      defaultMarkerPath,
-      "markers/IMG_20210427_103107.jpg",
-      true
-    )
-  );
-  markerPics.push(
-    new MarkerTestPicture(
-      defaultMarkerPath,
-      "markers/IMG_20210427_103121.jpg",
-      true
-    )
-  );
-  markerPics.push(
-    new MarkerTestPicture(
-      defaultMarkerPath,
-      "markers/IMG_20210427_103130.jpg",
-      true
-    )
-  );
-  markerPics.push(
-    new MarkerTestPicture(
-      defaultMarkerPath,
-      "fish-measures/b99in367.jpg",
-      false
-    )
-  );
+  const markerPics = [];  
   return markerPics;
 }
