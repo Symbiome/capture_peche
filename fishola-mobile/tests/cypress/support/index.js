@@ -20,6 +20,7 @@
  */
 /* eslint-disable no-undef */
 import "./commands";
+import "cypress-mochawesome-reporter/register";
 
 // Setup cypress to ignore 401 as we are not loggued
 Cypress.on("uncaught:exception", (_err, _runnable) => {

@@ -1,3 +1,3 @@
-module.exports = function (on, config) {
-    // No customization yet
-}
+module.exports = function(on, config) {
+  require("cypress-mochawesome-reporter/plugin")(on);
+};

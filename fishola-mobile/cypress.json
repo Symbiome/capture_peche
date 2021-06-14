@@ -1,13 +1,18 @@
 {
+  "baseUrl": "http://localhost:8081",
   "fixturesFolder": "tests/assets/",
   "integrationFolder": "tests/cypress",
   "pluginsFile": "tests/cypress/plugins/index.js",
-  "screenshotsFolder": "tests/cypress/screenshots",
-  "video": false,
-  "videosFolder": "tests/cypress/videos",
   "testFiles": ["**/*.cypress.js"],
   "supportFile": "tests/cypress/support/index.js",
   "viewportWidth": 1280,
   "viewportHeight": 720,
-  "baseUrl": "http://localhost:8081"
+  "video": false,
+  "reporter": "cypress-mochawesome-reporter",
+  "reporterOptions": {
+    "reportDir": "tests/cypress/reports",
+    "charts": true,
+    "reportPageTitle": "Mesure de poisons: tests",
+    "embeddedScreenshots": true
+  }
 }
