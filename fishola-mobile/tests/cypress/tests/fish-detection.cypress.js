@@ -43,88 +43,125 @@ describe("Mesures de poissons: tests automatiques", () => {
     testResults.push(new MeasureTestResult());
 
     // One test per picture to test
-    it("Picture " + testPicture.filePath, () => {
-      // Go to fish measurement page
-      cy.visit("/#/fish-measure-test/measure");
-      // Make sure OpenCV is ready
-      cy.get("div[id=status").contains("OpenCV.js is ready");
+    it(
+      "Photo " + testPicture.comment + " (" + testPicture.filePath + ")",
+      () => {
+        // Go to fish measurement page
+        cy.visit("/#/fish-measure-test/measure");
+        // Make sure OpenCV is ready
+        cy.get("div[id=status").contains("OpenCV.js is ready");
 
-      // Attach picture file
-      cy.get("[id=fileInput]").attachFile(testPicture.filePath);
+        // Attach picture file
+        cy.get("[id=fileInput]").attachFile(testPicture.filePath);
 
-      // Wait for result
-      cy.get("div[id=calculating]").contains("Calcul terminé");
+        // Wait for result
+        cy.get("div[id=calculating]").contains("Calcul terminé");
 
-      // Test if we detected fish and marker as expected
-      let expectedShapesNumber = 1;
-      cy.get("span[id=resultText]").contains("Détecté : Poisson");
-      if (testPicture.shouldHaveMarker) {
-        expectedShapesNumber++;
-        cy.get("span[id=resultText]").contains("Détecté : Marqueur");
-        testResults[i].markerDetectedAsExpected = true;
-      } else {
-        testResults[i].markerDetectedAsExpected = true;
-      }
-      // Make sure we did not detect other shapes
-      cy.get("span[id=shapesNumber]")
-        .invoke("text")
-        .then((shapesNumber) => {
-          if (parseInt(shapesNumber) !== expectedShapesNumber) {
-            failWithGrade(
-              testResults[i],
-              "Mauvais nombre de poissons détectés (" +
-                shapesNumber +
-                " au lieu de " +
-                expectedShapesNumber +
-                ")"
-            );
-          }
-          testResults[i].fishDetectedAsExpected = true;
+        // Test if we detected fish and marker as expected
+        let expectedShapesNumber = 1;
+        cy.get("span[id=resultText]").contains("Détecté : Poisson");
+        if (testPicture.shouldHaveMarker) {
+          expectedShapesNumber++;
+          cy.get("span[id=resultText]").contains("Détecté : Marqueur");
+          testResults[i].markerDetectedAsExpected = true;
+        } else {
+          testResults[i].markerDetectedAsExpected = true;
+        }
+        // Make sure we did not detect other shapes
+        cy.get("span[id=shapesNumber]")
+          .invoke("text")
+          .then((shapesNumber) => {
+            if (parseInt(shapesNumber) !== expectedShapesNumber) {
+              failWithGrade(
+                testResults[i],
+                "Mauvais nombre de poissons détectés (" +
+                  shapesNumber +
+                  " au lieu de " +
+                  expectedShapesNumber +
+                  ")"
+              );
+            }
+            testResults[i].fishDetectedAsExpected = true;
 
-          // Compare expected vs actual fish/picture ratio
-          cy.get("span[id=resultText]")
-            .invoke("text")
-            .then((rawMeasureText) => {
-              const fishSize = rawMeasureText
-                .split("Détecté : Poisson")[1]
-                .split("mm (")[1]
-                .split("px")[0]
-                .trim();
-              cy.get("input[id=resizeSize]")
-                .invoke("val")
-                .then((imageSize) => {
-                  const actualFishOnPictureSizeRatio =
-                    Math.round(
-                      (parseInt(fishSize) / parseInt(imageSize)) * 100
-                    ) / 100;
-                  const ratioDiff = Math.abs(
-                    actualFishOnPictureSizeRatio -
-                      testPicture.expectedFishOnImageRatio
-                  );
-                  testResults[i].diffBetweenExpectRationAndActual = ratioDiff;
-                  testResults[i].grade = computeGrade(testResults[i]);
-                  if (testResults[i].grade < 20) {
-                    failWithGrade(
-                      testResults[i],
-                      "Taille du poisson trop peu précise (" +
-                        parseInt(fishSize) +
-                        "px = " +
-                        actualFishOnPictureSizeRatio * 100 +
-                        "% de l'image totale) au lieu de " +
-                        testPicture.expectedFishOnImageRatio * 100 +
-                        "%"
+            // Compare expected vs actual fish/picture ratio
+            cy.get("span[id=resultText]")
+              .invoke("text")
+              .then((rawMeasureText) => {
+                const fishSize = rawMeasureText
+                  .split("Détecté : Poisson")[1]
+                  .split("mm (")[1]
+                  .split("px")[0]
+                  .trim();
+                cy.get("input[id=resizeSize]")
+                  .invoke("val")
+                  .then((imageSize) => {
+                    const actualFishOnPictureSizeRatio =
+                      Math.round(
+                        (parseInt(fishSize) / parseInt(imageSize)) * 100
+                      ) / 100;
+                    const ratioDiff = Math.abs(
+                      actualFishOnPictureSizeRatio -
+                        testPicture.expectedFishOnImageRatio
                     );
-                  }
-                });
-            });
-        });
-    });
+                    testResults[i].diffBetweenExpectRationAndActual = ratioDiff;
+                    testResults[i].grade = computeGrade(testResults[i]);
+                    if (testResults[i].grade < 20) {
+                      failWithGrade(
+                        testResults[i],
+                        "Taille du poisson trop peu précise (" +
+                          parseInt(fishSize) +
+                          "px = " +
+                          actualFishOnPictureSizeRatio * 100 +
+                          "% de l'image totale) au lieu de " +
+                          testPicture.expectedFishOnImageRatio * 100 +
+                          "%"
+                      );
+                    }
+                  });
+              });
+          });
+      }
+    );
   }
   it("Note finale", () => {
     assert.fail(computeFinalGradeString(testResults));
   });
   it("Détails techniques", () => {
-    assert.fail(JSON.stringify(testResults));
+    let technicalDetails = "";
+    cy.get("input[id=resizeSize]")
+      .invoke("val")
+      .then((imageSize) => {
+        cy.get("input[id=minSizeRatio]")
+          .invoke("val")
+          .then((minSizeRatio) => {
+            cy.get("input[id=maxSizeRatio]")
+              .invoke("val")
+              .then((maxSizeRatio) => {
+                cy.get("input[id=minWithLengthRatio]")
+                  .invoke("val")
+                  .then((minWithLengthRatio) => {
+                    cy.get("input[id=maxWithLengthRatio]")
+                      .invoke("val")
+                      .then((maxWithLengthRatio) => {
+                        technicalDetails +=
+                          "Configuration initiale utilisée : Taille image: " +
+                          imageSize +
+                          "px, MinSizeRation " +
+                          minSizeRatio +
+                          ", MaxSizeRation " +
+                          maxSizeRatio +
+                          ", minWithLengthRatio " +
+                          minWithLengthRatio +
+                          ", maxWithLengthRatio " +
+                          maxWithLengthRatio +
+                          "   ";
+                        technicalDetails += JSON.stringify(testResults);
+                        assert.fail(technicalDetails);
+                      });
+                  });
+              });
+          });
+      });
   });
 });
 
@@ -204,28 +241,41 @@ function failWithGrade(testResult, failureMessage) {
 
 function getPicturesToTest() {
   const pics = [];
-  pics.push(markerPic("marker_1.jpg", 0.62));
-  pics.push(fishPic("test_1_COR1_36cm.jpg", false, 0.1));
-  pics.push(fishPic("test_2_IMG_2539.jpg", false, 0.1));
-  pics.push(fishPic("test_3_IMG_20201001_102419.jpg", false, 0.1));
-  pics.push(fishPic("test_4_IMG_20210412_113556.jpg", false, 0.1));
+  pics.push(markerPic("marker_1.jpg", "optimale", 0.62));
+  pics.push(
+    fishPic("test_1_COR1_36cm.jpg", "avec queue ton sur ton", false, 0.1)
+  );
+  pics.push(
+    fishPic("test_2_IMG_2539.jpg", "avec rainures de bois", false, 0.1)
+  );
+  pics.push(fishPic("test_3_IMG_20201001_102419.jpg", "correcte", false, 0.1));
+  pics.push(
+    fishPic(
+      "test_4_IMG_20210412_113556.jpg",
+      "avec lignes parasites",
+      false,
+      0.1
+    )
+  );
   return pics;
 }
 
-function markerPic(imgPath, expectedFishOnImageRatio) {
+function markerPic(imgPath, comment, expectedFishOnImageRatio) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "markers/" + imgPath,
     true,
-    expectedFishOnImageRatio
+    expectedFishOnImageRatio,
+    comment
   );
 }
 
-function fishPic(imgPath, hasMarker, expectedFishOnImageRatio) {
+function fishPic(imgPath, comment, hasMarker, expectedFishOnImageRatio) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "fishes/" + imgPath,
     hasMarker,
-    expectedFishOnImageRatio
+    expectedFishOnImageRatio,
+    comment
   );
 }

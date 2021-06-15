@@ -195,7 +195,11 @@ export default class FisholaOpenCVService {
         vertices
       );
       detectedShape.isMarker = this.isMarker(cv, src, detectedShape, config);
-      detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
+      detectedShape.isFish = this.isShapePotentialFish(
+        detectedShape,
+        src,
+        config
+      );
       detectedShapes.push(detectedShape);
     }
 
@@ -219,12 +223,18 @@ export default class FisholaOpenCVService {
    */
   isShapePotentialFish(
     shape: DetectedShape,
+    resizedPicture: any,
     config: OpenCVDetectionConfig
   ): boolean {
     // Shape bust occuppy a certain % of the full image
-    if (shape.width / config.resizeSize >= config.minSizeRatio) {
+    const pictureSize = Math.max(resizedPicture.cols, resizedPicture.rows);
+    const shapeSizeOnPictureRatio = shape.width / pictureSize;
+    if (
+      shapeSizeOnPictureRatio >= config.minSizeRatio &&
+      shapeSizeOnPictureRatio <= config.maxSizeRatio
+    ) {
       const widthLengthRatio = shape.height / shape.width;
-      /// Ration height/widht must indicate a shape that is not "squary" neither "linny"
+      /// Ratio height/widht must indicate a shape that is not "squary" neither "linny"
       if (
         widthLengthRatio >= config.minWidthLengthRatio &&
         widthLengthRatio <= config.maxWidthLengthRatio
@@ -244,12 +254,17 @@ export default class FisholaOpenCVService {
    */
   isMarker(
     _cv: any,
-    _picture: any,
+    resizedPicture: any,
     markerCandidate: DetectedShape,
     config: OpenCVDetectionConfig
   ) {
     // Shape bust occuppy a certain % of the full image
-    if (markerCandidate.width / config.resizeSize >= config.minSizeRatio) {
+    const pictureSize = Math.max(resizedPicture.cols, resizedPicture.rows);
+    const shapeSizeOnPictureRatio = markerCandidate.width / pictureSize;
+    if (
+      shapeSizeOnPictureRatio >= config.markerMinSizeRatio &&
+      shapeSizeOnPictureRatio <= config.maxSizeRatio
+    ) {
       const diffBetweenWidthAndHeight = Math.abs(
         markerCandidate.width - markerCandidate.height
       );

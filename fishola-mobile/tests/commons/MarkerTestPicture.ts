@@ -27,16 +27,19 @@ export default class MarkerTestPicture {
   filePath: string;
   shouldHaveMarker: boolean;
   expectedFishOnImageRatio: number;
+  comment: string;
 
   constructor(
     markerPath: string,
     filePath: string,
     shouldHaveMarker: boolean,
-    expectedFishMeasure: number
+    expectedFishMeasure: number,
+    comment: string
   ) {
     this.markerPath = markerPath;
     this.filePath = filePath;
     this.shouldHaveMarker = shouldHaveMarker;
     this.expectedFishOnImageRatio = expectedFishMeasure;
+    this.comment = comment;
   }
 }

@@ -109,6 +109,16 @@
                   v-model.number="config.minSizeRatio"
                 />
                 <br />
+                % d'occupation maximal (0 à 1)
+                <input
+                  type="number"
+                  style="width:100px"
+                  id="maxSizeRatio"
+                  step="0.1"
+                  @change="launchSizeComputation"
+                  v-model.number="config.maxSizeRatio"
+                />
+                <br />
                 Ratio hauteur/largeur min (0 à 1)
                 <input
                   type="number"

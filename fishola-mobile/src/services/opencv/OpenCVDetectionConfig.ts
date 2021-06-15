@@ -25,8 +25,14 @@ export class OpenCVDetectionConfig {
   /*  The marker size "in real world" - float (in cm) */
   markerSizeInMm = 133;
 
-  /* Tthe minimum % of the screen each shape should cover - float between 0 & 1*/
-  minSizeRatio = 0.15;
+  /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
+  minSizeRatio = 0.3;
+
+  /* The maximum % of the screen each shape except marker should cover - float between 0 & 1*/
+  maxSizeRatio = 0.95;
+
+  /* The minimum % of the marker should cover - float between 0 & 1*/
+  markerMinSizeRatio = 0.15;
 
   /* The minimum width / length ratio each shape should respect(trims "line" shapes) - float between 0 & 1*/
   minWidthLengthRatio = 0.1;
