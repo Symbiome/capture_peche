@@ -97,8 +97,8 @@ describe("Mesures de poissons: tests automatiques", () => {
                   .then((imageSize) => {
                     const actualFishOnPictureSizeRatio =
                       Math.round(
-                        (parseInt(fishSize) / parseInt(imageSize)) * 100
-                      ) / 100;
+                        (parseInt(fishSize) / parseInt(imageSize)) * 1000
+                      ) / 1000;
                     const ratioDiff = Math.abs(
                       actualFishOnPictureSizeRatio -
                         testPicture.expectedFishOnImageRatio
@@ -111,9 +111,12 @@ describe("Mesures de poissons: tests automatiques", () => {
                         "Taille du poisson trop peu précise (" +
                           parseInt(fishSize) +
                           "px = " +
-                          actualFishOnPictureSizeRatio * 100 +
+                          Math.round(actualFishOnPictureSizeRatio * 1000) / 10 +
                           "% de l'image totale) au lieu de " +
-                          testPicture.expectedFishOnImageRatio * 100 +
+                          Math.round(
+                            testPicture.expectedFishOnImageRatio * 1000
+                          ) /
+                            10 +
                           "%"
                       );
                     }
@@ -184,7 +187,7 @@ function computeFinalGradeString(testResults) {
     }, 0) / testResults.length;
 
   // Compute final grade String
-  let finalGradeString = "Note : " + finalGrade + "/20 (";
+  let finalGradeString = Math.round(finalGrade * 10) / 10 + "/20 (";
   finalGradeString +=
     Math.round((wrongMarkers / testResults.length) * 100) +
     "% d'erreurs de marqueurs, ";
@@ -219,11 +222,12 @@ function computeGrade(testResult) {
         grade += 3;
         mediumRatioError;
         if (testResult.diffBetweenExpectRationAndActual < lowRationError) {
-          // 4 additional points if ratio below 'lowRationError'
-          grade += 4;
+          // 3 additional points if ratio below 'lowRationError'
+          grade += 3;
           if (testResult.diffBetweenExpectRationAndActual < perfectRatioError) {
-            // 4 additional points if ratio below 'perfectRatioError'
-            grade += 4;
+            // Grade = 15 (total up to this point) + diff squared
+            let diff = 1 - testResult.diffBetweenExpectRationAndActual * 20;
+            grade = 15 + Math.round(diff * 5 * 10) / 10;
           }
         }
       }
