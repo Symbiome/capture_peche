@@ -241,20 +241,22 @@ function failWithGrade(testResult, failureMessage) {
 
 function getPicturesToTest() {
   const pics = [];
-  pics.push(markerPic("marker_1.jpg", "optimale", 0.62));
+  pics.push(markerPic("marker_1.jpg", "optimale", 6.8 / 15));
   pics.push(
-    fishPic("test_1_COR1_36cm.jpg", "avec queue ton sur ton", false, 0.1)
+    fishPic("test_1_COR1_36cm.jpg", "avec queue ton sur ton", false, 11.3 / 15)
   );
   pics.push(
-    fishPic("test_2_IMG_2539.jpg", "avec rainures de bois", false, 0.1)
+    fishPic("test_2_IMG_2539.jpg", "avec rainures de bois", false, 8.6 / 15)
   );
-  pics.push(fishPic("test_3_IMG_20201001_102419.jpg", "correcte", false, 0.1));
+  pics.push(
+    fishPic("test_3_IMG_20201001_102419.jpg", "correcte", false, 10.9 / 15)
+  );
   pics.push(
     fishPic(
       "test_4_IMG_20210412_113556.jpg",
       "avec lignes parasites",
       false,
-      0.1
+      13.8 / 15
     )
   );
   return pics;

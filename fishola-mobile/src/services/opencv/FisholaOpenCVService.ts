@@ -197,11 +197,7 @@ export default class FisholaOpenCVService {
         vertices
       );
       detectedShape.isMarker = this.isMarker(cv, src, detectedShape, config);
-      detectedShape.isFish = this.isShapePotentialFish(
-        detectedShape,
-        src,
-        config
-      );
+      detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
     }
 
@@ -225,12 +221,10 @@ export default class FisholaOpenCVService {
    */
   isShapePotentialFish(
     shape: DetectedShape,
-    resizedPicture: any,
     config: OpenCVDetectionConfig
   ): boolean {
     // Shape bust occuppy a certain % of the full image
-    const pictureSize = Math.max(resizedPicture.cols, resizedPicture.rows);
-    const shapeSizeOnPictureRatio = shape.width / pictureSize;
+    const shapeSizeOnPictureRatio = shape.width / config.resizeSize;
     if (
       shapeSizeOnPictureRatio >= config.minSizeRatio &&
       shapeSizeOnPictureRatio <= config.maxSizeRatio
@@ -261,8 +255,7 @@ export default class FisholaOpenCVService {
     config: OpenCVDetectionConfig
   ) {
     // Shape bust occuppy a certain % of the full image
-    const pictureSize = Math.max(resizedPicture.cols, resizedPicture.rows);
-    const shapeSizeOnPictureRatio = markerCandidate.width / pictureSize;
+    const shapeSizeOnPictureRatio = markerCandidate.width / config.resizeSize;
     if (
       shapeSizeOnPictureRatio >= config.markerMinSizeRatio &&
       shapeSizeOnPictureRatio <= config.maxSizeRatio
@@ -334,7 +327,7 @@ export default class FisholaOpenCVService {
     const original = cv.imread(imgElement);
     const src = new cv.Mat();
     // Vertical images
-    if (original.cols < original.rows) {
+    if (original.cols > original.rows) {
       // Fix with
       const reducedWidth = resizeSize;
       const ratioWith = reducedWidth / original.cols;
