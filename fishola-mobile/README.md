@@ -38,3 +38,7 @@ Pour lancer la test suite :
 npm run cypress
 ```
 * cliquer sur le bouton "play" à droite de la liste des tests pour jouer les scénarios
+* pour générer un rapport html
+```bash
+npm run cypress-report
+```

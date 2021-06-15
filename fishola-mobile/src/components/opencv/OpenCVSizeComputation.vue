@@ -20,7 +20,6 @@
   -->
 <template>
   <div class="page-with-header-and-footer shifted-background">
-    <FisholaHeader />
     <div class="page">
       <div class="pane pane-only">
         <div class="pane-content large rounded">
@@ -168,19 +167,12 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 
-@Component({
-  components: {
-    FisholaHeader,
-    FisholaFooter,
-  },
-})
+@Component({})
 export default class OpenCVSizeComputation extends Vue {
   @Prop({ default: "measure" }) mode: string;
   imageSourceSRC = "";

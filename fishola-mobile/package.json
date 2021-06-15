@@ -9,8 +9,8 @@
     "build:mobile": "vue-cli-service build --mode mobile",
     "build:web": "vue-cli-service build --mode web",
     "tests": "vue-cli-service test:unit",
-    "cypress-open": "npx cypress open",
-    "cypress": "npx cypress run --reporter cypress-mochawesome-reporter --reporter-options 'reportDir=tests/cypress/reports,charts=true,reportPageTitle=Mesure de poisons,embeddedScreenshots=true'",
+    "cypress": "npx cypress open",
+    "cypress-report": "npx cypress run --reporter cypress-mochawesome-reporter --reporter-options 'timeStamp=yyyyddmm_HHMMss,overwrite=false,inline=true,code=false,showHooks=never,reportDir=tests/cypress/reports,charts=true,reportTitle=Mesures de poisons: rapport de tests,reportPageTitle=Mesures de poisons: rapport de tests,embeddedScreenshots=true'",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

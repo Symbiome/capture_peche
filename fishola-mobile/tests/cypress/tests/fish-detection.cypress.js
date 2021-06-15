@@ -123,6 +123,9 @@ describe("Mesures de poissons: tests automatiques", () => {
   it("Note finale", () => {
     assert.fail(computeFinalGradeString(testResults));
   });
+  it("Détails techniques", () => {
+    assert.fail(JSON.stringify(testResults));
+  });
 });
 
 /**
@@ -144,9 +147,8 @@ function computeFinalGradeString(testResults) {
     }, 0) / testResults.length;
 
   // Compute final grade String
-  let finalGradeString = "Note finale: " + finalGrade;
+  let finalGradeString = "Note : " + finalGrade + "/20 (";
   finalGradeString +=
-    " (" +
     Math.round((wrongMarkers / testResults.length) * 100) +
     "% d'erreurs de marqueurs, ";
   finalGradeString +=
