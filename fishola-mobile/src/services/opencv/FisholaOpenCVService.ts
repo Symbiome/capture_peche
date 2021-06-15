@@ -1,3 +1,4 @@
+import { FishDetectionOptimizer } from "./FishDetectionOptimizer";
 /*-
  * #%L
  * Fishola :: Mobile
@@ -51,11 +52,12 @@ export default class FisholaOpenCVService {
     const output = this.readAndResize(cv, imgElement, config.resizeSize);
 
     // Step 2: detect fishes and calculate sizes
-    const markerAndPotentialFishes = await this.calculateFishSizes(
+    const fishDetectionOptimizer = new FishDetectionOptimizer(
       cv,
       imgElement,
       config
     );
+    const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes();
 
     // Step 3: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
@@ -77,7 +79,7 @@ export default class FisholaOpenCVService {
     cv: any,
     imgElement: HTMLElement,
     config: OpenCVDetectionConfig
-  ) {
+  ): Array<DetectedShape> {
     // Step 1: find all closed shapes withing the picture
     const closedShapes = this.detectClosedShapesAndMarker(
       cv,
