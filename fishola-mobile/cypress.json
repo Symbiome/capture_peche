@@ -7,12 +7,5 @@
   "supportFile": "tests/cypress/support/index.js",
   "viewportWidth": 1280,
   "viewportHeight": 720,
-  "video": false,
-  "reporter": "cypress-mochawesome-reporter",
-  "reporterOptions": {
-    "reportDir": "tests/cypress/reports",
-    "charts": true,
-    "reportPageTitle": "Mesure de poisons: tests",
-    "embeddedScreenshots": true
-  }
+  "video": false
 }

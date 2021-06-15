@@ -26,5 +26,5 @@ export default class MeasureTestResult {
   markerDetectedAsExpected = false
   fishDetectedAsExpected = false;
   diffBetweenExpectRationAndActual = 0;
-  screenshot = "";
+  grade = 0;
 }

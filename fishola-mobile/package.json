@@ -9,7 +9,8 @@
     "build:mobile": "vue-cli-service build --mode mobile",
     "build:web": "vue-cli-service build --mode web",
     "tests": "vue-cli-service test:unit",
-    "cypress": "npx cypress open",
+    "cypress-open": "npx cypress open",
+    "cypress": "npx cypress run --reporter cypress-mochawesome-reporter --reporter-options 'reportDir=tests/cypress/reports,charts=true,reportPageTitle=Mesure de poisons,embeddedScreenshots=true'",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

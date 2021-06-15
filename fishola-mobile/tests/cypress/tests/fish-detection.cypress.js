@@ -26,7 +26,12 @@ const defaultMarkerPath = "markers/marker.jpg";
 import MarkerTestPicture from "../../commons/MarkerTestPicture";
 import MeasureTestResult from "../../commons/MeasureTestResult";
 
-describe("Fish measurement tests", () => {
+const bigRatioError = 0.4;
+const mediumRatioError = 0.25;
+const lowRationError = 0.1;
+const perfectRatioError = 0.05;
+
+describe("Mesures de poissons: tests automatiques", () => {
   const testResults = [];
 
   // Get Test Data
@@ -64,11 +69,16 @@ describe("Fish measurement tests", () => {
       cy.get("span[id=shapesNumber]")
         .invoke("text")
         .then((shapesNumber) => {
-          assert.equal(
-            shapesNumber,
-            expectedShapesNumber,
-            "Mauvais nombre de poissons détectés"
-          );
+          if (parseInt(shapesNumber) !== expectedShapesNumber) {
+            failWithGrade(
+              testResults[i],
+              "Mauvais nombre de poissons détectés (" +
+                shapesNumber +
+                " au lieu de " +
+                expectedShapesNumber +
+                ")"
+            );
+          }
           testResults[i].fishDetectedAsExpected = true;
 
           // Compare expected vs actual fish/picture ratio
@@ -84,68 +94,119 @@ describe("Fish measurement tests", () => {
                 .invoke("val")
                 .then((imageSize) => {
                   const actualFishOnPictureSizeRatio =
-                    parseInt(fishSize) / parseInt(imageSize);
+                    Math.round(
+                      (parseInt(fishSize) / parseInt(imageSize)) * 100
+                    ) / 100;
                   const ratioDiff = Math.abs(
                     actualFishOnPictureSizeRatio -
                       testPicture.expectedFishOnImageRatio
                   );
                   testResults[i].diffBetweenExpectRationAndActual = ratioDiff;
-                  assert.isBelow(
-                    ratioDiff,
-                    allowedRationDiff,
-                    "La taille du poisson (" +
-                      parseInt(fishSize) +
-                      "px = " +
-                      actualFishOnPictureSizeRatio * 100 +
-                      "% de l'image totale) doit être proche de la taille attendue (" +
-                      testPicture.expectedFishOnImageRatio * 100 +
-                      "%)"
-                  );
+                  testResults[i].grade = computeGrade(testResults[i]);
+                  if (testResults[i].grade < 20) {
+                    failWithGrade(
+                      testResults[i],
+                      "Taille du poisson trop peu précise (" +
+                        parseInt(fishSize) +
+                        "px = " +
+                        actualFishOnPictureSizeRatio * 100 +
+                        "% de l'image totale) au lieu de " +
+                        testPicture.expectedFishOnImageRatio * 100 +
+                        "%"
+                    );
+                  }
                 });
             });
         });
     });
   }
-  it("Report generation", () => {
-    const wrongMarkers = testResults.filter((ts) => {
-      return !ts.markerDetectedAsExpected;
-    }).length;
-    const wrongFishes = testResults.filter((ts) => {
-      return !ts.fishDetectedAsExpected;
-    }).length;
-    const correctDetections = testResults.filter((ts) => {
-      return ts.fishDetectedAsExpected && ts.markerDetectedAsExpected;
-    });
-    let stringReport = "[";
-    testResults.forEach((testResult) => {
-      stringReport += JSON.stringify(testResult) + ",\n";
-    });
-    stringReport += "]"
-    stringReport +=
-      "wrong markers: " +
-        wrongMarkers +
-        " / wrongs fishes " +
-        wrongFishes +
-        " / correct " +
-        correctDetections.length +
-        " / total " +
-    testResults.length
-    
-    const diffSum = correctDetections.reduce((totalDiff, testResult) => {
-      return totalDiff + testResult.diffBetweenExpectRationAndActual;
-    }, 0);
-    const diffAverage =
-      diffSum / correctDetections.length;
+  it("Note finale", () => {
+    assert.fail(computeFinalGradeString(testResults));
   });
 });
+
+/**
+ * Computes a grade (/20) for our measure system out of test results.
+ */
+function computeFinalGradeString(testResults) {
+  const wrongMarkers = testResults.filter((ts) => {
+    return !ts.markerDetectedAsExpected;
+  }).length;
+  const wrongFishes = testResults.filter((ts) => {
+    return !ts.fishDetectedAsExpected;
+  }).length;
+  const bigRationErrorCounts = testResults.filter((ts) => {
+    return ts.diffBetweenExpectRationAndActual >= bigRatioError;
+  }).length;
+  const finalGrade =
+    testResults.reduce((gradesSum, ts) => {
+      return gradesSum + ts.grade;
+    }, 0) / testResults.length;
+
+  // Compute final grade String
+  let finalGradeString = "Note finale: " + finalGrade;
+  finalGradeString +=
+    " (" +
+    Math.round((wrongMarkers / testResults.length) * 100) +
+    "% d'erreurs de marqueurs, ";
+  finalGradeString +=
+    Math.round((wrongFishes / testResults.length) * 100) +
+    "% d'erreurs de poissons, ";
+  finalGradeString +=
+    Math.round((bigRationErrorCounts / testResults.length) * 100) +
+    "% avec des erreurs de mesures très imprécises)";
+  return finalGradeString;
+}
+
+/**
+ * Provides a grade (/20) for the given test result
+ */
+function computeGrade(testResult) {
+  // Grade each test result on 20 points
+  let grade = 0;
+  // 3 point for marker detection
+  if (testResult.markerDetectedAsExpected) {
+    grade += 3;
+  }
+  if (testResult.fishDetectedAsExpected) {
+    // 3 point for fish detection
+    grade += 3;
+
+    // 3 points if ratio below 'bigRatioError'
+    if (testResult.diffBetweenExpectRationAndActual < bigRatioError) {
+      grade += 3;
+      if (testResult.diffBetweenExpectRationAndActual < mediumRatioError) {
+        // 3 additional points if ratio below 'bigRatioError'
+        grade += 3;
+        mediumRatioError;
+        if (testResult.diffBetweenExpectRationAndActual < lowRationError) {
+          // 4 additional points if ratio below 'lowRationError'
+          grade += 4;
+          if (testResult.diffBetweenExpectRationAndActual < perfectRatioError) {
+            // 4 additional points if ratio below 'perfectRatioError'
+            grade += 4;
+          }
+        }
+      }
+    }
+  }
+  return grade;
+}
+
+function failWithGrade(testResult, failureMessage) {
+  const grade = computeGrade(testResult);
+  if (grade < 20) {
+    assert.fail("Note : " + grade + "/20 - " + failureMessage);
+  }
+}
 
 function getPicturesToTest() {
   const pics = [];
   pics.push(markerPic("marker_1.jpg", 0.62));
   pics.push(fishPic("test_1_COR1_36cm.jpg", false, 0.1));
-  /* pics.push(fishPic("test_2_IMG_2539.jpg", false, 0.1));
+  pics.push(fishPic("test_2_IMG_2539.jpg", false, 0.1));
   pics.push(fishPic("test_3_IMG_20201001_102419.jpg", false, 0.1));
-  pics.push(fishPic("test_4_IMG_20210412_113556.jpg", false, 0.1));*/
+  pics.push(fishPic("test_4_IMG_20210412_113556.jpg", false, 0.1));
   return pics;
 }
 
@@ -157,6 +218,7 @@ function markerPic(imgPath, expectedFishOnImageRatio) {
     expectedFishOnImageRatio
   );
 }
+
 function fishPic(imgPath, hasMarker, expectedFishOnImageRatio) {
   return new MarkerTestPicture(
     defaultMarkerPath,
