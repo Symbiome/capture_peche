@@ -27,4 +27,9 @@ export default class MeasureTestResult {
   fishDetectedAsExpected = false;
   diffBetweenExpectRationAndActual = 0;
   grade = 0;
+  quality: number;
+
+  constructor(quality: number) {
+    this.quality = quality;
+  }
 }

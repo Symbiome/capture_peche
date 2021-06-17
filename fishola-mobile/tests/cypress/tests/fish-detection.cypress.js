@@ -35,16 +35,35 @@ describe("Mesures de poissons: tests automatiques", () => {
   const testResults = [];
 
   // Get Test Data
-  const allowedRationDiff = 0.01;
   const testPictures = getPicturesToTest();
 
   for (let i = 0; i < testPictures.length; i++) {
     const testPicture = testPictures[i];
-    testResults.push(new MeasureTestResult());
+    testResults.push(new MeasureTestResult(testPicture.quality));
 
     // One test per picture to test
+    let qualityString = "";
+    switch (testPicture.quality) {
+      case 4:
+        qualityString = "optimale";
+        break;
+      case 3:
+        qualityString = "correcte";
+        break;
+      case 2:
+        qualityString = "dégradée";
+        break;
+      default:
+        qualityString = "indétectable";
+    }
     it(
-      "Photo " + testPicture.comment + " (" + testPicture.filePath + ")",
+      "Photo " +
+        qualityString +
+        ' "' +
+        testPicture.comment +
+        '"(' +
+        testPicture.filePath +
+        ")",
       () => {
         // Go to fish measurement page
         cy.visit("/#/fish-measure-test/measure");
@@ -126,8 +145,14 @@ describe("Mesures de poissons: tests automatiques", () => {
       }
     );
   }
-  it("Note finale", () => {
-    assert.fail(computeFinalGradeString(testResults));
+  it("Note finale (cas optimaux et corrects)", () => {
+    assert.fail(computeFinalGradeString(testResults, 3));
+  });
+  it("Note finale (cas optimaux, corrects et dégradés)", () => {
+    assert.fail(computeFinalGradeString(testResults, 2));
+  });
+  it("Note finale (tous cas y compris  indétectables)", () => {
+    assert.fail(computeFinalGradeString(testResults, 1));
   });
   it("Détails techniques", () => {
     let technicalDetails = "";
@@ -171,31 +196,34 @@ describe("Mesures de poissons: tests automatiques", () => {
 /**
  * Computes a grade (/20) for our measure system out of test results.
  */
-function computeFinalGradeString(testResults) {
-  const wrongMarkers = testResults.filter((ts) => {
+function computeFinalGradeString(testResults, minimumQuality) {
+  const trimmedResults = testResults.filter((ts) => {
+    return ts.quality >= minimumQuality;
+  });
+  const wrongMarkers = trimmedResults.filter((ts) => {
     return !ts.markerDetectedAsExpected;
   }).length;
-  const wrongFishes = testResults.filter((ts) => {
+  const wrongFishes = trimmedResults.filter((ts) => {
     return !ts.fishDetectedAsExpected;
   }).length;
-  const bigRationErrorCounts = testResults.filter((ts) => {
+  const bigRationErrorCounts = trimmedResults.filter((ts) => {
     return ts.diffBetweenExpectRationAndActual >= bigRatioError;
   }).length;
   const finalGrade =
-    testResults.reduce((gradesSum, ts) => {
+    trimmedResults.reduce((gradesSum, ts) => {
       return gradesSum + ts.grade;
-    }, 0) / testResults.length;
+    }, 0) / trimmedResults.length;
 
   // Compute final grade String
   let finalGradeString = Math.round(finalGrade * 10) / 10 + "/20 (";
   finalGradeString +=
-    Math.round((wrongMarkers / testResults.length) * 100) +
+    Math.round((wrongMarkers / trimmedResults.length) * 100) +
     "% d'erreurs de marqueurs, ";
   finalGradeString +=
-    Math.round((wrongFishes / testResults.length) * 100) +
+    Math.round((wrongFishes / trimmedResults.length) * 100) +
     "% d'erreurs de poissons, ";
   finalGradeString +=
-    Math.round((bigRationErrorCounts / testResults.length) * 100) +
+    Math.round((bigRationErrorCounts / trimmedResults.length) * 100) +
     "% avec des erreurs de mesures très imprécises)";
   return finalGradeString;
 }
@@ -245,120 +273,110 @@ function failWithGrade(testResult, failureMessage) {
 
 function getPicturesToTest() {
   const pics = [];
-  // Home made pics (optimals)
-  pics.push(markerPic("marker_1.jpg", "optimale", 6.8 / 15));
+  const optimal = 4;
+  const good = 3;
+  const medium = 2;
+  const hard = 1;
 
-  // Pictures from scientists
-  pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15));
-  pics.push(fishPic("P1010100.jpg", "correcte", 13 / 15));
-  pics.push(fishPic("pisci_Bourget 2013 054.jpg", "correcte", 12 / 15));
-  pics.push(fishPic("WP_20151001_064.jpg", "correcte", 9.4 / 15));
-  pics.push(fishPic("COR1_42cm.jpg", "correcte", 13 / 15));
-  pics.push(fishPic("COR_ 42cm.jpg", "correcte", 13.5 / 15));
-  pics.push(fishPic("COR1_36cm.jpg", "avec queue ton sur ton", 11.3 / 15));
-  pics.push(fishPic("P1010081.jpg", "poisson-chat", 10.6 / 14.3));
-  pics.push(fishPic("b99in406.jpg", "avec étiquette collée", 13.9 / 15));
-  pics.push(fishPic("IMG_20210412.jpg", "avec lignes parasites 1", 13.8 / 15));
-  pics.push(fishPic("95ch115.sep.jpg", "paysage recadré 3", 13.8 / 15));
-  pics.push(fishPic("b99in360.jpg", "sur fond bleu 2", 13.5 / 15));
-  pics.push(fishPic("b99in365.jpg", "sur fond bleu 3", 12.3 / 15));
-  pics.push(fishPic("8b99in367.jpg", "sur fond bleu 4", 12 / 15));
-  pics.push(fishPic("b99in416.jpg", "autres éléments sur image 1", 9.6 / 15));
-  pics.push(fishPic("b99in422.jpg", "autres éléments sur image 2", 10.4 / 15));
-  pics.push(fishPic("DSC_0739.jpg", "sur règle 3", 11.5 / 15));
-  pics.push(fishPic("DSC_0746.jpg", "sur règle 4", 12 / 15));
-  pics.push(fishPic("DSC_0785.jpg", "sur règle 5", 10.6 / 15));
-  pics.push(fishPic("ch951762.rep.jpg", "tâcheté", 14.5 / 15));
-  pics.push(fishPic("DSCN1244.jpg", "dans boîte 1", 9.6 / 14.3));
-  pics.push(fishPic("DSCN1246.jpg", "dans boîte 2", 8.3 / 15));
-  pics.push(fishPic("GM_3469.jpg", "dans boîte 3", 13.8 / 15));
-  pics.push(fishPic("IMG_2547 (2).jpg", "dans boîte 4", 8.6 / 15));
-  pics.push(fishPic("IMG_2548 (2).jpg", "dans boîte 5", 12.5 / 15));
-  pics.push(fishPic("IMG_20181004_114926.jpg", "dans boîte 7", 11.6 / 15));
-  pics.push(fishPic("IMG_2539.jpg", "avec rainures de bois", 8.6 / 15));
+  // Optimal pictures
+  pics.push(markerPic("marker_1.jpg", "parfaite", 6.8 / 15, optimal));
+  pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15, optimal));
+  pics.push(fishPic("P1010100.jpg", "correcte", 13 / 15, optimal));
+  pics.push(fishPic("pisci_Bourget 2013.jpg", "correcte", 12 / 15, optimal));
 
-  // Pictures from Fishola users
-  pics.push(fishPic("fond_bateau_1.jpeg", "fond bateau 1", 14.4 / 15));
-  pics.push(fishPic("fond_serviette_1.jpeg", "fond serviette", 12.4 / 15));
-  pics.push(fishPic("ombres_portees.jpeg", "ombres portées", 10.9 / 15));
-  pics.push(
-    fishPic("fond_bateau_2.jpeg", "fond bateau avec cadenas", 9.5 / 15)
-  );
-  pics.push(
-    fishPic("fond_bateau_3.jpeg", "fond bateau avec ombres", 10.6 / 15)
-  );
-  pics.push(fishPic("fond_bateau_4.jpeg", "fond bateau", 12.1 / 15));
-  pics.push(fishPic("fond_bateau_5.jpeg", "fond bateau", 14.5 / 15));
-  pics.push(fishPic("fond_bateau_6.jpeg", "fond bateau", 11.2 / 15));
-  pics.push(fishPic("fond_bateau_7.jpeg", "fond bateau avec vrac", 9.9 / 15));
-  pics.push(fishPic("fond_bateau_8.jpeg", "fond bateau avec vrac", 11.7 / 15));
-  pics.push(
-    fishPic("fond_bateau_9.jpeg", "fond bateau avec rainures", 13.8 / 15)
-  );
-  pics.push(
-    fishPic("fond_bateau_11.jpeg", "fond bateau tâches de sang", 10.4 / 15)
-  );
-  pics.push(
-    fishPic("fond_bateau_12.jpeg", "fond bateau avec rainures", 13.3 / 15)
-  );
-  pics.push(
-    fishPic("fond_bateau_13.jpeg", "fond tâcheté poisson tronqué", 13.4 / 15)
-  );
-  pics.push(
-    fishPic("fond_bateau_14.jpeg", "fond bateau avec ombres", 13.7 / 15)
-  );
-  pics.push(fishPic("fond_bateau_15.jpeg", "fond bateau quadrillé", 13.5 / 15));
-  pics.push(fishPic("fond_bateau_16.jpeg", "fond bateau en coin", 11.4 / 15));
-  pics.push(fishPic("fond_bateau_17.jpeg", "fond bateau quadrillé", 10.1 / 15));
-  pics.push(fishPic("fond_bateau_18.jpeg", "fond bateau quadrillé", 10.3 / 15));
-  pics.push(fishPic("plaque.jpeg", "sur plaque", 8.2 / 15));
-  pics.push(fishPic("plaque2.jpeg", "sur plaque 2", 10.2 / 15));
-  pics.push(fishPic("herbe.jpeg", "dans herbe", 4 / 15));
-  pics.push(
-    fishPic("fond_bateau_coin_1.jpeg", "fond bateau avec coin", 12.3 / 15)
-  );
-  pics.push(fishPic("coin_table2.jpeg", "coin de table", 10.4 / 15));
-  pics.push(fishPic("coin_table3.jpeg", "coin de table", 14.4 / 15));
-  pics.push(fishPic("coin_table4.jpeg", "coin de table sale", 12.2 / 15));
-  pics.push(fishPic("coin_table5.jpeg", "coin de table", 7.7 / 15));
-  pics.push(fishPic("sur_fond_gradué.jpeg", "sur fond gradué", 10.5 / 15));
-  pics.push(fishPic("sur_fond_gradué2.jpeg", "sur fond gradué", 11 / 15));
-  pics.push(fishPic("boite.jpeg", "dans boite 8", 6.3 / 15));
+  // Good pictures
+  pics.push(fishPic("WP_20151001_064.jpg", "correcte", 9.4 / 15, good));
+  pics.push(fishPic("COR1_42cm.jpg", "queue ton sur ton", 13 / 15, good));
+  pics.push(fishPic("b99in416.jpg", "éléments divers", 9.6 / 15, good));
+  pics.push(fishPic("b99in422.jpg", "éléments divers 2", 10.4 / 15, good));
+  pics.push(fishPic("IMG_2539.jpg", "avec rainures de bois", 8.6 / 15, good));
+  pics.push(fishPic("fond_bateau_1.jpeg", "fond bateau 1", 14.4 / 15, good));
+  pics.push(fishPic("fond_bateau_17.jpeg", "quadrillage", 10.1 / 15, good));
+  pics.push(fishPic("fond_bateau_4.jpeg", "fond bateau", 12.1 / 15, good));
+  pics.push(fishPic("fond_bateau_6.jpeg", "fond bateau", 11.2 / 15, good));
+  pics.push(fishPic("fond_bateau_11.jpeg", "tâches de sang", 10.4 / 15, good));
+  pics.push(fishPic("fond_bateau_12.jpeg", "rainures", 13.3 / 15, good));
+  pics.push(fishPic("fond_bateau_13.jpeg", "fond tâcheté", 13.4 / 15, good));
+  pics.push(fishPic("fond_bateau_14.jpeg", "avec ombres", 13.7 / 15, good));
 
-  // Not detected yet
-  pics.push(fishPic("annecy IV43-2.jpg", "avec ombres fortes", 12.7 / 14.3));
-  pics.push(fishPic("COR2_42cm.jpg", "avec lignes parasites 2", 11.1 / 15));
-  pics.push(fishPic("95ch43.sep.jpg", "paysage recadré 1", 14.7 / 15));
-  pics.push(fishPic("b99in357.jpg", "sur fond bleu 1", 8.3 / 15));
-  pics.push(fishPic("ch951623.rep.jpg", "sur règle 1", 14 / 15));
-  pics.push(fishPic("ch951688.rep.jpg", "sur règle 2", 13.7 / 15));
-  pics.push(
-    fishPic("IMG_20181004_114934.jpg", "avec étiquette parasite", 11.5 / 15)
-  );
-  pics.push(fishPic("DSCN1714.jpg", "sur lattes", 9.6 / 15));
-  pics.push(fishPic("WP_20151001_065.jpg", "correcte", 7.2 / 15));
-  pics.push(fishPic("coin_table.jpeg", "coin de table", 11 / 15));
-  pics.push(fishPic("fond_bateau_10.jpeg", "fond bateau tâcheté", 7 / 15));
+  // Medium pictures
+  pics.push(fishPic("COR_ 42cm.jpg", "queue ton sur ton", 13.5 / 15, medium));
+  pics.push(fishPic("COR1_36cm.jpg", "queue ton sur ton", 11.3 / 15, medium));
+  pics.push(fishPic("P1010081.jpg", "ombres portées", 10.6 / 14.3, medium));
+  pics.push(fishPic("IMG_20210412.jpg", "lignes parasites", 13.8 / 15, medium));
+  pics.push(fishPic("b99in360.jpg", "sur fond bleu 2", 13.5 / 15, medium));
+  pics.push(fishPic("b99in365.jpg", "sur fond bleu 3", 12.3 / 15, medium));
+  pics.push(fishPic("8b99in367.jpg", "sur fond bleu 4", 12 / 15, medium));
+  pics.push(fishPic("ch951762.rep.jpg", "tâcheté", 14.5 / 15, medium));
+  pics.push(fishPic("IMG_2548 (2).jpg", "dans boîte 5", 12.5 / 15, medium));
+  pics.push(fishPic("IMG_20181004_114926.jpg", "boîte 7", 11.6 / 15, medium));
+  pics.push(fishPic("fond_bateau_5.jpeg", "fond bateau", 14.5 / 15, medium));
+  pics.push(fishPic("fond_bateau_8.jpeg", "fond avec vrac", 11.7 / 15, medium));
+  pics.push(fishPic("fond_bateau_15.jpeg", "quadrillage", 13.5 / 15, medium));
+  pics.push(fishPic("fond_bateau_16.jpeg", "rainures", 11.4 / 15, medium));
+  pics.push(fishPic("quadrillage.jpeg", "quadrillage vrac", 10.3 / 15, medium));
+  pics.push(fishPic("coin_table2.jpeg", "coin de table", 10.4 / 15, medium));
+  pics.push(fishPic("coin_table3.jpeg", "coin de table", 14.4 / 15, medium));
+  pics.push(fishPic("coin_table4.jpeg", "coin table sale", 12.2 / 15, medium));
+  pics.push(fishPic("coin_table5.jpeg", "coin de table", 7.7 / 15, medium));
+
+  // Hard pictures (ok if not detected)
+  pics.push(fishPic("95ch115.sep.jpg", "paysage recadré", 13.8 / 15, hard));
+  pics.push(fishPic("annecy IV43-2.jpg", "ombres fortes", 12.7 / 14.3, hard));
+  pics.push(fishPic("COR2_42cm.jpg", "lignes parasites", 11.1 / 15, hard));
+  pics.push(fishPic("95ch43.sep.jpg", "paysage recadré 1", 14.7 / 15, hard));
+  pics.push(fishPic("b99in357.jpg", "sur fond bleu 1", 8.3 / 15, hard));
+  pics.push(fishPic("ch951623.rep.jpg", "sur règle 1", 14 / 15, hard));
+  pics.push(fishPic("ch951688.rep.jpg", "sur règle 2", 13.7 / 15, hard));
+  pics.push(fishPic("DSC_0739.jpg", "sur règle 3", 11.5 / 15, hard));
+  pics.push(fishPic("DSC_0746.jpg", "sur règle 4", 12 / 15, hard));
+  pics.push(fishPic("IMG_20181004.jpg", "étiquette", 11.5 / 15, hard));
+  pics.push(fishPic("DSCN1714.jpg", "sur lattes", 9.6 / 15, hard));
+  pics.push(fishPic("WP_20151001_065.jpg", "correcte", 7.2 / 15, hard));
+  pics.push(fishPic("coin_table.jpeg", "coin de table", 11 / 15, hard));
+  pics.push(fishPic("fond_bateau_10.jpeg", "fond tâcheté", 7 / 15, hard));
+  pics.push(fishPic("DSC_0785.jpg", "sur règle 5", 10.6 / 15, hard));
+  pics.push(fishPic("DSCN1246.jpg", "dans boîte 2", 8.3 / 15, hard));
+  pics.push(fishPic("DSCN1244.jpg", "dans boîte 1", 9.6 / 14.3, hard));
+  pics.push(fishPic("DSCN1246.jpg", "dans boîte 2", 8.3 / 15, hard));
+  pics.push(fishPic("GM_3469.jpg", "dans boîte 3", 13.8 / 15, hard));
+  pics.push(fishPic("IMG_2547 (2).jpg", "dans boîte 4", 8.6 / 15, hard));
+  pics.push(fishPic("fond_serviette.jpeg", "fond serviette", 12.4 / 15, hard));
+  pics.push(fishPic("b99in406.jpg", "avec étiquette collée", 13.9 / 15, hard));
+  pics.push(fishPic("ombres_portees.jpeg", "ombres portées", 10.9 / 15, hard));
+  pics.push(fishPic("fond_bateau_2.jpeg", "fond avec cadenas", 9.5 / 15, hard));
+  pics.push(fishPic("fond_bateau_3.jpeg", "ombres et objets", 10.6 / 15, hard));
+  pics.push(fishPic("sur_fond_gradué.jpeg", "fond gradué", 10.5 / 15, hard));
+  pics.push(fishPic("sur_fond_gradué2.jpeg", "sur fond gradué", 11 / 15, hard));
+  pics.push(fishPic("boite.jpeg", "dans boite 8", 6.3 / 15, hard));
+  pics.push(fishPic("plaque.jpeg", "sur plaque", 8.2 / 15, hard));
+  pics.push(fishPic("plaque2.jpeg", "sur plaque 2", 10.2 / 15, hard));
+  pics.push(fishPic("herbe.jpeg", "dans herbe", 4 / 15, hard));
+  pics.push(fishPic("fond_bateau_coin_1.jpeg", "avec coin", 12.3 / 15, hard));
+  pics.push(fishPic("fond_bateau_7.jpeg", "fond avec vrac", 9.9 / 15, hard));
+  pics.push(fishPic("fond_bateau_9.jpeg", "vrac/rainures", 13.8 / 15, hard));
 
   return pics;
 }
 
-function markerPic(imgPath, comment, expectedFishOnImageRatio) {
+function markerPic(imgPath, comment, expectedFishOnImageRatio, picQuality) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "markers/" + imgPath,
     true,
     expectedFishOnImageRatio,
-    comment
+    comment,
+    picQuality
   );
 }
 
-function fishPic(imgPath, comment, expectedFishOnImageRatio) {
+function fishPic(imgPath, comment, expectedFishOnImageRatio, picQuality) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "fishes/test_" + imgPath,
     false,
     expectedFishOnImageRatio,
-    comment
+    comment,
+    picQuality
   );
 }

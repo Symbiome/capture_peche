@@ -29,7 +29,7 @@ export class OpenCVDetectionConfig {
   minSizeRatio = 0.3;
 
   /* The maximum % of the screen each shape except marker should cover - float between 0 & 1*/
-  maxSizeRatio = 0.95;
+  maxSizeRatio = 1.0;
 
   /* The minimum % of the marker should cover - float between 0 & 1*/
   markerMinSizeRatio = 0.15;

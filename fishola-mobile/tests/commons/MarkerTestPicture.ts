@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 /**
  * Represents a picture to test.
  */
@@ -28,18 +27,21 @@ export default class MarkerTestPicture {
   shouldHaveMarker: boolean;
   expectedFishOnImageRatio: number;
   comment: string;
+  quality: number;
 
   constructor(
     markerPath: string,
     filePath: string,
     shouldHaveMarker: boolean,
     expectedFishMeasure: number,
-    comment: string
+    comment: string,
+    quality: number
   ) {
     this.markerPath = markerPath;
     this.filePath = filePath;
     this.shouldHaveMarker = shouldHaveMarker;
     this.expectedFishOnImageRatio = expectedFishMeasure;
     this.comment = comment;
+    this.quality = quality;
   }
 }
