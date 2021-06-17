@@ -245,45 +245,100 @@ function failWithGrade(testResult, failureMessage) {
 
 function getPicturesToTest() {
   const pics = [];
+  // Home made pics (optimals)
   pics.push(markerPic("marker_1.jpg", "optimale", 6.8 / 15));
-  pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15));
-  pics.push(fishPic("P1010100.JPG", "correcte", 0.1));
-  pics.push(fishPic("pisci_Bourget 2013 054.jpg", "correcte", 0.1));
-  pics.push(fishPic("WP_20151001_064.jpg", "correcte", 0.1));
-  pics.push(fishPic("WP_20151001_065.jpg", "correcte", 0.1));
-  pics.push(fishPic("COR1_42cm.jpg", "correcte", 0.1));
-  pics.push(fishPic("COR_ 42cm.jpg", "correcte", 0.1));
 
+  // Pictures from scientists
+  pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15));
+  pics.push(fishPic("P1010100.jpg", "correcte", 13 / 15));
+  pics.push(fishPic("pisci_Bourget 2013 054.jpg", "correcte", 12 / 15));
+  pics.push(fishPic("WP_20151001_064.jpg", "correcte", 9.4 / 15));
+  pics.push(fishPic("COR1_42cm.jpg", "correcte", 13 / 15));
+  pics.push(fishPic("COR_ 42cm.jpg", "correcte", 13.5 / 15));
   pics.push(fishPic("COR1_36cm.jpg", "avec queue ton sur ton", 11.3 / 15));
-  pics.push(fishPic("IMG_2539.jpg", "avec rainures de bois", 8.6 / 15));
-  pics.push(fishPic("annecy IV43-2.jpg", "avec ombres fortes", 0.1));
-  pics.push(fishPic("P1010081.JPG", "poisson-chat", 0.1));
-  pics.push(fishPic("DSCN1714.JPG", "sur lattes", 0.1));
-  pics.push(fishPic("b99in406.jpg", "avec étiquette collée", 0.1));
+  pics.push(fishPic("P1010081.jpg", "poisson-chat", 10.6 / 14.3));
+  pics.push(fishPic("b99in406.jpg", "avec étiquette collée", 13.9 / 15));
   pics.push(fishPic("IMG_20210412.jpg", "avec lignes parasites 1", 13.8 / 15));
-  pics.push(fishPic("COR2_42cm.jpg", "avec lignes parasites 2", 0.1));
-  pics.push(fishPic("95ch43.sep.jpg", "paysage recadré 1", 0.1));
-  pics.push(fishPic("95ch67.sep.jpg", "paysage recadré 2", 0.1));
-  pics.push(fishPic("95ch115.sep.jpg", "paysage recadré 3", 0.1));
-  pics.push(fishPic("b99in357.jpg", "sur fond bleu 1", 0.1));
-  pics.push(fishPic("b99in360.jpg", "sur fond bleu 2", 0.1));
-  pics.push(fishPic("b99in365.jpg", "sur fond bleu 3", 0.1));
-  pics.push(fishPic("8b99in367.jpg", "sur fond bleu 4", 0.1));
-  pics.push(fishPic("b99in416.jpg", "autres éléments sur image 1", 0.1));
-  pics.push(fishPic("b99in422.jpg", "autres éléments sur image 2", 0.1));
-  pics.push(fishPic("ch951623.rep.jpg", "sur règle 1", 0.1));
-  pics.push(fishPic("ch951688.rep.jpg", "sur règle 2", 0.1));
-  pics.push(fishPic("DSC_0739.JPG", "sur règle 3", 0.1));
-  pics.push(fishPic("DSC_0746.JPG", "sur règle 4", 0.1));
-  pics.push(fishPic("DSC_0785.JPG", "sur règle 5", 0.1));
-  pics.push(fishPic("ch951762.rep.jpg", "tâcheté", 0.1));
-  pics.push(fishPic("DSCN1244.JPG", "dans boîte 1", 0.1));
-  pics.push(fishPic("DSCN1246.JPG", "dans boîte 2", 0.1));
-  pics.push(fishPic("GM_3469.JPG", "dans boîte 3", 0.1));
-  pics.push(fishPic("IMG_2547 (2).JPG", "dans boîte 4", 0.1));
-  pics.push(fishPic("IMG_2548 (2).JPG", "dans boîte 5", 0.1));
-  pics.push(fishPic("IMG_20181004_114926.jpg", "dans boîte 7", 0.1));
-  pics.push(fishPic("IMG_20181004_114934.jpg", "dans boîte 8", 0.1));
+  pics.push(fishPic("95ch115.sep.jpg", "paysage recadré 3", 13.8 / 15));
+  pics.push(fishPic("b99in360.jpg", "sur fond bleu 2", 13.5 / 15));
+  pics.push(fishPic("b99in365.jpg", "sur fond bleu 3", 12.3 / 15));
+  pics.push(fishPic("8b99in367.jpg", "sur fond bleu 4", 12 / 15));
+  pics.push(fishPic("b99in416.jpg", "autres éléments sur image 1", 9.6 / 15));
+  pics.push(fishPic("b99in422.jpg", "autres éléments sur image 2", 10.4 / 15));
+  pics.push(fishPic("DSC_0739.jpg", "sur règle 3", 11.5 / 15));
+  pics.push(fishPic("DSC_0746.jpg", "sur règle 4", 12 / 15));
+  pics.push(fishPic("DSC_0785.jpg", "sur règle 5", 10.6 / 15));
+  pics.push(fishPic("ch951762.rep.jpg", "tâcheté", 14.5 / 15));
+  pics.push(fishPic("DSCN1244.jpg", "dans boîte 1", 9.6 / 14.3));
+  pics.push(fishPic("DSCN1246.jpg", "dans boîte 2", 8.3 / 15));
+  pics.push(fishPic("GM_3469.jpg", "dans boîte 3", 13.8 / 15));
+  pics.push(fishPic("IMG_2547 (2).jpg", "dans boîte 4", 8.6 / 15));
+  pics.push(fishPic("IMG_2548 (2).jpg", "dans boîte 5", 12.5 / 15));
+  pics.push(fishPic("IMG_20181004_114926.jpg", "dans boîte 7", 11.6 / 15));
+  pics.push(fishPic("IMG_2539.jpg", "avec rainures de bois", 8.6 / 15));
+
+  // Pictures from Fishola users
+  pics.push(fishPic("fond_bateau_1.jpeg", "fond bateau 1", 14.4 / 15));
+  pics.push(fishPic("fond_serviette_1.jpeg", "fond serviette", 12.4 / 15));
+  pics.push(fishPic("ombres_portees.jpeg", "ombres portées", 10.9 / 15));
+  pics.push(
+    fishPic("fond_bateau_2.jpeg", "fond bateau avec cadenas", 9.5 / 15)
+  );
+  pics.push(
+    fishPic("fond_bateau_3.jpeg", "fond bateau avec ombres", 10.6 / 15)
+  );
+  pics.push(fishPic("fond_bateau_4.jpeg", "fond bateau", 12.1 / 15));
+  pics.push(fishPic("fond_bateau_5.jpeg", "fond bateau", 14.5 / 15));
+  pics.push(fishPic("fond_bateau_6.jpeg", "fond bateau", 11.2 / 15));
+  pics.push(fishPic("fond_bateau_7.jpeg", "fond bateau avec vrac", 9.9 / 15));
+  pics.push(fishPic("fond_bateau_8.jpeg", "fond bateau avec vrac", 11.7 / 15));
+  pics.push(
+    fishPic("fond_bateau_9.jpeg", "fond bateau avec rainures", 13.8 / 15)
+  );
+  pics.push(
+    fishPic("fond_bateau_11.jpeg", "fond bateau tâches de sang", 10.4 / 15)
+  );
+  pics.push(
+    fishPic("fond_bateau_12.jpeg", "fond bateau avec rainures", 13.3 / 15)
+  );
+  pics.push(
+    fishPic("fond_bateau_13.jpeg", "fond tâcheté poisson tronqué", 13.4 / 15)
+  );
+  pics.push(
+    fishPic("fond_bateau_14.jpeg", "fond bateau avec ombres", 13.7 / 15)
+  );
+  pics.push(fishPic("fond_bateau_15.jpeg", "fond bateau quadrillé", 13.5 / 15));
+  pics.push(fishPic("fond_bateau_16.jpeg", "fond bateau en coin", 11.4 / 15));
+  pics.push(fishPic("fond_bateau_17.jpeg", "fond bateau quadrillé", 10.1 / 15));
+  pics.push(fishPic("fond_bateau_18.jpeg", "fond bateau quadrillé", 10.3 / 15));
+  pics.push(fishPic("plaque.jpeg", "sur plaque", 8.2 / 15));
+  pics.push(fishPic("plaque2.jpeg", "sur plaque 2", 10.2 / 15));
+  pics.push(fishPic("herbe.jpeg", "dans herbe", 4 / 15));
+  pics.push(
+    fishPic("fond_bateau_coin_1.jpeg", "fond bateau avec coin", 12.3 / 15)
+  );
+  pics.push(fishPic("coin_table2.jpeg", "coin de table", 10.4 / 15));
+  pics.push(fishPic("coin_table3.jpeg", "coin de table", 14.4 / 15));
+  pics.push(fishPic("coin_table4.jpeg", "coin de table sale", 12.2 / 15));
+  pics.push(fishPic("coin_table5.jpeg", "coin de table", 7.7 / 15));
+  pics.push(fishPic("sur_fond_gradué.jpeg", "sur fond gradué", 10.5 / 15));
+  pics.push(fishPic("sur_fond_gradué2.jpeg", "sur fond gradué", 11 / 15));
+  pics.push(fishPic("boite.jpeg", "dans boite 8", 6.3 / 15));
+
+  // Not detected yet
+  pics.push(fishPic("annecy IV43-2.jpg", "avec ombres fortes", 12.7 / 14.3));
+  pics.push(fishPic("COR2_42cm.jpg", "avec lignes parasites 2", 11.1 / 15));
+  pics.push(fishPic("95ch43.sep.jpg", "paysage recadré 1", 14.7 / 15));
+  pics.push(fishPic("b99in357.jpg", "sur fond bleu 1", 8.3 / 15));
+  pics.push(fishPic("ch951623.rep.jpg", "sur règle 1", 14 / 15));
+  pics.push(fishPic("ch951688.rep.jpg", "sur règle 2", 13.7 / 15));
+  pics.push(
+    fishPic("IMG_20181004_114934.jpg", "avec étiquette parasite", 11.5 / 15)
+  );
+  pics.push(fishPic("DSCN1714.jpg", "sur lattes", 9.6 / 15));
+  pics.push(fishPic("WP_20151001_065.jpg", "correcte", 7.2 / 15));
+  pics.push(fishPic("coin_table.jpeg", "coin de table", 11 / 15));
+  pics.push(fishPic("fond_bateau_10.jpeg", "fond bateau tâcheté", 7 / 15));
 
   return pics;
 }
