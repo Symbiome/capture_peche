@@ -20,7 +20,7 @@
  */
 export class OpenCVDetectionConfig {
   /* Picture to analyse will first be resized to this given size (for performance considerations) - int in px */
-  resizeSize = 250;
+  resizeSize = 300;
 
   /*  The marker size "in real world" - float (in cm) */
   markerSizeInMm = 133;
@@ -29,7 +29,7 @@ export class OpenCVDetectionConfig {
   minSizeRatio = 0.3;
 
   /* The maximum % of the screen each shape except marker should cover - float between 0 & 1*/
-  maxSizeRatio = 1.0;
+  maxSizeRatio = 0.999;
 
   /* The minimum % of the marker should cover - float between 0 & 1*/
   markerMinSizeRatio = 0.15;
@@ -38,7 +38,7 @@ export class OpenCVDetectionConfig {
   minWidthLengthRatio = 0.1;
 
   /* The maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1*/
-  maxWidthLengthRatio = 0.8;
+  maxWidthLengthRatio = 0.6;
 
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
