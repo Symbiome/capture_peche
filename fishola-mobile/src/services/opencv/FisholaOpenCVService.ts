@@ -45,7 +45,7 @@ export default class FisholaOpenCVService {
    */
   async calculateAndDrawFishSizes(
     imgElement: HTMLElement,
-    markerElement: HTMLElement | null,
+    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ): Promise<Array<DetectedShape>> {
     // Step 1: load open cv and prepare output image
@@ -81,13 +81,14 @@ export default class FisholaOpenCVService {
   calculateFishSizes(
     cv: any,
     imgElement: HTMLElement,
-    markerElement: HTMLElement | null,
+    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ): Array<DetectedShape> {
     // Step 1: find all closed shapes withing the picture
     const closedShapes = this.detectClosedShapesAndMarker(
       cv,
       imgElement,
+      markerElement,
       config
     );
 
@@ -127,6 +128,7 @@ export default class FisholaOpenCVService {
   detectClosedShapesAndMarker(
     cv: any,
     imgElement: HTMLElement,
+    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ): Array<DetectedShape> {
     // Step 1: load the image & resize it
@@ -200,7 +202,13 @@ export default class FisholaOpenCVService {
         Math.min(rotatedRect.size.width, rotatedRect.size.height),
         vertices
       );
-      detectedShape.isMarker = this.isMarker(cv, src, detectedShape, config);
+      detectedShape.isMarker = this.isMarker(
+        cv,
+        src,
+        detectedShape,
+        markerElement,
+        config
+      );
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
     }
@@ -253,9 +261,10 @@ export default class FisholaOpenCVService {
    * @param markerCandidate the sahpe which is potentially a marker
    */
   isMarker(
-    _cv: any,
+    cv: any,
     resizedPicture: any,
     markerCandidate: DetectedShape,
+    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ) {
     // Shape bust occuppy a certain % of the full image
@@ -269,8 +278,15 @@ export default class FisholaOpenCVService {
       );
       // Only square-like shapes can be potential markers
       if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
-        // TODO perform actual marker recognition
-        return true;
+        // perform actual marker recognition
+        return this.isMarkerDetected(
+          cv,
+          resizedPicture,
+          markerElement,
+          markerCandidate.leftX,
+          markerCandidate.topY,
+          markerCandidate.width
+        );
       }
     }
     return false;
@@ -281,23 +297,30 @@ export default class FisholaOpenCVService {
    * @param imgElement
    * @param imgMarker
    */
-  async detectMarker(
-    imgElement: HTMLElement,
-    imgMarker: HTMLElement,
+  isMarkerDetected(
+    cv: any,
+    resizedPicture: any,
+    markerElement: HTMLElement,
+    candidateX: number,
+    candidateY: number,
     resizeSize: number
-  ): Promise<MarkerDetectionResult> {
-    await this.loadOpenCVIfNeeded();
-    const cv = this.cv;
-    const src = this.readAndResize(cv, imgElement, resizeSize);
-    const marker = this.readAndResize(cv, imgMarker, resizeSize / 2);
-    const dst = this.readAndResize(cv, imgElement, resizeSize);
+  ): boolean {
+    console.error(
+      "* is (" +
+        Math.round(candidateX) +
+        "," +
+        Math.round(candidateY) +
+        ") a marker of " +
+        resizeSize +
+        "px ?"
+    );
+    const marker = this.readAndResize(cv, markerElement, resizeSize);
 
     // Step 2: match template
     const matchedDst = new cv.Mat();
     const mask = new cv.Mat();
-    const match_method = cv.TM_CCOEFF_NORMED; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
-    cv.matchTemplate(src, marker, matchedDst, match_method, mask);
-    console.log("=====> matchedDst ", matchedDst);
+    const match_method = cv.TM_COEFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
+    cv.matchTemplate(resizedPicture, marker, matchedDst, match_method, mask);
     const result = cv.minMaxLoc(matchedDst, mask);
     // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
     let matchedPoint = result.maxLoc;
@@ -306,18 +329,15 @@ export default class FisholaOpenCVService {
     }
 
     const color = new cv.Scalar(255, 0, 0, 255);
-    console.log("=====> result ", result);
+    console.log("=====> ", matchedPoint);
     const matchedPointEnd = new cv.Point(
       matchedPoint.x + marker.cols,
       matchedPoint.y + marker.rows
     );
 
-    cv.rectangle(dst, matchedPoint, matchedPointEnd, color, 2, cv.LINE_8, 0);
-    cv.imshow("canvasOutput3", dst);
-
-    src.delete();
-    dst.delete();
-    return new MarkerDetectionResult(true, 0);
+    console.log("=====> ", matchedPointEnd);
+    marker.delete();
+    return result;
   }
 
   /**

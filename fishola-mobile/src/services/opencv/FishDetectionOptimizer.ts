@@ -29,13 +29,13 @@ import FisholaOpenCVService from "./FisholaOpenCVService";
 export class FishDetectionOptimizer {
   private cv: any;
   private imgElement: HTMLElement;
-  private markerElement: HTMLElement | null;
+  private markerElement: HTMLElement;
   private config: OpenCVDetectionConfig;
 
   constructor(
     cv: any,
     imgElement: HTMLElement,
-    markerElement: HTMLElement | null,
+    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ) {
     this.cv = cv;

@@ -221,7 +221,7 @@ export default class OpenCVSizeComputation extends Vue {
     const imageElement = document.getElementById("sourcePicture");
     const markerElement = document.getElementById("marker");
     this.calculating = true;
-    if (imageElement) {
+    if (imageElement && markerElement) {
       const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
         imageElement,
         markerElement,
