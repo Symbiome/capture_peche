@@ -65,7 +65,7 @@ describe("Mesures de poissons", () => {
         ")",
       () => {
         // Go to fish measurement page
-        cy.visit("/#/fish-measure-test/measure");
+        cy.visit("/#/fish-measure-test");
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
@@ -280,7 +280,7 @@ function getPicturesToTest() {
   // Optimal pictures
   pics.push(fishWithMarkerPic("marker_1.jpg", "parfaite", 6.8 / 15, optimal));
   pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15, optimal));
-  /*
+  
   pics.push(fishPic("P1010100.jpg", "correcte", 13 / 15, optimal));
   pics.push(fishPic("pisci_Bourget 2013.jpg", "correcte", 12 / 15, optimal));
 
@@ -354,7 +354,7 @@ function getPicturesToTest() {
   pics.push(fishPic("herbe.jpeg", "dans herbe", 4 / 15, hard));
   pics.push(fishPic("fond_bateau_coin_1.jpeg", "avec coin", 12.3 / 15, hard));
   pics.push(fishPic("fond_bateau_7.jpeg", "fond avec vrac", 9.9 / 15, hard));
-  pics.push(fishPic("fond_bateau_9.jpeg", "vrac/rainures", 13.8 / 15, hard));*/
+  pics.push(fishPic("fond_bateau_9.jpeg", "vrac/rainures", 13.8 / 15, hard));
 
   return pics;
 }

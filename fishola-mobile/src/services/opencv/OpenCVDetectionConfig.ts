@@ -40,6 +40,9 @@ export class OpenCVDetectionConfig {
   /* The maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1*/
   maxWidthLengthRatio = 0.6;
 
+  /** Default url for marker src */
+  defaultMarkerSrc = "/img/default_marker.jpg"
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 }

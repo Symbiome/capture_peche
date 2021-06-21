@@ -25,13 +25,7 @@
         <div class="pane-content large rounded">
           <div class="measure-tests">
             <h4 class="title">
-              OpenCV -
-              <span v-if="detectMarker">Détection de marqueur</span>
-              <span v-else>Mesure automatique de poisson</span>
-              <button @click="detectMarker = !detectMarker">
-                <span v-if="detectMarker">Mesures</span>
-                <span v-else>Marqueur</span>
-              </button>
+              OpenCV - Mesure automatique de poisson
 
               <input
                 type="file"
@@ -51,13 +45,13 @@
             </div>
 
             <div class="result" v-show="calculated && !calculating">
-              <div class="result-item" v-if="!detectMarker">
+              <div class="result-item">
                 <canvas id="canvasOutput1"></canvas><br />
                 <caption>
                   Original
                 </caption>
               </div>
-              <div class="result-item" v-if="!detectMarker">
+              <div class="result-item">
                 <canvas id="canvasOutput2"></canvas><br />
                 <caption>
                   Traité
@@ -97,8 +91,24 @@
                   @change="launchSizeComputation"
                   v-model.number="config.resizeSize"
                 /><br />
+                <div class="caption">
+                  Marqueur
+                  <input
+                    type="file"
+                    id="markerFile"
+                    name="file"
+                    @change="changeMarkerImage"
+                  />
+                </div>
+                <img
+                  style="width:80px;height:80px;"
+                  id="marker"
+                  alt=""
+                  @load="onNewMarkerSourceLoad"
+                  :src="markerSourceSRC"
+                />
               </div>
-              <div v-if="!detectMarker" class="params-item">
+              <div class="params-item">
                 % d'occupation minimal (0 à 1)
                 <input
                   type="number"
@@ -139,31 +149,6 @@
                   v-model.number="config.maxWidthLengthRatio"
                 />
               </div>
-              <div v-else class="params-item">
-                Resize image size
-                <input
-                  type="number"
-                  style="width:100px"
-                  id="resizeSize"
-                  @change="launchSizeComputation"
-                  v-model.number="config.resizeSize"
-                />
-                <div class="caption">
-                  Marqueur
-                  <input
-                    type="file"
-                    id="markerFile"
-                    name="file"
-                    @change="changeMarkerImage"
-                  />
-                </div>
-                <img
-                  id="marker"
-                  alt=""
-                  @load="onNewMarkerSourceLoad"
-                  :src="markerSourceSRC"
-                />
-              </div>
             </div>
             <div id="status">
               <span v-if="!openCVLoaded">OpenCV.js is loading...</span>
@@ -184,12 +169,9 @@ import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 
 @Component({})
 export default class OpenCVSizeComputation extends Vue {
-  @Prop({ default: "measure" }) mode: string;
   imageSourceSRC = "";
-  markerSourceSRC = "/tests/unit/assets/markers/marker.jpg";
+  markerSourceSRC = "";
   config: OpenCVDetectionConfig = new OpenCVDetectionConfig();
-
-  detectMarker = true;
   resultText = "";
 
   openCVLoaded = false;
@@ -197,7 +179,7 @@ export default class OpenCVSizeComputation extends Vue {
   calculating = false;
 
   mounted(): void {
-    this.detectMarker = this.mode == "marker";
+    this.markerSourceSRC = this.config.defaultMarkerSrc;
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
@@ -237,66 +219,55 @@ export default class OpenCVSizeComputation extends Vue {
 
   async launchSizeComputation(): Promise<void> {
     const imageElement = document.getElementById("sourcePicture");
+    const markerElement = document.getElementById("marker");
     this.calculating = true;
     if (imageElement) {
-      if (this.detectMarker) {
-        const markerElement = document.getElementById("marker");
-        if (markerElement) {
-          await FisholaOpenCVService.INSTANCE.detectMarker(
-            imageElement,
-            markerElement,
-            this.config.resizeSize
-          );
-          this.calculated = true;
-          this.calculating = false;
-        }
-      } else {
-        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-          imageElement,
-          this.config
-        );
-        this.calculated = true;
-        this.calculating = false;
+      const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+        imageElement,
+        markerElement,
+        this.config
+      );
+      this.calculated = true;
+      this.calculating = false;
 
-        const markers = detectedShapes.filter(
-          (shape: DetectedShape) => shape.isMarker
-        ).length;
-        const ignored = detectedShapes.filter(
-          (shape: DetectedShape) => !shape.isMarker && !shape.isFish
-        ).length;
-        const notIgnored = detectedShapes.filter(
-          (shape: DetectedShape) => shape.isFish || shape.isMarker
-        );
-        let result =
-          ": <span id='shapesNumber'>" +
-          (detectedShapes.length - ignored) +
-          "</span> formes (" +
-          markers +
-          " marqueurs, " +
-          (notIgnored.length - markers) +
-          " poissons, " +
-          ignored +
-          " ignorées)";
-        notIgnored.forEach((shape: DetectedShape) => {
-          result += "<br/>- ";
-          if (shape.isFish) {
-            result += " Détecté : Poisson ";
-          } else {
-            result += " Détecté : Marqueur ";
-          }
-          result +=
-            shape.calculatedLenght +
-            "mm (" +
-            Math.round(shape.width) +
-            "px * " +
-            Math.round(shape.height) +
-            " px) - left " +
-            Math.round(shape.leftX) +
-            " top " +
-            Math.round(shape.topY);
-        });
-        this.resultText = result;
-      }
+      const markers = detectedShapes.filter(
+        (shape: DetectedShape) => shape.isMarker
+      ).length;
+      const ignored = detectedShapes.filter(
+        (shape: DetectedShape) => !shape.isMarker && !shape.isFish
+      ).length;
+      const notIgnored = detectedShapes.filter(
+        (shape: DetectedShape) => shape.isFish || shape.isMarker
+      );
+      let result =
+        ": <span id='shapesNumber'>" +
+        (detectedShapes.length - ignored) +
+        "</span> formes (" +
+        markers +
+        " marqueurs, " +
+        (notIgnored.length - markers) +
+        " poissons, " +
+        ignored +
+        " ignorées)";
+      notIgnored.forEach((shape: DetectedShape) => {
+        result += "<br/>- ";
+        if (shape.isFish) {
+          result += " Détecté : Poisson ";
+        } else {
+          result += " Détecté : Marqueur ";
+        }
+        result +=
+          shape.calculatedLenght +
+          "mm (" +
+          Math.round(shape.width) +
+          "px * " +
+          Math.round(shape.height) +
+          " px) - left " +
+          Math.round(shape.leftX) +
+          " top " +
+          Math.round(shape.topY);
+      });
+      this.resultText = result;
     }
   }
 }

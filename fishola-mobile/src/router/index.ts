@@ -205,9 +205,8 @@ const routes = [
     component: VerifyAccount,
   },
   {
-    path: "/fish-measure-test/:mode",
+    path: "/fish-measure-test",
     name: "fish-measure-test",
-    props: true,
     meta: {
       public: true,
     },

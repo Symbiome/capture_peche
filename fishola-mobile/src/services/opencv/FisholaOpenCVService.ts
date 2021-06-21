@@ -40,10 +40,12 @@ export default class FisholaOpenCVService {
    * - Evaluates the other shapes size according to marker size
    * - Draws result in a picture
    * @param imgElement the <img> in wich shapes should be searched
+   * @param imgElement the <img> holding the searcher marker
    * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    */
   async calculateAndDrawFishSizes(
     imgElement: HTMLElement,
+    markerElement: HTMLElement | null,
     config: OpenCVDetectionConfig
   ): Promise<Array<DetectedShape>> {
     // Step 1: load open cv and prepare output image
@@ -55,11 +57,12 @@ export default class FisholaOpenCVService {
     const fishDetectionOptimizer = new FishDetectionOptimizer(
       cv,
       imgElement,
+      markerElement,
       config
     );
     const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes();
 
-    // Step 3: draw result in output pictures
+    // Step 4: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
       OpenCVUtils.drawShape(cv, output, shape, config.drawDebugCanvas);
     });
@@ -78,6 +81,7 @@ export default class FisholaOpenCVService {
   calculateFishSizes(
     cv: any,
     imgElement: HTMLElement,
+    markerElement: HTMLElement | null,
     config: OpenCVDetectionConfig
   ): Array<DetectedShape> {
     // Step 1: find all closed shapes withing the picture

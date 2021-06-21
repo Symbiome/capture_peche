@@ -29,11 +29,18 @@ import FisholaOpenCVService from "./FisholaOpenCVService";
 export class FishDetectionOptimizer {
   private cv: any;
   private imgElement: HTMLElement;
+  private markerElement: HTMLElement | null;
   private config: OpenCVDetectionConfig;
 
-  constructor(cv: any, imgElement: HTMLElement, config: OpenCVDetectionConfig) {
+  constructor(
+    cv: any,
+    imgElement: HTMLElement,
+    markerElement: HTMLElement | null,
+    config: OpenCVDetectionConfig
+  ) {
     this.cv = cv;
     this.imgElement = imgElement;
+    this.markerElement = markerElement;
     this.config = config;
   }
 
@@ -48,6 +55,7 @@ export class FishDetectionOptimizer {
     const markerAndPotentialFishes = FisholaOpenCVService.INSTANCE.calculateFishSizes(
       this.cv,
       this.imgElement,
+      this.markerElement,
       this.config
     );
     let biggestFishSize: number = 0;
@@ -75,8 +83,8 @@ export class FishDetectionOptimizer {
       });
       return markerAndPotentialFishes;
     } else {
-        // We did not detected any fish. Try to increase picture resolute and try again
-        // TODO
+      // We did not detected any fish. Try to increase picture resolute and try again
+      // TODO
     }
 
     return markerAndPotentialFishes;

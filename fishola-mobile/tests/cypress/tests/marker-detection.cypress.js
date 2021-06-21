@@ -37,7 +37,7 @@ describe("Détection de marqueurs", () => {
       "Photo " + testPicture.comment + '"(' + testPicture.filePath + ")",
       () => {
         // Go to fish measurement page
-        cy.visit("/#/fish-measure-test/marker");
+        cy.visit("/#/fish-measure-test");
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
@@ -53,16 +53,7 @@ describe("Détection de marqueurs", () => {
         cy.get("span[id=shapesNumber]")
           .invoke("text")
           .then((shapesNumber) => {
-            if (parseInt(shapesNumber) !== expectedMarkerNumber) {
-              failWithGrade(
-                testResults[i],
-                "Mauvais nombre de marqueurs détectés (" +
-                  shapesNumber +
-                  " au lieu de " +
-                  expectedMarkerNumber +
-                  ")"
-              );
-            }
+            assert.equal(parseInt(shapesNumber), expectedMarkerNumber);
           });
       }
     );
@@ -71,7 +62,6 @@ describe("Détection de marqueurs", () => {
 
 function getMarkerPicturesToTest() {
   const markerPics = [];
-  markerPics.push(markerPic("marker_1.jpg", 1));
   markerPics.push(markerPic("marker_2.jpg", 2));
   markerPics.push(markerPic("marker_3.jpg", 3));
   return markerPics;
