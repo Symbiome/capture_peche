@@ -22,34 +22,57 @@
 /**
  * Test suite related to automatic marker detection from picture with opencv
  */
-const defaultMarkerPath = "markers/marker.jpg";
-import MarkerTestPicture from "../../commons/MarkerTestPicture";
+import { markerPic } from "./cypress-test-utils";
 
-describe("Marker detection tests", () => {
+describe("Détection de marqueurs", () => {
+  const testResults = [];
+
   // Get Test Data
-  const markerTestPictures = getMarkerPicturesToTest();
+  const testPictures = getMarkerPicturesToTest();
 
-  for (let i = 0; i < markerTestPictures.length; i++) {
-    const markerTestPicture = markerTestPictures[i];
+  for (let i = 0; i < testPictures.length; i++) {
+    const testPicture = testPictures[i];
 
-    // One test per picture to test
-    it("Marker " + markerTestPicture.filePath, () => {
-      // Go to fish measurement page
-      cy.visit("/#/fish-measure-test/marker");
-      // Make sure OpenCV is ready
-      cy.get("div[id=status").contains("OpenCV.js is ready");
+    it(
+      "Photo " + testPicture.comment + '"(' + testPicture.filePath + ")",
+      () => {
+        // Go to fish measurement page
+        cy.visit("/#/fish-measure-test/marker");
+        // Make sure OpenCV is ready
+        cy.get("div[id=status").contains("OpenCV.js is ready");
 
-      // Attach marker file
-      cy.get("[id=markerFile]").attachFile(markerTestPicture.markerPath);
-      cy.get("[id=fileInput]").attachFile(markerTestPicture.filePath);
+        // Attach picture file
+        cy.get("[id=markerFile]").attachFile(testPicture.markerPath);
+        cy.get("[id=fileInput]").attachFile(testPicture.filePath);
 
-      // Wait for result
-      cy.get("div[id=calculating]").contains("Calcul terminé");
-    });
+        // Wait for result
+        cy.get("div[id=calculating]").contains("Calcul terminé");
+
+        // Test if we detected fish and marker as expected
+        let expectedMarkerNumber = 1;
+        cy.get("span[id=shapesNumber]")
+          .invoke("text")
+          .then((shapesNumber) => {
+            if (parseInt(shapesNumber) !== expectedMarkerNumber) {
+              failWithGrade(
+                testResults[i],
+                "Mauvais nombre de marqueurs détectés (" +
+                  shapesNumber +
+                  " au lieu de " +
+                  expectedMarkerNumber +
+                  ")"
+              );
+            }
+          });
+      }
+    );
   }
 });
 
 function getMarkerPicturesToTest() {
-  const markerPics = [];  
+  const markerPics = [];
+  markerPics.push(markerPic("marker_1.jpg", 1));
+  markerPics.push(markerPic("marker_2.jpg", 2));
+  markerPics.push(markerPic("marker_3.jpg", 3));
   return markerPics;
 }
