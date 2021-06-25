@@ -209,6 +209,7 @@ export default class FisholaOpenCVService {
         markerElement,
         config
       );
+      console.error("====>", detectedShape.leftX, detectedShape.topY);
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
     }
@@ -258,7 +259,7 @@ export default class FisholaOpenCVService {
    * @param cv the openCV instance
    * @param picture the picture in which the marker has been detected
    * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
-   * @param markerCandidate the sahpe which is potentially a marker
+   * @param markerCandidate the shape which is potentially a marker
    */
   isMarker(
     cv: any,
@@ -279,13 +280,11 @@ export default class FisholaOpenCVService {
       // Only square-like shapes can be potential markers
       if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
         // perform actual marker recognition
-        return this.isMarkerDetected(
+        return this.isMarkerCandidateAnActualMarker(
           cv,
           resizedPicture,
           markerElement,
-          markerCandidate.leftX,
-          markerCandidate.topY,
-          markerCandidate.width
+          markerCandidate
         );
       }
     }
@@ -293,51 +292,115 @@ export default class FisholaOpenCVService {
   }
 
   /**
-   * Detects if the given marker is inside the given picture
+   * Determines if the given marker candidate is actually a marker using template matching.
    * @param imgElement
    * @param imgMarker
    */
-  isMarkerDetected(
+  isMarkerCandidateAnActualMarker(
     cv: any,
     resizedPicture: any,
     markerElement: HTMLElement,
-    candidateX: number,
-    candidateY: number,
-    resizeSize: number
+    markerCandidate: DetectedShape
   ): boolean {
     console.error(
       "* is (" +
-        Math.round(candidateX) +
+        Math.round(markerCandidate.leftX) +
         "," +
-        Math.round(candidateY) +
+        Math.round(markerCandidate.topY) +
         ") a marker of " +
-        resizeSize +
+        Math.round(markerCandidate.width) +
         "px ?"
     );
-    const marker = this.readAndResize(cv, markerElement, resizeSize);
+    const marker = this.readAndResize(
+      cv,
+      markerElement,
+      Math.round(markerCandidate.width)
+    );
 
     // Step 2: match template
     const matchedDst = new cv.Mat();
     const mask = new cv.Mat();
-    const match_method = cv.TM_COEFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
-    cv.matchTemplate(resizedPicture, marker, matchedDst, match_method, mask);
-    const result = cv.minMaxLoc(matchedDst, mask);
+    const match_method = cv.TM_SQDIFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
+    cv.matchTemplate(resizedPicture, marker, matchedDst, match_method);
+    const result = cv.minMaxLoc(matchedDst);
     // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
     let matchedPoint = result.maxLoc;
+    let isAMarker = false;
     if (match_method == cv.TM_SQDIFF || match_method == cv.TM_SQDIFF_NORMED) {
       matchedPoint = result.minLoc;
     }
-
-    const color = new cv.Scalar(255, 0, 0, 255);
-    console.log("=====> ", matchedPoint);
     const matchedPointEnd = new cv.Point(
       matchedPoint.x + marker.cols,
       matchedPoint.y + marker.rows
     );
 
+    // If detected marker is close to marker candidate shape, then this is the marker
+    const MAX_ALLOWED_MARKER_POSITION_DIFF = markerCandidate.width / 10;
+    const diffX = Math.abs(matchedPoint.x - markerCandidate.leftX);
+    const diffY = Math.abs(matchedPoint.y - markerCandidate.topY);
+    const diffWidth =
+      Math.max(
+        matchedPointEnd.x - matchedPoint.x,
+        matchedPointEnd.y - matchedPoint.y
+      ) - markerCandidate.width;
+    if (
+      diffX < MAX_ALLOWED_MARKER_POSITION_DIFF &&
+      diffY < MAX_ALLOWED_MARKER_POSITION_DIFF &&
+      diffWidth < MAX_ALLOWED_MARKER_POSITION_DIFF
+    ) {
+      console.error("ITS A MARKER ! ");
+      console.error(
+        "diffX : " +
+          diffX +
+          " = " +
+          matchedPoint.x +
+          "-" +
+          markerCandidate.leftX
+      );
+      console.error(
+        "diffX : " + diffY + " = " + matchedPoint.Y + "-" + markerCandidate.topY
+      );
+      console.error(
+        "diffWidth : " +
+          diffWidth +
+          " = max(" +
+          matchedPointEnd.x +
+          "-" +
+          matchedPoint.x +
+          ", " +
+          matchedPointEnd.y +
+          "-" +
+          matchedPoint.y +
+          ") -" +
+          markerCandidate.width
+      );
+      isAMarker = true;
+    }
+
+
+    markerCandidate.leftX = matchedPoint.x;
+    markerCandidate.topY = matchedPoint.y;
+    markerCandidate.width = marker.cols;
+    // @ts-ignore
+    markerCandidate.vertices[0].x = matchedPoint.x;
+    // @ts-ignore
+    markerCandidate.vertices[0].y = matchedPoint.y;
+    // @ts-ignore
+    markerCandidate.vertices[1].x = matchedPointEnd.x;
+    // @ts-ignore
+    markerCandidate.vertices[1].y = matchedPoint.y;
+    // @ts-ignore
+    markerCandidate.vertices[2].x = matchedPointEnd.x;
+    // @ts-ignore
+    markerCandidate.vertices[2].y = matchedPointEnd.y;
+    // @ts-ignore
+    markerCandidate.vertices[3].x = matchedPoint.x;
+    // @ts-ignore
+    markerCandidate.vertices[3].y = matchedPointEnd.y;
+    console.log("=====> ", matchedPoint);
     console.log("=====> ", matchedPointEnd);
     marker.delete();
-    return result;
+    return isAMarker;
   }
 
   /**
