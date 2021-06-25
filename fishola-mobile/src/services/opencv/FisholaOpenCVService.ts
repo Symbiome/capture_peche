@@ -302,6 +302,7 @@ export default class FisholaOpenCVService {
     markerElement: HTMLElement,
     markerCandidate: DetectedShape
   ): boolean {
+    // Step 1: read marker
     console.error(
       "* is (" +
         Math.round(markerCandidate.leftX) +
@@ -319,16 +320,34 @@ export default class FisholaOpenCVService {
 
     // Step 2: match template
     const matchedDst = new cv.Mat();
-    const mask = new cv.Mat();
     const match_method = cv.TM_SQDIFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
     cv.matchTemplate(resizedPicture, marker, matchedDst, match_method);
     const result = cv.minMaxLoc(matchedDst);
     // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
     let matchedPoint = result.maxLoc;
-    let isAMarker = false;
     if (match_method == cv.TM_SQDIFF || match_method == cv.TM_SQDIFF_NORMED) {
       matchedPoint = result.minLoc;
     }
+
+    // Step 3: determine if template matching indicates this is a marker
+    const isAMarker = this.templateMatchingIndicatesShapeIsAMarker(
+      cv,
+      markerCandidate,
+      marker,
+      matchedPoint
+    );
+    marker.delete();
+    return isAMarker;
+  }
+
+  private templateMatchingIndicatesShapeIsAMarker(
+    cv: any,
+    markerCandidate: DetectedShape,
+    marker: any,
+    matchedPoint: any
+  ): boolean {
+    let isAMarker = false;
+    console.log("=====> ", matchedPoint, marker.cols);
     const matchedPointEnd = new cv.Point(
       matchedPoint.x + marker.cols,
       matchedPoint.y + marker.rows
@@ -349,35 +368,31 @@ export default class FisholaOpenCVService {
       diffWidth < MAX_ALLOWED_MARKER_POSITION_DIFF
     ) {
       console.error("ITS A MARKER ! ");
-      console.error(
-        "diffX : " +
-          diffX +
-          " = " +
-          matchedPoint.x +
-          "-" +
-          markerCandidate.leftX
-      );
-      console.error(
-        "diffX : " + diffY + " = " + matchedPoint.Y + "-" + markerCandidate.topY
-      );
-      console.error(
-        "diffWidth : " +
-          diffWidth +
-          " = max(" +
-          matchedPointEnd.x +
-          "-" +
-          matchedPoint.x +
-          ", " +
-          matchedPointEnd.y +
-          "-" +
-          matchedPoint.y +
-          ") -" +
-          markerCandidate.width
-      );
       isAMarker = true;
+    } else {
+      console.log("NOT A MARKER");
     }
-
-
+    console.error(
+      "diffX : " + diffX + " = " + matchedPoint.x + "-" + markerCandidate.leftX
+    );
+    console.error(
+      "diffX : " + diffY + " = " + matchedPoint.Y + "-" + markerCandidate.topY
+    );
+    console.error(
+      "diffWidth : " +
+        diffWidth +
+        " = max(" +
+        matchedPointEnd.x +
+        "-" +
+        matchedPoint.x +
+        ", " +
+        matchedPointEnd.y +
+        "-" +
+        matchedPoint.y +
+        ") -" +
+        markerCandidate.width
+    );
+    // TODO remove this, only to easy visualising debug
     markerCandidate.leftX = matchedPoint.x;
     markerCandidate.topY = matchedPoint.y;
     markerCandidate.width = marker.cols;
@@ -397,9 +412,6 @@ export default class FisholaOpenCVService {
     markerCandidate.vertices[3].x = matchedPoint.x;
     // @ts-ignore
     markerCandidate.vertices[3].y = matchedPointEnd.y;
-    console.log("=====> ", matchedPoint);
-    console.log("=====> ", matchedPointEnd);
-    marker.delete();
     return isAMarker;
   }
 
