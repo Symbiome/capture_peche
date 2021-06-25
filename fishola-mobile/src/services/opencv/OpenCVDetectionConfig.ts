@@ -43,6 +43,9 @@ export class OpenCVDetectionConfig {
   /** Default url for marker src */
   defaultMarkerSrc = "/img/default_marker.jpg"
 
+  /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
+  rotationStep = 45;
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 }

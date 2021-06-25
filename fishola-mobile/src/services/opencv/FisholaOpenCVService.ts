@@ -23,6 +23,7 @@ import { OpenCVUtils } from "./OpenCVUtils";
 import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
+import { config } from "vue/types/umd";
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -209,7 +210,6 @@ export default class FisholaOpenCVService {
         markerElement,
         config
       );
-      console.error("====>", detectedShape.leftX, detectedShape.topY);
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
     }
@@ -284,7 +284,8 @@ export default class FisholaOpenCVService {
           cv,
           resizedPicture,
           markerElement,
-          markerCandidate
+          markerCandidate,
+          config
         );
       }
     }
@@ -300,9 +301,10 @@ export default class FisholaOpenCVService {
     cv: any,
     resizedPicture: any,
     markerElement: HTMLElement,
-    markerCandidate: DetectedShape
+    markerCandidate: DetectedShape,
+    config: OpenCVDetectionConfig
   ): boolean {
-    // Step 1: read marker
+    // Step 1: read marker at expected dimensions
     console.error(
       "* is (" +
         Math.round(markerCandidate.leftX) +
@@ -318,25 +320,76 @@ export default class FisholaOpenCVService {
       Math.round(markerCandidate.width)
     );
 
-    // Step 2: match template
-    const matchedDst = new cv.Mat();
-    const match_method = cv.TM_SQDIFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
-    cv.matchTemplate(resizedPicture, marker, matchedDst, match_method);
-    const result = cv.minMaxLoc(matchedDst);
-    // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
-    let matchedPoint = result.maxLoc;
-    if (match_method == cv.TM_SQDIFF || match_method == cv.TM_SQDIFF_NORMED) {
-      matchedPoint = result.minLoc;
-    }
+    let isAMarker = false;
+    let angle = 0;
+    let matchedPoint = new cv.Point();
+    while (!isAMarker && angle < 360) {
+      // Step 2: perform marker rotation in all possible angles to optimize recognition
+      const rotatedMarker = new cv.Mat();
+      const dsize = new cv.Size(marker.rows, marker.cols);
+      const center = new cv.Point(marker.cols / 2, marker.rows / 2);
+      // You can try more different parameters
+      const M = cv.getRotationMatrix2D(center, angle, 1);
+      cv.warpAffine(
+        marker,
+        rotatedMarker,
+        M,
+        dsize,
+        cv.INTER_LINEAR,
+        cv.BORDER_CONSTANT,
+        new cv.Scalar()
+      );
 
-    // Step 3: determine if template matching indicates this is a marker
-    const isAMarker = this.templateMatchingIndicatesShapeIsAMarker(
-      cv,
-      markerCandidate,
-      marker,
-      matchedPoint
-    );
+      // Step 3: match template
+      const matchedDst = new cv.Mat();
+      const match_method = cv.TM_SQDIFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
+      cv.matchTemplate(resizedPicture, rotatedMarker, matchedDst, match_method);
+      const result = cv.minMaxLoc(matchedDst);
+      // According to the method, take different point from result (see https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html)
+      matchedPoint = result.maxLoc;
+      if (match_method == cv.TM_SQDIFF || match_method == cv.TM_SQDIFF_NORMED) {
+        matchedPoint = result.minLoc;
+      }
+
+      // Step 4: determine if template matching indicates this is a marker
+      isAMarker = this.templateMatchingIndicatesShapeIsAMarker(
+        cv,
+        markerCandidate,
+        rotatedMarker,
+        matchedPoint
+      );
+
+      console.error(
+        "- " + isAMarker + " FOR " + angle + "° : ",
+        matchedPoint,
+        rotatedMarker.cols
+      );
+      angle += config.rotationStep;
+    }
+    // TODO remove this, only to easy visualising debug
+    markerCandidate.leftX = matchedPoint.x;
+    markerCandidate.topY = matchedPoint.y;
+    markerCandidate.width = marker.cols;
+    // @ts-ignore
+    markerCandidate.vertices[0].x = matchedPoint.x;
+    // @ts-ignore
+    markerCandidate.vertices[0].y = matchedPoint.y;
+    // @ts-ignore
+    markerCandidate.vertices[1].x = matchedPoint.x + marker.cols;
+    // @ts-ignore
+    markerCandidate.vertices[1].y = matchedPoint.y;
+    // @ts-ignore
+    markerCandidate.vertices[2].x = matchedPoint.x + marker.cols;
+    // @ts-ignore
+    markerCandidate.vertices[2].y = matchedPoint.y + marker.rows;
+    // @ts-ignore
+    markerCandidate.vertices[3].x = matchedPoint.x;
+    // @ts-ignore
+    markerCandidate.vertices[3].y = matchedPoint.y + marker.rows;
     marker.delete();
+    console.error(
+      "*******************************************************************"
+    );
     return isAMarker;
   }
 
@@ -347,7 +400,6 @@ export default class FisholaOpenCVService {
     matchedPoint: any
   ): boolean {
     let isAMarker = false;
-    console.log("=====> ", matchedPoint, marker.cols);
     const matchedPointEnd = new cv.Point(
       matchedPoint.x + marker.cols,
       matchedPoint.y + marker.rows
@@ -367,18 +419,18 @@ export default class FisholaOpenCVService {
       diffY < MAX_ALLOWED_MARKER_POSITION_DIFF &&
       diffWidth < MAX_ALLOWED_MARKER_POSITION_DIFF
     ) {
-      console.error("ITS A MARKER ! ");
+      // console.error("ITS A MARKER ! ");
       isAMarker = true;
     } else {
-      console.log("NOT A MARKER");
+      //console.log("NOT A MARKER");
     }
-    console.error(
+    console.log(
       "diffX : " + diffX + " = " + matchedPoint.x + "-" + markerCandidate.leftX
     );
-    console.error(
-      "diffX : " + diffY + " = " + matchedPoint.Y + "-" + markerCandidate.topY
+    console.log(
+      "diffX : " + diffY + " = " + matchedPoint.y + "-" + markerCandidate.topY
     );
-    console.error(
+    console.log(
       "diffWidth : " +
         diffWidth +
         " = max(" +
@@ -392,27 +444,11 @@ export default class FisholaOpenCVService {
         ") -" +
         markerCandidate.width
     );
-    // TODO remove this, only to easy visualising debug
-    markerCandidate.leftX = matchedPoint.x;
-    markerCandidate.topY = matchedPoint.y;
-    markerCandidate.width = marker.cols;
-    // @ts-ignore
-    markerCandidate.vertices[0].x = matchedPoint.x;
-    // @ts-ignore
-    markerCandidate.vertices[0].y = matchedPoint.y;
-    // @ts-ignore
-    markerCandidate.vertices[1].x = matchedPointEnd.x;
-    // @ts-ignore
-    markerCandidate.vertices[1].y = matchedPoint.y;
-    // @ts-ignore
-    markerCandidate.vertices[2].x = matchedPointEnd.x;
-    // @ts-ignore
-    markerCandidate.vertices[2].y = matchedPointEnd.y;
-    // @ts-ignore
-    markerCandidate.vertices[3].x = matchedPoint.x;
-    // @ts-ignore
-    markerCandidate.vertices[3].y = matchedPointEnd.y;
     return isAMarker;
+  }
+
+  private getMarkerRotationAngles(): number[] {
+    return [0, 45, 90, 135, 180, 225, 270, 315, 360];
   }
 
   /**
