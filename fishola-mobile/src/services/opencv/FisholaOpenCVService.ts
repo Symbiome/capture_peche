@@ -24,6 +24,7 @@ import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
 import { config } from "vue/types/umd";
+import { SharePluginWeb } from "@capacitor/core";
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -203,15 +204,42 @@ export default class FisholaOpenCVService {
         Math.min(rotatedRect.size.width, rotatedRect.size.height),
         vertices
       );
-      detectedShape.isMarker = this.isMarker(
-        cv,
-        src,
+      detectedShape.isMarker = this.hasMarkerProportions(
         detectedShape,
-        markerElement,
         config
       );
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
+    }
+
+    // Step 6: if several markers detected, discriminate them using template matching
+    const markerCandidates = detectedShapes.filter((shape: DetectedShape) => {
+      return shape.isMarker;
+    });
+
+    if (markerCandidates.length > 1) {
+      const recognizedMarkers: DetectedShape[] = [];
+      markerCandidates.forEach((markerCandidate) => {
+        markerCandidate.isMarker = false;
+        if (
+          this.isMarkerTemplateMatched(
+            cv,
+            src,
+            markerElement,
+            markerCandidate,
+            config
+          )
+        ) {
+          markerCandidate.isMarker = true;
+          recognizedMarkers.push(markerCandidate);
+        }
+      });
+      if (recognizedMarkers.length > 1) {
+        // There can only be one marker : TODO Discriminate
+        recognizedMarkers[0].isMarker = true;
+      } else {
+        markerCandidates[0].isMarker = true;
+      }
     }
 
     if (config.drawDebugCanvas) {
@@ -255,17 +283,14 @@ export default class FisholaOpenCVService {
   }
 
   /**
-   * Indicates if the given detected shape is a marker or a random shape.
+   * Indicates if the given detected shape is a marker or a random shape based on proprtions.
    * @param cv the openCV instance
    * @param picture the picture in which the marker has been detected
    * @param config the OpenCVDetectionConfig detailing what is the expected markerSize in mm, the proportion of a fish...
    * @param markerCandidate the shape which is potentially a marker
    */
-  isMarker(
-    cv: any,
-    resizedPicture: any,
+  hasMarkerProportions(
     markerCandidate: DetectedShape,
-    markerElement: HTMLElement,
     config: OpenCVDetectionConfig
   ) {
     // Shape bust occuppy a certain % of the full image
@@ -279,14 +304,7 @@ export default class FisholaOpenCVService {
       );
       // Only square-like shapes can be potential markers
       if (diffBetweenWidthAndHeight < markerCandidate.width * 0.1) {
-        // perform actual marker recognition
-        return this.isMarkerCandidateAnActualMarker(
-          cv,
-          resizedPicture,
-          markerElement,
-          markerCandidate,
-          config
-        );
+        return true;
       }
     }
     return false;
@@ -297,7 +315,7 @@ export default class FisholaOpenCVService {
    * @param imgElement
    * @param imgMarker
    */
-  isMarkerCandidateAnActualMarker(
+  isMarkerTemplateMatched(
     cv: any,
     resizedPicture: any,
     markerElement: HTMLElement,
@@ -352,7 +370,7 @@ export default class FisholaOpenCVService {
       }
 
       // Step 4: determine if template matching indicates this is a marker
-      isAMarker = this.templateMatchingIndicatesShapeIsAMarker(
+      isAMarker = this.templateMatchingResultIndicatesShapeIsAMarker(
         cv,
         markerCandidate,
         rotatedMarker,
@@ -393,7 +411,7 @@ export default class FisholaOpenCVService {
     return isAMarker;
   }
 
-  private templateMatchingIndicatesShapeIsAMarker(
+  private templateMatchingResultIndicatesShapeIsAMarker(
     cv: any,
     markerCandidate: DetectedShape,
     marker: any,
