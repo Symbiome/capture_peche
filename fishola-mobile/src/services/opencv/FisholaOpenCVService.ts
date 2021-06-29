@@ -22,10 +22,9 @@ import { FishDetectionOptimizer } from "./FishDetectionOptimizer";
 import { OpenCVUtils } from "./OpenCVUtils";
 import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
+import { FeatureMatch } from "./FeatureMatch";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
-import { config } from "vue/types/umd";
-import { SharePluginWeb } from "@capacitor/core";
-import { marker } from "leaflet";
+
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -146,25 +145,21 @@ export default class FisholaOpenCVService {
 
     // Step 3: perform edge detection, then perform a dilation + erosion to
     // close gaps in between object edges
-    // Step 3.1 : edge detection
+    // Step 3.1 : edge detection https://docs.opencv.org/3.4/da/d22/tutorial_py_canny.html
     cv.Canny(refined2, refined1, 50, 100, 3, false);
-    // Step 3.2 : dilation
+    // Step 3.2 : dilation https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
     const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
     cv.dilate(refined1, refined2, kernel, new cv.Point(-1, 1), 1);
-    // Step 3.3 : erosion
-    /* TODO
-        var borderValue = cv.Scalar.all(Number.MAX_VALUE);
-        var erosion_type = cv.MorphShapes.MORPH_RECT.value;
-        var erosion_size = [2*Control.erosion_size+1, 2*Control.erosion_size+1];
-        var element = cv.getStructuringElement(erosion_type, erosion_size, [-1, -1]);
-        cv.erode(refined2, refined1, element, [-1, -1], 1, cv.BORDER_CONSTANT, borderValue);*/
+    // Some literature advise to apply erosion at this step, but this was not needed in our test case
+    // Something to keep in mind in the future though
 
     // Step 4: find contours in the edge map
-    // Step 4.1 : find contours
+    // Step 4.1 : threshold https://docs.opencv.org/4.5.2/d7/d4d/tutorial_py_thresholding.html
     cv.threshold(refined2, refined1, 120, 200, cv.THRESH_BINARY);
     const contours = new cv.MatVector();
     const hierarchy = new cv.Mat();
     const poly = new cv.MatVector();
+    // Step 4.2 find contours
     cv.findContours(
       refined1,
       contours,
@@ -173,7 +168,7 @@ export default class FisholaOpenCVService {
       cv.CHAIN_APPROX_SIMPLE
     );
 
-    // Step 4.2 : approximates each contour to polygon
+    // Step 4.3 : approximates each contour to polygon
     for (let i = 0; i < contours.size(); ++i) {
       const tmp = new cv.Mat();
       const cnt = contours.get(i);
@@ -183,7 +178,7 @@ export default class FisholaOpenCVService {
       tmp.delete();
     }
 
-    // Step 5: return detected shapes
+    // Step 5: wrap each polygon in a rectangle and convert to DetectedShape
     const detectedShapes = [];
     for (let i = 0; i < poly.size(); ++i) {
       const cnt = poly.get(i);
@@ -210,7 +205,7 @@ export default class FisholaOpenCVService {
       detectedShapes.push(detectedShape);
     }
 
-    // Step 6: if several markers detected, discriminate them using template matching
+    // Step 6: if several markers detected, discriminate them using feature matching
     const markerCandidates = detectedShapes.filter((shape: DetectedShape) => {
       return shape.isMarker;
     });
@@ -221,7 +216,7 @@ export default class FisholaOpenCVService {
       });
       const closestMarker = this.findBestCandidateUsingFeatureMatching(
         cv,
-        src,
+        imgElement,
         markerElement,
         markerCandidates,
         config
@@ -308,24 +303,29 @@ export default class FisholaOpenCVService {
    */
   findBestCandidateUsingFeatureMatching(
     cv: any,
-    grayScaledPicture: any,
+    pictureElement: HTMLElement,
     markerElement: HTMLElement,
     markerCandidates: DetectedShape[],
     config: OpenCVDetectionConfig
   ): DetectedShape[] {
     // Step 1: read marker
+    const resizeCoef = 4;
+    const picture = this.readAndResize(
+      cv,
+      pictureElement,
+      config.resizeSize * resizeCoef
+    );
     const marker = this.readAndResize(
       cv,
       markerElement,
-      Math.min(grayScaledPicture.cols, grayScaledPicture.rows)
+      config.resizeSize * resizeCoef
     );
 
-    //  Step 2 : convert it to grayscale, and blur it slightly
-    const refined1 = new cv.Mat();
-    const refined2 = new cv.Mat();
-    cv.cvtColor(marker, refined1, cv.COLOR_BGR2GRAY, 0);
-    const blurSize = new cv.Size(7, 7);
-    cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
+    //  Step 2 : convert it to grayscale
+    const grayedPicture = new cv.Mat();
+    cv.cvtColor(picture, grayedPicture, cv.COLOR_BGR2GRAY);
+    const grayedMarker = new cv.Mat();
+    cv.cvtColor(marker, grayedMarker, cv.COLOR_BGR2GRAY);
 
     // Step 3: Detect Features & Compute Descriptors
     // See https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/
@@ -338,26 +338,25 @@ export default class FisholaOpenCVService {
     const orb = new cv.AKAZE();
 
     orb.detectAndCompute(
-      grayScaledPicture,
+      grayedPicture,
       new cv.Mat(),
       pictureKeypoints,
       pictureDescriptors
     );
     orb.detectAndCompute(
-      refined2,
+      grayedMarker,
       new cv.Mat(),
       markerKeypoints,
       markerDescriptors
     );
 
     // Step 4: perform feature matching
-    const good_matches = new cv.DMatchVector();
+    const matchedFeatures: FeatureMatch[] = [];
     const bf = new cv.BFMatcher();
     const matches = new cv.DMatchVectorVector();
 
     bf.knnMatch(pictureDescriptors, markerDescriptors, matches, 2);
 
-    let counter = 0;
     for (let i = 0; i < matches.size(); ++i) {
       const match = matches.get(i);
       const dMatch1 = match.get(0);
@@ -366,63 +365,59 @@ export default class FisholaOpenCVService {
         dMatch1.distance <=
         dMatch2.distance * config.knnDistanceForFeatureMatching
       ) {
-        //console.log("***Good Match***", "dMatch1.distance: ", dMatch1.distance, "was less than or = to: ", "dMatch2.distance * parseFloat(knnDistance_option)", dMatch2.distance * parseFloat(knnDistance_option), "dMatch2.distance: ", dMatch2.distance, "knnDistance", knnDistance_option);
-        good_matches.push_back(dMatch1);
-        counter++;
+        const featureMatch = new FeatureMatch();
+        const correspondingPointInPicture = pictureKeypoints.get(
+          dMatch1.queryIdx
+        ).pt;
+        featureMatch.x = correspondingPointInPicture.x / resizeCoef;
+        featureMatch.y = correspondingPointInPicture.y / resizeCoef;
+        featureMatch.distance = dMatch1.distance;
+        matchedFeatures.push(featureMatch);
       }
     }
 
     console.log(
       "keeping ",
-      counter,
+      matchedFeatures.length,
       " points in good_matches vector out of ",
       matches.size(),
       " contained in this match vector:",
       matches
     );
 
-    console.log("here are first 5 good_matches");
-    for (let r = 0; r < good_matches.size(); ++r) {
-      console.log("[" + r + "]", "good_matches: ", good_matches.get(r));
-      if (r === 5) {
-        break;
-      }
-    }
-
     // Step 5: get matched point in pictures and find closest candidate
-    // TODO sort
+    matchedFeatures.sort((match1: any, match2: any) => {
+      return match1.distance - match2.distance;
+    });
     const matchedMarkers: DetectedShape[] = [];
-    for (let i = 0; i < good_matches.size(); i++) {
-      console.error("converting to point " + i);
-      const x = pictureKeypoints.get(good_matches.get(i).queryIdx).pt.x;
-      const y = pictureKeypoints.get(good_matches.get(i).queryIdx).pt.y;
+    for (let i = 0; i < Math.min(matchedFeatures.length, 20); i++) {
       const matchedMarker = new DetectedShape(
         0,
         0,
-        x,
-        y,
+        matchedFeatures[i].x,
+        matchedFeatures[i].y,
         100,
         100,
         JSON.parse(JSON.stringify(markerCandidates[0].vertices))
       );
-      matchedMarker.leftX = x;
-      matchedMarker.topY = y;
+      matchedMarker.leftX = matchedFeatures[i].x;
+      matchedMarker.topY = matchedFeatures[i].y;
       // @ts-ignore
-      matchedMarker.vertices[0].x = x;
+      matchedMarker.vertices[0].x = matchedFeatures[i].x;
       // @ts-ignore
-      matchedMarker.vertices[0].y = y;
+      matchedMarker.vertices[0].y = matchedFeatures[i].y;
       // @ts-ignore
-      matchedMarker.vertices[1].x = x + 10;
+      matchedMarker.vertices[1].x = matchedFeatures[i].x + 10;
       // @ts-ignore
-      matchedMarker.vertices[1].y = y;
+      matchedMarker.vertices[1].y = matchedFeatures[i].y;
       // @ts-ignore
-      matchedMarker.vertices[2].x = x + 10;
+      matchedMarker.vertices[2].x = matchedFeatures[i].x + 10;
       // @ts-ignore
-      matchedMarker.vertices[2].y = y + 10;
+      matchedMarker.vertices[2].y = matchedFeatures[i].y + 10;
       // @ts-ignore
-      matchedMarker.vertices[3].x = x;
+      matchedMarker.vertices[3].x = matchedFeatures[i].x;
       // @ts-ignore
-      matchedMarker.vertices[3].y = y + 10;
+      matchedMarker.vertices[3].y = matchedFeatures[i].y + 10;
       matchedMarker.isMarker = true;
       matchedMarkers.push(matchedMarker);
     }
@@ -431,8 +426,7 @@ export default class FisholaOpenCVService {
     markerKeypoints.delete();
     pictureDescriptors.delete();
     markerDescriptors.delete();
-    refined1.delete();
-    refined2.delete();
+    grayedMarker.delete();
     marker.delete();
     console.error(matchedMarkers.length);
     return matchedMarkers;
