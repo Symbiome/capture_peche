@@ -210,18 +210,28 @@ export default class FisholaOpenCVService {
       return shape.isMarker;
     });
 
-    if (markerCandidates.length > 1) {
+    if (
+      markerCandidates.length > 1 ||
+      (markerCandidates.length == 1 && !config.alwaysAtLeastOneMarker)
+    ) {
       markerCandidates.forEach((markerCandidate) => {
         markerCandidate.isMarker = false;
       });
-      const closestMarker = this.findBestCandidateUsingFeatureMatching(
+      const featureMatchedMarker = this.findBestCandidateUsingFeatureMatching(
         cv,
         imgElement,
         markerElement,
         markerCandidates,
         config
       );
-      closestMarker.forEach((c) => detectedShapes.push(c));
+      if (featureMatchedMarker) {
+        featureMatchedMarker.isMarker = true;
+      } else {
+        if (config.alwaysAtLeastOneMarker) {
+          // Find first marker and say it's the best
+          markerCandidates[0].isMarker = true;
+        }
+      }
     }
 
     if (config.drawDebugCanvas) {
@@ -307,7 +317,7 @@ export default class FisholaOpenCVService {
     markerElement: HTMLElement,
     markerCandidates: DetectedShape[],
     config: OpenCVDetectionConfig
-  ): DetectedShape[] {
+  ): DetectedShape | undefined {
     // Step 1: read marker
     const resizeCoef = 4;
     const picture = this.readAndResize(
@@ -376,50 +386,40 @@ export default class FisholaOpenCVService {
       }
     }
 
-    console.log(
-      "keeping ",
-      matchedFeatures.length,
-      " points in good_matches vector out of ",
-      matches.size(),
-      " contained in this match vector:",
-      matches
-    );
-
-    // Step 5: get matched point in pictures and find closest candidate
+    // Step 5: sort matched features and iterate over each match
     matchedFeatures.sort((match1: any, match2: any) => {
       return match1.distance - match2.distance;
     });
-    const matchedMarkers: DetectedShape[] = [];
-    for (let i = 0; i < Math.min(matchedFeatures.length, 20); i++) {
-      const matchedMarker = new DetectedShape(
-        0,
-        0,
-        matchedFeatures[i].x,
-        matchedFeatures[i].y,
-        100,
-        100,
-        JSON.parse(JSON.stringify(markerCandidates[0].vertices))
-      );
-      matchedMarker.leftX = matchedFeatures[i].x;
-      matchedMarker.topY = matchedFeatures[i].y;
-      // @ts-ignore
-      matchedMarker.vertices[0].x = matchedFeatures[i].x;
-      // @ts-ignore
-      matchedMarker.vertices[0].y = matchedFeatures[i].y;
-      // @ts-ignore
-      matchedMarker.vertices[1].x = matchedFeatures[i].x + 10;
-      // @ts-ignore
-      matchedMarker.vertices[1].y = matchedFeatures[i].y;
-      // @ts-ignore
-      matchedMarker.vertices[2].x = matchedFeatures[i].x + 10;
-      // @ts-ignore
-      matchedMarker.vertices[2].y = matchedFeatures[i].y + 10;
-      // @ts-ignore
-      matchedMarker.vertices[3].x = matchedFeatures[i].x;
-      // @ts-ignore
-      matchedMarker.vertices[3].y = matchedFeatures[i].y + 10;
-      matchedMarker.isMarker = true;
-      matchedMarkers.push(matchedMarker);
+    const shapeScores: number[] = new Array<number>(markerCandidates.length);
+    let bestMarker: DetectedShape | undefined = undefined;
+    for (
+      let i = 0;
+      i < Math.min(matchedFeatures.length, 20) && !bestMarker;
+      i++
+    ) {
+      let foundShape = false;
+      for (let j = 0; j < markerCandidates.length && !foundShape; j++) {
+        const markerCandidate = markerCandidates[j];
+        // Each time a matched feature is inside a detected shape, we increment the shape's score
+        if (
+          matchedFeatures[i].x >= markerCandidate.leftX &&
+          matchedFeatures[i].x <=
+            markerCandidate.leftX + markerCandidate.width &&
+          matchedFeatures[i].y >= markerCandidate.topY &&
+          matchedFeatures[i].y <= markerCandidate.topY + markerCandidate.width
+        ) {
+          foundShape = true;
+          if (shapeScores[j]) {
+            shapeScores[j]++;
+            // If enough match are contained in the shape, then it is most likely our marker
+            if (shapeScores[j] >= 8) {
+              bestMarker = markerCandidate;
+            }
+          } else {
+            shapeScores[j] = 1;
+          }
+        }
+      }
     }
 
     pictureKeypoints.delete();
@@ -428,8 +428,7 @@ export default class FisholaOpenCVService {
     markerDescriptors.delete();
     grayedMarker.delete();
     marker.delete();
-    console.error(matchedMarkers.length);
-    return matchedMarkers;
+    return bestMarker;
   }
 
   /**
