@@ -219,15 +219,14 @@ export default class FisholaOpenCVService {
       markerCandidates.forEach((markerCandidate) => {
         markerCandidate.isMarker = false;
       });
-      const closestMarker = this.findBestCandidateUsingTemplateMatching(
+      const closestMarker = this.findBestCandidateUsingFeatureMatching(
         cv,
         src,
         markerElement,
         markerCandidates,
         config
       );
-      closestMarker.isMarker = true;
-      detectedShapes.push(closestMarker);
+      closestMarker.forEach((c) => detectedShapes.push(c));
     }
 
     if (config.drawDebugCanvas) {
@@ -238,6 +237,7 @@ export default class FisholaOpenCVService {
     src.delete();
     refined1.delete();
     refined2.delete();
+    hierarchy.delete();
 
     return detectedShapes;
   }
@@ -296,6 +296,146 @@ export default class FisholaOpenCVService {
       }
     }
     return false;
+  }
+
+  /**
+   * Use feature matching to determine the best candidate.
+   * @param cv the OpenCV instance
+   * @param resizedPicture the picture in which the marker search should be performed
+   * @param markerElement the <image> holding the marker picture to search
+   * @param markerCandidates the potential candidates
+   * @param config the OpenCV configuration
+   */
+  findBestCandidateUsingFeatureMatching(
+    cv: any,
+    grayScaledPicture: any,
+    markerElement: HTMLElement,
+    markerCandidates: DetectedShape[],
+    config: OpenCVDetectionConfig
+  ): DetectedShape[] {
+    // Step 1: read marker
+    const marker = this.readAndResize(
+      cv,
+      markerElement,
+      Math.min(grayScaledPicture.cols, grayScaledPicture.rows)
+    );
+
+    //  Step 2 : convert it to grayscale, and blur it slightly
+    const refined1 = new cv.Mat();
+    const refined2 = new cv.Mat();
+    cv.cvtColor(marker, refined1, cv.COLOR_BGR2GRAY, 0);
+    const blurSize = new cv.Size(7, 7);
+    cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
+
+    // Step 3: Detect Features & Compute Descriptors
+    // See https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/
+    // And https://docs.opencv.org/4.5.2/dc/dc3/tutorial_py_matcher.html
+    const pictureKeypoints = new cv.KeyPointVector();
+    const markerKeypoints = new cv.KeyPointVector();
+    const pictureDescriptors = new cv.Mat();
+    const markerDescriptors = new cv.Mat();
+
+    const orb = new cv.AKAZE();
+
+    orb.detectAndCompute(
+      grayScaledPicture,
+      new cv.Mat(),
+      pictureKeypoints,
+      pictureDescriptors
+    );
+    orb.detectAndCompute(
+      refined2,
+      new cv.Mat(),
+      markerKeypoints,
+      markerDescriptors
+    );
+
+    // Step 4: perform feature matching
+    const good_matches = new cv.DMatchVector();
+    const bf = new cv.BFMatcher();
+    const matches = new cv.DMatchVectorVector();
+
+    bf.knnMatch(pictureDescriptors, markerDescriptors, matches, 2);
+
+    let counter = 0;
+    for (let i = 0; i < matches.size(); ++i) {
+      const match = matches.get(i);
+      const dMatch1 = match.get(0);
+      const dMatch2 = match.get(1);
+      if (
+        dMatch1.distance <=
+        dMatch2.distance * config.knnDistanceForFeatureMatching
+      ) {
+        //console.log("***Good Match***", "dMatch1.distance: ", dMatch1.distance, "was less than or = to: ", "dMatch2.distance * parseFloat(knnDistance_option)", dMatch2.distance * parseFloat(knnDistance_option), "dMatch2.distance: ", dMatch2.distance, "knnDistance", knnDistance_option);
+        good_matches.push_back(dMatch1);
+        counter++;
+      }
+    }
+
+    console.log(
+      "keeping ",
+      counter,
+      " points in good_matches vector out of ",
+      matches.size(),
+      " contained in this match vector:",
+      matches
+    );
+
+    console.log("here are first 5 good_matches");
+    for (let r = 0; r < good_matches.size(); ++r) {
+      console.log("[" + r + "]", "good_matches: ", good_matches.get(r));
+      if (r === 5) {
+        break;
+      }
+    }
+
+    // Step 5: get matched point in pictures and find closest candidate
+    // TODO sort
+    const matchedMarkers: DetectedShape[] = [];
+    for (let i = 0; i < good_matches.size(); i++) {
+      console.error("converting to point " + i);
+      const x = pictureKeypoints.get(good_matches.get(i).queryIdx).pt.x;
+      const y = pictureKeypoints.get(good_matches.get(i).queryIdx).pt.y;
+      const matchedMarker = new DetectedShape(
+        0,
+        0,
+        x,
+        y,
+        100,
+        100,
+        JSON.parse(JSON.stringify(markerCandidates[0].vertices))
+      );
+      matchedMarker.leftX = x;
+      matchedMarker.topY = y;
+      // @ts-ignore
+      matchedMarker.vertices[0].x = x;
+      // @ts-ignore
+      matchedMarker.vertices[0].y = y;
+      // @ts-ignore
+      matchedMarker.vertices[1].x = x + 10;
+      // @ts-ignore
+      matchedMarker.vertices[1].y = y;
+      // @ts-ignore
+      matchedMarker.vertices[2].x = x + 10;
+      // @ts-ignore
+      matchedMarker.vertices[2].y = y + 10;
+      // @ts-ignore
+      matchedMarker.vertices[3].x = x;
+      // @ts-ignore
+      matchedMarker.vertices[3].y = y + 10;
+      matchedMarker.isMarker = true;
+      matchedMarkers.push(matchedMarker);
+    }
+
+    pictureKeypoints.delete();
+    markerKeypoints.delete();
+    pictureDescriptors.delete();
+    markerDescriptors.delete();
+    refined1.delete();
+    refined2.delete();
+    marker.delete();
+    console.error(matchedMarkers.length);
+    return matchedMarkers;
   }
 
   /**
@@ -387,6 +527,8 @@ export default class FisholaOpenCVService {
         templateDetected = true;
       }
       angle += config.rotationStep;
+      rotatedMarker.delete();
+      matchedDst.delete();
       console.error(
         "Distance " +
           closestDistance +
@@ -434,6 +576,8 @@ export default class FisholaOpenCVService {
         Math.round(matchedPoint.y) +
         ""
     );
+
+    marker.delete();
     return matchedMarker;
   }
 

@@ -19,38 +19,43 @@
  * #L%
  */
 export class OpenCVDetectionConfig {
-  /* Picture to analyse will first be resized to this given size (for performance considerations) - int in px */
-  resizeSize = 300;
+         /* Picture to analyse will first be resized to this given size (for performance considerations) - int in px */
+         resizeSize = 300;
 
-  /*  The marker size "in real world" - float (in cm) */
-  markerSizeInMm = 133;
+         /*  The marker size "in real world" - float (in cm) */
+         markerSizeInMm = 133;
 
-  /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
-  minSizeRatio = 0.3;
+         /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
+         minSizeRatio = 0.3;
 
-  /* The maximum % of the screen each shape except marker should cover - float between 0 & 1*/
-  maxSizeRatio = 0.999;
+         /* The maximum % of the screen each shape except marker should cover - float between 0 & 1*/
+         maxSizeRatio = 0.999;
 
-  /* The minimum % of the marker should cover - float between 0 & 1*/
-  markerMinSizeRatio = 0.15;
+         /* The minimum % of the marker should cover - float between 0 & 1*/
+         markerMinSizeRatio = 0.15;
 
-  /* The minimum width / length ratio each shape should respect(trims "line" shapes) - float between 0 & 1*/
-  minWidthLengthRatio = 0.1;
+         /* The minimum width / length ratio each shape should respect(trims "line" shapes) - float between 0 & 1*/
+         minWidthLengthRatio = 0.1;
 
-  /* The maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1*/
-  maxWidthLengthRatio = 0.6;
+         /* The maximum widht/length ratio each shape should respect (trims "square" shapes) - float between 0 & 1*/
+         maxWidthLengthRatio = 0.6;
 
-  /** Default url for marker src */
-  defaultMarkerSrc = "/img/default_marker.jpg";
+         /** Default url for marker src */
+         defaultMarkerSrc = "/img/default_marker.jpg";
 
-  /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
-  rotationStep = 45;
+         /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
+         rotationStep = 45;
 
-  /**
-   * Maximal distance (in px) for considering that a template matched zone is the marker.
-   */
-  maxDistanceBetweenTemplateMatchedAndCandidate = 20;
+         /**
+          * Maximal distance (in px) for considering that a template matched zone is the marker.
+          */
+         maxDistanceBetweenTemplateMatchedAndCandidate = 20;
 
-  /* Indicates if we should draw debug shapes in dedicated canvas*/
-  drawDebugCanvas = true;
-}
+         /**
+          * Knn distance for feature matching (see https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/). A float around 0.7.
+          */
+         knnDistanceForFeatureMatching = 0.85;
+
+         /* Indicates if we should draw debug shapes in dedicated canvas*/
+         drawDebugCanvas = true;
+       }
