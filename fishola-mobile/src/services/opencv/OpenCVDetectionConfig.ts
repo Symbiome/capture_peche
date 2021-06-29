@@ -41,10 +41,15 @@ export class OpenCVDetectionConfig {
   maxWidthLengthRatio = 0.6;
 
   /** Default url for marker src */
-  defaultMarkerSrc = "/img/default_marker.jpg"
+  defaultMarkerSrc = "/img/default_marker.jpg";
 
   /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
   rotationStep = 45;
+
+  /**
+   * Maximal distance (in px) for considering that a template matched zone is the marker.
+   */
+  maxDistanceBetweenTemplateMatchedAndCandidate = 20;
 
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;

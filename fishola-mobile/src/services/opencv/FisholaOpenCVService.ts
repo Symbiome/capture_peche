@@ -25,6 +25,7 @@ import { DetectedShape } from "./DetectedShape";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
 import { config } from "vue/types/umd";
 import { SharePluginWeb } from "@capacitor/core";
+import { marker } from "leaflet";
 export default class FisholaOpenCVService {
   static INSTANCE = new FisholaOpenCVService();
   public cv: any;
@@ -204,10 +205,7 @@ export default class FisholaOpenCVService {
         Math.min(rotatedRect.size.width, rotatedRect.size.height),
         vertices
       );
-      detectedShape.isMarker = this.hasMarkerProportions(
-        detectedShape,
-        config
-      );
+      detectedShape.isMarker = this.hasMarkerProportions(detectedShape, config);
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
     }
@@ -218,28 +216,18 @@ export default class FisholaOpenCVService {
     });
 
     if (markerCandidates.length > 1) {
-      const recognizedMarkers: DetectedShape[] = [];
       markerCandidates.forEach((markerCandidate) => {
         markerCandidate.isMarker = false;
-        if (
-          this.isMarkerTemplateMatched(
-            cv,
-            src,
-            markerElement,
-            markerCandidate,
-            config
-          )
-        ) {
-          markerCandidate.isMarker = true;
-          recognizedMarkers.push(markerCandidate);
-        }
       });
-      if (recognizedMarkers.length > 1) {
-        // There can only be one marker : TODO Discriminate
-        recognizedMarkers[0].isMarker = true;
-      } else {
-        markerCandidates[0].isMarker = true;
-      }
+      const closestMarker = this.findBestCandidateUsingTemplateMatching(
+        cv,
+        src,
+        markerElement,
+        markerCandidates,
+        config
+      );
+      closestMarker.isMarker = true;
+      detectedShapes.push(closestMarker);
     }
 
     if (config.drawDebugCanvas) {
@@ -311,42 +299,37 @@ export default class FisholaOpenCVService {
   }
 
   /**
-   * Determines if the given marker candidate is actually a marker using template matching.
-   * @param imgElement
-   * @param imgMarker
+   * Use template matching to determine the best candidate.
+   * @param cv the OpenCV instance
+   * @param resizedPicture the picture in which the marker search should be performed
+   * @param markerElement the <image> holding the marker picture to search
+   * @param markerCandidates the potential candidates
+   * @param config the OpenCV configuration
    */
-  isMarkerTemplateMatched(
+  findBestCandidateUsingTemplateMatching(
     cv: any,
     resizedPicture: any,
     markerElement: HTMLElement,
-    markerCandidate: DetectedShape,
+    markerCandidates: DetectedShape[],
     config: OpenCVDetectionConfig
-  ): boolean {
-    // Step 1: read marker at expected dimensions
-    console.error(
-      "* is (" +
-        Math.round(markerCandidate.leftX) +
-        "," +
-        Math.round(markerCandidate.topY) +
-        ") a marker of " +
-        Math.round(markerCandidate.width) +
-        "px ?"
-    );
+  ): DetectedShape {
+    // Step 1: read marker
     const marker = this.readAndResize(
       cv,
       markerElement,
-      Math.round(markerCandidate.width)
+      resizedPicture.cols / 4
     );
 
-    let isAMarker = false;
+    let templateDetected = false;
     let angle = 0;
     let matchedPoint = new cv.Point();
-    while (!isAMarker && angle < 360) {
+    let closestDistance = 100000;
+    let closestMarker: DetectedShape = markerCandidates[0];
+    while (!templateDetected && angle < 360) {
       // Step 2: perform marker rotation in all possible angles to optimize recognition
       const rotatedMarker = new cv.Mat();
       const dsize = new cv.Size(marker.rows, marker.cols);
       const center = new cv.Point(marker.cols / 2, marker.rows / 2);
-      // You can try more different parameters
       const M = cv.getRotationMatrix2D(center, angle, 1);
       cv.warpAffine(
         marker,
@@ -358,7 +341,7 @@ export default class FisholaOpenCVService {
         new cv.Scalar()
       );
 
-      // Step 3: match template
+      // Step 3: perform template matching in search of the marker
       const matchedDst = new cv.Mat();
       const match_method = cv.TM_SQDIFF; // cv.TM_SQDIFF // TM_SQDIFF_NORMED // TM_CCORR // TM_CCORR_NORMED // TM_COEFF // TM_CCOEFF_NORMED
       cv.matchTemplate(resizedPicture, rotatedMarker, matchedDst, match_method);
@@ -369,60 +352,97 @@ export default class FisholaOpenCVService {
         matchedPoint = result.minLoc;
       }
 
+      const matchedResult: number[] = [];
+      matchedResult[0] = matchedPoint;
+      matchedResult[1] = new cv.Point(
+        matchedPoint.x + marker.cols,
+        matchedPoint.y + marker.rows
+      );
+
       // Step 4: determine if template matching indicates this is a marker
-      isAMarker = this.templateMatchingResultIndicatesShapeIsAMarker(
-        cv,
-        markerCandidate,
-        rotatedMarker,
-        matchedPoint
-      );
-
-      console.error(
-        "- " + isAMarker + " FOR " + angle + "° : ",
-        matchedPoint,
-        rotatedMarker.cols
-      );
+      // Get the closest marker of template matched location
+      markerCandidates.forEach((markerCandidate) => {
+        markerCandidate.isMarker = false;
+        const distance = this.getDistanceBetweenMatchedTemplateAndMarkerCandidate(
+          matchedResult,
+          markerCandidate
+        );
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestMarker = markerCandidate;
+          console.error(
+            "new closest " +
+              closestDistance +
+              " (" +
+              Math.round(markerCandidate.leftX) +
+              "," +
+              Math.round(markerCandidate.topY) +
+              ")"
+          );
+        }
+      });
+      if (
+        closestDistance < config.maxDistanceBetweenTemplateMatchedAndCandidate
+      ) {
+        templateDetected = true;
+      }
       angle += config.rotationStep;
+      console.error(
+        "Distance " +
+          closestDistance +
+          " is not close enough, try with a different angle"
+      );
     }
-    // TODO remove this, only to easy visualising debug
-    markerCandidate.leftX = matchedPoint.x;
-    markerCandidate.topY = matchedPoint.y;
-    markerCandidate.width = marker.cols;
-    // @ts-ignore
-    markerCandidate.vertices[0].x = matchedPoint.x;
-    // @ts-ignore
-    markerCandidate.vertices[0].y = matchedPoint.y;
-    // @ts-ignore
-    markerCandidate.vertices[1].x = matchedPoint.x + marker.cols;
-    // @ts-ignore
-    markerCandidate.vertices[1].y = matchedPoint.y;
-    // @ts-ignore
-    markerCandidate.vertices[2].x = matchedPoint.x + marker.cols;
-    // @ts-ignore
-    markerCandidate.vertices[2].y = matchedPoint.y + marker.rows;
-    // @ts-ignore
-    markerCandidate.vertices[3].x = matchedPoint.x;
-    // @ts-ignore
-    markerCandidate.vertices[3].y = matchedPoint.y + marker.rows;
-    marker.delete();
-    console.error(
-      "*******************************************************************"
-    );
-    return isAMarker;
-  }
-
-  private templateMatchingResultIndicatesShapeIsAMarker(
-    cv: any,
-    markerCandidate: DetectedShape,
-    marker: any,
-    matchedPoint: any
-  ): boolean {
-    let isAMarker = false;
+    const result = [];
+    result[0] = matchedPoint;
     const matchedPointEnd = new cv.Point(
       matchedPoint.x + marker.cols,
       matchedPoint.y + marker.rows
     );
+    result[1] = matchedPointEnd;
+    const matchedMarker = new DetectedShape(
+      0,
+      0,
+      matchedPoint.x,
+      matchedPoint.y,
+      100,
+      100,
+      JSON.parse(JSON.stringify(closestMarker.vertices))
+    );
+    matchedMarker.leftX = matchedPoint.x;
+    matchedMarker.topY = matchedPoint.y;
+    // @ts-ignore
+    matchedMarker.vertices[0].x = matchedPoint.x;
+    // @ts-ignore
+    matchedMarker.vertices[0].y = matchedPoint.y;
+    // @ts-ignore
+    matchedMarker.vertices[1].x = matchedPointEnd.x;
+    // @ts-ignore
+    matchedMarker.vertices[1].y = matchedPoint.y;
+    // @ts-ignore
+    matchedMarker.vertices[2].x = matchedPointEnd.x;
+    // @ts-ignore
+    matchedMarker.vertices[2].y = matchedPointEnd.y;
+    // @ts-ignore
+    matchedMarker.vertices[3].x = matchedPoint.x;
+    // @ts-ignore
+    matchedMarker.vertices[3].y = matchedPointEnd.y;
+    console.error(
+      "MATCHED : " +
+        Math.round(matchedPoint.x) +
+        "," +
+        Math.round(matchedPoint.y) +
+        ""
+    );
+    return matchedMarker;
+  }
 
+  private getDistanceBetweenMatchedTemplateAndMarkerCandidate(
+    templateMatchedPoint: any[],
+    markerCandidate: DetectedShape
+  ): number {
+    const matchedPoint = templateMatchedPoint[0];
+    const matchedPointEnd = templateMatchedPoint[1];
     // If detected marker is close to marker candidate shape, then this is the marker
     const MAX_ALLOWED_MARKER_POSITION_DIFF = markerCandidate.width / 10;
     const diffX = Math.abs(matchedPoint.x - markerCandidate.leftX);
@@ -432,41 +452,7 @@ export default class FisholaOpenCVService {
         matchedPointEnd.x - matchedPoint.x,
         matchedPointEnd.y - matchedPoint.y
       ) - markerCandidate.width;
-    if (
-      diffX < MAX_ALLOWED_MARKER_POSITION_DIFF &&
-      diffY < MAX_ALLOWED_MARKER_POSITION_DIFF &&
-      diffWidth < MAX_ALLOWED_MARKER_POSITION_DIFF
-    ) {
-      // console.error("ITS A MARKER ! ");
-      isAMarker = true;
-    } else {
-      //console.log("NOT A MARKER");
-    }
-    console.log(
-      "diffX : " + diffX + " = " + matchedPoint.x + "-" + markerCandidate.leftX
-    );
-    console.log(
-      "diffX : " + diffY + " = " + matchedPoint.y + "-" + markerCandidate.topY
-    );
-    console.log(
-      "diffWidth : " +
-        diffWidth +
-        " = max(" +
-        matchedPointEnd.x +
-        "-" +
-        matchedPoint.x +
-        ", " +
-        matchedPointEnd.y +
-        "-" +
-        matchedPoint.y +
-        ") -" +
-        markerCandidate.width
-    );
-    return isAMarker;
-  }
-
-  private getMarkerRotationAngles(): number[] {
-    return [0, 45, 90, 135, 180, 225, 270, 315, 360];
+    return diffX + diffY;
   }
 
   /**
