@@ -43,14 +43,6 @@ export class OpenCVDetectionConfig {
   /** Default url for marker src */
   defaultMarkerSrc = "/img/default_marker.jpg";
 
-  /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
-  rotationStep = 45;
-
-  /**
-   * Maximal distance (in px) for considering that a template matched zone is the marker.
-   */
-  maxDistanceBetweenTemplateMatchedAndCandidate = 20;
-
   /**
    * Knn distance for feature matching (see https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/). A float around 0.7.
    */
@@ -67,9 +59,17 @@ export class OpenCVDetectionConfig {
   minFeaturematchRequired = 2;
 
   /**
-   * Indicates if we should force to have at least one marker always.
+   * Indicates if we should check marker candidates even if there is only one.
    */
-  alwaysAtLeastOneMarker = false;
+  alwaysCheckMarkerCandidates = false;
+
+  /** Rotation step to use for marker detection (in degree, e.g. 90°)*/
+  rotationStep = 45;
+
+  /**
+   * Maximal distance (in px) for considering that a template matched zone is the marker.
+   */
+  maxDistanceBetweenTemplateMatchedAndCandidate = 20;
 
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;

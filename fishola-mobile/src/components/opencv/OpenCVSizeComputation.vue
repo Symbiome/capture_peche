@@ -148,6 +148,13 @@
                   @change="launchSizeComputation"
                   v-model.number="config.maxWidthLengthRatio"
                 />
+                 FeatureMatching si 1 seul candidat
+                <input
+                  type="checkbox"
+                  style="width:100px"
+                  id="alwaysCheckMarkerCandidates"
+                  v-model.number="config.alwaysCheckMarkerCandidates"
+                /><br />
               </div>
             </div>
             <div id="status">

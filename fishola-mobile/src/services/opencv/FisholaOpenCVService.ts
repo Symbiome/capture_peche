@@ -209,10 +209,10 @@ export default class FisholaOpenCVService {
 
     // Step 6: if several markers detected, discriminate them using feature matching
     const markerCandidates = detectedShapes.filter((shape) => shape.isMarker);
-
+    console.error(markerCandidates.length)
     if (
       markerCandidates.length > 1 ||
-      (markerCandidates.length == 1 && !config.alwaysAtLeastOneMarker)
+      (markerCandidates.length == 1 && config.alwaysCheckMarkerCandidates)
     ) {
       markerCandidates.forEach((markerCandidate) => {
         markerCandidate.isMarker = false;
@@ -226,11 +226,6 @@ export default class FisholaOpenCVService {
       );
       if (featureMatchedMarker) {
         featureMatchedMarker.isMarker = true;
-      } else {
-        if (config.alwaysAtLeastOneMarker) {
-          // Find first marker and say it's the best
-          markerCandidates[0].isMarker = true;
-        }
       }
       const debugShapes = markerCandidates.filter((shape) => shape.isDebug);
       debugShapes.forEach((debugShape) => detectedShapes.push(debugShape));
@@ -394,7 +389,8 @@ export default class FisholaOpenCVService {
     let bestScore = 0;
     for (
       let i = 0;
-      i < Math.min(matchedFeatures.length, 2 * config.maxFeatureMatchRequired) &&
+      i <
+        Math.min(matchedFeatures.length, 2 * config.maxFeatureMatchRequired) &&
       !foundSureMatch;
       i++
     ) {
@@ -469,7 +465,6 @@ export default class FisholaOpenCVService {
     grayedMarker.delete();
     marker.delete();
 
-    console.error("BEST SCORE ", bestScore, " vs ", config.minFeaturematchRequired);
     if (bestScore >= config.minFeaturematchRequired) {
       return bestMarker;
     }
@@ -478,6 +473,7 @@ export default class FisholaOpenCVService {
 
   /**
    * Use template matching to determine the best candidate.
+   * DEPRECATED : feature matching (although more resource-taking) is way better for matching.
    * @param cv the OpenCV instance
    * @param resizedPicture the picture in which the marker search should be performed
    * @param markerElement the <image> holding the marker picture to search

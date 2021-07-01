@@ -41,6 +41,9 @@ describe("Détection de marqueurs", () => {
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
+        // Always launch feature matching (even if only one candidate)
+        cy.get("[id=alwaysCheckMarkerCandidates]").check();
+
         // Attach picture file
         cy.get("[id=markerFile]").attachFile(testPicture.markerPath);
         cy.get("[id=fileInput]").attachFile(testPicture.filePath);
@@ -59,7 +62,11 @@ describe("Détection de marqueurs", () => {
           .then((rawMeasureText) => {
             const actualMarkerCount =
               rawMeasureText.split("Détecté : Marqueur").length - 1;
-            assert.equal(actualMarkerCount, expectedMarkerCount, "Mauvais nombre de marqueurs détectés");
+            assert.equal(
+              actualMarkerCount,
+              expectedMarkerCount,
+              "Mauvais nombre de marqueurs détectés"
+            );
             const markerSize = rawMeasureText
               .split("Détecté : Marqueur")[1]
               .split("mm (")[1]
@@ -77,7 +84,13 @@ describe("Détection de marqueurs", () => {
                   actuaMarkerOnPictureSizeRatio -
                     testPicture.expectedFishOnImageRatio
                 );
-                assert.equal(Math.round(ratioDiff * 1000) / 1000, 0, "Légère différence entre la taille attendu et détectée (" + (Math.round(ratioDiff * 1000) / 10) + "% )");
+                assert.equal(
+                  Math.round(ratioDiff * 1000) / 1000,
+                  0,
+                  "Légère différence entre la taille attendue et détectée (" +
+                    Math.round(ratioDiff * 1000) / 10 +
+                    "% )"
+                );
               });
           });
       }
@@ -87,10 +100,11 @@ describe("Détection de marqueurs", () => {
 
 function getMarkerPicturesToTest() {
   const markerPics = [];
+  markerPics.push(markerPic("marker_1.jpg", "Marqueur seul", 57 / 300));
   markerPics.push(markerPic("marker_2.jpg", "Marqueur absent", 0));
   markerPics.push(markerPic("marker_3.jpg", "nombreux marqueurs", 58 / 300));
-  markerPics.push(markerPic("marker_4.jpg", "nombreux marqueurs 2", 46 / 300));
-  markerPics.push(markerPic("marker_6.jpg", "nombreux marqueurs 3", 55 / 300));
+  markerPics.push(markerPic("marker_4.jpg", "nombreux marqueurs 2", 48 / 300));
+  markerPics.push(markerPic("marker_6.jpg", "nombreux marqueurs 3", 57 / 300));
   markerPics.push(markerPic("marker_5.jpg", "qr code", 83 / 300));
   return markerPics;
 }
