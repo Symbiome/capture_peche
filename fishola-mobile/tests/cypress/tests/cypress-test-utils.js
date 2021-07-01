@@ -26,16 +26,15 @@ const defaultMarkerPath = "markers/marker.jpg";
 export function markerPic(
   imgPath,
   comment,
-  expectedFishOnImageRatio,
-  picQuality
+  expectedMarkerRatio
 ) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "markers/" + imgPath,
     true,
-    expectedFishOnImageRatio,
+    expectedMarkerRatio,
     comment,
-    picQuality
+    3
   );
 }
 

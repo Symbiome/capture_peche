@@ -34,7 +34,7 @@ describe("Détection de marqueurs", () => {
     const testPicture = testPictures[i];
 
     it(
-      "Photo " + testPicture.comment + '"(' + testPicture.filePath + ")",
+      'Photo "' + testPicture.comment + '" (' + testPicture.filePath + ")",
       () => {
         // Go to fish measurement page
         cy.visit("/#/fish-measure-test");
@@ -49,11 +49,36 @@ describe("Détection de marqueurs", () => {
         cy.get("div[id=calculating]").contains("Calcul terminé");
 
         // Test if we detected fish and marker as expected
-        let expectedMarkerNumber = 1;
-        cy.get("span[id=shapesNumber]")
+        let expectedMarkerCount = 0;
+        if (testPicture.expectedFishOnImageRatio) {
+          expectedMarkerCount = 1;
+        }
+
+        cy.get("span[id=resultText]")
           .invoke("text")
-          .then((shapesNumber) => {
-            assert.equal(parseInt(shapesNumber), expectedMarkerNumber);
+          .then((rawMeasureText) => {
+            const actualMarkerCount =
+              rawMeasureText.split("Détecté : Marqueur").length - 1;
+            assert.equal(actualMarkerCount, expectedMarkerCount, "Mauvais nombre de marqueurs détectés");
+            const markerSize = rawMeasureText
+              .split("Détecté : Marqueur")[1]
+              .split("mm (")[1]
+              .split("px")[0]
+              .trim();
+
+            cy.get("input[id=resizeSize]")
+              .invoke("val")
+              .then((imageSize) => {
+                const actuaMarkerOnPictureSizeRatio =
+                  Math.round(
+                    (parseInt(markerSize) / parseInt(imageSize)) * 1000
+                  ) / 1000;
+                const ratioDiff = Math.abs(
+                  actuaMarkerOnPictureSizeRatio -
+                    testPicture.expectedFishOnImageRatio
+                );
+                assert.equal(Math.round(ratioDiff * 1000) / 1000, 0, "Légère différence entre la taille attendu et détectée (" + (Math.round(ratioDiff * 1000) / 10) + "% )");
+              });
           });
       }
     );
@@ -62,7 +87,10 @@ describe("Détection de marqueurs", () => {
 
 function getMarkerPicturesToTest() {
   const markerPics = [];
-  markerPics.push(markerPic("marker_2.jpg", 2));
-  markerPics.push(markerPic("marker_3.jpg", 3));
+  markerPics.push(markerPic("marker_2.jpg", "Marqueur absent", 0));
+  markerPics.push(markerPic("marker_3.jpg", "nombreux marqueurs", 58 / 300));
+  markerPics.push(markerPic("marker_4.jpg", "nombreux marqueurs 2", 46 / 300));
+  markerPics.push(markerPic("marker_6.jpg", "nombreux marqueurs 3", 55 / 300));
+  markerPics.push(markerPic("marker_5.jpg", "qr code", 83 / 300));
   return markerPics;
 }

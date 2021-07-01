@@ -321,17 +321,13 @@ export default class FisholaOpenCVService {
     config: OpenCVDetectionConfig
   ): DetectedShape | undefined {
     // Step 1: read marker
-    const resizeCoef = 4;
+    const resizeCoef = 2.5;
     const picture = this.readAndResize(
       cv,
       pictureElement,
       config.resizeSize * resizeCoef
     );
-    const marker = this.readAndResize(
-      cv,
-      markerElement,
-      config.resizeSize * resizeCoef
-    );
+    const marker = this.readAndResize(cv, markerElement, config.resizeSize);
 
     //  Step 2 : convert it to grayscale
     const grayedPicture = new cv.Mat();
@@ -394,9 +390,12 @@ export default class FisholaOpenCVService {
     });
     const shapeScores: number[] = new Array<number>(markerCandidates.length);
     let bestMarker: DetectedShape | undefined = undefined;
+    let foundSureMatch = false;
+    let bestScore = 0;
     for (
       let i = 0;
-      i < Math.min(matchedFeatures.length, 20) && !bestMarker;
+      i < Math.min(matchedFeatures.length, 2 * config.maxFeatureMatchRequired) &&
+      !foundSureMatch;
       i++
     ) {
       let foundShape = false;
@@ -413,9 +412,13 @@ export default class FisholaOpenCVService {
           foundShape = true;
           if (shapeScores[j]) {
             shapeScores[j]++;
-            // If enough match are contained in the shape, then it is most likely our marker
-            if (shapeScores[j] >= 8) {
+            if (shapeScores[j] >= bestScore) {
               bestMarker = markerCandidate;
+              bestScore = shapeScores[j];
+            }
+            // If enough match are contained in the shape, then it is most likely our marker, stop searching
+            if (shapeScores[j] >= config.maxFeatureMatchRequired) {
+              foundSureMatch = true;
             }
           } else {
             shapeScores[j] = 1;
@@ -425,7 +428,6 @@ export default class FisholaOpenCVService {
     }
 
     // if draw debug mode activated, draw matched featchure
-    console.info(matchedFeatures.length + " matched features");
     if (config.drawDebugCanvas) {
       for (let i = 0; i < Math.min(matchedFeatures.length, 8); i++) {
         const debugFeatureShape = new DetectedShape(
@@ -466,7 +468,12 @@ export default class FisholaOpenCVService {
     markerDescriptors.delete();
     grayedMarker.delete();
     marker.delete();
-    return bestMarker;
+
+    console.error("BEST SCORE ", bestScore, " vs ", config.minFeaturematchRequired);
+    if (bestScore >= config.minFeaturematchRequired) {
+      return bestMarker;
+    }
+    return undefined;
   }
 
   /**

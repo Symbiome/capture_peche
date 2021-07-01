@@ -57,6 +57,16 @@ export class OpenCVDetectionConfig {
   knnDistanceForFeatureMatching = 0.75;
 
   /**
+   * If this number of feature matched is reached for a shap, we will consider it as the marker and stop searching.
+   */
+  maxFeatureMatchRequired = 8;
+
+  /**
+   * Minimal number of feature match required to consider a shape as a marker.
+   */
+  minFeaturematchRequired = 2;
+
+  /**
    * Indicates if we should force to have at least one marker always.
    */
   alwaysAtLeastOneMarker = false;
