@@ -15,6 +15,8 @@ export class OpenCVUtils {
       color = [0, 220, 0, 255];
     } else if (shapeToDraw.isMarker) {
       color = [220, 0, 0, 255];
+    } else if (shapeToDraw.isDebug) {
+      color = [255, 127, 0, 255];
     }
 
     // Draw rectangle around shape

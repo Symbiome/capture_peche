@@ -54,7 +54,7 @@ export class OpenCVDetectionConfig {
   /**
    * Knn distance for feature matching (see https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/). A float around 0.7.
    */
-  knnDistanceForFeatureMatching = 1;
+  knnDistanceForFeatureMatching = 0.75;
 
   /**
    * Indicates if we should force to have at least one marker always.

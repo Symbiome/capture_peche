@@ -66,7 +66,11 @@ export default class FisholaOpenCVService {
 
     // Step 4: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
-      OpenCVUtils.drawShape(cv, output, shape, config.drawDebugCanvas);
+      if (!shape.isDebug) {
+        OpenCVUtils.drawShape(cv, output, shape, config.drawDebugCanvas);
+      } else if (config.drawDebugCanvas) {
+        OpenCVUtils.drawShape(cv, output, shape, true);
+      }
     });
     cv.imshow("canvasOutput3", output);
     output.delete();
@@ -97,12 +101,10 @@ export default class FisholaOpenCVService {
     // Step 2: extract marker form detected shapes
     // TODO change this fixed value
     let ratioBetweenMarkerInCmndMarkerInPx: number = 0.15;
-    let marker: DetectedShape | null = null;
     const markerShapes = closedShapes.filter((shape: DetectedShape) => {
       return shape.isMarker;
     });
     if (markerShapes.length > 0) {
-      marker = markerShapes[0];
       ratioBetweenMarkerInCmndMarkerInPx =
         config.markerSizeInMm / markerShapes[0].width;
     }
@@ -206,9 +208,7 @@ export default class FisholaOpenCVService {
     }
 
     // Step 6: if several markers detected, discriminate them using feature matching
-    const markerCandidates = detectedShapes.filter((shape: DetectedShape) => {
-      return shape.isMarker;
-    });
+    const markerCandidates = detectedShapes.filter((shape) => shape.isMarker);
 
     if (
       markerCandidates.length > 1 ||
@@ -232,6 +232,8 @@ export default class FisholaOpenCVService {
           markerCandidates[0].isMarker = true;
         }
       }
+      const debugShapes = markerCandidates.filter((shape) => shape.isDebug);
+      debugShapes.forEach((debugShape) => detectedShapes.push(debugShape));
     }
 
     if (config.drawDebugCanvas) {
@@ -419,6 +421,42 @@ export default class FisholaOpenCVService {
             shapeScores[j] = 1;
           }
         }
+      }
+    }
+
+    // if draw debug mode activated, draw matched featchure
+    console.info(matchedFeatures.length + " matched features");
+    if (config.drawDebugCanvas) {
+      for (let i = 0; i < Math.min(matchedFeatures.length, 8); i++) {
+        const debugFeatureShape = new DetectedShape(
+          0,
+          0,
+          matchedFeatures[i].x,
+          matchedFeatures[i].y,
+          100,
+          100,
+          JSON.parse(JSON.stringify(markerCandidates[0].vertices))
+        );
+        debugFeatureShape.leftX = matchedFeatures[i].x;
+        debugFeatureShape.topY = matchedFeatures[i].y;
+        // @ts-ignore
+        debugFeatureShape.vertices[0].x = matchedFeatures[i].x;
+        // @ts-ignore
+        debugFeatureShape.vertices[0].y = matchedFeatures[i].y;
+        // @ts-ignore
+        debugFeatureShape.vertices[1].x = matchedFeatures[i].x + 10;
+        // @ts-ignore
+        debugFeatureShape.vertices[1].y = matchedFeatures[i].y;
+        // @ts-ignore
+        debugFeatureShape.vertices[2].x = matchedFeatures[i].x + 10;
+        // @ts-ignore
+        debugFeatureShape.vertices[2].y = matchedFeatures[i].y + 10;
+        // @ts-ignore
+        debugFeatureShape.vertices[3].x = matchedFeatures[i].x;
+        // @ts-ignore
+        debugFeatureShape.vertices[3].y = matchedFeatures[i].y + 10;
+        debugFeatureShape.isDebug = true;
+        markerCandidates.push(debugFeatureShape);
       }
     }
 
