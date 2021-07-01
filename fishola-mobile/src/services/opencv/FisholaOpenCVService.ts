@@ -209,7 +209,6 @@ export default class FisholaOpenCVService {
 
     // Step 6: if several markers detected, discriminate them using feature matching
     const markerCandidates = detectedShapes.filter((shape) => shape.isMarker);
-    console.error(markerCandidates.length)
     if (
       markerCandidates.length > 1 ||
       (markerCandidates.length == 1 && config.alwaysCheckMarkerCandidates)
@@ -315,37 +314,16 @@ export default class FisholaOpenCVService {
     markerCandidates: DetectedShape[],
     config: OpenCVDetectionConfig
   ): DetectedShape | undefined {
-    // Step 1: read marker
-    const resizeCoef = 2.5;
-    const picture = this.readAndResize(
-      cv,
-      pictureElement,
-      config.resizeSize * resizeCoef
-    );
+    // First, read marker and find its feature
+    // See https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/
+    // And https://docs.opencv.org/4.5.2/dc/dc3/tutorial_py_matcher.html
     const marker = this.readAndResize(cv, markerElement, config.resizeSize);
-
-    //  Step 2 : convert it to grayscale
-    const grayedPicture = new cv.Mat();
-    cv.cvtColor(picture, grayedPicture, cv.COLOR_BGR2GRAY);
     const grayedMarker = new cv.Mat();
     cv.cvtColor(marker, grayedMarker, cv.COLOR_BGR2GRAY);
 
-    // Step 3: Detect Features & Compute Descriptors
-    // See https://scottsuhy.com/2021/02/01/image-alignment-feature-based-in-opencv-js-javascript/
-    // And https://docs.opencv.org/4.5.2/dc/dc3/tutorial_py_matcher.html
-    const pictureKeypoints = new cv.KeyPointVector();
     const markerKeypoints = new cv.KeyPointVector();
-    const pictureDescriptors = new cv.Mat();
     const markerDescriptors = new cv.Mat();
-
     const orb = new cv.AKAZE();
-
-    orb.detectAndCompute(
-      grayedPicture,
-      new cv.Mat(),
-      pictureKeypoints,
-      pictureDescriptors
-    );
     orb.detectAndCompute(
       grayedMarker,
       new cv.Mat(),
@@ -353,114 +331,98 @@ export default class FisholaOpenCVService {
       markerDescriptors
     );
 
-    // Step 4: perform feature matching
-    const matchedFeatures: FeatureMatch[] = [];
-    const bf = new cv.BFMatcher();
-    const matches = new cv.DMatchVectorVector();
+    const resizeCoef = 2;
 
-    bf.knnMatch(pictureDescriptors, markerDescriptors, matches, 2);
-
-    for (let i = 0; i < matches.size(); ++i) {
-      const match = matches.get(i);
-      const dMatch1 = match.get(0);
-      const dMatch2 = match.get(1);
-      if (
-        dMatch1.distance <=
-        dMatch2.distance * config.knnDistanceForFeatureMatching
-      ) {
-        const featureMatch = new FeatureMatch();
-        const correspondingPointInPicture = pictureKeypoints.get(
-          dMatch1.queryIdx
-        ).pt;
-        featureMatch.x = correspondingPointInPicture.x / resizeCoef;
-        featureMatch.y = correspondingPointInPicture.y / resizeCoef;
-        featureMatch.distance = dMatch1.distance;
-        matchedFeatures.push(featureMatch);
-      }
-    }
-
-    // Step 5: sort matched features and iterate over each match
-    matchedFeatures.sort((match1: any, match2: any) => {
-      return match1.distance - match2.distance;
-    });
+    // Then for each marker candidate
     const shapeScores: number[] = new Array<number>(markerCandidates.length);
     let bestMarker: DetectedShape | undefined = undefined;
     let foundSureMatch = false;
     let bestScore = 0;
-    for (
-      let i = 0;
-      i <
-        Math.min(matchedFeatures.length, 2 * config.maxFeatureMatchRequired) &&
-      !foundSureMatch;
-      i++
-    ) {
-      let foundShape = false;
-      for (let j = 0; j < markerCandidates.length && !foundShape; j++) {
-        const markerCandidate = markerCandidates[j];
-        // Each time a matched feature is inside a detected shape, we increment the shape's score
+    for (let j = 0; j < markerCandidates.length && !foundSureMatch; j++) {
+      const markerCandidate = markerCandidates[j];
+      // Step 1: read and crop image (only keep zone of image corresponding to marker candidate)
+      let picture = this.readAndResize(
+        cv,
+        pictureElement,
+        config.resizeSize * resizeCoef
+      );
+      const zoneOfInterest = new cv.Rect(
+        Math.min(picture.cols, markerCandidate.leftX * resizeCoef),
+        Math.min(picture.rows, markerCandidate.topY * resizeCoef),
+        Math.min(
+          picture.cols - markerCandidate.leftX * resizeCoef,
+          markerCandidate.width * resizeCoef
+        ),
+        Math.min(
+          picture.rows - markerCandidate.topY * resizeCoef,
+          markerCandidate.width * resizeCoef
+        )
+      );
+      picture = picture.roi(zoneOfInterest);
+
+      //  Step 2 : convert it to grayscale
+      const grayedPicture = new cv.Mat();
+      cv.cvtColor(picture, grayedPicture, cv.COLOR_BGR2GRAY);
+
+      // Step 3: Detect Features & Compute Descriptors
+      const pictureKeypoints = new cv.KeyPointVector();
+      const pictureDescriptors = new cv.Mat();
+      orb.detectAndCompute(
+        grayedPicture,
+        new cv.Mat(),
+        pictureKeypoints,
+        pictureDescriptors
+      );
+
+      // Step 4: perform feature matching with the expected marker features
+      const matchedFeatures: FeatureMatch[] = [];
+      const bf = new cv.BFMatcher();
+      const matches = new cv.DMatchVectorVector();
+
+      bf.knnMatch(pictureDescriptors, markerDescriptors, matches, 2);
+
+      for (let i = 0; i < matches.size(); ++i) {
+        const match = matches.get(i);
+        const dMatch1 = match.get(0);
+        const dMatch2 = match.get(1);
         if (
-          matchedFeatures[i].x >= markerCandidate.leftX &&
-          matchedFeatures[i].x <=
-            markerCandidate.leftX + markerCandidate.width &&
-          matchedFeatures[i].y >= markerCandidate.topY &&
-          matchedFeatures[i].y <= markerCandidate.topY + markerCandidate.width
+          dMatch1.distance <=
+          dMatch2.distance * config.knnDistanceForFeatureMatching
         ) {
-          foundShape = true;
-          if (shapeScores[j]) {
-            shapeScores[j]++;
-            if (shapeScores[j] >= bestScore) {
-              bestMarker = markerCandidate;
-              bestScore = shapeScores[j];
-            }
-            // If enough match are contained in the shape, then it is most likely our marker, stop searching
-            if (shapeScores[j] >= config.maxFeatureMatchRequired) {
-              foundSureMatch = true;
-            }
-          } else {
-            shapeScores[j] = 1;
-          }
+          const featureMatch = new FeatureMatch();
+          const correspondingPointInPicture = pictureKeypoints.get(
+            dMatch1.queryIdx
+          ).pt;
+          featureMatch.x = correspondingPointInPicture.x / resizeCoef;
+          featureMatch.y = correspondingPointInPicture.y / resizeCoef;
+          featureMatch.distance = dMatch1.distance;
+          matchedFeatures.push(featureMatch);
         }
       }
-    }
 
-    // if draw debug mode activated, draw matched featchure
-    if (config.drawDebugCanvas) {
-      for (let i = 0; i < Math.min(matchedFeatures.length, 8); i++) {
-        const debugFeatureShape = new DetectedShape(
-          0,
-          0,
-          matchedFeatures[i].x,
-          matchedFeatures[i].y,
-          100,
-          100,
-          JSON.parse(JSON.stringify(markerCandidates[0].vertices))
-        );
-        debugFeatureShape.leftX = matchedFeatures[i].x;
-        debugFeatureShape.topY = matchedFeatures[i].y;
-        // @ts-ignore
-        debugFeatureShape.vertices[0].x = matchedFeatures[i].x;
-        // @ts-ignore
-        debugFeatureShape.vertices[0].y = matchedFeatures[i].y;
-        // @ts-ignore
-        debugFeatureShape.vertices[1].x = matchedFeatures[i].x + 10;
-        // @ts-ignore
-        debugFeatureShape.vertices[1].y = matchedFeatures[i].y;
-        // @ts-ignore
-        debugFeatureShape.vertices[2].x = matchedFeatures[i].x + 10;
-        // @ts-ignore
-        debugFeatureShape.vertices[2].y = matchedFeatures[i].y + 10;
-        // @ts-ignore
-        debugFeatureShape.vertices[3].x = matchedFeatures[i].x;
-        // @ts-ignore
-        debugFeatureShape.vertices[3].y = matchedFeatures[i].y + 10;
-        debugFeatureShape.isDebug = true;
-        markerCandidates.push(debugFeatureShape);
+      // Step 5: sort matched features and iterate over each match
+      matchedFeatures.sort((match1: any, match2: any) => {
+        return match1.distance - match2.distance;
+      });
+      shapeScores[j] = matchedFeatures.length;
+      if (shapeScores[j] >= bestScore) {
+        bestMarker = markerCandidate;
+        bestScore = shapeScores[j];
       }
+      // If enough match are contained in the shape, then it is most likely our marker, stop searching
+      if (shapeScores[j] >= config.maxFeatureMatchRequired) {
+        foundSureMatch = true;
+      }
+
+      pictureKeypoints.delete();
+      pictureDescriptors.delete();
+      picture.delete();
+      grayedPicture.delete();
+
+      console.error(matchedFeatures.length + " for marker " + j);
     }
 
-    pictureKeypoints.delete();
     markerKeypoints.delete();
-    pictureDescriptors.delete();
     markerDescriptors.delete();
     grayedMarker.delete();
     marker.delete();
