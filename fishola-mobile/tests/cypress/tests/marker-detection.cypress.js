@@ -67,6 +67,9 @@ describe("Détection de marqueurs", () => {
               expectedMarkerCount,
               "Mauvais nombre de marqueurs détectés"
             );
+            if ((actualMarkerCount == 0)) {
+              return;
+            }
             const markerSize = rawMeasureText
               .split("Détecté : Marqueur")[1]
               .split("mm (")[1]

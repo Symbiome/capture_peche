@@ -145,8 +145,7 @@ export default class FisholaOpenCVService {
     const blurSize = new cv.Size(7, 7);
     cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
 
-    // Step 3: perform edge detection, then perform a dilation + erosion to
-    // close gaps in between object edges
+    // Step 3: perform edge detection, then perform a dilation
     // Step 3.1 : edge detection https://docs.opencv.org/3.4/da/d22/tutorial_py_canny.html
     cv.Canny(refined2, refined1, 50, 100, 3, false);
     // Step 3.2 : dilation https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
@@ -338,6 +337,9 @@ export default class FisholaOpenCVService {
     let bestMarker: DetectedShape | undefined = undefined;
     let foundSureMatch = false;
     let bestScore = 0;
+    console.info(
+      markerCandidates.length + " marker candidates (squared shapes) to study"
+    );
     for (let j = 0; j < markerCandidates.length && !foundSureMatch; j++) {
       const markerCandidate = markerCandidates[j];
       // Step 1: read and crop image (only keep zone of image corresponding to marker candidate)
@@ -419,7 +421,14 @@ export default class FisholaOpenCVService {
       picture.delete();
       grayedPicture.delete();
 
-      console.error(matchedFeatures.length + " for marker " + j);
+      console.info(
+        matchedFeatures.length +
+          " matched features for marker (" +
+          Math.round(markerCandidate.centerX) +
+          "," +
+          Math.round(markerCandidate.topY) +
+          ")"
+      );
     }
 
     markerKeypoints.delete();

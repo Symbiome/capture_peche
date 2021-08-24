@@ -28,6 +28,7 @@
               OpenCV - Mesure automatique de poisson
 
               <input
+                v-if="openCVLoaded"
                 type="file"
                 id="fileInput"
                 name="file"
@@ -65,7 +66,7 @@
               </div>
             </div>
 
-            <div class="params">
+            <div class="params" v-if="openCVLoaded">
               <div class="params-item">
                 <img
                   style="display:none"
