@@ -22,89 +22,122 @@
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
-      <PicturePreview v-bind:src="pictureSrc"
-                      v-bind:modifiable="modifiable"
-                      noPictureText="Appuyer pour ajouter une photo"
-                      v-on:take-picture="takePicture" />
-      <input type="file"
-             accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG"
-             id="cameraInput"
-             name="cameraInput"
-             v-on:change="pictureTaken"
-             style="display: none;"
-             ref="fileInput">
+      <PicturePreview
+        v-bind:src="pictureSrc"
+        v-bind:modifiable="modifiable"
+        noPictureText="Appuyer pour ajouter une photo"
+        v-on:take-picture="takePicture"
+      />
+      <input
+        type="file"
+        accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG"
+        id="cameraInput"
+        name="cameraInput"
+        v-on:change="pictureTaken"
+        style="display: none;"
+        ref="fileInput"
+      />
     </div>
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
         <div class="pane-content rounded" v-if="ready">
           <h1>
-            <BackButton class="hide-on-mobile"/>
+            <BackButton class="hide-on-mobile" />
             Capture
           </h1>
 
           <span v-if="catchPositionError" class="position-error">
-            <i class="icon-warning"/>
-            {{catchPositionError}}
+            <i class="icon-warning" />
+            {{ catchPositionError }}
           </span>
 
           <div class="catch-picture-desktop-and-form">
             <div class="catch-picture-desktop hide-on-mobile">
-              <PicturePreview v-bind:src="pictureSrc"
-                              v-bind:modifiable="modifiable"
-                              noPictureText="Appuyer pour ajouter une photo"
-                              v-on:take-picture="takePicture" />
+              <PicturePreview
+                v-bind:src="pictureSrc"
+                v-bind:modifiable="modifiable"
+                noPictureText="Appuyer pour ajouter une photo"
+                v-on:take-picture="takePicture"
+              />
             </div>
 
             <div class="edit-catch-form">
-              <div :class="{'two-columns-row-on-desktop': aCatch.speciesId == '__other__'}">
-                <FormSelect name="species"
-                            label="Espèce"
-                            v-bind:options="allSpeciesWithAliases"
-                            v-model="aCatch.speciesId"
-                            v-bind:error="speciesIdError"
-                            v-bind:readonly="!modifiable"/>
-                <FormInput name="otherSpecies"
-                          label="Si autre"
-                          type="text"
-                          placeholder="Renseigner l’espèce"
-                          v-model="aCatch.otherSpecies"
-                          v-bind:error="otherSpeciesError"
-                          v-bind:readonly="!modifiable"
-                          v-if="aCatch.speciesId == '__other__'"/>
+              <div
+                :class="{
+                  'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
+                }"
+              >
+                <FormSelect
+                  name="species"
+                  label="Espèce"
+                  v-bind:options="allSpeciesWithAliases"
+                  v-model="aCatch.speciesId"
+                  v-bind:error="speciesIdError"
+                  v-bind:readonly="!modifiable"
+                />
+                <FormInput
+                  name="otherSpecies"
+                  label="Si autre"
+                  type="text"
+                  placeholder="Renseigner l’espèce"
+                  v-model="aCatch.otherSpecies"
+                  v-bind:error="otherSpeciesError"
+                  v-bind:readonly="!modifiable"
+                  v-if="aCatch.speciesId == '__other__'"
+                />
               </div>
               <div class="two-columns-row-on-desktop">
                 <div>
-                  <FormInput name="size"
-                            :label="sizeLabel"
-                            type="number"
-                            :min="1"
-                            placeholder="Entrez une taille en centimètres"
-                            v-model="aCatch.size"
-                            v-bind:error="sizeError"
-                            v-bind:readonly="!modifiable"/>
-                  <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
-                    <i class="icon-info"/>
+                  <div class="button button-secondary-no-outline" v-if="modifiable">
+                    <button @click="displayMeasurementPicturePopup = !displayMeasurementPicturePopup">
+                      <i class="icon-size" /> Mesure automatique
+                    </button>
+                  </div>
+                  <FormInput
+                    name="size"
+                    :label="sizeLabel"
+                    type="number"
+                    :min="1"
+                    placeholder="Entrez une taille en centimètres"
+                    v-model="aCatch.size"
+                    v-bind:error="sizeError"
+                    v-bind:readonly="!modifiable"
+                  />
+                  <div
+                    class="multiple-catchs-info"
+                    v-if="multipleCatchsAllowed"
+                  >
+                    <i class="icon-info" />
                     <span>
-                      Indiquez le poids total de vos captures si vous en avez plusieurs pour cette espèce
+                      Indiquez le poids total de vos captures si vous en avez
+                      plusieurs pour cette espèce
                     </span>
                   </div>
                 </div>
-                <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)"
-                          name="weight"
-                          label="Poids en g (optionnel)"
-                          type="number"
-                          :min="1"
-                          placeholder="Entrez un poids en grammes"
-                          v-model="aCatch.weight"
-                          v-bind:error="weightError"
-                          v-bind:readonly="!modifiable"/>
+                <FormInput
+                  v-if="aCatch.weight || (settings && settings.promptWeight)"
+                  name="weight"
+                  label="Poids en g (optionnel)"
+                  type="number"
+                  :min="1"
+                  placeholder="Entrez un poids en grammes"
+                  v-model="aCatch.weight"
+                  v-bind:error="weightError"
+                  v-bind:readonly="!modifiable"
+                />
               </div>
               <div class="two-columns-row-on-desktop">
-                <FormYesNo name="keep"
-                          v-bind:label="tripMode == 'Live' ? 'Conservez-vous ce poisson ?' : 'Avez-vous conservé ce poisson ?'"
-                          v-model="aCatch.keep"
-                          v-bind:error="keepError"
-                          v-bind:readonly="!modifiable"/>
+                <FormYesNo
+                  name="keep"
+                  v-bind:label="
+                    tripMode == 'Live'
+                      ? 'Conservez-vous ce poisson ?'
+                      : 'Avez-vous conservé ce poisson ?'
+                  "
+                  v-model="aCatch.keep"
+                  v-bind:error="keepError"
+                  v-bind:readonly="!modifiable"
+                />
                 <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
                 <!--FormSelect name="releaseState"
                             label="État du poisson relâché"
@@ -112,40 +145,50 @@
                             v-model="aCatch.releasedStateId"
                             v-bind:error="releasedStateIdError"
                             v-bind:readonly="!modifiable"/-->
-                <FormSelect name="technique"
-                            label="Technique de pêche"
-                            v-bind:options="allTechniques"
-                            v-model="aCatch.techniqueId"
-                            v-bind:error="techniqueIdError"
-                            v-bind:readonly="!modifiable"/>
+                <FormSelect
+                  name="technique"
+                  label="Technique de pêche"
+                  v-bind:options="allTechniques"
+                  v-model="aCatch.techniqueId"
+                  v-bind:error="techniqueIdError"
+                  v-bind:readonly="!modifiable"
+                />
               </div>
               <div class="two-columns-row-on-desktop">
-                <FormTextarea name="description"
-                              label="Observation (optionnelle)"
-                              placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
-                              v-model="aCatch.description"
-                              v-bind:readonly="!modifiable"/>
-                <FormInput name="caughtAt"
-                          label="Heure de la capture (optionnelle)"
-                          type="time"
-                          v-model="caughtAt"
-                          v-bind:readonly="!modifiable"/>
+                <FormTextarea
+                  name="description"
+                  label="Observation (optionnelle)"
+                  placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
+                  v-model="aCatch.description"
+                  v-bind:readonly="!modifiable"
+                />
+                <FormInput
+                  name="caughtAt"
+                  label="Heure de la capture (optionnelle)"
+                  type="time"
+                  v-model="caughtAt"
+                  v-bind:readonly="!modifiable"
+                />
               </div>
-              <FormToggle v-if="withSample
-                                || ( settings
-                                    && settings.promptSamples
-                                    && (authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-                                  )"
-                          label="Prélèvement (optionnel)"
-                          v-model="withSample"
-                          v-bind:readonly="!modifiable"/>
+              <FormToggle
+                v-if="
+                  withSample ||
+                    (settings &&
+                      settings.promptSamples &&
+                      authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) !=
+                        -1)
+                "
+                label="Prélèvement (optionnel)"
+                v-model="withSample"
+                v-bind:readonly="!modifiable"
+              />
               <div class="sample two-columns-row-on-desktop" v-if="withSample">
-
-                <div class="info"
-                    v-if="samplesDocumentationUrl">
+                <div class="info" v-if="samplesDocumentationUrl">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
                   d'un kit dans un des points de collecte :
-                  <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
+                  <a :href="samplesDocumentationUrl" target="_blank"
+                    >consulter la liste</a
+                  >
                 </div>
 
                 <div class="sample-id-container">
@@ -153,26 +196,25 @@
                     Numéro d'échantillon à reporter :
                   </div>
                   <div v-if="!sampleIdReady" class="spinner">&nbsp;</div>
-                  <div class="sample-id"
-                      v-if="sampleIdReady">
-                    {{aCatch.sampleId}}
+                  <div class="sample-id" v-if="sampleIdReady">
+                    {{ aCatch.sampleId }}
                   </div>
                 </div>
-
               </div>
 
               <div v-if="!inCreation" class="location">
                 <!-- <div class="separator"></div>
                 <p>Emplacement de la capture</p> -->
                 <div class="empty" v-if="!gpsLocation">
-                  <i class="icon icon-warning"></i> Aucune position enregistrée pour cette prise
+                  <i class="icon icon-warning"></i> Aucune position enregistrée
+                  pour cette prise
                 </div>
                 <div class="map" v-if="gpsLocation">
                   <l-map
                     :zoom="16"
                     :center="gpsLocation"
                     :options="{
-                      zoomSnap: 0.5
+                      zoomSnap: 0.5,
                     }"
                     style="height: 100%; width: 100%;"
                   >
@@ -182,7 +224,6 @@
                     />
 
                     <l-marker :lat-lng="gpsLocation"></l-marker>
-
                   </l-map>
                 </div>
               </div>
@@ -190,7 +231,8 @@
               <div class="buttons-bar hide-on-mobile">
                 <div class="button button-primary" v-if="modifiable">
                   <button v-on:click="validateClicked">
-                    <i class="icon-fish"/> {{inCreation ? 'Valider' : 'Enregistrer'}}
+                    <i class="icon-fish" />
+                    {{ inCreation ? "Valider" : "Enregistrer" }}
                   </button>
                 </div>
                 <div class="button button-secondary" v-if="inCreation">
@@ -198,65 +240,78 @@
                     Annuler
                   </button>
                 </div>
-                <div class="button button-danger" v-if="!inCreation && modifiable">
+                <div
+                  class="button button-danger"
+                  v-if="!inCreation && modifiable"
+                >
                   <button v-on:click="deleteCatch">
-                    <i class="icon-delete"/> Supprimer
+                    <i class="icon-delete" /> Supprimer
                   </button>
                 </div>
               </div>
-
-            </div> <!-- edit-catch-form -->
-          </div> <!-- catch-picture-desktop-and-form -->
+            </div>
+            <!-- edit-catch-form -->
+          </div>
+          <!-- catch-picture-desktop-and-form -->
 
           <div class="bottom-page-spacer keyboardSensitive"></div>
         </div>
       </div>
     </div>
-    <FisholaFooter v-if="ready && modifiable"
-                   v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
-                   button-icon="icon-fish"
-                   v-on:buttonClicked="validateClicked"
-                   v-on:deleteClicked="deleteCatch"
-                   v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"/>
-    <FisholaFooter v-if="ready && !modifiable"
-                   shortcuts="back,spacer,blank"/>
+    <MeasurementPicturePopup v-if="displayMeasurementPicturePopup" />
+    <FisholaFooter
+      v-if="ready && modifiable"
+      v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
+      button-icon="icon-fish"
+      v-on:buttonClicked="validateClicked"
+      v-on:deleteClicked="deleteCatch"
+      v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
+    />
+    <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
   </div>
 </template>
 
 <script lang="ts">
-import {TripBean, CatchBean, Technique, SpeciesWithAlias, TripMode} from '@/pojos/BackendPojos';
-import CatchSummary from '@/pojos/CatchSummary';
+import {
+  TripBean,
+  CatchBean,
+  Technique,
+  SpeciesWithAlias,
+  TripMode,
+} from "@/pojos/BackendPojos";
+import CatchSummary from "@/pojos/CatchSummary";
 
-import PicturesService from '@/services/PicturesService';
-import TripsService from '@/services/TripsService';
-import {SpeciesWithAliasAndTechnique} from '@/services/ReferentialService';
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/services/Helpers';
-import GeolocationService from '@/services/GeolocationService';
+import PicturesService from "@/services/PicturesService";
+import TripsService from "@/services/TripsService";
+import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
+import ReferentialService from "@/services/ReferentialService";
+import Helpers from "@/services/Helpers";
+import GeolocationService from "@/services/GeolocationService";
 
-import {UserSettings} from '@/pojos/BackendPojos';
-import ProfileService from '@/services/ProfileService';
+import { UserSettings } from "@/pojos/BackendPojos";
+import ProfileService from "@/services/ProfileService";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import BackButton from '@/components/common/BackButton.vue'
-import FormSelect from '@/components/common/FormSelect.vue'
-import FormToggle from '@/components/common/FormToggle.vue'
-import FormInput from '@/components/common/FormInput.vue'
-import FormYesNo from '@/components/common/FormYesNo.vue'
-import FormTextarea from '@/components/common/FormTextarea.vue'
-import PicturePreview from '@/components/trip/PicturePreview.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue"
+import BackButton from "@/components/common/BackButton.vue";
+import FormSelect from "@/components/common/FormSelect.vue";
+import FormToggle from "@/components/common/FormToggle.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import FormYesNo from "@/components/common/FormYesNo.vue";
+import FormTextarea from "@/components/common/FormTextarea.vue";
+import PicturePreview from "@/components/trip/PicturePreview.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import router from '../../router';
-import Constants from '../../services/Constants';
-import DocumentationService from '@/services/DocumentationService';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import router from "../../router";
+import Constants from "../../services/Constants";
+import DocumentationService from "@/services/DocumentationService";
 
-import { Plugins, CameraResultType } from '@capacitor/core';
+import { Plugins, CameraResultType } from "@capacitor/core";
 const { Camera } = Plugins;
 const { Device } = Plugins;
 
-import { latLng, LatLng, Icon } from 'leaflet';
+import { latLng, LatLng, Icon } from "leaflet";
 
 type D = Icon.Default & {
   _getIconUrl?: string;
@@ -265,12 +320,12 @@ type D = Icon.Default & {
 delete (Icon.Default.prototype as D)._getIconUrl;
 
 Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
+import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
 
 @Component({
   components: {
@@ -285,70 +340,76 @@ import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
     LMap,
     LTileLayer,
     LMarker,
-    FisholaFooter
-  }
+    MeasurementPicturePopup,
+    FisholaFooter,
+  },
 })
 export default class EditCatchView extends Vue {
+  @Prop() tripId!: string;
+  @Prop() catchId!: string;
 
-  @Prop() tripId!:string;
-  @Prop() catchId!:string;
+  platform: string = "";
 
-  platform:string = '';
-
-  settings:UserSettings | null = null;
+  settings: UserSettings | null = null;
 
   // On est obligés de gérer un flag de ce genre, sinon les FormSelect
   // sont créés à vide et ne sélectionnent pas les bonnes valeurs
-  ready:boolean = false;
+  ready: boolean = false;
 
-  tripDate?:Date;
-  tripMode:TripMode = 'Live';
-  tripSpeciesIds:string[] = [];
-  tripOtherSpecies:string = '';
-  aCatch: CatchSummary = {id: ''};
+  tripDate?: Date;
+  tripMode: TripMode = "Live";
+  tripSpeciesIds: string[] = [];
+  tripOtherSpecies: string = "";
+  aCatch: CatchSummary = { id: "" };
 
-  pictureSrc:string = '';
-  newPictureTaken:boolean = false;
+  pictureSrc: string = "";
+  newPictureTaken: boolean = false;
 
-  caughtAt:string = '';
+  caughtAt: string = "";
 
-  defaultSizeLabel:string = "Taille en cm";
-  sizeLabel:string = this.defaultSizeLabel;
-  multipleCatchsAllowed:boolean = false;
+  defaultSizeLabel: string = "Taille en cm";
+  sizeLabel: string = this.defaultSizeLabel;
+  multipleCatchsAllowed: boolean = false;
 
-  catchPositionError:string = '';
-  speciesIdError:string = '';
-  otherSpeciesError:string = '';
-  sizeError:string = '';
-  weightError:string = '';
-  keepError:string = '';
-  releasedStateIdError:string = '';
-  techniqueIdError:string = '';
+  catchPositionError: string = "";
+  speciesIdError: string = "";
+  otherSpeciesError: string = "";
+  sizeError: string = "";
+  weightError: string = "";
+  keepError: string = "";
+  releasedStateIdError: string = "";
+  techniqueIdError: string = "";
 
-  modifiable:boolean = true;
-  inCreation:boolean = true;
-  inTripCreation:boolean = true;
-  middleShortcut:string = '';
-  rightShortcut:string = 'delete';
+  modifiable: boolean = true;
+  inCreation: boolean = true;
+  inTripCreation: boolean = true;
+  middleShortcut: string = "";
+  rightShortcut: string = "delete";
 
-  allSpeciesWithAliases:SpeciesWithAlias[] = [];
-  allTechniques:Technique[] = [];
+  allSpeciesWithAliases: SpeciesWithAlias[] = [];
+  allTechniques: Technique[] = [];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
-  withSample:boolean = false;
-  samplesDocumentationUrl:string = '';
-  sampleIdReady:boolean = false;
-  authorizedSampleSpeciesIds:string[] = [];
+  withSample: boolean = false;
+  samplesDocumentationUrl: string = "";
+  sampleIdReady: boolean = false;
+  authorizedSampleSpeciesIds: string[] = [];
 
-  gpsLocation:LatLng|null = null;
+  gpsLocation: LatLng | null = null;
 
+  displayMeasurementPicturePopup = false;
   created() {
-    TripsService.getTripAndCatch(this.tripId, this.catchId, this.tripAndCatchLoaded);
+    TripsService.getTripAndCatch(
+      this.tripId,
+      this.catchId,
+      this.tripAndCatchLoaded
+    );
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
 
-    Device.getInfo()
-      .then(info => {this.platform = info.platform});
+    Device.getInfo().then((info) => {
+      this.platform = info.platform;
+    });
   }
 
   mounted() {
@@ -356,70 +417,84 @@ export default class EditCatchView extends Vue {
   }
 
   loadSettings() {
-    ProfileService.getSettings()
-      .then(this.settingsLoaded);
+    ProfileService.getSettings().then(this.settingsLoaded);
   }
 
-  settingsLoaded(settings:UserSettings) {
+  settingsLoaded(settings: UserSettings) {
     this.settings = settings;
   }
 
-  tripAndCatchLoaded(someTrip:TripBean, someCatch:CatchSummary) {
-    const lakeId:string = someTrip.lakeId;
+  tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
+    const lakeId: string = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
     if (!someCatch.speciesId && someCatch.otherSpecies) {
-      someCatch.speciesId = '__other__';
+      someCatch.speciesId = "__other__";
     }
     this.inTripCreation = !someTrip.createdOn;
-    this.middleShortcut = (this.inTripCreation ? 'step-3-4':'spacer');
-    this.modifiable = (this.inTripCreation || !!someTrip.modifiableUntil);
+    this.middleShortcut = this.inTripCreation ? "step-3-4" : "spacer";
+    this.modifiable = this.inTripCreation || !!someTrip.modifiableUntil;
     this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
 
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
-      if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
-        const seconds:number = Helpers.computeDurationInSeconds(someTrip.startedAt, someCatch.caughtAt!);
-        this.rightShortcut = 'timer-' + seconds;
+      if (this.inCreation && this.inTripCreation && this.tripMode == "Live") {
+        const seconds: number = Helpers.computeDurationInSeconds(
+          someTrip.startedAt,
+          someCatch.caughtAt!
+        );
+        this.rightShortcut = "timer-" + seconds;
       }
     }
 
-    PicturesService.getPicture(someCatch.id)
-      .then(this.pictureLoaded, this.noPictureFound);
+    PicturesService.getPicture(someCatch.id).then(
+      this.pictureLoaded,
+      this.noPictureFound
+    );
 
     if (someCatch.sampleId) {
       this.sampleIdReady = true;
       this.withSample = true;
     }
 
-    ReferentialService.getSpeciesAndTechniques(lakeId)
-      .then(this.referentialLoaded);
+    ReferentialService.getSpeciesAndTechniques(lakeId).then(
+      this.referentialLoaded
+    );
 
-    if (this.inCreation && this.inTripCreation && this.tripMode == 'Live') {
-      GeolocationService.checkWatchAndGetPositionUntilTimeout()
-        .then(
-          (position) => {
-            this.aCatch.latitude = position.coords.latitude;
-            this.aCatch.longitude = position.coords.longitude;
-            console.info(`Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`);
-          },
-          (e) => {
-            console.error("Error while geting location from geolocation service", JSON.stringify(e));
-            if (JSON.stringify(e).indexOf('location unavailable') != -1) {
-              this.catchPositionError = "La position n'est pas activée, la capture ne sera pas geolocalisée";
-              if (!GeolocationService.notifiedPositionDisabled) {
-                GeolocationService.notifiedPositionDisabled = true;
-                Helpers.alert(this.$modal, 'Vous devez activer la localisation de l\'appareil pour que FISHOLA puisse acquérir votre position', 'La position n\'est pas activée');
-              }
-            } else if (JSON.stringify(e).indexOf('User denied') != -1) {
-              this.catchPositionError = "Partage de position refusé, la capture ne sera pas geolocalisée";
+    if (this.inCreation && this.inTripCreation && this.tripMode == "Live") {
+      GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
+        (position) => {
+          this.aCatch.latitude = position.coords.latitude;
+          this.aCatch.longitude = position.coords.longitude;
+          console.info(
+            `Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`
+          );
+        },
+        (e) => {
+          console.error(
+            "Error while geting location from geolocation service",
+            JSON.stringify(e)
+          );
+          if (JSON.stringify(e).indexOf("location unavailable") != -1) {
+            this.catchPositionError =
+              "La position n'est pas activée, la capture ne sera pas geolocalisée";
+            if (!GeolocationService.notifiedPositionDisabled) {
+              GeolocationService.notifiedPositionDisabled = true;
+              Helpers.alert(
+                this.$modal,
+                "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
+                "La position n'est pas activée"
+              );
             }
-
+          } else if (JSON.stringify(e).indexOf("User denied") != -1) {
+            this.catchPositionError =
+              "Partage de position refusé, la capture ne sera pas geolocalisée";
           }
-        );
+        }
+      );
     }
 
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
@@ -427,57 +502,67 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  pictureLoaded(content:string) {
+  pictureLoaded(content: string) {
     this.pictureSrc = content;
   }
 
   noPictureFound() {
     if (this.aCatch.hasPicture) {
-      this.pictureSrc = Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`);
+      this.pictureSrc = Constants.apiUrl(
+        `/v1/pictures/${this.aCatch.id}/preview`
+      );
     }
   }
 
-  embedAlias(s:SpeciesWithAlias):SpeciesWithAlias {
-    const result:SpeciesWithAlias = {
+  embedAlias(s: SpeciesWithAlias): SpeciesWithAlias {
+    const result: SpeciesWithAlias = {
       id: s.id,
-      name: s.alias ? (`${s.alias} (${s.name})`) : s.name,
+      name: s.alias ? `${s.alias} (${s.name})` : s.name,
       builtIn: s.builtIn,
       mandatorySize: s.mandatorySize,
-      authorizedSample: s.authorizedSample
+      authorizedSample: s.authorizedSample,
     };
     return result;
   }
 
-  referentialLoaded(data:SpeciesWithAliasAndTechnique) {
+  referentialLoaded(data: SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
-      if (s.builtIn // Espèce de base
-          || this.aCatch.speciesId == s.id // Espèce custom sélectionnée pour la capture
-          || this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
-        ) {
-        const speciesWithAlias:SpeciesWithAlias = this.embedAlias(s);
+      if (
+        s.builtIn || // Espèce de base
+        this.aCatch.speciesId == s.id || // Espèce custom sélectionnée pour la capture
+        this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+      ) {
+        const speciesWithAlias: SpeciesWithAlias = this.embedAlias(s);
         this.allSpeciesWithAliases.push(speciesWithAlias);
         if (s.authorizedSample) {
           this.authorizedSampleSpeciesIds.push(s.id);
         }
       }
     });
-     // Espèce custom sélectionnée pour la sortie mais pas encore synchro
+    // Espèce custom sélectionnée pour la sortie mais pas encore synchro
     if (this.tripOtherSpecies) {
-      this.tripOtherSpecies
-        .split(',')
-        .forEach((name) => {
-          const customSpecies:SpeciesWithAlias = {
-            id: name,
-            name: name,
-            builtIn: false,
-            mandatorySize: false,
-            authorizedSample: false
-          };
-          this.allSpeciesWithAliases.push(customSpecies);
+      this.tripOtherSpecies.split(",").forEach((name) => {
+        const customSpecies: SpeciesWithAlias = {
+          id: name,
+          name: name,
+          builtIn: false,
+          mandatorySize: false,
+          authorizedSample: false,
+        };
+        this.allSpeciesWithAliases.push(customSpecies);
       });
     }
-    this.allSpeciesWithAliases = Vue.lodash.orderBy(this.allSpeciesWithAliases, 'name');
-    this.allSpeciesWithAliases.push({id:'__other__', name:'Autre ...', builtIn: false, mandatorySize: false, authorizedSample: false});
+    this.allSpeciesWithAliases = Vue.lodash.orderBy(
+      this.allSpeciesWithAliases,
+      "name"
+    );
+    this.allSpeciesWithAliases.push({
+      id: "__other__",
+      name: "Autre ...",
+      builtIn: false,
+      mandatorySize: false,
+      authorizedSample: false,
+    });
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
@@ -490,10 +575,10 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  isMandatorySize(speciesId?:string):boolean {
+  isMandatorySize(speciesId?: string): boolean {
     let result = true;
     if (speciesId) {
-      this.allSpeciesWithAliases.forEach((s:SpeciesWithAlias) => {
+      this.allSpeciesWithAliases.forEach((s: SpeciesWithAlias) => {
         if (s.id == speciesId && s.mandatorySize === false) {
           result = false;
         }
@@ -502,12 +587,12 @@ export default class EditCatchView extends Vue {
     return result;
   }
 
-  @Watch('aCatch.speciesId')
-  speciesChanged(newValue:string, oldValue:string) {
+  @Watch("aCatch.speciesId")
+  speciesChanged(newValue: string, oldValue: string) {
     this.sizeLabel = this.defaultSizeLabel;
     this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
-      this.sizeLabel = this.defaultSizeLabel + ' (optionnelle)';
+      this.sizeLabel = this.defaultSizeLabel + " (optionnelle)";
       this.multipleCatchsAllowed = true;
     }
   }
@@ -516,113 +601,109 @@ export default class EditCatchView extends Vue {
     if (this.modifiable) {
       if (this.platform == "web") {
         // Si on est pas dans une APP on conserve le comportement avec le champ 'file'
-        const input:any = this.$refs.fileInput;
+        const input: any = this.$refs.fileInput;
         input.click();
       } else {
         Camera.getPhoto({
-            quality: 95,
-            allowEditing: false,
-            resultType: CameraResultType.DataUrl,
-            promptLabelCancel: 'Annuler',
-            promptLabelPhoto: 'Sélectionner une image',
-            promptLabelPicture: 'Prendre une photo'
-          }).then(
-            image => {
-              var imageSrc = image.dataUrl;
-              if (imageSrc) {
-                this.pictureSrc = imageSrc;
-                this.newPictureTaken = true;
-              }
-            },
-            failure => {
-              console.error('Unable to use camera', failure);
+          quality: 95,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          promptLabelCancel: "Annuler",
+          promptLabelPhoto: "Sélectionner une image",
+          promptLabelPicture: "Prendre une photo",
+        }).then(
+          (image) => {
+            var imageSrc = image.dataUrl;
+            if (imageSrc) {
+              this.pictureSrc = imageSrc;
+              this.newPictureTaken = true;
             }
-          );
+          },
+          (failure) => {
+            console.error("Unable to use camera", failure);
+          }
+        );
       }
     }
   }
 
-  readUploadedFile(file:any, callback: (fileContent:string) => void) {
+  readUploadedFile(file: any, callback: (fileContent: string) => void) {
     var reader = new FileReader();
-    reader.onload = function readSuccess(loadEvt:any) {
-        const content:string = loadEvt.target.result;
-        callback(content);
+    reader.onload = function readSuccess(loadEvt: any) {
+      const content: string = loadEvt.target.result;
+      callback(content);
     };
     reader.readAsDataURL(file);
   }
 
-  pictureTaken(evt:any) {
+  pictureTaken(evt: any) {
     const file = evt.srcElement.files[0];
-    this.readUploadedFile(file, (content:string) => {
+    this.readUploadedFile(file, (content: string) => {
       this.pictureSrc = content;
       this.newPictureTaken = true;
     });
   }
 
-  @Watch('withSample')
+  @Watch("withSample")
   onWithSampleChanged(value: boolean, oldValue: boolean) {
     if (value && !this.aCatch.sampleId) {
-      TripsService.newSampleId()
-        .then(this.onNewSampleId);
+      TripsService.newSampleId().then(this.onNewSampleId);
     }
   }
 
-  onNewSampleId(newSampleId:string) {
+  onNewSampleId(newSampleId: string) {
     this.aCatch.sampleId = newSampleId;
     this.sampleIdReady = true;
   }
 
   validateClicked() {
-    let hasError:boolean = false;
+    let hasError: boolean = false;
 
-    if (this.aCatch.speciesId == '__other__') {
-
-      this.speciesIdError = '';
+    if (this.aCatch.speciesId == "__other__") {
+      this.speciesIdError = "";
 
       if (this.aCatch.otherSpecies) {
-        if (this.aCatch.otherSpecies.indexOf(',') == -1) {
-          this.otherSpeciesError = '';
+        if (this.aCatch.otherSpecies.indexOf(",") == -1) {
+          this.otherSpeciesError = "";
         } else {
           hasError = true;
-          this.otherSpeciesError = 'Vous ne pouvez pas spécifier plusieurs espèces ici';
+          this.otherSpeciesError =
+            "Vous ne pouvez pas spécifier plusieurs espèces ici";
         }
       } else {
         hasError = true;
-        this.otherSpeciesError = 'Espèce obligatoire';
+        this.otherSpeciesError = "Espèce obligatoire";
       }
-
     } else {
-
-      this.otherSpeciesError = '';
+      this.otherSpeciesError = "";
 
       if (this.aCatch.speciesId) {
-        this.speciesIdError = '';
+        this.speciesIdError = "";
       } else {
         hasError = true;
-        this.speciesIdError = 'Espèce obligatoire';
+        this.speciesIdError = "Espèce obligatoire";
       }
-
     }
 
     const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
     if (mandatorySize && !this.aCatch.size) {
       hasError = true;
-      this.sizeError = 'Taille obligatoire';
+      this.sizeError = "Taille obligatoire";
     } else if (this.aCatch.size && this.aCatch.size <= 0) {
       hasError = true;
-      this.sizeError = 'La taille doit être strictement positive';
+      this.sizeError = "La taille doit être strictement positive";
     } else {
       if (this.aCatch.size) {
         if (this.aCatch.size != Math.floor(this.aCatch.size)) {
           hasError = true;
-          this.sizeError = 'La taille doit être un nombre entier';
+          this.sizeError = "La taille doit être un nombre entier";
         } else {
           // On force pour stocker uniquement la valeur tronquée
           this.aCatch.size = Math.floor(this.aCatch.size);
-          this.sizeError = '';
+          this.sizeError = "";
         }
       } else {
-        this.sizeError = '';
+        this.sizeError = "";
       }
     }
 
@@ -630,41 +711,50 @@ export default class EditCatchView extends Vue {
       if (this.aCatch.weight) {
         if (this.aCatch.weight != Math.floor(this.aCatch.weight)) {
           hasError = true;
-          this.weightError = 'Le poids doit être un nombre entier';
+          this.weightError = "Le poids doit être un nombre entier";
         } else {
           // On force pour stocker uniquement la valeur tronquée
           this.aCatch.weight = Math.floor(this.aCatch.weight);
-          this.weightError = '';
+          this.weightError = "";
         }
       } else {
-        this.weightError = '';
+        this.weightError = "";
       }
     } else {
       hasError = true;
-      this.weightError = 'Le poids doit être strictement positif';
+      this.weightError = "Le poids doit être strictement positif";
     }
 
-    if (this.aCatch.size && !this.sizeError && this.aCatch.weight && !this.weightError) {
+    if (
+      this.aCatch.size &&
+      !this.sizeError &&
+      this.aCatch.weight &&
+      !this.weightError
+    ) {
       if (this.aCatch.size >= 25) {
         const minValue = 0.01 * Math.pow(this.aCatch.size, 2.7);
         const maxValue = 0.01 * Math.pow(this.aCatch.size, 3.2);
         if (this.aCatch.weight < minValue || this.aCatch.weight > maxValue) {
-          console.info(`Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`);
+          console.info(
+            `Le poids (${this.aCatch.weight}g) devrait se situer entre ${minValue}g et ${maxValue}g`
+          );
           hasError = true;
           this.weightError = "Le poids n'est pas cohérent avec la taille";
         }
       } else if (this.aCatch.weight > 300) {
-        console.info(`Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`);
+        console.info(
+          `Le poids (${this.aCatch.weight}g) ne devrait pas dépasser 300g`
+        );
         hasError = true;
         this.weightError = "Le poids n'est pas cohérent avec la taille";
       }
     }
 
     if (this.aCatch.keep === true || this.aCatch.keep === false) {
-      this.keepError = '';
+      this.keepError = "";
     } else {
       hasError = true;
-      this.keepError = 'Information obligatoire';
+      this.keepError = "Information obligatoire";
     }
 
     // if (this.aCatch.keep === false)  {
@@ -675,14 +765,14 @@ export default class EditCatchView extends Vue {
     //     this.releasedStateIdError = 'État du poisson relâché obligatoire';
     //   }
     // } else {
-        this.releasedStateIdError = '';
+    this.releasedStateIdError = "";
     // }
 
     if (this.aCatch.techniqueId) {
-      this.techniqueIdError = '';
+      this.techniqueIdError = "";
     } else {
       hasError = true;
-      this.techniqueIdError = 'Technique de pêche obligatoire';
+      this.techniqueIdError = "Technique de pêche obligatoire";
     }
 
     if (this.caughtAt && this.caughtAt.length > 0) {
@@ -692,25 +782,28 @@ export default class EditCatchView extends Vue {
     }
 
     if (hasError) {
-      this.$root.$emit('toaster-error', 'Vous devez renseigner les champs obligatoires');
+      this.$root.$emit(
+        "toaster-error",
+        "Vous devez renseigner les champs obligatoires"
+      );
     } else {
-      const aCatchBean:CatchBean = this.castToBean(this.aCatch);
-      if (aCatchBean.speciesId == '__other__') {
-        aCatchBean.speciesId = '';
+      const aCatchBean: CatchBean = this.castToBean(this.aCatch);
+      if (aCatchBean.speciesId == "__other__") {
+        aCatchBean.speciesId = "";
       }
-      aCatchBean.hasPicture = this.pictureSrc != '';
+      aCatchBean.hasPicture = this.pictureSrc != "";
       if (!this.withSample) {
-        aCatchBean.sampleId = '';
+        aCatchBean.sampleId = "";
       }
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
   }
 
-  castToBean(input:any):CatchBean {
+  castToBean(input: any): CatchBean {
     return input;
   }
 
-  catchSaved(catchId:string) {
+  catchSaved(catchId: string) {
     if (this.pictureSrc && this.newPictureTaken) {
       PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
     } else {
@@ -719,10 +812,11 @@ export default class EditCatchView extends Vue {
   }
 
   deleteCatch() {
-    Helpers.confirm(this.$modal, "Voulez-vous supprimer la capture ?")
-      .then(() => {
+    Helpers.confirm(this.$modal, "Voulez-vous supprimer la capture ?").then(
+      () => {
         TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
-      });
+      }
+    );
   }
 
   cancel() {
@@ -731,19 +825,16 @@ export default class EditCatchView extends Vue {
 
   leavePage() {
     if (this.inTripCreation) {
-      router.push({name:'trip-catchs', params: {id: this.tripId}});
+      router.push({ name: "trip-catchs", params: { id: this.tripId } });
     } else {
-      router.push({name:'trip', params: {id: this.tripId}});
+      router.push({ name: "trip", params: { id: this.tripId } });
     }
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .edit-catch {
@@ -757,7 +848,6 @@ export default class EditCatchView extends Vue {
     &.keyboardShowing {
       display: none;
     }
-
   }
 
   .position-error {
@@ -800,12 +890,19 @@ export default class EditCatchView extends Vue {
 
     .description {
       font-size: @fontsize-header-paragraph;
-      line-height: calc(@fontsize-header-paragraph + @line-height-padding-small);
+      line-height: calc(
+        @fontsize-header-paragraph + @line-height-padding-small
+      );
       color: @black;
       margin: @vertical-margin-small;
     }
 
-    @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+    @keyframes spin {
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
 
     .spinner {
       height: 40px;
@@ -813,7 +910,7 @@ export default class EditCatchView extends Vue {
       border-radius: 50%;
       border-top: 3px solid @pelorous;
       border-left: 3px solid @pelorous;
-      animation:spin 2s linear infinite;
+      animation: spin 2s linear infinite;
     }
 
     .sample-id {
@@ -889,11 +986,14 @@ export default class EditCatchView extends Vue {
         margin-bottom: 0px;
       }
     }
-
   }
 
   @media screen and (min-width: 1264px) {
-    &.picture-background .edit-catch-page .pane .pane-content .catch-picture-desktop-and-form {
+    &.picture-background
+      .edit-catch-page
+      .pane
+      .pane-content
+      .catch-picture-desktop-and-form {
       flex-direction: row;
       justify-content: space-between;
     }
@@ -928,7 +1028,5 @@ export default class EditCatchView extends Vue {
       width: calc(100% - 530px - @margin-large);
     }
   }
-
 }
-
 </style>
