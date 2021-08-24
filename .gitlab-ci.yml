@@ -183,6 +183,22 @@ package:docker-demo:
   tags:
     - docker
 
+package:docker-opencv:
+  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  stage: package
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/opencv.js" && $CI_PIPELINE_SOURCE != "schedule"'
+      when: always
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
+    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-opencv fishola-backend
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-opencv fishola-mobile
+    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-opencv fishola-admin
+    - docker push registry.nuiton.org/inrae/fishola
+    - docker logout registry.nuiton.org
+  tags:
+    - docker
+
 package:docker-demo-feature:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
