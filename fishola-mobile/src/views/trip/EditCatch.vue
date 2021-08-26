@@ -88,8 +88,15 @@
               </div>
               <div class="two-columns-row-on-desktop">
                 <div>
-                  <div class="button button-secondary-no-outline" v-if="modifiable">
-                    <button @click="displayMeasurementPicturePopup = !displayMeasurementPicturePopup">
+                  <div
+                    class="button button-secondary-no-outline"
+                    v-if="modifiable"
+                  >
+                    <button
+                      @click="
+                        displayMeasurementPicturePopup = !displayMeasurementPicturePopup
+                      "
+                    >
                       <i class="icon-size" /> Mesure automatique
                     </button>
                   </div>
@@ -258,7 +265,10 @@
         </div>
       </div>
     </div>
-    <MeasurementPicturePopup v-if="displayMeasurementPicturePopup" />
+    <MeasurementPicturePopup
+      v-if="displayMeasurementPicturePopup"
+      @close="displayMeasurementPicturePopup = false"
+    />
     <FisholaFooter
       v-if="ready && modifiable"
       v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
@@ -292,7 +302,7 @@ import { UserSettings } from "@/pojos/BackendPojos";
 import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue"
+import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormToggle from "@/components/common/FormToggle.vue";
