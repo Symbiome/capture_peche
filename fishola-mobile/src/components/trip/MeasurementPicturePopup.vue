@@ -24,8 +24,22 @@
     <div class="pane popup-content">
       <div class="pane-content">
         <h1>Mesure automatique</h1>
-        <h3 v-if="errorMessage" class="errorMessage">{{ errorMessage }}</h3>
-        <h3 v-if="!openCVLoaded">CHARGEMENT</h3>
+        <h4 v-if="errorMessage" class="error">{{ errorMessage }}</h4>
+        <!-- pictures required for measurement -->
+        <div class="picture-holder">
+          <img id="marker" v-show="false" :src="markerSourceSRC" />
+          <canvas
+            v-show="measurementPictureSrc && !calculating"
+            id="resultCanvas"
+            class="picture-display"
+          />
+          <img
+            v-show="measurementPictureSrc && calculating"
+            id="sourcePicture"
+            class="picture-display"
+            :src="measurementPictureSrc"
+          />
+        </div>
         <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
           <div class="preconisations">
@@ -61,21 +75,27 @@
             Loading...
           </div>
           <!-- Calulation is over: display result -->
-          <div v-else></div>
+          <div v-else>
+            <h4>
+              <span class="measure">Mesure </span>
+              <!-- Correct measure -->
+              <div class="success" v-if="markerFound && fishSize">
+                <i class="icon-success" /> {{ fishSize }}mm
+              </div>
+              <div class="error" v-else>
+                <i class="icon-error" />
+                <span v-if="!markerFound">
+                  Impossible de détecter le marqueur
+                </span>
+                <span v-else>
+                  Impossible de détecter le poisson
+                </span>
+                <br />
+                Veuillez vérifier que votre photo suit bien les préconisations
+              </div>
+            </h4>
+          </div>
         </div>
-        <!-- pictures required for measurement -->
-        <img id="marker" v-show="false" :src="markerSourceSRC" />
-        <canvas
-          v-show="measurementPictureSrc && !calculating"
-          id="resultCanvas"
-          class="picture-display"
-        />
-        <img
-          v-show="measurementPictureSrc && calculating"
-          id="sourcePicture"
-          class="picture-display"
-          :src="measurementPictureSrc"
-        />
       </div>
     </div>
   </div>
@@ -98,6 +118,8 @@ export default class MeasurementPicturePopup extends Vue {
   openCVLoaded = false;
   errorMessage = "";
   openCVConfig = new OpenCVDetectionConfig();
+  fishSize = 0;
+  markerFound = false;
 
   mounted(): void {
     this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
@@ -106,12 +128,12 @@ export default class MeasurementPicturePopup extends Vue {
     });
   }
 
-  async takePictureAndTryToMeasure(
-    fromCameraIfPossible: boolean,
-    numberOfRetries: number
-  ) {
+  async takePictureAndTryToMeasure(fromCameraIfPossible: boolean) {
+    this.measurementPictureSrc = "";
     this.calculating = true;
     this.errorMessage = "";
+    this.fishSize = 0;
+    this.markerFound = false;
     try {
       // Step 1: take picture
       this.measurementPictureSrc = await PictureTakerService.INSTANCE.takePicture(
@@ -121,7 +143,6 @@ export default class MeasurementPicturePopup extends Vue {
       // Step 2: make sure opencv is loaded and launch measurement
       const imageElement = document.getElementById("sourcePicture");
       const markerElement = document.getElementById("marker");
-      console.error(this.openCVLoaded, imageElement, markerElement);
       if (this.openCVLoaded && imageElement && markerElement) {
         this.openCVConfig.drawDebugCanvas = false;
         const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
@@ -134,12 +155,13 @@ export default class MeasurementPicturePopup extends Vue {
         const markers = detectedShapes.filter(
           (shape: DetectedShape) => shape.isMarker
         ).length;
+        this.markerFound = markers === 1;
         const fishes = detectedShapes.filter(
           (shape: DetectedShape) => shape.isFish
-        ).length;
-        console.error(
-          "Found " + markers + " markers and " + fishes + " fishes "
         );
+        if (fishes.length === 1) {
+          this.fishSize = fishes[0].calculatedLenght;
+        }
         this.calculating = false;
       } else {
         this.errorMessage =
@@ -216,10 +238,21 @@ export default class MeasurementPicturePopup extends Vue {
       max-height: 50vh;
       max-width: 90vw;
       padding-left: 5vw;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .errorMessage {
-      color: red;
+    .error {
+      color: @cardinal;
+    }
+    .success {
+      color: @lime-green;
+    }
+
+    .measure {
+      float: left;
+      padding-right: 10px;
     }
   }
 }

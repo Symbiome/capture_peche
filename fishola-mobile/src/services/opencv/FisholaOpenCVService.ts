@@ -68,9 +68,15 @@ export default class FisholaOpenCVService {
     // Step 4: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
       if (!shape.isDebug) {
-        OpenCVUtils.drawShape(cv, output, shape, config.drawDebugCanvas);
+        OpenCVUtils.drawShape(
+          cv,
+          output,
+          shape,
+          config.drawDebugCanvas,
+          config.drawDebugCanvas
+        );
       } else if (config.drawDebugCanvas) {
-        OpenCVUtils.drawShape(cv, output, shape, true);
+        OpenCVUtils.drawShape(cv, output, shape, true, true);
       }
     });
     if (resultCanvasId) {
