@@ -24,18 +24,23 @@
     <div class="pane popup-content">
       <div class="pane-content">
         <h1>Mesure automatique</h1>
-        <div class="preconisations">
-          <h4>Préconisations</h4>
-          SLIDER
+        <div v-if="!measurementPictureSrc">
+          <div class="preconisations">
+            <h4>Préconisations</h4>
+            SLIDER
+          </div>
+          <div class="bottom-actions">
+            <h4>Ajouter une image</h4>
+            <div class="picture-source-item" @click="takePicture(false)">
+              <i class="pic icon-photo" />Depuis la galerie
+            </div>
+            <div class="picture-source-item" @click="takePicture(true)">
+              <i class="pic icon-photo" />Depuis l'appareil photo
+            </div>
+          </div>
         </div>
-        <div class="bottom-actions">
-          <h4>Ajouter une image</h4>
-          <div class="picture-source-item">
-            <i class="pic icon-photo" />Depuis la gallerie
-          </div>
-          <div class="picture-source-item">
-            <i class="pic icon-photo" />Depuis l'appareil photo
-          </div>
+        <div v-else>
+          <img :src="measurementPictureSrc" />
         </div>
       </div>
     </div>
@@ -43,13 +48,28 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
+import PictureTakerService from "@/services/PictureTakerService";
 
 @Component({
   components: {},
 })
 export default class MeasurementPicturePopup extends Vue {
+  measurementPictureSrc = "";
+  loading = false;
+
   created() {}
+
+  async takePicture(fromCameraIfPossible: boolean) {
+    this.loading = true;
+    try {
+      this.measurementPictureSrc = await PictureTakerService.takePicture(
+        fromCameraIfPossible
+      );
+    } catch (error) {
+      this.loading = false;
+    }
+  }
 }
 </script>
 

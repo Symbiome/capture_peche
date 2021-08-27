@@ -28,15 +28,6 @@
         noPictureText="Appuyer pour ajouter une photo"
         v-on:take-picture="takePicture"
       />
-      <input
-        type="file"
-        accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG"
-        id="cameraInput"
-        name="cameraInput"
-        v-on:change="pictureTaken"
-        style="display: none;"
-        ref="fileInput"
-      />
     </div>
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
@@ -317,10 +308,6 @@ import router from "../../router";
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
-import { Plugins, CameraResultType } from "@capacitor/core";
-const { Camera } = Plugins;
-const { Device } = Plugins;
-
 import { latLng, LatLng, Icon } from "leaflet";
 
 type D = Icon.Default & {
@@ -336,6 +323,7 @@ Icon.Default.mergeOptions({
 });
 
 import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import PictureTakerService from "@/services/PictureTakerService";
 
 @Component({
   components: {
@@ -357,8 +345,6 @@ import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
 export default class EditCatchView extends Vue {
   @Prop() tripId!: string;
   @Prop() catchId!: string;
-
-  platform: string = "";
 
   settings: UserSettings | null = null;
 
@@ -416,10 +402,6 @@ export default class EditCatchView extends Vue {
     );
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
-
-    Device.getInfo().then((info) => {
-      this.platform = info.platform;
-    });
   }
 
   mounted() {
@@ -607,51 +589,16 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  takePicture() {
+  async takePicture() {
     if (this.modifiable) {
-      if (this.platform == "web") {
-        // Si on est pas dans une APP on conserve le comportement avec le champ 'file'
-        const input: any = this.$refs.fileInput;
-        input.click();
-      } else {
-        Camera.getPhoto({
-          quality: 95,
-          allowEditing: false,
-          resultType: CameraResultType.DataUrl,
-          promptLabelCancel: "Annuler",
-          promptLabelPhoto: "Sélectionner une image",
-          promptLabelPicture: "Prendre une photo",
-        }).then(
-          (image) => {
-            var imageSrc = image.dataUrl;
-            if (imageSrc) {
-              this.pictureSrc = imageSrc;
-              this.newPictureTaken = true;
-            }
-          },
-          (failure) => {
-            console.error("Unable to use camera", failure);
-          }
-        );
+      // TODO Alex Afficher le choix Photo/Gallery avant d'appeler takePicture
+      try {
+        this.pictureSrc = await PictureTakerService.INSTANCE.takePicture(false);
+        this.newPictureTaken = true;
+      } catch (failure) {
+        // Silent catch, already logged in PictureTakerService
       }
     }
-  }
-
-  readUploadedFile(file: any, callback: (fileContent: string) => void) {
-    var reader = new FileReader();
-    reader.onload = function readSuccess(loadEvt: any) {
-      const content: string = loadEvt.target.result;
-      callback(content);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  pictureTaken(evt: any) {
-    const file = evt.srcElement.files[0];
-    this.readUploadedFile(file, (content: string) => {
-      this.pictureSrc = content;
-      this.newPictureTaken = true;
-    });
   }
 
   @Watch("withSample")
