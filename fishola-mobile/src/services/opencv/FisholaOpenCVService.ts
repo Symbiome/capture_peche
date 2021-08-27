@@ -48,7 +48,8 @@ export default class FisholaOpenCVService {
   async calculateAndDrawFishSizes(
     imgElement: HTMLElement,
     markerElement: HTMLElement,
-    config: OpenCVDetectionConfig
+    config: OpenCVDetectionConfig,
+    resultCanvasId: string
   ): Promise<Array<DetectedShape>> {
     // Step 1: load open cv and prepare output image
     await this.loadOpenCVIfNeeded();
@@ -72,7 +73,9 @@ export default class FisholaOpenCVService {
         OpenCVUtils.drawShape(cv, output, shape, true);
       }
     });
-    cv.imshow("canvasOutput3", output);
+    if (resultCanvasId) {
+      cv.imshow(resultCanvasId, output);
+    }
     output.delete();
     return markerAndPotentialFishes;
   }

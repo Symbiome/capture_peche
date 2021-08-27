@@ -24,6 +24,9 @@
     <div class="pane popup-content">
       <div class="pane-content">
         <h1>Mesure automatique</h1>
+        <h3 v-if="errorMessage" class="errorMessage">{{ errorMessage }}</h3>
+        <h3 v-if="!openCVLoaded">CHARGEMENT</h3>
+        <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
           <div class="preconisations">
             <h4>Préconisations</h4>
@@ -31,17 +34,48 @@
           </div>
           <div class="bottom-actions">
             <h4>Ajouter une image</h4>
-            <div class="picture-source-item" @click="takePicture(false)">
-              <i class="pic icon-photo" />Depuis la galerie
+            <div v-if="openCVLoaded">
+              <div
+                class="picture-source-item"
+                @click="takePictureAndTryToMeasure(false)"
+              >
+                <i class="pic icon-photo" />Depuis la galerie
+              </div>
+              <div
+                class="picture-source-item"
+                @click="takePictureAndTryToMeasure(true)"
+              >
+                <i class="pic icon-photo" />Depuis l'appareil photo
+              </div>
             </div>
-            <div class="picture-source-item" @click="takePicture(true)">
-              <i class="pic icon-photo" />Depuis l'appareil photo
+
+            <div v-else>
+              Chargement en cours...
             </div>
           </div>
         </div>
+        <!-- Picture taken -->
         <div v-else>
-          <img :src="measurementPictureSrc" />
+          <!-- Still calculating : show taken picture & loader !-->
+          <div v-if="calculating">
+            Loading...
+          </div>
+          <!-- Calulation is over: display result -->
+          <div v-else></div>
         </div>
+        <!-- pictures required for measurement -->
+        <img id="marker" v-show="false" :src="markerSourceSRC" />
+        <canvas
+          v-show="measurementPictureSrc && !calculating"
+          id="resultCanvas"
+          class="picture-display"
+        />
+        <img
+          v-show="measurementPictureSrc && calculating"
+          id="sourcePicture"
+          class="picture-display"
+          :src="measurementPictureSrc"
+        />
       </div>
     </div>
   </div>
@@ -50,25 +84,77 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
+import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
+import { DetectedShape } from "@/services/opencv/DetectedShape";
+import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 
 @Component({
   components: {},
 })
 export default class MeasurementPicturePopup extends Vue {
   measurementPictureSrc = "";
-  loading = false;
+  markerSourceSRC = "";
+  calculating = false;
+  openCVLoaded = false;
+  errorMessage = "";
+  openCVConfig = new OpenCVDetectionConfig();
 
-  created() {}
+  mounted(): void {
+    this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
+    FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
+      this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
+    });
+  }
 
-  async takePicture(fromCameraIfPossible: boolean) {
-    this.loading = true;
+  async takePictureAndTryToMeasure(
+    fromCameraIfPossible: boolean,
+    numberOfRetries: number
+  ) {
+    this.calculating = true;
+    this.errorMessage = "";
     try {
-      this.measurementPictureSrc = await PictureTakerService.takePicture(
+      // Step 1: take picture
+      this.measurementPictureSrc = await PictureTakerService.INSTANCE.takePicture(
         fromCameraIfPossible
       );
+
+      // Step 2: make sure opencv is loaded and launch measurement
+      const imageElement = document.getElementById("sourcePicture");
+      const markerElement = document.getElementById("marker");
+      console.error(this.openCVLoaded, imageElement, markerElement);
+      if (this.openCVLoaded && imageElement && markerElement) {
+        this.openCVConfig.drawDebugCanvas = false;
+        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+          imageElement,
+          markerElement,
+          this.openCVConfig,
+          "resultCanvas"
+        );
+
+        const markers = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isMarker
+        ).length;
+        const fishes = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isFish
+        ).length;
+        console.error(
+          "Found " + markers + " markers and " + fishes + " fishes "
+        );
+        this.calculating = false;
+      } else {
+        this.errorMessage =
+          "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
+      }
+
+      return;
+      // Step 2: launch calculation
     } catch (error) {
-      this.loading = false;
+      this.errorMessage =
+        "Une erreur est survenue lors de la prise de photo, veuillez réessayer";
+      console.log("Error while taking measure picture", error);
     }
+    this.measurementPictureSrc = "";
+    this.calculating = false;
   }
 }
 </script>
@@ -124,6 +210,16 @@ export default class MeasurementPicturePopup extends Vue {
           font-size: large;
         }
       }
+    }
+
+    .picture-display {
+      max-height: 50vh;
+      max-width: 90vw;
+      padding-left: 5vw;
+    }
+
+    .errorMessage {
+      color: red;
     }
   }
 }

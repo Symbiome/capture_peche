@@ -149,7 +149,7 @@
                   @change="launchSizeComputation"
                   v-model.number="config.maxWidthLengthRatio"
                 />
-                 FeatureMatching si 1 seul candidat
+                FeatureMatching si 1 seul candidat
                 <input
                   type="checkbox"
                   style="width:100px"
@@ -233,7 +233,8 @@ export default class OpenCVSizeComputation extends Vue {
       const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
         imageElement,
         markerElement,
-        this.config
+        this.config,
+        "canvasOutput3"
       );
       this.calculated = true;
       this.calculating = false;
