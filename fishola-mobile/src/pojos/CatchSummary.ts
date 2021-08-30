@@ -23,7 +23,8 @@ export default interface CatchSummary {
     id: string;
     speciesId?: string;
     otherSpecies?: string;
-    size?: number;
+    size?: number;    
+    automatic_measure?: number;
     weight?: number;
     keep?: boolean;
     releasedStateId?: string;

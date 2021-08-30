@@ -432,6 +432,7 @@ public class TripResource extends AbstractFisholaResource {
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
         aCatch.size.ifPresent(catchPojo::setSize);
+        aCatch.automatic_measure.ifPresent(catchPojo::setAutomaticMeasure);
         aCatch.weight.ifPresent(catchPojo::setWeight);
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
@@ -453,6 +454,7 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
         existingCatch.setSize(aCatch.size.orElse(null));
+        existingCatch.setAutomaticMeasure(aCatch.automatic_measure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
@@ -568,6 +570,7 @@ public class TripResource extends AbstractFisholaResource {
         result.id = catchId.toString();
         result.speciesId = Optional.of(aCatch.getSpeciesId().toString());
         result.size = Optional.ofNullable(aCatch.getSize());
+        result.automatic_measure = Optional.ofNullable(aCatch.getAutomaticMeasure());
         result.weight = Optional.ofNullable(aCatch.getWeight());
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
