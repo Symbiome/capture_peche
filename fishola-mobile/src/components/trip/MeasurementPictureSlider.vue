@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="preconisations">
+  <div class="preconisations" v-touch:swipe="swiped">
     <h4>
       Préconisations
     </h4>
@@ -28,18 +28,27 @@
       :key="slide.order"
       class="slide fade"
       v-show="currentSlide == slide.order"
+      v-touch:swipe="swiped"
     >
-      <p class="preco-text">{{ slide.text }}</p>
+      <p class="preco-text" v-touch:swipe="swiped">{{ slide.text }}</p>
       <div class="do">
         <div class="conformity">CONFORME</div>
         <div class="frame">
-          <img class="warning-picture" :src="slide.doPicPath" />
+          <img
+            class="warning-picture"
+            :src="slide.doPicPath"
+            v-touch:swipe="swiped"
+          />
         </div>
       </div>
       <div class="do-not">
         <div class="conformity">NON CONFORME</div>
         <div class="frame">
-          <img class="warning-picture" :src="slide.donotPicPath" />
+          <img
+            class="warning-picture"
+            :src="slide.donotPicPath"
+            v-touch:swipe="swiped"
+          />
         </div>
       </div>
     </div>
@@ -68,6 +77,7 @@ import { Component, Vue } from "vue-property-decorator";
 export default class MeasurementPictureSlider extends Vue {
   slides: Slide[] = new Array<Slide>();
   currentSlide = 1;
+  lastSwipe = Date.now();
 
   mounted() {
     this.slides = new Array<Slide>();
@@ -96,6 +106,17 @@ export default class MeasurementPictureSlider extends Vue {
       )
     );
     this.currentSlide = 1 + Math.floor(Math.random() * this.slides.length);
+  }
+
+  swiped(direction: any): void {
+    if (!this.lastSwipe || Date.now() - this.lastSwipe > 500) {
+      this.lastSwipe = Date.now();
+      if (direction == "right") {
+        this.currentSlide = Math.max(1, this.currentSlide - 1);
+      } else {
+        this.currentSlide = Math.min(this.slides.length, this.currentSlide + 1);
+      }
+    }
   }
 }
 

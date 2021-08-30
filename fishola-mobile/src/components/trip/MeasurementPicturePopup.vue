@@ -288,6 +288,7 @@ export default class MeasurementPicturePopup extends Vue {
 
       .picture-source-item {
         padding-bottom: 5px;
+        cursor: pointer;
 
         .pic {
           color: @pale-sky !important;
