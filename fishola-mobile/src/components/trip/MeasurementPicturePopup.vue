@@ -23,7 +23,7 @@
     <div class="transparent-background" @click="$emit('close')"></div>
     <div class="pane popup-content">
       <div class="pane-content">
-        <h1>Mesure automatique</h1>
+        <h2 class="title">Mesure automatique</h2>
         <h4 v-if="errorMessage" class="error">{{ errorMessage }}</h4>
         <!-- pictures required for measurement -->
         <div class="picture-holder">
@@ -51,16 +51,26 @@
             <h4>Ajouter une image</h4>
             <div v-if="openCVLoaded">
               <div
+                v-if="!isWebPlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(false)"
               >
+                <!-- TODO Alex add gallery pic -->
                 <i class="pic icon-photo" />Depuis la galerie
               </div>
               <div
+                v-if="!isWebPlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(true)"
               >
                 <i class="pic icon-photo" />Depuis l'appareil photo
+              </div>
+              <div
+                v-if="isWebPlatform"
+                class="picture-source-item"
+                @click="takePictureAndTryToMeasure(true)"
+              >
+                <i class="pic icon-photo" />Choisir une photo de mesure
               </div>
             </div>
 
@@ -95,6 +105,33 @@
                 Veuillez vérifier que votre photo suit bien les préconisations
               </div>
             </h4>
+            <div class="bottom-actions">
+              <div class="button button-primary button-main">
+                <button v-if="markerFound && fishSize" @click="validate">
+                  <i class="icon-fish" />
+                  Valider
+                </button>
+                <button v-else @click="measurementPictureSrc = ''">
+                  <!-- TODO Alex add redo icon -->
+                  <i class="icon-arrow" />
+                  Recommencer
+                </button>
+              </div>
+              <div class="button-minor-left">
+                <button
+                  @click="measurementPictureSrc = ''"
+                  v-if="markerFound && fishSize"
+                >
+                  <!-- TODO Alex add redo icon -->
+                  <i class="icon-arrow" />
+                </button>
+              </div>
+              <div class="button-minor-right">
+                <button v-on:click="$emit('close')">
+                  Abandon
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -108,6 +145,7 @@ import PictureTakerService from "@/services/PictureTakerService";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
+import { Device } from "@capacitor/core";
 
 @Component({
   components: {},
@@ -121,7 +159,13 @@ export default class MeasurementPicturePopup extends Vue {
   openCVConfig = new OpenCVDetectionConfig();
   fishSize = 0;
   markerFound = false;
+  isWebPlatform = false;
 
+  created(): void {
+    Device.getInfo().then((info) => {
+      this.isWebPlatform = info && info.platform !== "web";
+    });
+  }
   mounted(): void {
     this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
@@ -192,6 +236,11 @@ export default class MeasurementPicturePopup extends Vue {
     this.measurementPictureSrc = "";
     this.calculating = false;
   }
+
+  validate() {
+    // TODO
+    console.info("VALIDATED");
+  }
 }
 </script>
 
@@ -213,12 +262,15 @@ export default class MeasurementPicturePopup extends Vue {
     margin-left: @desktop-menu-width;
   }
 
+  .title {
+    color: @pelorous;
+  }
   .transparent-background {
-    height: 30vh;
+    height: 25vh;
   }
   .popup-content {
     margin-top: 0px !important;
-    height: 70vh;
+    height: 75vh;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
 
@@ -248,8 +300,11 @@ export default class MeasurementPicturePopup extends Vue {
       }
     }
 
+    .picture-holder {
+      background-color: @gainsboro;
+    }
     .picture-display {
-      max-height: 50vh;
+      max-height: 40vh;
       max-width: 90vw;
       padding-left: 5vw;
       display: block;
@@ -288,6 +343,36 @@ export default class MeasurementPicturePopup extends Vue {
     top: 48vh;
     left: calc(45vw - 60px);
     display: block;
+  }
+
+  .button-main {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -25px;
+  }
+
+  .button-minor-left {
+    margin-right: auto;
+    float: left;
+    button {
+      color: @pelorous;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0);
+      border: 0px solid black;
+      font-size: 18px;
+    }
+  }
+
+  .button-minor-right {
+    margin-left: auto;
+    float: right;
+    button {
+      color: @pelorous;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0);
+      border: 0px solid black;
+      font-size: 16px;
+    }
   }
 }
 </style>
