@@ -163,7 +163,7 @@ export default class MeasurementPicturePopup extends Vue {
 
   created(): void {
     Device.getInfo().then((info) => {
-      this.isWebPlatform = info && info.platform !== "web";
+      this.isWebPlatform = info && info.platform === "web";
     });
   }
   mounted(): void {
@@ -238,8 +238,7 @@ export default class MeasurementPicturePopup extends Vue {
   }
 
   validate() {
-    // TODO
-    console.info("VALIDATED");
+    this.$emit("measured", this.fishSize);
   }
 }
 </script>

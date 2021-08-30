@@ -259,6 +259,7 @@
     <MeasurementPicturePopup
       v-if="displayMeasurementPicturePopup"
       @close="displayMeasurementPicturePopup = false"
+      @measured="gotAutomaticMeasure"
     />
     <FisholaFooter
       v-if="ready && modifiable"
@@ -429,6 +430,10 @@ export default class EditCatchView extends Vue {
     this.modifiable = this.inTripCreation || !!someTrip.modifiableUntil;
     this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
+
+    if (this.aCatch.automatic_measure && !this.aCatch.size) {
+      this.aCatch.size = this.aCatch.automatic_measure;
+    }
 
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
@@ -786,6 +791,13 @@ export default class EditCatchView extends Vue {
     } else {
       router.push({ name: "trip", params: { id: this.tripId } });
     }
+  }
+
+  gotAutomaticMeasure(measure: number) {
+    this.displayMeasurementPicturePopup = false;
+    this.aCatch.automatic_measure = measure;
+    // Override manual size, but user will still be able to modify it later on
+    this.aCatch.size = measure;
   }
 }
 </script>
