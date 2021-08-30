@@ -34,9 +34,10 @@
             class="picture-display"
           />
           <img
-            v-show="measurementPictureSrc && calculating"
+            v-show="calculating"
             id="sourcePicture"
             class="picture-display"
+            @load="sourcePictureLoaded"
             :src="measurementPictureSrc"
           />
         </div>
@@ -71,8 +72,8 @@
         <!-- Picture taken -->
         <div v-else>
           <!-- Still calculating : show taken picture & loader !-->
-          <div v-if="calculating">
-            Loading...
+          <div v-if="calculating" class="loading">
+            <div class="spinner">&nbsp;</div>
           </div>
           <!-- Calulation is over: display result -->
           <div v-else>
@@ -139,8 +140,22 @@ export default class MeasurementPicturePopup extends Vue {
       this.measurementPictureSrc = await PictureTakerService.INSTANCE.takePicture(
         fromCameraIfPossible
       );
+      // Step 2: launch calculation
+    } catch (error) {
+      this.errorMessage =
+        "Une erreur est survenue lors de la prise de photo, veuillez réessayer";
+      console.log("Error while taking measure picture", error);
+      this.measurementPictureSrc = "";
+      this.calculating = false;
+    }
+  }
 
-      // Step 2: make sure opencv is loaded and launch measurement
+  async sourcePictureLoaded() {
+    try {
+      console.info(
+        "Source picture loaded, launching calculation",
+        this.calculating
+      );
       const imageElement = document.getElementById("sourcePicture");
       const markerElement = document.getElementById("marker");
       if (this.openCVLoaded && imageElement && markerElement) {
@@ -172,8 +187,7 @@ export default class MeasurementPicturePopup extends Vue {
       // Step 2: launch calculation
     } catch (error) {
       this.errorMessage =
-        "Une erreur est survenue lors de la prise de photo, veuillez réessayer";
-      console.log("Error while taking measure picture", error);
+        "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
     }
     this.measurementPictureSrc = "";
     this.calculating = false;
@@ -254,6 +268,26 @@ export default class MeasurementPicturePopup extends Vue {
       float: left;
       padding-right: 10px;
     }
+  }
+
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  .spinner {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border-top: 3px solid @pelorous;
+    border-left: 3px solid @pelorous;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    top: 48vh;
+    left: calc(45vw - 60px);
+    display: block;
   }
 }
 </style>
