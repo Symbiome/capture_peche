@@ -43,10 +43,7 @@
         </div>
         <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
-          <div class="preconisations">
-            <h4>Préconisations</h4>
-            SLIDER
-          </div>
+          <MeasurementPictureSlider />
           <div class="bottom-actions">
             <h4>Ajouter une image</h4>
             <div v-if="openCVLoaded">
@@ -146,9 +143,10 @@ import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { Device } from "@capacitor/core";
+import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
 
 @Component({
-  components: {},
+  components: { MeasurementPictureSlider },
 })
 export default class MeasurementPicturePopup extends Vue {
   measurementPictureSrc = "";
@@ -188,7 +186,7 @@ export default class MeasurementPicturePopup extends Vue {
     } catch (error) {
       this.errorMessage =
         "Une erreur est survenue lors de la prise de photo, veuillez réessayer";
-      console.log("Error while taking measure picture", error);
+      console.error("Error while taking measure picture", error);
       this.measurementPictureSrc = "";
       this.calculating = false;
     }
