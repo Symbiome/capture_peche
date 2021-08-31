@@ -48,7 +48,7 @@
             <h4>Ajouter une image</h4>
             <div v-if="openCVLoaded">
               <div
-                v-if="!isWebPlatform"
+                v-if="isMobilePlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(false)"
               >
@@ -56,14 +56,14 @@
                 <i class="pic icon-photo" />Depuis la galerie
               </div>
               <div
-                v-if="!isWebPlatform"
+                v-if="isMobilePlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(true)"
               >
                 <i class="pic icon-photo" />Depuis l'appareil photo
               </div>
               <div
-                v-if="isWebPlatform"
+                v-if="!isMobilePlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(true)"
               >
@@ -157,11 +157,13 @@ export default class MeasurementPicturePopup extends Vue {
   openCVConfig = new OpenCVDetectionConfig();
   fishSize = 0;
   markerFound = false;
-  isWebPlatform = false;
+  isMobilePlatform = true;
 
   created(): void {
     Device.getInfo().then((info) => {
-      this.isWebPlatform = info && info.platform === "web";
+      this.isMobilePlatform =
+        info &&
+        (info.operatingSystem === "android" || info.operatingSystem === "ios");
     });
   }
   mounted(): void {
@@ -263,13 +265,15 @@ export default class MeasurementPicturePopup extends Vue {
     color: @pelorous;
   }
   .transparent-background {
-    height: 25vh;
+    height: 18vh;
   }
   .popup-content {
     margin-top: 0px !important;
-    height: 75vh;
+    height: 82vh;
+    overflow-y: auto;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
+    padding-bottom: 10vh;
 
     .bottom-actions {
       position: absolute;

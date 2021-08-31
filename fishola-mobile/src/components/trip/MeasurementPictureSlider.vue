@@ -85,24 +85,24 @@ export default class MeasurementPictureSlider extends Vue {
       new Slide(
         1,
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/default_marker.jpg",
-        "/img/illustration_fish.svg"
+        "/img/preco_ok1.png",
+        "/img/preco_ko1.png"
       )
     );
     this.slides.push(
       new Slide(
         2,
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/illustration_fish.svg",
-        "/img/default_marker.jpg"
+        "/img/preco_ok1.png",
+        "/img/preco_ko2.png"
       )
     );
     this.slides.push(
       new Slide(
         3,
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/default_marker.jpg",
-        "/img/illustration_fish.svg"
+        "/img/preco_ok1.png",
+        "/img/preco_ko3.png"
       )
     );
     this.currentSlide = 1 + Math.floor(Math.random() * this.slides.length);
@@ -154,6 +154,10 @@ class Slide {
   border: 2px solid @pelorous;
   display: inline-block;
   transition: background-color 0.6s ease;
+}
+
+.preco-text {
+  font-size: 14px;
 }
 
 .active,
@@ -222,8 +226,8 @@ class Slide {
   }
 }
 .warning-picture {
-  height: 28vh;
-  max-width: 20vw;
+  height: 20vw;
+  max-width: 30vw;
   margin-left: auto;
   margin-right: auto;
 }
