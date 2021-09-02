@@ -431,8 +431,8 @@ export default class EditCatchView extends Vue {
     this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
 
-    if (this.aCatch.automatic_measure && !this.aCatch.size) {
-      this.aCatch.size = this.aCatch.automatic_measure;
+    if (this.aCatch.automaticMeasure && !this.aCatch.size) {
+      this.aCatch.size = this.aCatch.automaticMeasure;
     }
 
     if (someCatch.caughtAt) {
@@ -795,7 +795,7 @@ export default class EditCatchView extends Vue {
 
   gotAutomaticMeasure(measure: number) {
     this.displayMeasurementPicturePopup = false;
-    this.aCatch.automatic_measure = measure;
+    this.aCatch.automaticMeasure = measure;
     // Override manual size, but user will still be able to modify it later on
     this.aCatch.size = measure;
   }
