@@ -168,6 +168,7 @@ export default class MeasurementPicturePopup extends Vue {
   }
   mounted(): void {
     this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
+    this.errorMessage = "";
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
@@ -186,8 +187,6 @@ export default class MeasurementPicturePopup extends Vue {
       );
       // Step 2: launch calculation
     } catch (error) {
-      this.errorMessage =
-        "Une erreur est survenue lors de la prise de photo, veuillez réessayer";
       console.error("Error while taking measure picture", error);
       this.measurementPictureSrc = "";
       this.calculating = false;
@@ -244,7 +243,7 @@ export default class MeasurementPicturePopup extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style lang="less" scoped>
 @import "../../less/main";
 
 .picture-source-chooser {

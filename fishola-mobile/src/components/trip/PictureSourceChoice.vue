@@ -71,26 +71,23 @@ export default class PictureSourceChoice extends Vue {
       this.isMobilePlatform =
         info &&
         (info.operatingSystem === "android" || info.operatingSystem === "ios");
+      // On écoute l'évenement "annuler" sur le fileinput pour ferme la popup
+      const emitter = this;
+      document.body.onfocus = function() {
+        setTimeout(() => {
+          const fileInput = document.getElementById("_capacitor-camera-input");
+          const selectedFile = (fileInput as HTMLInputElement)?.files?.length;
+          if (!selectedFile) {
+            emitter.$emit("close");
+          }
+        }, 350);
+      };
+
       if (!this.isMobilePlatform && this.directlyOpenGaleryInWebMode) {
         // Tentative d'ouvrir l'APN au chargement MAIS
         // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
         // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
-        const emitter = this;
         setTimeout(() => {
-          // On écoute l'évenement "annuler" sur le fileinput
-          document.body.onfocus = function() {
-            setTimeout(() => {
-              const fileInput = document.getElementById(
-                "_capacitor-camera-input"
-              );
-              const selectedFile = (fileInput as HTMLInputElement)?.files
-                ?.length;
-              if (!selectedFile) {
-                emitter.$emit("close");
-              }
-            }, 350);
-          };
-
           this.takePicture(true);
         }, 350);
       }
@@ -122,7 +119,7 @@ export default class PictureSourceChoice extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style lang="less" scoped>
 @import "../../less/main";
 
 .picture-source-chooser {
