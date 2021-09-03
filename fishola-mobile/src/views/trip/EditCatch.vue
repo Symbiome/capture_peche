@@ -261,6 +261,12 @@
       @close="displayMeasurementPicturePopup = false"
       @measured="gotAutomaticMeasure"
     />
+    <PictureSourceChoice
+      v-if="requestNewPicture"
+      @close="requestNewPicture = false"
+      @pictureTaken="pictureTaken"
+      :directlyOpenGaleryInWebMode="true"
+    />
     <FisholaFooter
       v-if="ready && modifiable"
       v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
@@ -295,6 +301,7 @@ import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
+import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormToggle from "@/components/common/FormToggle.vue";
@@ -324,7 +331,6 @@ Icon.Default.mergeOptions({
 });
 
 import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
-import PictureTakerService from "@/services/PictureTakerService";
 
 @Component({
   components: {
@@ -340,6 +346,7 @@ import PictureTakerService from "@/services/PictureTakerService";
     LTileLayer,
     LMarker,
     MeasurementPicturePopup,
+    PictureSourceChoice,
     FisholaFooter,
   },
 })
@@ -395,6 +402,8 @@ export default class EditCatchView extends Vue {
   gpsLocation: LatLng | null = null;
 
   displayMeasurementPicturePopup = false;
+  requestNewPicture = false;
+
   created() {
     TripsService.getTripAndCatch(
       this.tripId,
@@ -564,11 +573,9 @@ export default class EditCatchView extends Vue {
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
 
-    // Tentative pour déclencher l'ouverture de l'APN dès le début de la capture
-    // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
-    // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
+    // On déclenche l'ouverture de l'APN dès le début de la capture
     if (this.inCreation) {
-      setTimeout(this.takePicture, 350);
+      this.takePicture();
     }
   }
 
@@ -596,14 +603,14 @@ export default class EditCatchView extends Vue {
 
   async takePicture() {
     if (this.modifiable) {
-      // TODO Alex Afficher le choix Photo/Gallery avant d'appeler takePicture
-      try {
-        this.pictureSrc = await PictureTakerService.INSTANCE.takePicture(false);
-        this.newPictureTaken = true;
-      } catch (failure) {
-        // Silent catch, already logged in PictureTakerService
-      }
+      this.requestNewPicture = true;
     }
+  }
+
+  pictureTaken(pictureSrc: string) {
+    this.requestNewPicture = false;
+    this.pictureSrc = pictureSrc;
+    this.newPictureTaken = true;
   }
 
   @Watch("withSample")
