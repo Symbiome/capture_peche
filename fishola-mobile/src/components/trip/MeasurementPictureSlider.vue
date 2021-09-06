@@ -46,6 +46,7 @@
         <div class="frame">
           <img
             class="warning-picture"
+            :class="{ firstKo: slide.order == 1 }"
             :src="slide.donotPicPath"
             v-touch:swipe="swiped"
           />
@@ -200,6 +201,7 @@ class Slide {
   margin-left: 1vw;
   width: 45%;
   .frame {
+    background-color: white;
     border: 5px solid @cardinal;
     display: flex;
     align-items: center;
@@ -215,6 +217,7 @@ class Slide {
   margin-right: 1vw;
   width: 45%;
   .frame {
+    background-color: white;
     border: 5px solid @lime-green;
 
     display: flex;
@@ -230,7 +233,16 @@ class Slide {
   max-width: 30vw;
   margin-left: auto;
   margin-right: auto;
+  @media screen and (min-width: @desktop-min-width) {
+    max-width: 18vw;
+  }
+
+  &.firstKo {
+    margin-left: 0px;
+    margin-top: 0px;
+  }
 }
+
 .dotter {
   display: flex;
   align-items: center;

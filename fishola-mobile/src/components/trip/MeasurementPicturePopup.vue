@@ -101,7 +101,7 @@
                 Veuillez vérifier que votre photo suit bien les préconisations
               </div>
             </h4>
-            <div class="bottom-actions">
+            <div class="bottom-actions validate-redo">
               <div class="button button-primary button-main">
                 <button v-if="markerFound && fishSize" @click="validate">
                   <i class="icon-fish" />
@@ -295,6 +295,10 @@ export default class MeasurementPicturePopup extends Vue {
           padding-right: 10px;
           font-size: large;
         }
+      }
+
+      &validate-redo {
+        padding-bottom: 20px;
       }
     }
 

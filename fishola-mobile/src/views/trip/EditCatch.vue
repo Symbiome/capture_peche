@@ -80,39 +80,37 @@
                 />
               </div>
               <div class="two-columns-row-on-desktop">
-                <div>
-                  <div
-                    class="button button-secondary-no-outline"
-                    v-if="modifiable"
+                <div
+                  class="button button-secondary-no-outline automatic-measure"
+                  v-if="modifiable"
+                >
+                  <button
+                    @click="
+                      displayMeasurementPicturePopup = !displayMeasurementPicturePopup
+                    "
                   >
-                    <button
-                      @click="
-                        displayMeasurementPicturePopup = !displayMeasurementPicturePopup
-                      "
-                    >
-                      <i class="icon-size" /> Mesure automatique
-                    </button>
-                  </div>
-                  <FormInput
-                    name="size"
-                    :label="sizeLabel"
-                    type="number"
-                    :min="1"
-                    placeholder="Entrez une taille en centimètres"
-                    v-model="aCatch.size"
-                    v-bind:error="sizeError"
-                    v-bind:readonly="!modifiable"
-                  />
-                  <div
-                    class="multiple-catchs-info"
-                    v-if="multipleCatchsAllowed"
-                  >
-                    <i class="icon-info" />
-                    <span>
-                      Indiquez le poids total de vos captures si vous en avez
-                      plusieurs pour cette espèce
-                    </span>
-                  </div>
+                    <i class="icon-size" /> Mesure automatique
+                  </button>
+                </div>
+                <FormInput
+                  name="size"
+                  :label="sizeLabel"
+                  type="number"
+                  :min="1"
+                  placeholder="Entrez une taille en centimètres"
+                  v-model="aCatch.size"
+                  v-bind:error="sizeError"
+                  v-bind:readonly="!modifiable"
+                />
+              </div>
+
+              <div class="two-columns-row-on-desktop">
+                <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
+                  <i class="icon-info" />
+                  <span>
+                    Indiquez le poids total de vos captures si vous en avez
+                    plusieurs pour cette espèce
+                  </span>
                 </div>
                 <FormInput
                   v-if="aCatch.weight || (settings && settings.promptWeight)"
@@ -125,8 +123,6 @@
                   v-bind:error="weightError"
                   v-bind:readonly="!modifiable"
                 />
-              </div>
-              <div class="two-columns-row-on-desktop">
                 <FormYesNo
                   name="keep"
                   v-bind:label="
@@ -138,6 +134,8 @@
                   v-bind:error="keepError"
                   v-bind:readonly="!modifiable"
                 />
+              </div>
+              <div class="two-columns-row-on-desktop">
                 <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
                 <!--FormSelect name="releaseState"
                             label="État du poisson relâché"
@@ -153,20 +151,20 @@
                   v-bind:error="techniqueIdError"
                   v-bind:readonly="!modifiable"
                 />
-              </div>
-              <div class="two-columns-row-on-desktop">
-                <FormTextarea
-                  name="description"
-                  label="Observation (optionnelle)"
-                  placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
-                  v-model="aCatch.description"
-                  v-bind:readonly="!modifiable"
-                />
                 <FormInput
                   name="caughtAt"
                   label="Heure de la capture (optionnelle)"
                   type="time"
                   v-model="caughtAt"
+                  v-bind:readonly="!modifiable"
+                />
+              </div>
+              <div>
+                <FormTextarea
+                  name="description"
+                  label="Observation (optionnelle)"
+                  placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
+                  v-model="aCatch.description"
                   v-bind:readonly="!modifiable"
                 />
               </div>
@@ -885,6 +883,18 @@ export default class EditCatchView extends Vue {
 @import "../../less/main";
 
 .edit-catch {
+  .automatic-measure {
+    margin-top: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    overflow: hidden;
+    @media screen and (max-width: @desktop-min-width) {
+      margin-top: 0px;
+      padding-right: 30px;
+      width: 100%;
+    }
+  }
   .catch-picture {
     height: calc(165px + env(safe-area-inset-top));
     width: 100%;
