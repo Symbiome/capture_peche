@@ -84,25 +84,25 @@ export default class MeasurementPictureSlider extends Vue {
     this.slides.push(
       new Slide(
         1,
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/preco_ok1.png",
-        "/img/preco_ko1.png"
+        "Votre prise et le marqueur doivent être intégralement visibles sur la photo et ne pas toucher les bords de l'écran.",
+        "/img/preco_ok1.svg",
+        "/img/preco_ko1.svg"
       )
     );
     this.slides.push(
       new Slide(
         2,
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/preco_ok1.png",
-        "/img/preco_ko2.png"
+        "Placez votre prise allongée sur le franc et le marqueur à côté.",
+        "/img/preco_ok1.svg",
+        "/img/preco_ko2.svg"
       )
     );
     this.slides.push(
       new Slide(
         3,
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus id diam id tellus eleifend sodales. Donec a pellentesque dui. Maecenas vitae feugiat tortor, ut lobortis nisl.",
-        "/img/preco_ok1.png",
-        "/img/preco_ko3.png"
+        "Placez la prise sur un fond relativement uni, si possible sans objet parasite (matériel de pêche, outils, rainures) visible sur la photo.",
+        "/img/preco_ok1.svg",
+        "/img/preco_ko3.svg"
       )
     );
     this.currentSlide = 1 + Math.floor(Math.random() * this.slides.length);

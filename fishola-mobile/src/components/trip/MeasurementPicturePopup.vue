@@ -52,8 +52,7 @@
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(false)"
               >
-                <!-- TODO Alex add gallery pic -->
-                <i class="pic icon-photo" />Depuis la galerie
+                <i class="pic icon-gallery" />Depuis la galerie
               </div>
               <div
                 v-if="isMobilePlatform"
@@ -109,8 +108,7 @@
                   Valider
                 </button>
                 <button v-else @click="measurementPictureSrc = ''">
-                  <!-- TODO Alex add redo icon -->
-                  <i class="icon-arrow" />
+                  <i class="icon-redo" />
                   Recommencer
                 </button>
               </div>
@@ -119,8 +117,7 @@
                   @click="measurementPictureSrc = ''"
                   v-if="markerFound && fishSize"
                 >
-                  <!-- TODO Alex add redo icon -->
-                  <i class="icon-arrow" />
+                  <i class="icon-redo" />
                 </button>
               </div>
               <div class="button-minor-right">

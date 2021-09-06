@@ -30,8 +30,7 @@
             class="picture-source-item"
             @click="takePicture(false)"
           >
-            <!-- TODO Alex add gallery pic -->
-            <i class="pic icon-photo" />Depuis la galerie
+            <i class="pic icon-gallery" />Depuis la galerie
           </div>
           <div
             v-if="isMobilePlatform"
