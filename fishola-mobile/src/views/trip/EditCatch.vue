@@ -27,6 +27,7 @@
         v-bind:modifiable="modifiable"
         noPictureText="Appuyer pour ajouter une photo"
         v-on:take-picture="takePicture"
+        @load="pictureSrcDisplayed"
       />
     </div>
     <div class="edit-catch-page page">
@@ -49,6 +50,7 @@
                 v-bind:modifiable="modifiable"
                 noPictureText="Appuyer pour ajouter une photo"
                 v-on:take-picture="takePicture"
+                @load="pictureSrcDisplayed"
               />
             </div>
 
@@ -276,6 +278,8 @@
       v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
     />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
+    <!-- Invisible marker (required for silent size computation) -->
+    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
   </div>
 </template>
 
@@ -331,6 +335,9 @@ Icon.Default.mergeOptions({
 });
 
 import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
+import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
+import { DetectedShape } from "@/services/opencv/DetectedShape";
 
 @Component({
   components: {
@@ -370,6 +377,7 @@ export default class EditCatchView extends Vue {
   newPictureTaken: boolean = false;
 
   caughtAt: string = "";
+  markerSourceSRC = "";
 
   defaultSizeLabel: string = "Taille en cm";
   sizeLabel: string = this.defaultSizeLabel;
@@ -403,6 +411,7 @@ export default class EditCatchView extends Vue {
 
   displayMeasurementPicturePopup = false;
   requestNewPicture = false;
+  shouldLaunchAutomaticMeasure = false;
 
   created() {
     TripsService.getTripAndCatch(
@@ -412,6 +421,8 @@ export default class EditCatchView extends Vue {
     );
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
+    this.markerSourceSRC = new OpenCVDetectionConfig().defaultMarkerSrc;
+    FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded();
   }
 
   mounted() {
@@ -512,6 +523,64 @@ export default class EditCatchView extends Vue {
     this.pictureSrc = content;
   }
 
+  async pictureSrcDisplayed() {
+    if (this.shouldLaunchAutomaticMeasure && !this.aCatch.automaticMeasure) {
+      this.shouldLaunchAutomaticMeasure = false;
+      // Launch a silent measure
+      console.info("[Silent automatic measure] Loading opencv...");
+      FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(async () => {
+        if (FisholaOpenCVService.INSTANCE.isOpenCVReady()) {
+          try {
+            const imageElement = document.getElementById(
+              "sourcePictureAutomatic"
+            );
+            const markerElement = document.getElementById("markerAutomatic");
+            console.info(
+              "[Silent automatic measure] Launching automatic measure...",
+              imageElement,
+              markerElement
+            );
+            if (imageElement && markerElement) {
+              const openCVConfig = new OpenCVDetectionConfig();
+              openCVConfig.drawDebugCanvas = false;
+              const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+                imageElement,
+                markerElement,
+                openCVConfig,
+                ""
+              );
+
+              const markers = detectedShapes.filter(
+                (shape: DetectedShape) => shape.isMarker
+              ).length;
+              const markerFound = markers === 1;
+              const fishes = detectedShapes.filter(
+                (shape: DetectedShape) => shape.isFish
+              );
+              let fishSize = 0;
+              if (fishes.length === 1) {
+                fishSize = fishes[0].calculatedLenght;
+              }
+              console.info(
+                "[Silent automatic measure] Success : " +
+                  markers +
+                  " markers and fish of " +
+                  fishSize +
+                  "mm"
+              );
+              if (markerFound) {
+                this.gotAutomaticMeasure(fishSize);
+              }
+            }
+            // Step 2: launch calculation
+          } catch (error) {
+            console.error("[Silent automatic measure] Failure ", error);
+          }
+        }
+      });
+    }
+  }
+
   noPictureFound() {
     if (this.aCatch.hasPicture) {
       this.pictureSrc = Constants.apiUrl(
@@ -603,6 +672,7 @@ export default class EditCatchView extends Vue {
 
   async takePicture() {
     if (this.modifiable) {
+      this.shouldLaunchAutomaticMeasure = true;
       this.requestNewPicture = true;
     }
   }
@@ -805,6 +875,7 @@ export default class EditCatchView extends Vue {
     this.aCatch.automaticMeasure = measure;
     // Override manual size, but user will still be able to modify it later on
     this.aCatch.size = measure;
+    this.$forceUpdate();
   }
 }
 </script>
