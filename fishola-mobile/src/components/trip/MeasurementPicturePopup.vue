@@ -218,6 +218,7 @@ export default class MeasurementPicturePopup extends Vue {
           this.fishSize = fishes[0].calculatedLenght;
         }
         this.calculating = false;
+        this.$emit("measurementPictureTaken", this.measurementPictureSrc);
       } else {
         this.errorMessage =
           "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
@@ -228,6 +229,7 @@ export default class MeasurementPicturePopup extends Vue {
     } catch (error) {
       this.errorMessage =
         "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
+      this.$emit("measurementPictureTaken", this.measurementPictureSrc);
     }
     this.measurementPictureSrc = "";
     this.calculating = false;

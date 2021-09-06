@@ -259,6 +259,7 @@
     <MeasurementPicturePopup
       v-if="displayMeasurementPicturePopup"
       @close="displayMeasurementPicturePopup = false"
+      @measurementPictureTaken="measurementPictureTaken"
       @measured="gotAutomaticMeasure"
     />
     <PictureSourceChoice
@@ -679,6 +680,15 @@ export default class EditCatchView extends Vue {
     this.requestNewPicture = false;
     this.pictureSrc = pictureSrc;
     this.newPictureTaken = true;
+  }
+
+  measurementPictureTaken(pictureSrc: string) {
+    // If no picture was taken, use automatic picture as pic
+    this.shouldLaunchAutomaticMeasure = false;
+    if (!this.pictureSrc) {
+      this.newPictureTaken = true;
+      this.pictureSrc = pictureSrc;
+    }
   }
 
   @Watch("withSample")
