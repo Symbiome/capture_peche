@@ -20,50 +20,47 @@
   -->
 <template>
   <div class="picture-preview">
-    <div v-if="!src"
-         class="no-picture"
-         v-on:click="$emit('take-picture')">
-      <img src="/img/camera.svg"
-            alt="Pas de photo"/>
-      <span>{{noPictureText}}</span>
+    <div v-if="!src" class="no-picture" v-on:click="$emit('take-picture')">
+      <img src="/img/camera.svg" alt="Pas de photo" />
+      <span>{{ noPictureText }}</span>
     </div>
-    <div class="picture"
-         v-if="src"
-         v-on:click="openModal">
-      <img class="picture"
-           v-bind:src="src"
-           alt="Photo de la capture"/>
+    <div class="picture" v-if="src" v-on:click="openModal">
+      <img
+        class="picture"
+        v-bind:src="src"
+        alt="Photo de la capture"
+        @load="pictureLoaded"
+      />
     </div>
-    <PictureModal v-if="src && showModal && enableModal"
-                  v-bind:src="src"
-                  v-bind:replaceButton="modifiable"
-                  v-on:replace="onReplace"
-                  v-on:closeModal="closeModal"/>
+    <PictureModal
+      v-if="src && showModal && enableModal"
+      v-bind:src="src"
+      v-bind:replaceButton="modifiable"
+      v-on:replace="onReplace"
+      v-on:closeModal="closeModal"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import PictureModal from "@/components/trip/PictureModal.vue";
 
-import PictureModal from '@/components/trip/PictureModal.vue';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
-    PictureModal
-  }
+    PictureModal,
+  },
 })
 export default class PicturePreview extends Vue {
+  @Prop() src: string = "";
+  @Prop({ default: "Aucune photo" }) noPictureText?: string;
+  @Prop({ default: true }) modifiable: boolean;
+  @Prop({ default: true }) enableModal: boolean;
 
-  @Prop() src:string = '';
-  @Prop({default:'Aucune photo'}) noPictureText?:string;
-  @Prop({default: true}) modifiable: boolean;
-  @Prop({default: true}) enableModal: boolean;
+  showModal: boolean = false;
 
-  showModal:boolean = false;
-
-  created() {
-  }
+  created() {}
 
   openModal() {
     if (this.enableModal) {
@@ -77,19 +74,20 @@ export default class PicturePreview extends Vue {
 
   onReplace() {
     this.closeModal();
-    this.$emit('take-picture');
+    this.$emit("take-picture");
   }
 
+  pictureLoaded() {
+    this.$emit("load");
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .picture-preview {
-
   height: 100%;
   width: 100%;
 
@@ -101,10 +99,9 @@ export default class PicturePreview extends Vue {
   }
 
   .no-picture {
-
     height: 100%;
 
-    display:flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -116,9 +113,10 @@ export default class PicturePreview extends Vue {
       color: @pale-sky;
       font-weight: 300;
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
     }
   }
-
 }
 </style>

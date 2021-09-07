@@ -7,14 +7,15 @@ export class OpenCVUtils {
     cv: any,
     output: any,
     shapeToDraw: DetectedShape,
-    drawIgnoredShape: boolean
+    drawIgnoredShape: boolean,
+    drawSizeText: boolean
   ) {
     // Color : marker & fish in green, ignored shape in grey
     let color = [0, 0, 220, 255];
     if (shapeToDraw.isFish) {
       color = [0, 220, 0, 255];
     } else if (shapeToDraw.isMarker) {
-      color = [220, 0, 0, 255];
+      color = [30, 155, 196, 255];
     } else if (shapeToDraw.isDebug) {
       color = [255, 127, 0, 255];
     }
@@ -34,7 +35,7 @@ export class OpenCVUtils {
       }
 
       // If shape is not a marker, draw calculated length
-      if (shapeToDraw.isFish) {
+      if (shapeToDraw.isFish && drawSizeText) {
         cv.putText(
           output,
           shapeToDraw.calculatedLenght + "mm",

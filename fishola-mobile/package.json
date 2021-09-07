@@ -34,7 +34,8 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.4.9",
     "vue-scrollto": "^2.20.0",
-    "vue2-leaflet": "^2.6.0"
+    "vue2-leaflet": "^2.6.0",
+    "vue2-touch-events": "^3.2.2"
   },
   "devDependencies": {
     "@capacitor/cli": "^2.4.5",
