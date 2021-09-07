@@ -298,10 +298,11 @@ export default class MeasurementPicturePopup extends Vue {
           font-size: large;
         }
       }
+    }
 
-      &validate-redo {
-        padding-bottom: 20px;
-      }
+    .validate-redo {
+      padding-bottom: 20px;
+      padding-top: 30px;
     }
 
     .picture-holder {
@@ -352,7 +353,7 @@ export default class MeasurementPicturePopup extends Vue {
   .button-main {
     margin-left: auto;
     margin-right: auto;
-    margin-top: -25px;
+    margin-top: -55px;
   }
 
   .button-minor-left {

@@ -76,7 +76,7 @@
                   v-if="aCatch.speciesId == '__other__'"
                 />
               </div>
-              <div class="two-columns-row-on-desktop">
+              <div class="measure-row">
                 <div
                   class="button button-secondary-no-outline automatic-measure"
                   v-if="modifiable"
@@ -86,7 +86,8 @@
                       displayMeasurementPicturePopup = !displayMeasurementPicturePopup
                     "
                   >
-                    <i class="icon-size" /> Mesure automatique
+                    <i class="icon-size" />
+                    <span id="measure-button-text"></span>
                   </button>
                 </div>
                 <FormInput
@@ -1019,6 +1020,58 @@ export default class EditCatchView extends Vue {
     }
   }
 
+  .measure-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    > :nth-child(1) {
+      width: calc(100% - 200px);
+      margin-top: 20px;
+      min-width: 150px;
+    }
+    > :nth-child(2) {
+      width: 200px;
+    }
+    @media screen and (min-width: 515px) {
+      > :nth-child(1) {
+        width: 300px;
+      }
+      > :nth-child(2) {
+        width: calc(100% - 300px);
+      }
+    }
+    @media screen and (min-width: @desktop-min-width) {
+      > :nth-child(1) {
+        width: calc(100% - 200px);
+        margin-top: 20px;
+      }
+      > :nth-child(2) {
+        width: 200px;
+      }
+    }
+    @media screen and (min-width: 880px) {
+      > :nth-child(1) {
+        width: 300px;
+      }
+      > :nth-child(2) {
+        width: calc(100% - 300px);
+      }
+    }
+  }
+
+  #measure-button-text:after {
+    content: "Mesure";
+    @media screen and (min-width: 515px) {
+      content: "Mesure automatique";
+    }
+    @media screen and (min-width: @desktop-min-width) {
+      content: "Mesure";
+    }
+    @media screen and (min-width: 880px) {
+      content: "Mesure automatique";
+    }
+  }
   @media screen and (min-width: @desktop-min-width) {
     &.picture-background .edit-catch-page {
       .pane {

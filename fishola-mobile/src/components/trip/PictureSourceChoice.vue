@@ -128,6 +128,7 @@ export default class PictureSourceChoice extends Vue {
   height: 100vh;
   width: 100%;
   z-index: 99;
+  color: black;
   background-color: rgba(0, 0, 0, 0.6);
 
   @media screen and (min-width: @desktop-min-width) {
