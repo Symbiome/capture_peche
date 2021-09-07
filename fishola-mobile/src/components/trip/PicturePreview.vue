@@ -26,7 +26,6 @@
     </div>
     <div class="picture" v-if="src" v-on:click="openModal">
       <img
-        id="sourcePictureAutomatic"
         class="picture"
         v-bind:src="src"
         alt="Photo de la capture"

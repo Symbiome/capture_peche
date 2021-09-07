@@ -27,7 +27,6 @@
         v-bind:modifiable="modifiable"
         noPictureText="Appuyer pour ajouter une photo"
         v-on:take-picture="takePicture"
-        @load="pictureSrcDisplayed"
       />
     </div>
     <div class="edit-catch-page page">
@@ -50,10 +49,8 @@
                 v-bind:modifiable="modifiable"
                 noPictureText="Appuyer pour ajouter une photo"
                 v-on:take-picture="takePicture"
-                @load="pictureSrcDisplayed"
               />
             </div>
-
             <div class="edit-catch-form">
               <div
                 :class="{
@@ -277,8 +274,14 @@
       v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
     />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
-    <!-- Invisible marker (required for silent size computation) -->
+    <!-- Invisible marker & pic (required for silent size computation) -->
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
+    <img
+      id="sourcePictureAutomatic"
+      :src="pictureSrc"
+      v-show="false"
+      @load="launchSilentAutomaticMeasureIfRequired"
+    />
   </div>
 </template>
 
@@ -522,7 +525,7 @@ export default class EditCatchView extends Vue {
     this.pictureSrc = content;
   }
 
-  async pictureSrcDisplayed() {
+  async launchSilentAutomaticMeasureIfRequired() {
     if (this.shouldLaunchAutomaticMeasure && !this.aCatch.automaticMeasure) {
       this.shouldLaunchAutomaticMeasure = false;
       // Launch a silent measure
