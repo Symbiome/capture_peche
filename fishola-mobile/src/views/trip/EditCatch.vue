@@ -86,7 +86,7 @@
                       displayMeasurementPicturePopup = !displayMeasurementPicturePopup
                     "
                   >
-                    <i class="icon-size" />
+                    <i class="icon-size measure-button-icon" />
                     <span id="measure-button-text"></span>
                   </button>
                 </div>
@@ -1060,6 +1060,12 @@ export default class EditCatchView extends Vue {
     }
   }
 
+  .measure-button-icon {
+    margin-left: -4px;
+  }
+  #measure-button-text {
+    padding-left: 8px;
+  }
   #measure-button-text:after {
     content: "Mesure";
     @media screen and (min-width: 515px) {
