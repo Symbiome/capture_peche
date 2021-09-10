@@ -49,17 +49,17 @@
             <div v-if="openCVLoaded">
               <div
                 v-if="isMobilePlatform"
-                class="picture-source-item"
+                class="picture-source-item first-choice"
                 @click="takePictureAndTryToMeasure(false)"
               >
-                <i class="pic icon-gallery" />Depuis la galerie
+                <i class="pic icon-gallery" /><span>Depuis la galerie</span>
               </div>
               <div
                 v-if="isMobilePlatform"
                 class="picture-source-item"
                 @click="takePictureAndTryToMeasure(true)"
               >
-                <i class="pic icon-photo" />Depuis l'appareil photo
+                <i class="pic icon-photo" /><span>Depuis l'appareil photo</span>
               </div>
               <div
                 v-if="!isMobilePlatform"
@@ -291,11 +291,17 @@ export default class MeasurementPicturePopup extends Vue {
       .picture-source-item {
         padding-bottom: 5px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
 
         .pic {
           color: @pale-sky !important;
           padding-right: 10px;
-          font-size: large;
+          font-size: x-large;
+        }
+
+        &.first-choice {
+          padding-bottom: 20px;
         }
       }
     }
