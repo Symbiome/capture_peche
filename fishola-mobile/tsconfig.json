@@ -3,6 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
+    "allowJs": true,
     "strictPropertyInitialization": false,
     "jsx": "preserve",
     "importHelpers": true,
@@ -13,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env", "jest"
     ],
     "paths": {
       "@/*": [

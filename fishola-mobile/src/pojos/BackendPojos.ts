@@ -26,6 +26,7 @@ export interface CatchBean {
     speciesId?: string;
     otherSpecies?: string;
     size?: number;
+    automaticMeasure?: number;
     weight?: number;
     keep: boolean;
     releasedStateId?: string;

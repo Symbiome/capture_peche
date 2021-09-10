@@ -38,3 +38,8 @@ package-lock.json
 
 # Fichier de conf local
 fishola-backend/.env
+
+
+# Cypress screenshots
+fishola-mobile/cypress/screenshots
+fishola-mobile/tests/cypress/reports

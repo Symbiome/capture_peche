@@ -1,22 +1,22 @@
 include:
-  - project: 'codelutin/ci'
-    file: '/ci.yml'
+  - project: "codelutin/ci"
+    file: "/ci.yml"
 
 variables:
   # Improve performance with overlayfs.
   DOCKER_DRIVER: overlay2
   ANDROID_COMPILE_SDK: "29"
   ANDROID_BUILD_TOOLS: "29.0.3"
-  ANDROID_SDK_TOOLS:   "6200805"
+  ANDROID_SDK_TOOLS: "6200805"
   MAVEN_REPO_PATH: "/var/local/shared-m2-repository"
   MAVEN_OPTS: "-Dmaven.repo.local=${MAVEN_REPO_PATH}"
 
 stages:
-- build
-- package
-- deploy
-- check-releasable
-- sonar
+  - build
+  - package
+  - deploy
+  - check-releasable
+  - sonar
 
 build:compile:
   image: maven:3.6-openjdk-15
@@ -86,7 +86,7 @@ build:compile-stable:
 
 # must be run after the build stage
 package:android-demo:
-  image: openjdk:9-jdk
+  image: openjdk:11.0-jdk
   stage: package
   when: manual
   cache:
@@ -127,7 +127,7 @@ package:android-demo:
 
 # must be run after the build stage
 package:android-production:
-  image: openjdk:9-jdk
+  image: openjdk:11.0-jdk
   stage: package
   rules:
     - if: $CI_COMMIT_TAG
@@ -183,6 +183,22 @@ package:docker-demo:
   tags:
     - docker
 
+package:docker-opencv:
+  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  stage: package
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "feature/opencv.js" && $CI_PIPELINE_SOURCE != "schedule"'
+      when: always
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
+    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-opencv fishola-backend
+    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-opencv fishola-mobile
+    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-opencv fishola-admin
+    - docker push registry.nuiton.org/inrae/fishola
+    - docker logout registry.nuiton.org
+  tags:
+    - docker
+
 package:docker-demo-feature:
   image: registry.nuiton.org/codelutin/dockerfiles:docker
   stage: package
@@ -226,7 +242,6 @@ sonarqube:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   tags:
     - docker
-
 #build:ios:
 #  stage: build
 #  when: manual

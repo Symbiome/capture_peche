@@ -110,7 +110,7 @@ export default class Menu extends Vue {
     {name:'documentation', label:'Documentation',   iconName:'files',     clickHandler:this.goDocumentation, onlyConnected:false},
     {name:'credits',       label:'Infos / Crédits', iconName:'info',      clickHandler:this.goCredits,       onlyConnected:false},
     {name:'feedback',      label:'Des retours ?',   iconName:'faq',       clickHandler:this.openFeedback,    onlyConnected:false},
-    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true}
+    {name:'logout',        label:'Déconnexion',     iconName:'logout',    clickHandler:this.logout,          onlyConnected:true},
   ];
 
   fullName:string = '';

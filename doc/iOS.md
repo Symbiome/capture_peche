@@ -4,7 +4,7 @@
 
 S'assurer que Docker est bien lancé (commande espace "Docker")
 Se rendre à la racine du projet (e.g. /Users/alexmorel/Documents/Git/fishola)
-mvn clean package
+mvn clean package (ou mvn clean package -pl fishola-mobile -DjavaVersion=1.8 pour builder uniquement le mobile)
 cd fishola-mobile
 mv target/dist-production target/dist
 npx cap copy

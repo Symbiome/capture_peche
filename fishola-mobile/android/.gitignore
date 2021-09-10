@@ -90,3 +90,6 @@ app/src/main/assets/public
 
 keystore-fishola.jks
 signin.properties
+
+# Cypress screenshots
+cypress/screenshots
