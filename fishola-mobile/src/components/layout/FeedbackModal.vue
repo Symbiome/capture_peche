@@ -19,43 +19,61 @@
   #L%
   -->
 <template>
-  <div class="feedback page-with-header-and-footer" v-bind:class="display ? '' : 'feedback-hidden'">
+  <div
+    class="feedback page-with-header-and-footer"
+    v-bind:class="display ? '' : 'feedback-hidden'"
+  >
     <div class="page feedback-page">
       <div class="pane">
         <div class="pane-content rounded">
           <h1>Des retours ?</h1>
-          <p>Si vous voyez une anomalie ou si vous avez simplement une remarque à faire, remplissez ce formulaire pour nous faire parvenir votre avis.</p>
+          <p>
+            Si vous voyez une anomalie ou si vous avez simplement une remarque à
+            faire, remplissez ce formulaire pour nous faire parvenir votre avis.
+          </p>
           <p>N'hésitez pas à en abuser !</p>
 
-          <FormRadio name="category"
-                     label="Catégorie"
-                     v-bind:options="categories"
-                     v-model="model.category"/>
-          <FormInput name="email"
-                     label="E-mail (optionnel)"
-                     placeholder="Indiquez votre e-mail pour rester informé"
-                     v-model="model.email"/>
-          <FormTextarea name="description"
-                        label="Description"
-                        placeholder="Écrivez une description"
-                        v-model="model.description"/>
+          <FormRadio
+            name="category"
+            label="Catégorie"
+            v-bind:options="categories"
+            v-model="model.category"
+          />
+          <FormInput
+            name="email"
+            label="E-mail (optionnel)"
+            placeholder="Indiquez votre e-mail pour rester informé"
+            v-model="model.email"
+          />
+          <FormTextarea
+            name="description"
+            label="Description"
+            placeholder="Écrivez une description"
+            v-model="model.description"
+          />
           <div class="form-checkbox">
-            <input type="checkbox"
-                   id="feedback-with-picture"
-                   class="pelorous-checkbox"
-                   v-model="withPicture" />
+            <input
+              type="checkbox"
+              id="feedback-with-picture"
+              class="pelorous-checkbox"
+              v-model="withPicture"
+            />
             <label for="feedback-with-picture"></label>
-            <label for="feedback-with-picture" class="real-label">Inclure une copie d'écran</label>
+            <label for="feedback-with-picture" class="real-label"
+              >Inclure une copie d'écran</label
+            >
           </div>
-          <FormInput name="version"
-                     label="Version de l'application"
-                     readonly="true"
-                     v-model="model.frontendVersion"/>
+          <FormInput
+            name="version"
+            label="Version de l'application"
+            readonly="true"
+            v-model="model.frontendVersion"
+          />
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
               <button v-on:click="sendClicked">
-                <i class="icon-send"/> Envoyer
+                <i class="icon-send" /> Envoyer
               </button>
             </div>
             <div class="button button-secondary">
@@ -69,37 +87,36 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,credits,feedback"
-                   button-icon="icon-send"
-                   button-text="Envoyer"
-                   v-on:buttonClicked="sendClicked"
-                   back-event="onBackButton"
-                   v-on:onBackButton="closeFeedback"
-                   selected="feedback" />
+    <FisholaFooter
+      shortcuts="back,credits,feedback"
+      button-icon="icon-send"
+      button-text="Envoyer"
+      v-on:buttonClicked="sendClicked"
+      back-event="onBackButton"
+      v-on:onBackButton="closeFeedback"
+      selected="feedback"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FormInput from "@/components/common/FormInput.vue";
+import FormRadio from "@/components/common/FormRadio.vue";
+import FormTextarea from "@/components/common/FormTextarea.vue";
 
-import FormInput from '@/components/common/FormInput.vue'
-import FormRadio from '@/components/common/FormRadio.vue'
-import FormTextarea from '@/components/common/FormTextarea.vue'
+import { Feedback } from "@/pojos/BackendPojos.ts";
+import UserProfile from "@/pojos/UserProfile.ts";
 
-import {Feedback} from '@/pojos/BackendPojos.ts';
-import UserProfile from '@/pojos/UserProfile.ts';
+import ProfileService from "@/services/ProfileService";
+import FeedbackService from "@/services/FeedbackService";
 
-import ProfileService from '@/services/ProfileService';
-import FeedbackService from '@/services/FeedbackService';
+import html2canvas from "html2canvas";
 
-import html2canvas from 'html2canvas';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
-
-import { Plugins, CameraResultType } from '@capacitor/core';
-const { Device } = Plugins;
+import { Component, Vue } from "vue-property-decorator";
+import { Device } from "@capacitor/device";
 
 @Component({
   components: {
@@ -107,44 +124,46 @@ const { Device } = Plugins;
     FisholaFooter,
     FormInput,
     FormRadio,
-    FormTextarea
-  }
+    FormTextarea,
+  },
 })
 export default class FeedbackModal extends Vue {
-
   display = false;
 
   // version:string = process.env.VUE_APP_VERSION;
-  projectVersion:string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision:string = process.env.VUE_APP_GIT_REVISION;
-  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`;
+  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
+  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
+  frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
-  device:string = '';
+  device: string = "";
 
-  model:Feedback = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
-  withPicture:boolean = false;
+  model: Feedback = {
+    category: "BUG",
+    id: "" + new Date().getTime(),
+    frontendVersion: this.frontendVersion,
+  };
+  withPicture: boolean = false;
 
-  categories:any[] = [
-    {id:'BUG', name:'Bug'},
-    {id:'ERGO', name:'Ergonomie'},
-    {id:'OTHER', name:'Autre'}
+  categories: any[] = [
+    { id: "BUG", name: "Bug" },
+    { id: "ERGO", name: "Ergonomie" },
+    { id: "OTHER", name: "Autre" },
   ];
 
   created() {
-
-    Device.getInfo()
-      .then(info => {this.device = JSON.stringify(info)});
-
+    Device.getInfo().then((info) => {
+      this.device = JSON.stringify(info);
+    });
   }
 
   mounted() {
-    this.$root.$on('open-feedback', this.openFeedback);
-    this.$root.$on('close-feedback', this.closeFeedback);
+    this.$root.$on("open-feedback", this.openFeedback);
+    this.$root.$on("close-feedback", this.closeFeedback);
   }
 
   beforeDestroy() {
-    this.$root.$off('open-feedback');
-    this.$root.$off('close-feedback');
+    this.$root.$off("open-feedback");
+    this.$root.$off("close-feedback");
   }
 
   openFeedback() {
@@ -153,16 +172,22 @@ export default class FeedbackModal extends Vue {
     if (footer != null) {
       footer.classList.add("hidden");
     }
-    this.model = { category: 'BUG', id: '' + new Date().getTime(), frontendVersion: this.frontendVersion };
+    this.model = {
+      category: "BUG",
+      id: "" + new Date().getTime(),
+      frontendVersion: this.frontendVersion,
+    };
     this.loadProfile();
   }
 
   loadProfile() {
-    ProfileService.getProfile()
-      .then(this.profileLoaded, () => this.display = true);
+    ProfileService.getProfile().then(
+      this.profileLoaded,
+      () => (this.display = true)
+    );
   }
 
-  profileLoaded(profile:UserProfile) {
+  profileLoaded(profile: UserProfile) {
     this.model.email = profile.email;
     this.model.userId = profile.email;
     this.display = true;
@@ -178,24 +203,23 @@ export default class FeedbackModal extends Vue {
   }
 
   sendClicked() {
-
     this.closeFeedback();
 
     if (this.withPicture) {
-      const rootElement:HTMLElement = this.castRootElement(document.querySelector("#default-layout"));
-      html2canvas(rootElement)
-        .then((canvas:any) => {
-          const pngPicture = canvas.toDataURL("image/png")
-          this.model.screenshot = pngPicture;
-          this.sendFeedback();
-        });
+      const rootElement: HTMLElement = this.castRootElement(
+        document.querySelector("#default-layout")
+      );
+      html2canvas(rootElement).then((canvas: any) => {
+        const pngPicture = canvas.toDataURL("image/png");
+        this.model.screenshot = pngPicture;
+        this.sendFeedback();
+      });
     } else {
       this.sendFeedback();
     }
-
   }
 
-  castRootElement(whatever:any):HTMLElement {
+  castRootElement(whatever: any): HTMLElement {
     return whatever;
   }
 
@@ -212,30 +236,34 @@ export default class FeedbackModal extends Vue {
   getOperatingSystemNameAndVersion() {
     const userAgent = navigator.userAgent;
     let os = userAgent;
-    if (userAgent.indexOf("Windows NT 10.0")!=-1) os="Windows 10";
-    if (userAgent.indexOf("Windows NT 6.3")!=-1) os="Windows 8.1";
-    if (userAgent.indexOf("Windows NT 6.2")!=-1) os="Windows 8";
-    if (userAgent.indexOf("Windows NT 6.1")!=-1) os="Windows 7";
-    if (userAgent.indexOf("Windows NT 6.0")!=-1) os="Windows Vista";
-    if (userAgent.indexOf("Windows NT 5.1")!=-1) os="Windows XP";
-    if (userAgent.indexOf("Windows NT 5.0")!=-1) os="Windows 2000";
-    if (userAgent.indexOf("Mac")!=-1) os="Mac/iOS";
-    if (userAgent.indexOf("X11")!=-1) os="UNIX";
-    if (userAgent.indexOf("Linux")!=-1) os="Linux";
-    if (userAgent.indexOf("Android")!=-1) os="Android";
+    if (userAgent.indexOf("Windows NT 10.0") != -1) os = "Windows 10";
+    if (userAgent.indexOf("Windows NT 6.3") != -1) os = "Windows 8.1";
+    if (userAgent.indexOf("Windows NT 6.2") != -1) os = "Windows 8";
+    if (userAgent.indexOf("Windows NT 6.1") != -1) os = "Windows 7";
+    if (userAgent.indexOf("Windows NT 6.0") != -1) os = "Windows Vista";
+    if (userAgent.indexOf("Windows NT 5.1") != -1) os = "Windows XP";
+    if (userAgent.indexOf("Windows NT 5.0") != -1) os = "Windows 2000";
+    if (userAgent.indexOf("Mac") != -1) os = "Mac/iOS";
+    if (userAgent.indexOf("X11") != -1) os = "UNIX";
+    if (userAgent.indexOf("Linux") != -1) os = "Linux";
+    if (userAgent.indexOf("Android") != -1) os = "Android";
     return os;
   }
 
   getBrowserNameAndVersion() {
-    var ua = navigator.userAgent, tem,
-        M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d]+)/i) || [];
-    if(/trident/i.test(M[1])){
-      tem=  /\brv[ :]+(\d+(\.\d+)?)/g.exec(ua) || [];
-      return 'IE '+(tem[1] || '');
+    var ua = navigator.userAgent,
+      tem,
+      M =
+        ua.match(
+          /(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d]+)/i
+        ) || [];
+    if (/trident/i.test(M[1])) {
+      tem = /\brv[ :]+(\d+(\.\d+)?)/g.exec(ua) || [];
+      return "IE " + (tem[1] || "");
     }
-    M= M[2]? [M[1], M[2]]:[navigator.appName, navigator.appVersion, '-?'];
-    if((tem= ua.match(/version\/([\d]+)/i))!= null) M[2]= tem[1];
-    return M.join(' ');
+    M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, "-?"];
+    if ((tem = ua.match(/version\/([\d]+)/i)) != null) M[2] = tem[1];
+    return M.join(" ");
   }
 
   sendFeedback() {
@@ -243,18 +271,18 @@ export default class FeedbackModal extends Vue {
     this.model.date = new Date();
     this.model.location = window.location.href;
     this.model.device = this.device;
-    FeedbackService.sendFeedback(this.model)
-      .then(() => {
-        this.$root.$emit('toaster-success', 'Votre retour a été enregistré, merci');
-      });
+    FeedbackService.sendFeedback(this.model).then(() => {
+      this.$root.$emit(
+        "toaster-success",
+        "Votre retour a été enregistré, merci"
+      );
+    });
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .feedback-page {
@@ -289,10 +317,11 @@ export default class FeedbackModal extends Vue {
       margin-top: 0px;
 
       .pane-content {
-
         color: @gunmetal;
         font-size: @fontsize-feedback-paragraph;
-        line-height: calc(@fontsize-feedback-paragraph + @line-height-padding-medium);
+        line-height: calc(
+          @fontsize-feedback-paragraph + @line-height-padding-medium
+        );
 
         p {
           text-align: center;
@@ -307,7 +336,6 @@ export default class FeedbackModal extends Vue {
         }
       }
     }
-
   }
 
   @media screen and (min-width: @desktop-min-width) {
@@ -323,7 +351,7 @@ export default class FeedbackModal extends Vue {
         align-items: center;
         justify-content: center;
         .pane-content {
-          background-color: #F7F7F7;
+          background-color: #f7f7f7;
           width: @desktop-min-width;
           border-bottom-left-radius: 30px;
           border-bottom-right-radius: 30px;
@@ -332,5 +360,4 @@ export default class FeedbackModal extends Vue {
     }
   }
 }
-
 </style>
