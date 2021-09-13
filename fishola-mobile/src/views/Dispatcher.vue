@@ -25,23 +25,21 @@
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
 
-import Constants from '@/services/Constants';
+import router from "@/router";
 
-import router from '@/router'
+import ProfileService from "@/services/ProfileService";
+import Helpers from "@/services/Helpers";
 
-import ProfileService from '@/services/ProfileService';
-import Helpers from '@/services/Helpers';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar } = Plugins;
+import { Component, Vue } from "vue-property-decorator";
+import { StatusBar } from "@capacitor/status-bar";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 @Component({
-  components: {}
+  components: {},
 })
 export default class DispatcherView extends Vue {
-
   constructor() {
     super();
   }
@@ -51,39 +49,36 @@ export default class DispatcherView extends Vue {
   }
 
   checkForActiveSession() {
-    ProfileService.getProfile()
-      .then(
-        (profile) => {
-          if (profile.offlineMarker) {
-            this.$root.$emit('toaster-warning', 'Pas de connexion internet');
-          } else {
-            this.$root.$emit('toaster-success', 'Vous êtes toujours connecté\u00B7e');
-          }
-          router.push('trips');
-
-          this.startupFinished();
-
-        },
-        (status) => {
-          // Only push route if no route has already been pushed (typically when opening from external url)
-          if (router.currentRoute.name == "dispatcher") {
-
-            // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
-            Helpers.getDeviceType()
-              .then(type => {
-                if (type == "web") {
-                  router.push('/about');
-                } else {
-                  router.push('/login');
-                }
-              });
-
-          }
-
-          this.startupFinished();
-
+    ProfileService.getProfile().then(
+      (profile) => {
+        if (profile.offlineMarker) {
+          this.$root.$emit("toaster-warning", "Pas de connexion internet");
+        } else {
+          this.$root.$emit(
+            "toaster-success",
+            "Vous êtes toujours connecté\u00B7e"
+          );
         }
-      );
+        router.push("trips");
+
+        this.startupFinished();
+      },
+      (status) => {
+        // Only push route if no route has already been pushed (typically when opening from external url)
+        if (router.currentRoute.name == "dispatcher") {
+          // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
+          Helpers.getDeviceType().then((type) => {
+            if (type == "web") {
+              router.push("/about");
+            } else {
+              router.push("/login");
+            }
+          });
+        }
+
+        this.startupFinished();
+      }
+    );
   }
 
   startupFinished() {
@@ -97,11 +92,9 @@ export default class DispatcherView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../less/main";
 
 .dispatcher {
-
   height: 100%;
 
   display: flex;
@@ -109,7 +102,12 @@ export default class DispatcherView extends Vue {
   justify-content: center;
   align-items: center;
 
-  @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
 
   .spinner {
     height: 60px;
@@ -117,9 +115,7 @@ export default class DispatcherView extends Vue {
     border-radius: 50%;
     border-top: 3px solid @white;
     border-left: 3px solid @white;
-    animation:spin 2s linear infinite;
+    animation: spin 2s linear infinite;
   }
-
 }
-
 </style>

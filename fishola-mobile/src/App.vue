@@ -20,149 +20,156 @@
   -->
 <template>
   <div id="app">
-    <v-dialog :width="270"/>
-    <Toaster/>
+    <v-dialog :width="270" />
+    <Toaster />
     <component :is="layout()" class="layout">
-      <router-view/>
+      <router-view />
     </component>
   </div>
 </template>
 
 <script lang="ts">
+import Helpers from "@/services/Helpers";
 
-import Helpers from '@/services/Helpers';
+import Toaster from "@/components/layout/Toaster.vue";
 
-import Toaster from '@/components/layout/Toaster.vue'
+import TripsService from "@/services/TripsService";
+import PicturesService from "@/services/PicturesService";
+import FeedbackService from "@/services/FeedbackService";
+import KeyboardManager from "@/services/KeyboardManager";
 
-import TripsService from '@/services/TripsService';
-import PicturesService from '@/services/PicturesService';
-import FeedbackService from '@/services/FeedbackService';
-import KeyboardManager from '@/services/KeyboardManager';
-
-import { Component, Vue } from 'vue-property-decorator';
-import ReferentialService from './services/ReferentialService';
-import DocumentationService from './services/DocumentationService';
-import ProfileService from './services/ProfileService';
-import GeolocationService from './services/GeolocationService';
-import { Plugins, AppState, StatusBarStyle } from '@capacitor/core';
-const { SplashScreen, StatusBar} = Plugins;
-import router from '@/router';
-
-const { App } = Plugins;
+import { Component, Vue } from "vue-property-decorator";
+import ReferentialService from "./services/ReferentialService";
+import DocumentationService from "./services/DocumentationService";
+import ProfileService from "./services/ProfileService";
+import GeolocationService from "./services/GeolocationService";
+import router from "@/router";
+import { StatusBar } from "@capacitor/status-bar";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { App } from "@capacitor/app";
 
 @Component({
   components: {
-    Toaster
-  }
+    Toaster,
+  },
 })
 export default class AppView extends Vue {
+  interval?: number;
 
-    interval?:number;
+  created() {
+    this.initApp();
+  }
 
-    created() {
-      this.initApp();
-    }
+  layout() {
+    return (this.$route.meta.layout || "default") + "-layout";
+  }
 
-    layout() {
-      return (this.$route.meta.layout || 'default') + '-layout';
-    }
+  // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
+  initApp() {
+    // Configure Keyboard & Status bar
+    Helpers.ifApplication(() => {
+      KeyboardManager.setupKeyboardConfiguration();
+      StatusBar.setBackgroundColor({ color: "#1E9BC4" });
+    });
 
-    // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application
-    initApp() {
-
-      // Configure Keyboard & Status bar
-      Helpers.ifApplication(() => {
-        KeyboardManager.setupKeyboardConfiguration();
-        StatusBar.setBackgroundColor({"color": "#1E9BC4"});
-      });
-
-      // If app is opened externally (typically from mails when validating account or password forgotten)
-      App.addListener('appUrlOpen', (data: any) => {
-        // Catch any URL like %%/security/ACTION?t=TOKEN
-        console.info("Opening from external url " + data.url);
-        const start = data.url.indexOf('security');
-        if (start > 0 && data.url.indexOf('?t=') > 0) {
-          const actionAndToken = data.url.substring(start + 'security'.length + 1);
-          const action = actionAndToken.substring(0, actionAndToken.indexOf('?'));
-          const token = actionAndToken.substring(actionAndToken.indexOf('=') + 1);
-          if ('reset-password' === action) {
-            console.info("Detected reset password request");
-            router.push({name:'reset-password', params: {token: token}});
-          } else if ('verify' === action) {
-            console.info("Detected verify request");
-            router.push({name:'verify', params: {token: token}});
-          }
-
-          // Hide splashscreen
-          Helpers.ifApplication(() => {
-            SplashScreen.hide();
-            StatusBar.show();
-          });
-
+    // If app is opened externally (typically from mails when validating account or password forgotten)
+    App.addListener("appUrlOpen", (data: any) => {
+      // Catch any URL like %%/security/ACTION?t=TOKEN
+      console.info("Opening from external url " + data.url);
+      const start = data.url.indexOf("security");
+      if (start > 0 && data.url.indexOf("?t=") > 0) {
+        const actionAndToken = data.url.substring(
+          start + "security".length + 1
+        );
+        const action = actionAndToken.substring(0, actionAndToken.indexOf("?"));
+        const token = actionAndToken.substring(actionAndToken.indexOf("=") + 1);
+        if ("reset-password" === action) {
+          console.info("Detected reset password request");
+          router.push({ name: "reset-password", params: { token: token } });
+        } else if ("verify" === action) {
+          console.info("Detected verify request");
+          router.push({ name: "verify", params: { token: token } });
         }
-      });
 
-      ReferentialService.prepareCaches()
-        .then(
-          () => console.debug("Préparation des caches du référentiel terminée"),
-          (error) => console.error("Erreur lors de la préparation des caches du référentiel", error)
-        );
-      DocumentationService.prepareCaches()
-        .then(
-          () => console.debug("Préparation des caches de documentation terminée"),
-          (error) => console.error("Erreur lors de la préparation des caches de documentation", error)
-        );
-      ProfileService.prepareCaches()
-        .then(
-          () => console.debug("Préparation des caches du profil utilisateur terminée"),
-          (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
-        );
-      this.checkOutOfSyncTrips();
-      const syncDelay = 30000;
-      console.debug(`setInterval(${syncDelay/1000}s) pour surveiller les sorties à synchro`);
-      this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
-
-      this.$root.$on('ask-for-sync-check', this.checkOutOfSyncTrips);     
-    }
-
-    beforeDestroy() {
-      this.$root.$off('ask-for-sync-check');
-      clearInterval(this.interval);
-      this.stopWatchingPosition();
-    }
-
-    checkOutOfSyncTrips() {
-      // console.debug("SYNCHO : Recherche des sorties");
-      TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
-        console.error("Apparement, il y a un pb de sync", e);
-        // Même en cas d'erreur on essaye de synchro les photos
-        this.checkOutOfSyncPicturesAndFeedbacks();
-      });
-    }
-
-    tripsSyncFinished(someTripsSaved:boolean) {
-      this.checkOutOfSyncPicturesAndFeedbacks();
-      if (someTripsSaved) {
-        this.$root.$emit('trips-saved');
+        // Hide splashscreen
+        Helpers.ifApplication(() => {
+          SplashScreen.hide();
+          StatusBar.show();
+        });
       }
-    }
+    });
 
-    checkOutOfSyncPicturesAndFeedbacks() {
-      // console.debug("SYNCHO : Recherche des photos");
-      PicturesService.syncPictures();
-      // Check for out of sync feedbacks any time we check for pictures
-      FeedbackService.syncFeedbacks();
-    }
+    ReferentialService.prepareCaches().then(
+      () => console.debug("Préparation des caches du référentiel terminée"),
+      (error) =>
+        console.error(
+          "Erreur lors de la préparation des caches du référentiel",
+          error
+        )
+    );
+    DocumentationService.prepareCaches().then(
+      () => console.debug("Préparation des caches de documentation terminée"),
+      (error) =>
+        console.error(
+          "Erreur lors de la préparation des caches de documentation",
+          error
+        )
+    );
+    ProfileService.prepareCaches().then(
+      () =>
+        console.debug("Préparation des caches du profil utilisateur terminée"),
+      (error) =>
+        console.error(
+          "Erreur lors de la préparation des caches du profil utilisateur",
+          error
+        )
+    );
+    this.checkOutOfSyncTrips();
+    const syncDelay = 30000;
+    console.debug(
+      `setInterval(${syncDelay / 1000}s) pour surveiller les sorties à synchro`
+    );
+    this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
-    stopWatchingPosition() {
-      GeolocationService.stopWatchingPosition();
+    this.$root.$on("ask-for-sync-check", this.checkOutOfSyncTrips);
+  }
+
+  beforeDestroy() {
+    this.$root.$off("ask-for-sync-check");
+    clearInterval(this.interval);
+    this.stopWatchingPosition();
+  }
+
+  checkOutOfSyncTrips() {
+    // console.debug("SYNCHO : Recherche des sorties");
+    TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
+      console.error("Apparement, il y a un pb de sync", e);
+      // Même en cas d'erreur on essaye de synchro les photos
+      this.checkOutOfSyncPicturesAndFeedbacks();
+    });
+  }
+
+  tripsSyncFinished(someTripsSaved: boolean) {
+    this.checkOutOfSyncPicturesAndFeedbacks();
+    if (someTripsSaved) {
+      this.$root.$emit("trips-saved");
     }
+  }
+
+  checkOutOfSyncPicturesAndFeedbacks() {
+    // console.debug("SYNCHO : Recherche des photos");
+    PicturesService.syncPictures();
+    // Check for out of sync feedbacks any time we check for pictures
+    FeedbackService.syncFeedbacks();
+  }
+
+  stopWatchingPosition() {
+    GeolocationService.stopWatchingPosition();
+  }
 }
-
 </script>
 
 <style lang="less">
-
 @import "less/main";
 
 body {
@@ -185,7 +192,7 @@ html {
 }
 
 #app {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: @white;
@@ -202,11 +209,9 @@ html {
     display: flex;
     flex-direction: row;
   }
-
 }
 
 .page-with-header {
-
   display: flex;
   flex-direction: column;
 
@@ -222,14 +227,12 @@ html {
 }
 
 .page-with-header-and-footer {
-
   display: flex;
   flex-direction: column;
 
   height: 100%;
 
   .page {
-
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -238,7 +241,7 @@ html {
     &.keyboardShowing {
       margin-top: env(safe-area-inset-top);
       // Take reduced footer height into account
-      height: calc(100%  - env(safe-area-inset-top) - @reduced-footer-height);
+      height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height);
     }
 
     @media screen and (min-width: @desktop-min-width) {
@@ -261,7 +264,7 @@ html {
   background-position: top;
   // Very small resolution: scale down kacground to make it fit widht
   background-position-y: -1vw;
-  @media(min-width:200px) {
+  @media (min-width: 200px) {
     background-position-y: -3vw;
   }
   // Resolutions larger than background: strech background width
@@ -281,8 +284,7 @@ html {
 }
 
 .pane {
-
-  flex:auto;
+  flex: auto;
 
   display: flex;
   flex-direction: column;
@@ -294,10 +296,14 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
-  height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
+  height: calc(
+    100% - @header-height - @secondary-header-height - @footer-height - 10px
+  );
   &.keyboardShowing {
     // Take reduced footer height into account
-    height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height - 10px);
+    height: calc(
+      100% - env(safe-area-inset-top) - @reduced-footer-height - 10px
+    );
   }
   color: @gunmetal;
 
@@ -314,20 +320,18 @@ html {
     color: @pelorous;
     text-align: center;
 
-    @media(max-height:579px) {
+    @media (max-height: 579px) {
       margin-top: @margin-medium;
       margin-bottom: @margin-medium;
     }
 
-    @media(max-height:450px) {
+    @media (max-height: 450px) {
       margin-top: @margin-small;
       margin-bottom: @margin-small;
     }
-
   }
 
   .pane-content {
-
     overflow: auto;
 
     padding-left: @margin-large;
@@ -348,9 +352,7 @@ html {
     margin-top: @vertical-margin-medium;
   }
 
-
   @media screen and (min-width: @desktop-min-width) {
-
     border-top-left-radius: unset;
     border-top-right-radius: unset;
     padding-top: 0px;
@@ -361,7 +363,9 @@ html {
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(
+        @fontsize-title-desktop + @line-height-padding-xx-large
+      );
       text-align: left;
 
       &.no-margin-pane {
@@ -378,10 +382,7 @@ html {
     &.pane-only {
       margin-top: 0px;
     }
-
   }
-
-
 }
 
 .picture-background {
@@ -392,7 +393,6 @@ html {
     &.keyboardShowing {
       margin-top: 5px;
     }
-
   }
 }
 
@@ -425,7 +425,9 @@ html {
 
         @media screen and (min-width: @desktop-min-width) {
           font-size: calc(@fontsize-dialog-title-desktop);
-          line-height: calc(@fontsize-dialog-title-desktop + @line-height-padding-large);
+          line-height: calc(
+            @fontsize-dialog-title-desktop + @line-height-padding-large
+          );
         }
       }
 
@@ -436,7 +438,9 @@ html {
 
         @media screen and (min-width: @desktop-min-width) {
           font-size: calc(@fontsize-dialog-text-desktop);
-          line-height: calc(@fontsize-dialog-text-desktop + @line-height-padding-large);
+          line-height: calc(
+            @fontsize-dialog-text-desktop + @line-height-padding-large
+          );
         }
       }
 

@@ -19,7 +19,7 @@
  * #L%
  */
 
-import { Camera, CameraSource, CameraResultType } from "@capacitor/core";
+import { Camera, CameraSource, CameraResultType } from "@capacitor/camera";
 
 export default class PictureTakerService {
   public static INSTANCE = new PictureTakerService();
