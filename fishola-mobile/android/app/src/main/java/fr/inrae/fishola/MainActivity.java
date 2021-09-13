@@ -10,17 +10,6 @@ import java.util.ArrayList;
 import android.webkit.CookieManager;
 
 public class MainActivity extends BridgeActivity {
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    // Initializes the Bridge
-    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-      // Additional plugins you've installed go here
-      // Ex: add(TotallyAwesomePlugin.class);
-    }});
-
-  }
 
   /*
    * Les cookies ne sont pas immédiatement persistés ce qui fait que si l'application est tuée avant

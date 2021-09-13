@@ -56,7 +56,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
-import { Device } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 
 @Component({})
 export default class PictureSourceChoice extends Vue {

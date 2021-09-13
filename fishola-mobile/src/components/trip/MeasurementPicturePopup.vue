@@ -139,7 +139,7 @@ import PictureTakerService from "@/services/PictureTakerService";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
-import { Device } from "@capacitor/core";
+import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
 
 @Component({
