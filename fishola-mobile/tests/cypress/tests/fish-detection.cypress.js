@@ -277,6 +277,22 @@ function getPicturesToTest() {
   const medium = 2;
   const hard = 1;
 
+  // Beta pictures
+  pics.push(
+    fishWithMarkerPic("beta-GAR130b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+  );
+  pics.push(
+    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+  );
+  pics.push(
+    fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+  );
+  pics.push(
+    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+  );
+  pics.push(
+    fishWithMarkerPic("beta-TAN519b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+  );
   // Optimal pictures
   pics.push(fishWithMarkerPic("marker_1.jpg", "parfaite", 6.8 / 15, optimal));
   pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15, optimal));
