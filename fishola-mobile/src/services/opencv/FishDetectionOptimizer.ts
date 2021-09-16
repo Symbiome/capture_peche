@@ -78,11 +78,14 @@ export class FishDetectionOptimizer {
         // Case 1 : we did not detect the marker but were expecting one
         // If we found a fish, maybe marker and fish are too close and were considered as a single fish
         if (fishCount >= 1) {
-          // => try again with differents threeshold for canny edge detection
+          // => try again with differents threeshold for canny edge detection & thickness size
+          this.config.dilationThickness = 3;
           this.config.cannyEdgeUpperThreshold += 20;
           console.error(
             "Failed to detect marker -> increasing cannyEdgeUpperThreshold to " +
-              this.config.cannyEdgeUpperThreshold
+              this.config.cannyEdgeUpperThreshold +
+              " and dilation thickness to " +
+              this.config.dilationThickness
           );
           this.calculateAndOptimizeFishSizes(retries + 1);
         } else {

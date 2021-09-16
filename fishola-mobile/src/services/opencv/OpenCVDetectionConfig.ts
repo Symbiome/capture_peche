@@ -81,6 +81,11 @@ export class OpenCVDetectionConfig {
    */
   cannyEdgeUpperThreshold = 100;
 
+  /**
+   * Contour size to use for dilation.
+   */
+  dilationThickness = 5;
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 
@@ -92,5 +97,5 @@ export class OpenCVDetectionConfig {
   /**
    * Number of retries the size computation algorithm allows itself before returning the current result.
    */
-  maxRetries = 1;
+  maxRetries = 2;
 }

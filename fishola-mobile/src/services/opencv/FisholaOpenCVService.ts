@@ -167,7 +167,10 @@ export default class FisholaOpenCVService {
       false
     );
     // Step 3.2 : dilation https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
-    const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+    const kernel = cv.getStructuringElement(
+      cv.MORPH_RECT,
+      new cv.Size(config.dilationThickness, config.dilationThickness)
+    );
     cv.dilate(refined1, refined2, kernel, new cv.Point(-1, 1), 1);
     // Some literature advise to apply erosion at this step, but this was not needed in our test case
     // Something to keep in mind in the future though
