@@ -56,7 +56,7 @@ export class OpenCVDetectionConfig {
   /**
    * Minimal number of feature match required to consider a shape as a marker.
    */
-  minFeaturematchRequired = 2;
+  minFeaturematchRequired = 1;
 
   /**
    * Indicates if we should check marker candidates even if there is only one.
