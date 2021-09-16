@@ -63,7 +63,9 @@ export default class FisholaOpenCVService {
       markerElement,
       config
     );
-    const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes();
+    const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes(
+      0
+    );
 
     // Step 4: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {

@@ -88,4 +88,9 @@ export class OpenCVDetectionConfig {
    * Indicates if there is  marker on the pictures to anlayse (alway true, only set to false for testing purpose)
    */
   pictureIsSupposedToContainMarker = true;
+
+  /**
+   * Number of retries the size computation algorithm allows itself before returning the current result.
+   */
+  maxRetries = 1;
 }
