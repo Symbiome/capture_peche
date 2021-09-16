@@ -58,43 +58,26 @@ export class FishDetectionOptimizer {
       this.markerElement,
       this.config
     );
-    let biggestFish: DetectedShape | undefined;
     let biggestFishSize: number = 0;
     let fishCount: number = 0;
     let markerFound = false;
     markerAndPotentialFishes.forEach((potentialFish: DetectedShape) => {
-      if (potentialFish.isMarker) {
-        markerFound = true;
-      } else if (potentialFish.isFish) {
+      if (potentialFish.isFish) {
         fishCount++;
         if (potentialFish.calculatedLenght > biggestFishSize) {
           biggestFishSize = potentialFish.calculatedLenght;
-          biggestFish = potentialFish;
         }
       }
-    });
-    console.error(markerAndPotentialFishes);
-    console.error(biggestFish);
-    // If we detected a marker and a fish, make sur that marker is not inside the fish
-    if (fishCount >= 1 && biggestFish) {
-      // first, try to feature match inside fish to determine if marker is in it
-      const matched = FisholaOpenCVService.INSTANCE.findBestCandidateUsingFeatureMatching(
-        this.cv,
-        this.imgElement,
-        this.markerElement,
-        [biggestFish],
-        this.config
-      );
-      if (matched) {
-        console.error("Fish contains marker ", matched);
-        return markerAndPotentialFishes;
+      if (potentialFish.isMarker) {
+        markerFound = true;
       }
-    }
+    });
+
     if (retries < this.config.maxRetries) {
       if (!markerFound && this.config.pictureIsSupposedToContainMarker) {
         // Case 1 : we did not detect the marker but were expecting one
         // If we found a fish, maybe marker and fish are too close and were considered as a single fish
-        if (fishCount >= 1 && biggestFish) {
+        if (fishCount >= 1) {
           // => try again with differents threeshold for canny edge detection
           this.config.cannyEdgeUpperThreshold += 20;
           console.error(
