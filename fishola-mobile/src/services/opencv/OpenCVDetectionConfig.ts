@@ -32,7 +32,7 @@ export class OpenCVDetectionConfig {
   maxSizeRatio = 0.999;
 
   /* The minimum % of the marker should cover - float between 0 & 1*/
-  markerMinSizeRatio = 0.15;
+  markerMinSizeRatio = 0.05;
 
   /* The minimum width / length ratio each shape should respect(trims "line" shapes) - float between 0 & 1*/
   minWidthLengthRatio = 0.1;
