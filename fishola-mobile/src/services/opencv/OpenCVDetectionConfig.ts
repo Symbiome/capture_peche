@@ -71,6 +71,16 @@ export class OpenCVDetectionConfig {
    */
   maxDistanceBetweenTemplateMatchedAndCandidate = 20;
 
+  /**
+   * Lower threeshold for the canny edge detection algorithm.
+   */
+  cannyEdgeLowerThreshold = 50;
+
+  /**
+   * Upper threeshold for the canny edge detection algorithm.
+   */
+  cannyEdgeUpperThreshold = 100;
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 }

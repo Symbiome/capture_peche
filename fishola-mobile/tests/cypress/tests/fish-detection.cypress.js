@@ -43,6 +43,9 @@ describe("Mesures de poissons", () => {
     // One test per picture to test
     let qualityString = "";
     switch (testPicture.quality) {
+      case 5:
+        qualityString = "beta";
+        break;
       case 4:
         qualityString = "optimale";
         break;
@@ -144,10 +147,19 @@ describe("Mesures de poissons", () => {
       }
     );
   }
-  it("Note finale (cas optimaux et corrects)", () => {
+  it("Note finale (cas beta)", () => {
+    assert.fail(computeFinalGradeString(testResults, 5, true));
+  });
+  it("Note finale (cas optimaux)", () => {
+    assert.fail(computeFinalGradeString(testResults, 4, true));
+  });
+  it("Note finale (cas beta et optimaux)", () => {
+    assert.fail(computeFinalGradeString(testResults, 4));
+  });
+  it("Note finale (cas beta, optimaux et corrects)", () => {
     assert.fail(computeFinalGradeString(testResults, 3));
   });
-  it("Note finale (cas optimaux, corrects et dégradés)", () => {
+  it("Note finale (cas beta, optimaux, corrects et dégradés)", () => {
     assert.fail(computeFinalGradeString(testResults, 2));
   });
   it("Note finale (tous cas y compris  indétectables)", () => {
@@ -195,9 +207,17 @@ describe("Mesures de poissons", () => {
 /**
  * Computes a grade (/20) for our measure system out of test results.
  */
-function computeFinalGradeString(testResults, minimumQuality) {
+function computeFinalGradeString(
+  testResults,
+  minimumQuality,
+  strictQualityEquality
+) {
   const trimmedResults = testResults.filter((ts) => {
-    return ts.quality >= minimumQuality;
+    if (strictQualityEquality) {
+      return ts.quality == minimumQuality;
+    } else {
+      return ts.quality >= minimumQuality;
+    }
   });
   const wrongMarkers = trimmedResults.filter((ts) => {
     return !ts.markerDetectedAsExpected;
@@ -272,6 +292,7 @@ function failWithGrade(testResult, failureMessage) {
 
 function getPicturesToTest() {
   const pics = [];
+  const beta = 5;
   const optimal = 4;
   const good = 3;
   const medium = 2;
@@ -279,24 +300,27 @@ function getPicturesToTest() {
 
   // Beta pictures
   pics.push(
-    fishWithMarkerPic("beta-GAR130b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+    fishWithMarkerPic("beta-GAR130b.jpg", "chloé 13/09", 7.2 / 15, beta)
   );
   pics.push(
-    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 9.5 / 15, beta)
   );
   pics.push(
-    fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+    fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 9.3 / 15, beta)
   );
   pics.push(
-    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+    fishWithMarkerPic("beta-PER313.jpg", "chloé 13/09", 8.5 / 15, beta)
   );
   pics.push(
-    fishWithMarkerPic("beta-TAN519b.jpg", "chloé 13/09", 6.8 / 15, optimal)
+    fishWithMarkerPic("beta-TAN418b.jpg", "chloé 13/09", 9.1 / 15, beta)
+  );
+  pics.push(
+    fishWithMarkerPic("beta-TAN519b.jpg", "chloé 13/09", 9.5 / 15, beta)
   );
   // Optimal pictures
   pics.push(fishWithMarkerPic("marker_1.jpg", "parfaite", 6.8 / 15, optimal));
   pics.push(fishPic("IMG_20201001_102419.jpg", "correcte", 10.9 / 15, optimal));
-  
+
   pics.push(fishPic("P1010100.jpg", "correcte", 13 / 15, optimal));
   pics.push(fishPic("pisci_Bourget 2013.jpg", "correcte", 12 / 15, optimal));
 

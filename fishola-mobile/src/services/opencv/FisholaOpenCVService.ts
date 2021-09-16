@@ -156,7 +156,14 @@ export default class FisholaOpenCVService {
 
     // Step 3: perform edge detection, then perform a dilation
     // Step 3.1 : edge detection https://docs.opencv.org/3.4/da/d22/tutorial_py_canny.html
-    cv.Canny(refined2, refined1, 50, 100, 3, false);
+    cv.Canny(
+      refined2,
+      refined1,
+      config.cannyEdgeLowerThreshold,
+      config.cannyEdgeUpperThreshold,
+      3,
+      false
+    );
     // Step 3.2 : dilation https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
     const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
     cv.dilate(refined1, refined2, kernel, new cv.Point(-1, 1), 1);
