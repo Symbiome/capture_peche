@@ -199,7 +199,7 @@ class Slide {
 .do-not {
   float: left;
   margin-left: 1vw;
-  width: 45%;
+  width: calc(50% - 1vw);
   .frame {
     background-color: white;
     border: 5px solid @cardinal;
@@ -215,7 +215,7 @@ class Slide {
 .do {
   float: left;
   margin-right: 1vw;
-  width: 45%;
+  width: calc(50% - 1vw);
   .frame {
     background-color: white;
     border: 5px solid @lime-green;
@@ -248,6 +248,6 @@ class Slide {
   align-items: center;
   justify-content: center;
   padding-top: 1vh;
-  width: 90%;
+  width: 100%;
 }
 </style>
