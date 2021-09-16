@@ -156,6 +156,13 @@
                   id="alwaysCheckMarkerCandidates"
                   v-model.number="config.alwaysCheckMarkerCandidates"
                 /><br />
+                La photo contient un marqueur
+                <input
+                  type="checkbox"
+                  style="width:100px"
+                  id="pictureIsSupposedToContainMarker"
+                  v-model.number="config.pictureIsSupposedToContainMarker"
+                /><br />
               </div>
             </div>
             <div id="status">

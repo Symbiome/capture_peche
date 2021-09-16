@@ -72,6 +72,11 @@ describe("Mesures de poissons", () => {
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
+        // Indicate if picture is suppose to contain mraker
+        if (!testPicture.shouldHaveMarker) {
+          cy.get("[id=pictureIsSupposedToContainMarker]").uncheck();
+        }
+
         // Attach picture file
         cy.get("[id=fileInput]").attachFile(testPicture.filePath);
 
@@ -300,10 +305,10 @@ function getPicturesToTest() {
 
   // Beta pictures
   pics.push(
-    fishWithMarkerPic("beta-GAR130b.jpg", "chloé 13/09", 7.2 / 15, beta)
+    fishWithMarkerPic("beta-GAR130b.jpg", "marqueur tâché", 7.2 / 15, beta)
   );
   pics.push(
-    fishWithMarkerPic("beta-OBL285b.jpg", "chloé 13/09", 9.5 / 15, beta)
+    fishWithMarkerPic("beta-OBL285b.jpg", "marqueur collé", 9.5 / 15, beta)
   );
   pics.push(
     fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 9.3 / 15, beta)

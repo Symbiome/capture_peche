@@ -83,4 +83,9 @@ export class OpenCVDetectionConfig {
 
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
+
+  /**
+   * Indicates if there is  marker on the pictures to anlayse (alway true, only set to false for testing purpose)
+   */
+  pictureIsSupposedToContainMarker = true;
 }
