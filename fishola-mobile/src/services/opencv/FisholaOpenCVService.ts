@@ -153,7 +153,7 @@ export default class FisholaOpenCVService {
     const refined1 = new cv.Mat();
     const refined2 = new cv.Mat();
     cv.cvtColor(src, refined1, cv.COLOR_BGR2GRAY, 0);
-    const blurSize = new cv.Size(7, 7);
+    const blurSize = new cv.Size(config.blurSize, config.blurSize);
     cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
 
     // Step 3: perform edge detection, then perform a dilation
@@ -186,7 +186,7 @@ export default class FisholaOpenCVService {
       refined1,
       contours,
       hierarchy,
-      cv.RETR_EXTERNAL,
+      cv.RETR_LIST,
       cv.CHAIN_APPROX_SIMPLE
     );
 

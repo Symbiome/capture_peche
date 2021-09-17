@@ -86,6 +86,11 @@ export class OpenCVDetectionConfig {
    */
   dilationThickness = 5;
 
+  /**
+   * Gaussian blur size.
+   */
+  blurSize = 7;
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 

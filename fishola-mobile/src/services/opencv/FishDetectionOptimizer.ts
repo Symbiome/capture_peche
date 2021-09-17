@@ -73,6 +73,7 @@ export class FishDetectionOptimizer {
       }
     });
 
+    // If we are allowed to retry with different parameters, check if we can improve result
     if (retries < this.config.maxRetries) {
       if (!markerFound && this.config.pictureIsSupposedToContainMarker) {
         // Case 1 : we did not detect the marker but were expecting one
@@ -99,18 +100,7 @@ export class FishDetectionOptimizer {
       } else {
         // Step 2: see if raw results are ok or if we have to try again with another config
 
-        // If we detected more than one fish, only keep the biggest one and return
-        if (fishCount >= 1) {
-          markerAndPotentialFishes.forEach((potentialFish: DetectedShape) => {
-            if (
-              potentialFish.isFish &&
-              potentialFish.calculatedLenght != biggestFishSize
-            ) {
-              potentialFish.isFish = false;
-            }
-          });
-          return markerAndPotentialFishes;
-        } else {
+        if (fishCount < 1) {
           // We did not detected any fish. Try to decrease picture resolute and try again
           this.config.resizeSize *= 0.75;
           console.error(
@@ -119,6 +109,18 @@ export class FishDetectionOptimizer {
           );
         }
       }
+    }
+
+    // If we detected more than one fish, only keep the biggest one
+    if (fishCount > 1) {
+      markerAndPotentialFishes.forEach((potentialFish: DetectedShape) => {
+        if (
+          potentialFish.isFish &&
+          potentialFish.calculatedLenght != biggestFishSize
+        ) {
+          potentialFish.isFish = false;
+        }
+      });
     }
     return markerAndPotentialFishes;
   }
