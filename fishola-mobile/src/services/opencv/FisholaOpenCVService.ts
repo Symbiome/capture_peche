@@ -351,7 +351,7 @@ export default class FisholaOpenCVService {
       markerDescriptors
     );
 
-    const resizeCoef = 2;
+    const resizeCoef = 3;
 
     // Then for each marker candidate
     const shapeScores: number[] = new Array<number>(markerCandidates.length);
