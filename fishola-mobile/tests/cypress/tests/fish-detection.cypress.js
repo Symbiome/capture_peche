@@ -72,7 +72,7 @@ describe("Mesures de poissons", () => {
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
-        // Indicate if picture is suppose to contain mraker
+        // Indicate if picture is suppose to contain marker
         if (!testPicture.shouldHaveMarker) {
           cy.get("[id=pictureIsSupposedToContainMarker]").uncheck();
         }

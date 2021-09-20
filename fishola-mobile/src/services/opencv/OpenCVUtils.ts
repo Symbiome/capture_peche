@@ -8,12 +8,12 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -36,6 +36,8 @@ export class OpenCVUtils {
       color = [0, 220, 0, 255];
     } else if (shapeToDraw.isMarker) {
       color = [30, 155, 196, 255];
+    } else if (shapeToDraw.featureMatchTested) {
+      color = [255, 0, 0, 255];
     } else if (shapeToDraw.isDebug) {
       color = [255, 127, 0, 255];
     }

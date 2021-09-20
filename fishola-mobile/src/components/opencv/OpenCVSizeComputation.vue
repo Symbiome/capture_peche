@@ -163,6 +163,13 @@
                   id="pictureIsSupposedToContainMarker"
                   v-model.number="config.pictureIsSupposedToContainMarker"
                 /><br />
+                La photo contient un poisson
+                <input
+                  type="checkbox"
+                  style="width:100px"
+                  id="pictureIsSupposedToContainFish"
+                  v-model.number="config.pictureIsSupposedToContainFish"
+                /><br />
               </div>
             </div>
             <div id="status">

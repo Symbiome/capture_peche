@@ -51,7 +51,7 @@ export class OpenCVDetectionConfig {
   /**
    * If this number of feature matched is reached for a shap, we will consider it as the marker and stop searching.
    */
-  maxFeatureMatchRequired = 8;
+  maxFeatureMatchRequired = 4;
 
   /**
    * Minimal number of feature match required to consider a shape as a marker.
@@ -95,9 +95,14 @@ export class OpenCVDetectionConfig {
   drawDebugCanvas = true;
 
   /**
-   * Indicates if there is  marker on the pictures to anlayse (alway true, only set to false for testing purpose)
+   * Indicates if there is  marker on the pictures to analyse (alway true, only set to false for testing purpose)
    */
   pictureIsSupposedToContainMarker = true;
+
+  /**
+   * Indicates if there is  fish on the pictures to analyse (alway true, only set to false for testing purpose)
+   */
+  pictureIsSupposedToContainFish = true;
 
   /**
    * Number of retries the size computation algorithm allows itself before returning the current result.

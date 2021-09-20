@@ -353,6 +353,12 @@ export default class FisholaOpenCVService {
 
     const resizeCoef = 3;
 
+    // Order marker candidates by width : study biggest ones first
+    markerCandidates.sort((c1, c2) => {
+      const c1Width = c1.centerX - c1.leftX;
+      const c2Width = c2.centerX - c2.leftX;
+      return c2Width - c1Width;
+    });
     // Then for each marker candidate
     const shapeScores: number[] = new Array<number>(markerCandidates.length);
     let bestMarker: DetectedShape | undefined = undefined;
@@ -363,6 +369,7 @@ export default class FisholaOpenCVService {
     );
     for (let j = 0; j < markerCandidates.length && !foundSureMatch; j++) {
       const markerCandidate = markerCandidates[j];
+      markerCandidate.featureMatchTested = true;
       // Step 1: read and crop image (only keep zone of image corresponding to marker candidate)
       let picture = this.readAndResize(
         cv,

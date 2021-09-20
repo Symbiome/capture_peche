@@ -132,7 +132,7 @@ export class FishDetectionOptimizer {
           );
         }
         // Step 2: see if raw results are ok or if we have to try again with another config
-        else if (fishCount < 1) {
+        else if (fishCount < 1 && this.config.pictureIsSupposedToContainFish) {
           // We did not detected any fish. Try to decrease picture resolute and try again
           this.config.resizeSize *= 0.75;
           console.error(
