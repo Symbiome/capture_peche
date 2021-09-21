@@ -195,7 +195,7 @@ export default class MeasurementPicturePopup extends Vue {
     }
   }
 
-  async sourcePictureLoaded() {
+  async sourcePictureLoaded(retries: number) {
     try {
       console.info(
         "Source picture loaded, launching calculation",
@@ -225,6 +225,9 @@ export default class MeasurementPicturePopup extends Vue {
         this.calculating = false;
         this.$emit("measurementPictureTaken", this.measurementPictureSrc);
       } else {
+        console.error("OPEN CV LOADED : ", this.openCVLoaded);
+        console.error("marker: ", markerElement);
+        console.error("sourcePicture", imageElement);
         this.errorMessage =
           "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
       }
@@ -232,9 +235,21 @@ export default class MeasurementPicturePopup extends Vue {
       return;
       // Step 2: launch calculation
     } catch (error) {
-      this.errorMessage =
-        "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
-      this.$emit("measurementPictureTaken", this.measurementPictureSrc);
+      console.error(error);
+      if (retries < 2) {
+        console.error("Try to reload opencv");
+        const that = this;
+        // Reload opencv
+        FisholaOpenCVService.INSTANCE.cv = undefined;
+        FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
+          that.sourcePictureLoaded(retries + 1);
+        });
+      } else {
+        console.error("Do not reload opencv, no more retries ", retries);
+        this.errorMessage =
+          "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
+        this.$emit("measurementPictureTaken", this.measurementPictureSrc);
+      }
     }
     this.measurementPictureSrc = "";
     this.calculating = false;
