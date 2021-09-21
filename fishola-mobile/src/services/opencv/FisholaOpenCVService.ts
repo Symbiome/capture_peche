@@ -668,18 +668,7 @@ export default class FisholaOpenCVService {
     const result = new Promise<void>((resolve, _reject) => {
       // Check whether OpenCV is loaded or not
       if (!this.cv) {
-        // first delete previously installed opencv script if any
-        const tags = document.getElementsByTagName("script");
-        for (let i = tags.length; i >= 0; i--) {
-          //search backwards within nodelist for matching elements to remove
-          if (
-            tags[i] &&
-            tags[i].getAttribute("src") != null &&
-            tags[i].getAttribute("src")?.indexOf("opencv") != -1
-          )
-            tags[i].parentNode?.removeChild(tags[i]); //remove element by calling parentNode.removeChild()
-        }
-        // Let's create an async script to load opencv
+        // If not, let's create an async script to load it
         const callbackTarget = this;
         const head = document.getElementsByTagName("head").item(0);
         const script = document.createElement("script");
