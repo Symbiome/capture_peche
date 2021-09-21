@@ -259,6 +259,7 @@ export default class FisholaOpenCVService {
     refined1.delete();
     refined2.delete();
     hierarchy.delete();
+    kernel.delete();
 
     return detectedShapes;
   }
@@ -444,6 +445,7 @@ export default class FisholaOpenCVService {
         foundSureMatch = true;
       }
 
+      matches.delete();
       pictureKeypoints.delete();
       pictureDescriptors.delete();
       picture.delete();

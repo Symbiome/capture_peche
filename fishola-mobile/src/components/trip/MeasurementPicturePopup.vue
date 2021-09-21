@@ -352,7 +352,7 @@ export default class MeasurementPicturePopup extends Vue {
     animation: spin 2s linear infinite;
     position: absolute;
     top: 48vh;
-    left: calc(45vw - 60px);
+    left: calc(50vw - 30px);
     display: block;
   }
 
