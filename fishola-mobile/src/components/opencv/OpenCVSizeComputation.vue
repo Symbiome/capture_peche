@@ -248,58 +248,62 @@ export default class OpenCVSizeComputation extends Vue {
     const markerElement = document.getElementById("marker");
     this.calculating = true;
     if (imageElement && markerElement) {
-      const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-        imageElement,
-        markerElement,
-        this.config,
-        "canvasOutput3"
-      );
+      try {
+        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+          imageElement,
+          markerElement,
+          this.config,
+          "canvasOutput3"
+        );
 
-      const markers = detectedShapes.filter(
-        (shape: DetectedShape) => shape.isMarker
-      ).length;
-      const ignored = detectedShapes.filter(
-        (shape: DetectedShape) => !shape.isMarker && !shape.isFish
-      ).length;
-      const notIgnored = detectedShapes.filter(
-        (shape: DetectedShape) => shape.isFish || shape.isMarker
-      );
-      let result =
-        ": <span id='shapesNumber'>" +
-        (detectedShapes.length - ignored) +
-        "</span> formes (" +
-        markers +
-        " marqueurs, " +
-        (notIgnored.length - markers) +
-        " poissons, " +
-        ignored +
-        " ignorées)";
-      notIgnored.forEach((shape: DetectedShape) => {
-        result += "<br/>- ";
-        if (shape.isFish) {
-          result += " Détecté : Poisson ";
-        } else {
-          result += " Détecté : Marqueur ";
+        const markers = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isMarker
+        ).length;
+        const ignored = detectedShapes.filter(
+          (shape: DetectedShape) => !shape.isMarker && !shape.isFish
+        ).length;
+        const notIgnored = detectedShapes.filter(
+          (shape: DetectedShape) => shape.isFish || shape.isMarker
+        );
+        let result =
+          ": <span id='shapesNumber'>" +
+          (detectedShapes.length - ignored) +
+          "</span> formes (" +
+          markers +
+          " marqueurs, " +
+          (notIgnored.length - markers) +
+          " poissons, " +
+          ignored +
+          " ignorées)";
+        notIgnored.forEach((shape: DetectedShape) => {
+          result += "<br/>- ";
+          if (shape.isFish) {
+            result += " Détecté : Poisson ";
+          } else {
+            result += " Détecté : Marqueur ";
+          }
+          result +=
+            shape.calculatedLenght +
+            "mm (" +
+            Math.round(shape.width) +
+            "px * " +
+            Math.round(shape.height) +
+            " px) - left " +
+            Math.round(shape.leftX) +
+            " top " +
+            Math.round(shape.topY);
+        });
+        this.resultText = result;
+
+        this.calculated = true;
+        this.calculating = false;
+
+        if (this.stressTestMode) {
+          console.info("Automatic relaunch #" + this.attempsCount);
+          setTimeout(this.onNewImageSourceLoad, 800);
         }
-        result +=
-          shape.calculatedLenght +
-          "mm (" +
-          Math.round(shape.width) +
-          "px * " +
-          Math.round(shape.height) +
-          " px) - left " +
-          Math.round(shape.leftX) +
-          " top " +
-          Math.round(shape.topY);
-      });
-      this.resultText = result;
-
-      this.calculated = true;
-      this.calculating = false;
-
-      if (this.stressTestMode) {
-        console.info("Automaticly relaunch #" + this.attempsCount);
-        setTimeout(this.onNewImageSourceLoad, 800);
+      } catch (error) {
+        console.error("****", error);
       }
     }
   }

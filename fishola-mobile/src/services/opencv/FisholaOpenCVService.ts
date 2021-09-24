@@ -20,7 +20,6 @@ import { FishDetectionOptimizer } from "./FishDetectionOptimizer";
  * #L%
  */
 import { OpenCVUtils } from "./OpenCVUtils";
-import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
 import { FeatureMatch } from "./FeatureMatch";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
@@ -225,6 +224,7 @@ export default class FisholaOpenCVService {
       detectedShape.isMarker = this.hasMarkerProportions(detectedShape, config);
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
+      cnt.delete();
     }
 
     // Step 6: if several markers detected, discriminate them using feature matching
@@ -259,6 +259,8 @@ export default class FisholaOpenCVService {
     refined1.delete();
     refined2.delete();
     hierarchy.delete();
+    poly.delete();
+    contours.delete();
     kernel.delete();
 
     return detectedShapes;
@@ -344,14 +346,15 @@ export default class FisholaOpenCVService {
 
     const markerKeypoints = new cv.KeyPointVector();
     const markerDescriptors = new cv.Mat();
+    const temp = new cv.Mat();
     const orb = new cv.AKAZE();
     orb.detectAndCompute(
       grayedMarker,
-      new cv.Mat(),
+      temp,
       markerKeypoints,
       markerDescriptors
     );
-
+    temp.delete();
     const resizeCoef = 3;
 
     // Order marker candidates by width : study biggest ones first
@@ -372,24 +375,25 @@ export default class FisholaOpenCVService {
       const markerCandidate = markerCandidates[j];
       markerCandidate.featureMatchTested = true;
       // Step 1: read and crop image (only keep zone of image corresponding to marker candidate)
-      let picture = this.readAndResize(
+      const pictureFull = this.readAndResize(
         cv,
         pictureElement,
         config.resizeSize * resizeCoef
       );
       const zoneOfInterest = new cv.Rect(
-        Math.min(picture.cols, markerCandidate.leftX * resizeCoef),
-        Math.min(picture.rows, markerCandidate.topY * resizeCoef),
+        Math.min(pictureFull.cols, markerCandidate.leftX * resizeCoef),
+        Math.min(pictureFull.rows, markerCandidate.topY * resizeCoef),
         Math.min(
-          picture.cols - markerCandidate.leftX * resizeCoef,
+          pictureFull.cols - markerCandidate.leftX * resizeCoef,
           markerCandidate.width * resizeCoef
         ),
         Math.min(
-          picture.rows - markerCandidate.topY * resizeCoef,
+          pictureFull.rows - markerCandidate.topY * resizeCoef,
           markerCandidate.width * resizeCoef
         )
       );
-      picture = picture.roi(zoneOfInterest);
+      const picture = pictureFull.roi(zoneOfInterest);
+      pictureFull.delete();
 
       //  Step 2 : convert it to grayscale
       const grayedPicture = new cv.Mat();
@@ -398,12 +402,14 @@ export default class FisholaOpenCVService {
       // Step 3: Detect Features & Compute Descriptors
       const pictureKeypoints = new cv.KeyPointVector();
       const pictureDescriptors = new cv.Mat();
+      const temp = new cv.Mat();
       orb.detectAndCompute(
         grayedPicture,
-        new cv.Mat(),
+        temp,
         pictureKeypoints,
         pictureDescriptors
       );
+      temp.delete();
 
       // Step 4: perform feature matching with the expected marker features
       const matchedFeatures: FeatureMatch[] = [];
@@ -446,6 +452,7 @@ export default class FisholaOpenCVService {
       }
 
       matches.delete();
+      bf.delete();
       pictureKeypoints.delete();
       pictureDescriptors.delete();
       picture.delete();
@@ -465,6 +472,7 @@ export default class FisholaOpenCVService {
     markerDescriptors.delete();
     grayedMarker.delete();
     marker.delete();
+    orb.delete();
 
     if (bestScore >= config.minFeaturematchRequired) {
       return bestMarker;
@@ -658,6 +666,7 @@ export default class FisholaOpenCVService {
       const dsize = new cv.Size(ratioHeight * original.cols, reduceHeight);
       cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
     }
+    original.delete();
     return src;
   }
 
