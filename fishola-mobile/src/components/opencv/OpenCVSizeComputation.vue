@@ -35,14 +35,13 @@
                 @change="changeSourceImage"
               />
             </h4>
-
             <div id="calculating">
               <span v-if="calculating">Calcul en cours...</span>
               <span v-if="!calculating && !calculated"
                 >Aucun calcul en cours</span
               >
               <span v-if="!calculating && calculated">Calcul terminé</span>
-              <span id="resultText" v-html="resultText" />
+              <span id="resultText" v-if="!calculating" v-html="resultText" />
             </div>
 
             <div class="result" v-show="calculated && !calculating">
@@ -199,6 +198,8 @@ export default class OpenCVSizeComputation extends Vue {
   openCVLoaded = false;
   calculated = false;
   calculating = false;
+  attempsCount = 0;
+  stressTestMode = false;
 
   mounted(): void {
     this.markerSourceSRC = this.config.defaultMarkerSrc;
@@ -235,11 +236,14 @@ export default class OpenCVSizeComputation extends Vue {
     }
   }
 
-  async onNewImageSourceLoad(e: Event): Promise<void> {
-    this.launchSizeComputation();
+  onNewImageSourceLoad(e: Event): void {
+    this.calculating = true;
+    this.$forceUpdate();
+    setTimeout(this.launchSizeComputation, 200);
   }
 
   async launchSizeComputation(): Promise<void> {
+    this.attempsCount++;
     const imageElement = document.getElementById("sourcePicture");
     const markerElement = document.getElementById("marker");
     this.calculating = true;
@@ -250,8 +254,6 @@ export default class OpenCVSizeComputation extends Vue {
         this.config,
         "canvasOutput3"
       );
-      this.calculated = true;
-      this.calculating = false;
 
       const markers = detectedShapes.filter(
         (shape: DetectedShape) => shape.isMarker
@@ -291,6 +293,14 @@ export default class OpenCVSizeComputation extends Vue {
           Math.round(shape.topY);
       });
       this.resultText = result;
+
+      this.calculated = true;
+      this.calculating = false;
+
+      if (this.stressTestMode) {
+        console.info("Automaticly relaunch #" + this.attempsCount);
+        setTimeout(this.onNewImageSourceLoad, 800);
+      }
     }
   }
 }
