@@ -20,6 +20,13 @@
   -->
 <template>
   <div class="picture-source-chooser">
+    <img
+      v-show="false"
+      id="sourcePicture"
+      style="position:absolute"
+      @load="sourcePictureLoaded(0)"
+      :src="measurementPictureSrc"
+    />
     <div class="transparent-background" @click="$emit('close')"></div>
     <div class="pane popup-content">
       <div class="pane-content">
@@ -35,9 +42,7 @@
           />
           <img
             v-show="calculating"
-            id="sourcePicture"
             class="picture-display"
-            @load="sourcePictureLoaded"
             :src="measurementPictureSrc"
           />
         </div>
@@ -352,7 +357,7 @@ export default class MeasurementPicturePopup extends Vue {
     animation: spin 2s linear infinite;
     position: absolute;
     top: 48vh;
-    left: calc(45vw - 60px);
+    left: calc(50vw - 30px);
     display: block;
   }
 

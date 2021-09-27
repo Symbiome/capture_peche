@@ -23,7 +23,7 @@ export class OpenCVDetectionConfig {
   resizeSize = 300;
 
   /*  The marker size "in real world" - float (in cm) */
-  markerSizeInMm = 133;
+  markerSizeInMm = 97;
 
   /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
   minSizeRatio = 0.3;
@@ -32,7 +32,7 @@ export class OpenCVDetectionConfig {
   maxSizeRatio = 0.999;
 
   /* The minimum % of the marker should cover - float between 0 & 1*/
-  markerMinSizeRatio = 0.15;
+  markerMinSizeRatio = 0.05;
 
   /* The minimum width / length ratio each shape should respect(trims "line" shapes) - float between 0 & 1*/
   minWidthLengthRatio = 0.1;
@@ -51,7 +51,7 @@ export class OpenCVDetectionConfig {
   /**
    * If this number of feature matched is reached for a shap, we will consider it as the marker and stop searching.
    */
-  maxFeatureMatchRequired = 8;
+  maxFeatureMatchRequired = 4;
 
   /**
    * Minimal number of feature match required to consider a shape as a marker.
@@ -71,6 +71,41 @@ export class OpenCVDetectionConfig {
    */
   maxDistanceBetweenTemplateMatchedAndCandidate = 20;
 
+  /**
+   * Lower threeshold for the canny edge detection algorithm.
+   */
+  cannyEdgeLowerThreshold = 50;
+
+  /**
+   * Upper threeshold for the canny edge detection algorithm.
+   */
+  cannyEdgeUpperThreshold = 100;
+
+  /**
+   * Contour size to use for dilation.
+   */
+  dilationThickness = 5;
+
+  /**
+   * Gaussian blur size.
+   */
+  blurSize = 7;
+
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
+
+  /**
+   * Indicates if there is  marker on the pictures to analyse (alway true, only set to false for testing purpose)
+   */
+  pictureIsSupposedToContainMarker = true;
+
+  /**
+   * Indicates if there is  fish on the pictures to analyse (alway true, only set to false for testing purpose)
+   */
+  pictureIsSupposedToContainFish = true;
+
+  /**
+   * Number of retries the size computation algorithm allows itself before returning the current result.
+   */
+  maxRetries = 2;
 }

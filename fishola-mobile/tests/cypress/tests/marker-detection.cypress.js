@@ -41,8 +41,7 @@ describe("Détection de marqueurs", () => {
         // Make sure OpenCV is ready
         cy.get("div[id=status").contains("OpenCV.js is ready");
 
-        // Always launch feature matching (even if only one candidate)
-        cy.get("[id=alwaysCheckMarkerCandidates]").check();
+        cy.get("[id=pictureIsSupposedToContainFish]").uncheck();
 
         // Attach picture file
         cy.get("[id=markerFile]").attachFile(testPicture.markerPath);
@@ -67,7 +66,7 @@ describe("Détection de marqueurs", () => {
               expectedMarkerCount,
               "Mauvais nombre de marqueurs détectés"
             );
-            if ((actualMarkerCount == 0)) {
+            if (actualMarkerCount == 0) {
               return;
             }
             const markerSize = rawMeasureText
@@ -104,7 +103,6 @@ describe("Détection de marqueurs", () => {
 function getMarkerPicturesToTest() {
   const markerPics = [];
   markerPics.push(markerPic("marker_1.jpg", "Marqueur seul", 57 / 300));
-  markerPics.push(markerPic("marker_2.jpg", "Marqueur absent", 0));
   markerPics.push(markerPic("marker_3.jpg", "nombreux marqueurs", 58 / 300));
   markerPics.push(markerPic("marker_4.jpg", "nombreux marqueurs 2", 48 / 300));
   markerPics.push(markerPic("marker_6.jpg", "nombreux marqueurs 3", 57 / 300));

@@ -41,7 +41,7 @@ export class FishDetectionOptimizer {
     this.cv = cv;
     this.imgElement = imgElement;
     this.markerElement = markerElement;
-    this.config = config;
+    this.config = JSON.parse(JSON.stringify(config));
   }
 
   /**
@@ -50,7 +50,7 @@ export class FishDetectionOptimizer {
    * - Evaluates the other shapes size according to marker size
    * - Tries to modify config and result until one single fish is detected
    */
-  calculateAndOptimizeFishSizes(): Array<DetectedShape> {
+  calculateAndOptimizeFishSizes(retries: number): Array<DetectedShape> {
     // Step 1: get raw results
     const markerAndPotentialFishes = FisholaOpenCVService.INSTANCE.calculateFishSizes(
       this.cv,
@@ -59,20 +59,29 @@ export class FishDetectionOptimizer {
       this.config
     );
     let biggestFishSize: number = 0;
+    let biggestFish: DetectedShape | undefined;
     let fishCount: number = 0;
+    let marker: DetectedShape | undefined;
+
+    // Step 2: get biggest fish and marker
     markerAndPotentialFishes.forEach((potentialFish: DetectedShape) => {
       if (potentialFish.isFish) {
         fishCount++;
         if (potentialFish.calculatedLenght > biggestFishSize) {
           biggestFishSize = potentialFish.calculatedLenght;
+          biggestFish = potentialFish;
         }
+      }
+
+      if (potentialFish.isMarker && !marker) {
+        marker = potentialFish;
+      } else {
+        potentialFish.isMarker = false;
       }
     });
 
-    // Step 2: see if raw results are ok or if we have to try again with another config
-
-    // If we detected more than one fish, only keep the biggest one and return
-    if (fishCount >= 1) {
+    // If we detected more than one fish, only keep the biggest one
+    if (fishCount > 1) {
       markerAndPotentialFishes.forEach((potentialFish: DetectedShape) => {
         if (
           potentialFish.isFish &&
@@ -81,12 +90,87 @@ export class FishDetectionOptimizer {
           potentialFish.isFish = false;
         }
       });
-      return markerAndPotentialFishes;
-    } else {
-      // We did not detected any fish. Try to increase picture resolute and try again
-      // TODO
+    }
+
+    if (retries <= this.config.maxRetries) {
+      // If we are allowed to retry with different parameters, check if we can improve result
+      let resultCanBeImproved = true;
+
+      // Case 1 : we did not detect the marker but were expecting one
+      if (!marker && this.config.pictureIsSupposedToContainMarker) {
+        // If we found a fish, maybe marker and fish are too close and were considered as a single fish
+        if (fishCount >= 1) {
+          // => try again with differents threeshold for canny edge detection & thickness size
+          this.config.dilationThickness = 3;
+          this.config.cannyEdgeUpperThreshold += 20;
+          console.error(
+            "Failed to detect marker -> increasing cannyEdgeUpperThreshold to " +
+              this.config.cannyEdgeUpperThreshold +
+              " and dilation thickness to " +
+              this.config.dilationThickness
+          );
+        } else {
+          // Here we did not found neither fish nor marker, let's increase resize size
+          this.config.resizeSize *= 1.5;
+          console.error(
+            "Failed to detect marker and fish, increase resize size to " +
+              this.config.resizeSize
+          );
+        }
+        return this.calculateAndOptimizeFishSizes(retries + 1);
+      } else {
+        // 1 - Check if the marker we detected is inside our biggest fish. If so it means that fish and marker are too close
+        if (marker && this.markerIsInsideFish(marker, biggestFish)) {
+          // => try again with a higher resize size so that marker can be separated
+          this.config.cannyEdgeUpperThreshold += 20;
+          this.config.dilationThickness -= 2;
+          console.error(
+            "Marker is inside fish => decreasing dilation thickness to " +
+              this.config.dilationThickness +
+              " and cannyEdgeUpperThreshold to " +
+              this.config.cannyEdgeUpperThreshold
+          );
+        }
+        // Step 2: see if raw results are ok or if we have to try again with another config
+        else if (fishCount < 1 && this.config.pictureIsSupposedToContainFish) {
+          // We did not detected any fish. Try to decrease picture resolute and try again
+          this.config.resizeSize *= 0.75;
+          console.error(
+            "Failed to detect fish, decrease resize size to " +
+              this.config.resizeSize
+          );
+        } else {
+          // Here we have a marker and a fish, both separated from each other
+          // Let's stop here
+          resultCanBeImproved = false;
+        }
+      }
+
+      if (resultCanBeImproved) {
+        // Relaunch detection with the modified configuration
+        return this.calculateAndOptimizeFishSizes(retries + 1);
+      }
     }
 
     return markerAndPotentialFishes;
+  }
+
+  markerIsInsideFish(
+    marker: DetectedShape,
+    fish: DetectedShape | undefined
+  ): boolean {
+    if (fish) {
+      const markerRightX = marker.leftX + (marker.centerX - marker.leftX) * 2;
+      const markerBottomY = marker.topY + (marker.centerY - marker.topY) * 2;
+      const fishRightX = fish.leftX + (fish.centerX - fish.leftX) * 2;
+      const fishBottomY = fish.topY + (fish.centerY - fish.topY) * 2;
+      return (
+        marker.leftX > fish.leftX &&
+        markerRightX < fishRightX &&
+        marker.topY > fish.topY &&
+        markerBottomY < fishBottomY
+      );
+    }
+    return false;
   }
 }

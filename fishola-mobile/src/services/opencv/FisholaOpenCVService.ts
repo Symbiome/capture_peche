@@ -20,7 +20,6 @@ import { FishDetectionOptimizer } from "./FishDetectionOptimizer";
  * #L%
  */
 import { OpenCVUtils } from "./OpenCVUtils";
-import { MarkerDetectionResult } from "./MarkerDetectionResult";
 import { DetectedShape } from "./DetectedShape";
 import { FeatureMatch } from "./FeatureMatch";
 import { OpenCVDetectionConfig } from "./OpenCVDetectionConfig";
@@ -63,7 +62,9 @@ export default class FisholaOpenCVService {
       markerElement,
       config
     );
-    const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes();
+    const markerAndPotentialFishes = fishDetectionOptimizer.calculateAndOptimizeFishSizes(
+      0
+    );
 
     // Step 4: draw result in output pictures
     markerAndPotentialFishes.forEach((shape) => {
@@ -151,14 +152,24 @@ export default class FisholaOpenCVService {
     const refined1 = new cv.Mat();
     const refined2 = new cv.Mat();
     cv.cvtColor(src, refined1, cv.COLOR_BGR2GRAY, 0);
-    const blurSize = new cv.Size(7, 7);
+    const blurSize = new cv.Size(config.blurSize, config.blurSize);
     cv.GaussianBlur(refined1, refined2, blurSize, 0, 0, cv.BORDER_DEFAULT);
 
     // Step 3: perform edge detection, then perform a dilation
     // Step 3.1 : edge detection https://docs.opencv.org/3.4/da/d22/tutorial_py_canny.html
-    cv.Canny(refined2, refined1, 50, 100, 3, false);
+    cv.Canny(
+      refined2,
+      refined1,
+      config.cannyEdgeLowerThreshold,
+      config.cannyEdgeUpperThreshold,
+      3,
+      false
+    );
     // Step 3.2 : dilation https://docs.opencv.org/3.4/db/df6/tutorial_erosion_dilatation.html
-    const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+    const kernel = cv.getStructuringElement(
+      cv.MORPH_RECT,
+      new cv.Size(config.dilationThickness, config.dilationThickness)
+    );
     cv.dilate(refined1, refined2, kernel, new cv.Point(-1, 1), 1);
     // Some literature advise to apply erosion at this step, but this was not needed in our test case
     // Something to keep in mind in the future though
@@ -174,7 +185,7 @@ export default class FisholaOpenCVService {
       refined1,
       contours,
       hierarchy,
-      cv.RETR_EXTERNAL,
+      cv.RETR_LIST,
       cv.CHAIN_APPROX_SIMPLE
     );
 
@@ -213,6 +224,7 @@ export default class FisholaOpenCVService {
       detectedShape.isMarker = this.hasMarkerProportions(detectedShape, config);
       detectedShape.isFish = this.isShapePotentialFish(detectedShape, config);
       detectedShapes.push(detectedShape);
+      cnt.delete();
     }
 
     // Step 6: if several markers detected, discriminate them using feature matching
@@ -247,6 +259,9 @@ export default class FisholaOpenCVService {
     refined1.delete();
     refined2.delete();
     hierarchy.delete();
+    poly.delete();
+    contours.delete();
+    kernel.delete();
 
     return detectedShapes;
   }
@@ -331,16 +346,23 @@ export default class FisholaOpenCVService {
 
     const markerKeypoints = new cv.KeyPointVector();
     const markerDescriptors = new cv.Mat();
+    const temp = new cv.Mat();
     const orb = new cv.AKAZE();
     orb.detectAndCompute(
       grayedMarker,
-      new cv.Mat(),
+      temp,
       markerKeypoints,
       markerDescriptors
     );
+    temp.delete();
+    const resizeCoef = 3;
 
-    const resizeCoef = 2;
-
+    // Order marker candidates by width : study biggest ones first
+    markerCandidates.sort((c1, c2) => {
+      const c1Width = c1.centerX - c1.leftX;
+      const c2Width = c2.centerX - c2.leftX;
+      return c2Width - c1Width;
+    });
     // Then for each marker candidate
     const shapeScores: number[] = new Array<number>(markerCandidates.length);
     let bestMarker: DetectedShape | undefined = undefined;
@@ -351,25 +373,27 @@ export default class FisholaOpenCVService {
     );
     for (let j = 0; j < markerCandidates.length && !foundSureMatch; j++) {
       const markerCandidate = markerCandidates[j];
+      markerCandidate.featureMatchTested = true;
       // Step 1: read and crop image (only keep zone of image corresponding to marker candidate)
-      let picture = this.readAndResize(
+      const pictureFull = this.readAndResize(
         cv,
         pictureElement,
         config.resizeSize * resizeCoef
       );
       const zoneOfInterest = new cv.Rect(
-        Math.min(picture.cols, markerCandidate.leftX * resizeCoef),
-        Math.min(picture.rows, markerCandidate.topY * resizeCoef),
+        Math.min(pictureFull.cols, markerCandidate.leftX * resizeCoef),
+        Math.min(pictureFull.rows, markerCandidate.topY * resizeCoef),
         Math.min(
-          picture.cols - markerCandidate.leftX * resizeCoef,
+          pictureFull.cols - markerCandidate.leftX * resizeCoef,
           markerCandidate.width * resizeCoef
         ),
         Math.min(
-          picture.rows - markerCandidate.topY * resizeCoef,
+          pictureFull.rows - markerCandidate.topY * resizeCoef,
           markerCandidate.width * resizeCoef
         )
       );
-      picture = picture.roi(zoneOfInterest);
+      const picture = pictureFull.roi(zoneOfInterest);
+      pictureFull.delete();
 
       //  Step 2 : convert it to grayscale
       const grayedPicture = new cv.Mat();
@@ -378,12 +402,14 @@ export default class FisholaOpenCVService {
       // Step 3: Detect Features & Compute Descriptors
       const pictureKeypoints = new cv.KeyPointVector();
       const pictureDescriptors = new cv.Mat();
+      const temp = new cv.Mat();
       orb.detectAndCompute(
         grayedPicture,
-        new cv.Mat(),
+        temp,
         pictureKeypoints,
         pictureDescriptors
       );
+      temp.delete();
 
       // Step 4: perform feature matching with the expected marker features
       const matchedFeatures: FeatureMatch[] = [];
@@ -425,6 +451,8 @@ export default class FisholaOpenCVService {
         foundSureMatch = true;
       }
 
+      matches.delete();
+      bf.delete();
       pictureKeypoints.delete();
       pictureDescriptors.delete();
       picture.delete();
@@ -444,6 +472,7 @@ export default class FisholaOpenCVService {
     markerDescriptors.delete();
     grayedMarker.delete();
     marker.delete();
+    orb.delete();
 
     if (bestScore >= config.minFeaturematchRequired) {
       return bestMarker;
@@ -637,6 +666,7 @@ export default class FisholaOpenCVService {
       const dsize = new cv.Size(ratioHeight * original.cols, reduceHeight);
       cv.resize(original, src, dsize, 0, 0, cv.INTER_AREA);
     }
+    original.delete();
     return src;
   }
 

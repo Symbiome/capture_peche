@@ -1,23 +1,23 @@
 {
-  "appId": "fr.inrae.fishola",
-  "appName": "FISHOLA",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "target/dist",
-  "cordova": {},
-  "linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
-  "server" : {
-    "hostname" : "api-fishola.inrae.fr"
-  },
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 2500,
-      "launchAutoHide": true,
-      "androidScaleType": "CENTER_CROP",
-      "androidSpinnerStyle": "large",
-      "iosSpinnerStyle": "large",
-      "spinnerColor": "#1e9bc4",
-      "showSpinner": true
-    }
-  }
+	"appId": "fr.inrae.fishola",
+	"appName": "FISHOLA",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "target/dist",
+	"cordova": {},
+	"linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
+	"server" : {
+    	"hostname" : "api-fishola.inrae.fr"
+  	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 2500,
+			"launchAutoHide": true,
+			"androidScaleType": "CENTER_CROP",
+			"androidSpinnerStyle": "large",
+			"iosSpinnerStyle": "large",
+			"spinnerColor": "#1e9bc4",
+			"showSpinner": true
+		}
+	}
 }

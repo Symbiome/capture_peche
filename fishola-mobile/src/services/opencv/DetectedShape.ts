@@ -25,6 +25,7 @@
 export class DetectedShape {
   isMarker: boolean;
   isFish: boolean;
+  featureMatchTested: boolean;
   isDebug: boolean;
   centerX: number;
   centerY: number;
