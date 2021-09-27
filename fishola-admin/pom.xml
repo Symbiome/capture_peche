@@ -29,7 +29,7 @@
   <parent>
     <groupId>fr.inrae</groupId>
     <artifactId>fishola</artifactId>
-    <version>1.2.0-beta-3-SNAPSHOT</version>
+    <version>1.2.0-beta-3</version>
   </parent>
 
   <artifactId>fishola-admin</artifactId>
