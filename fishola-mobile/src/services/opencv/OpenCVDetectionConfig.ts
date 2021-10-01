@@ -94,6 +94,12 @@ export class OpenCVDetectionConfig {
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
 
+  /** Marker crop will never exceed this amount in px */
+  markerMaxCroppingInPixels = 4;
+
+  /** Marker crop will never exeed this amount in proportion */
+  markerMaxCroppingInProportion = 0.98;
+
   /**
    * Indicates if there is  marker on the pictures to analyse (alway true, only set to false for testing purpose)
    */

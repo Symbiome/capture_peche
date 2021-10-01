@@ -249,7 +249,15 @@ export default class FisholaOpenCVService {
       const debugShapes = markerCandidates.filter((shape) => shape.isDebug);
       debugShapes.forEach((debugShape) => detectedShapes.push(debugShape));
     }
-
+    markerCandidates.forEach((mc) => {
+      if (mc.isMarker) {
+        const croppedInPx = mc.height - config.markerMaxCroppingInPixels;
+        const croppedInProportion =
+          mc.height * config.markerMaxCroppingInProportion;
+        mc.height = Math.max(croppedInPx, croppedInProportion);
+        mc.width = mc.height;
+      }
+    });
     if (config.drawDebugCanvas) {
       cv.imshow("canvasOutput1", src);
       cv.imshow("canvasOutput2", refined1);
