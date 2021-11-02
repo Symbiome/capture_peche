@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.9</version>
+    <version>11.10</version>
   </parent>
 
   <groupId>fr.inrae</groupId>
@@ -61,16 +61,16 @@
 
     <!-- Quarkus ne peut pas être mis à jour en 1.13.x à cause d'un formattage de date mal cadré. Cf fr.inrae.fishola.rest.mapper.LocalDateTimeFormatterTest -->
     <quarkusVersion>1.12.2.Final</quarkusVersion>
-    <jooqVersion>3.14.9</jooqVersion>
+    <jooqVersion>3.15.4</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
-    <postgresqlDriverVersion>42.2.20</postgresqlDriverVersion>
-    <testcontainersVersion>1.15.3</testcontainersVersion>
+    <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
+    <testcontainersVersion>1.16.2</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>14</javaVersion>
+    <javaVersion>17</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
     <licensePluginVersion>2.0.0</licensePluginVersion>
@@ -156,7 +156,7 @@
       <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.13.0</version>
+        <version>3.18.2</version>
       </dependency>
 
       <dependency>
@@ -186,7 +186,7 @@
       <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
-        <version>0.9.7</version>
+        <version>0.9.10</version>
       </dependency>
 
       <dependency>
@@ -206,6 +206,13 @@
         <artifactId>postgresql</artifactId>
         <version>${testcontainersVersion}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresqlDriverVersion}</version>
+        <scope>runtime</scope>
       </dependency>
 
     </dependencies>
