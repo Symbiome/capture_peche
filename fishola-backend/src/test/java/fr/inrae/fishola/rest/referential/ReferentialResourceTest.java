@@ -26,6 +26,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
 
 @QuarkusTest
 class ReferentialResourceTest {
@@ -36,10 +37,10 @@ class ReferentialResourceTest {
                 .when().get("/api/v1/referential/lakes")
                 .then()
                 .statusCode(200)
-                .body(CoreMatchers.containsString("\"Lac d'Annecy\""))
-                .body(CoreMatchers.containsString("\"Léman\""))
-                .body(CoreMatchers.containsString("\"Lac du Bourget\""))
-                .body(CoreMatchers.containsString("\"Lac d'Aiguebelette\""));
+                .body(containsString("\"Lac d'Annecy\""))
+                .body(containsString("\"Léman\""))
+                .body(containsString("\"Lac du Bourget\""))
+                .body(containsString("\"Lac d'Aiguebelette\""));
     }
 
 }
