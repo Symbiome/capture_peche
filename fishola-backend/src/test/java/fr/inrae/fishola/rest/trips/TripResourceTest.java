@@ -33,7 +33,6 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.quarkus.test.junit.QuarkusTest;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +47,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
 public class TripResourceTest extends AbstractFisholaTest {
@@ -95,7 +96,7 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .get("/api/v1/trips?pageNumber=0&pageSize=-1&desc=false")
             .then()
                 .statusCode(200)
-                .body(CoreMatchers.containsString("\"count\":" + count));
+                .body("count", equalTo(count));
     }
 
     protected TripBean buildValidTripBean() {
@@ -128,7 +129,9 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .post("/api/v1/trips")
             .then()
                 .statusCode(201)
-                .body(CoreMatchers.containsString("{\"dontcare\":\""));
+                // On reçoit la map de replacement dontcare -> nouvel-id telle que :
+                //  {"dontcare": "2244331f-f9dc-4102-b832-be7d69b7c377"}
+                .body(trip.id, notNullValue());
 
 
         int countAfter = countTrips();
