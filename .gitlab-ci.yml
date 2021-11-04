@@ -19,7 +19,7 @@ stages:
   - sonar
 
 build:compile:
-  image: maven:3.6-openjdk-15
+  image: maven:3.8-openjdk-17
   stage: build
   services:
     # DinD service is required for Testcontainers
@@ -52,7 +52,7 @@ build:compile:
     - docker
 
 build:compile-stable:
-  image: maven:3.6-openjdk-15
+  image: maven:3.8-openjdk-17
   stage: build
   services:
     # DinD service is required for Testcontainers
@@ -228,7 +228,7 @@ deploy:demo:
     - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
-  image: maven:3.6-openjdk-15
+  image: maven:3.8-openjdk-17
   stage: sonar
   services:
     # DinD service is required for Testcontainers
