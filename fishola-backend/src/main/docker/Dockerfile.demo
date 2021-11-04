@@ -14,19 +14,15 @@
 # docker run -i --rm -p 8080:8080 --name fishola-backend inrae/fishola-backend:demo
 #
 ###
-FROM openjdk:15
+FROM openjdk:17
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
-COPY target/lib/* /deployments/lib/
-COPY target/*-runner.jar /deployments/app.jar
+
+COPY --chown=1001 target/lib/* /deployments/lib/
+COPY --chown=1001 target/*-runner.jar /deployments/app.jar
+
 WORKDIR /deployments
 EXPOSE 8080
-
-## Remove for the moment cause the command is no more available oO
-#RUN adduser -G root --no-create-home 1001 \
-#  && chown -R 1001 /deployments \
-#  && chmod -R "g+rwX" /deployments \
-#  && chown -R 1001:root /deployments
-#USER 1001
+USER 1001
 
 CMD ["java", "-Dquarkus.profile=demo", "-jar", "app.jar"]
