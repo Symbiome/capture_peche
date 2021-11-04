@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.security;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -44,6 +45,7 @@ public class SecurityResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
+        Assertions.assertTrue(cookieHandler.getValue().isPresent());
     }
 
     @Test

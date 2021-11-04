@@ -58,7 +58,7 @@ public abstract class AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("thimel@codelutin.com", "sispea"))
+                .body(new LoginBean(email, password))
                 .post("/api/v1/security/login")
             .then()
                 .statusCode(200)

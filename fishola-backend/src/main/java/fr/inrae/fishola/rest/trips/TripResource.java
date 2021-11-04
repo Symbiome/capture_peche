@@ -202,7 +202,7 @@ public class TripResource extends AbstractFisholaResource {
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
 
-        // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des application <= 1.0.4
+        // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des applications <= 1.0.4
         entity.setSource(Optional.ofNullable(trip.source).orElse(DeviceType.application));
 
         trip.weatherId.ifPresent(entity::setWeatherId);
