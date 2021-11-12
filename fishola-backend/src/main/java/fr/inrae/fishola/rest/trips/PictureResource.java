@@ -39,6 +39,7 @@ import org.jboss.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -71,14 +72,15 @@ public class PictureResource extends AbstractFisholaResource {
     protected TripResource tripResource;
 
     @PUT
-    @Path("/{catchId}")
+    @Path("/{catchId}/{order}")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setPicture(@PathParam("catchId") UUID catchId,
-                               String content) {
+    public Response setPictureWithOrder(@PathParam("catchId") UUID catchId,
+                                        @PathParam("order") int order,
+                                        String content) {
 
         if (log.isDebugEnabled()) {
-            log.debugv("Réception d'une image pour la capture : %s", catchId);
+            log.debugf("Réception d'une image pour la capture : %s (order=%d)", catchId, order);
         }
 
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
@@ -127,7 +129,7 @@ public class PictureResource extends AbstractFisholaResource {
             }
 
             Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
-            catchsDao.setPicture(catchId, jpegBytes);
+            catchsDao.setPicture(catchId, order, jpegBytes);
 
             File file = getPreviewFile(catchId);
             if (file.exists() && !file.delete()) {
@@ -142,19 +144,45 @@ public class PictureResource extends AbstractFisholaResource {
         return response;
     }
 
-    @GET
+    @PUT
     @Path("/{catchId}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Deprecated // Conservé pour la rétrocompatibilité avec le mode galerie
+    public Response setPicture(@PathParam("catchId") UUID catchId,
+                               String content) {
+
+        if (log.isDebugEnabled()) {
+            log.infof("Réception d'une image pour la capture '%s' sur le endpoint de rétrocompatibilité", catchId);
+        }
+
+        Response response = setPictureWithOrder(catchId, 0, content);
+        return response;
+    }
+
+    @GET
+    @Path("/{catchId}/{order}")
     @Produces("image/jpeg")
-    public Response getPicture(@PathParam("catchId") UUID catchId) {
+    public Response getPictureWithOrder(@PathParam("catchId") UUID catchId,
+                                        @PathParam("order") int order) {
 
         // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
-        Optional<byte[]> bytes = catchsDao.getPicture(catchId);
+        Optional<byte[]> bytes = catchsDao.getPicture(catchId, order);
 
         Response response = bytes.map(this::wrapAsStreamingOutput)
                 .map(Response::ok)
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
                 .build();
+        return response;
+    }
+
+    @GET
+    @Path("/{catchId}")
+    @Produces("image/jpeg")
+    @Deprecated // Conservé pour rétro compatibilité
+    public Response getPicture(@PathParam("catchId") UUID catchId) {
+        Response response = getPictureWithOrder(catchId, 0);
         return response;
     }
 
@@ -184,7 +212,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         if (!file.exists()) {
 
-            Optional<byte[]> bytes = catchsDao.getPicture(catchId);
+            Optional<byte[]> bytes = catchsDao.getFirstPicture(catchId);
 
             NotFoundException.check(bytes.isPresent());
 
@@ -235,6 +263,35 @@ public class PictureResource extends AbstractFisholaResource {
         Response result = builder.build();
 
         return result;
+    }
+
+    @DELETE
+    @Path("/{catchId}/{order}")
+    public void deletePicture(@PathParam("catchId") UUID catchId,
+                                  @PathParam("order") int order) {
+
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+
+        Catch existingCatch = catchsDao.getCatch(catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
+
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+
+        catchsDao.deletePicture(catchId, order);
+
+        // Par sécurité, on supprime la miniature aussi
+        try {
+            File previewFile = getPreviewFile(catchId);
+            if (previewFile.exists()) {
+                previewFile.delete();
+            }
+        } catch (Exception eee) {
+            log.warnf("Unable to delete preview file '%s'", catchId);
+        }
     }
 
 }

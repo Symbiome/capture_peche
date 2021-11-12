@@ -62,6 +62,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
@@ -344,6 +345,204 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .statusCode(200)
                 .body("id", equalTo(tripId))
                 .body("catchs[0].hasPicture", equalTo(true));
+
+        // Supprime l'image
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/pictures/" + catchId + "/0")
+            .then()
+                .statusCode(204);
+
+        // Vérifie que l'image est bien supprimée
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasPicture", equalTo(false));
+
+    }
+
+    @Test
+    public void testTripWithPictureGallery() throws IOException {
+
+        int countBefore = countTrips();
+
+        TripBean trip = buildValidTripBean();
+        CatchBean c = new CatchBean();
+        c.id = "abc";
+        c.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        c.techniqueId = trip.techniqueIds.iterator().next();
+        trip.catchs = Collections.singletonList(c);
+
+        ResponseBodyExtractionOptions body = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+                // On reçoit la map de replacement :
+                //   dontcare -> nouvel-id-de-trip
+                //   abc -> nouvel-id-de-capture
+                // telle que :
+                //  {"dontcare": "2244331f-f9dc-4102-b832-be7d69b7c377", "abc": "c2ec85c3-7b03-4cc7-ad80-5e17cfa29772"}
+                .body(trip.id, notNullValue())
+                .body(c.id, notNullValue())
+            .extract()
+                .body();
+
+        String tripId = body.path(trip.id);
+        String catchId = body.path(c.id);
+
+        int countAfter = countTrips();
+        Assertions.assertEquals(countBefore + 1, countAfter);
+
+        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","lakeId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("catchs[0].hasPicture", equalTo(false));
+
+        // Pas encore de miniature
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview")
+            .then()
+                .statusCode(404);
+
+        InputStream resource = this.getClass().getResourceAsStream("/about-fishes.jpg");
+        Preconditions.checkState(resource != null, "Image non trouvée");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        IOUtils.copy(resource, stream);
+        byte[] originalByteArray = stream.toByteArray();
+        String base64Content = Base64.getEncoder().encodeToString(originalByteArray);
+
+        // Ajoute une image en '0'
+        given()
+            .when()
+                .contentType(MediaType.TEXT_PLAIN)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body("data:image/jpeg;base64," + base64Content)
+                .put("/api/v1/pictures/" + catchId + "/0")
+            .then()
+                .statusCode(204);
+
+        // Vérifie qu'elle est bien listée ...
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasPicture", equalTo(true))
+                .body("catchs[0].pictureOrders", hasItems(0));
+
+        // ... et téléchargeable
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/0")
+            .then()
+                .statusCode(200);
+
+        // On vérifie que la miniature est générée
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview")
+            .then()
+                .statusCode(200);
+
+        // Ajoute une image en '12'
+        given()
+            .when()
+                .contentType(MediaType.TEXT_PLAIN)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body("data:image/jpeg;base64," + base64Content)
+                .put("/api/v1/pictures/" + catchId + "/12")
+            .then()
+                .statusCode(204);
+
+        // Vérifie qu'elle est bien listée ...
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasPicture", equalTo(true))
+                .body("catchs[0].pictureOrders", hasItems(0, 12));
+
+        // ... et téléchargeable
+        given()
+                .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/12")
+                .then()
+                .statusCode(200);
+
+        // Supprime l'image '0'
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/pictures/" + catchId + "/0")
+            .then()
+                .statusCode(204);
+
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasPicture", equalTo(true))
+                .body("catchs[0].pictureOrders", hasItems(12));
+
+        // On vérifie qu'on a toujours une miniature
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview")
+            .then()
+                .statusCode(200);
+
+        // Supprime l'image
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/pictures/" + catchId + "/12")
+            .then()
+                .statusCode(204);
+
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasPicture", equalTo(false))
+                .body("catchs[0].pictureOrders", equalTo(new LinkedList<>()));
+
+        // Plus de miniature
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview")
+            .then()
+                .statusCode(404);
 
     }
 

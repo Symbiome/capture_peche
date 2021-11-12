@@ -24,7 +24,9 @@ package fr.inrae.fishola.rest.trips;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
@@ -502,7 +504,7 @@ public class TripResource extends AbstractFisholaResource {
         Set<UUID> catchIds = catchs.stream()
                 .map(Catch::getId)
                 .collect(Collectors.toSet());
-        Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
+        ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.checkForPictures(catchIds);
         result.catchs = catchs.stream()
                 .map(aCatch -> toCatchBean(aCatch, catchsWithPictures))
                 .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
@@ -559,7 +561,7 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    public static CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
+    public static CatchBean toCatchBean(Catch aCatch, ListMultimap<UUID, Integer> catchsWithPictures) {
         CatchBean result = new CatchBean();
         result.tripId = Optional.of(aCatch.getTripId());
         UUID catchId = aCatch.getId();
@@ -575,7 +577,9 @@ public class TripResource extends AbstractFisholaResource {
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern("HH:mm")));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
-        result.hasPicture = catchsWithPictures.contains(catchId);
+        List<Integer> pictureIndexes = catchsWithPictures.get(catchId);
+        result.pictureOrders = pictureIndexes;
+        result.hasPicture = !pictureIndexes.isEmpty();
         result.sampleId = Optional.ofNullable(aCatch.getSampleId());
         return result;
     }
