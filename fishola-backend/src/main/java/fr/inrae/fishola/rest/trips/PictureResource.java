@@ -54,6 +54,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 @Path("/api/v1/pictures")
@@ -131,10 +132,8 @@ public class PictureResource extends AbstractFisholaResource {
             Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
             catchsDao.setPicture(catchId, order, jpegBytes);
 
-            File file = getPreviewFile(catchId);
-            if (file.exists() && !file.delete()) {
-                log.errorf("Impossible de supprimer la preview: %s", file.getAbsolutePath());
-            }
+            deletePreview(catchId);
+            deletePreview(catchId, OptionalInt.of(order));
 
         } catch (IOException ioe) {
            throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
@@ -142,6 +141,17 @@ public class PictureResource extends AbstractFisholaResource {
 
         Response response = noContent(userIdAndRenewal);
         return response;
+    }
+
+    protected void deletePreview(UUID catchId) {
+        deletePreview(catchId, OptionalInt.empty());
+    }
+
+    protected void deletePreview(UUID catchId, OptionalInt order) {
+        File file = getPreviewFile(catchId, order);
+        if (file.exists() && !file.delete()) {
+            log.errorf("Impossible de supprimer la preview: %s (%s)", file.getAbsolutePath(), order);
+        }
     }
 
     @PUT
@@ -186,15 +196,23 @@ public class PictureResource extends AbstractFisholaResource {
         return response;
     }
 
-    protected File getPreviewFile(UUID catchId) {
+    protected File getPreviewFile(UUID catchId, OptionalInt order) {
         File folder = config.getPicturesPreviewFolder();
         File subFolder = new File(folder, catchId.toString().substring(0, 2));
         if (subFolder.mkdirs() && log.isInfoEnabled()) {
             log.infof("Création du sous dossier : %s", subFolder.getAbsolutePath());
         }
 
-        String fileName = String.format("%s.jpeg", catchId);
+        String fileNameWithoutExtension = catchId.toString();
+        if (order.isPresent()) {
+            fileNameWithoutExtension += "-" + order.getAsInt();
+        }
+        String fileName = String.format("%s.jpeg", fileNameWithoutExtension);
         File result = new File(subFolder, fileName);
+
+        if (log.isDebugEnabled()) {
+            log.debugf("Miniature (%s,%s) =>%s", catchId, order, result.getAbsolutePath());
+        }
 
         return result;
     }
@@ -208,11 +226,78 @@ public class PictureResource extends AbstractFisholaResource {
 
         Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
 
-        File file = getPreviewFile(catchId);
+        File file = getPreviewFile(catchId, OptionalInt.empty());
 
         if (!file.exists()) {
 
-            Optional<byte[]> bytes = catchsDao.getFirstPicture(catchId);
+            Optional<byte[]> bytes = catchsDao.getLastPicture(catchId);
+
+            NotFoundException.check(bytes.isPresent());
+
+            try {
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes.get());
+                BufferedImage rawImage = ImageIO.read(inputStream);
+                BufferedImage scaledImage;
+
+                int width = rawImage.getWidth();
+                int height = rawImage.getHeight();
+
+                int percent = 100;
+
+                int threshold = 285 * 2; // Double d'une largeur classique d'écran
+                if (width > threshold) {
+                    percent = threshold * 100 / width;
+                }
+
+                if (percent == 100) {
+                    scaledImage = rawImage;
+                } else {
+                    int newWidth = width * percent / 100;
+                    int newHeight = height * percent / 100;
+                    if (log.isDebugEnabled()) {
+                        log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
+                    }
+                    ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
+                    resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());
+                    scaledImage = resizeOperation.filter(rawImage, null);
+                }
+
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                ImageHelper.imageToStream(scaledImage, "jpeg", .95f, fileOutputStream);
+            } catch (IOException ioe) {
+                throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
+            }
+
+        }
+
+        Response.ResponseBuilder builder = Response.ok(file);
+
+        // TODO AThimel 12/02/2020 Cache !
+//        CacheControl cc = new CacheControl();
+//        cc.setMaxAge(86400);
+//        cc.setPrivate(true);
+//        builder.cacheControl(cc);
+
+        Response result = builder.build();
+
+        return result;
+    }
+
+    @GET
+    @Path("/{catchId}/preview/{order}")
+    @Produces("image/jpeg")
+    public Response getPicturePreview(@PathParam("catchId") UUID catchId,
+                                      @PathParam("order") int order) {
+
+        // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
+
+        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+
+        File file = getPreviewFile(catchId, OptionalInt.of(order));
+
+        if (!file.exists()) {
+
+            Optional<byte[]> bytes = catchsDao.getPicture(catchId, order);
 
             NotFoundException.check(bytes.isPresent());
 
@@ -284,14 +369,8 @@ public class PictureResource extends AbstractFisholaResource {
         catchsDao.deletePicture(catchId, order);
 
         // Par sécurité, on supprime la miniature aussi
-        try {
-            File previewFile = getPreviewFile(catchId);
-            if (previewFile.exists()) {
-                previewFile.delete();
-            }
-        } catch (Exception eee) {
-            log.warnf("Unable to delete preview file '%s'", catchId);
-        }
+        deletePreview(catchId);
+        deletePreview(catchId, OptionalInt.of(order));
     }
 
 }

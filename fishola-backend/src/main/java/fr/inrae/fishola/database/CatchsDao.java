@@ -123,16 +123,16 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Optional<byte[]> getFirstPicture(UUID catchId) {
+    public Optional<byte[]> getLastPicture(UUID catchId) {
         ListMultimap<UUID, Integer> pictureIndexes = checkForPictures(ImmutableSet.of(catchId));
         if (pictureIndexes.isEmpty()) {
             return Optional.empty();
         }
         List<Integer> indexes = pictureIndexes.get(catchId);
         Preconditions.checkState(CollectionUtils.isNotEmpty(indexes));
-        final OptionalInt min = indexes.stream().mapToInt(a -> a).min();
-        final int minimalIndex = min.getAsInt();
-        return this.getPicture(catchId, minimalIndex);
+        final OptionalInt max = indexes.stream().mapToInt(a -> a).max();
+        final int maximalIndex = max.getAsInt();
+        return this.getPicture(catchId, maximalIndex);
     }
 
     public void deletePicture(UUID catchId, int pictureIndex) {

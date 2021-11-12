@@ -463,6 +463,14 @@ public class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200);
 
+        // On vérifie que la miniature '0' est générée
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview/0")
+            .then()
+                .statusCode(200);
+
         // Ajoute une image en '12'
         given()
             .when()
@@ -518,6 +526,22 @@ public class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200);
 
+        // On vérifie que la miniature '12' est générée
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview/12")
+            .then()
+                .statusCode(200);
+
+        // On vérifie que la miniature '0' n'est plus dispo
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview/0")
+            .then()
+                .statusCode(404);
+
         // Supprime l'image
         given()
             .when()
@@ -541,6 +565,22 @@ public class TripResourceTest extends AbstractFisholaTest {
             .when()
                 .body(trip)
                 .get("/api/v1/pictures/" + catchId + "/preview")
+            .then()
+                .statusCode(404);
+
+        // On vérifie que la miniature '0' n'est plus dispo
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview/0")
+            .then()
+                .statusCode(404);
+
+        // On vérifie que la miniature '12' n'est plus dispo
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/" + catchId + "/preview/12")
             .then()
                 .statusCode(404);
 
