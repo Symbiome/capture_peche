@@ -40,8 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 import org.jooq.exception.DataAccessException;
 
 import javax.inject.Inject;
@@ -69,7 +68,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(SecurityResource.class);
+    @Inject
+    protected Logger log;
 
     private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_FIRST_NAME = "firstName";
@@ -171,7 +171,7 @@ public class SecurityResource extends AbstractFisholaResource {
             return true;
         } catch (AddressException ex) {
             if (log.isInfoEnabled()) {
-                log.info(String.format("'%s' does not seem to be a valid email address", email));
+                log.infof("'%s' does not seem to be a valid email address", email);
             }
             return false;
         }
@@ -227,7 +227,7 @@ public class SecurityResource extends AbstractFisholaResource {
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
 
             if (log.isInfoEnabled()) {
-                log.info(String.format("Email verified, create account for %s", email));
+                log.infof("Email verified, create account for %s", email);
             }
 
             usersDao.create(
@@ -370,7 +370,7 @@ public class SecurityResource extends AbstractFisholaResource {
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
             String newPasswordHashed = getClaimOrFail.apply(CLAIM_PASSWORD_HASHED);
             if (log.isInfoEnabled()) {
-                log.info(String.format("Password reset for %s", email));
+                log.infof("Password reset for %s", email);
             }
             Optional<FisholaUser> user = usersDao.findByEmail(email);
             if (user.isPresent()) {

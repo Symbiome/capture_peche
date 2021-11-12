@@ -31,8 +31,7 @@ import com.google.common.net.MediaType;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import io.quarkus.scheduler.Scheduled;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -58,7 +57,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RequestScoped
 public class MailService {
 
-    private static final Log log = LogFactory.getLog(MailService.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected FisholaConfiguration config;
@@ -150,7 +150,7 @@ public class MailService {
             try {
                 sendMail0(mail);
             } catch (MessagingException me) {
-                log.error("Unable to synchronously send email: " + mail, me);
+                log.errorf("Unable to synchronously send email: %s", mail, me);
                 throw new FisholaTechnicalException("Unable to synchronously send email: " + mail, me);
             }
         }
@@ -160,7 +160,7 @@ public class MailService {
     public void sendMailAsync(FisholaMail mail) {
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Saving email to send to '%s': « %s »", mail.getTos(), mail.getSubject()));
+            log.infof("Saving email to send to '%s': « %s »", mail.getTos(), mail.getSubject());
         }
 
         FisholaMail safeMail = mail.pendingSince().isPresent() ? mail : ImmutableFisholaMail.builder()
@@ -177,7 +177,7 @@ public class MailService {
 
         int pendingEmailsCount = PENDING_EMAILS.size();
         if (log.isInfoEnabled() && pendingEmailsCount > 0) {
-            log.info(String.format("Trying to send %d pending emails", pendingEmailsCount));
+            log.infof("Trying to send %d pending emails", pendingEmailsCount);
         }
 
         Preconditions.checkState(
@@ -194,12 +194,10 @@ public class MailService {
             } catch (Exception eee) {
                 Preconditions.checkState(fisholaMail.pendingSince().isPresent(), "FisholaMail sans pendingSince: " + fisholaMail);
                 Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
-                log.warn(String.format("Unable to send mail for the last %d seconds", pendingDuration.toSeconds()), eee);
+                log.warnf("Unable to send mail for the last %d seconds", pendingDuration.toSeconds(), eee);
                 int retentionMinutes = config.getAsyncEmailsRetentionMinutes();
                 if (pendingDuration.toMinutes() > retentionMinutes) {
-                    if (log.isErrorEnabled()) {
-                        log.error(String.format("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes, fisholaMail));
-                    }
+                    log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes, fisholaMail);
                     iterator.remove();
                 }
             }
@@ -209,7 +207,7 @@ public class MailService {
     protected void sendMail0(FisholaMail mail) throws MessagingException {
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Trying to send an email to '%s': « %s »", mail.getTos(), mail.getSubject()));
+            log.infof("Trying to send an email to '%s': « %s »", mail.getTos(), mail.getSubject());
         }
 
         MimeMessage message = buildMimeMessage(mail);
@@ -221,7 +219,7 @@ public class MailService {
         }
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject()));
+            log.infof("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject());
         }
     }
 

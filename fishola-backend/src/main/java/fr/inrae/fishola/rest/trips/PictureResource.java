@@ -34,8 +34,7 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -59,7 +58,8 @@ import java.util.UUID;
 @Path("/api/v1/pictures")
 public class PictureResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(PictureResource.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected TripsDao tripsDao;
@@ -78,7 +78,7 @@ public class PictureResource extends AbstractFisholaResource {
                                String content) {
 
         if (log.isDebugEnabled()) {
-            log.debug("Réception d'une image pour la capture : " + catchId);
+            log.debugv("Réception d'une image pour la capture : %s", catchId);
         }
 
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
@@ -122,16 +122,16 @@ public class PictureResource extends AbstractFisholaResource {
 
             byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", config.getRawImageQuality());
             if (jpegBytes.length > 0) {
-                log.info("Pas de soucis pour: " + image);
-                log.info("Taille: " + (jpegBytes.length / 1024) + "kb");
+                log.infof("Pas de soucis pour: %s", image);
+                log.infof("Taille: %dkb", jpegBytes.length / 1024);
             }
 
             Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
             catchsDao.setPicture(catchId, jpegBytes);
 
             File file = getPreviewFile(catchId);
-            if (file.exists() && !file.delete() && log.isErrorEnabled()) {
-                log.error("Impossible de supprimer la preview: " + file.getAbsolutePath());
+            if (file.exists() && !file.delete()) {
+                log.errorf("Impossible de supprimer la preview: %s", file.getAbsolutePath());
             }
 
         } catch (IOException ioe) {
@@ -162,7 +162,7 @@ public class PictureResource extends AbstractFisholaResource {
         File folder = config.getPicturesPreviewFolder();
         File subFolder = new File(folder, catchId.toString().substring(0, 2));
         if (subFolder.mkdirs() && log.isInfoEnabled()) {
-            log.info("Création du sous dossier : " + subFolder.getAbsolutePath());
+            log.infof("Création du sous dossier : %s", subFolder.getAbsolutePath());
         }
 
         String fileName = String.format("%s.jpeg", catchId);
@@ -209,7 +209,7 @@ public class PictureResource extends AbstractFisholaResource {
                     int newWidth = width * percent / 100;
                     int newHeight = height * percent / 100;
                     if (log.isDebugEnabled()) {
-                        log.debug(String.format("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight));
+                        log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
                     }
                     ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
                     resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());

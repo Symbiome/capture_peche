@@ -34,24 +34,19 @@ import fr.inrae.fishola.entities.tables.daos.ReleasedFishStateDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
-import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
-import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
-import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
-import java.util.LinkedHashSet;
-import javax.ws.rs.core.Link;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.text.Normalizer;
 import java.util.HashSet;
@@ -64,7 +59,8 @@ import java.util.stream.Collectors;
 @Singleton
 public class ReferentialDao extends AbstractFisholaDao {
 
-    private static final Log log = LogFactory.getLog(ReferentialDao.class);
+    @Inject
+    protected Logger log;
 
     public List<Lake> listLakes() {
         List<Lake> result = withDao(LakeDao.class, LakeDao::findAll);
@@ -297,7 +293,7 @@ public class ReferentialDao extends AbstractFisholaDao {
             UUID existingSpeciesId = existingSpecies.getId();
 
             if (log.isDebugEnabled()) {
-                log.debug("Espèce trouvée avec pour exportAs=" + exportAs + " => " + existingSpeciesId);
+                log.debugf("Espèce trouvée avec pour exportAs=%s => %s", exportAs, existingSpeciesId);
             }
 
             return existingSpeciesId;
@@ -320,7 +316,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         });
 
         if (log.isDebugEnabled()) {
-            log.debug("Espèce créée pour exportAs=" + exportAs + " => " + result);
+            log.debugf("Espèce créée pour exportAs=%s => %s", exportAs, result);
         }
 
         return result;

@@ -30,8 +30,7 @@ import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -49,7 +48,8 @@ import java.util.Optional;
 @Path("/api/v1/feedback")
 public class FeedbackResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(FeedbackResource.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected MailService mailService;
@@ -60,7 +60,7 @@ public class FeedbackResource extends AbstractFisholaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public void newFeedback(Feedback bean) {
 
-        log.info("Réception d'un feedback " + bean);
+        log.infof("Réception d'un feedback %s", bean);
 
         Optional<byte[]> screenshotBytes = Optional.empty();
 

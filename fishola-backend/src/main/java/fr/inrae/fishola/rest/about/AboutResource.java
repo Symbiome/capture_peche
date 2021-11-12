@@ -29,8 +29,7 @@ import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ComputedDataHolder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -48,7 +47,8 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class AboutResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(AboutResource.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -87,7 +87,7 @@ public class AboutResource extends AbstractFisholaResource {
         KeyFigures result = builder.build();
 
         if (log.isDebugEnabled()) {
-            log.debug("Nouvelle instance: " + result);
+            log.debugf("Nouvelle instance: %s", result);
         }
         return result;
     }

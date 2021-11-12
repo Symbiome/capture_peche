@@ -49,8 +49,7 @@ import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -84,7 +83,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(DashboardResource.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected MailService mailService;
@@ -356,7 +356,7 @@ public class DashboardResource extends AbstractFisholaResource {
         GlobalDashboard result = builder.build();
 
         if (log.isDebugEnabled()) {
-            log.debug("Nouvelle instance: " + result);
+            log.debugf("Nouvelle instance: %s", result);
         }
         return result;
     }

@@ -70,8 +70,6 @@ import java.util.UUID;
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
-    private static final Log log = LogFactory.getLog(FisholaCustomMappers.class);
-
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
     }
@@ -156,6 +154,10 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         return result;
     }
 
+    protected static Log getLog() {
+        return LogFactory.getLog(FisholaCustomMappers.class);
+    }
+
     protected static Optional<LocalDateTime> readIso8601AtZone(String dateString, ZoneId zoneId) {
         try {
             Optional<Instant> instant = iso8601ToInstant(dateString);
@@ -163,7 +165,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Optional<LocalDateTime> localDateTime = zonedDateTime.map(ZonedDateTime::toLocalDateTime);
             return localDateTime;
         } catch (Exception eee) {
-            log.error("Unable to read date: " + dateString, eee);
+            getLog().error("Unable to read date: " + dateString, eee);
             return Optional.empty();
         }
     }
@@ -175,7 +177,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Optional<Instant> result = Optional.of(instant);
             return result;
         } catch (Exception eee) {
-            log.error("Unable to read date: " + dateString, eee);
+            getLog().error("Unable to read date: " + dateString, eee);
             return Optional.empty();
         }
     }
