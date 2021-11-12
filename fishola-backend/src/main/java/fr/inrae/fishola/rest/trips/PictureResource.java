@@ -234,39 +234,7 @@ public class PictureResource extends AbstractFisholaResource {
 
             NotFoundException.check(bytes.isPresent());
 
-            try {
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes.get());
-                BufferedImage rawImage = ImageIO.read(inputStream);
-                BufferedImage scaledImage;
-
-                int width = rawImage.getWidth();
-                int height = rawImage.getHeight();
-
-                int percent = 100;
-
-                int threshold = 285 * 2; // Double d'une largeur classique d'écran
-                if (width > threshold) {
-                    percent = threshold * 100 / width;
-                }
-
-                if (percent == 100) {
-                    scaledImage = rawImage;
-                } else {
-                    int newWidth = width * percent / 100;
-                    int newHeight = height * percent / 100;
-                    if (log.isDebugEnabled()) {
-                        log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
-                    }
-                    ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
-                    resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());
-                    scaledImage = resizeOperation.filter(rawImage, null);
-                }
-
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                ImageHelper.imageToStream(scaledImage, "jpeg", .95f, fileOutputStream);
-            } catch (IOException ioe) {
-                throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
-            }
+            writeImageToFile(file, bytes.get());
 
         }
 
@@ -301,39 +269,7 @@ public class PictureResource extends AbstractFisholaResource {
 
             NotFoundException.check(bytes.isPresent());
 
-            try {
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes.get());
-                BufferedImage rawImage = ImageIO.read(inputStream);
-                BufferedImage scaledImage;
-
-                int width = rawImage.getWidth();
-                int height = rawImage.getHeight();
-
-                int percent = 100;
-
-                int threshold = 285 * 2; // Double d'une largeur classique d'écran
-                if (width > threshold) {
-                    percent = threshold * 100 / width;
-                }
-
-                if (percent == 100) {
-                    scaledImage = rawImage;
-                } else {
-                    int newWidth = width * percent / 100;
-                    int newHeight = height * percent / 100;
-                    if (log.isDebugEnabled()) {
-                        log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
-                    }
-                    ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
-                    resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());
-                    scaledImage = resizeOperation.filter(rawImage, null);
-                }
-
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                ImageHelper.imageToStream(scaledImage, "jpeg", .95f, fileOutputStream);
-            } catch (IOException ioe) {
-                throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
-            }
+            writeImageToFile(file, bytes.get());
 
         }
 
@@ -348,6 +284,42 @@ public class PictureResource extends AbstractFisholaResource {
         Response result = builder.build();
 
         return result;
+    }
+
+    protected void writeImageToFile(File file, byte[] bytes) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            BufferedImage rawImage = ImageIO.read(inputStream);
+            BufferedImage scaledImage;
+
+            int width = rawImage.getWidth();
+            int height = rawImage.getHeight();
+
+            int percent = 100;
+
+            int threshold = 285 * 2; // Double d'une largeur classique d'écran
+            if (width > threshold) {
+                percent = threshold * 100 / width;
+            }
+
+            if (percent == 100) {
+                scaledImage = rawImage;
+            } else {
+                int newWidth = width * percent / 100;
+                int newHeight = height * percent / 100;
+                if (log.isDebugEnabled()) {
+                    log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
+                }
+                ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
+                resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());
+                scaledImage = resizeOperation.filter(rawImage, null);
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ImageHelper.imageToStream(scaledImage, "jpeg", .95f, fileOutputStream);
+        } catch (IOException ioe) {
+            throw new FisholaTechnicalException("Impossible de d'écrire l'image vers un fichier", ioe);
+        }
     }
 
     @DELETE
