@@ -120,7 +120,7 @@ public class PictureResource extends AbstractFisholaResource {
 //                }
 //            }
 
-            byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", config.getRawImageQuality());
+            byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", config.rawImageQuality());
             if (jpegBytes.length > 0) {
                 log.infof("Pas de soucis pour: %s", image);
                 log.infof("Taille: %dkb", jpegBytes.length / 1024);

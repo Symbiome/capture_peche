@@ -166,7 +166,7 @@ public class TripResource extends AbstractFisholaResource {
     }
 
     protected Optional<LocalDateTime> getModifiableUntil(Trip trip, LocalDateTime now) {
-        LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.getTripModifiableHours());
+        LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.tripModifiableHours());
         boolean canBeModified = modifiableUntil.isAfter(now);
         Optional<LocalDateTime> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
         return result;

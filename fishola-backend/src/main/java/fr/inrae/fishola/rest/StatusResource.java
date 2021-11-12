@@ -105,9 +105,9 @@ public class StatusResource {
 
         ImmutableHealth.Builder builder = ImmutableHealth.builder();
 
-        builder.version(config.getVersion());
-        builder.gitRevision(config.getGitRevision());
-        builder.buildDate(config.getBuildDate());
+        builder.version(config.version());
+        builder.gitRevision(config.gitRevision());
+        builder.buildDate(config.buildDate());
 
         builder.currentDate(new Date().toString());
         builder.currentTimeZone(TimeZone.getDefault().toString());

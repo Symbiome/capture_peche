@@ -67,7 +67,7 @@ public class MailService {
 
     public ImmutableFisholaMail.Builder newMail(String body) {
         ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder()
-                .from(config.getMailFrom())
+                .from(config.mailFrom())
                 .body(body);
         return builder;
     }
@@ -144,7 +144,7 @@ public class MailService {
 
     public void sendMail(FisholaMail mail) {
 
-        if (config.isAsyncEmails()) {
+        if (config.asyncEmails()) {
             sendMailAsync(mail);
         } else {
             try {
@@ -181,7 +181,7 @@ public class MailService {
         }
 
         Preconditions.checkState(
-                pendingEmailsCount == 0 || config.isAsyncEmails(),
+                pendingEmailsCount == 0 || config.asyncEmails(),
                 "On ne devrait pas avoir de mails pending vu qu'on est pas en async");
 
         Iterator<FisholaMail> iterator = PENDING_EMAILS.iterator();
@@ -195,7 +195,7 @@ public class MailService {
                 Preconditions.checkState(fisholaMail.pendingSince().isPresent(), "FisholaMail sans pendingSince: " + fisholaMail);
                 Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
                 log.warnf("Unable to send mail for the last %d seconds", pendingDuration.toSeconds(), eee);
-                int retentionMinutes = config.getAsyncEmailsRetentionMinutes();
+                int retentionMinutes = config.asyncEmailsRetentionMinutes();
                 if (pendingDuration.toMinutes() > retentionMinutes) {
                     log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes, fisholaMail);
                     iterator.remove();
@@ -212,8 +212,8 @@ public class MailService {
 
         MimeMessage message = buildMimeMessage(mail);
 
-        if (config.getSmtpUsername().isPresent() && config.getSmtpPassword().isPresent()) {
-            Transport.send(message, config.getSmtpUsername().get(), config.getSmtpPassword().get());
+        if (config.smtpUsername().isPresent() && config.smtpPassword().isPresent()) {
+            Transport.send(message, config.smtpUsername().get(), config.smtpPassword().get());
         } else {
             Transport.send(message);
         }

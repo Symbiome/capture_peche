@@ -109,7 +109,7 @@ public class FeedbackResource extends AbstractFisholaResource {
                 "emails/new-feedback.html",
                 args);
         builder.subject("Nouveau feedback : " + feedback.category());
-        builder.addTos(config.getFeedbackMailTo());
+        builder.addTos(config.feedbackMailTo());
         if (screenshotBytes.isPresent()) {
             byte[] bytes = screenshotBytes.get();
             FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()

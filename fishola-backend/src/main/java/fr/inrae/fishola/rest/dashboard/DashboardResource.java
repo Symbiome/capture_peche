@@ -165,7 +165,7 @@ public class DashboardResource extends AbstractFisholaResource {
     }
 
     protected Optional<Integer> getYearFilter() {
-        Optional<Integer> result = config.isDashboardOnlyCurrentYear()
+        Optional<Integer> result = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
         return result;
@@ -308,7 +308,7 @@ public class DashboardResource extends AbstractFisholaResource {
         final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
                 this::computeNewGlobalDashboard,
                 GlobalDashboard::computedOn,
-                Duration.ofMinutes(config.getGlobalDashboardTimeoutMinutes()),
+                Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
                 false
         );
 

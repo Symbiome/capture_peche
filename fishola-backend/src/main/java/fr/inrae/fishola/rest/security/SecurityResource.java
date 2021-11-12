@@ -138,7 +138,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
 
-        if (config.isAutoVerifyAccounts()) {
+        if (config.autoVerifyAccounts()) {
             try {
                 verifyAfterRegistrationFromMail(request, token);
             } catch (Exception eee) {
@@ -631,7 +631,7 @@ public class SecurityResource extends AbstractFisholaResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response adminLogin(LoginBean loginBean) {
 
-        if (config.getAdminPassword().equals(loginBean.password)) {
+        if (config.adminPassword().equals(loginBean.password)) {
 
             String token = jwtHelper.createAdminToken();
 

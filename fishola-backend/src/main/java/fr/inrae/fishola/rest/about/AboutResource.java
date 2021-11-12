@@ -99,7 +99,7 @@ public class AboutResource extends AbstractFisholaResource {
         final KeyFigures result = KEY_FIGURES_HOLDER.get(
                 this::computeKeyFigures,
                 KeyFigures::computedOn,
-                Duration.ofHours(config.getKeyFiguresTimeoutHours()),
+                Duration.ofHours(config.keyFiguresTimeoutHours()),
                 true
         );
 

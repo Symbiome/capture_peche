@@ -62,8 +62,8 @@ public class FisholaApplication {
         }
 
         Map<String, String> flywayPlaceholders = ImmutableMap.of(
-                "baseUrl", config.getBackendBaseUrl().orElse("http://localhost:8080"),
-                "exportSafeHours", String.valueOf(config.getExportSafeHours())
+                "baseUrl", config.backendBaseUrl().orElse("http://localhost:8080"),
+                "exportSafeHours", String.valueOf(config.exportSafeHours())
         );
         Flyway flyway = Flyway.configure()
                 .placeholders(flywayPlaceholders)
