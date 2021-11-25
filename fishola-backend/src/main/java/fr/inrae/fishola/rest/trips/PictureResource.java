@@ -52,7 +52,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
@@ -99,45 +98,11 @@ public class PictureResource extends AbstractFisholaResource {
         String[] contentSplitted = content.split(",");
         String base64Image = contentSplitted[1];
 
-        byte[] bytes = Base64.getDecoder().decode(base64Image);
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        try {
-            BufferedImage image = ImageIO.read(bis);
-            bis.close();
+        byte[] jpegBytes = ImageHelper.base64ImageToJpegBytes(base64Image, config.rawImageQuality());
+        catchsDao.setPicture(catchId, order, jpegBytes);
 
-            image = ImageHelper.removeAlphaIfPresent(image);
-
-//            Set<String> formats = ImmutableSet.of("jpeg");
-//            for (String format : formats) {
-//                for (float quality = 1f; quality >= 0.90f; quality -= 0.01f) {
-//                    // write the image to a file
-//                    byte[] testBytes = imageToBytes(image, format, quality);
-//                    File parent = new File("/tmp/taiste-0.01");
-//                    parent.mkdirs();
-//                    File file = new File(parent, String.format("%s-%s-%.3f.%s", format, catchId, quality, format));
-//                    Files.write(testBytes, file);
-//
-//                    if (testBytes.length > 0) {
-//                        log.info(String.format("%s/%.3f=%dkb en %s", format, quality, testBytes.length / 1024, file.getAbsolutePath()));
-//                    }
-//                }
-//            }
-
-            byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", config.rawImageQuality());
-            if (jpegBytes.length > 0) {
-                log.infof("Pas de soucis pour: %s", image);
-                log.infof("Taille: %dkb", jpegBytes.length / 1024);
-            }
-
-            Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
-            catchsDao.setPicture(catchId, order, jpegBytes);
-
-            deletePreview(catchId);
-            deletePreview(catchId, OptionalInt.of(order));
-
-        } catch (IOException ioe) {
-           throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
-        }
+        deletePreview(catchId);
+        deletePreview(catchId, OptionalInt.of(order));
 
         Response response = noContent(userIdAndRenewal);
         return response;
@@ -167,6 +132,39 @@ public class PictureResource extends AbstractFisholaResource {
         }
 
         Response response = setPictureWithOrder(catchId, 0, content);
+        return response;
+    }
+
+    @PUT
+    @Path("/{catchId}/measure")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setMeasurementPicture(@PathParam("catchId") UUID catchId,
+                                          String content) {
+
+        if (log.isDebugEnabled()) {
+            log.infof("Réception d'une image de mesure pour la capture '%s'", catchId);
+        }
+
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+
+        Catch existingCatch = catchsDao.getCatch(catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
+
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+
+        // tokenize the data
+        String[] contentSplitted = content.split(",");
+        String base64Image = contentSplitted[1];
+
+        byte[] jpegBytes = ImageHelper.base64ImageToJpegBytes(base64Image, config.rawImageQuality());
+        catchsDao.setMeasurementPicture(catchId, jpegBytes);
+
+        Response response = noContent(userIdAndRenewal);
         return response;
     }
 

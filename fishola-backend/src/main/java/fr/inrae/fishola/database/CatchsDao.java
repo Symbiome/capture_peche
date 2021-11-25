@@ -21,7 +21,6 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -32,8 +31,10 @@ import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.Lake;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
+import fr.inrae.fishola.entities.tables.daos.CatchMeasurementPictureDao;
 import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
 import org.apache.commons.collections4.CollectionUtils;
@@ -116,6 +117,14 @@ public class CatchsDao extends AbstractFisholaDao {
         });
     }
 
+    public void setMeasurementPicture(UUID catchId, byte[] bytes) {
+        CatchMeasurementPicture newCatchPicture = new CatchMeasurementPicture(catchId, bytes);
+        withDaoNoResult(CatchMeasurementPictureDao.class, dao -> {
+            dao.deleteById(catchId);
+            dao.insert(newCatchPicture);
+        });
+    }
+
     public Optional<byte[]> getPicture(UUID catchId, int pictureIndex) {
         final Record2<UUID, Integer> pictureId = asPictureId(catchId, pictureIndex);
         CatchPicture picture = withDao(CatchPictureDao.class, dao -> dao.findById(pictureId));
@@ -124,12 +133,10 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public Optional<byte[]> getLastPicture(UUID catchId) {
-        ListMultimap<UUID, Integer> pictureIndexes = checkForPictures(ImmutableSet.of(catchId));
-        if (pictureIndexes.isEmpty()) {
+        List<Integer> indexes = getPictureIndexes(catchId);
+        if (CollectionUtils.isEmpty(indexes)) {
             return Optional.empty();
         }
-        List<Integer> indexes = pictureIndexes.get(catchId);
-        Preconditions.checkState(CollectionUtils.isNotEmpty(indexes));
         final OptionalInt max = indexes.stream().mapToInt(a -> a).max();
         final int maximalIndex = max.getAsInt();
         return this.getPicture(catchId, maximalIndex);
@@ -140,7 +147,13 @@ public class CatchsDao extends AbstractFisholaDao {
         withDaoNoResult(CatchPictureDao.class, dao -> dao.deleteById(pictureId));
     }
 
-    public ListMultimap<UUID, Integer> checkForPictures(Set<UUID> catchIds) {
+    public List<Integer> getPictureIndexes(UUID catchId) {
+        ListMultimap<UUID, Integer> multimap = getPictureIndexes(ImmutableSet.of(catchId));
+        List<Integer> pictureIndexes = multimap.get(catchId);
+        return pictureIndexes;
+    }
+
+    public ListMultimap<UUID, Integer> getPictureIndexes(Set<UUID> catchIds) {
         ListMultimap<UUID, Integer> result = withContext(context -> {
             Result<Record2<UUID, Integer>> records = context.select(Tables.CATCH_PICTURE.CATCH_ID, Tables.CATCH_PICTURE.PICTURE_INDEX)
                     .from(Tables.CATCH_PICTURE)
@@ -153,6 +166,20 @@ public class CatchsDao extends AbstractFisholaDao {
                 multimap.put(catchId, order);
             }
             return multimap;
+        });
+        return result;
+    }
+
+    /**
+     * Calcule la liste des captures ayant une photo de mesure parmi la liste donnée
+     */
+    public Set<UUID> getMeasurementPictures(Set<UUID> catchIds) {
+        Set<UUID> result = withContext(context -> {
+            Set<UUID> records = context.select(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID)
+                    .from(Tables.CATCH_MEASUREMENT_PICTURE)
+                    .where(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID.in(catchIds))
+                    .fetchSet(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID);
+            return records;
         });
         return result;
     }
