@@ -353,7 +353,7 @@ public class PictureResource extends AbstractFisholaResource {
                 int newWidth = width * percent / 100;
                 int newHeight = height * percent / 100;
                 if (log.isDebugEnabled()) {
-                    log.debugf("On réduit à %d%% : %dx%d -> %dx%d", percent, width, height, newWidth, newHeight);
+                    log.debugf("On réduit à %d%s : %dx%d -> %dx%d", percent, "%", width, height, newWidth, newHeight);
                 }
                 ResampleOp resizeOperation = new ResampleOp(newWidth, newHeight);
                 resizeOperation.setFilter(ResampleFilters.getLanczos3Filter());
