@@ -631,14 +631,22 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .statusCode(200)
                 .body("catchs[0].hasPicture", equalTo(false))
                 .body("catchs[0].hasMeasurementPicture", equalTo(false));
-//
-//        // Pas encore de miniature
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview")
-//            .then()
-//                .statusCode(404);
+
+        // Pas encore téléchargeable
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(404);
+
+        // Pas encore de miniature
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId + "/preview")
+            .then()
+                .statusCode(404);
 
         InputStream resource = this.getClass().getResourceAsStream("/about-fishes.jpg");
         Preconditions.checkState(resource != null, "Image non trouvée");
@@ -653,7 +661,7 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .contentType(MediaType.TEXT_PLAIN)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
-                .put("/api/v1/pictures/" + catchId + "/measure")
+                .put("/api/v1/pictures/measure/" + catchId)
             .then()
                 .statusCode(204);
 
@@ -668,142 +676,21 @@ public class TripResourceTest extends AbstractFisholaTest {
                 .body("catchs[0].hasPicture", equalTo(false))
                 .body("catchs[0].hasMeasurementPicture", equalTo(true));
 
-//        // ... et téléchargeable
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/0")
-//            .then()
-//                .statusCode(200);
-//
-//        // On vérifie que la miniature est générée
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview")
-//            .then()
-//                .statusCode(200);
-//
-//        // On vérifie que la miniature '0' est générée
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview/0")
-//            .then()
-//                .statusCode(200);
-//
-//        // Ajoute une image en '12'
-//        given()
-//            .when()
-//                .contentType(MediaType.TEXT_PLAIN)
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .body("data:image/jpeg;base64," + base64Content)
-//                .put("/api/v1/pictures/" + catchId + "/12")
-//            .then()
-//                .statusCode(204);
-//
-//        // Vérifie qu'elle est bien listée ...
-//        given()
-//            .when()
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .get("/api/v1/trips/" + tripId)
-//            .then()
-//                .statusCode(200)
-//                .body("id", equalTo(tripId))
-//                .body("catchs[0].hasPicture", equalTo(true))
-//                .body("catchs[0].pictureOrders", hasItems(0, 12));
-//
-//        // ... et téléchargeable
-//        given()
-//                .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/12")
-//                .then()
-//                .statusCode(200);
-//
-//        // Supprime l'image '0'
-//        given()
-//            .when()
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .delete("/api/v1/pictures/" + catchId + "/0")
-//            .then()
-//                .statusCode(204);
-//
-//        given()
-//            .when()
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .get("/api/v1/trips/" + tripId)
-//            .then()
-//                .statusCode(200)
-//                .body("id", equalTo(tripId))
-//                .body("catchs[0].hasPicture", equalTo(true))
-//                .body("catchs[0].pictureOrders", hasItems(12));
-//
-//        // On vérifie qu'on a toujours une miniature
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview")
-//            .then()
-//                .statusCode(200);
-//
-//        // On vérifie que la miniature '12' est générée
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview/12")
-//            .then()
-//                .statusCode(200);
-//
-//        // On vérifie que la miniature '0' n'est plus dispo
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview/0")
-//            .then()
-//                .statusCode(404);
-//
-//        // Supprime l'image
-//        given()
-//            .when()
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .delete("/api/v1/pictures/" + catchId + "/12")
-//            .then()
-//                .statusCode(204);
-//
-//        given()
-//            .when()
-//                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-//                .get("/api/v1/trips/" + tripId)
-//            .then()
-//                .statusCode(200)
-//                .body("id", equalTo(tripId))
-//                .body("catchs[0].hasPicture", equalTo(false))
-//                .body("catchs[0].pictureOrders", equalTo(new LinkedList<>()));
-//
-//        // Plus de miniature
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview")
-//            .then()
-//                .statusCode(404);
-//
-//        // On vérifie que la miniature '0' n'est plus dispo
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview/0")
-//            .then()
-//                .statusCode(404);
-//
-//        // On vérifie que la miniature '12' n'est plus dispo
-//        given()
-//            .when()
-//                .body(trip)
-//                .get("/api/v1/pictures/" + catchId + "/preview/12")
-//            .then()
-//                .statusCode(404);
+        // ... et téléchargeable
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(200);
+
+        // On vérifie que la miniature est générée
+        given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId + "/preview")
+            .then()
+                .statusCode(200);
 
     }
 

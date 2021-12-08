@@ -53,7 +53,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.UUID;
 
 @Path("/api/v1/pictures")
@@ -102,18 +101,18 @@ public class PictureResource extends AbstractFisholaResource {
         catchsDao.setPicture(catchId, order, jpegBytes);
 
         deletePreview(catchId);
-        deletePreview(catchId, OptionalInt.of(order));
+        deletePreview(catchId, Optional.of(order));
 
         Response response = noContent(userIdAndRenewal);
         return response;
     }
 
     protected void deletePreview(UUID catchId) {
-        deletePreview(catchId, OptionalInt.empty());
+        deletePreview(catchId, Optional.empty());
     }
 
-    protected void deletePreview(UUID catchId, OptionalInt order) {
-        File file = getPreviewFile(catchId, order);
+    protected void deletePreview(UUID catchId, Optional<Integer> order) {
+        File file = getPreviewFile(catchId, order.map(String::valueOf));
         if (file.exists() && !file.delete()) {
             log.errorf("Impossible de supprimer la preview: %s (%s)", file.getAbsolutePath(), order);
         }
@@ -136,7 +135,7 @@ public class PictureResource extends AbstractFisholaResource {
     }
 
     @PUT
-    @Path("/{catchId}/measure")
+    @Path("/measure/{catchId}")
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_JSON)
     public Response setMeasurementPicture(@PathParam("catchId") UUID catchId,
@@ -194,7 +193,23 @@ public class PictureResource extends AbstractFisholaResource {
         return response;
     }
 
-    protected File getPreviewFile(UUID catchId, OptionalInt order) {
+    @GET
+    @Path("/measure/{catchId}")
+    @Produces("image/jpeg")
+    public Response getMeasurementPicture(@PathParam("catchId") UUID catchId) {
+
+        // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
+
+        Optional<byte[]> bytes = catchsDao.getMeasurementPicture(catchId);
+
+        Response response = bytes.map(this::wrapAsStreamingOutput)
+                .map(Response::ok)
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
+                .build();
+        return response;
+    }
+
+    protected File getPreviewFile(UUID catchId, Optional<String> addition) {
         File folder = config.getPicturesPreviewFolder();
         File subFolder = new File(folder, catchId.toString().substring(0, 2));
         if (subFolder.mkdirs() && log.isInfoEnabled()) {
@@ -202,14 +217,14 @@ public class PictureResource extends AbstractFisholaResource {
         }
 
         String fileNameWithoutExtension = catchId.toString();
-        if (order.isPresent()) {
-            fileNameWithoutExtension += "-" + order.getAsInt();
+        if (addition.isPresent()) {
+            fileNameWithoutExtension += "-" + addition.get();
         }
         String fileName = String.format("%s.jpeg", fileNameWithoutExtension);
         File result = new File(subFolder, fileName);
 
         if (log.isDebugEnabled()) {
-            log.debugf("Miniature (%s,%s) =>%s", catchId, order, result.getAbsolutePath());
+            log.debugf("Miniature (%s,%s) =>%s", catchId, addition, result.getAbsolutePath());
         }
 
         return result;
@@ -224,7 +239,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
 
-        File file = getPreviewFile(catchId, OptionalInt.empty());
+        File file = getPreviewFile(catchId, Optional.empty());
 
         if (!file.exists()) {
 
@@ -259,11 +274,43 @@ public class PictureResource extends AbstractFisholaResource {
 
         Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
 
-        File file = getPreviewFile(catchId, OptionalInt.of(order));
+        File file = getPreviewFile(catchId, Optional.of(order).map(String::valueOf));
 
         if (!file.exists()) {
 
             Optional<byte[]> bytes = catchsDao.getPicture(catchId, order);
+
+            NotFoundException.check(bytes.isPresent());
+
+            writeImageToFile(file, bytes.get());
+
+        }
+
+        Response.ResponseBuilder builder = Response.ok(file);
+
+        // TODO AThimel 12/02/2020 Cache !
+//        CacheControl cc = new CacheControl();
+//        cc.setMaxAge(86400);
+//        cc.setPrivate(true);
+//        builder.cacheControl(cc);
+
+        Response result = builder.build();
+
+        return result;
+    }
+
+    @GET
+    @Path("/measure/{catchId}/preview")
+    @Produces("image/jpeg")
+    public Response getMeasurementPicturePreview(@PathParam("catchId") UUID catchId) {
+
+        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+
+        File file = getPreviewFile(catchId, Optional.of("measure"));
+
+        if (!file.exists()) {
+
+            Optional<byte[]> bytes = catchsDao.getMeasurementPicture(catchId);
 
             NotFoundException.check(bytes.isPresent());
 
@@ -323,7 +370,7 @@ public class PictureResource extends AbstractFisholaResource {
     @DELETE
     @Path("/{catchId}/{order}")
     public void deletePicture(@PathParam("catchId") UUID catchId,
-                                  @PathParam("order") int order) {
+                              @PathParam("order") int order) {
 
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
@@ -340,7 +387,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // Par sécurité, on supprime la miniature aussi
         deletePreview(catchId);
-        deletePreview(catchId, OptionalInt.of(order));
+        deletePreview(catchId, Optional.of(order));
     }
 
 }

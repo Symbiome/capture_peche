@@ -132,6 +132,12 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    public Optional<byte[]> getMeasurementPicture(UUID catchId) {
+        CatchMeasurementPicture picture = withDao(CatchMeasurementPictureDao.class, dao -> dao.findById(catchId));
+        Optional<byte[]> result = Optional.ofNullable(picture).map(CatchMeasurementPicture::getContent);
+        return result;
+    }
+
     public Optional<byte[]> getLastPicture(UUID catchId) {
         List<Integer> indexes = getPictureIndexes(catchId);
         if (CollectionUtils.isEmpty(indexes)) {
