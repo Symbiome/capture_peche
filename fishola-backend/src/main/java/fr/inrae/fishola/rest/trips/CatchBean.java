@@ -21,6 +21,8 @@ package fr.inrae.fishola.rest.trips;
  * #L%
  */
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,6 +44,8 @@ public class CatchBean {
     public Optional<Double> longitude = Optional.empty();
 
     public boolean hasPicture = false;
+    public List<Integer> pictureOrders = new LinkedList<>();
+    public boolean hasMeasurementPicture = false;
     public Optional<UUID> tripId = Optional.empty();
 
     @Override
@@ -62,6 +66,8 @@ public class CatchBean {
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
                 ", hasPicture=" + hasPicture +
+                ", pictureOrders=" + pictureOrders +
+                ", hasMeasurementPicture=" + hasMeasurementPicture +
                 ", tripId=" + tripId +
                 '}';
     }

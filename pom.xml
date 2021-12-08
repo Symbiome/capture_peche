@@ -59,12 +59,11 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>2.4.0.Final</quarkusVersion>
+    <quarkusVersion>2.5.0.Final</quarkusVersion>
     <jooqVersion>3.15.4</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
     <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
-    <!-- La version 1.16.1+ pose des problèmes au démarrage : ClassNotFoundException: com.github.dockerjava.api.DockerClientDelegate -->
-    <testcontainersVersion>1.16.0</testcontainersVersion>
+    <testcontainersVersion>1.16.2</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
@@ -231,7 +230,7 @@
         <plugin>
           <groupId>cz.habarta.typescript-generator</groupId>
           <artifactId>typescript-generator-maven-plugin</artifactId>
-          <version>2.32.889</version>
+          <version>2.33.956</version>
         </plugin>
 
         <plugin>

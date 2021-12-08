@@ -65,14 +65,19 @@ public abstract class AbstractFisholaDao {
         void execute(D dao);
     }
 
+    protected DSLContext newContext() {
+        final DSLContext result = DSL.using(dataSource, SQLDialect.POSTGRES);
+        return result;
+    }
+
     protected <R> R withContext(JooqContext<R> work) {
-        DSLContext context = DSL.using(dataSource, SQLDialect.POSTGRES);
+        DSLContext context = newContext();
         R result = work.execute(context);
         return result;
     }
 
     protected <R> void withContextNoResult(JooqContextNoResult<R> work) {
-        DSLContext context = DSL.using(dataSource, SQLDialect.POSTGRES);
+        DSLContext context = newContext();
         work.execute(context);
     }
 
