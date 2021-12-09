@@ -61,6 +61,15 @@ export default class FisholaDatabase extends Dexie {
             offlineFeedbacks: 'id'
         });
 
+        // As StoredPicture model has changed (new fields), new version is required even though collections did not change
+        this.version(5).stores({
+            onCreationTrip: "id",
+            dirtyTrips: "id",
+            dirtyPictures: "id, order",
+            offlineStorage: "key",
+            offlineFeedbacks: "id",
+        });
+
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
         this.dirtyPictures = this.table("dirtyPictures");

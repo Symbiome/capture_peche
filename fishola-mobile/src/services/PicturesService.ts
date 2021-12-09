@@ -20,15 +20,18 @@
  */
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import StoredPicture from "@/pojos/StoredPicture";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 export default class PicturesService extends AbstractFisholaService {
   constructor() {
     super();
   }
 
-  static savePicture(
+  static savePictureInLocalDB(
     catchId: string,
     content: string,
+    isMeasurementPicture: boolean,
+    order: number,
     callback: () => any,
     dirtySince?: number
   ) {
@@ -36,6 +39,8 @@ export default class PicturesService extends AbstractFisholaService {
       id: catchId,
       dirtySince: dirtySince || new Date().getTime(),
       content: content,
+      isMeasurementPicture: isMeasurementPicture,
+      order: order,
     };
 
     this.getDatabase()
@@ -46,52 +51,57 @@ export default class PicturesService extends AbstractFisholaService {
       });
   }
 
-  static deletePicture(catchId: string) {
-    this.getDatabase().dirtyPictures.delete(catchId);
+  static deletePictureFromLocalDB(catchId: string) {
+    this.getDatabase()
+      .dirtyPictures.where("id")
+      .equals(catchId)
+      .delete();
   }
 
-  static getPictureFull(catchId: string): Promise<StoredPicture> {
-    return new Promise<StoredPicture>((resolve, reject) => {
-      this.getDatabase()
-        .dirtyPictures.get(catchId)
-        .then((item?: StoredPicture) => {
-          if (item) {
-            resolve(item);
-          } else {
-            reject();
-          }
-        }, reject);
-    });
+  static internalGetPicturesFull(catchId: string): Promise<StoredPicture[]> {
+    const picturesWithCatchId = this.getDatabase()
+      .dirtyPictures.where("id")
+      .equals(catchId);
+    return picturesWithCatchId.toArray();
   }
 
-  static getPicture(catchId: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      this.getPictureFull(catchId).then((result) => {
-        if (result.content) {
-          resolve(result.content);
-        } else {
-          reject();
-        }
-      }, reject);
-    });
+  static async internalGetPictureFullFromCatchAndOrder(
+    catchId: string,
+    order: number
+  ): Promise<StoredPicture[]> {
+    const picWithCatchIdAndOrder = this.getDatabase()
+      .dirtyPictures.where("id")
+      .equals(catchId)
+      .filter((storedPic) => storedPic.order == order);
+    return picWithCatchIdAndOrder.toArray();
+  }
+
+  static getPicturesFromLocalDB(catchId: string): PictureContentWithOrder[] {
+    const storedPictures = PicturesService.internalGetPicturesFull(catchId);
+    const result: PictureContentWithOrder[] = [];
+    return result as PictureContentWithOrder[];
   }
 
   static checkForPicturesToRename(map: any) {
     const keys: string[] = Object.keys(map);
     keys.forEach((key: string) => {
-      PicturesService.getPictureFull(key).then((result) => {
-        if (result.content) {
-          const newId = map[key];
-          console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
-          PicturesService.savePicture(
-            newId,
-            result.content,
-            () => {
-              PicturesService.deletePicture(key);
-            },
-            result.dirtySince
-          );
-        }
+      PicturesService.internalGetPicturesFull(key).then((pictures) => {
+        pictures.forEach((result) => {
+          if (result.content) {
+            const newId = map[key];
+            console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
+            PicturesService.savePictureInLocalDB(
+              newId,
+              result.content,
+              result.isMeasurementPicture,
+              result.order,
+              () => {
+                PicturesService.deletePictureFromLocalDB(key);
+              },
+              result.dirtySince
+            );
+          }
+        });
       });
     });
   }
@@ -109,6 +119,8 @@ export default class PicturesService extends AbstractFisholaService {
 
         const allPromises: Promise<void>[] = [];
 
+        // TODO Gallery rewrite synchronisation with new routes
+        /*
         // Pour chaque photo on créé une promise qui tente de la sauvegarder
         pictureIds
           .filter((pictureId) => pictureId.length == 36)
@@ -120,7 +132,7 @@ export default class PicturesService extends AbstractFisholaService {
                 "Photo synchronisée, on la supprime de la base embarquée",
                 pictureId
               );
-              PicturesService.deletePicture(pictureId);
+              PicturesService.deletePictureFromLocalDB(pictureId);
             });
           });
 
@@ -128,7 +140,7 @@ export default class PicturesService extends AbstractFisholaService {
         pictureIds
           .filter((pictureId) => pictureId.length != 36)
           .forEach((pictureId) => {
-            PicturesService.getPictureFull(pictureId).then((result) => {
+            PicturesService.internalGetPictureFull(pictureId).then((result) => {
               if (result.dirtySince) {
                 const dirtySinceInMillis =
                   new Date().getTime() - result.dirtySince;
@@ -137,7 +149,7 @@ export default class PicturesService extends AbstractFisholaService {
                   console.info(
                     `On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`
                   );
-                  PicturesService.deletePicture(pictureId);
+                  PicturesService.deletePictureFromLocalDB(pictureId);
                   return;
                 }
               }
@@ -153,37 +165,46 @@ export default class PicturesService extends AbstractFisholaService {
               console.error("Problème de synchro des images", eee);
             }
           );
-        }
+        }*/
       });
   }
 
-  static syncPicture(pictureId: string): Promise<void> {
+  // TODO Galery : add Order
+  static syncPicture(pictureId: string, order: number): Promise<void> {
     return new Promise((resolve, reject) => {
       console.info("On essaye de sauvegarder la photo", pictureId);
-      PicturesService.getPictureFull(pictureId).then((result) => {
-        if (result.dirtySince) {
-          const dirtySinceInMillis = new Date().getTime() - result.dirtySince;
-          if (dirtySinceInMillis > 1000 * 60 * 60 * 24 * 7) {
-            // Plus de 7j
-            console.info(
-              `On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`
-            );
-            PicturesService.deletePicture(pictureId);
-            reject("Photo non synchronisée depuis trop longtemps");
-            return;
+      PicturesService.internalGetPictureFullFromCatchAndOrder(
+        pictureId,
+        order
+      ).then((matchingLocalPics) => {
+        if (matchingLocalPics && matchingLocalPics.length > 0) {
+          const result = matchingLocalPics[0];
+          if (result.dirtySince) {
+            const dirtySinceInMillis = new Date().getTime() - result.dirtySince;
+            if (dirtySinceInMillis > 1000 * 60 * 60 * 24 * 7) {
+              // Plus de 7j
+              console.info(
+                `On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`
+              );
+              PicturesService.deletePictureFromLocalDB(pictureId);
+              reject("Photo non synchronisée depuis trop longtemps");
+              return;
+            }
           }
-        }
-        if (result.content) {
-          this.backendPutPlain(
-            `/v1/pictures/${pictureId}`,
-            result.content
-          ).then(resolve, (error: any) => {
-            console.error(
-              `Erreur lors de la synchro de l'image ${pictureId}`,
-              error
-            );
-            reject(error);
-          });
+          if (result.content) {
+            this.backendPutPlain(
+              `/v1/pictures/${pictureId}`,
+              result.content
+            ).then(resolve, (error: any) => {
+              console.error(
+                `Erreur lors de la synchro de l'image ${pictureId}`,
+                error
+              );
+              reject(error);
+            });
+          } else {
+            reject(`Unable to find picture content ${pictureId}`);
+          }
         } else {
           reject(`Unable to find picture content ${pictureId}`);
         }

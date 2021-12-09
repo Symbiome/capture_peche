@@ -23,6 +23,8 @@
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <PicturePreview
+        v-for="pictureSrc in allPicturesSrc"
+        :key="pictureSrc"
         v-bind:src="pictureSrc"
         v-bind:modifiable="modifiable"
         noPictureText="Appuyer pour ajouter une photo"
@@ -45,6 +47,8 @@
           <div class="catch-picture-desktop-and-form">
             <div class="catch-picture-desktop hide-on-mobile">
               <PicturePreview
+                v-for="pictureSrc in allPicturesSrc"
+                :key="pictureSrc"
                 v-bind:src="pictureSrc"
                 v-bind:modifiable="modifiable"
                 noPictureText="Appuyer pour ajouter une photo"
@@ -279,7 +283,7 @@
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
     <img
       id="sourcePictureAutomatic"
-      :src="pictureSrc"
+      :src="measurementPictureSrc"
       v-show="false"
       @load="launchSilentAutomaticMeasureIfRequired"
     />
@@ -376,7 +380,8 @@ export default class EditCatchView extends Vue {
   tripOtherSpecies: string = "";
   aCatch: CatchSummary = { id: "" };
 
-  pictureSrc: string = "";
+  allPicturesSrc: string[] = [];
+  measurementPictureSrc: string = "";
   newPictureTaken: boolean = false;
 
   caughtAt: string = "";
@@ -523,7 +528,8 @@ export default class EditCatchView extends Vue {
   }
 
   pictureLoaded(content: string) {
-    this.pictureSrc = content;
+    // TODO Gallery set pictureSrc acccording to index
+    this.allPicturesSrc = [content];
   }
 
   async launchSilentAutomaticMeasureIfRequired() {
@@ -586,9 +592,10 @@ export default class EditCatchView extends Vue {
 
   noPictureFound() {
     if (this.aCatch.hasPicture) {
-      this.pictureSrc = Constants.apiUrl(
-        `/v1/pictures/${this.aCatch.id}/preview`
-      );
+      // TODO Gallery
+      this.allPicturesSrc = [
+        Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`),
+      ];
     }
   }
 
@@ -682,16 +689,18 @@ export default class EditCatchView extends Vue {
 
   pictureTaken(pictureSrc: string) {
     this.requestNewPicture = false;
-    this.pictureSrc = pictureSrc;
+    // TODO Gallery
+    this.allPicturesSrc = [pictureSrc];
     this.newPictureTaken = true;
   }
 
-  measurementPictureTaken(pictureSrc: string) {
-    // If no picture was taken, use automatic picture as pic
+  measurementPictureTaken(newMeasurementPictureSrc: string) {
     this.shouldLaunchAutomaticMeasure = false;
-    if (!this.pictureSrc) {
+    this.measurementPictureSrc = newMeasurementPictureSrc;
+    // TODO Gallery : store this as measurent pic
+    if (!this.allPicturesSrc || this.allPicturesSrc.length == 0) {
       this.newPictureTaken = true;
-      this.pictureSrc = pictureSrc;
+      this.allPicturesSrc = [newMeasurementPictureSrc];
     }
   }
 
@@ -842,7 +851,8 @@ export default class EditCatchView extends Vue {
       if (aCatchBean.speciesId == "__other__") {
         aCatchBean.speciesId = "";
       }
-      aCatchBean.hasPicture = this.pictureSrc != "";
+      aCatchBean.hasPicture =
+        this.allPicturesSrc && this.allPicturesSrc.length > 0;
       if (!this.withSample) {
         aCatchBean.sampleId = "";
       }
@@ -855,8 +865,17 @@ export default class EditCatchView extends Vue {
   }
 
   catchSaved(catchId: string) {
-    if (this.pictureSrc && this.newPictureTaken) {
-      PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
+    // TODO Gallery save: define order and if measurement pic
+    let order = 1;
+    let isMeasurementPic = false;
+    if (this.allPicturesSrc && this.newPictureTaken) {
+      PicturesService.savePicture(
+        catchId,
+        this.allPicturesSrc[0],
+        isMeasurementPic,
+        order,
+        this.leavePage
+      );
     } else {
       this.leavePage();
     }
