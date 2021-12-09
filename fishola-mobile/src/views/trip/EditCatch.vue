@@ -22,18 +22,25 @@
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
+      <!-- Show all gallery pics -->
       <PicturePreview
         v-for="pictureSrc in allPicturesSrc"
-        :key="pictureSrc"
-        v-bind:src="pictureSrc"
+        :key="pictureSrc.order"
+        v-bind:src="pictureSrc.content"
         v-bind:modifiable="modifiable"
-        noPictureText="Appuyer pour ajouter une photo"
         v-on:take-picture="takePicture"
       />
+      <!-- Then measurement pic (if any) -->
       <PicturePreview
         v-if="measurementPictureSrc"
-        :key="measurementPictureSrc"
         v-bind:src="measurementPictureSrc"
+        v-bind:modifiable="modifiable"
+        v-on:take-picture="takePicture"
+      />
+      <!-- Empty picture if no picture yet -->
+      <PicturePreview
+        v-else-if="!allPicturesSrc.length"
+        noPictureText="Appuyer pour ajouter une photo"
         v-bind:modifiable="modifiable"
         v-on:take-picture="takePicture"
       />
@@ -53,21 +60,53 @@
 
           <div class="catch-picture-desktop-and-form">
             <div class="catch-picture-desktop hide-on-mobile">
+              <!-- Show focused pic -->
               <PicturePreview
-                v-for="pictureSrc in allPicturesSrc"
-                :key="pictureSrc"
-                v-bind:src="pictureSrc"
-                v-bind:modifiable="modifiable"
+                class="pic-focused"
+                v-bind:src="focusedPicSrc"
                 noPictureText="Appuyer pour ajouter une photo"
-                v-on:take-picture="takePicture"
-              />
-              <PicturePreview
-                v-if="measurementPictureSrc"
-                :key="measurementPictureSrc"
-                v-bind:src="measurementPictureSrc"
                 v-bind:modifiable="modifiable"
                 v-on:take-picture="takePicture"
               />
+              <div class="pic-miniatures-container">
+                <!-- Show all gallery pics -->
+                <PicturePreview
+                  :enableModal="false"
+                  v-for="pictureSrc in allPicturesSrc"
+                  :key="pictureSrc.order"
+                  v-bind:src="pictureSrc.content"
+                  v-bind:modifiable="modifiable"
+                  @picture-clicked="focusedPicSrc = pictureSrc.content"
+                  v-on:take-picture="takePicture"
+                  :class="{
+                    'pic-miniature': true,
+                    'pic-selected': pictureSrc.content == focusedPicSrc,
+                  }"
+                />
+                <!-- Then measurement pic (if any) -->
+                <PicturePreview
+                  :enableModal="false"
+                  v-if="measurementPictureSrc"
+                  :key="measurementPictureSrc"
+                  v-bind:src="measurementPictureSrc"
+                  v-bind:modifiable="modifiable"
+                  v-on:take-picture="takePicture"
+                  @click="focusedPicSrc = measurementPictureSrc"
+                  :class="{
+                    'pic-miniature': true,
+                    'pic-selected': pictureSrc.content == focusedPicSrc,
+                  }"
+                />
+                <!-- Empty miniature picture for adding pictures -->
+                <PicturePreview
+                  :enableModal="false"
+                  class="pic-miniature"
+                  v-if="focusedPicSrc"
+                  noPictureText="Appuyer pour ajouter une photo"
+                  v-bind:modifiable="modifiable"
+                  v-on:take-picture="takePicture"
+                />
+              </div>
             </div>
             <div class="edit-catch-form">
               <div
@@ -397,6 +436,7 @@ export default class EditCatchView extends Vue {
 
   allPicturesSrc: PictureContentWithOrder[] = [];
   measurementPictureSrc: string = "";
+  focusedPicSrc: string = "";
   // Pictures that have just been taken and hence should be saved in local DB when validating
   newTakenPictures: PictureContentWithOrder[] = [];
 
@@ -541,7 +581,10 @@ export default class EditCatchView extends Vue {
     const localPics = await PicturesService.getPicturesFromLocalDB(
       someCatch.id
     );
-    this.allPicturesSrc.concat(localPics);
+    if (localPics.length) {
+      this.focusedPicSrc = localPics[0].content;
+    }
+    this.allPicturesSrc = this.allPicturesSrc.concat(localPics);
 
     // Get server gallery pics (reconstructed through the "orders" field)
     this.aCatch.pictureOrders?.forEach((order) => {
@@ -553,6 +596,10 @@ export default class EditCatchView extends Vue {
         ),
       };
       this.allPicturesSrc.push(pictureFromServer);
+
+      if (!this.focusedPicSrc) {
+        this.focusedPicSrc = pictureFromServer.content;
+      }
     });
 
     // Finally get measurement pic (if any)
@@ -560,6 +607,10 @@ export default class EditCatchView extends Vue {
       this.measurementPictureSrc = Constants.apiUrl(
         `/v1/pictures/measure/${this.aCatch.id}/preview`
       );
+
+      if (!this.focusedPicSrc) {
+        this.focusedPicSrc = this.measurementPictureSrc;
+      }
     }
   }
 
@@ -711,13 +762,24 @@ export default class EditCatchView extends Vue {
 
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
     this.requestNewPicture = false;
+    var maxOrder = Math.max(
+      1,
+      Math.max.apply(
+        Math,
+        this.allPicturesSrc.map(function(o) {
+          return o.order;
+        })
+      )
+    );
+    maxOrder += 1;
     const pictureInDb: PictureContentWithOrder = {
-      order: this.allPicturesSrc.length + 1,
+      order: maxOrder,
       content: pictureContent,
       isMeasurementPicture: isMeasurementPicture,
     };
-    this.allPicturesSrc.push(pictureInDb);
-    this.newTakenPictures.push(pictureInDb);
+    this.allPicturesSrc.unshift(pictureInDb);
+    this.newTakenPictures.unshift(pictureInDb);
+    this.focusedPicSrc = pictureInDb.content;
   }
 
   measurementPictureTaken(newMeasurementPictureSrc: string) {
@@ -955,6 +1017,23 @@ export default class EditCatchView extends Vue {
 
     &.keyboardShowing {
       display: none;
+    }
+  }
+  .pic-focused {
+    border: 10px solid red;
+  }
+
+  .pic-miniatures-container {
+    display: flex;
+
+    .pic-miniature {
+      margin: 10px;
+      max-width: 100px;
+      max-height: 100px;
+
+      &.pic-selected {
+        border: 4px solid blue;
+      }
     }
   }
 

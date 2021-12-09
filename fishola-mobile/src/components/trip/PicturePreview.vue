@@ -53,7 +53,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
   },
 })
 export default class PicturePreview extends Vue {
-  @Prop() src: string = "";
+  @Prop() src: string;
   @Prop({ default: "Aucune photo" }) noPictureText?: string;
   @Prop({ default: true }) modifiable: boolean;
   @Prop({ default: true }) enableModal: boolean;
@@ -66,6 +66,7 @@ export default class PicturePreview extends Vue {
     if (this.enableModal) {
       this.showModal = true;
     }
+    this.$emit("picture-clicked");
   }
 
   closeModal() {
