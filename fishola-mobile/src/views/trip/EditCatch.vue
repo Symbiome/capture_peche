@@ -952,6 +952,7 @@ export default class EditCatchView extends Vue {
     for (var i = 0; i < this.newTakenPictures.length; i++) {
       const picToSaveInLocalDb = this.newTakenPictures[i];
       await PicturesService.savePictureInLocalDB(
+        catchId + picToSaveInLocalDb.order,
         catchId,
         picToSaveInLocalDb.content,
         picToSaveInLocalDb.isMeasurementPicture,

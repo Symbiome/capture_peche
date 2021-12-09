@@ -28,6 +28,7 @@ export default class PicturesService extends AbstractFisholaService {
   }
 
   static async savePictureInLocalDB(
+    id: string,
     catchId: string,
     content: string,
     isMeasurementPicture: boolean,
@@ -35,26 +36,27 @@ export default class PicturesService extends AbstractFisholaService {
     dirtySince?: number
   ): Promise<void> {
     const newPicture: StoredPicture = {
-      id: catchId,
+      id: id,
+      catch: catchId,
       dirtySince: dirtySince || new Date().getTime(),
       content: content,
       isMeasurementPicture: isMeasurementPicture,
       order: order,
     };
-    const id = await this.getDatabase().dirtyPictures.put(newPicture);
+    const savedId = await this.getDatabase().dirtyPictures.put(newPicture);
     console.info("Image enregistrée", id);
   }
 
   static deletePictureFromLocalDB(catchId: string) {
     this.getDatabase()
-      .dirtyPictures.where("id")
+      .dirtyPictures.where("catch")
       .equals(catchId)
       .delete();
   }
 
   static internalGetPicturesFull(catchId: string): Promise<StoredPicture[]> {
     const picturesWithCatchId = this.getDatabase()
-      .dirtyPictures.where("id")
+      .dirtyPictures.where("catch")
       .equals(catchId);
     return picturesWithCatchId.toArray();
   }
@@ -64,7 +66,7 @@ export default class PicturesService extends AbstractFisholaService {
     order: number
   ): Promise<StoredPicture[]> {
     const picWithCatchIdAndOrder = this.getDatabase()
-      .dirtyPictures.where("id")
+      .dirtyPictures.where("catch")
       .equals(catchId)
       .filter((storedPic) => storedPic.order == order);
     return picWithCatchIdAndOrder.toArray();
@@ -77,7 +79,7 @@ export default class PicturesService extends AbstractFisholaService {
       catchId
     );
     storedPictures.sort((pic1, pic2) => {
-      return pic1.order - pic2.order;
+      return pic2.order - pic1.order;
     });
     return storedPictures as PictureContentWithOrder[];
   }
@@ -92,6 +94,7 @@ export default class PicturesService extends AbstractFisholaService {
             console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
             await PicturesService.savePictureInLocalDB(
               newId,
+              result.catch,
               result.content,
               result.isMeasurementPicture,
               result.order,

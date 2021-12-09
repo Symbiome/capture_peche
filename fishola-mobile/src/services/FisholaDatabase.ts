@@ -65,7 +65,7 @@ export default class FisholaDatabase extends Dexie {
         this.version(5).stores({
             onCreationTrip: "id",
             dirtyTrips: "id",
-            dirtyPictures: "id, order",
+            dirtyPictures: "id, order, catch",
             offlineStorage: "key",
             offlineFeedbacks: "id",
         });
