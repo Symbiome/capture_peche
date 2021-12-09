@@ -130,7 +130,7 @@ export default class CatchPreview extends Vue {
     } else if (this.aCatch.hasMeasurementPicture) {
       // Otherwise, get preview from server measurement picture (if any)
       this.pictureSrc = Constants.apiUrl(
-        `/v1/measure/${this.aCatch.id}/preview`
+        `/v1/pictures/measure/${this.aCatch.id}/preview`
       );
     }
   }

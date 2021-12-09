@@ -558,7 +558,7 @@ export default class EditCatchView extends Vue {
     // Finally get measurement pic (if any)
     if (this.aCatch.hasMeasurementPicture) {
       this.measurementPictureSrc = Constants.apiUrl(
-        `/v1/measure/${this.aCatch.id}/preview`
+        `/v1/pictures/measure/${this.aCatch.id}/preview`
       );
     }
   }
