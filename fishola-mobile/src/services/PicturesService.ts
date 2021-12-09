@@ -27,14 +27,13 @@ export default class PicturesService extends AbstractFisholaService {
     super();
   }
 
-  static savePictureInLocalDB(
+  static async savePictureInLocalDB(
     catchId: string,
     content: string,
     isMeasurementPicture: boolean,
     order: number,
-    callback: () => any,
     dirtySince?: number
-  ) {
+  ): Promise<void> {
     const newPicture: StoredPicture = {
       id: catchId,
       dirtySince: dirtySince || new Date().getTime(),
@@ -42,13 +41,8 @@ export default class PicturesService extends AbstractFisholaService {
       isMeasurementPicture: isMeasurementPicture,
       order: order,
     };
-
-    this.getDatabase()
-      .dirtyPictures.put(newPicture)
-      .then((id) => {
-        console.info("Image enregistrée", id);
-        callback();
-      });
+    const id = await this.getDatabase().dirtyPictures.put(newPicture);
+    console.info("Image enregistrée", id);
   }
 
   static deletePictureFromLocalDB(catchId: string) {
@@ -76,30 +70,34 @@ export default class PicturesService extends AbstractFisholaService {
     return picWithCatchIdAndOrder.toArray();
   }
 
-  static getPicturesFromLocalDB(catchId: string): PictureContentWithOrder[] {
-    const storedPictures = PicturesService.internalGetPicturesFull(catchId);
-    const result: PictureContentWithOrder[] = [];
-    return result as PictureContentWithOrder[];
+  static async getPicturesFromLocalDB(
+    catchId: string
+  ): Promise<PictureContentWithOrder[]> {
+    const storedPictures = await PicturesService.internalGetPicturesFull(
+      catchId
+    );
+    storedPictures.sort((pic1, pic2) => {
+      return pic1.order - pic2.order;
+    });
+    return storedPictures as PictureContentWithOrder[];
   }
 
   static checkForPicturesToRename(map: any) {
     const keys: string[] = Object.keys(map);
     keys.forEach((key: string) => {
       PicturesService.internalGetPicturesFull(key).then((pictures) => {
-        pictures.forEach((result) => {
+        pictures.forEach(async (result) => {
           if (result.content) {
             const newId = map[key];
             console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
-            PicturesService.savePictureInLocalDB(
+            await PicturesService.savePictureInLocalDB(
               newId,
               result.content,
               result.isMeasurementPicture,
               result.order,
-              () => {
-                PicturesService.deletePictureFromLocalDB(key);
-              },
               result.dirtySince
             );
+            PicturesService.deletePictureFromLocalDB(key);
           }
         });
       });

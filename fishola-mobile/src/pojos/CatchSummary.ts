@@ -34,6 +34,7 @@ export default interface CatchSummary {
     sampleId?: string;
     hasPicture?: boolean;
     latitude?:number;
-    longitude?:number;
-
+    longitude?: number;
+    hasMeasurementPicture?: boolean;
+    pictureOrders?: number[];
 }

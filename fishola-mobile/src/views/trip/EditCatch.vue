@@ -30,6 +30,13 @@
         noPictureText="Appuyer pour ajouter une photo"
         v-on:take-picture="takePicture"
       />
+      <PicturePreview
+        v-if="measurementPictureSrc"
+        :key="measurementPictureSrc"
+        v-bind:src="measurementPictureSrc"
+        v-bind:modifiable="modifiable"
+        v-on:take-picture="takePicture"
+      />
     </div>
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
@@ -52,6 +59,13 @@
                 v-bind:src="pictureSrc"
                 v-bind:modifiable="modifiable"
                 noPictureText="Appuyer pour ajouter une photo"
+                v-on:take-picture="takePicture"
+              />
+              <PicturePreview
+                v-if="measurementPictureSrc"
+                :key="measurementPictureSrc"
+                v-bind:src="measurementPictureSrc"
+                v-bind:modifiable="modifiable"
                 v-on:take-picture="takePicture"
               />
             </div>
@@ -308,6 +322,7 @@ import Helpers from "@/services/Helpers";
 import GeolocationService from "@/services/GeolocationService";
 
 import { UserSettings } from "@/pojos/BackendPojos";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -380,9 +395,10 @@ export default class EditCatchView extends Vue {
   tripOtherSpecies: string = "";
   aCatch: CatchSummary = { id: "" };
 
-  allPicturesSrc: string[] = [];
+  allPicturesSrc: PictureContentWithOrder[] = [];
   measurementPictureSrc: string = "";
-  newPictureTaken: boolean = false;
+  // Pictures that have just been taken and hence should be saved in local DB when validating
+  newTakenPictures: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
   markerSourceSRC = "";
@@ -445,7 +461,7 @@ export default class EditCatchView extends Vue {
     this.settings = settings;
   }
 
-  tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
+  async tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
     const lakeId: string = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
@@ -474,11 +490,6 @@ export default class EditCatchView extends Vue {
         this.rightShortcut = "timer-" + seconds;
       }
     }
-
-    PicturesService.getPicture(someCatch.id).then(
-      this.pictureLoaded,
-      this.noPictureFound
-    );
 
     if (someCatch.sampleId) {
       this.sampleIdReady = true;
@@ -525,11 +536,31 @@ export default class EditCatchView extends Vue {
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
       this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
     }
-  }
 
-  pictureLoaded(content: string) {
-    // TODO Gallery set pictureSrc acccording to index
-    this.allPicturesSrc = [content];
+    // Get pictures stored locally (not yet synchronized)
+    const localPics = await PicturesService.getPicturesFromLocalDB(
+      someCatch.id
+    );
+    this.allPicturesSrc.concat(localPics);
+
+    // Get server gallery pics (reconstructed through the "orders" field)
+    this.aCatch.pictureOrders?.forEach((order) => {
+      const pictureFromServer: PictureContentWithOrder = {
+        order: order,
+        isMeasurementPicture: false,
+        content: Constants.apiUrl(
+          `/v1/pictures/${this.aCatch.id}/preview/${order}`
+        ),
+      };
+      this.allPicturesSrc.push(pictureFromServer);
+    });
+
+    // Finally get measurement pic (if any)
+    if (this.aCatch.hasMeasurementPicture) {
+      this.measurementPictureSrc = Constants.apiUrl(
+        `/v1/measure/${this.aCatch.id}/preview`
+      );
+    }
   }
 
   async launchSilentAutomaticMeasureIfRequired() {
@@ -587,15 +618,6 @@ export default class EditCatchView extends Vue {
           }
         }
       });
-    }
-  }
-
-  noPictureFound() {
-    if (this.aCatch.hasPicture) {
-      // TODO Gallery
-      this.allPicturesSrc = [
-        Constants.apiUrl(`/v1/pictures/${this.aCatch.id}/preview`),
-      ];
     }
   }
 
@@ -687,21 +709,21 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  pictureTaken(pictureSrc: string) {
+  pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
     this.requestNewPicture = false;
-    // TODO Gallery
-    this.allPicturesSrc = [pictureSrc];
-    this.newPictureTaken = true;
+    const pictureInDb: PictureContentWithOrder = {
+      order: this.allPicturesSrc.length + 1,
+      content: pictureContent,
+      isMeasurementPicture: isMeasurementPicture,
+    };
+    this.allPicturesSrc.push(pictureInDb);
+    this.newTakenPictures.push(pictureInDb);
   }
 
   measurementPictureTaken(newMeasurementPictureSrc: string) {
     this.shouldLaunchAutomaticMeasure = false;
     this.measurementPictureSrc = newMeasurementPictureSrc;
-    // TODO Gallery : store this as measurent pic
-    if (!this.allPicturesSrc || this.allPicturesSrc.length == 0) {
-      this.newPictureTaken = true;
-      this.allPicturesSrc = [newMeasurementPictureSrc];
-    }
+    this.pictureTaken(newMeasurementPictureSrc, true);
   }
 
   @Watch("withSample")
@@ -864,21 +886,17 @@ export default class EditCatchView extends Vue {
     return input;
   }
 
-  catchSaved(catchId: string) {
-    // TODO Gallery save: define order and if measurement pic
-    let order = 1;
-    let isMeasurementPic = false;
-    if (this.allPicturesSrc && this.newPictureTaken) {
-      PicturesService.savePicture(
+  async catchSaved(catchId: string) {
+    for (var i = 0; i < this.newTakenPictures.length; i++) {
+      const picToSaveInLocalDb = this.newTakenPictures[i];
+      await PicturesService.savePictureInLocalDB(
         catchId,
-        this.allPicturesSrc[0],
-        isMeasurementPic,
-        order,
-        this.leavePage
+        picToSaveInLocalDb.content,
+        picToSaveInLocalDb.isMeasurementPicture,
+        picToSaveInLocalDb.order
       );
-    } else {
-      this.leavePage();
     }
+    this.leavePage();
   }
 
   deleteCatch() {
