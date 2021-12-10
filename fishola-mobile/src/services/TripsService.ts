@@ -139,7 +139,9 @@ export default class TripsService extends AbstractFisholaService {
             hasPicture: input.hasPicture,
             latitude: input.latitude,
             longitude: input.longitude,
-            caughtAt: input.caughtAt
+            caughtAt: input.caughtAt,
+            automaticMeasure: input.automaticMeasure,
+            pictureOrders: input.pictureOrders,
         };
 
         return result;
