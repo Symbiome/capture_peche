@@ -87,22 +87,25 @@ export default class PicturesService extends AbstractFisholaService {
   static checkForPicturesToRename(map: any) {
     const keys: string[] = Object.keys(map);
     keys.forEach((key: string) => {
-      PicturesService.internalGetPicturesFull(key).then((pictures) => {
-        pictures.forEach(async (result) => {
-          if (result.content) {
-            const newId = map[key];
-            console.debug(`On change l'ID de l'image ${key} -> ${newId}`);
+      console.error("Trip saved, checking pictures for catch " + key);
+      PicturesService.internalGetPicturesFull(key).then(async (pictures) => {
+        console.error("Found " + pictures.length + " pictures");
+        for (let i = 0; i < pictures.length; i++) {
+          const pic = pictures[i];
+          if (pic.content) {
+            const newCatchId = map[key];
+            console.debug(`On change l'ID de l'image ${key} -> ${newCatchId}`);
             await PicturesService.savePictureInLocalDB(
-              newId,
-              result.catch,
-              result.content,
-              result.isMeasurementPicture,
-              result.order,
-              result.dirtySince
+              newCatchId + pic.order,
+              newCatchId,
+              pic.content,
+              pic.isMeasurementPicture,
+              pic.order,
+              pic.dirtySince
             );
-            PicturesService.deletePictureFromLocalDB(key);
           }
-        });
+        }
+        PicturesService.deletePictureFromLocalDB(key);
       });
     });
   }

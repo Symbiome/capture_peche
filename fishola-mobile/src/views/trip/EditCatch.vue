@@ -24,7 +24,7 @@
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
       <PicturePreview
-        v-for="pictureSrc in allPicturesSrc"
+        v-for="pictureSrc in allNonMeasurePictures"
         :key="pictureSrc.order"
         v-bind:src="pictureSrc.content"
         v-bind:modifiable="modifiable"
@@ -39,7 +39,7 @@
       />
       <!-- Empty picture if no picture yet -->
       <PicturePreview
-        v-else-if="!allPicturesSrc.length"
+        v-else-if="!allNonMeasurePictures.length && !measurementPictureSrc"
         noPictureText="Appuyer pour ajouter une photo"
         v-bind:modifiable="modifiable"
         v-on:take-picture="takePicture"
@@ -71,8 +71,9 @@
               <div class="pic-miniatures-container">
                 <!-- Show all gallery pics -->
                 <PicturePreview
+                  style="padding:10px;"
                   :enableModal="false"
-                  v-for="pictureSrc in allPicturesSrc"
+                  v-for="pictureSrc in allNonMeasurePictures"
                   :key="pictureSrc.order"
                   v-bind:src="pictureSrc.content"
                   v-bind:modifiable="modifiable"
@@ -91,10 +92,10 @@
                   v-bind:src="measurementPictureSrc"
                   v-bind:modifiable="modifiable"
                   v-on:take-picture="takePicture"
-                  @click="focusedPicSrc = measurementPictureSrc"
+                  @picture-clicked="focusedPicSrc = measurementPictureSrc"
                   :class="{
                     'pic-miniature': true,
-                    'pic-selected': pictureSrc.content == focusedPicSrc,
+                    'pic-selected': measurementPictureSrc == focusedPicSrc,
                   }"
                 />
                 <!-- Empty miniature picture for adding pictures -->
@@ -336,7 +337,7 @@
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
     <img
       id="sourcePictureAutomatic"
-      :src="measurementPictureSrc"
+      :src="measurementPictureCandidateSrc"
       v-show="false"
       @load="launchSilentAutomaticMeasureIfRequired"
     />
@@ -434,8 +435,9 @@ export default class EditCatchView extends Vue {
   tripOtherSpecies: string = "";
   aCatch: CatchSummary = { id: "" };
 
-  allPicturesSrc: PictureContentWithOrder[] = [];
+  allNonMeasurePictures: PictureContentWithOrder[] = [];
   measurementPictureSrc: string = "";
+  measurementPictureCandidateSrc: string = "";
   focusedPicSrc: string = "";
   // Pictures that have just been taken and hence should be saved in local DB when validating
   newTakenPictures: PictureContentWithOrder[] = [];
@@ -584,7 +586,15 @@ export default class EditCatchView extends Vue {
     if (localPics.length) {
       this.focusedPicSrc = localPics[0].content;
     }
-    this.allPicturesSrc = this.allPicturesSrc.concat(localPics);
+    this.allNonMeasurePictures = localPics.filter(
+      (pic) => !pic.isMeasurementPicture
+    );
+    const potentialMeasurePic = localPics.filter(
+      (pic) => pic.isMeasurementPicture
+    );
+    if (potentialMeasurePic.length) {
+      this.measurementPictureSrc = potentialMeasurePic[0].content;
+    }
 
     // Get server gallery pics (reconstructed through the "orders" field)
     this.aCatch.pictureOrders?.forEach((order) => {
@@ -595,7 +605,7 @@ export default class EditCatchView extends Vue {
           `/v1/pictures/${this.aCatch.id}/preview/${order}`
         ),
       };
-      this.allPicturesSrc.push(pictureFromServer);
+      this.allNonMeasurePictures.push(pictureFromServer);
 
       if (!this.focusedPicSrc) {
         this.focusedPicSrc = pictureFromServer.content;
@@ -766,7 +776,7 @@ export default class EditCatchView extends Vue {
       1,
       Math.max.apply(
         Math,
-        this.allPicturesSrc.map(function(o) {
+        this.allNonMeasurePictures.map(function(o) {
           return o.order;
         })
       )
@@ -777,9 +787,14 @@ export default class EditCatchView extends Vue {
       content: pictureContent,
       isMeasurementPicture: isMeasurementPicture,
     };
-    this.allPicturesSrc.unshift(pictureInDb);
+    this.allNonMeasurePictures.unshift(pictureInDb);
     this.newTakenPictures.unshift(pictureInDb);
     this.focusedPicSrc = pictureInDb.content;
+
+    // If no automatic measure has been determined yet, let's try with this new picture
+    if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
+      this.measurementPictureCandidateSrc = pictureContent;
+    }
   }
 
   measurementPictureTaken(newMeasurementPictureSrc: string) {
@@ -936,7 +951,7 @@ export default class EditCatchView extends Vue {
         aCatchBean.speciesId = "";
       }
       aCatchBean.hasPicture =
-        this.allPicturesSrc && this.allPicturesSrc.length > 0;
+        this.allNonMeasurePictures && this.allNonMeasurePictures.length > 0;
       if (!this.withSample) {
         aCatchBean.sampleId = "";
       }
@@ -987,6 +1002,19 @@ export default class EditCatchView extends Vue {
     this.aCatch.automaticMeasure = measure;
     // Override manual size, but user will still be able to modify it later on
     this.aCatch.size = measure;
+
+    // If we had a measure, means that latest taken picture is a measurement pic
+    if (this.newTakenPictures.length) {
+      // All previously taken pictures should not be considered as measurement
+      this.newTakenPictures.forEach(
+        (pic) => (pic.isMeasurementPicture = false)
+      );
+      this.measurementPictureSrc = this.newTakenPictures[0].content;
+      this.newTakenPictures[0].isMeasurementPicture = true;
+      this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
+        (pic) => !pic.isMeasurementPicture
+      );
+    }
     this.$forceUpdate();
   }
 }
