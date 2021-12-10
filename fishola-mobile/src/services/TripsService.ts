@@ -642,7 +642,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteCatch(tripId:any, catchId:any, callback:() => void) {
-        PicturesService.deletePictureFromLocalDB(catchId);
+        PicturesService.deleteAllPicturesForCatch(catchId);
         TripsService.getTrip(tripId, (trip:TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];
