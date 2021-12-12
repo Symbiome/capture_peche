@@ -648,6 +648,7 @@ export default class EditCatchView extends Vue {
             if (imageElement && markerElement) {
               const openCVConfig = new OpenCVDetectionConfig();
               openCVConfig.drawDebugCanvas = false;
+              openCVConfig.maxRetries = -1;
               const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
                 imageElement,
                 markerElement,
@@ -673,7 +674,7 @@ export default class EditCatchView extends Vue {
                   fishSize +
                   "mm"
               );
-              if (markerFound) {
+              if (markerFound && fishSize) {
                 this.gotAutomaticMeasure(fishSize);
               }
             }
