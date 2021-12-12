@@ -42,7 +42,7 @@
         <PicturePreview
           v-bind:src="pictureSrc"
           v-bind:enableModal="false"
-          v-bind:modifiable="modifiable"
+          v-bind:deletable="false"
         />
       </div>
     </div>

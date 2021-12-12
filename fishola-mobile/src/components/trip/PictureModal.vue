@@ -20,58 +20,47 @@
   -->
 <template>
   <div class="picture-modal">
-    <div class="pastille close"
-         v-on:click="$emit('closeModal')">
-      <i class="icon-plus"/>
+    <div class="pastille close" v-on:click="$emit('closeModal')">
+      <i class="icon-plus" />
     </div>
-    <div class="picture-wrapper"
-         v-on:click="$emit('closeModal')">
+    <div class="picture-wrapper" v-on:click="$emit('closeModal')">
       <div class="picture-content">
-        <img class="picture"
-            v-bind:src="src"
-            alt="Photo de la capture">
+        <img class="picture" v-bind:src="src" alt="Photo de la capture" />
       </div>
     </div>
-    <div class="replace"
-         v-if="replaceButton">
-      <button v-on:click="$emit('replace')">
-        <i class="icon-photo"/> Remplacer la photo
+    <div class="replace" v-if="deleteButton">
+      <button v-on:click="$emit('delete')">
+        <i class="icon-delete" /> Supprimer
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class PictureModal extends Vue {
+  @Prop() src: string;
+  @Prop({ default: false }) deleteButton: boolean;
 
-  @Prop() src:string;
-  @Prop({default: false}) replaceButton:boolean;
-
-  created() {
-  }
-
+  created() {}
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .picture-modal {
-
   position: fixed;
-  z-index: 1500;   
+  z-index: 1500;
   top: env(safe-area-inset-top);
   left: 0;
   width: 100%;
   height: 100%;
   background-color: @black-alpha-90;
-  transition: opacity .3s ease;
+  transition: opacity 0.3s ease;
 
   .close {
     position: fixed;
@@ -99,7 +88,6 @@ export default class PictureModal extends Vue {
       margin-left: @margin-medium;
     }
 
-
     button {
       height: 41px;
       width: fit-content;
@@ -126,11 +114,9 @@ export default class PictureModal extends Vue {
         background-color: @cardinal;
       }
     }
-
   }
 
   .picture-wrapper {
-
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -140,7 +126,6 @@ export default class PictureModal extends Vue {
     // border: 1px solid red;
 
     .picture-content {
-
       // border: 1px solid blue;
 
       img.picture {
@@ -150,8 +135,6 @@ export default class PictureModal extends Vue {
         // object-position: 50% 50%;
       }
     }
-
   }
-
 }
 </style>

@@ -27,21 +27,22 @@
         v-for="pictureSrc in allNonMeasurePictures"
         :key="pictureSrc.order"
         v-bind:src="pictureSrc.content"
-        v-bind:modifiable="modifiable"
+        v-bind:deletable="modifiable"
         v-on:take-picture="takePicture"
+        v-on:delete-picture="deletePicture(pictureSrc.content)"
       />
       <!-- Then measurement pic (if any) -->
       <PicturePreview
         v-if="measurementPictureSrc"
         v-bind:src="measurementPictureSrc"
-        v-bind:modifiable="modifiable"
+        v-bind:deletable="false"
         v-on:take-picture="takePicture"
       />
       <!-- Empty picture if no picture yet -->
       <PicturePreview
         v-else-if="!allNonMeasurePictures.length && !measurementPictureSrc"
         noPictureText="Appuyer pour ajouter une photo"
-        v-bind:modifiable="modifiable"
+        v-bind:deletable="false"
         v-on:take-picture="takePicture"
       />
     </div>
@@ -65,8 +66,9 @@
                 class="pic-focused"
                 v-bind:src="focusedPicSrc"
                 noPictureText="Appuyer pour ajouter une photo"
-                v-bind:modifiable="modifiable"
+                v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture"
+                v-on:delete-picture="deletePicture(focusedPicSrc)"
               />
               <div class="pic-miniatures-container">
                 <!-- Show all gallery pics -->
@@ -76,7 +78,7 @@
                   v-for="pictureSrc in allNonMeasurePictures"
                   :key="pictureSrc.order"
                   v-bind:src="pictureSrc.content"
-                  v-bind:modifiable="modifiable"
+                  v-bind:deletable="false"
                   @picture-clicked="focusedPicSrc = pictureSrc.content"
                   v-on:take-picture="takePicture"
                   :class="{
@@ -90,7 +92,7 @@
                   v-if="measurementPictureSrc"
                   :key="measurementPictureSrc"
                   v-bind:src="measurementPictureSrc"
-                  v-bind:modifiable="modifiable"
+                  v-bind:deletable="false"
                   v-on:take-picture="takePicture"
                   @picture-clicked="focusedPicSrc = measurementPictureSrc"
                   :class="{
@@ -104,7 +106,7 @@
                   class="pic-miniature"
                   v-if="focusedPicSrc"
                   noPictureText="Appuyer pour ajouter une photo"
-                  v-bind:modifiable="modifiable"
+                  v-bind:deletable="modifiable"
                   v-on:take-picture="takePicture"
                 />
               </div>
@@ -441,6 +443,8 @@ export default class EditCatchView extends Vue {
   focusedPicSrc: string = "";
   // Pictures that have just been taken and hence should be saved in local DB when validating
   newTakenPictures: PictureContentWithOrder[] = [];
+  // Picture that should be deleted at next save
+  picturesToDelete: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
   markerSourceSRC = "";
@@ -768,6 +772,38 @@ export default class EditCatchView extends Vue {
       this.shouldLaunchAutomaticMeasure = true;
       this.requestNewPicture = true;
     }
+  }
+
+  async deletePicture(pictureToDeleteSrc: string) {
+    // Add pic to list of pictures to delete on local storage / server
+    this.picturesToDelete = this.picturesToDelete.concat(
+      this.allNonMeasurePictures.filter(
+        (pic) => pic.content == pictureToDeleteSrc
+      )
+    );
+
+    // Filter currently displayed list
+    this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
+      (pic) => pic.content != pictureToDeleteSrc
+    );
+
+    // Remove pic from pictures that are about to be stored in local storage
+    this.newTakenPictures = this.newTakenPictures.filter(
+      (pic) => pic.content != pictureToDeleteSrc
+    );
+
+    // Update focused pic
+    if (this.focusedPicSrc == pictureToDeleteSrc) {
+      if (this.allNonMeasurePictures.length) {
+        this.focusedPicSrc = this.allNonMeasurePictures[0].content;
+      } else if (this.measurementPictureSrc) {
+        this.focusedPicSrc = this.measurementPictureSrc;
+      } else {
+        this.focusedPicSrc = "";
+      }
+    }
+
+    console.error(this.picturesToDelete);
   }
 
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {

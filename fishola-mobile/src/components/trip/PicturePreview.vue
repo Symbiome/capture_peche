@@ -35,8 +35,8 @@
     <PictureModal
       v-if="src && showModal && enableModal"
       v-bind:src="src"
-      v-bind:replaceButton="modifiable"
-      v-on:replace="onReplace"
+      v-bind:deleteButton="deletable"
+      v-on:delete="onDelete"
       v-on:closeModal="closeModal"
     />
   </div>
@@ -55,7 +55,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 export default class PicturePreview extends Vue {
   @Prop() src: string;
   @Prop({ default: "Aucune photo" }) noPictureText?: string;
-  @Prop({ default: true }) modifiable: boolean;
+  @Prop({ default: true }) deletable: boolean;
   @Prop({ default: true }) enableModal: boolean;
 
   showModal: boolean = false;
@@ -73,9 +73,9 @@ export default class PicturePreview extends Vue {
     this.showModal = false;
   }
 
-  onReplace() {
+  onDelete() {
     this.closeModal();
-    this.$emit("take-picture");
+    this.$emit("delete-picture");
   }
 
   pictureLoaded() {
