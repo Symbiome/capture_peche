@@ -776,20 +776,25 @@ export default class EditCatchView extends Vue {
   }
 
   async deletePicture(pictureToDeleteSrc: string) {
-    // Add pic to list of pictures to delete on local storage / server
-    this.picturesToDelete = this.picturesToDelete.concat(
-      this.allNonMeasurePictures.filter(
-        (pic) => pic.content == pictureToDeleteSrc
-      )
-    );
+    const isANonSavedPicture =
+      this.newTakenPictures.filter((pic) => pic.content == pictureToDeleteSrc)
+        .length > 0;
+    if (!isANonSavedPicture) {
+      // Add pic to list of pictures to delete on local storage / server
+      this.picturesToDelete = this.picturesToDelete.concat(
+        this.allNonMeasurePictures.filter(
+          (pic) => pic.content == pictureToDeleteSrc
+        )
+      );
+    } else {
+      // Remove pic from pictures that are about to be stored in local storage
+      this.newTakenPictures = this.newTakenPictures.filter(
+        (pic) => pic.content != pictureToDeleteSrc
+      );
+    }
 
     // Filter currently displayed list
     this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
-      (pic) => pic.content != pictureToDeleteSrc
-    );
-
-    // Remove pic from pictures that are about to be stored in local storage
-    this.newTakenPictures = this.newTakenPictures.filter(
       (pic) => pic.content != pictureToDeleteSrc
     );
 
