@@ -803,8 +803,6 @@ export default class EditCatchView extends Vue {
         this.focusedPicSrc = "";
       }
     }
-
-    console.error(this.picturesToDelete);
   }
 
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
@@ -1009,6 +1007,14 @@ export default class EditCatchView extends Vue {
         picToSaveInLocalDb.content,
         picToSaveInLocalDb.isMeasurementPicture,
         picToSaveInLocalDb.order
+      );
+    }
+    for (var j = 0; j < this.picturesToDelete.length; j++) {
+      const pictureToDelete = this.picturesToDelete[j];
+      await PicturesService.deletePicture(
+        catchId + pictureToDelete.order,
+        catchId,
+        pictureToDelete.order
       );
     }
     this.leavePage();

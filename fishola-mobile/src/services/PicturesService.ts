@@ -55,10 +55,34 @@ export default class PicturesService extends AbstractFisholaService {
   }
 
   static deleteSinglePictureFromLocalDB(picId: string) {
-    this.getDatabase()
+    return this.getDatabase()
       .dirtyPictures.where("id")
       .equals(picId)
       .delete();
+  }
+
+  static async deletePicture(
+    picId: string,
+    catchId: string,
+    order: number
+  ): Promise<void> {
+    // Check if picture exists in local db
+    const matchingLocalPic = await this.internalGetPictureFullFromCatchAndOrder(
+      catchId,
+      order
+    );
+    if (matchingLocalPic.length) {
+      // Delete from local storage
+      await this.deleteSinglePictureFromLocalDB(picId);
+      console.info("Deleted local storage picture " + picId);
+      return;
+    } else {
+      // Delete from server
+      const deleteUrl = `/v1/pictures/${catchId}/${order}`;
+      await this.backendDelete(deleteUrl);
+      console.info("Deleted remote picture " + deleteUrl);
+      return;
+    }
   }
 
   static internalGetPicturesFull(catchId: string): Promise<StoredPicture[]> {
