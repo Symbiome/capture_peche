@@ -213,7 +213,7 @@ export default class PicturesService extends AbstractFisholaService {
             if (result.content) {
               let putUrl = `/v1/pictures/${result.catch}/${result.order}`;
               if (result.isMeasurementPicture) {
-                putUrl = `/v1/pictures/${result.catch}/${result.order}`;
+                putUrl = `/v1/pictures/measure/${result.catch}`;
               }
               this.backendPutPlain(putUrl, result.content).then(
                 resolve,
