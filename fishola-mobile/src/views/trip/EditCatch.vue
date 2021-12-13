@@ -23,24 +23,18 @@
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
+      <!-- Todo Gallery MOBILE -->
       <PicturePreview
         v-for="pictureSrc in allNonMeasurePictures"
         :key="pictureSrc.order"
         v-bind:src="pictureSrc.content"
         v-bind:deletable="modifiable"
         v-on:take-picture="takePicture"
+        noPictureText="Ajouter une photo"
         v-on:delete-picture="deletePicture(pictureSrc.content)"
-      />
-      <!-- Then measurement pic (if any) -->
-      <PicturePreview
-        v-if="measurementPictureSrc"
-        v-bind:src="measurementPictureSrc"
-        v-bind:deletable="false"
-        v-on:take-picture="takePicture"
       />
       <!-- Empty picture if no picture yet -->
       <PicturePreview
-        v-else-if="!allNonMeasurePictures.length && !measurementPictureSrc"
         noPictureText="Appuyer pour ajouter une photo"
         v-bind:deletable="false"
         v-on:take-picture="takePicture"
@@ -73,7 +67,6 @@
               <div class="pic-miniatures-container">
                 <!-- Show all gallery pics -->
                 <PicturePreview
-                  style="padding:10px;"
                   :enableModal="false"
                   v-for="pictureSrc in allNonMeasurePictures"
                   :key="pictureSrc.order"
@@ -101,14 +94,24 @@
                   }"
                 />
                 <!-- Empty miniature picture for adding pictures -->
-                <PicturePreview
-                  :enableModal="false"
-                  class="pic-miniature"
-                  v-if="focusedPicSrc"
-                  noPictureText="Appuyer pour ajouter une photo"
-                  v-bind:deletable="modifiable"
-                  v-on:take-picture="takePicture"
-                />
+                <div
+                  class="pic-miniature picture-preview"
+                  v-if="
+                    focusedPicSrc &&
+                      (allNonMeasurePictures.length < 4 ||
+                        (!measurementPictureSrc &&
+                          allNonMeasurePictures.length < 5))
+                  "
+                >
+                  <div class="picture">
+                    <img
+                      src="/img/add-pic-to-gallery.png"
+                      alt="Ajouter une photo"
+                      class="picture add-pic-button"
+                      v-on:click="takePicture"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div class="edit-catch-form">
@@ -1124,21 +1127,26 @@ export default class EditCatchView extends Vue {
       display: none;
     }
   }
-  .pic-focused {
-    border: 10px solid red;
-  }
 
   .pic-miniatures-container {
     display: flex;
+    margin-top: 10px;
+    column-gap: 10px;
 
     .pic-miniature {
-      margin: 10px;
-      max-width: 100px;
-      max-height: 100px;
+      max-width: 140px;
+      height: 90px;
+      flex: 1 1 auto;
 
       &.pic-selected {
-        border: 4px solid blue;
+        border: 4px solid @pelorous;
       }
+    }
+
+    .add-pic-button {
+      cursor: pointer;
+      border: 2px solid @gainsboro;
+      border-radius: 2px;
     }
   }
 
@@ -1314,11 +1322,16 @@ export default class EditCatchView extends Vue {
     }
     .catch-picture-desktop {
       width: 100%;
-      height: 220px;
+      height: 320px;
 
       .no-picture {
         border: 1px dashed @pale-sky;
         border-radius: 8px;
+        height: 300px;
+      }
+
+      .pic-focused {
+        height: 215px;
       }
     }
 
@@ -1346,6 +1359,12 @@ export default class EditCatchView extends Vue {
       .catch-picture-desktop-and-form {
       flex-direction: row;
       justify-content: space-between;
+    }
+
+    .catch-picture-desktop {
+      .pic-focused {
+        height: 100%;
+      }
     }
   }
 
