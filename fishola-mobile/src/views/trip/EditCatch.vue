@@ -1134,12 +1134,29 @@ export default class EditCatchView extends Vue {
     column-gap: 10px;
 
     .pic-miniature {
+      cursor: pointer;
+      :hover {
+        img {
+          -webkit-transform: scale(1.05);
+          -moz-transform: scale(1.05);
+          -o-transform: scale(1.05);
+          transform: scale(1.05);
+        }
+      }
       max-width: 140px;
       height: 90px;
       flex: 1 1 auto;
 
       &.pic-selected {
         border: 4px solid @pelorous;
+        :hover {
+          img {
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -o-transform: scale(1);
+            transform: scale(1);
+          }
+        }
       }
     }
 
@@ -1362,6 +1379,11 @@ export default class EditCatchView extends Vue {
     }
 
     .catch-picture-desktop {
+      .no-picture {
+        border: 1px dashed @pale-sky;
+        border-radius: 8px;
+        height: 100%;
+      }
       .pic-focused {
         height: 100%;
       }
