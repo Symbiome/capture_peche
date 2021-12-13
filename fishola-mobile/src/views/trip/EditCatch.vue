@@ -483,6 +483,9 @@ export default class EditCatchView extends Vue {
   requestNewPicture = false;
   shouldLaunchAutomaticMeasure = false;
 
+  lastUsedPicOrder = 0;
+  lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
+
   created() {
     TripsService.getTripAndCatch(
       this.tripId,
@@ -676,6 +679,7 @@ export default class EditCatchView extends Vue {
               );
               if (markerFound && fishSize) {
                 this.gotAutomaticMeasure(fishSize);
+                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = true;
               }
             }
             // Step 2: launch calculation
@@ -813,7 +817,7 @@ export default class EditCatchView extends Vue {
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
     this.requestNewPicture = false;
     var maxOrder = Math.max(
-      1,
+      this.lastUsedPicOrder,
       Math.max.apply(
         Math,
         this.allNonMeasurePictures.map(function(o) {
@@ -822,6 +826,7 @@ export default class EditCatchView extends Vue {
       )
     );
     maxOrder += 1;
+    this.lastUsedPicOrder = maxOrder;
     const pictureInDb: PictureContentWithOrder = {
       order: maxOrder,
       content: pictureContent,
@@ -1053,10 +1058,30 @@ export default class EditCatchView extends Vue {
 
     // If we had a measure, means that latest taken picture is a measurement pic
     if (this.newTakenPictures.length) {
+      if (this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery) {
+        // Keep measurement pic as it was automatic and should be kept in gallery
+        const automaticMeasurePic = this.newTakenPictures.filter(
+          (pic) =>
+            pic.isMeasurementPicture &&
+            pic.order != this.newTakenPictures[0].order
+        );
+        if (automaticMeasurePic.length) {
+          this.allNonMeasurePictures.unshift(automaticMeasurePic[0]);
+        }
+        this.newTakenPictures.forEach(
+          (pic) => (pic.isMeasurementPicture = false)
+        );
+        this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
+      } else {
+        // Remove all measurement pic to only keep the last
+        this.newTakenPictures = this.newTakenPictures.filter(
+          (pic) =>
+            !pic.isMeasurementPicture ||
+            pic.order == this.newTakenPictures[0].order
+        );
+      }
       // All previously taken pictures should not be considered as measurement
-      this.newTakenPictures.forEach(
-        (pic) => (pic.isMeasurementPicture = false)
-      );
+
       this.measurementPictureSrc = this.newTakenPictures[0].content;
       this.newTakenPictures[0].isMeasurementPicture = true;
       this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
