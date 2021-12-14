@@ -31,6 +31,8 @@
         v-bind:deletable="modifiable"
         v-on:take-picture="takePicture"
         noPictureText="Ajouter une photo"
+        :otherPics="allNonMeasurePictures"
+        :measurementPictureSrc="measurementPictureSrc"
         v-on:delete-picture="deletePicture(pictureSrc.content)"
       />
       <!-- Empty picture if no picture yet -->
@@ -63,6 +65,8 @@
                 v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture"
                 v-on:delete-picture="deletePicture(focusedPicSrc)"
+                :otherPics="allNonMeasurePictures"
+                :measurementPictureSrc="measurementPictureSrc"
               />
               <div class="pic-miniatures-container">
                 <!-- Show all gallery pics -->

@@ -19,40 +19,108 @@
   #L%
   -->
 <template>
-  <div class="picture-modal">
-    <div class="pastille close" v-on:click="$emit('closeModal')">
-      <i class="icon-plus" />
-    </div>
-    <div class="picture-wrapper" v-on:click="$emit('closeModal')">
-      <div class="picture-content">
-        <img class="picture" v-bind:src="src" alt="Photo de la capture" />
+  <div class="modal-container">
+    <!-- Gallery -->
+    <div class="gallery">
+      <div class="pic-miniatures-container">
+        <!-- Show all gallery pics -->
+        <div
+          v-for="pictureSrc in allNonMeasurePictures"
+          class="pic-miniature picture-preview"
+          :key="pictureSrc.order"
+          @click="src = pictureSrc.content"
+          :class="{
+            'pic-miniature': true,
+            'pic-selected': pictureSrc.content == src,
+          }"
+        >
+          <img class="picture" :src="pictureSrc.content" />
+        </div>
+        <!-- Then measurement pic (if any) -->
+        <div
+          class="pic-miniature picture-preview"
+          :key="measurementPictureSrc.order"
+          @click="src = measurementPictureSrc.content"
+          :class="{
+            'pic-miniature': true,
+            'pic-selected': measurementPictureSrc == src,
+          }"
+        >
+          <img class="picture" :src="measurementPictureSrc" />
+        </div>
+        <!-- Empty miniature picture for adding pictures -->
+        <div
+          class="pic-miniature picture-preview"
+          v-if="
+            src &&
+              (allNonMeasurePictures.length < 4 ||
+                (!measurementPictureSrc && allNonMeasurePictures.length < 5))
+          "
+        >
+          <div class="picture">
+            <img
+              src="/img/add-pic-to-gallery.png"
+              alt="Ajouter une photo"
+              class="picture add-pic-button"
+              v-on:click="takePicture"
+            />
+          </div>
+        </div>
       </div>
     </div>
-    <div class="replace" v-if="deleteButton">
-      <button v-on:click="$emit('delete')">
-        <i class="icon-delete" /> Supprimer
-      </button>
+
+    <div class="picture-modal">
+      <div class="pastille close" v-on:click="$emit('closeModal')">
+        <i class="icon-plus" />
+      </div>
+      <div class="picture-wrapper" v-on:click="$emit('closeModal')">
+        <div class="picture-content">
+          <img class="picture" v-bind:src="src" alt="Photo de la capture" />
+        </div>
+      </div>
+      <div class="replace" v-if="deleteButton">
+        <button v-on:click="$emit('delete')">
+          <i class="icon-delete" /> Supprimer
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import { Component, Prop, Vue } from "vue-property-decorator";
+import PicturePreview from "@/components/trip/PicturePreview.vue";
 
-@Component
+@Component({
+  components: {
+    PicturePreview,
+  },
+})
 export default class PictureModal extends Vue {
   @Prop() src: string;
   @Prop({ default: false }) deleteButton: boolean;
+  @Prop() otherPics: PictureContentWithOrder[];
+  @Prop({ default: "" }) measurementPictureSrc: "";
+  allNonMeasurePictures: PictureContentWithOrder[] = [];
 
-  created() {}
+  mounted() {
+    this.allNonMeasurePictures = this.otherPics;
+    if (!this.allNonMeasurePictures) {
+      this.allNonMeasurePictures = [];
+    }
+  }
+
+  takePicture() {
+    this.$emit("take-picture");
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
-
-.picture-modal {
+.modal-container {
   position: fixed;
   z-index: 1500;
   top: env(safe-area-inset-top);
@@ -61,7 +129,8 @@ export default class PictureModal extends Vue {
   height: 100%;
   background-color: @black-alpha-90;
   transition: opacity 0.3s ease;
-
+}
+.picture-modal {
   .close {
     position: fixed;
     top: calc(env(safe-area-inset-top) + 30px);
@@ -134,6 +203,56 @@ export default class PictureModal extends Vue {
         // object-fit: cover;
         // object-position: 50% 50%;
       }
+    }
+  }
+}
+
+.gallery {
+  width: 140px;
+  float: left;
+  margin-left: calc(@desktop-menu-width + 15px);
+
+  .pic-miniatures-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    gap: 10px;
+
+    .pic-miniature {
+      cursor: pointer;
+      :hover {
+        img {
+          -webkit-transform: scale(1.05);
+          -moz-transform: scale(1.05);
+          -o-transform: scale(1.05);
+          transform: scale(1.05);
+        }
+      }
+      max-width: 140px;
+      height: 90px;
+      flex: 1 1 auto;
+
+      &.pic-selected {
+        border: 4px solid @pelorous;
+        -webkit-transform: scale(1.05);
+        -moz-transform: scale(1.05);
+        -o-transform: scale(1.05);
+        transform: scale(1.05);
+        :hover {
+          img {
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -o-transform: scale(1);
+            transform: scale(1);
+          }
+        }
+      }
+    }
+
+    .add-pic-button {
+      cursor: pointer;
+      border: 2px solid @gainsboro;
+      border-radius: 2px;
     }
   }
 }

@@ -38,12 +38,15 @@
       v-bind:deleteButton="deletable"
       v-on:delete="onDelete"
       v-on:closeModal="closeModal"
+      :otherPics="otherPics"
+      :measurementPictureSrc="measurementPictureSrc"
     />
   </div>
 </template>
 
 <script lang="ts">
 import PictureModal from "@/components/trip/PictureModal.vue";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 
@@ -57,6 +60,8 @@ export default class PicturePreview extends Vue {
   @Prop({ default: "Aucune photo" }) noPictureText?: string;
   @Prop({ default: true }) deletable: boolean;
   @Prop({ default: true }) enableModal: boolean;
+  @Prop() otherPics: PictureContentWithOrder[];
+  @Prop({ default: "" }) measurementPictureSrc: "";
 
   showModal: boolean = false;
 
