@@ -33,6 +33,7 @@
         noPictureText="Ajouter une photo"
         :otherPics="allNonMeasurePictures"
         :measurementPictureSrc="measurementPictureSrc"
+        v-on:take-picure="takePicture"
         v-on:delete-picture="deletePicture(pictureSrc.content)"
       />
       <!-- Empty picture if no picture yet -->

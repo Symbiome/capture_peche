@@ -28,10 +28,10 @@
           v-for="pictureSrc in allNonMeasurePictures"
           class="pic-miniature picture-preview"
           :key="pictureSrc.order"
-          @click="src = pictureSrc.content"
+          @click="focusedPicSrc = pictureSrc.content"
           :class="{
             'pic-miniature': true,
-            'pic-selected': pictureSrc.content == src,
+            'pic-selected': pictureSrc.content == focusedPicSrc,
           }"
         >
           <img class="picture" :src="pictureSrc.content" />
@@ -40,10 +40,10 @@
         <div
           class="pic-miniature picture-preview"
           :key="measurementPictureSrc.order"
-          @click="src = measurementPictureSrc.content"
+          @click="focusedPicSrc = measurementPictureSrc"
           :class="{
             'pic-miniature': true,
-            'pic-selected': measurementPictureSrc == src,
+            'pic-selected': measurementPictureSrc == focusedPicSrc,
           }"
         >
           <img class="picture" :src="measurementPictureSrc" />
@@ -52,7 +52,7 @@
         <div
           class="pic-miniature picture-preview"
           v-if="
-            src &&
+            focusedPicSrc &&
               (allNonMeasurePictures.length < 4 ||
                 (!measurementPictureSrc && allNonMeasurePictures.length < 5))
           "
@@ -75,10 +75,14 @@
       </div>
       <div class="picture-wrapper" v-on:click="$emit('closeModal')">
         <div class="picture-content">
-          <img class="picture" v-bind:src="src" alt="Photo de la capture" />
+          <img
+            class="picture"
+            v-bind:src="focusedPicSrc"
+            alt="Photo de la capture"
+          />
         </div>
       </div>
-      <div class="replace" v-if="deleteButton">
+      <div class="replace" v-if="allowDeletion">
         <button v-on:click="$emit('delete')">
           <i class="icon-delete" /> Supprimer
         </button>
@@ -89,7 +93,7 @@
 
 <script lang="ts">
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PicturePreview from "@/components/trip/PicturePreview.vue";
 
 @Component({
@@ -102,13 +106,27 @@ export default class PictureModal extends Vue {
   @Prop({ default: false }) deleteButton: boolean;
   @Prop() otherPics: PictureContentWithOrder[];
   @Prop({ default: "" }) measurementPictureSrc: "";
+  focusedPicSrc: string = "";
   allNonMeasurePictures: PictureContentWithOrder[] = [];
+  allowDeletion = false;
 
   mounted() {
     this.allNonMeasurePictures = this.otherPics;
     if (!this.allNonMeasurePictures) {
       this.allNonMeasurePictures = [];
     }
+    this.focusedPicSrc = this.src;
+    this.allowDeletion = this.deleteButton;
+  }
+
+  @Watch("focusedPicSrc")
+  focusPicSrcChanged(newValue: string) {
+    this.allowDeletion = newValue != this.measurementPictureSrc;
+  }
+
+  @Watch("src")
+  srcChanged(newValue: string) {
+    this.focusedPicSrc = this.src;
   }
 
   takePicture() {
@@ -146,7 +164,8 @@ export default class PictureModal extends Vue {
   .replace {
     position: fixed;
     bottom: 30px;
-    width: 100%;
+    margin-left: calc(@desktop-menu-width + 15px + 140px);
+    width: calc(100vw - @desktop-menu-width - 140px);
     line-height: 40px;
     display: flex;
     flex-direction: row;
@@ -190,18 +209,18 @@ export default class PictureModal extends Vue {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+
     // border: 1px solid red;
 
     .picture-content {
       // border: 1px solid blue;
 
       img.picture {
-        // height: 100%;
-        // width: 100%;
-        // object-fit: cover;
-        // object-position: 50% 50%;
+        width: auto;
+        margin: 10px;
+        max-width: calc(100vw - @desktop-menu-width - 15px - 200px);
+        height: calc(100vh - 20px);
+        object-fit: cover;
       }
     }
   }
@@ -221,12 +240,10 @@ export default class PictureModal extends Vue {
     .pic-miniature {
       cursor: pointer;
       :hover {
-        img {
-          -webkit-transform: scale(1.05);
-          -moz-transform: scale(1.05);
-          -o-transform: scale(1.05);
-          transform: scale(1.05);
-        }
+        -webkit-transform: scale(1.05);
+        -moz-transform: scale(1.05);
+        -o-transform: scale(1.05);
+        transform: scale(1.05);
       }
       max-width: 140px;
       height: 90px;
@@ -239,12 +256,10 @@ export default class PictureModal extends Vue {
         -o-transform: scale(1.05);
         transform: scale(1.05);
         :hover {
-          img {
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -o-transform: scale(1);
-            transform: scale(1);
-          }
+          -webkit-transform: scale(1);
+          -moz-transform: scale(1);
+          -o-transform: scale(1);
+          transform: scale(1);
         }
       }
     }

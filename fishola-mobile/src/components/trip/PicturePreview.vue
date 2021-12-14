@@ -40,6 +40,7 @@
       v-on:closeModal="closeModal"
       :otherPics="otherPics"
       :measurementPictureSrc="measurementPictureSrc"
+      @take-picture="$emit('take-picture')"
     />
   </div>
 </template>
