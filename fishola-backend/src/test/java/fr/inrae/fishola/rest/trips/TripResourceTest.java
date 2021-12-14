@@ -692,6 +692,14 @@ public class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200);
 
+        // Supprime la sortie
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(204);
+
     }
 
 }
