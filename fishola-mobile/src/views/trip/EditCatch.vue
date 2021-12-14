@@ -1149,6 +1149,10 @@ export default class EditCatchView extends Vue {
 
       &.pic-selected {
         border: 4px solid @pelorous;
+        -webkit-transform: scale(1.05);
+        -moz-transform: scale(1.05);
+        -o-transform: scale(1.05);
+        transform: scale(1.05);
         :hover {
           img {
             -webkit-transform: scale(1);
