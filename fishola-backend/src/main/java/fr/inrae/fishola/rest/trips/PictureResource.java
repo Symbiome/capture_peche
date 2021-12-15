@@ -101,7 +101,7 @@ public class PictureResource extends AbstractFisholaResource {
         catchsDao.setPicture(catchId, order, jpegBytes);
 
         deletePreview(catchId);
-        deletePreview(catchId, Optional.of(order));
+        deletePreview(catchId, Optional.of(order).map(String::valueOf));
 
         Response response = noContent(userIdAndRenewal);
         return response;
@@ -111,8 +111,8 @@ public class PictureResource extends AbstractFisholaResource {
         deletePreview(catchId, Optional.empty());
     }
 
-    protected void deletePreview(UUID catchId, Optional<Integer> order) {
-        File file = getPreviewFile(catchId, order.map(String::valueOf));
+    protected void deletePreview(UUID catchId, Optional<String> order) {
+        File file = getPreviewFile(catchId, order);
         if (file.exists() && !file.delete()) {
             log.errorf("Impossible de supprimer la preview: %s (%s)", file.getAbsolutePath(), order);
         }
@@ -162,6 +162,9 @@ public class PictureResource extends AbstractFisholaResource {
 
         byte[] jpegBytes = ImageHelper.base64ImageToJpegBytes(base64Image, config.rawImageQuality());
         catchsDao.setMeasurementPicture(catchId, jpegBytes);
+
+        deletePreview(catchId);
+        deletePreview(catchId, Optional.of("measure"));
 
         Response response = noContent(userIdAndRenewal);
         return response;
@@ -387,7 +390,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // Par sécurité, on supprime la miniature aussi
         deletePreview(catchId);
-        deletePreview(catchId, Optional.of(order));
+        deletePreview(catchId, Optional.of(order).map(String::valueOf));
     }
 
 }
