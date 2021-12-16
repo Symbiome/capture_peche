@@ -1087,9 +1087,9 @@ export default class EditCatchView extends Vue {
 
   gotAutomaticMeasure(measure: number) {
     this.displayMeasurementPicturePopup = false;
-    this.aCatch.automaticMeasure = measure;
+    this.aCatch.automaticMeasure = Math.round(measure / 10);
     // Override manual size, but user will still be able to modify it later on
-    this.aCatch.size = measure;
+    this.aCatch.size = Math.round(measure / 10);
 
     // If we had a measure, means that latest taken picture is a measurement pic
     if (this.newTakenPictures.length) {

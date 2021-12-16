@@ -92,7 +92,7 @@
               <span class="measure">Mesure </span>
               <!-- Correct measure -->
               <div class="success" v-if="markerFound && fishSize">
-                <i class="icon-success" /> {{ fishSize }}mm
+                <i class="icon-success" /> {{ Math.floor(fishSize / 10) }}cm
               </div>
               <div class="error" v-else>
                 <i class="icon-error" />
