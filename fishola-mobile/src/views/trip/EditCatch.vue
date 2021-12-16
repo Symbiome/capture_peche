@@ -340,7 +340,7 @@
       @measured="gotAutomaticMeasure"
     />
     <PictureSourceChoice
-      v-if="requestNewPicture"
+      :visible="requestNewPicture"
       @close="requestNewPicture = false"
       @pictureTaken="pictureTaken"
       :directlyOpenGaleryInWebMode="true"
