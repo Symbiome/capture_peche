@@ -838,29 +838,42 @@ export default class EditCatchView extends Vue {
 
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
     this.requestNewPicture = false;
-    var maxOrder = Math.max(
-      this.lastUsedPicOrder,
-      Math.max.apply(
-        Math,
-        this.allNonMeasurePictures.map(function(o) {
-          return o.order;
-        })
-      )
-    );
-    maxOrder += 1;
-    this.lastUsedPicOrder = maxOrder;
-    const pictureInDb: PictureContentWithOrder = {
-      order: maxOrder,
-      content: pictureContent,
-      isMeasurementPicture: isMeasurementPicture,
-    };
-    this.allNonMeasurePictures.unshift(pictureInDb);
-    this.newTakenPictures.unshift(pictureInDb);
-    this.focusedPicSrc = pictureInDb.content;
 
-    // If no automatic measure has been determined yet, let's try with this new picture
-    if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
-      this.measurementPictureCandidateSrc = pictureContent;
+    // First check that we do not already have the picture in the gallery
+    var alreadyInGalery = pictureContent == this.measurementPictureSrc;
+    this.allNonMeasurePictures.forEach((pic) => {
+      alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
+    });
+    if (!alreadyInGalery) {
+      var maxOrder = Math.max(
+        this.lastUsedPicOrder,
+        Math.max.apply(
+          Math,
+          this.allNonMeasurePictures.map(function(o) {
+            return o.order;
+          })
+        )
+      );
+      maxOrder += 1;
+      this.lastUsedPicOrder = maxOrder;
+      const pictureInDb: PictureContentWithOrder = {
+        order: maxOrder,
+        content: pictureContent,
+        isMeasurementPicture: isMeasurementPicture,
+      };
+      this.allNonMeasurePictures.unshift(pictureInDb);
+      this.newTakenPictures.unshift(pictureInDb);
+      this.focusedPicSrc = pictureInDb.content;
+
+      // If no automatic measure has been determined yet, let's try with this new picture
+      if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
+        this.measurementPictureCandidateSrc = pictureContent;
+      }
+    } else {
+      this.$root.$emit(
+        "toaster-error",
+        "Cette photo est déjà dans votre gallerie"
+      );
     }
   }
 
