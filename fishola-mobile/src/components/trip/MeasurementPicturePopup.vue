@@ -94,6 +94,10 @@
               <div class="success" v-if="markerFound && fishSize">
                 <i class="icon-success" /> {{ Math.floor(fishSize / 10) }}cm
               </div>
+              <div class="warning" v-if="markerFound && fishSize">
+                <i class="icon-warning" /> Cette fonctionnalité est
+                expérimentale, cette mesure peut être imprécise
+              </div>
               <div class="error" v-else>
                 <i class="icon-error" />
                 <span v-if="!markerFound">
@@ -335,6 +339,9 @@ export default class MeasurementPicturePopup extends Vue {
     }
     .success {
       color: @lime-green;
+    }
+    .warning {
+      color: @terra-cotta;
     }
 
     .measure {
