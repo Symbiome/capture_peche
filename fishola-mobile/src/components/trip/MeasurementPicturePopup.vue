@@ -266,6 +266,8 @@ export default class MeasurementPicturePopup extends Vue {
 
   .title {
     color: @pelorous;
+    font-weight: normal;
+    font-size: calc(@fontsize-title + 5px);
   }
   .transparent-background {
     height: 18vh;

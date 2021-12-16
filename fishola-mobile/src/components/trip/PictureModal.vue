@@ -20,8 +20,20 @@
   -->
 <template>
   <div class="modal-container">
-    <!-- Gallery -->
-    <div class="gallery">
+    <div class="mobile-gallery hide-on-desktop">
+      <div class="transparent-background" @click="$emit('closeModal')"></div>
+      <div class="pane popup-content">
+        <div class="pane-content">
+          <h2 class="title">Galerie Photos</h2>
+          <!-- pictures required for measurement -->
+          <div class="picture-holder">
+            <img class="picture-display" :src="focusedPicSrc" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Gallery on desktop-->
+    <div class="gallery hide-on-mobile">
       <div class="pic-miniatures-container">
         <!-- Show all gallery pics -->
         <div
@@ -268,6 +280,124 @@ export default class PictureModal extends Vue {
       cursor: pointer;
       border: 2px solid @gainsboro;
       border-radius: 2px;
+    }
+  }
+}
+
+.mobile-gallery {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100vh;
+  width: 100%;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.6);
+
+  .title {
+    color: @pelorous;
+    font-weight: normal;
+    font-size: calc(@fontsize-title + 5px);
+    text-align: center;
+  }
+  .transparent-background {
+    height: 18vh;
+  }
+  .popup-content {
+    margin-top: 0px !important;
+    height: 82vh;
+    overflow-y: auto;
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    padding-bottom: 10vh;
+
+    .bottom-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: @solitude;
+      padding-left: @margin-large;
+      padding-right: @margin-large;
+      padding-bottom: @margin-medium;
+    }
+
+    .validate-redo {
+      padding-bottom: 20px;
+      padding-top: 30px;
+    }
+
+    .picture-holder {
+      background-color: @gainsboro;
+    }
+    .picture-display {
+      max-height: 40vh;
+      max-width: 90vw;
+      padding-left: 5vw;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .error {
+      color: @cardinal;
+    }
+    .success {
+      color: @lime-green;
+    }
+
+    .measure {
+      float: left;
+      padding-right: 10px;
+    }
+  }
+
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  .spinner {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    border-top: 3px solid @pelorous;
+    border-left: 3px solid @pelorous;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    top: 48vh;
+    left: calc(50vw - 30px);
+    display: block;
+  }
+
+  .button-main {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -55px;
+  }
+
+  .button-minor-left {
+    margin-right: auto;
+    float: left;
+    button {
+      color: @pelorous;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0);
+      border: 0px solid black;
+      font-size: 18px;
+    }
+  }
+
+  .button-minor-right {
+    margin-left: auto;
+    float: right;
+    button {
+      color: @pelorous;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0);
+      border: 0px solid black;
+      font-size: 16px;
     }
   }
 }
