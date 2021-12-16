@@ -119,11 +119,11 @@
                           allNonMeasurePictures.length < 5))
                   "
                 >
-                  <div class="picture">
+                  <div class="picture add-pic-button">
                     <img
-                      src="/img/add-pic-to-gallery.png"
+                      src="/img/add-pic-to-gallery.svg"
                       alt="Ajouter une photo"
-                      class="picture add-pic-button"
+                      class="picture "
                       v-on:click="takePicture"
                     />
                   </div>
@@ -1184,6 +1184,10 @@ export default class EditCatchView extends Vue {
       cursor: pointer;
       border: 2px solid @gainsboro;
       border-radius: 2px;
+      img {
+        object-fit: contain;
+      }
+      padding: 10px;
     }
   }
 
