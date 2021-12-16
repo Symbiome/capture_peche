@@ -23,7 +23,7 @@
     <div class="mobile-gallery hide-on-desktop">
       <div class="transparent-background" @click="$emit('closeModal')"></div>
       <div class="pane popup-content">
-        <div class="pane-content">
+        <div class="no-scroll">
           <h2 class="title">Galerie Photos</h2>
           <!-- pictures required for measurement -->
           <PictureModalMobileGallerySlider
@@ -162,6 +162,10 @@ export default class PictureModal extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
+
+.no-scroll {
+  overflow: hidden;
+}
 .modal-container {
   position: fixed;
   z-index: 1500;
@@ -325,7 +329,6 @@ export default class PictureModal extends Vue {
     overflow-y: auto;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
-    padding-bottom: 10vh;
   }
 }
 </style>

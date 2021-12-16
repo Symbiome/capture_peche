@@ -20,21 +20,26 @@
   -->
 <template>
   <div class="mobile-gallery-slider" v-touch:swipe="swiped">
-    <div
-      v-for="slide in slides"
-      :key="slide.src"
-      class="slide fade"
-      v-show="currentSlide == slide.order"
-      v-touch:swipe="swiped"
-    >
-      <img
-        v-if="!slide.isAddPicButton"
-        class="slider-pic"
-        :src="slide.src"
+    <div class="slider-pic">
+      <div
+        v-for="slide in slides"
+        :key="slide.src"
+        class="slide fade"
+        v-show="currentSlide == slide.order"
         v-touch:swipe="swiped"
-      />
-      <div v-else @click="$emit('take-picture')">
-        <button>ADD PIC PUTTON</button>
+      >
+        <img
+          v-if="!slide.isAddPicButton"
+          :src="slide.src"
+          v-touch:swipe="swiped"
+        />
+        <div v-else @click="$emit('take-picture')">
+          <img
+            src="/img/add-pic-to-gallery.svg"
+            v-touch:swipe="swiped"
+            class="add-picture"
+          />
+        </div>
       </div>
     </div>
     <div style="clear:both" />
@@ -143,13 +148,31 @@ class GallerySlide {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../../less/main";
+
 .mobile-gallery-slider {
+  .slider-pic {
+    height: 82vh;
+    width: 100vw;
+    img {
+      height: 68vh;
+      width: 100vw;
+      object-fit: cover;
+    }
+    .add-picture {
+      padding-top: 10vh;
+      width: 100vw;
+      height: 50vh;
+      margin: auto;
+      object-fit: contain;
+    }
+  }
+
   .footer {
+    position: absolute;
+    bottom: 0;
     align-content: center;
     align-items: center;
-    margin-left: calc(-1 * @margin-large);
     width: 100vw;
-    padding-top: 20px;
     .pastille {
       float: left;
     }
@@ -177,11 +200,6 @@ class GallerySlide {
     }
   }
 }
-
-.preco-text {
-  font-size: 14px;
-}
-
 /* Fading animation */
 .fade {
   -webkit-animation-name: fade;
@@ -206,22 +224,5 @@ class GallerySlide {
   to {
     opacity: 1;
   }
-}
-
-.slider-pic {
-  max-height: 40vh;
-  max-width: 90vw;
-  padding-left: 5vw;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.dotter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 1vh;
-  width: 100%;
 }
 </style>
