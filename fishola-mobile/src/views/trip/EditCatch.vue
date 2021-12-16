@@ -23,21 +23,32 @@
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
-      <!-- Todo Gallery MOBILE -->
       <PicturePreview
         v-for="pictureSrc in allNonMeasurePictures"
         :key="pictureSrc.order"
         v-bind:src="pictureSrc.content"
         v-bind:deletable="modifiable"
         v-on:take-picture="takePicture"
-        noPictureText="Ajouter une photo"
         :otherPics="allNonMeasurePictures"
         :measurementPictureSrc="measurementPictureSrc"
         v-on:take-picure="takePicture"
         v-on:delete-picture="deletePicture(pictureSrc.content)"
       />
+      <!-- Then measurement pic (if any) -->
+      <PicturePreview
+        v-if="measurementPictureSrc && !allNonMeasurePictures.length"
+        v-bind:src="measurementPictureSrc"
+        v-bind:deletable="modifiable"
+        v-on:take-picture="takePicture"
+        :otherPics="allNonMeasurePictures"
+        :measurementPictureSrc="measurementPictureSrc"
+        v-on:take-picure="takePicture"
+        v-on:delete-picture="deletePicture(pictureSrc.content)"
+      />
+      <!-- Empty miniature picture for adding pictures -->
       <!-- Empty picture if no picture yet -->
       <PicturePreview
+        v-else-if="!allNonMeasurePictures.length"
         noPictureText="Appuyer pour ajouter une photo"
         v-bind:deletable="false"
         v-on:take-picture="takePicture"

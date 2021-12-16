@@ -30,6 +30,14 @@
             :src="focusedPicSrc"
             :otherPics="otherPics"
             :measurementPictureSrc="measurementPictureSrc"
+            @delete="
+              $emit('closeModal');
+              $emit('delete');
+            "
+            @take-picture="
+              $emit('closeModal');
+              takePicture();
+            "
           />
         </div>
       </div>
