@@ -328,7 +328,6 @@ export default class MeasurementPicturePopup extends Vue {
     .picture-display {
       max-height: 40vh;
       max-width: 90vw;
-      padding-left: 5vw;
       display: block;
       margin-left: auto;
       margin-right: auto;
@@ -368,6 +367,12 @@ export default class MeasurementPicturePopup extends Vue {
     top: 48vh;
     left: calc(50vw - 30px);
     display: block;
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .spinner {
+      left: calc(50vw - 30px - @desktop-menu-width / 2);
+    }
   }
 
   .button-main {
