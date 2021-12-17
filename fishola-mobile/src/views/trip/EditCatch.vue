@@ -840,7 +840,7 @@ export default class EditCatchView extends Vue {
     this.requestNewPicture = false;
 
     // First check that we do not already have the picture in the gallery
-    var alreadyInGalery = pictureContent == this.measurementPictureSrc;
+    var alreadyInGalery = false;
     this.allNonMeasurePictures.forEach((pic) => {
       alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
     });
