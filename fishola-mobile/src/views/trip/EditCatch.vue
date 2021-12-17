@@ -1186,7 +1186,7 @@ export default class EditCatchView extends Vue {
           transform: scale(1.05);
         }
       }
-      max-width: 140px;
+      max-width: 137px;
       height: 90px;
       flex: 1 1 auto;
 
