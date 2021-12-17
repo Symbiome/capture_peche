@@ -1,3 +1,4 @@
+import { CatchBean, TripBean } from "@/pojos/BackendPojos";
 /*-
  * #%L
  * Fishola :: Mobile
@@ -21,6 +22,7 @@
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import StoredPicture from "@/pojos/StoredPicture";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
+import TripsService from "./TripsService";
 
 export default class PicturesService extends AbstractFisholaService {
   constructor() {
@@ -150,7 +152,21 @@ export default class PicturesService extends AbstractFisholaService {
     });
   }
 
-  static syncPictures() {
+  static async syncPictures() {
+    // Step 1: get trips for which save is delayed (because corresponding pictures should not be sent yet)
+    const allDirtyTrips = await this.getDatabase().dirtyTrips.toArray();
+    const tripsWithDelayedSaved: TripBean[] = allDirtyTrips.filter((trip) => {
+      return TripsService.shouldDelaySave(trip);
+    });
+    // Get corresponding catches
+    const catchesWithDelayedSaved: CatchBean[] = tripsWithDelayedSaved
+      .map((trip) => trip.catchs)
+      .flat();
+    const catchesWithDelayedsavedIds = catchesWithDelayedSaved.map(
+      (aCatch) => aCatch.id
+    );
+
+    // Step 2: get pictures to save
     this.getDatabase()
       .dirtyPictures.toCollection()
       .primaryKeys((pictureIds: string[]) => {
@@ -166,15 +182,11 @@ export default class PicturesService extends AbstractFisholaService {
         pictureIds
           .filter((pictureId) => pictureId.length >= 36)
           .forEach((pictureId) => {
-            const promise = this.syncPicture(pictureId);
+            const promise = this.syncPicture(
+              pictureId,
+              catchesWithDelayedsavedIds
+            );
             allPromises.push(promise);
-            promise.then(() => {
-              console.info(
-                "Photo synchronisée, on la supprime de la base embarquée",
-                pictureId
-              );
-              PicturesService.deleteSinglePictureFromLocalDB(pictureId);
-            });
           });
 
         // Pour les photos qui ne correspondent pas à une capture sur le serveur : on les supprime au bout de 7j
@@ -214,43 +226,61 @@ export default class PicturesService extends AbstractFisholaService {
       });
   }
 
-  static async syncPicture(pictureId: string): Promise<void> {
+  static async syncPicture(
+    pictureId: string,
+    catchesWithDelayedsavedIds: string[]
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       console.info("On essaye de sauvegarder la photo " + pictureId);
       PicturesService.internalGetPictureFullFromPictureId(pictureId).then(
         (matchingLocalPics) => {
           if (matchingLocalPics && matchingLocalPics.length > 0) {
             const result = matchingLocalPics[0];
-            if (result.dirtySince) {
-              const dirtySinceInMillis =
-                new Date().getTime() - result.dirtySince;
-              if (dirtySinceInMillis > 1000 * 60 * 60 * 24 * 7) {
-                // Plus de 7j
-                console.info(
-                  `On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`
-                );
-                PicturesService.deleteSinglePictureFromLocalDB(pictureId);
-                reject("Photo non synchronisée depuis trop longtemps");
-                return;
-              }
-            }
-            if (result.content) {
-              let putUrl = `/v1/pictures/${result.catch}/${result.order}`;
-              if (result.isMeasurementPicture) {
-                putUrl = `/v1/pictures/measure/${result.catch}`;
-              }
-              this.backendPutPlain(putUrl, result.content).then(
-                resolve,
-                (error: any) => {
-                  console.error(
-                    `Erreur lors de la synchro de l'image ${pictureId}`,
-                    error
+
+            // First check if photo sending should be delayed (as part of a delayed trip)
+            if (!catchesWithDelayedsavedIds.includes(result.catch)) {
+              if (result.dirtySince) {
+                const dirtySinceInMillis =
+                  new Date().getTime() - result.dirtySince;
+                if (dirtySinceInMillis > 1000 * 60 * 60 * 24 * 7) {
+                  // Plus de 7j
+                  console.info(
+                    `On supprime la photo ${pictureId} qui n'est pas sauvegardée depuis ${result.dirtySince}`
                   );
-                  reject(error);
+                  PicturesService.deleteSinglePictureFromLocalDB(pictureId);
+                  reject("Photo non synchronisée depuis trop longtemps");
+                  return;
                 }
-              );
+              }
+              if (result.content) {
+                let putUrl = `/v1/pictures/${result.catch}/${result.order}`;
+                if (result.isMeasurementPicture) {
+                  putUrl = `/v1/pictures/measure/${result.catch}`;
+                }
+                this.backendPutPlain(putUrl, result.content).then(
+                  () => {
+                    console.info(
+                      "Photo synchronisée, on la supprime de la base embarquée",
+                      pictureId
+                    );
+                    PicturesService.deleteSinglePictureFromLocalDB(pictureId);
+                  },
+                  (error: any) => {
+                    console.error(
+                      `Erreur lors de la synchro de l'image ${pictureId}`,
+                      error
+                    );
+                    reject(error);
+                  }
+                );
+              } else {
+                reject(`Unable to find picture content ${pictureId}`);
+              }
             } else {
-              reject(`Unable to find picture content ${pictureId}`);
+              console.info(
+                `${pictureId} save is delayed as part of a delayed trip`
+              );
+              resolve();
             }
           } else {
             reject(`Unable to find picture content ${pictureId}`);
