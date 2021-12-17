@@ -143,7 +143,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
@@ -155,6 +155,7 @@ import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider
   components: { MeasurementPictureSlider },
 })
 export default class MeasurementPicturePopup extends Vue {
+  @Prop() measurementPicture: string;
   measurementPictureSrc = "";
   markerSourceSRC = "";
   calculating = false;
@@ -178,6 +179,13 @@ export default class MeasurementPicturePopup extends Vue {
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
+  }
+
+  @Watch("measurementPicture")
+  measurementPictureChanged() {
+    if (this.measurementPicture) {
+      this.measurementPictureSrc = this.measurementPicture;
+    }
   }
 
   async takePictureAndTryToMeasure(fromCameraIfPossible: boolean) {

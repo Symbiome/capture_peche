@@ -335,6 +335,7 @@
     </div>
     <MeasurementPicturePopup
       v-if="displayMeasurementPicturePopup"
+      :measurementPicture="measurementPictureToDispatch"
       @close="displayMeasurementPicturePopup = false"
       @measurementPictureTaken="measurementPictureTaken"
       @measured="gotAutomaticMeasure"
@@ -504,6 +505,7 @@ export default class EditCatchView extends Vue {
 
   lastUsedPicOrder = 0;
   lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
+  measurementPictureToDispatch = "";
 
   created() {
     TripsService.getTripAndCatch(
@@ -837,47 +839,55 @@ export default class EditCatchView extends Vue {
   }
 
   pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
-    this.requestNewPicture = false;
+    this.measurementPictureToDispatch = "";
+    // Make sure the received pictures does not come from measurement popup (can happen due to cancel bugs)
+    if (!this.displayMeasurementPicturePopup) {
+      this.requestNewPicture = false;
 
-    // First check that we do not already have the picture in the gallery
-    var alreadyInGalery = false;
-    this.allNonMeasurePictures.forEach((pic) => {
-      alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
-    });
-    if (!alreadyInGalery) {
-      var maxOrder = Math.max(
-        this.lastUsedPicOrder,
-        Math.max.apply(
-          Math,
-          this.allNonMeasurePictures.map(function(o) {
-            return o.order;
-          })
-        )
-      );
-      maxOrder += 1;
-      this.lastUsedPicOrder = maxOrder;
-      const pictureInDb: PictureContentWithOrder = {
-        order: maxOrder,
-        content: pictureContent,
-        isMeasurementPicture: isMeasurementPicture,
-      };
-      this.allNonMeasurePictures.unshift(pictureInDb);
-      this.newTakenPictures.unshift(pictureInDb);
-      this.focusedPicSrc = pictureInDb.content;
+      // First check that we do not already have the picture in the gallery
+      var alreadyInGalery = false;
+      this.allNonMeasurePictures.forEach((pic) => {
+        alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
+      });
+      if (!alreadyInGalery) {
+        var maxOrder = Math.max(
+          this.lastUsedPicOrder,
+          Math.max.apply(
+            Math,
+            this.allNonMeasurePictures.map(function(o) {
+              return o.order;
+            })
+          )
+        );
+        maxOrder += 1;
+        this.lastUsedPicOrder = maxOrder;
+        const pictureInDb: PictureContentWithOrder = {
+          order: maxOrder,
+          content: pictureContent,
+          isMeasurementPicture: isMeasurementPicture,
+        };
+        this.allNonMeasurePictures.unshift(pictureInDb);
+        this.newTakenPictures.unshift(pictureInDb);
+        this.focusedPicSrc = pictureInDb.content;
 
-      // If no automatic measure has been determined yet, let's try with this new picture
-      if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
-        this.measurementPictureCandidateSrc = pictureContent;
+        // If no automatic measure has been determined yet, let's try with this new picture
+        if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
+          this.measurementPictureCandidateSrc = pictureContent;
+        }
+      } else {
+        this.$root.$emit(
+          "toaster-error",
+          "Cette photo est déjà dans votre gallerie"
+        );
       }
     } else {
-      this.$root.$emit(
-        "toaster-error",
-        "Cette photo est déjà dans votre gallerie"
-      );
+      // Dispatching measurement pic to expected target
+      this.measurementPictureToDispatch = pictureContent;
     }
   }
 
   measurementPictureTaken(newMeasurementPictureSrc: string) {
+    console.error("measurementPictureTaken ");
     this.shouldLaunchAutomaticMeasure = false;
     this.measurementPictureSrc = newMeasurementPictureSrc;
     this.pictureTaken(newMeasurementPictureSrc, true);
