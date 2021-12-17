@@ -338,7 +338,6 @@
       :measurementPicture="measurementPictureToDispatch"
       @close="displayMeasurementPicturePopup = false"
       @measurementPictureTaken="measurementPictureTaken"
-      @measured="gotAutomaticMeasure"
     />
     <PictureSourceChoice
       :visible="requestNewPicture"
@@ -390,6 +389,7 @@ import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
+import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -887,11 +887,14 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  measurementPictureTaken(newMeasurementPictureSrc: string) {
-    console.error("measurementPictureTaken ");
+  measurementPictureTaken(measureAndPic: MeasureAndPic) {
+    console.error("measurementPictureTaken", measureAndPic.measurePicSrc);
+    this.displayMeasurementPicturePopup = false;
     this.shouldLaunchAutomaticMeasure = false;
-    this.measurementPictureSrc = newMeasurementPictureSrc;
-    this.pictureTaken(newMeasurementPictureSrc, true);
+    this.measurementPictureSrc = measureAndPic.measurePicSrc;
+    this.pictureTaken(measureAndPic.measurePicSrc, true);
+    this.focusedPicSrc = this.measurementPictureSrc;
+    this.gotAutomaticMeasure(measureAndPic.fishSize);
   }
 
   @Watch("withSample")

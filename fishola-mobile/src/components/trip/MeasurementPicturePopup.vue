@@ -150,6 +150,7 @@ import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
+import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 
 @Component({
   components: { MeasurementPictureSlider },
@@ -251,8 +252,11 @@ export default class MeasurementPicturePopup extends Vue {
   }
 
   validate() {
-    this.$emit("measurementPictureTaken", this.measurementPictureSrc);
-    this.$emit("measured", this.fishSize);
+    const measureAndPic = new MeasureAndPic(
+      this.fishSize,
+      this.measurementPictureSrc
+    );
+    this.$emit("measurementPictureTaken", measureAndPic);
   }
 }
 </script>
