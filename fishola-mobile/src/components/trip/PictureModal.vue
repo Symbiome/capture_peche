@@ -60,6 +60,7 @@
         </div>
         <!-- Then measurement pic (if any) -->
         <div
+          v-if="measurementPictureSrc"
           class="pic-miniature picture-preview"
           :key="measurementPictureSrc.order"
           @click="focusedPicSrc = measurementPictureSrc"
