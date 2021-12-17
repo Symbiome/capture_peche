@@ -357,11 +357,12 @@
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
     <!-- Invisible marker & pic (required for silent size computation) -->
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
+    <!-- To enable silent automatic size computation, simply add this to the following img
+      @load="launchSilentAutomaticMeasureIfRequired" -->
     <img
       id="sourcePictureAutomatic"
       :src="measurementPictureCandidateSrc"
       v-show="false"
-      @load="launchSilentAutomaticMeasureIfRequired"
     />
   </div>
 </template>
