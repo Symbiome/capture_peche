@@ -24,9 +24,9 @@
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
       <PicturePreview
-        v-for="pictureSrc in allNonMeasurePictures"
-        :key="pictureSrc.order"
-        v-bind:src="pictureSrc.content"
+        v-if="allNonMeasurePictures.length"
+        :key="allNonMeasurePictures[0].order"
+        v-bind:src="allNonMeasurePictures[0].content"
         v-bind:deletable="modifiable"
         v-on:take-picture="takePicture"
         :otherPics="allNonMeasurePictures"
