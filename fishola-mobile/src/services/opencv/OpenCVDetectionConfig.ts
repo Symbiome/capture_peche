@@ -23,7 +23,7 @@ export class OpenCVDetectionConfig {
   resizeSize = 300;
 
   /*  The marker size "in real world" - float (in cm) */
-  markerSizeInMm = 97;
+  markerSizeInMm = 90;
 
   /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
   minSizeRatio = 0.3;

@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="picture-source-chooser">
+  <div v-show="visible" class="picture-source-chooser">
     <div class="transparent-background" @click="$emit('close')"></div>
     <div class="popup-content">
       <div class="bottom-actions">
@@ -54,17 +54,31 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
 import { Device } from "@capacitor/device";
 
 @Component({})
 export default class PictureSourceChoice extends Vue {
   @Prop({ default: false }) directlyOpenGaleryInWebMode: boolean;
+  @Prop({ default: false }) visible: boolean;
   pictureSrc = "";
   errorMessage = "";
   isMobilePlatform = true;
 
+  @Watch("visible")
+  visbilityChanged(): void {
+    if (this.visible) {
+      if (!this.isMobilePlatform && this.directlyOpenGaleryInWebMode) {
+        // Tentative d'ouvrir l'APN au chargement MAIS
+        // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
+        // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
+        setTimeout(() => {
+          this.takePicture(true);
+        }, 350);
+      }
+    }
+  }
   mounted(): void {
     Device.getInfo().then((info) => {
       this.isMobilePlatform =
@@ -81,15 +95,6 @@ export default class PictureSourceChoice extends Vue {
           }
         }, 350);
       };
-
-      if (!this.isMobilePlatform && this.directlyOpenGaleryInWebMode) {
-        // Tentative d'ouvrir l'APN au chargement MAIS
-        // Mais : https://stackoverflow.com/questions/33911801/input-file-click-no-working-no-event
-        // Et : https://stackoverflow.com/questions/29728705/trigger-click-on-input-file-on-asynchronous-ajax-done/29873845#29873845
-        setTimeout(() => {
-          this.takePicture(true);
-        }, 350);
-      }
     });
   }
 

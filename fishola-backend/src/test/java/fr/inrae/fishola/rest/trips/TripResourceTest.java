@@ -655,7 +655,7 @@ public class TripResourceTest extends AbstractFisholaTest {
         byte[] originalByteArray = stream.toByteArray();
         String base64Content = Base64.getEncoder().encodeToString(originalByteArray);
 
-        // Ajoute une image en '0'
+        // Ajoute l'image de mesure
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
@@ -692,6 +692,184 @@ public class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200);
 
+        // Supprime la sortie
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(204);
+
     }
 
+    @Test
+    public void testReplaceMeasurementPicture() throws IOException {
+
+        int countBefore = countTrips();
+
+        TripBean trip = buildValidTripBean();
+        CatchBean c = new CatchBean();
+        c.id = "abc";
+        c.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        c.techniqueId = trip.techniqueIds.iterator().next();
+        trip.catchs = Collections.singletonList(c);
+
+        ResponseBodyExtractionOptions body = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+                // On reçoit la map de replacement :
+                //   dontcare -> nouvel-id-de-trip
+                //   abc -> nouvel-id-de-capture
+                // telle que :
+                //  {"dontcare": "2244331f-f9dc-4102-b832-be7d69b7c377", "abc": "c2ec85c3-7b03-4cc7-ad80-5e17cfa29772"}
+                .body(trip.id, notNullValue())
+                .body(c.id, notNullValue())
+            .extract()
+                .body();
+
+        String tripId = body.path(trip.id);
+        String catchId = body.path(c.id);
+
+        int countAfter = countTrips();
+        Assertions.assertEquals(countBefore + 1, countAfter);
+
+        InputStream resource = this.getClass().getResourceAsStream("/about-fishes.jpg");
+        Preconditions.checkState(resource != null, "Image non trouvée");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        IOUtils.copy(resource, stream);
+        byte[] originalByteArray = stream.toByteArray();
+        String base64Content = Base64.getEncoder().encodeToString(originalByteArray);
+
+        // Ajoute l'image de mesure
+        given()
+            .when()
+                .contentType(MediaType.TEXT_PLAIN)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body("data:image/jpeg;base64," + base64Content)
+                .put("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(204);
+
+        // Vérifie qu'elle est bien listée ...
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("id", equalTo(tripId))
+                .body("catchs[0].hasMeasurementPicture", equalTo(true));
+
+        // ... et téléchargeable
+        byte[] getBytes = given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(200)
+            .extract()
+                .body()
+                .asByteArray();
+
+        // On compare les dimensions de l'image lue avec l'image d'origine
+        ByteArrayInputStream originalInputStream = new ByteArrayInputStream(originalByteArray);
+        BufferedImage originalImage = ImageIO.read(originalInputStream);
+
+        ByteArrayInputStream getInputStream = new ByteArrayInputStream(getBytes);
+        BufferedImage getImage = ImageIO.read(getInputStream);
+
+        Assertions.assertEquals(originalImage.getWidth(), getImage.getWidth());
+        Assertions.assertEquals(originalImage.getHeight(), getImage.getHeight());
+
+        Assertions.assertEquals(computeRatio(originalImage), computeRatio(getImage));
+
+        // On vérifie que la miniature est générée
+        byte[] previewBytes = given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId + "/preview")
+            .then()
+                .statusCode(200)
+            .extract()
+                .body()
+                .asByteArray();
+
+        ByteArrayInputStream previewInputStream = new ByteArrayInputStream(previewBytes);
+        BufferedImage previewImage = ImageIO.read(previewInputStream);
+
+        // La preview ayant été redimensionnée, le ratio peut être significativement différent
+        Assertions.assertEquals(computeRatio(originalImage), computeRatio(previewImage), 0.005f);
+
+        InputStream replacementResource = this.getClass().getResourceAsStream("/talkie-reine-des-neiges.jpeg");
+        Preconditions.checkState(replacementResource != null, "Image non trouvée");
+        ByteArrayOutputStream replacementStream = new ByteArrayOutputStream();
+        IOUtils.copy(replacementResource, replacementStream);
+        byte[] replacementByteArray = replacementStream.toByteArray();
+        String replacementBase64Content = Base64.getEncoder().encodeToString(replacementByteArray);
+
+        // Ajoute l'image de mesure
+        given()
+            .when()
+                .contentType(MediaType.TEXT_PLAIN)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body("data:image/jpeg;base64," + replacementBase64Content)
+                .put("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(204);
+
+        // ... et téléchargeable
+        byte[] getReplacementBytes = given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId)
+            .then()
+                .statusCode(200)
+            .extract()
+                .body()
+                .asByteArray();
+
+        // On compare les dimensions de l'image lue avec l'image d'origine
+        ByteArrayInputStream replacementInputStream = new ByteArrayInputStream(replacementByteArray);
+        BufferedImage replacementImage = ImageIO.read(replacementInputStream);
+
+        ByteArrayInputStream getReplacementInputStream = new ByteArrayInputStream(getReplacementBytes);
+        BufferedImage getReplacementImage = ImageIO.read(getReplacementInputStream);
+
+        Assertions.assertEquals(replacementImage.getWidth(), getReplacementImage.getWidth());
+        Assertions.assertEquals(replacementImage.getHeight(), getReplacementImage.getHeight());
+
+        Assertions.assertEquals(computeRatio(replacementImage), computeRatio(getReplacementImage));
+
+        // On s'assure que les dimensions sont bien différentes de l'original
+        Assertions.assertNotEquals(getImage.getWidth(), getReplacementImage.getWidth());
+        Assertions.assertNotEquals(getImage.getHeight(), getReplacementImage.getHeight());
+        Assertions.assertNotEquals(computeRatio(getImage), computeRatio(getReplacementImage));
+
+        // On vérifie que la miniature est générée
+        byte[] previewReplacementBytes = given()
+            .when()
+                .body(trip)
+                .get("/api/v1/pictures/measure/" + catchId + "/preview")
+            .then()
+                .statusCode(200)
+            .extract()
+                .body()
+                .asByteArray();
+
+        ByteArrayInputStream previewReplacementInputStream = new ByteArrayInputStream(previewReplacementBytes);
+        BufferedImage previewReplacementImage = ImageIO.read(previewReplacementInputStream);
+
+        Assertions.assertEquals(computeRatio(replacementImage), computeRatio(previewReplacementImage), 0.005f);
+
+    }
+
+    protected float computeRatio(BufferedImage image) {
+        float result = Integer.valueOf(image.getWidth()).floatValue() / Integer.valueOf(image.getHeight()).floatValue();
+        return result;
+    }
 }

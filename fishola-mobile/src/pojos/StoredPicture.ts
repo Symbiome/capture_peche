@@ -20,7 +20,10 @@
  */
 
 export default interface StoredPicture {
-    id: string,
-    dirtySince: number,
-    content: any
+    id: string;
+    catch: string;
+    dirtySince: number;
+    content: any;
+    isMeasurementPicture: boolean;
+    order: number;
 }

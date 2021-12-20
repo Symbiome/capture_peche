@@ -22,10 +22,35 @@
   <div class="edit-catch page-with-header-and-footer picture-background">
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
+      <!-- Show all gallery pics -->
       <PicturePreview
-        v-bind:src="pictureSrc"
-        v-bind:modifiable="modifiable"
+        v-for="pictureSrc in allNonMeasurePictures"
+        :key="pictureSrc.order"
+        v-bind:src="pictureSrc.content"
+        v-bind:deletable="modifiable"
+        v-on:take-picture="takePicture"
+        :otherPics="allNonMeasurePictures"
+        :measurementPictureSrc="measurementPictureSrc"
+        v-on:take-picure="takePicture"
+        v-on:delete-picture="deletePicture(pictureSrc.content)"
+      />
+      <!-- Then measurement pic (if any) -->
+      <PicturePreview
+        v-if="measurementPictureSrc && !allNonMeasurePictures.length"
+        v-bind:src="measurementPictureSrc"
+        v-bind:deletable="modifiable"
+        v-on:take-picture="takePicture"
+        :otherPics="allNonMeasurePictures"
+        :measurementPictureSrc="measurementPictureSrc"
+        v-on:take-picure="takePicture"
+        v-on:delete-picture="deletePicture(pictureSrc.content)"
+      />
+      <!-- Empty miniature picture for adding pictures -->
+      <!-- Empty picture if no picture yet -->
+      <PicturePreview
+        v-else-if="!allNonMeasurePictures.length"
         noPictureText="Appuyer pour ajouter une photo"
+        v-bind:deletable="false"
         v-on:take-picture="takePicture"
       />
     </div>
@@ -44,12 +69,66 @@
 
           <div class="catch-picture-desktop-and-form">
             <div class="catch-picture-desktop hide-on-mobile">
+              <!-- Show focused pic -->
               <PicturePreview
-                v-bind:src="pictureSrc"
-                v-bind:modifiable="modifiable"
+                class="pic-focused"
+                v-bind:src="focusedPicSrc"
                 noPictureText="Appuyer pour ajouter une photo"
+                v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture"
+                v-on:delete-picture="deletePicture(focusedPicSrc)"
+                :otherPics="allNonMeasurePictures"
+                :measurementPictureSrc="measurementPictureSrc"
               />
+              <div class="pic-miniatures-container">
+                <!-- Show all gallery pics -->
+                <PicturePreview
+                  :enableModal="false"
+                  v-for="pictureSrc in allNonMeasurePictures"
+                  :key="pictureSrc.order"
+                  v-bind:src="pictureSrc.content"
+                  v-bind:deletable="false"
+                  @picture-clicked="focusedPicSrc = pictureSrc.content"
+                  v-on:take-picture="takePicture"
+                  :class="{
+                    'pic-miniature': true,
+                    'pic-selected': pictureSrc.content == focusedPicSrc,
+                  }"
+                />
+                <!-- Then measurement pic (if any) -->
+                <PicturePreview
+                  :enableModal="false"
+                  v-if="measurementPictureSrc"
+                  :key="measurementPictureSrc"
+                  v-bind:src="measurementPictureSrc"
+                  v-bind:deletable="false"
+                  v-on:take-picture="takePicture"
+                  @picture-clicked="focusedPicSrc = measurementPictureSrc"
+                  :class="{
+                    'pic-miniature': true,
+                    'pic-selected': measurementPictureSrc == focusedPicSrc,
+                  }"
+                />
+                <!-- Empty miniature picture for adding pictures -->
+                <div
+                  class="pic-miniature picture-preview"
+                  v-if="
+                    focusedPicSrc &&
+                      (allNonMeasurePictures.length < 4 ||
+                        (!measurementPictureSrc &&
+                          allNonMeasurePictures.length < 5))
+                  "
+                >
+                  <div class="picture add-pic-button">
+                    <img
+                      src="/img/add-pic-to-gallery.svg"
+                      alt="Ajouter une photo"
+                      class="picture "
+                      v-on:click="takePicture"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="edit-catch-form">
               <div
@@ -256,12 +335,12 @@
     </div>
     <MeasurementPicturePopup
       v-if="displayMeasurementPicturePopup"
+      :measurementPicture="measurementPictureToDispatch"
       @close="displayMeasurementPicturePopup = false"
       @measurementPictureTaken="measurementPictureTaken"
-      @measured="gotAutomaticMeasure"
     />
     <PictureSourceChoice
-      v-if="requestNewPicture"
+      :visible="requestNewPicture"
       @close="requestNewPicture = false"
       @pictureTaken="pictureTaken"
       :directlyOpenGaleryInWebMode="true"
@@ -277,11 +356,12 @@
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
     <!-- Invisible marker & pic (required for silent size computation) -->
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
+    <!-- To enable silent automatic size computation, simply add this to the following img
+      @load="launchSilentAutomaticMeasureIfRequired" -->
     <img
       id="sourcePictureAutomatic"
-      :src="pictureSrc"
+      :src="measurementPictureCandidateSrc"
       v-show="false"
-      @load="launchSilentAutomaticMeasureIfRequired"
     />
   </div>
 </template>
@@ -304,10 +384,12 @@ import Helpers from "@/services/Helpers";
 import GeolocationService from "@/services/GeolocationService";
 
 import { UserSettings } from "@/pojos/BackendPojos";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
+import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -376,8 +458,14 @@ export default class EditCatchView extends Vue {
   tripOtherSpecies: string = "";
   aCatch: CatchSummary = { id: "" };
 
-  pictureSrc: string = "";
-  newPictureTaken: boolean = false;
+  allNonMeasurePictures: PictureContentWithOrder[] = [];
+  measurementPictureSrc: string = "";
+  measurementPictureCandidateSrc: string = "";
+  focusedPicSrc: string = "";
+  // Pictures that have just been taken and hence should be saved in local DB when validating
+  newTakenPictures: PictureContentWithOrder[] = [];
+  // Picture that should be deleted at next save
+  picturesToDelete: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
   markerSourceSRC = "";
@@ -416,6 +504,10 @@ export default class EditCatchView extends Vue {
   requestNewPicture = false;
   shouldLaunchAutomaticMeasure = false;
 
+  lastUsedPicOrder = 0;
+  lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
+  measurementPictureToDispatch = "";
+
   created() {
     TripsService.getTripAndCatch(
       this.tripId,
@@ -440,7 +532,7 @@ export default class EditCatchView extends Vue {
     this.settings = settings;
   }
 
-  tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
+  async tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
     const lakeId: string = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
@@ -469,11 +561,6 @@ export default class EditCatchView extends Vue {
         this.rightShortcut = "timer-" + seconds;
       }
     }
-
-    PicturesService.getPicture(someCatch.id).then(
-      this.pictureLoaded,
-      this.noPictureFound
-    );
 
     if (someCatch.sampleId) {
       this.sampleIdReady = true;
@@ -520,10 +607,53 @@ export default class EditCatchView extends Vue {
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
       this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
     }
-  }
 
-  pictureLoaded(content: string) {
-    this.pictureSrc = content;
+    // Get pictures stored locally (not yet synchronized)
+    const localPics = await PicturesService.getPicturesFromLocalDB(
+      someCatch.id
+    );
+    if (localPics.length) {
+      this.focusedPicSrc = localPics[0].content;
+    }
+    this.allNonMeasurePictures = localPics.filter(
+      (pic) => !pic.isMeasurementPicture
+    );
+    const potentialMeasurePic = localPics.filter(
+      (pic) => pic.isMeasurementPicture
+    );
+    if (potentialMeasurePic.length) {
+      this.measurementPictureSrc = potentialMeasurePic[0].content;
+    }
+
+    // Get server gallery pics (reconstructed through the "orders" field)
+    this.aCatch.pictureOrders?.forEach((order) => {
+      const pictureFromServer: PictureContentWithOrder = {
+        order: order,
+        isMeasurementPicture: false,
+        content: Constants.apiUrl(
+          `/v1/pictures/${this.aCatch.id}/preview/${order}`
+        ),
+      };
+      this.allNonMeasurePictures.push(pictureFromServer);
+
+      if (!this.focusedPicSrc) {
+        this.focusedPicSrc = pictureFromServer.content;
+      }
+    });
+
+    // Finally get measurement pic (if any)
+    if (this.aCatch.hasMeasurementPicture) {
+      // Ignore server measurement pic if we have a local one
+      if (!this.measurementPictureSrc) {
+        this.measurementPictureSrc = Constants.apiUrl(
+          `/v1/pictures/measure/${this.aCatch.id}/preview`
+        );
+
+        if (!this.focusedPicSrc) {
+          this.focusedPicSrc = this.measurementPictureSrc;
+        }
+      }
+    }
   }
 
   async launchSilentAutomaticMeasureIfRequired() {
@@ -546,6 +676,7 @@ export default class EditCatchView extends Vue {
             if (imageElement && markerElement) {
               const openCVConfig = new OpenCVDetectionConfig();
               openCVConfig.drawDebugCanvas = false;
+              openCVConfig.maxRetries = -1;
               const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
                 imageElement,
                 markerElement,
@@ -571,8 +702,9 @@ export default class EditCatchView extends Vue {
                   fishSize +
                   "mm"
               );
-              if (markerFound) {
+              if (markerFound && fishSize) {
                 this.gotAutomaticMeasure(fishSize);
+                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = true;
               }
             }
             // Step 2: launch calculation
@@ -581,14 +713,6 @@ export default class EditCatchView extends Vue {
           }
         }
       });
-    }
-  }
-
-  noPictureFound() {
-    if (this.aCatch.hasPicture) {
-      this.pictureSrc = Constants.apiUrl(
-        `/v1/pictures/${this.aCatch.id}/preview`
-      );
     }
   }
 
@@ -680,19 +804,97 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  pictureTaken(pictureSrc: string) {
-    this.requestNewPicture = false;
-    this.pictureSrc = pictureSrc;
-    this.newPictureTaken = true;
+  async deletePicture(pictureToDeleteSrc: string) {
+    const isANonSavedPicture =
+      this.newTakenPictures.filter((pic) => pic.content == pictureToDeleteSrc)
+        .length > 0;
+    if (!isANonSavedPicture) {
+      // Add pic to list of pictures to delete on local storage / server
+      this.picturesToDelete = this.picturesToDelete.concat(
+        this.allNonMeasurePictures.filter(
+          (pic) => pic.content == pictureToDeleteSrc
+        )
+      );
+    } else {
+      // Remove pic from pictures that are about to be stored in local storage
+      this.newTakenPictures = this.newTakenPictures.filter(
+        (pic) => pic.content != pictureToDeleteSrc
+      );
+    }
+
+    // Filter currently displayed list
+    this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
+      (pic) => pic.content != pictureToDeleteSrc
+    );
+
+    // Update focused pic
+    if (this.focusedPicSrc == pictureToDeleteSrc) {
+      if (this.allNonMeasurePictures.length) {
+        this.focusedPicSrc = this.allNonMeasurePictures[0].content;
+      } else if (this.measurementPictureSrc) {
+        this.focusedPicSrc = this.measurementPictureSrc;
+      } else {
+        this.focusedPicSrc = "";
+      }
+    }
   }
 
-  measurementPictureTaken(pictureSrc: string) {
-    // If no picture was taken, use automatic picture as pic
-    this.shouldLaunchAutomaticMeasure = false;
-    if (!this.pictureSrc) {
-      this.newPictureTaken = true;
-      this.pictureSrc = pictureSrc;
+  pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
+    this.measurementPictureToDispatch = "";
+    // Make sure the received pictures does not come from measurement popup (can happen due to cancel bugs)
+    if (!this.displayMeasurementPicturePopup) {
+      this.requestNewPicture = false;
+
+      // First check that we do not already have the picture in the gallery
+      var alreadyInGalery = false;
+      this.allNonMeasurePictures.forEach((pic) => {
+        alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
+      });
+      if (!alreadyInGalery) {
+        var maxOrder = Math.max(
+          this.lastUsedPicOrder,
+          Math.max.apply(
+            Math,
+            this.allNonMeasurePictures.map(function(o) {
+              return o.order;
+            })
+          )
+        );
+        maxOrder += 1;
+        this.lastUsedPicOrder = maxOrder;
+        const pictureInDb: PictureContentWithOrder = {
+          order: maxOrder,
+          content: pictureContent,
+          isMeasurementPicture: isMeasurementPicture,
+        };
+        this.allNonMeasurePictures.unshift(pictureInDb);
+        this.newTakenPictures.unshift(pictureInDb);
+        this.focusedPicSrc = pictureInDb.content;
+
+        // If no automatic measure has been determined yet, let's try with this new picture
+        if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
+          this.measurementPictureCandidateSrc = pictureContent;
+        }
+      } else {
+        this.$root.$emit(
+          "toaster-error",
+          "Cette photo est déjà dans votre gallerie"
+        );
+      }
+    } else {
+      // Dispatching measurement pic to expected target
+      this.measurementPictureToDispatch = pictureContent;
     }
+  }
+
+  measurementPictureTaken(measureAndPic: MeasureAndPic) {
+    console.error("measurementPictureTaken", measureAndPic.measurePicSrc);
+    this.displayMeasurementPicturePopup = false;
+    this.shouldLaunchAutomaticMeasure = false;
+    this.measurementPictureSrc = measureAndPic.measurePicSrc;
+    this.pictureTaken(measureAndPic.measurePicSrc, true);
+    this.focusedPicSrc = this.measurementPictureSrc;
+    this.gotAutomaticMeasure(measureAndPic.fishSize);
   }
 
   @Watch("withSample")
@@ -842,7 +1044,8 @@ export default class EditCatchView extends Vue {
       if (aCatchBean.speciesId == "__other__") {
         aCatchBean.speciesId = "";
       }
-      aCatchBean.hasPicture = this.pictureSrc != "";
+      aCatchBean.hasPicture =
+        this.allNonMeasurePictures && this.allNonMeasurePictures.length > 0;
       if (!this.withSample) {
         aCatchBean.sampleId = "";
       }
@@ -854,12 +1057,26 @@ export default class EditCatchView extends Vue {
     return input;
   }
 
-  catchSaved(catchId: string) {
-    if (this.pictureSrc && this.newPictureTaken) {
-      PicturesService.savePicture(catchId, this.pictureSrc, this.leavePage);
-    } else {
-      this.leavePage();
+  async catchSaved(catchId: string) {
+    for (var i = 0; i < this.newTakenPictures.length; i++) {
+      const picToSaveInLocalDb = this.newTakenPictures[i];
+      await PicturesService.savePictureInLocalDB(
+        catchId + picToSaveInLocalDb.order,
+        catchId,
+        picToSaveInLocalDb.content,
+        picToSaveInLocalDb.isMeasurementPicture,
+        picToSaveInLocalDb.order
+      );
     }
+    for (var j = 0; j < this.picturesToDelete.length; j++) {
+      const pictureToDelete = this.picturesToDelete[j];
+      await PicturesService.deletePicture(
+        catchId + pictureToDelete.order,
+        catchId,
+        pictureToDelete.order
+      );
+    }
+    this.leavePage();
   }
 
   deleteCatch() {
@@ -884,9 +1101,42 @@ export default class EditCatchView extends Vue {
 
   gotAutomaticMeasure(measure: number) {
     this.displayMeasurementPicturePopup = false;
-    this.aCatch.automaticMeasure = measure;
+    this.aCatch.automaticMeasure = Math.round(measure / 10);
     // Override manual size, but user will still be able to modify it later on
-    this.aCatch.size = measure;
+    this.aCatch.size = Math.round(measure / 10);
+
+    // If we had a measure, means that latest taken picture is a measurement pic
+    if (this.newTakenPictures.length) {
+      if (this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery) {
+        // Keep measurement pic as it was automatic and should be kept in gallery
+        const automaticMeasurePic = this.newTakenPictures.filter(
+          (pic) =>
+            pic.isMeasurementPicture &&
+            pic.order != this.newTakenPictures[0].order
+        );
+        if (automaticMeasurePic.length) {
+          this.allNonMeasurePictures.unshift(automaticMeasurePic[0]);
+        }
+        this.newTakenPictures.forEach(
+          (pic) => (pic.isMeasurementPicture = false)
+        );
+        this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
+      } else {
+        // Remove all measurement pic to only keep the last
+        this.newTakenPictures = this.newTakenPictures.filter(
+          (pic) =>
+            !pic.isMeasurementPicture ||
+            pic.order == this.newTakenPictures[0].order
+        );
+      }
+      // All previously taken pictures should not be considered as measurement
+
+      this.measurementPictureSrc = this.newTakenPictures[0].content;
+      this.newTakenPictures[0].isMeasurementPicture = true;
+      this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
+        (pic) => !pic.isMeasurementPicture
+      );
+    }
     this.$forceUpdate();
   }
 }
@@ -918,6 +1168,53 @@ export default class EditCatchView extends Vue {
 
     &.keyboardShowing {
       display: none;
+    }
+  }
+
+  .pic-miniatures-container {
+    display: flex;
+    margin-top: 10px;
+    column-gap: 10px;
+
+    .pic-miniature {
+      cursor: pointer;
+      :hover {
+        img {
+          -webkit-transform: scale(1.05);
+          -moz-transform: scale(1.05);
+          -o-transform: scale(1.05);
+          transform: scale(1.05);
+        }
+      }
+      max-width: 137px;
+      height: 90px;
+      flex: 1 1 auto;
+
+      &.pic-selected {
+        border: 4px solid @pelorous;
+        -webkit-transform: scale(1.05);
+        -moz-transform: scale(1.05);
+        -o-transform: scale(1.05);
+        transform: scale(1.05);
+        :hover {
+          img {
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -o-transform: scale(1);
+            transform: scale(1);
+          }
+        }
+      }
+    }
+
+    .add-pic-button {
+      cursor: pointer;
+      border: 2px solid @gainsboro;
+      border-radius: 2px;
+      img {
+        object-fit: contain;
+      }
+      padding: 10px;
     }
   }
 
@@ -1093,11 +1390,16 @@ export default class EditCatchView extends Vue {
     }
     .catch-picture-desktop {
       width: 100%;
-      height: 220px;
+      height: 320px;
 
       .no-picture {
         border: 1px dashed @pale-sky;
         border-radius: 8px;
+        height: 300px;
+      }
+
+      .pic-focused {
+        height: 215px;
       }
     }
 
@@ -1125,6 +1427,17 @@ export default class EditCatchView extends Vue {
       .catch-picture-desktop-and-form {
       flex-direction: row;
       justify-content: space-between;
+    }
+
+    .catch-picture-desktop {
+      .no-picture {
+        border: 1px dashed @pale-sky;
+        border-radius: 8px;
+        height: 100%;
+      }
+      .pic-focused {
+        height: 100%;
+      }
     }
   }
 

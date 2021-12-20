@@ -87,6 +87,7 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public void delete(UUID catchId) {
         withContextNoResult(context -> {
+            context.deleteFrom(Tables.CATCH_MEASUREMENT_PICTURE).where(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID.eq(catchId)).execute();
             context.deleteFrom(Tables.CATCH_PICTURE).where(Tables.CATCH_PICTURE.CATCH_ID.eq(catchId)).execute();
             context.deleteFrom(Tables.CATCH).where(Tables.CATCH.ID.eq(catchId)).execute();
         });
