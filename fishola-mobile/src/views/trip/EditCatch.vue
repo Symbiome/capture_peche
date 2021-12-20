@@ -625,19 +625,28 @@ export default class EditCatchView extends Vue {
       this.measurementPictureSrc = potentialMeasurePic[0].content;
     }
 
+    // Get server pictures that have been deleted since last sync (and hence should not be displayed)
+    const toDeletePics = await PicturesService.getAboutToBeDeletedPictures(
+      someCatch.id
+    );
+    const toDeletePicsOrders = toDeletePics.map((pic) => pic.order);
+
     // Get server gallery pics (reconstructed through the "orders" field)
     this.aCatch.pictureOrders?.forEach((order) => {
-      const pictureFromServer: PictureContentWithOrder = {
-        order: order,
-        isMeasurementPicture: false,
-        content: Constants.apiUrl(
-          `/v1/pictures/${this.aCatch.id}/preview/${order}`
-        ),
-      };
-      this.allNonMeasurePictures.push(pictureFromServer);
+      // Make sure picture has not been deleted locally
+      if (!toDeletePicsOrders.includes(order)) {
+        const pictureFromServer: PictureContentWithOrder = {
+          order: order,
+          isMeasurementPicture: false,
+          content: Constants.apiUrl(
+            `/v1/pictures/${this.aCatch.id}/preview/${order}`
+          ),
+        };
+        this.allNonMeasurePictures.push(pictureFromServer);
 
-      if (!this.focusedPicSrc) {
-        this.focusedPicSrc = pictureFromServer.content;
+        if (!this.focusedPicSrc) {
+          this.focusedPicSrc = pictureFromServer.content;
+        }
       }
     });
 

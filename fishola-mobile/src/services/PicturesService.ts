@@ -50,17 +50,11 @@ export default class PicturesService extends AbstractFisholaService {
   }
 
   static deleteAllPicturesForCatch(catchId: string) {
-    this.getDatabase()
-      .dirtyPictures.where("catch")
-      .equals(catchId)
-      .delete();
+    this.getDatabase().dirtyPictures.where("catch").equals(catchId).delete();
   }
 
   static deleteSinglePictureFromLocalDB(picId: string) {
-    return this.getDatabase()
-      .dirtyPictures.where("id")
-      .equals(picId)
-      .delete();
+    return this.getDatabase().dirtyPictures.where("id").equals(picId).delete();
   }
 
   static async deletePicture(
@@ -79,12 +73,31 @@ export default class PicturesService extends AbstractFisholaService {
       console.info("Deleted local storage picture " + picId);
       return;
     } else {
-      // Delete from server
-      const deleteUrl = `/v1/pictures/${catchId}/${order}`;
-      await this.backendDelete(deleteUrl);
-      console.info("Deleted remote picture " + deleteUrl);
+      // Store it as toDelete on server-side during next syncPictures()
+      const pictureToDelete: StoredPicture = {
+        id: picId,
+        catch: catchId,
+        dirtySince: new Date().getTime(),
+        content: "",
+        isMeasurementPicture: false,
+        order: order,
+      };
+      await this.getDatabase().toDeletePictures.put(pictureToDelete);
+      console.info(
+        "Remote picture stored as to delete at next trip sync " + picId
+      );
+
       return;
     }
+  }
+
+  static getAboutToBeDeletedPictures(
+    catchId: string
+  ): Promise<StoredPicture[]> {
+    const toDeletePicturesWithCatchId = this.getDatabase()
+      .toDeletePictures.where("catch")
+      .equals(catchId);
+    return toDeletePicturesWithCatchId.toArray();
   }
 
   static internalGetPicturesFull(catchId: string): Promise<StoredPicture[]> {
@@ -224,6 +237,28 @@ export default class PicturesService extends AbstractFisholaService {
           );
         }
       });
+
+    // Step 3: get pictures to delete and delete them on server
+    const toDeletePictures =
+      await this.getDatabase().toDeletePictures.toArray();
+    for (let i = 0; i < toDeletePictures.length; i++) {
+      const toDeletePic = toDeletePictures[i];
+      // First check if photo deletion should be delayed (as part of a delayed trip)
+      if (!catchesWithDelayedsavedIds.includes(toDeletePic.catch)) {
+        const deleteUrl = `/v1/pictures/${toDeletePic.catch}/${toDeletePic.order}`;
+        try {
+          await this.backendDelete(deleteUrl);
+          await this.getDatabase()
+            .toDeletePictures.where("id")
+            .equals(toDeletePic.id)
+            .delete();
+          console.info("Deleted remote picture " + deleteUrl);
+        } catch (error) {
+          console.error(error);
+          // Silent catch, delete will be tried again later
+        }
+      }
+    }
   }
 
   static async syncPicture(
