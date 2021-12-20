@@ -30,14 +30,8 @@
             :src="focusedPicSrc"
             :otherPics="otherPics"
             :measurementPictureSrc="measurementPictureSrc"
-            @delete="
-              $emit('closeModal');
-              $emit('delete');
-            "
-            @take-picture="
-              $emit('closeModal');
-              takePicture();
-            "
+            @delete="deletePicture"
+            @take-picture="takePicture"
           />
         </div>
       </div>
@@ -76,8 +70,8 @@
           class="pic-miniature picture-preview"
           v-if="
             focusedPicSrc &&
-              (allNonMeasurePictures.length < 4 ||
-                (!measurementPictureSrc && allNonMeasurePictures.length < 5))
+            (allNonMeasurePictures.length < 4 ||
+              (!measurementPictureSrc && allNonMeasurePictures.length < 5))
           "
         >
           <div class="picture add-pic-button">
@@ -106,7 +100,7 @@
         </div>
       </div>
       <div class="replace" v-if="allowDeletion">
-        <button v-on:click="$emit('delete')">
+        <button v-on:click="deletePicture(focusedPicSrc)">
           <i class="icon-delete" /> Supprimer
         </button>
       </div>
@@ -155,7 +149,13 @@ export default class PictureModal extends Vue {
   }
 
   takePicture() {
+    this.$emit("closeModal");
     this.$emit("take-picture");
+  }
+
+  deletePicture(pictureToDeleteSrc: string) {
+    this.$emit("closeModal");
+    this.$emit("delete", pictureToDeleteSrc);
   }
 }
 </script>

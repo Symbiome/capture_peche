@@ -79,9 +79,9 @@ export default class PicturePreview extends Vue {
     this.showModal = false;
   }
 
-  onDelete() {
+  onDelete(pictureSrcToDelete: string) {
     this.closeModal();
-    this.$emit("delete-picture");
+    this.$emit("delete-picture", pictureSrcToDelete);
   }
 
   pictureLoaded() {

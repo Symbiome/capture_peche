@@ -32,7 +32,7 @@
         :otherPics="allNonMeasurePictures"
         :measurementPictureSrc="measurementPictureSrc"
         v-on:take-picure="takePicture"
-        v-on:delete-picture="deletePicture(pictureSrc.content)"
+        v-on:delete-picture="deletePicture"
       />
       <!-- Then measurement pic (if any) -->
       <PicturePreview
@@ -43,7 +43,7 @@
         :otherPics="allNonMeasurePictures"
         :measurementPictureSrc="measurementPictureSrc"
         v-on:take-picure="takePicture"
-        v-on:delete-picture="deletePicture(pictureSrc.content)"
+        v-on:delete-picture="deletePicture"
       />
       <!-- Empty miniature picture for adding pictures -->
       <!-- Empty picture if no picture yet -->
@@ -76,7 +76,7 @@
                 noPictureText="Appuyer pour ajouter une photo"
                 v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture"
-                v-on:delete-picture="deletePicture(focusedPicSrc)"
+                v-on:delete-picture="deletePicture"
                 :otherPics="allNonMeasurePictures"
                 :measurementPictureSrc="measurementPictureSrc"
               />
@@ -114,16 +114,16 @@
                   class="pic-miniature picture-preview"
                   v-if="
                     focusedPicSrc &&
-                      (allNonMeasurePictures.length < 4 ||
-                        (!measurementPictureSrc &&
-                          allNonMeasurePictures.length < 5))
+                    (allNonMeasurePictures.length < 4 ||
+                      (!measurementPictureSrc &&
+                        allNonMeasurePictures.length < 5))
                   "
                 >
                   <div class="picture add-pic-button">
                     <img
                       src="/img/add-pic-to-gallery.svg"
                       alt="Ajouter une photo"
-                      class="picture "
+                      class="picture"
                       v-on:click="takePicture"
                     />
                   </div>
@@ -162,7 +162,8 @@
                 >
                   <button
                     @click="
-                      displayMeasurementPicturePopup = !displayMeasurementPicturePopup
+                      displayMeasurementPicturePopup =
+                        !displayMeasurementPicturePopup
                     "
                   >
                     <i class="icon-size measure-button-icon" />
@@ -248,10 +249,9 @@
               <FormToggle
                 v-if="
                   withSample ||
-                    (settings &&
-                      settings.promptSamples &&
-                      authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) !=
-                        -1)
+                  (settings &&
+                    settings.promptSamples &&
+                    authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
                 "
                 label="Prélèvement (optionnel)"
                 v-model="withSample"
@@ -291,7 +291,7 @@
                     :options="{
                       zoomSnap: 0.5,
                     }"
-                    style="height: 100%; width: 100%;"
+                    style="height: 100%; width: 100%"
                   >
                     <l-tile-layer
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -311,9 +311,7 @@
                   </button>
                 </div>
                 <div class="button button-secondary" v-if="inCreation">
-                  <button v-on:click="cancel">
-                    Annuler
-                  </button>
+                  <button v-on:click="cancel">Annuler</button>
                 </div>
                 <div
                   class="button button-danger"
@@ -521,7 +519,8 @@ export default class EditCatchView extends Vue {
   }
 
   mounted() {
-    this.samplesDocumentationUrl = DocumentationService.getSamplesDocumentationUrl();
+    this.samplesDocumentationUrl =
+      DocumentationService.getSamplesDocumentationUrl();
   }
 
   loadSettings() {
@@ -686,12 +685,13 @@ export default class EditCatchView extends Vue {
               const openCVConfig = new OpenCVDetectionConfig();
               openCVConfig.drawDebugCanvas = false;
               openCVConfig.maxRetries = -1;
-              const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-                imageElement,
-                markerElement,
-                openCVConfig,
-                ""
-              );
+              const detectedShapes: Array<DetectedShape> =
+                await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+                  imageElement,
+                  markerElement,
+                  openCVConfig,
+                  ""
+                );
 
               const markers = detectedShapes.filter(
                 (shape: DetectedShape) => shape.isMarker
@@ -713,7 +713,8 @@ export default class EditCatchView extends Vue {
               );
               if (markerFound && fishSize) {
                 this.gotAutomaticMeasure(fishSize);
-                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = true;
+                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery =
+                  true;
               }
             }
             // Step 2: launch calculation
@@ -864,7 +865,7 @@ export default class EditCatchView extends Vue {
           this.lastUsedPicOrder,
           Math.max.apply(
             Math,
-            this.allNonMeasurePictures.map(function(o) {
+            this.allNonMeasurePictures.map(function (o) {
               return o.order;
             })
           )

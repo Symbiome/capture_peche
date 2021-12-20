@@ -42,17 +42,17 @@
         </div>
       </div>
     </div>
-    <div style="clear:both" />
+    <div style="clear: both" />
 
     <div class="footer">
       <FooterButton
         v-if="
           !slides[currentSlide].isAddPicButton &&
-            !slides[currentSlide].isMeasurementPic
+          !slides[currentSlide].isMeasurementPic
         "
         icon="icon-delete"
         text="Supprimer"
-        v-on:clicked="$emit('delete')"
+        v-on:clicked="$emit('delete', slides[currentSlide].src)"
       />
 
       <div class="footer-element pastille" @click="swiped('right')">
