@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.2.0-beta-4-SNAPSHOT</version>
+  <version>1.2.0-rc-1</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -69,9 +69,11 @@
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>16</javaVersion>
+    <javaVersion>15</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
+    <!-- Pour supporter Java 16, il faut upgrade en 3.2.0 mais alors l'analyse des dépendances se trompe : https://issues.apache.org/jira/projects/MDEP/issues/MDEP-780?filter=allopenissues-->
+    <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
     <licensePluginVersion>2.0.0</licensePluginVersion>
   </properties>
 
@@ -100,6 +102,12 @@
         <version>${quarkusVersion}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>io.smallrye.config</groupId>
+        <artifactId>smallrye-config-core</artifactId>
+        <version>2.7.0</version>
       </dependency>
 
       <dependency>
