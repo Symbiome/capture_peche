@@ -29,12 +29,12 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.9</version>
+    <version>11.10</version>
   </parent>
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.2.0-beta-3</version>
+  <version>1.2.0-rc-1</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -59,20 +59,21 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <!-- Quarkus ne peut pas être mis à jour en 1.13.x à cause d'un formattage de date mal cadré. Cf fr.inrae.fishola.rest.mapper.LocalDateTimeFormatterTest -->
-    <quarkusVersion>1.12.2.Final</quarkusVersion>
-    <jooqVersion>3.14.9</jooqVersion>
+    <quarkusVersion>2.5.3.Final</quarkusVersion>
+    <jooqVersion>3.15.5</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
-    <postgresqlDriverVersion>42.2.20</postgresqlDriverVersion>
-    <testcontainersVersion>1.15.3</testcontainersVersion>
+    <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
+    <testcontainersVersion>1.16.2</testcontainersVersion>
 
     <maven.compiler.parameters>true</maven.compiler.parameters>
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>14</javaVersion>
+    <javaVersion>15</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
+    <!-- Pour supporter Java 16, il faut upgrade en 3.2.0 mais alors l'analyse des dépendances se trompe : https://issues.apache.org/jira/projects/MDEP/issues/MDEP-780?filter=allopenissues-->
+    <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
     <licensePluginVersion>2.0.0</licensePluginVersion>
   </properties>
 
@@ -104,6 +105,12 @@
       </dependency>
 
       <dependency>
+        <groupId>io.smallrye.config</groupId>
+        <artifactId>smallrye-config-core</artifactId>
+        <version>2.7.0</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.google.code.findbugs</groupId>
         <artifactId>jsr305</artifactId>
         <version>3.0.2</version>
@@ -119,7 +126,7 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.7.0</version>
+        <version>5.8.2</version>
         <scope>test</scope>
       </dependency>
 
@@ -156,7 +163,7 @@
       <dependency>
         <groupId>com.auth0</groupId>
         <artifactId>java-jwt</artifactId>
-        <version>3.13.0</version>
+        <version>3.18.2</version>
       </dependency>
 
       <dependency>
@@ -186,7 +193,7 @@
       <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
-        <version>0.9.7</version>
+        <version>0.9.10</version>
       </dependency>
 
       <dependency>
@@ -208,6 +215,13 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${postgresqlDriverVersion}</version>
+        <scope>runtime</scope>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -218,13 +232,13 @@
         <plugin>
           <groupId>pl.project13.maven</groupId>
           <artifactId>git-commit-id-plugin</artifactId>
-          <version>4.0.4</version>
+          <version>4.9.10</version>
         </plugin>
 
         <plugin>
           <groupId>cz.habarta.typescript-generator</groupId>
           <artifactId>typescript-generator-maven-plugin</artifactId>
-          <version>2.31.861</version>
+          <version>2.34.976</version>
         </plugin>
 
         <plugin>
@@ -248,7 +262,7 @@
         <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
-          <version>1.11.3</version>
+          <version>1.12.0</version>
         </plugin>
 
         <plugin>

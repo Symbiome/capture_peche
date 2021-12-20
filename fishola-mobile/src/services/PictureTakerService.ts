@@ -23,14 +23,11 @@ import { Camera, CameraSource, CameraResultType } from "@capacitor/camera";
 
 export default class PictureTakerService {
   public static INSTANCE = new PictureTakerService();
-  private static REQUEST_ID = 1;
-
   /**
    * Takes a picture weither from the Camera or Gallery according to the given boolean (always fileInput if on desktop).
    * @returns the taken picture src
    */
   async takePicture(fromCameraIfPossible: boolean): Promise<string> {
-    const requestId = ++PictureTakerService.REQUEST_ID;
     let source = CameraSource.Photos;
     if (fromCameraIfPossible) {
       source = CameraSource.Camera;
@@ -44,14 +41,8 @@ export default class PictureTakerService {
         source: source,
         webUseInput: true,
       });
-      if (requestId === PictureTakerService.REQUEST_ID) {
-        const imageSrc = image.dataUrl;
-        if (imageSrc) {
-          return imageSrc;
-        }
-      } else {
-        throw new Error("user cancelled");
-      }
+      const imageSrc = image.dataUrl;
+      return imageSrc ? imageSrc : "";
     } catch (failure) {
       console.error("Unable to use camera", failure);
     }

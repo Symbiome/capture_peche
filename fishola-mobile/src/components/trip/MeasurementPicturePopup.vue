@@ -92,7 +92,11 @@
               <span class="measure">Mesure </span>
               <!-- Correct measure -->
               <div class="success" v-if="markerFound && fishSize">
-                <i class="icon-success" /> {{ fishSize }}mm
+                <i class="icon-success" /> {{ Math.floor(fishSize / 10) }}cm
+              </div>
+              <div class="warning" v-if="markerFound && fishSize">
+                <i class="icon-warning" /> Cette fonctionnalité est
+                expérimentale, cette mesure peut être imprécise
               </div>
               <div class="error" v-else>
                 <i class="icon-error" />
@@ -139,18 +143,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
+import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 
 @Component({
   components: { MeasurementPictureSlider },
 })
 export default class MeasurementPicturePopup extends Vue {
+  @Prop() measurementPicture: string;
   measurementPictureSrc = "";
   markerSourceSRC = "";
   calculating = false;
@@ -174,6 +180,13 @@ export default class MeasurementPicturePopup extends Vue {
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
+  }
+
+  @Watch("measurementPicture")
+  measurementPictureChanged() {
+    if (this.measurementPicture) {
+      this.measurementPictureSrc = this.measurementPicture;
+    }
   }
 
   async takePictureAndTryToMeasure(fromCameraIfPossible: boolean) {
@@ -223,7 +236,6 @@ export default class MeasurementPicturePopup extends Vue {
           this.fishSize = fishes[0].calculatedLenght;
         }
         this.calculating = false;
-        this.$emit("measurementPictureTaken", this.measurementPictureSrc);
       } else {
         this.errorMessage =
           "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
@@ -234,14 +246,17 @@ export default class MeasurementPicturePopup extends Vue {
     } catch (error) {
       this.errorMessage =
         "Impossible de déterminer la mesure automatiquement, veuillez réessayer";
-      this.$emit("measurementPictureTaken", this.measurementPictureSrc);
     }
     this.measurementPictureSrc = "";
     this.calculating = false;
   }
 
   validate() {
-    this.$emit("measured", this.fishSize);
+    const measureAndPic = new MeasureAndPic(
+      this.fishSize,
+      this.measurementPictureSrc
+    );
+    this.$emit("measurementPictureTaken", measureAndPic);
   }
 }
 </script>
@@ -266,6 +281,8 @@ export default class MeasurementPicturePopup extends Vue {
 
   .title {
     color: @pelorous;
+    font-weight: normal;
+    font-size: calc(@fontsize-title + 5px);
   }
   .transparent-background {
     height: 18vh;
@@ -322,7 +339,6 @@ export default class MeasurementPicturePopup extends Vue {
     .picture-display {
       max-height: 40vh;
       max-width: 90vw;
-      padding-left: 5vw;
       display: block;
       margin-left: auto;
       margin-right: auto;
@@ -333,6 +349,9 @@ export default class MeasurementPicturePopup extends Vue {
     }
     .success {
       color: @lime-green;
+    }
+    .warning {
+      color: @terra-cotta;
     }
 
     .measure {
@@ -359,6 +378,12 @@ export default class MeasurementPicturePopup extends Vue {
     top: 48vh;
     left: calc(50vw - 30px);
     display: block;
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    .spinner {
+      left: calc(50vw - 30px - @desktop-menu-width / 2);
+    }
   }
 
   .button-main {

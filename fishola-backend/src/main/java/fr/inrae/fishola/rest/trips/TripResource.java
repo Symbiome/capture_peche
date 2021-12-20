@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.trips;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
@@ -38,8 +39,7 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -78,13 +78,14 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class TripResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(TripResource.class);
-
     private static final Ordering<CatchBean> CATCH_ORDERING_ON_CAUGHT_AT = Ordering.natural()
             .nullsFirst()
             .onResultOf(c -> c.caughtAt.orElse(null));
 
     private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
+
+    @Inject
+    protected Logger log;
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -166,7 +167,7 @@ public class TripResource extends AbstractFisholaResource {
     }
 
     protected Optional<LocalDateTime> getModifiableUntil(Trip trip, LocalDateTime now) {
-        LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.getTripModifiableHours());
+        LocalDateTime modifiableUntil = trip.getCreatedOn().plusHours(config.tripModifiableHours());
         boolean canBeModified = modifiableUntil.isAfter(now);
         Optional<LocalDateTime> result = canBeModified ? Optional.of(modifiableUntil) : Optional.empty();
         return result;
@@ -184,11 +185,11 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Nouvelle sortie à persister : id=%s; owner=%s", trip.id, userId));
+            log.debugf("Nouvelle sortie à persister : id=%s; owner=%s", trip.id, userId);
         }
 
         if (log.isTraceEnabled()) {
-            log.trace(String.format("Détails de la sortie : %s", trip));
+            log.tracef("Détails de la sortie : %s", trip);
         }
 
         Trip entity = new Trip();
@@ -202,7 +203,7 @@ public class TripResource extends AbstractFisholaResource {
         entity.setMode(trip.mode);
         entity.setOwnerId(userId);
 
-        // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des application <= 1.0.4
+        // Pour rester rétro-compatible, on considère que tous les appels qui n'envoient pas le champ sont des applications <= 1.0.4
         entity.setSource(Optional.ofNullable(trip.source).orElse(DeviceType.application));
 
         trip.weatherId.ifPresent(entity::setWeatherId);
@@ -214,7 +215,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Sortie en cours de création : %s -> %s", trip.id, tripId));
+            log.debugf("Sortie en cours de création : %s -> %s", trip.id, tripId);
         }
 
         Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
@@ -222,24 +223,24 @@ public class TripResource extends AbstractFisholaResource {
 
         int created = tripsDao.setSpecies(tripId, speciesIds);
         if (log.isDebugEnabled()) {
-            log.debug(created + " espèce(s) recherchée(s) : " + speciesIds);
+            log.debugf("%d espèce(s) recherchée(s) : %s", created, speciesIds);
         }
 
         int techniquesCreated = tripsDao.setTechniques(tripId, trip.techniqueIds);
         if (log.isDebugEnabled()) {
-            log.debug(techniquesCreated + " technique(s) utilisée(s) : " + trip.techniqueIds);
+            log.debugf("%d technique(s) utilisée(s) : %s", techniquesCreated, trip.techniqueIds);
         }
 
         Collection<CatchBean> catchBeans = CollectionUtils.emptyIfNull(trip.catchs);
         for (CatchBean aCatch : catchBeans) {
             if (log.isTraceEnabled()) {
-                log.trace(String.format("Détails de la capture : %s", aCatch));
+                log.tracef("Détails de la capture : %s", aCatch);
             }
 
             UUID catchId = createCatch(tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Capture créée : %s -> %s", aCatch.id, catchId));
+                log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
             }
         }
 
@@ -256,7 +257,7 @@ public class TripResource extends AbstractFisholaResource {
 
         URI uri = UriBuilder.fromPath("/api/v1/trips/" + tripId).build();
         if (log.isDebugEnabled()) {
-            log.debug("URI de la sortie : " + uri);
+            log.debugf("URI de la sortie : %s", uri);
         }
 
         Response.ResponseBuilder responseBuilder = Response.created(uri).entity(replacements);
@@ -274,11 +275,11 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Sortie à mettre à jour : id=%s, owner=%s", tripId, userId));
+            log.debugf("Sortie à mettre à jour : id=%s, owner=%s", tripId, userId);
         }
 
         if (log.isTraceEnabled()) {
-            log.trace(String.format("Détails de la sortie : %s", trip));
+            log.tracef("Détails de la sortie : %s", trip);
         }
 
         Trip existingTrip = tripsDao.getTrip(UUID.fromString(trip.id));
@@ -287,9 +288,7 @@ public class TripResource extends AbstractFisholaResource {
 
         boolean stillModifiable = isStillModifiable(existingTrip);
         if (!stillModifiable && trip.saveDelayMarker.isPresent()) {
-            if (log.isWarnEnabled()) {
-                log.warn("La sortie n'est plus modifiable. On vérifie si elle l'était à sa dernière sauvegarde");
-            }
+            log.warn("La sortie n'est plus modifiable. On vérifie si elle l'était à sa dernière sauvegarde");
             stillModifiable = isStillModifiable(existingTrip, trip.saveDelayMarker.get());
         }
         AccessDeniedException.check(stillModifiable, "Il n'est plus possible de modifier la sortie");
@@ -309,7 +308,7 @@ public class TripResource extends AbstractFisholaResource {
         tripsDao.updateTrip(existingTrip);
 
         if (log.isDebugEnabled()) {
-            log.debug("Sortie mise à jour : " + tripId);
+            log.debugf("Sortie mise à jour : %s", tripId);
         }
 
         Set<UUID> otherSpeciesIds = referentialDao.checkSpeciesOrCreateIfNecessary(trip.otherSpecies);
@@ -331,7 +330,7 @@ public class TripResource extends AbstractFisholaResource {
         for (CatchBean aCatch : incomingCatchBeans) {
 
             if (log.isTraceEnabled()) {
-                log.trace(String.format("Détails de la capture : %s", aCatch));
+                log.tracef("Détails de la capture : %s", aCatch);
             }
 
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
@@ -340,13 +339,13 @@ public class TripResource extends AbstractFisholaResource {
                 updateCatch(existingCatch, aCatch);
                 updatedCatchsIds.add(parsedCatchId.get());
                 if (log.isDebugEnabled()) {
-                    log.debug("Capture mise à jour : " + parsedCatchId.get());
+                    log.debugf("Capture mise à jour : %s", parsedCatchId.get());
                 }
             } else {
                 UUID catchId = createCatch(tripId, aCatch);
                 replacements.put(aCatch.id, catchId);
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("Capture créée : %s -> %s", aCatch.id, catchId));
+                    log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
                 }
             }
         }
@@ -355,7 +354,7 @@ public class TripResource extends AbstractFisholaResource {
         toDeleteCatchsIds.forEach(catchId -> {
             catchsDao.delete(catchId);
             if (log.isDebugEnabled()) {
-                log.debug("Capture supprimée : " + catchId);
+                log.debugf("Capture supprimée : %s", catchId);
             }
         });
 
@@ -367,9 +366,7 @@ public class TripResource extends AbstractFisholaResource {
                 .collect(Collectors.toSet());
         Set<String> newSampleIds = Sets.difference(incomingSampleIds, existingSampleIds);
         if (!newSampleIds.isEmpty()) {
-            if (log.isWarnEnabled()) {
-                log.warn("Nouveaux échantillons: " + newSampleIds);
-            }
+            log.warnf("Nouveaux échantillons: %s", newSampleIds);
             // On reçoit un échantillon, on incrémente l'identifiant de l'utilisateur
             usersDao.increaseSampleBaseId(userId);
         }
@@ -386,7 +383,7 @@ public class TripResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Suppression de la sortie : id=%s", tripId));
+            log.debugf("Suppression de la sortie : id=%s", tripId);
         }
 
         deleteTrip(tripId, userId);
@@ -401,12 +398,12 @@ public class TripResource extends AbstractFisholaResource {
         if (stillModifiable) {
             tripsDao.delete(tripId);
             if (log.isDebugEnabled()) {
-                log.debug("Sortie supprimée : " + tripId);
+                log.debugf("Sortie supprimée : %s", tripId);
             }
         } else {
             tripsDao.hide(tripId);
             if (log.isDebugEnabled()) {
-                log.debug("Sortie masquée : " + tripId);
+                log.debugf("Sortie masquée : %s", tripId);
             }
         }
     }
@@ -506,9 +503,10 @@ public class TripResource extends AbstractFisholaResource {
         Set<UUID> catchIds = catchs.stream()
                 .map(Catch::getId)
                 .collect(Collectors.toSet());
-        Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
+        ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
+        Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
         result.catchs = catchs.stream()
-                .map(aCatch -> toCatchBean(aCatch, catchsWithPictures))
+                .map(aCatch -> toCatchBean(aCatch, catchsWithPictures, measurementPictures))
                 .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
                 .collect(Collectors.toList());
 
@@ -563,7 +561,9 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
-    public static CatchBean toCatchBean(Catch aCatch, Set<UUID> catchsWithPictures) {
+    public static CatchBean toCatchBean(Catch aCatch,
+                                        ListMultimap<UUID, Integer> catchsWithPictures,
+                                        Set<UUID> catchsWithMeasurementPicture) {
         CatchBean result = new CatchBean();
         result.tripId = Optional.of(aCatch.getTripId());
         UUID catchId = aCatch.getId();
@@ -579,10 +579,12 @@ public class TripResource extends AbstractFisholaResource {
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern("HH:mm")));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
-        result.hasPicture = catchsWithPictures.contains(catchId);
+        List<Integer> pictureIndexes = catchsWithPictures.get(catchId);
+        result.pictureOrders = pictureIndexes;
+        result.hasPicture = !pictureIndexes.isEmpty();
+        result.hasMeasurementPicture = catchsWithMeasurementPicture.contains(catchId);
         result.sampleId = Optional.ofNullable(aCatch.getSampleId());
         return result;
     }
-
 
 }

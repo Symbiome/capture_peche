@@ -38,7 +38,7 @@ import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
 public class UsersDao extends AbstractFisholaDao {
 
     public String hashPassword(String password) {
-        int cost = config.getPasswordHashCost();
+        int cost = config.passwordHashCost();
         String result = BCrypt.withDefaults().hashToString(cost, password.toCharArray());
         return result;
     }

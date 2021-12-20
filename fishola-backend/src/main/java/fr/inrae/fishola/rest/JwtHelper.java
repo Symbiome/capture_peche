@@ -33,8 +33,7 @@ import com.google.common.collect.Maps;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -46,13 +45,14 @@ import java.util.UUID;
 @RequestScoped
 public class JwtHelper {
 
-    private static final Log log = LogFactory.getLog(JwtHelper.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected FisholaConfiguration config;
 
     private Algorithm getJwtSecretAlgorithm() {
-        String jwtSecret = config.getJwtSecret();
+        String jwtSecret = config.jwtSecret();
         Algorithm result = Algorithm.HMAC512(jwtSecret);
         return result;
     }
@@ -60,7 +60,7 @@ public class JwtHelper {
     public String createUserToken(UUID userId) {
 
         if (log.isInfoEnabled()) {
-            log.info("Création d'un token JWT pour l'utilisateur " + userId);
+            log.infof("Création d'un token JWT pour l'utilisateur %s", userId);
         }
 
         String result = createToken0(userId);
@@ -79,7 +79,7 @@ public class JwtHelper {
 
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, config.getJwtLifetimeHours());
+        calendar.add(Calendar.HOUR, config.jwtLifetimeHours());
         Date expiresAt = calendar.getTime();
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
@@ -112,7 +112,7 @@ public class JwtHelper {
         Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
 
         // On convertit en secondes
-        long seconds = config.getJwtRenewalHours() * 60 * 60;
+        long seconds = config.jwtRenewalHours() * 60 * 60;
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)
@@ -176,7 +176,7 @@ public class JwtHelper {
                     .verify(token);
             return true;
         } catch (Exception eee) {
-            log.warn("Token invalide: " + token, eee);
+            log.warnf("Token invalide: %s", token, eee);
             return false;
         }
     }

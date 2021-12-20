@@ -28,9 +28,8 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.runtime.StartupEvent;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
+import org.jboss.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -44,7 +43,8 @@ import java.util.Map;
 @ApplicationScoped
 public class FisholaApplication {
 
-    private static final Log log = LogFactory.getLog(FisholaApplication.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected FisholaConfiguration config;
@@ -58,12 +58,12 @@ public class FisholaApplication {
     void onStart(@Observes StartupEvent ev) {
 
         if (log.isInfoEnabled()) {
-            log.info(String.format("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile()));
+            log.infof("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile());
         }
 
         Map<String, String> flywayPlaceholders = ImmutableMap.of(
-                "baseUrl", config.getBackendBaseUrl().orElse("http://localhost:8080"),
-                "exportSafeHours", String.valueOf(config.getExportSafeHours())
+                "baseUrl", config.backendBaseUrl().orElse("http://localhost:8080"),
+                "exportSafeHours", String.valueOf(config.exportSafeHours())
         );
         Flyway flyway = Flyway.configure()
                 .placeholders(flywayPlaceholders)
@@ -97,7 +97,7 @@ public class FisholaApplication {
                     InputStream resource = this.getClass().getResourceAsStream(path);
                     byte[] bytes = IOUtils.toByteArray(resource);
                     if (log.isInfoEnabled()) {
-                        log.info("Insertion du PDF par défaut : " + documentation.getName());
+                        log.infof("Insertion du PDF par défaut : %s", documentation.getName());
                     }
                     documentation.setContent(bytes);
                     documentationDao.updateDocumentation(documentation);

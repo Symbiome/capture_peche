@@ -35,15 +35,19 @@
     <PictureModal
       v-if="src && showModal && enableModal"
       v-bind:src="src"
-      v-bind:replaceButton="modifiable"
-      v-on:replace="onReplace"
+      v-bind:deleteButton="deletable"
+      v-on:delete="onDelete"
       v-on:closeModal="closeModal"
+      :otherPics="otherPics"
+      :measurementPictureSrc="measurementPictureSrc"
+      @take-picture="$emit('take-picture')"
     />
   </div>
 </template>
 
 <script lang="ts">
 import PictureModal from "@/components/trip/PictureModal.vue";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 
@@ -53,10 +57,12 @@ import { Component, Prop, Vue } from "vue-property-decorator";
   },
 })
 export default class PicturePreview extends Vue {
-  @Prop() src: string = "";
+  @Prop() src: string;
   @Prop({ default: "Aucune photo" }) noPictureText?: string;
-  @Prop({ default: true }) modifiable: boolean;
+  @Prop({ default: true }) deletable: boolean;
   @Prop({ default: true }) enableModal: boolean;
+  @Prop() otherPics: PictureContentWithOrder[];
+  @Prop({ default: "" }) measurementPictureSrc: "";
 
   showModal: boolean = false;
 
@@ -66,15 +72,16 @@ export default class PicturePreview extends Vue {
     if (this.enableModal) {
       this.showModal = true;
     }
+    this.$emit("picture-clicked");
   }
 
   closeModal() {
     this.showModal = false;
   }
 
-  onReplace() {
+  onDelete(pictureSrcToDelete: string) {
     this.closeModal();
-    this.$emit("take-picture");
+    this.$emit("delete-picture", pictureSrcToDelete);
   }
 
   pictureLoaded() {

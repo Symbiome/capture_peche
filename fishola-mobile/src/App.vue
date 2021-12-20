@@ -61,7 +61,11 @@ export default class AppView extends Vue {
   }
 
   layout() {
-    return (this.$route.meta.layout || "default") + "-layout";
+    if (this.$route.meta) {
+      return (this.$route.meta.layout || "default") + "-layout";
+    } else {
+      return "default-layout";
+    }
   }
 
   // TODO AThimel 07/12/2020 : Déplacer ça dans un service dédié à l'initialisation de l'application

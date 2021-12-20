@@ -23,9 +23,9 @@ package fr.inrae.fishola.rest.mapper;
 
 import fr.inrae.fishola.exceptions.AbstractFisholaRuntimeException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -35,7 +35,8 @@ import java.util.Map;
 @Provider
 public class FisholaExceptionMapper implements ExceptionMapper<AbstractFisholaRuntimeException> {
 
-    private static final Log log = LogFactory.getLog(FisholaExceptionMapper.class);
+    @Inject
+    protected Logger log;
 
     @Override
     public Response toResponse(AbstractFisholaRuntimeException exception) {
@@ -52,9 +53,7 @@ public class FisholaExceptionMapper implements ExceptionMapper<AbstractFisholaRu
             responseBuilder.entity(entity);
         }
 
-        if (log.isWarnEnabled()) {
-            log.warn(String.format("%s thrown: %s", exception.getClass().getName(), entity));
-        }
+        log.warnf("%s thrown: %s", exception.getClass().getName(), entity);
 
         Response result = responseBuilder.build();
         return result;

@@ -31,13 +31,13 @@ describe("Stress tests", () => {
     // Make sure OpenCV is ready
     cy.get("div[id=status").contains("OpenCV.js is ready");
     // Launch 100 detections to make sure that there is no memory leak
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 20; i++) {
       cy.task("log", "*** Attempt #" + i);
       // Attach picture file
       if (i % 2 == 0) {
         cy.get("[id=fileInput]").attachFile("markers/beta-TAN519b.jpg");
       } else {
-        cy.get("[id=fileInput]").attachFile("markers/beta-TAN418b.jpg");
+        cy.get("[id=fileInput]").attachFile("markers/beta-TAN478b.jpg");
       }
       cy.get("div[id=calculating]").contains("Calcul en cours");
 

@@ -23,7 +23,7 @@ export class OpenCVDetectionConfig {
   resizeSize = 300;
 
   /*  The marker size "in real world" - float (in cm) */
-  markerSizeInMm = 97;
+  markerSizeInMm = 90;
 
   /* The minimum % of the screen each shape except marker should cover - float between 0 & 1*/
   minSizeRatio = 0.3;
@@ -93,6 +93,12 @@ export class OpenCVDetectionConfig {
 
   /* Indicates if we should draw debug shapes in dedicated canvas*/
   drawDebugCanvas = true;
+
+  /** Marker crop will never exceed this amount in px */
+  markerMaxCroppingInPixels = 4;
+
+  /** Marker crop will never exeed this amount in proportion */
+  markerMaxCroppingInProportion = 0.98;
 
   /**
    * Indicates if there is  marker on the pictures to analyse (alway true, only set to false for testing purpose)

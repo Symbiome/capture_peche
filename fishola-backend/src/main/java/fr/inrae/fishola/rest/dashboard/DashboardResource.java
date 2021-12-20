@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -49,8 +50,7 @@ import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -84,7 +84,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource extends AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(DashboardResource.class);
+    @Inject
+    protected Logger log;
 
     @Inject
     protected MailService mailService;
@@ -136,11 +137,12 @@ public class DashboardResource extends AbstractFisholaResource {
         Set<UUID> catchIds = allCatches.stream()
                 .map(Catch::getId)
                 .collect(Collectors.toSet());
-        Set<UUID> catchsWithPictures = catchsDao.checkForPictures(catchIds);
-        Map<UUID, List<CatchBean>> topBySize = computeTopCatchs(allCatches, catchsWithPictures, Catch::getSize);
+        ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
+        Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
+        Map<UUID, List<CatchBean>> topBySize = computeTopCatchs(allCatches, catchsWithPictures, measurementPictures, Catch::getSize);
         builder.topBySize(topBySize);
 
-        Map<UUID, List<CatchBean>> topByWeight = computeTopCatchs(allCatches, catchsWithPictures, Catch::getWeight);
+        Map<UUID, List<CatchBean>> topByWeight = computeTopCatchs(allCatches, catchsWithPictures, measurementPictures, Catch::getWeight);
         builder.topByWeight(topByWeight);
 
         List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
@@ -165,7 +167,7 @@ public class DashboardResource extends AbstractFisholaResource {
     }
 
     protected Optional<Integer> getYearFilter() {
-        Optional<Integer> result = config.isDashboardOnlyCurrentYear()
+        Optional<Integer> result = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
         return result;
@@ -240,19 +242,21 @@ public class DashboardResource extends AbstractFisholaResource {
     }
 
     protected List<CatchBean> toDashboardTopCatchs(Collection<Catch> catches,
-                                                      Ordering<Catch> ordering,
-                                                      Set<UUID> catchsWithPictures) {
+                                                   Ordering<Catch> ordering,
+                                                   ListMultimap<UUID, Integer> catchsWithPictures,
+                                                   Set<UUID> measurementPictures) {
         List<CatchBean> result = ordering.immutableSortedCopy(catches)
                 .stream()
                 .limit(5)
-                .map(aCatch -> TripResource.toCatchBean(aCatch, catchsWithPictures))
+                .map(aCatch -> TripResource.toCatchBean(aCatch, catchsWithPictures, measurementPictures))
                 .collect(Collectors.toList());
         return result;
     }
 
     protected Map<UUID, List<CatchBean>> computeTopCatchs(Collection<Catch> allCatches,
-                                                        Set<UUID> catchsWithPictures,
-                                                        Function<Catch, Integer> getter) {
+                                                          ListMultimap<UUID, Integer> catchsWithPictures,
+                                                          Set<UUID> measurementPictures,
+                                                          Function<Catch, Integer> getter) {
         Multimap<UUID, Catch> catchsBySpecies = Multimaps.index(allCatches, Catch::getSpeciesId);
         // On commence par retirer les captures dont la valeur est nulle
         catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.apply(aCatch) != null);
@@ -264,7 +268,7 @@ public class DashboardResource extends AbstractFisholaResource {
         Map<UUID, List<CatchBean>> result = new HashMap<>();
         catchsBySpecies.asMap()
                 .forEach((key, value) -> {
-                    List<CatchBean> topCatchs = toDashboardTopCatchs(value, ordering, catchsWithPictures);
+                    List<CatchBean> topCatchs = toDashboardTopCatchs(value, ordering, catchsWithPictures, measurementPictures);
                     result.put(key, topCatchs);
                 });
         return result;
@@ -308,7 +312,7 @@ public class DashboardResource extends AbstractFisholaResource {
         final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
                 this::computeNewGlobalDashboard,
                 GlobalDashboard::computedOn,
-                Duration.ofMinutes(config.getGlobalDashboardTimeoutMinutes()),
+                Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
                 false
         );
 
@@ -356,7 +360,7 @@ public class DashboardResource extends AbstractFisholaResource {
         GlobalDashboard result = builder.build();
 
         if (log.isDebugEnabled()) {
-            log.debug("Nouvelle instance: " + result);
+            log.debugf("Nouvelle instance: %s", result);
         }
         return result;
     }

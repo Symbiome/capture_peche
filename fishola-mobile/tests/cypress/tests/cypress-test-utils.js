@@ -23,11 +23,7 @@ import MarkerTestPicture from "../../commons/MarkerTestPicture";
 
 const defaultMarkerPath = "markers/marker.jpg";
 
-export function markerPic(
-  imgPath,
-  comment,
-  expectedMarkerRatio
-) {
+export function markerPic(imgPath, comment, expectedMarkerRatio) {
   return new MarkerTestPicture(
     defaultMarkerPath,
     "markers/" + imgPath,
@@ -42,7 +38,8 @@ export function fishWithMarkerPic(
   imgPath,
   comment,
   expectedFishOnImageRatio,
-  picQuality
+  picQuality,
+  expectedMeasureInMm
 ) {
   return new MarkerTestPicture(
     defaultMarkerPath,
@@ -50,10 +47,10 @@ export function fishWithMarkerPic(
     true,
     expectedFishOnImageRatio,
     comment,
-    picQuality
+    picQuality,
+    expectedMeasureInMm
   );
 }
-
 
 export function fishPic(
   imgPath,

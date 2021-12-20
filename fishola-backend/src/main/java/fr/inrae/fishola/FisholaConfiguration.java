@@ -22,8 +22,9 @@ package fr.inrae.fishola;
  */
 
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.configuration.ProfileManager;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,19 +34,19 @@ import java.io.File;
 import java.util.Optional;
 import java.util.Properties;
 
-@ConfigProperties(prefix = "fishola")
+@ConfigMapping(prefix = "fishola")
 public interface FisholaConfiguration {
 
-    String getVersion();
+    String version();
 
-    String getGitRevision();
+    String gitRevision();
 
     default String getFullVersion() {
-        String result = String.format("%s (%s)", getVersion(), getGitRevision());
+        String result = String.format("%s (%s)", version(), gitRevision());
         return result;
     }
 
-    String getBuildDate();
+    String buildDate();
 
     default String getActiveProfile() {
         return ProfileManager.getActiveProfile();
@@ -57,29 +58,29 @@ public interface FisholaConfiguration {
         return result;
     }
 
-    @ConfigProperty(defaultValue = "12")
-    int getPasswordHashCost();
+    @WithDefault("12")
+    int passwordHashCost();
 
-    String getJwtSecret();
+    String jwtSecret();
 
-    @ConfigProperty(defaultValue = "24")
-    int getJwtLifetimeHours();
+    @WithDefault("24")
+    int jwtLifetimeHours();
 
-    @ConfigProperty(defaultValue = "168") // Renouvellement accepté pendant 7j (168=7*24) après expiration
-    int getJwtRenewalHours();
+    @WithDefault("168") // Renouvellement accepté pendant 7j (168=7*24) après expiration
+    int jwtRenewalHours();
 
-    @ConfigProperty(defaultValue = "168")
-    int getTripModifiableHours();
+    @WithDefault("168")
+    int tripModifiableHours();
 
-    @ConfigProperty(defaultValue = "168") // Délai avant que les sorties soient disponibles dans le fichier d'export. En théorie ce chiffre doit être le même que #getTripModifiableHours()
-    int getExportSafeHours();
+    @WithDefault("168") // Délai avant que les sorties soient disponibles dans le fichier d'export. En théorie ce chiffre doit être le même que #getTripModifiableHours()
+    int exportSafeHours();
 
-    Optional<String> getBackendBaseUrl();
+    Optional<String> backendBaseUrl();
 
-    Optional<String> getBackendDeeplinkSafeBaseUrl();
+    Optional<String> backendDeeplinkSafeBaseUrl();
 
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
-        Optional<String> backendBaseUrl = getBackendBaseUrl();
+        Optional<String> backendBaseUrl = backendBaseUrl();
         String result;
         if (backendBaseUrl.isPresent()) { // Ne pas utiliser de lambda sinon ça plante au démarrage
             result = backendBaseUrl.get();
@@ -107,7 +108,7 @@ public interface FisholaConfiguration {
     }
 
     default String getDeeplinkSafeApiUrl(String path, HttpServletRequest httpServletRequest) {
-        Optional<String> deeplinkSafeBaseUrl = getBackendDeeplinkSafeBaseUrl();
+        Optional<String> deeplinkSafeBaseUrl = backendDeeplinkSafeBaseUrl();
         if (deeplinkSafeBaseUrl.isPresent()) {
             String result = String.format("%s%s", deeplinkSafeBaseUrl.get(), path);
             return result;
@@ -116,51 +117,55 @@ public interface FisholaConfiguration {
         }
     }
 
-    @ConfigProperty(defaultValue = "fishola@codelutin.com")
-    String getMailFrom();
+    @WithDefault("fishola@codelutin.com")
+    String mailFrom();
 
-    Optional<String> getSmtpUsername();
+    Optional<String> smtpUsername();
 
-    Optional<String> getSmtpPassword();
+    Optional<String> smtpPassword();
 
-    @ConfigProperty(defaultValue = "false")
-    boolean getSmtpStarttls();
+    @WithDefault("false")
+    boolean smtpStarttls();
 
-    String getSmtpHost();
+    String smtpHost();
 
-    @ConfigProperty(defaultValue = "25")
-    int getSmtpPort();
+    @WithDefault("25")
+    int smtpPort();
 
     default Properties getMailProperties() {
-        boolean auth = getSmtpUsername().isPresent() && getSmtpPassword().isPresent();
+        boolean auth = smtpUsername().isPresent() && smtpPassword().isPresent();
         Properties prop = new Properties();
         prop.put("mail.smtp.auth", auth);
-        prop.put("mail.smtp.starttls.enable", String.valueOf(getSmtpStarttls()));
-        prop.put("mail.smtp.host", getSmtpHost());
-        prop.put("mail.smtp.port", String.valueOf(getSmtpPort()));
+        prop.put("mail.smtp.starttls.enable", String.valueOf(smtpStarttls()));
+        prop.put("mail.smtp.host", smtpHost());
+        prop.put("mail.smtp.port", String.valueOf(smtpPort()));
 //        prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
         return prop;
     }
 
-    @ConfigProperty(defaultValue = "true")
-    boolean isAsyncEmails();
+    @WithDefault("true")
+    boolean asyncEmails();
 
-    @ConfigProperty(defaultValue = "60")
-    int getAsyncEmailsRetentionMinutes();
+    @WithDefault("60")
+    int asyncEmailsRetentionMinutes();
+
+    @WithDefault("30s")
+    // Utilisé directement par MailService#sendPendingEmails()
+    String asyncEmailsEvery();
 
     /**
      * Par défaut la qualité semble être de ~0.74.
      * Pour une qualité équivalent mettre 0.98.
      * .90 pourrait être un bon compromis.
      */
-    @ConfigProperty(defaultValue = ".90f")
-    float getRawImageQuality();
+    @WithDefault(".90f")
+    float rawImageQuality();
 
-    @ConfigProperty(defaultValue = "/tmp/fishola-pictures")
-    String getPicturesPreviewFolderPath();
+    @WithDefault("/tmp/fishola-pictures")
+    String picturesPreviewFolderPath();
 
     default File getPicturesPreviewFolder() {
-        File result = new File(getPicturesPreviewFolderPath());
+        File result = new File(picturesPreviewFolderPath());
         Log log = LogFactory.getLog(FisholaConfiguration.class);
         if (result.mkdirs() && log.isInfoEnabled()) {
             log.info("Création du dossier de stockage des previews : " + result.getAbsolutePath());
@@ -168,21 +173,21 @@ public interface FisholaConfiguration {
         return result;
     }
 
-    String getFeedbackMailTo();
+    String feedbackMailTo();
 
-    @ConfigProperty(defaultValue = "false")
-    boolean isAutoVerifyAccounts();
+    @WithDefault("false")
+    boolean autoVerifyAccounts();
 
     @ConfigProperty
-    String getAdminPassword();
+    String adminPassword();
 
-    @ConfigProperty(defaultValue = "24")
-    long getKeyFiguresTimeoutHours();
+    @WithDefault("24")
+    long keyFiguresTimeoutHours();
 
-    @ConfigProperty(defaultValue = "true")
-    boolean isDashboardOnlyCurrentYear();
+    @WithDefault("true")
+    boolean dashboardOnlyCurrentYear();
 
-    @ConfigProperty(defaultValue = "15")
-    long getGlobalDashboardTimeoutMinutes();
+    @WithDefault("15")
+    long globalDashboardTimeoutMinutes();
 
 }

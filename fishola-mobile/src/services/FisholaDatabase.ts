@@ -32,6 +32,7 @@ export default class FisholaDatabase extends Dexie {
     onCreationTrip: Dexie.Table<any, string>;
     dirtyTrips: Dexie.Table<TripBean, string>;
     dirtyPictures: Dexie.Table<StoredPicture, string>;
+    toDeletePictures: Dexie.Table<StoredPicture, string>;
     offlineStorage: Dexie.Table<OfflineEntry, string>;
     offlineFeedbacks: Dexie.Table<Feedback, string>;
 
@@ -61,9 +62,28 @@ export default class FisholaDatabase extends Dexie {
             offlineFeedbacks: 'id'
         });
 
+        // As StoredPicture model has changed (new fields), new version is required even though collections did not change
+        this.version(5).stores({
+            onCreationTrip: "id",
+            dirtyTrips: "id",
+            dirtyPictures: "id, order, catch",
+            offlineStorage: "key",
+            offlineFeedbacks: "id",
+        });
+
+        this.version(6).stores({
+          onCreationTrip: "id",
+          dirtyTrips: "id",
+          dirtyPictures: "id, order, catch",
+          toDeletePictures: "id, order, catch",
+          offlineStorage: "key",
+          offlineFeedbacks: "id",
+        });
+
         this.onCreationTrip = this.table("onCreationTrip");
         this.dirtyTrips = this.table("dirtyTrips");
         this.dirtyPictures = this.table("dirtyPictures");
+        this.toDeletePictures = this.table("toDeletePictures");
         this.offlineStorage = this.table("offlineStorage");
         this.offlineFeedbacks = this.table("offlineFeedbacks");
 

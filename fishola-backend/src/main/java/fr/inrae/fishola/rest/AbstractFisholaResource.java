@@ -26,8 +26,7 @@ import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -45,7 +44,8 @@ import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
 
-    private static final Log log = LogFactory.getLog(AbstractFisholaResource.class);
+    @Inject
+    protected Logger log;
 
     public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
@@ -140,7 +140,7 @@ public abstract class AbstractFisholaResource {
             boolean isValid = usersDao.isValidUserId(userId);
             if (isValid) {
                 if (log.isInfoEnabled()) {
-                    log.info("Renouvellement automatique du token JWT pour l'utilisateur " + userId);
+                    log.infof("Renouvellement automatique du token JWT pour l'utilisateur %s", userId);
                 }
                 String newToken = jwtHelper.createUserToken(userId);
                 UserIdAndRenewal result = UserIdAndRenewal.of(userId, newToken);
@@ -149,9 +149,7 @@ public abstract class AbstractFisholaResource {
                 return Optional.empty();
             }
         } catch (Exception eee) {
-            if (log.isWarnEnabled()) {
-                log.warn("Le renouvellement de Token n'est pas possible", eee);
-            }
+            log.warn("Le renouvellement de Token n'est pas possible", eee);
             return Optional.empty();
         }
     }

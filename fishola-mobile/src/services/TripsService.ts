@@ -125,21 +125,24 @@ export default class TripsService extends AbstractFisholaService {
 
     static backendCatchToCatchBean(realDate:moment.Moment, input:any):CatchBean {
 
-        const result:any = {
-            tripId: input.tripId,
-            id: input.id,
-            speciesId: input.speciesId,
-            size: input.size,
-            weight: input.weight,
-            keep: input.keep,
-            releasedStateId: input.releasedStateId,
-            techniqueId: input.techniqueId,
-            description: input.description,
-            sampleId: input.sampleId,
-            hasPicture: input.hasPicture,
-            latitude: input.latitude,
-            longitude: input.longitude,
-            caughtAt: input.caughtAt
+        const result: any = {
+          tripId: input.tripId,
+          id: input.id,
+          speciesId: input.speciesId,
+          size: input.size,
+          weight: input.weight,
+          keep: input.keep,
+          releasedStateId: input.releasedStateId,
+          techniqueId: input.techniqueId,
+          description: input.description,
+          sampleId: input.sampleId,
+          hasPicture: input.hasPicture,
+          latitude: input.latitude,
+          longitude: input.longitude,
+          caughtAt: input.caughtAt,
+          automaticMeasure: input.automaticMeasure,
+          pictureOrders: input.pictureOrders,
+          hasMeasurementPicture: input.hasMeasurementPicture,
         };
 
         return result;
@@ -642,7 +645,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static deleteCatch(tripId:any, catchId:any, callback:() => void) {
-        PicturesService.deletePicture(catchId);
+        PicturesService.deleteAllPicturesForCatch(catchId);
         TripsService.getTrip(tripId, (trip:TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];

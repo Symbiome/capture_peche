@@ -19,6 +19,11 @@
 -- #L%
 ---
 
+-- Suppression des vues d'export
+
+DROP VIEW IF EXISTS catchs_export;
+DROP VIEW IF EXISTS personal_catchs_export;
+
 -- VUE : trip_species_names
 
 CREATE OR REPLACE VIEW trip_species_names AS
@@ -43,21 +48,42 @@ INNER JOIN technique t
 GROUP BY tt.trip_id;
 COMMENT ON VIEW trip_techniques_names IS 'Permet d''avoir, pour chaque sortie, la liste des techniques séparées par des virgules';
 
--- VUE : catch_picture_url
+-- VUE : catch_picture_url (obsolète)
 
-CREATE OR REPLACE VIEW catch_picture_url AS
+DROP VIEW IF EXISTS catch_picture_url;
+
+-- VUE : catch_picture_urls
+
+CREATE OR REPLACE VIEW catch_picture_urls AS
 SELECT
     c.id AS catch_id,
-    ('${baseUrl}/api/v1/pictures/' || cp.catch_id) AS url
+    ('${baseUrl}/api/v1/pictures/' || cp.catch_id || '/' || cp.picture_index) AS url
 FROM catch c
 INNER JOIN catch_picture cp
-    ON cp.catch_id = c.id;
+    ON cp.catch_id = c.id
+UNION
+SELECT
+    c.id AS catch_id,
+    ('${baseUrl}/api/v1/pictures/measure/' || cmp.catch_id) AS url
+FROM catch c
+INNER JOIN catch_measurement_picture cmp
+    ON cmp.catch_id = c.id;
 
-COMMENT ON VIEW catch_picture_url IS 'Permet d''avoir, pour chaque capture, l''URL pour télécharger l''image';
+COMMENT ON VIEW catch_picture_urls IS 'Permet d''avoir, pour chaque capture, les URLs pour télécharger les images';
+
+-- VUE : catch_picture_urls
+
+CREATE OR REPLACE VIEW catch_picture_joined_urls AS
+SELECT
+    cpu.catch_id,
+    string_agg(cpu.url, ',') as urls
+FROM catch_picture_urls cpu
+GROUP BY cpu.catch_id;
+
+COMMENT ON VIEW catch_picture_joined_urls IS 'Permet d''avoir, pour chaque capture, la concaténation des URLs pour télécharger les images';
 
 -- VUE : catchs_export
 
-DROP VIEW IF EXISTS catchs_export;
 CREATE VIEW catchs_export AS
 SELECT
     'FISHOLA' AS nom_du_projet,
@@ -97,7 +123,7 @@ SELECT
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
-    cpu.url AS url_photos,
+    cpju.urls AS url_photos,
     c.sample_id AS id_prelevement,
     w.export_as AS conditions_meteo,
     c.description AS commentaires,
@@ -113,7 +139,7 @@ LEFT JOIN weather w ON w.id = t.weather_id
 LEFT JOIN catch c ON t.id = c.trip_id
 LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
-LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
 AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
 
@@ -128,7 +154,6 @@ COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
 -- VUE : personal_catchs_export
 
-DROP VIEW IF EXISTS personal_catchs_export;
 CREATE VIEW personal_catchs_export AS
 SELECT
     l.export_as AS nom_du_site,
@@ -159,7 +184,7 @@ SELECT
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
-    cpu.url AS url_photos,
+    cpju.urls AS url_photos,
     c.sample_id AS id_prelevement,
     w.export_as AS conditions_meteo,
     c.description AS commentaires,
@@ -175,7 +200,7 @@ LEFT JOIN weather w ON w.id = t.weather_id
 LEFT JOIN catch c ON t.id = c.trip_id
 LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
-LEFT JOIN catch_picture_url cpu ON cpu.catch_id = c.id
+LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE t.hidden = false
 ;
 

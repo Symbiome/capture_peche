@@ -98,6 +98,9 @@ describe("Mesures de poissons", () => {
           .invoke("text")
           .then((shapesNumber) => {
             if (parseInt(shapesNumber) !== expectedShapesNumber) {
+              testResults[i].grade = computeGradeWithPxRatioResult(
+                testResults[i]
+              );
               failWithGrade(
                 testResults[i],
                 "Mauvais nombre de poissons détectés (" +
@@ -113,7 +116,11 @@ describe("Mesures de poissons", () => {
             cy.get("span[id=resultText]")
               .invoke("text")
               .then((rawMeasureText) => {
-                const fishSize = rawMeasureText
+                const fishSizeInMM = rawMeasureText
+                  .split("Détecté : Poisson")[1]
+                  .split("mm")[0]
+                  .trim();
+                const fishSizeInPx = rawMeasureText
                   .split("Détecté : Poisson")[1]
                   .split("mm (")[1]
                   .split("px")[0]
@@ -121,29 +128,48 @@ describe("Mesures de poissons", () => {
                 cy.get("input[id=resizeSize]")
                   .invoke("val")
                   .then((imageSize) => {
-                    const actualFishOnPictureSizeRatio =
-                      Math.round(
-                        (parseInt(fishSize) / parseInt(imageSize)) * 1000
-                      ) / 1000;
-                    const ratioDiff = Math.abs(
-                      actualFishOnPictureSizeRatio -
-                        testPicture.expectedFishOnImageRatio
-                    );
-                    testResults[i].diffBetweenExpectRationAndActual = ratioDiff;
-                    testResults[i].grade = computeGrade(testResults[i]);
+                    let actualSizeString = "";
+                    let expectedSizeString = "";
+                    if (testPicture.expectedMeasureInMm) {
+                      // If we have the actual measure in cm, use this to measure quality
+                      actualSizeString = fishSizeInMM;
+                      expectedSizeString =
+                        testPicture.expectedMeasureInMm + "mm";
+                      testResults[i].grade = computeGradeWithMmMeasureResult(
+                        testResults[i],
+                        testPicture.expectedMeasureInMm,
+                        fishSizeInMM
+                      );
+                    } else {
+                      const actualFishOnPictureSizeRatio =
+                        // Otherwise use fish on whole picture ratio
+                        Math.round(
+                          (parseInt(fishSizeInPx) / parseInt(imageSize)) * 1000
+                        ) / 1000;
+                      const ratioDiff = Math.abs(
+                        actualFishOnPictureSizeRatio -
+                          testPicture.expectedFishOnImageRatio
+                      );
+                      testResults[
+                        i
+                      ].diffBetweenExpectRationAndActual = ratioDiff;
+                      actualSizeString = `${fishSizeInPx} px = ${Math.round(
+                        actualFishOnPictureSizeRatio * 1000
+                      ) / 10} % de l'image totale`;
+                      expectedSizeString =
+                        Math.round(
+                          testPicture.expectedFishOnImageRatio * 1000
+                        ) /
+                          10 +
+                        "%";
+                      testResults[i].grade = computeGradeWithPxRatioResult(
+                        testResults[i]
+                      );
+                    }
                     if (testResults[i].grade < 20) {
                       failWithGrade(
                         testResults[i],
-                        "Taille du poisson trop peu précise (" +
-                          parseInt(fishSize) +
-                          "px = " +
-                          Math.round(actualFishOnPictureSizeRatio * 1000) / 10 +
-                          "% de l'image totale) au lieu de " +
-                          Math.round(
-                            testPicture.expectedFishOnImageRatio * 1000
-                          ) /
-                            10 +
-                          "%"
+                        `Taille du poisson trop peu précise (${actualSizeString} vs ${expectedSizeString})`
                       );
                     }
                   });
@@ -255,7 +281,7 @@ function computeFinalGradeString(
 /**
  * Provides a grade (/20) for the given test result
  */
-function computeGrade(testResult) {
+function computeGradeWithPxRatioResult(testResult) {
   // Grade each test result on 20 points
   let grade = 0;
   // 3 point for marker detection
@@ -288,10 +314,53 @@ function computeGrade(testResult) {
   return grade;
 }
 
+/**
+ * Provides a grade (/20) for the given test result
+ */
+function computeGradeWithMmMeasureResult(
+  testResult,
+  expectedMeasureInMm,
+  actualMeasureInMm
+) {
+  // Grade each test result on 20 points
+  let grade = 0;
+  // 3 point for marker detection
+  if (testResult.markerDetectedAsExpected) {
+    grade += 3;
+  }
+  if (testResult.fishDetectedAsExpected) {
+    // 3 point for fish detection
+    grade += 3;
+
+    // 3 points if diff below 5cm
+    const diffInMm = Math.abs(expectedMeasureInMm - actualMeasureInMm);
+    if (diffInMm < 50) {
+      grade += 3;
+      if (diffInMm < 35) {
+        // 3 additional points if ratio below 'bigRatioError'
+        grade += 3;
+        mediumRatioError;
+        if (diffInMm < 27) {
+          // 3 additional points if ratio below 'lowRationError'
+          grade += 3;
+          if (diffInMm < 15) {
+            grade += 3;
+            if (diffInMm < 10) {
+              // Grade = 18 (total up to this point) + diff
+              let diff = 0.2 * (10 - diffInMm);
+              grade = 18 + diff;
+            }
+          }
+        }
+      }
+    }
+  }
+  return grade;
+}
+
 function failWithGrade(testResult, failureMessage) {
-  const grade = computeGrade(testResult);
-  if (grade < 20) {
-    assert.fail("Note : " + grade + "/20 - " + failureMessage);
+  if (testResult.grade < 20) {
+    assert.fail("Note : " + testResult.grade + "/20 - " + failureMessage);
   }
 }
 
@@ -305,22 +374,22 @@ function getPicturesToTest() {
 
   // Beta pictures
   pics.push(
-    fishWithMarkerPic("beta-GAR130b.jpg", "marqueur tâché", 7.2 / 15, beta)
+    fishWithMarkerPic("beta-GAR130b.jpg", "marqueur tâché", 7.2 / 15, beta, 130)
   );
   pics.push(
-    fishWithMarkerPic("beta-OBL285b.jpg", "marqueur collé", 9.5 / 15, beta)
+    fishWithMarkerPic("beta-OBL285b.jpg", "marqueur collé", 9.5 / 15, beta, 285)
   );
   pics.push(
-    fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 9.3 / 15, beta)
+    fishWithMarkerPic("beta-PER297b.jpg", "chloé 13/09", 9.3 / 15, beta, 297)
   );
   pics.push(
-    fishWithMarkerPic("beta-PER313.jpg", "chloé 13/09", 8.5 / 15, beta)
+    fishWithMarkerPic("beta-PER313.jpg", "chloé 13/09", 8.5 / 15, beta, 313)
   );
   pics.push(
-    fishWithMarkerPic("beta-TAN418b.jpg", "chloé 13/09", 9.1 / 15, beta)
+    fishWithMarkerPic("beta-TAN478b.jpg", "chloé 13/09", 9.1 / 15, beta, 478)
   );
   pics.push(
-    fishWithMarkerPic("beta-TAN519b.jpg", "chloé 13/09", 9.5 / 15, beta)
+    fishWithMarkerPic("beta-TAN519b.jpg", "chloé 13/09", 9.5 / 15, beta, 519)
   );
   // Optimal pictures
   pics.push(fishWithMarkerPic("marker_1.jpg", "parfaite", 6.8 / 15, optimal));

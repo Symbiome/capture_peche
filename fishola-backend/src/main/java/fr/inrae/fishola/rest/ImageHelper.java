@@ -21,6 +21,11 @@ package fr.inrae.fishola.rest;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
+import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -28,11 +33,55 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Base64;
 
 public class ImageHelper {
+
+    private static final Log log = LogFactory.getLog(ImageHelper.class);
+
+    public static byte[] base64ImageToJpegBytes(String base64Image, float rawImageQuality) {
+
+        byte[] bytes = Base64.getDecoder().decode(base64Image);
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
+            BufferedImage image = ImageIO.read(bis);
+            bis.close();
+
+            image = ImageHelper.removeAlphaIfPresent(image);
+
+//            Set<String> formats = ImmutableSet.of("jpeg");
+//            for (String format : formats) {
+//                for (float quality = 1f; quality >= 0.90f; quality -= 0.01f) {
+//                    // write the image to a file
+//                    byte[] testBytes = imageToBytes(image, format, quality);
+//                    File parent = new File("/tmp/taiste-0.01");
+//                    parent.mkdirs();
+//                    File file = new File(parent, String.format("%s-%s-%.3f.%s", format, catchId, quality, format));
+//                    Files.write(testBytes, file);
+//
+//                    if (testBytes.length > 0) {
+//                        log.info(String.format("%s/%.3f=%dkb en %s", format, quality, testBytes.length / 1024, file.getAbsolutePath()));
+//                    }
+//                }
+//            }
+
+            byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", rawImageQuality);
+            if (jpegBytes.length > 0) {
+                log.info("Pas de soucis pour: " + image);
+                LogFactory.getLog(ImageHelper.class).info(String.format("Taille: %dkb", jpegBytes.length / 1024));
+            }
+
+            Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
+
+            return jpegBytes;
+        } catch (IOException ioe) {
+            throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
+        }
+
+    }
 
     public static BufferedImage removeAlphaIfPresent(BufferedImage image) {
         // On gère le cas de photos avec un canal alpha -> on le remplace par du noir

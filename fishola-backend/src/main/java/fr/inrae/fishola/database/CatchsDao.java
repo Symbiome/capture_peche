@@ -23,16 +23,23 @@ package fr.inrae.fishola.database;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.Lake;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
+import fr.inrae.fishola.entities.tables.daos.CatchMeasurementPictureDao;
 import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -45,6 +52,7 @@ import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 
@@ -79,6 +87,7 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public void delete(UUID catchId) {
         withContextNoResult(context -> {
+            context.deleteFrom(Tables.CATCH_MEASUREMENT_PICTURE).where(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID.eq(catchId)).execute();
             context.deleteFrom(Tables.CATCH_PICTURE).where(Tables.CATCH_PICTURE.CATCH_ID.eq(catchId)).execute();
             context.deleteFrom(Tables.CATCH).where(Tables.CATCH.ID.eq(catchId)).execute();
         });
@@ -93,26 +102,90 @@ public class CatchsDao extends AbstractFisholaDao {
         return aCatch;
     }
 
-    public void setPicture(UUID catchId, byte[] bytes) {
-        CatchPicture newCatchPicture = new CatchPicture(catchId, bytes);
+    protected Record2<UUID, Integer> asPictureId(UUID catchId, int pictureIndex) {
+        DSLContext dslContext = newContext();
+        Record2<UUID, Integer> someRecord = dslContext.newRecord(Tables.CATCH_PICTURE.CATCH_ID, Tables.CATCH_PICTURE.PICTURE_INDEX);
+        Record2<UUID, Integer> pictureId = someRecord.values(catchId, pictureIndex);
+        return pictureId;
+    }
+
+    public void setPicture(UUID catchId, int pictureIndex, byte[] bytes) {
+        final Record2<UUID, Integer> pictureId = asPictureId(catchId, pictureIndex);
+        CatchPicture newCatchPicture = new CatchPicture(catchId, bytes, pictureIndex);
         withDaoNoResult(CatchPictureDao.class, dao -> {
+            dao.deleteById(pictureId);
+            dao.insert(newCatchPicture);
+        });
+    }
+
+    public void setMeasurementPicture(UUID catchId, byte[] bytes) {
+        CatchMeasurementPicture newCatchPicture = new CatchMeasurementPicture(catchId, bytes);
+        withDaoNoResult(CatchMeasurementPictureDao.class, dao -> {
             dao.deleteById(catchId);
             dao.insert(newCatchPicture);
         });
     }
 
-    public Optional<byte[]> getPicture(UUID catchId) {
-        CatchPicture picture = withDao(CatchPictureDao.class, dao -> dao.findById(catchId));
+    public Optional<byte[]> getPicture(UUID catchId, int pictureIndex) {
+        final Record2<UUID, Integer> pictureId = asPictureId(catchId, pictureIndex);
+        CatchPicture picture = withDao(CatchPictureDao.class, dao -> dao.findById(pictureId));
         Optional<byte[]> result = Optional.ofNullable(picture).map(CatchPicture::getContent);
         return result;
     }
 
-    public Set<UUID> checkForPictures(Set<UUID> catchIds) {
-        Set<UUID> result = withContext(context -> {
-            Set<UUID> records = context.select(Tables.CATCH_PICTURE.CATCH_ID)
+    public Optional<byte[]> getMeasurementPicture(UUID catchId) {
+        CatchMeasurementPicture picture = withDao(CatchMeasurementPictureDao.class, dao -> dao.findById(catchId));
+        Optional<byte[]> result = Optional.ofNullable(picture).map(CatchMeasurementPicture::getContent);
+        return result;
+    }
+
+    public Optional<byte[]> getLastPicture(UUID catchId) {
+        List<Integer> indexes = getPictureIndexes(catchId);
+        if (CollectionUtils.isEmpty(indexes)) {
+            return Optional.empty();
+        }
+        final OptionalInt max = indexes.stream().mapToInt(a -> a).max();
+        final int maximalIndex = max.getAsInt();
+        return this.getPicture(catchId, maximalIndex);
+    }
+
+    public void deletePicture(UUID catchId, int pictureIndex) {
+        final Record2<UUID, Integer> pictureId = asPictureId(catchId, pictureIndex);
+        withDaoNoResult(CatchPictureDao.class, dao -> dao.deleteById(pictureId));
+    }
+
+    public List<Integer> getPictureIndexes(UUID catchId) {
+        ListMultimap<UUID, Integer> multimap = getPictureIndexes(ImmutableSet.of(catchId));
+        List<Integer> pictureIndexes = multimap.get(catchId);
+        return pictureIndexes;
+    }
+
+    public ListMultimap<UUID, Integer> getPictureIndexes(Set<UUID> catchIds) {
+        ListMultimap<UUID, Integer> result = withContext(context -> {
+            Result<Record2<UUID, Integer>> records = context.select(Tables.CATCH_PICTURE.CATCH_ID, Tables.CATCH_PICTURE.PICTURE_INDEX)
                     .from(Tables.CATCH_PICTURE)
                     .where(Tables.CATCH_PICTURE.CATCH_ID.in(catchIds))
-                    .fetchSet(Tables.CATCH_PICTURE.CATCH_ID);
+                    .fetch();
+            LinkedListMultimap<UUID, Integer> multimap = LinkedListMultimap.create();
+            for (Record2<UUID, Integer> record : records) {
+                final UUID catchId = record.component1();
+                final int order = record.component2();
+                multimap.put(catchId, order);
+            }
+            return multimap;
+        });
+        return result;
+    }
+
+    /**
+     * Calcule la liste des captures ayant une photo de mesure parmi la liste donnée
+     */
+    public Set<UUID> getMeasurementPictures(Set<UUID> catchIds) {
+        Set<UUID> result = withContext(context -> {
+            Set<UUID> records = context.select(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID)
+                    .from(Tables.CATCH_MEASUREMENT_PICTURE)
+                    .where(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID.in(catchIds))
+                    .fetchSet(Tables.CATCH_MEASUREMENT_PICTURE.CATCH_ID);
             return records;
         });
         return result;
