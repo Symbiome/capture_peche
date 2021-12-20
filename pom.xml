@@ -72,6 +72,7 @@
     <javaVersion>16</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
 
+    <dependencyPluginVersion>3.2.0</dependencyPluginVersion>
     <licensePluginVersion>2.0.0</licensePluginVersion>
   </properties>
 
