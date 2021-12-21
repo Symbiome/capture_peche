@@ -71,6 +71,7 @@
 
     <javaVersion>15</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
+    <gpg.skip>true</gpg.skip>
 
     <!-- Pour supporter Java 16, il faut upgrade en 3.2.0 mais alors l'analyse des dépendances se trompe : https://issues.apache.org/jira/projects/MDEP/issues/MDEP-780?filter=allopenissues-->
     <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
@@ -273,6 +274,16 @@
             <extraExtensions>
               <vue>html</vue>
             </extraExtensions>
+          </configuration>
+        </plugin>
+
+        <!-- Disable this execution if no GPG signature is expected -->
+        <plugin>
+          <groupId>org.nuiton</groupId>
+          <artifactId>helper-maven-plugin</artifactId>
+          <version>${helperPluginVersion}</version>
+          <configuration>
+            <skipShareServerSecret>${gpg.skip}</skipShareServerSecret>
           </configuration>
         </plugin>
 
