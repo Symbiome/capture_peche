@@ -59,7 +59,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>2.5.3.Final</quarkusVersion>
+    <quarkusVersion>2.5.4.Final</quarkusVersion>
     <jooqVersion>3.15.5</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
     <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
