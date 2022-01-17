@@ -289,7 +289,7 @@ export default class MeasurementPicturePopup extends Vue {
   }
   .popup-content {
     margin-top: 0px !important;
-    height: 82vh;
+    height: 100vh;
     overflow-y: auto;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
