@@ -33,7 +33,7 @@
         <h2 class="title">Mesure automatique</h2>
         <h4 v-if="errorMessage" class="error">{{ errorMessage }}</h4>
         <!-- pictures required for measurement -->
-        <div class="picture-holder">
+        <div class="picture-holder hiddenWhenKeyboardShows">
           <img id="marker" v-show="false" :src="markerSourceSRC" />
           <canvas
             v-show="measurementPictureSrc && !calculating"
