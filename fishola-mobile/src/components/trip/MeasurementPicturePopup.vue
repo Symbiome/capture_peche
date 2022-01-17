@@ -99,7 +99,11 @@
                 imprécise, vous pouvez la rectifier ci-dessous :
               </div>
               <span class="measure">
-                <i class="icon-success success" /> Mesure
+                <i
+                  class="icon-success success"
+                  v-if="markerFound && fishSizeAutomatedInMM"
+                />
+                Mesure
               </span>
               <!-- Correct measure -->
               <div class="success" v-if="markerFound && fishSizeAutomatedInMM">
