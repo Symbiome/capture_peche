@@ -700,19 +700,24 @@ export default class EditCatchView extends Vue {
               const fishes = detectedShapes.filter(
                 (shape: DetectedShape) => shape.isFish
               );
-              let fishSize = 0;
+              let fishSizeAutomatedInMm = 0;
               if (fishes.length === 1) {
-                fishSize = fishes[0].calculatedLenght;
+                fishSizeAutomatedInMm = fishes[0].calculatedLenght;
               }
               console.info(
                 "[Silent automatic measure] Success : " +
                   markers +
                   " markers and fish of " +
-                  fishSize +
+                  fishSizeAutomatedInMm +
                   "mm"
               );
-              if (markerFound && fishSize) {
-                this.gotAutomaticMeasure(fishSize);
+              if (markerFound && fishSizeAutomatedInMm) {
+                const measureAndPic = new MeasureAndPic(
+                  fishSizeAutomatedInMm,
+                  fishSizeAutomatedInMm,
+                  this.measurementPictureSrc
+                );
+                this.gotAutomaticMeasure(measureAndPic);
                 this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery =
                   true;
               }
@@ -904,7 +909,7 @@ export default class EditCatchView extends Vue {
     this.measurementPictureSrc = measureAndPic.measurePicSrc;
     this.pictureTaken(measureAndPic.measurePicSrc, true);
     this.focusedPicSrc = this.measurementPictureSrc;
-    this.gotAutomaticMeasure(measureAndPic.fishSize);
+    this.gotAutomaticMeasure(measureAndPic);
   }
 
   @Watch("withSample")
@@ -1109,11 +1114,13 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  gotAutomaticMeasure(measure: number) {
+  gotAutomaticMeasure(measure: MeasureAndPic) {
     this.displayMeasurementPicturePopup = false;
-    this.aCatch.automaticMeasure = Math.round(measure / 10);
+    this.aCatch.automaticMeasure = Math.round(
+      measure.fishSizeAutomatedInMm / 10
+    );
     // Override manual size, but user will still be able to modify it later on
-    this.aCatch.size = Math.round(measure / 10);
+    this.aCatch.size = Math.round(measure.fishSizeManualInMm / 10);
 
     // If we had a measure, means that latest taken picture is a measurement pic
     if (this.newTakenPictures.length) {

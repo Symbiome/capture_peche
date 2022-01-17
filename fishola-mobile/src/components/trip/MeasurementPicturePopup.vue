@@ -23,7 +23,7 @@
     <img
       v-show="false"
       id="sourcePicture"
-      style="position:absolute"
+      style="position: absolute"
       @load="sourcePictureLoaded(0)"
       :src="measurementPictureSrc"
     />
@@ -79,9 +79,7 @@
               </div>
             </div>
 
-            <div v-else>
-              Chargement en cours...
-            </div>
+            <div v-else>Chargement en cours...</div>
           </div>
         </div>
         <!-- Picture taken -->
@@ -93,30 +91,41 @@
           <!-- Calulation is over: display result -->
           <div v-else>
             <h4>
-              <span class="measure">Mesure </span>
-              <!-- Correct measure -->
-              <div class="success" v-if="markerFound && fishSize">
-                <i class="icon-success" /> {{ Math.round(fishSize / 10) }}cm
+              <div
+                class="warning below"
+                v-if="markerFound && fishSizeAutomatedInMM"
+              >
+                <i class="icon-warning" /> Cette mesure automatique peut être
+                imprécise, vous pouvez la rectifier ci-dessous :
               </div>
-              <div class="warning" v-if="markerFound && fishSize">
-                <i class="icon-warning" /> Cette fonctionnalité est
-                expérimentale, cette mesure peut être imprécise
+              <span class="measure">
+                <i class="icon-success success" /> Mesure
+              </span>
+              <!-- Correct measure -->
+              <div class="success" v-if="markerFound && fishSizeAutomatedInMM">
+                <input
+                  class="manual-size-input"
+                  type="number"
+                  v-model="fishSizeManualInCm"
+                  min="1"
+                />cm
               </div>
               <div class="error" v-else>
                 <i class="icon-error" />
                 <span v-if="!markerFound">
                   Impossible de détecter le marqueur
                 </span>
-                <span v-else>
-                  Impossible de détecter le poisson
-                </span>
+                <span v-else> Impossible de détecter le poisson </span>
                 <br />
                 Veuillez vérifier que votre photo suit bien les préconisations
               </div>
             </h4>
             <div class="bottom-actions validate-redo">
               <div class="button button-primary button-main">
-                <button v-if="markerFound && fishSize" @click="validate">
+                <button
+                  v-if="markerFound && fishSizeAutomatedInMM"
+                  @click="validate"
+                >
                   <i class="icon-fish" />
                   Valider
                 </button>
@@ -128,15 +137,13 @@
               <div class="button-minor-left">
                 <button
                   @click="measurementPictureSrc = ''"
-                  v-if="markerFound && fishSize"
+                  v-if="markerFound && fishSizeAutomatedInMM"
                 >
                   <i class="icon-redo" />
                 </button>
               </div>
               <div class="button-minor-right">
-                <button v-on:click="$emit('close')">
-                  Abandon
-                </button>
+                <button v-on:click="$emit('close')">Abandon</button>
               </div>
             </div>
           </div>
@@ -169,7 +176,8 @@ export default class MeasurementPicturePopup extends Vue {
   openCVLoaded = false;
   errorMessage = "";
   openCVConfig = new OpenCVDetectionConfig();
-  fishSize = 0;
+  fishSizeAutomatedInMM = 0;
+  fishSizeManualInCm = 0;
   markerFound = false;
   isMobilePlatform = true;
   markerDocURL = "";
@@ -207,13 +215,13 @@ export default class MeasurementPicturePopup extends Vue {
     this.measurementPictureSrc = "";
     this.calculating = true;
     this.errorMessage = "";
-    this.fishSize = 0;
+    this.fishSizeAutomatedInMM = 0;
+    this.fishSizeManualInCm = 0;
     this.markerFound = false;
     try {
       // Step 1: take picture
-      this.measurementPictureSrc = await PictureTakerService.INSTANCE.takePicture(
-        fromCameraIfPossible
-      );
+      this.measurementPictureSrc =
+        await PictureTakerService.INSTANCE.takePicture(fromCameraIfPossible);
       // Step 2: launch calculation
     } catch (error) {
       console.error("Error while taking measure picture", error);
@@ -232,12 +240,13 @@ export default class MeasurementPicturePopup extends Vue {
       const markerElement = document.getElementById("marker");
       if (this.openCVLoaded && imageElement && markerElement) {
         this.openCVConfig.drawDebugCanvas = false;
-        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-          imageElement,
-          markerElement,
-          this.openCVConfig,
-          "resultCanvas"
-        );
+        const detectedShapes: Array<DetectedShape> =
+          await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+            imageElement,
+            markerElement,
+            this.openCVConfig,
+            "resultCanvas"
+          );
 
         const markers = detectedShapes.filter(
           (shape: DetectedShape) => shape.isMarker
@@ -247,7 +256,8 @@ export default class MeasurementPicturePopup extends Vue {
           (shape: DetectedShape) => shape.isFish
         );
         if (fishes.length === 1) {
-          this.fishSize = fishes[0].calculatedLenght;
+          this.fishSizeAutomatedInMM = fishes[0].calculatedLenght;
+          this.fishSizeManualInCm = Math.round(this.fishSizeAutomatedInMM / 10);
         }
         this.calculating = false;
       } else {
@@ -267,7 +277,8 @@ export default class MeasurementPicturePopup extends Vue {
 
   validate() {
     const measureAndPic = new MeasureAndPic(
-      this.fishSize,
+      this.fishSizeAutomatedInMM,
+      this.fishSizeManualInCm * 10,
       this.measurementPictureSrc
     );
     this.$emit("measurementPictureTaken", measureAndPic);
@@ -364,9 +375,15 @@ export default class MeasurementPicturePopup extends Vue {
     .success {
       color: @lime-green;
     }
+    .below {
+      padding-bottom: 10px;
+    }
     .warning {
       color: @terra-cotta;
-      font-size: 14px;
+      font-size: 12px;
+      @media screen and (min-width: @desktop-min-width) {
+        font-size: 14px;
+      }
       a {
         color: @terra-cotta;
         font-weight: bolder;
@@ -376,6 +393,13 @@ export default class MeasurementPicturePopup extends Vue {
     .measure {
       float: left;
       padding-right: 10px;
+    }
+
+    .manual-size-input {
+      width: 70px;
+      text-align: right;
+      font-size: 16px;
+      font-weight: bolder;
     }
   }
 
