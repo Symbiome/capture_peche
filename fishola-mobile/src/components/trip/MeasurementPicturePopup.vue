@@ -48,7 +48,7 @@
         </div>
         <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
-          <div class="warning">
+          <div class="warning" v-if="!hasAtLeastAPicWithMarker">
             Pour utiliser cette fonctionnalité, vous devez vous
             <a :href="markerDocURL">procurer un marqueur</a>
           </div>
@@ -156,6 +156,7 @@ import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
 import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 import DocumentationService from "@/services/DocumentationService";
+import PicturesService from "@/services/PicturesService";
 
 @Component({
   components: { MeasurementPictureSlider },
@@ -172,6 +173,7 @@ export default class MeasurementPicturePopup extends Vue {
   markerFound = false;
   isMobilePlatform = true;
   markerDocURL = "";
+  hasAtLeastAPicWithMarker: Boolean = true;
 
   created(): void {
     Device.getInfo().then((info) => {
@@ -187,6 +189,11 @@ export default class MeasurementPicturePopup extends Vue {
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
+    PicturesService.hasAtLeastOnePicWithMarker().then(
+      (hasAtLeastAPicWithMarker) => {
+        this.hasAtLeastAPicWithMarker = hasAtLeastAPicWithMarker;
+      }
+    );
   }
 
   @Watch("measurementPicture")

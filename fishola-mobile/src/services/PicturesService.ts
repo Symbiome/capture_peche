@@ -46,7 +46,17 @@ export default class PicturesService extends AbstractFisholaService {
       order: order,
     };
     const savedId = await this.getDatabase().dirtyPictures.put(newPicture);
+    if (isMeasurementPicture) {
+      await this.getDatabase().lastMeasurementPic.clear();
+      await this.getDatabase().lastMeasurementPic.put(newPicture);
+    }
     console.info("Image enregistrée", id);
+  }
+
+  static async hasAtLeastOnePicWithMarker(): Promise<Boolean> {
+    const mostRecentPicWithMarker =
+      await this.getDatabase().lastMeasurementPic.toArray();
+    return mostRecentPicWithMarker.length > 0;
   }
 
   static deleteAllPicturesForCatch(catchId: string) {
