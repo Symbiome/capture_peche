@@ -95,8 +95,8 @@
                 class="warning below"
                 v-if="markerFound && fishSizeAutomatedInMM"
               >
-                <i class="icon-warning" /> Cette mesure automatique peut être
-                imprécise, vous pouvez la rectifier ci-dessous :
+                Cette mesure automatique peut être imprécise, vous pouvez la
+                rectifier ci-dessous :
               </div>
               <span class="measure">
                 <i
