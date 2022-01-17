@@ -28,6 +28,11 @@ export default class DocumentationService extends AbstractFisholaService {
         super();
     }
 
+    static getMarkerDocumentationUrl(): string {
+        const result = Constants.deeplinkSafeApiUrl("/v1/documentation/fixed/marker");
+        return result;
+    }
+    
     static getSamplesDocumentationUrl():string {
         const result = Constants.deeplinkSafeApiUrl('/v1/documentation/fixed/samples');
         return result;

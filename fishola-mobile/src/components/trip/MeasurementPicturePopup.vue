@@ -48,6 +48,10 @@
         </div>
         <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
+          <div class="warning">
+            Pour utiliser cette fonctionnalité, vous devez vous
+            <a :href="markerDocURL">procurer un marqueur</a>
+          </div>
           <MeasurementPictureSlider />
           <div class="bottom-actions">
             <h4>Ajouter une image</h4>
@@ -151,6 +155,7 @@ import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
 import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
+import DocumentationService from "@/services/DocumentationService";
 
 @Component({
   components: { MeasurementPictureSlider },
@@ -166,6 +171,7 @@ export default class MeasurementPicturePopup extends Vue {
   fishSize = 0;
   markerFound = false;
   isMobilePlatform = true;
+  markerDocURL = "";
 
   created(): void {
     Device.getInfo().then((info) => {
@@ -175,6 +181,7 @@ export default class MeasurementPicturePopup extends Vue {
     });
   }
   mounted(): void {
+    this.markerDocURL = DocumentationService.getMarkerDocumentationUrl();
     this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
     this.errorMessage = "";
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
@@ -352,6 +359,11 @@ export default class MeasurementPicturePopup extends Vue {
     }
     .warning {
       color: @terra-cotta;
+      font-size: 14px;
+      a {
+        color: @terra-cotta;
+        font-weight: bolder;
+      }
     }
 
     .measure {
