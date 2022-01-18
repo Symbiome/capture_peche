@@ -91,31 +91,26 @@
           <!-- Calulation is over: display result -->
           <div v-else>
             <h4>
-              <div
-                class="warning below"
-                v-if="markerFound && fishSizeAutomatedInMM"
-              >
-                Cette mesure automatique peut être imprécise, vous pouvez la
-                rectifier ci-dessous :
-              </div>
-              <span class="measure">
-                <i
-                  class="icon-success success"
-                  v-if="markerFound && fishSizeAutomatedInMM"
-                />
-                Mesure
-              </span>
               <!-- Correct measure -->
-              <div class="success" v-if="markerFound && fishSizeAutomatedInMM">
-                <input
-                  class="manual-size-input"
-                  type="number"
-                  v-model="fishSizeManualInCm"
-                  min="1"
-                />cm
+              <div v-if="markerFound && fishSizeAutomatedInMM" class="center">
+                <div class="manual-size-input-container">
+                  <div class="space-between">
+                    <i class="icon-success success" />
+                    Mesure (en cm)<br />
+                  </div>
+                  <input type="number" v-model="fishSizeManualInCm" min="1" />
+                </div>
+                <div class="warning-container">
+                  <br />
+                  <div class="warning">
+                    Cette mesure automatique peut être imprécise, vous pouvez la
+                    rectifier avant de valider.
+                  </div>
+                </div>
               </div>
               <div class="error" v-else>
                 <i class="icon-error" />
+                <span class="measure"> Mesure </span>
                 <span v-if="!markerFound">
                   Impossible de détecter le marqueur
                 </span>
@@ -366,7 +361,7 @@ export default class MeasurementPicturePopup extends Vue {
       background-color: @gainsboro;
     }
     .picture-display {
-      max-height: 40vh;
+      max-height: 30vh;
       max-width: 90vw;
       display: block;
       margin-left: auto;
@@ -378,9 +373,6 @@ export default class MeasurementPicturePopup extends Vue {
     }
     .success {
       color: @lime-green;
-    }
-    .below {
-      padding-bottom: 10px;
     }
     .warning {
       color: @terra-cotta;
@@ -397,13 +389,7 @@ export default class MeasurementPicturePopup extends Vue {
     .measure {
       float: left;
       padding-right: 10px;
-    }
-
-    .manual-size-input {
-      width: 70px;
-      text-align: right;
-      font-size: 16px;
-      font-weight: bolder;
+      color: black;
     }
   }
 
@@ -460,6 +446,49 @@ export default class MeasurementPicturePopup extends Vue {
       background-color: rgba(0, 0, 0, 0);
       border: 0px solid black;
       font-size: 16px;
+    }
+  }
+
+  .space-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .warning-container {
+    width: 50vw;
+    padding-left: 30px;
+    max-width: 400px;
+  }
+
+  .manual-size-input-container {
+    width: 34vw;
+    max-width: 160px;
+    font-size: 14px;
+
+    @media screen and (max-width: 365px) {
+      width: 50vw;
+    }
+    input {
+      padding-left: @margin-small;
+      padding-right: @margin-small;
+      margin-top: @vertical-margin-xx-small;
+      width: 100%;
+      height: 38px;
+      border-radius: 4px;
+
+      background: transparent;
+      border: 1px solid @pale-sky;
+
+      color: @gunmetal;
+      font-size: @fontsize-form-input;
+      font-family: "Open Sans", sans-serif;
+      text-align: right;
+      font-size: 14px;
     }
   }
 }
