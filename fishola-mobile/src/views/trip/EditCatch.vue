@@ -1165,6 +1165,7 @@ export default class EditCatchView extends Vue {
 
 .edit-catch {
   .automatic-measure {
+    margin-left: 0px;
     margin-top: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1172,7 +1173,7 @@ export default class EditCatchView extends Vue {
     overflow: hidden;
     @media screen and (max-width: @desktop-min-width) {
       margin-top: 0px;
-      padding-right: 30px;
+      padding-right: 0px;
       width: 100%;
     }
   }
