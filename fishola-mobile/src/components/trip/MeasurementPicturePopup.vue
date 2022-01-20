@@ -94,7 +94,7 @@
               <!-- Correct measure -->
               <div v-if="markerFound && fishSizeAutomatedInMM" class="center">
                 <div class="manual-size-input-container">
-                  <div class="space-between">
+                  <div class="cm-measure-text">
                     <i class="icon-success success" />
                     Mesure (en cm)<br />
                   </div>
@@ -313,7 +313,7 @@ export default class MeasurementPicturePopup extends Vue {
   }
   .popup-content {
     margin-top: 0px !important;
-    height: 100vh;
+    height: 82vh;
     overflow-y: auto;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
@@ -463,6 +463,14 @@ export default class MeasurementPicturePopup extends Vue {
     width: 50vw;
     padding-left: 30px;
     max-width: 400px;
+  }
+
+  .cm-measure-text {
+    display: flex;
+    justify-content: start;
+    i {
+      padding-right: 8px;
+    }
   }
 
   .manual-size-input-container {
