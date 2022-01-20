@@ -474,7 +474,7 @@ export default class MeasurementPicturePopup extends Vue {
   }
 
   .manual-size-input-container {
-    width: 34vw;
+    width: 36vw;
     max-width: 160px;
     font-size: 14px;
 
