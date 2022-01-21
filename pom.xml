@@ -29,12 +29,12 @@
   <parent>
     <groupId>org.nuiton</groupId>
     <artifactId>pom</artifactId>
-    <version>11.10</version>
+    <version>11.11</version>
   </parent>
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>1.2.0-rc-1</version>
+  <version>1.2.0-rc-2-SNAPSHOT</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
@@ -59,7 +59,7 @@
     <gitlabGroupName>inrae</gitlabGroupName>
     <gitlabProjectName>fishola</gitlabProjectName>
 
-    <quarkusVersion>2.5.3.Final</quarkusVersion>
+    <quarkusVersion>2.5.4.Final</quarkusVersion>
     <jooqVersion>3.15.5</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
     <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
@@ -69,12 +69,23 @@
 
     <license.licenseName>agpl_v3</license.licenseName>
 
-    <javaVersion>15</javaVersion>
+    <javaVersion>17</javaVersion>
     <animal.sniffer.skip>true</animal.sniffer.skip>
+    <gpg.skip>true</gpg.skip>
 
-    <!-- Pour supporter Java 16, il faut upgrade en 3.2.0 mais alors l'analyse des dépendances se trompe : https://issues.apache.org/jira/projects/MDEP/issues/MDEP-780?filter=allopenissues-->
-    <dependencyPluginVersion>3.1.2</dependencyPluginVersion>
     <licensePluginVersion>2.0.0</licensePluginVersion>
+
+    <!--
+    This is temporary because of this incorrect failure :
+    [WARNING] Non-test scoped test only dependencies found:
+    [WARNING]    org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
+
+    Check the issue for resolution : https://issues.apache.org/jira/browse/MDEP-753
+    22/12/2021 : The current status is that a vote is currently running about maven-dependency-analyzer release (1.11.4?)
+    Check https://repo1.maven.org/maven2/org/apache/maven/shared/maven-dependency-analyzer/ expecting any version above 1.11.3
+    -->
+    <analyzeDependencies.failOnWarning>false</analyzeDependencies.failOnWarning>
+
   </properties>
 
   <scm>

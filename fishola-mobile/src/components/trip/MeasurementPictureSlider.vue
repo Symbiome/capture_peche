@@ -20,9 +20,7 @@
   -->
 <template>
   <div class="preconisations" v-touch:swipe="swiped">
-    <h4>
-      Préconisations
-    </h4>
+    <h4>Préconisations</h4>
     <div
       v-for="slide in slides"
       :key="slide.order"
@@ -53,7 +51,7 @@
         </div>
       </div>
     </div>
-    <div style="clear:both" />
+    <div style="clear: both" />
     <div class="dotter">
       <span
         class="dot"
@@ -229,7 +227,7 @@ class Slide {
   }
 }
 .warning-picture {
-  height: 20vw;
+  height: 18vw;
   max-width: 30vw;
   margin-left: auto;
   margin-right: auto;

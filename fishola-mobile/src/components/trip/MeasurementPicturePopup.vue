@@ -23,7 +23,7 @@
     <img
       v-show="false"
       id="sourcePicture"
-      style="position:absolute"
+      style="position: absolute"
       @load="sourcePictureLoaded(0)"
       :src="measurementPictureSrc"
     />
@@ -33,7 +33,7 @@
         <h2 class="title">Mesure automatique</h2>
         <h4 v-if="errorMessage" class="error">{{ errorMessage }}</h4>
         <!-- pictures required for measurement -->
-        <div class="picture-holder">
+        <div class="picture-holder hiddenWhenKeyboardShows">
           <img id="marker" v-show="false" :src="markerSourceSRC" />
           <canvas
             v-show="measurementPictureSrc && !calculating"
@@ -48,6 +48,10 @@
         </div>
         <!-- No picture taken : display slider + camera/gallery choice -->
         <div v-if="!measurementPictureSrc">
+          <div class="warning" v-if="!hasAtLeastAPicWithMarker">
+            Pour utiliser cette fonctionnalité, vous devez vous
+            <a :href="markerDocURL">procurer un marqueur</a>
+          </div>
           <MeasurementPictureSlider />
           <div class="bottom-actions">
             <h4>Ajouter une image</h4>
@@ -75,9 +79,7 @@
               </div>
             </div>
 
-            <div v-else>
-              Chargement en cours...
-            </div>
+            <div v-else>Chargement en cours...</div>
           </div>
         </div>
         <!-- Picture taken -->
@@ -89,30 +91,40 @@
           <!-- Calulation is over: display result -->
           <div v-else>
             <h4>
-              <span class="measure">Mesure </span>
               <!-- Correct measure -->
-              <div class="success" v-if="markerFound && fishSize">
-                <i class="icon-success" /> {{ Math.floor(fishSize / 10) }}cm
-              </div>
-              <div class="warning" v-if="markerFound && fishSize">
-                <i class="icon-warning" /> Cette fonctionnalité est
-                expérimentale, cette mesure peut être imprécise
+              <div v-if="markerFound && fishSizeAutomatedInMM" class="center">
+                <div class="manual-size-input-container">
+                  <div class="cm-measure-text">
+                    <i class="icon-success success" />
+                    Mesure (en cm)<br />
+                  </div>
+                  <input type="number" v-model="fishSizeManualInCm" min="1" />
+                </div>
+                <div class="warning-container">
+                  <br />
+                  <div class="warning">
+                    Cette mesure automatique peut être imprécise, vous pouvez la
+                    rectifier avant de valider.
+                  </div>
+                </div>
               </div>
               <div class="error" v-else>
                 <i class="icon-error" />
+                <span class="measure"> Mesure </span>
                 <span v-if="!markerFound">
                   Impossible de détecter le marqueur
                 </span>
-                <span v-else>
-                  Impossible de détecter le poisson
-                </span>
+                <span v-else> Impossible de détecter le poisson </span>
                 <br />
                 Veuillez vérifier que votre photo suit bien les préconisations
               </div>
             </h4>
             <div class="bottom-actions validate-redo">
               <div class="button button-primary button-main">
-                <button v-if="markerFound && fishSize" @click="validate">
+                <button
+                  v-if="markerFound && fishSizeAutomatedInMM"
+                  @click="validate"
+                >
                   <i class="icon-fish" />
                   Valider
                 </button>
@@ -124,15 +136,13 @@
               <div class="button-minor-left">
                 <button
                   @click="measurementPictureSrc = ''"
-                  v-if="markerFound && fishSize"
+                  v-if="markerFound && fishSizeAutomatedInMM"
                 >
                   <i class="icon-redo" />
                 </button>
               </div>
               <div class="button-minor-right">
-                <button v-on:click="$emit('close')">
-                  Abandon
-                </button>
+                <button v-on:click="$emit('close')">Abandon</button>
               </div>
             </div>
           </div>
@@ -151,6 +161,8 @@ import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { Device } from "@capacitor/device";
 import MeasurementPictureSlider from "@/components/trip/MeasurementPictureSlider.vue";
 import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
+import DocumentationService from "@/services/DocumentationService";
+import PicturesService from "@/services/PicturesService";
 
 @Component({
   components: { MeasurementPictureSlider },
@@ -163,9 +175,12 @@ export default class MeasurementPicturePopup extends Vue {
   openCVLoaded = false;
   errorMessage = "";
   openCVConfig = new OpenCVDetectionConfig();
-  fishSize = 0;
+  fishSizeAutomatedInMM = 0;
+  fishSizeManualInCm = 0;
   markerFound = false;
   isMobilePlatform = true;
+  markerDocURL = "";
+  hasAtLeastAPicWithMarker: Boolean = true;
 
   created(): void {
     Device.getInfo().then((info) => {
@@ -175,11 +190,17 @@ export default class MeasurementPicturePopup extends Vue {
     });
   }
   mounted(): void {
+    this.markerDocURL = DocumentationService.getMarkerDocumentationUrl();
     this.markerSourceSRC = this.openCVConfig.defaultMarkerSrc;
     this.errorMessage = "";
     FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(() => {
       this.openCVLoaded = FisholaOpenCVService.INSTANCE.isOpenCVReady();
     });
+    PicturesService.hasAtLeastOnePicWithMarker().then(
+      (hasAtLeastAPicWithMarker) => {
+        this.hasAtLeastAPicWithMarker = hasAtLeastAPicWithMarker;
+      }
+    );
   }
 
   @Watch("measurementPicture")
@@ -193,13 +214,13 @@ export default class MeasurementPicturePopup extends Vue {
     this.measurementPictureSrc = "";
     this.calculating = true;
     this.errorMessage = "";
-    this.fishSize = 0;
+    this.fishSizeAutomatedInMM = 0;
+    this.fishSizeManualInCm = 0;
     this.markerFound = false;
     try {
       // Step 1: take picture
-      this.measurementPictureSrc = await PictureTakerService.INSTANCE.takePicture(
-        fromCameraIfPossible
-      );
+      this.measurementPictureSrc =
+        await PictureTakerService.INSTANCE.takePicture(fromCameraIfPossible);
       // Step 2: launch calculation
     } catch (error) {
       console.error("Error while taking measure picture", error);
@@ -218,12 +239,13 @@ export default class MeasurementPicturePopup extends Vue {
       const markerElement = document.getElementById("marker");
       if (this.openCVLoaded && imageElement && markerElement) {
         this.openCVConfig.drawDebugCanvas = false;
-        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-          imageElement,
-          markerElement,
-          this.openCVConfig,
-          "resultCanvas"
-        );
+        const detectedShapes: Array<DetectedShape> =
+          await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+            imageElement,
+            markerElement,
+            this.openCVConfig,
+            "resultCanvas"
+          );
 
         const markers = detectedShapes.filter(
           (shape: DetectedShape) => shape.isMarker
@@ -233,7 +255,8 @@ export default class MeasurementPicturePopup extends Vue {
           (shape: DetectedShape) => shape.isFish
         );
         if (fishes.length === 1) {
-          this.fishSize = fishes[0].calculatedLenght;
+          this.fishSizeAutomatedInMM = fishes[0].calculatedLenght;
+          this.fishSizeManualInCm = Math.round(this.fishSizeAutomatedInMM / 10);
         }
         this.calculating = false;
       } else {
@@ -253,7 +276,8 @@ export default class MeasurementPicturePopup extends Vue {
 
   validate() {
     const measureAndPic = new MeasureAndPic(
-      this.fishSize,
+      this.fishSizeAutomatedInMM,
+      this.fishSizeManualInCm * 10,
       this.measurementPictureSrc
     );
     this.$emit("measurementPictureTaken", measureAndPic);
@@ -337,7 +361,7 @@ export default class MeasurementPicturePopup extends Vue {
       background-color: @gainsboro;
     }
     .picture-display {
-      max-height: 40vh;
+      max-height: 30vh;
       max-width: 90vw;
       display: block;
       margin-left: auto;
@@ -352,11 +376,20 @@ export default class MeasurementPicturePopup extends Vue {
     }
     .warning {
       color: @terra-cotta;
+      font-size: 12px;
+      @media screen and (min-width: @desktop-min-width) {
+        font-size: 14px;
+      }
+      a {
+        color: @terra-cotta;
+        font-weight: bolder;
+      }
     }
 
     .measure {
       float: left;
       padding-right: 10px;
+      color: black;
     }
   }
 
@@ -413,6 +446,57 @@ export default class MeasurementPicturePopup extends Vue {
       background-color: rgba(0, 0, 0, 0);
       border: 0px solid black;
       font-size: 16px;
+    }
+  }
+
+  .space-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .warning-container {
+    width: 50vw;
+    padding-left: 30px;
+    max-width: 400px;
+  }
+
+  .cm-measure-text {
+    display: flex;
+    justify-content: start;
+    i {
+      padding-right: 8px;
+    }
+  }
+
+  .manual-size-input-container {
+    width: 36vw;
+    max-width: 160px;
+    font-size: 14px;
+
+    @media screen and (max-width: 365px) {
+      width: 50vw;
+    }
+    input {
+      padding-left: @margin-small;
+      padding-right: @margin-small;
+      margin-top: @vertical-margin-xx-small;
+      width: 100%;
+      height: 38px;
+      border-radius: 4px;
+
+      background: transparent;
+      border: 1px solid @pale-sky;
+
+      color: @gunmetal;
+      font-size: @fontsize-form-input;
+      font-family: "Open Sans", sans-serif;
+      text-align: right;
+      font-size: 14px;
     }
   }
 }

@@ -19,11 +19,17 @@
  * #L%
  */
 export class MeasureAndPic {
-  fishSize: number;
+  fishSizeAutomatedInMm: number;
+  fishSizeManualInMm: number;
   measurePicSrc: string;
 
-  constructor(fishSize: number, measurePicSrc: string) {
-    this.fishSize = fishSize;
+  constructor(
+    fishSizeAutomatedInMm: number,
+    fishSizeManualInMm: number,
+    measurePicSrc: string
+  ) {
+    this.fishSizeAutomatedInMm = fishSizeAutomatedInMm;
+    this.fishSizeManualInMm = fishSizeManualInMm;
     this.measurePicSrc = measurePicSrc;
   }
 }

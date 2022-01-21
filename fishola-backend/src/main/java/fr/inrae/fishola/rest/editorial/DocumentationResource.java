@@ -190,6 +190,14 @@ public class DocumentationResource extends AbstractFisholaResource {
     }
 
     @GET
+    @Path("/documentation/fixed/marker")
+    @Produces("application/pdf")
+    public Response downloadMarkerDocumentation() {
+        Response response = downloadDocumentationByNaturalId("marqueur");
+        return response;
+    }
+
+    @GET
     @Path("/editorial")
     public Response getEditorials() {
         List<Editorial> editorials = dao.getEditorials();
