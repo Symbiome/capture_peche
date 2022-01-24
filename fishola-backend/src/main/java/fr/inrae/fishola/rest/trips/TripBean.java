@@ -54,6 +54,7 @@ public class TripBean {
     public Optional<Double> endLatitude = Optional.empty();
     public Optional<Double> endLongitude = Optional.empty();
     public DeviceType source;
+    public Optional<String> frontendVersion = Optional.empty();
 
     public Optional<LocalDateTime> saveDelayMarker = Optional.empty();
 
@@ -89,6 +90,7 @@ public class TripBean {
                 ", endLatitude=" + endLatitude +
                 ", endLongitude=" + endLongitude +
                 ", source=" + source +
+                ", frontendVersion=" + frontendVersion +
                 ", saveDelayMarker=" + saveDelayMarker +
                 ", modifiableUntil=" + modifiableUntil +
                 '}';
