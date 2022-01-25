@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -62,6 +62,7 @@ export interface TripBean {
     endLatitude?: number;
     endLongitude?: number;
     source: DeviceType;
+    frontendVersion?: string;
     saveDelayMarker?: Date;
     modifiableUntil?: Date;
 }

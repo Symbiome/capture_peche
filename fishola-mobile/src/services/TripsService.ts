@@ -264,6 +264,7 @@ export default class TripsService extends AbstractFisholaService {
 
         if (trip.id == Constants.RUNNING_ID) {
             const source:DeviceType = await Helpers.getDeviceType();
+            const frontendVersion = process.env.VUE_APP_PROJECT_VERSION;
 
             return new Promise<void>((resolve, reject) => {
                 if (trip.mode == 'Live') {
@@ -272,6 +273,7 @@ export default class TripsService extends AbstractFisholaService {
 
                 const tripBean:TripBean = <TripBean>trip;
                 tripBean.source = source;
+                tripBean.frontendVersion = frontendVersion;
                 if (!tripBean.techniqueIds) {
                     tripBean.techniqueIds = [];
                 }
