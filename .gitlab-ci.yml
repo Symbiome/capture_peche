@@ -223,7 +223,7 @@ deploy:demo:
     - package:docker-demo
   script:
     - apt update && apt install -y curl && apt clean
-    - /usr/bin/curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
+    - /usr/bin/curl http://webhooks.demo.codelutin.com:28080/redeploy-fishola-demo
 
 sonarqube:
   image: maven:3.8-openjdk-17
