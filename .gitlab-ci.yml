@@ -214,15 +214,8 @@ package:docker-demo-feature:
     - docker
 
 deploy:demo:
-  image: debian:latest
-  stage: deploy
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
-      when: always
-  dependencies:
-    - package:docker-demo
+  stage: build
   script:
-    - apt update && apt install -y curl && apt clean
     - /usr/bin/curl http://webhooks.demo.codelutin.com:28080/redeploy-fishola-demo
 
 sonarqube:
