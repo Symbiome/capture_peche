@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="preconisations" v-touch:swipe="swiped">
-    <h4>Préconisations</h4>
+    <h4>Avant de prendre votre photo</h4>
     <div
       v-for="slide in slides"
       :key="slide.order"
@@ -99,7 +99,7 @@ export default class MeasurementPictureSlider extends Vue {
     this.slides.push(
       new Slide(
         3,
-        "Placez la prise sur un fond relativement uni, si possible sans objet parasite (matériel de pêche, outils, rainures) visible sur la photo.",
+        "Placez la prise sur un fond uni sans objet parasite (matériel de pêche, outils, rainures) visible sur la photo.",
         "/img/preco_ok1.svg",
         "/img/preco_ko3.svg"
       )
