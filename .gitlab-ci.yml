@@ -221,7 +221,7 @@ deploy:demo:
   dependencies:
     - package:docker-demo
   script:
-    - /usr/bin/curl http://webhooks.demo.codelutin.com:28080/redeploy-fishola-demo
+    - curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
   image: maven:3.8-openjdk-17
