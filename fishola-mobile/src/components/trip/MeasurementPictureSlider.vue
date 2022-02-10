@@ -99,7 +99,7 @@ export default class MeasurementPictureSlider extends Vue {
     this.slides.push(
       new Slide(
         3,
-        "Placez la prise sur un fond uni sans objet parasite (matériel de pêche, outils, rainures) visible sur la photo.",
+        "Placez la prise sur un fond uni sans objets parasites (matériel de pêche, outils, rainures) visible sur la photo.",
         "/img/preco_ok1.svg",
         "/img/preco_ko3.svg"
       )

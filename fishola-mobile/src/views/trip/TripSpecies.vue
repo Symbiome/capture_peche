@@ -86,6 +86,7 @@
     </div>
     <FisholaFooter v-bind:button-text="buttonLabel"
                    v-on:buttonClicked="next"
+                   :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"
                    shortcuts="back,step-2-4,giveup"/>
   </div>
 </template>
@@ -126,6 +127,8 @@ export default class TripSpeciesView extends Vue {
   speciesIndex:Map<string, SpeciesWithAlias[]> = new Map();
 
   buttonLabel:string;
+
+  isWaitingForPositionBeforeGoingToNextPage = false
 
   created() {
     this.buttonLabel = this.id == Constants.NEW_TRIP_ID ? 'Commencer' : 'Enregistrer'
@@ -201,6 +204,7 @@ export default class TripSpeciesView extends Vue {
     if (hasError) {
       //
     } else {
+      this.isWaitingForPositionBeforeGoingToNextPage = true
       TripsService.finishTripBootstrap(this.trip, this.tripSaved);
     }
   }
@@ -222,6 +226,7 @@ export default class TripSpeciesView extends Vue {
   }
 
   tripSaved(savedId:string) {
+    this.isWaitingForPositionBeforeGoingToNextPage = false
     if (this.id == Constants.NEW_TRIP_ID || this.summaryNotYetSaved(this.trip)) {
       router.push({name:'trip-catchs', params: {id: savedId}});
     } else if (this.id == 'RUNNING') {

@@ -174,7 +174,7 @@ export default class GeolocationService extends AbstractFisholaService {
       delete GeolocationService.latestError;
     }
     const result = GeolocationService.getPositionWithRetryUntilTimeout(
-      ms || 10000
+      ms || 2000
     );
     return result;
   }
