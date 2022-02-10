@@ -21,36 +21,40 @@
 <template>
   <div class="footer-button">
     <div>
-      <button v-on:click="$emit('clicked')" v-bind:class="deleteMode ? 'delete' : ''">
-        <i v-if="icon" v-bind:class="icon"/>
-        {{text}}
+      <button
+        v-on:click="$emit('clicked')"
+        v-bind:class="deleteMode ? 'delete' : ''"
+        :disabled="isWaitingForPositionBeforeGoingToNextPage"
+      >
+        <span v-if="!isWaitingForPositionBeforeGoingToNextPage">
+          <i v-if="icon" v-bind:class="icon" />
+          {{ text }}
+        </span>
+        <span v-else>
+          En attente du GPS...
+        </span>
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class FooterButton extends Vue {
-  @Prop() icon?:string;
-  @Prop() text?:string;
-  @Prop({default: false}) deleteMode:boolean;
-
-  mounted() {
-  }
-
+  @Prop() icon?: string;
+  @Prop() text?: string;
+  @Prop({ default: false }) deleteMode: boolean;
+  @Prop({ default: false }) isWaitingForPositionBeforeGoingToNextPage: boolean;
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .footer-button {
-
   height: 41px;
   width: fit-content;
   position: absolute;
@@ -96,5 +100,4 @@ export default class FooterButton extends Vue {
     }
   }
 }
-
 </style>

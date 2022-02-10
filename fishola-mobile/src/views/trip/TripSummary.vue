@@ -40,8 +40,8 @@
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="startSave">
-                <i class="icon-send"/> Terminer
+              <button v-on:click="startSave">            
+                <i class="icon-send"/> Terminer                 
               </button>
             </div>
             <div class="button button-secondary">
@@ -58,7 +58,8 @@
     <FisholaFooter button-text="Terminer"
                    button-icon="icon-send"
                    v-on:buttonClicked="startSave"
-                   shortcuts="back,step-4-4,giveup"/>
+                   shortcuts="back,step-4-4,giveup"
+                  :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"/>
   </div>
 </template>
 
@@ -99,6 +100,8 @@ export default class TripSummaryView extends Vue {
   techniquesIndex:Map<string, Technique>;
 
   actionRequested:ActionType = "SendTrip";
+
+  isWaitingForPositionBeforeGoingToNextPage = false
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -146,6 +149,7 @@ export default class TripSummaryView extends Vue {
         Helpers.confirm(this.$modal, confirmText, 'Techniques de pêche', 'Corriger', 'C\'est bon')
           .then(
             () => {
+              this.isWaitingForPositionBeforeGoingToNextPage = true
               TripsService.sendTripAndCancelCreations(trip)
                 .then(
                   this.tripSaved,
@@ -174,6 +178,7 @@ export default class TripSummaryView extends Vue {
   }
 
   tripSaved() {
+    this.isWaitingForPositionBeforeGoingToNextPage = false
     if (this.actionRequested == "SendTrip") {
       router.push('/trips');
       this.$root.$emit('ask-for-sync-check');

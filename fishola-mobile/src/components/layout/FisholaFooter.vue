@@ -24,6 +24,7 @@
                   v-bind:icon="buttonIcon"
                   v-bind:text="buttonText"
                   v-bind:deleteMode="buttonIcon == 'icon-delete'"
+                  :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"
                   v-on:clicked="$emit('buttonClicked')"/>
 
     <div class="footer-element pastille hiddenWhenKeyboardShows"
@@ -138,6 +139,7 @@ export default class FisholaFooter extends Vue {
   @Prop() buttonText?: string;
   @Prop() backEvent?: string;
   @Prop({default: false}) hideButton: boolean;
+  @Prop({default: false}) isWaitingForPositionBeforeGoingToNextPage: boolean;
 
   steps:any[] = [];
   timer:string = '';
