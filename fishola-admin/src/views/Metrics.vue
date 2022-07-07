@@ -131,7 +131,7 @@ export default class Metrics extends Vue {
       if (i > 0) {
         csvContent += ",";
       }
-      csvContent += columns[i]["label"];
+      csvContent += ((columns[i] as unknown) as Column).label;
     }
     csvContent += "\n";
     // Add content rows
@@ -142,7 +142,7 @@ export default class Metrics extends Vue {
           if (i > 0) {
             csvRow += ",";
           }
-          csvRow += row[columns[i]["field"]];
+          csvRow += row[((columns[i] as unknown) as Column).field];
         }
         return csvRow;
       })
@@ -152,10 +152,16 @@ export default class Metrics extends Vue {
     window.open(encodedUri);
   }
 }
+
+class Column {
+  field: string;
+  label: string;
+}
 </script>
 
 <style lang="less">
 .metrics-container {
+  padding-left: 0px;
   .metrics-title {
     max-width: 900px;
     display: flex;
