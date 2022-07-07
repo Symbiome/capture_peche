@@ -22,7 +22,68 @@
   <div>
     <div class="referential">
       <h1>Chiffres clés</h1>
-      *{{ metrics }}*
+
+      <div class="metrics-container">
+        <h2 class="metrics-title is-primary">
+          Nombre d'inscription par an
+          <b-button
+            type="is-primary"
+            @click="exportAsCSV(userColumns, metrics.usersPerYear)"
+            >Exporter en csv</b-button
+          >
+        </h2>
+        <b-table
+          :data="metrics.usersPerYear"
+          :columns="userColumns"
+          :default-sort="['annee', 'asc']"
+        />
+
+        <h2 class="metrics-title">
+          Nombre de sorties par lac et par an
+          <b-button
+            type="is-primary"
+            @click="exportAsCSV(tripsPerLakeColumns, metrics.tripsPerLake)"
+            >Exporter en csv</b-button
+          >
+        </h2>
+        <b-table
+          :data="metrics.tripsPerLake"
+          :columns="tripsPerLakeColumns"
+          :default-sort="['lac', 'asc']"
+        />
+
+        <h2 class="metrics-title">
+          Nombre de captures par lac et par an
+          <b-button
+            type="is-primary"
+            @click="exportAsCSV(catchesPerLakeColumns, metrics.catchesPerLake)"
+            >Exporter en csv</b-button
+          >
+        </h2>
+        <b-table
+          :data="metrics.catchesPerLake"
+          :columns="catchesPerLakeColumns"
+          :default-sort="['lac', 'asc']"
+        />
+        <h2 class="metrics-title">
+          Nombre de mesures automatiques par lac et par an
+          <b-button
+            type="is-primary"
+            @click="
+              exportAsCSV(
+                automaticMeasuresPerLakeColumns,
+                metrics.automaticMeasuresPerLake
+              )
+            "
+            >Exporter en csv</b-button
+          >
+        </h2>
+        <b-table
+          :data="metrics.automaticMeasuresPerLake"
+          :columns="automaticMeasuresPerLakeColumns"
+          :default-sort="['lac', 'asc']"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -37,13 +98,80 @@ import { Component, Vue } from "vue-property-decorator";
 export default class Metrics extends Vue {
   url = "/v1/metrics";
   metrics = {};
+  userColumns = [
+    { field: "annee", label: "Année", sortable: true },
+    { field: "total", label: "Inscriptions", sortable: true }
+  ];
+  tripsPerLakeColumns = [
+    { field: "annee", label: "Année", sortable: true },
+    { field: "lac", label: "Lac", sortable: true },
+    { field: "total", label: "Nombre de sorties", sortable: true }
+  ];
+  catchesPerLakeColumns = [
+    { field: "annee", label: "Année", sortable: true },
+    { field: "lac", label: "Lac", sortable: true },
+    { field: "total", label: "Nombres de prises", sortable: true }
+  ];
+  automaticMeasuresPerLakeColumns = [
+    { field: "annee", label: "Année", sortable: true },
+    { field: "lac", label: "Lac", sortable: true },
+    { field: "total", label: "Mesures automatiques", sortable: true }
+  ];
 
   created() {
     BackendService.backendGet(this.url).then(res => {
       this.metrics = res;
     });
   }
+
+  exportAsCSV(columns: Array<string>, array: Array<any>) {
+    console.error(array);
+    let csvContent = "data:text/csv;charset=utf-8,";
+    for (var i = 0; i < columns.length; i++) {
+      if (i > 0) {
+        csvContent += ",";
+      }
+      csvContent += columns[i]["label"];
+    }
+    csvContent += "\n";
+    // Add content rows
+    csvContent += array
+      .map(row => {
+        var csvRow = "";
+        for (var i = 0; i < columns.length; i++) {
+          if (i > 0) {
+            csvRow += ",";
+          }
+          csvRow += row[columns[i]["field"]];
+        }
+        return csvRow;
+      })
+      .join("\n");
+    console.error(csvContent);
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+  }
 }
 </script>
 
-<style scoped lang="less"></style>
+<style lang="less">
+.metrics-container {
+  .metrics-title {
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 60px;
+    font-size: 20px;
+  }
+  .b-table {
+    max-width: 900px;
+    .table {
+      tr {
+        td {
+          width: 300px;
+        }
+      }
+    }
+  }
+}
+</style>

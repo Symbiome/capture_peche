@@ -2,7 +2,6 @@ package fr.inrae.fishola.database;
 
 import fr.inrae.fishola.rest.metrics.CountPerlakeAndPerYear;
 import fr.inrae.fishola.rest.metrics.MetricBean;
-import fr.inrae.fishola.rest.metrics.UsersPerYear;
 import java.util.List;
 import javax.inject.Singleton;
 
@@ -12,8 +11,8 @@ public class MetricsDao extends AbstractFisholaDao {
     public MetricBean getMetrics() {
         MetricBean result = new MetricBean();
 
-        String usersPerYearSQL = "select extract(year from created_on) as annee, count(*) as utilisateurs from fishola_user where exclude_from_exports = false group by extract(year from created_on);";
-        List<UsersPerYear> usersPerYears = withContext(context -> context.fetch(usersPerYearSQL).into(UsersPerYear.class));
+        String usersPerYearSQL = "select '-' as lac, extract(year from created_on) as annee, count(*) as total from fishola_user where exclude_from_exports = false group by extract(year from created_on);";
+        List<CountPerlakeAndPerYear> usersPerYears = withContext(context -> context.fetch(usersPerYearSQL).into(CountPerlakeAndPerYear.class));
         result.usersPerYear = usersPerYears;
 
         String tripsPerLakeSQL = "select lake.name as lac, extract(year from t.created_on) as annee, count(*) as total from trip t join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
