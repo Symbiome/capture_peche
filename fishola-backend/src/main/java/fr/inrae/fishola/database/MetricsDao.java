@@ -11,10 +11,14 @@ public class MetricsDao extends AbstractFisholaDao {
     public MetricBean getMetrics() {
         MetricBean result = new MetricBean();
 
-        String usersPerYearSQL = "select '-' as lac, extract(year from created_on)::INTEGER as annee, count(*) as total from fishola_user where exclude_from_exports = false group by extract(year from created_on);";
-        List<CountPerlakeAndPerYear> usersPerYears = withContext(context -> context.fetch(usersPerYearSQL).into(CountPerlakeAndPerYear.class));
-        result.usersPerYear = usersPerYears;
-        result.usersPerYear.add(getTotalRow(usersPerYears));
+        String activeUsersPerYearSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(distinct u.id) as total from trip t join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
+        List<CountPerlakeAndPerYear> activeUsersPerYear = withContext(context -> context.fetch(activeUsersPerYearSQL).into(CountPerlakeAndPerYear.class));
+        result.activeUsersPerYear = activeUsersPerYear;
+
+        String userRegistrationsPerYearSQL = "select '-' as lac, extract(year from created_on)::INTEGER as annee, count(*) as total from fishola_user where exclude_from_exports = false group by extract(year from created_on);";
+        List<CountPerlakeAndPerYear> userRegistrationsPerYear = withContext(context -> context.fetch(userRegistrationsPerYearSQL).into(CountPerlakeAndPerYear.class));
+        result.userRegistrationsPerYear = userRegistrationsPerYear;
+        result.userRegistrationsPerYear.add(getTotalRow(userRegistrationsPerYear));
 
         String tripsPerLakeSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(*) as total from trip t join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
         List<CountPerlakeAndPerYear> tripsPerLake = withContext(context -> context.fetch(tripsPerLakeSQL).into(CountPerlakeAndPerYear.class));

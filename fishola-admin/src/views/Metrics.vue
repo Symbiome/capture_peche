@@ -25,16 +25,35 @@
 
       <div class="metrics-container">
         <h2 class="metrics-title is-primary">
-          Nombre d'inscription par an
+          Nombre d'utilisateurs actifs (au moins une sortie dans l'année)
           <b-button
             type="is-primary"
-            @click="exportAsCSV(userColumns, metrics.usersPerYear)"
+            @click="exportAsCSV(activeUsersColumns, metrics.activeUsersPerYear)"
             >Exporter en csv</b-button
           >
         </h2>
         <b-table
-          :data="metrics.usersPerYear"
-          :columns="userColumns"
+          :data="metrics.activeUsersPerYear"
+          :columns="activeUsersColumns"
+          :default-sort="['lac', 'asc']"
+        />
+
+        <h2 class="metrics-title">
+          Nombre d'inscriptions par an
+          <b-button
+            type="is-primary"
+            @click="
+              exportAsCSV(
+                userRegistrationsColumns,
+                metrics.userRegistrationsPerYear
+              )
+            "
+            >Exporter en csv</b-button
+          >
+        </h2>
+        <b-table
+          :data="metrics.userRegistrationsPerYear"
+          :columns="userRegistrationsColumns"
           :default-sort="['annee', 'asc']"
         />
 
@@ -98,7 +117,12 @@ import { Component, Vue } from "vue-property-decorator";
 export default class Metrics extends Vue {
   url = "/v1/metrics";
   metrics = {};
-  userColumns = [
+  activeUsersColumns = [
+    { field: "annee", label: "Année", sortable: true },
+    { field: "lac", label: "Lac", sortable: true },
+    { field: "total", label: "Utilisateurs actifs", sortable: true }
+  ];
+  userRegistrationsColumns = [
     { field: "annee", label: "Année", sortable: true },
     { field: "total", label: "Inscriptions", sortable: true }
   ];

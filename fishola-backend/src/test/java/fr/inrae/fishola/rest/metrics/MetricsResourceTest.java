@@ -10,8 +10,7 @@ import javax.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
 public class MetricsResourceTest {
@@ -50,10 +49,11 @@ public class MetricsResourceTest {
                 .get("/api/v1/metrics")
                 .then()
                 .statusCode(200)
-                .body("usersPerYear.size()", not(equalTo(0)))
-                .body("tripsPerLake.size()", not(equalTo(0)))
-                .body("catchesPerLake.size()",not(equalTo(0)))
-                .body("automaticMeasuresPerLake.size()", not(equalTo(0)));
+                .body("activeUsersPerYear", notNullValue())
+                .body("userRegistrationsPerYear",  notNullValue())
+                .body("tripsPerLake",  notNullValue())
+                .body("catchesPerLake", notNullValue())
+                .body("automaticMeasuresPerLake",  notNullValue());
 
     }
 }
