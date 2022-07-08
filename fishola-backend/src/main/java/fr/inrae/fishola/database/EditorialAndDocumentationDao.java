@@ -47,11 +47,10 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
         return result;
     }
 
-    public LinkedHashMap<UUID, Pair<String,String>> listDocumentations(boolean news) {
+    public LinkedHashMap<UUID, Pair<String,String>> listDocumentations() {
         return withContext(context -> {
             Result<Record3<UUID, String, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NATURAL_ID, Tables.DOCUMENTATION.NAME)
                     .from(Tables.DOCUMENTATION)
-                    .where(Tables.DOCUMENTATION.NEWS.equal(news))
                     .fetch();
 
             LinkedHashMap<UUID, Pair<String, String>> result = new LinkedHashMap<>();

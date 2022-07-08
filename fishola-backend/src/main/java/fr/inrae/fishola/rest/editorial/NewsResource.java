@@ -27,8 +27,13 @@ import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-import org.apache.commons.lang3.tuple.Pair;
-
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -41,19 +46,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class NewsResource extends AbstractFisholaResource {
-
-    public static final boolean IS_NEWS = true;
 
     @Inject
     protected EditorialAndDocumentationDao dao;
@@ -61,12 +58,13 @@ public class NewsResource extends AbstractFisholaResource {
     @GET
     @Path("/news")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
+        /*LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
                 .collect(Collectors.toList());
-        return result;
+        return result;*/
+        return new ArrayList<>();
     }
 
     @DELETE
@@ -125,7 +123,6 @@ public class NewsResource extends AbstractFisholaResource {
         docId.ifPresent(documentation::setId);
         documentation.setNaturalId(documentationBase64Content.naturalId());
         documentation.setName(documentationBase64Content.name());
-        documentation.setNews(IS_NEWS);
         // If new documentation was sent in base64
         if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
             String[] contentSplitted = documentationBase64Content.base64Content().split(",");
