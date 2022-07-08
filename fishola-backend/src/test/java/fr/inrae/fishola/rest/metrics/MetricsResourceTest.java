@@ -21,12 +21,9 @@ package fr.inrae.fishola.rest.metrics;
  * #L%
  */
 
-import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
-import fr.inrae.fishola.rest.security.LoginBean;
 import io.quarkus.test.junit.QuarkusTest;
-import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +31,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 @QuarkusTest
-public class MetricsResourceTest {
-    @Inject
-    protected FisholaConfiguration config;
+public class MetricsResourceTest extends AbstractFisholaTest {
 
     @Test
     public void testMetricsAreNotVisibleForNonAdmins() {
@@ -50,17 +45,8 @@ public class MetricsResourceTest {
 
     @Test
     public void testMetricsBasicWiring() {
-        // Loggin as admin
-        AbstractFisholaTest.CookieHandler cookieHandler = new AbstractFisholaTest.CookieHandler();
-        given()
-                .when()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("", config.adminPassword()))
-                .post("/api/v1/security/admin-login")
-                .then()
-                .statusCode(204)
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);
-        String token = cookieHandler.getValue().orElseThrow();
+        // Login as admin
+        String token = loginAsAdmin();
 
         // Just test that all expected metrics are here and not null
         given()

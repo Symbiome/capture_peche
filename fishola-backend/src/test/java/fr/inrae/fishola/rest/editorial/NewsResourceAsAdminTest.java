@@ -1,0 +1,156 @@
+package fr.inrae.fishola.rest.editorial;
+
+/*-
+ * #%L
+ * Fishola :: Backend
+ * %%
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
+import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.entities.tables.pojos.News;
+import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractFisholaTest;
+import io.quarkus.test.junit.QuarkusTest;
+import java.time.LocalDateTime;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.ws.rs.core.MediaType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+
+@QuarkusTest
+public class NewsResourceAsAdminTest extends AbstractFisholaTest {
+
+    @Inject
+    protected NewsFisholaDao newsDao;
+
+    private String token;
+
+    @BeforeEach
+    @Transactional
+    public void loginAsAdminAndCreateRandomNews() {
+        token = loginAsAdmin();
+
+        // Insert a non published news
+        LocalDateTime now = LocalDateTime.now();
+        News unpublishedNews = new News();
+        unpublishedNews.setContent("Content");
+        unpublishedNews.setName(this.token);
+        unpublishedNews.setDatePublicationDebut(now.plusDays(10));
+        unpublishedNews.setDatePublicationFin(now.plusDays(20));
+        this.newsDao.insert(unpublishedNews);
+
+        // Insert a published news
+        News publishedNews = new News();
+        publishedNews.setContent("Content");
+        publishedNews.setName("published-" + token);
+        publishedNews.setDatePublicationDebut(now.minusDays(1));
+        publishedNews.setDatePublicationFin(now.plusDays(10));
+        this.newsDao.insert(publishedNews);
+    }
+
+    @Test
+    @Transactional
+    public void testGetAllNews() {
+        // All news should be displayed no matter the publication date
+        int expectedNewsCount = this.newsDao.getNews(false).size();
+        Assertions.assertNotEquals(expectedNewsCount, 0);
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/news-all")
+                .then()
+                .statusCode(200)
+                .body("size()", equalTo(expectedNewsCount));
+    }
+
+    @Test
+    @Transactional
+    public void testNewsUpdate() {
+        // Update news's publication date
+        News news = newsDao.getNews(false).get(0);
+        String modifiedName = "modified";
+        news.setName(modifiedName);
+        LocalDateTime now = LocalDateTime.now();
+        news.setDatePublicationDebut(now.minusDays(1));
+        news.setDatePublicationFin(now.plusDays(20));
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(news)
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .put("/api/v1/news/" + news.getId())
+                .then()
+                .statusCode(204);
+        News updated = newsDao.findById(news.getId());
+        Assertions.assertEquals(modifiedName, updated.getName());
+
+        // TODO #11679 notifications should be sent due to modified date
+    }
+
+    @Test
+    @Transactional
+    public void testNewsPost() {
+        int newsCountBefore = this.newsDao.getNews(false).size();
+        News news = new News();
+        news.setName("newnews");
+        LocalDateTime now = LocalDateTime.now();
+        news.setDatePublicationDebut(now.minusDays(1));
+        news.setDatePublicationFin(now.plusDays(20));
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(news)
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .post("/api/v1/news")
+                .then()
+                .statusCode(204);
+
+        int newsCountAfter = this.newsDao.getNews(false).size();
+
+        // TODO #11679 notifications should be sent due to modified date
+        Assertions.assertEquals(newsCountAfter, newsCountBefore + 1);
+    }
+
+    @Test
+    @Transactional
+    public void testNewsDelete() {
+        int newsCountBefore = this.newsDao.getNews(false).size();
+
+        News news = newsDao.getNews(false).get(0);
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .delete("/api/v1/news/" + news.getId())
+                .then()
+                .statusCode(204);
+
+        int newsCountAfter = this.newsDao.getNews(false).size();
+
+        Assertions.assertEquals(newsCountAfter, newsCountBefore - 1);
+
+    }
+
+}

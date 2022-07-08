@@ -21,7 +21,9 @@ package fr.inrae.fishola.rest;
  * #L%
  */
 
+import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.security.LoginBean;
+import javax.inject.Inject;
 import org.hamcrest.CustomMatcher;
 
 import javax.ws.rs.core.MediaType;
@@ -30,6 +32,9 @@ import java.util.Optional;
 import static io.restassured.RestAssured.given;
 
 public abstract class AbstractFisholaTest {
+
+    @Inject
+    FisholaConfiguration config;
 
     public static class CookieHandler extends CustomMatcher {
 
@@ -63,6 +68,20 @@ public abstract class AbstractFisholaTest {
             .then()
                 .statusCode(200)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
+        String result = cookieHandler.getValue().orElseThrow();
+        return result;
+    }
+
+    protected String loginAsAdmin() {
+        AbstractFisholaTest.CookieHandler cookieHandler = new AbstractFisholaTest.CookieHandler();
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new LoginBean("", config.adminPassword()))
+                .post("/api/v1/security/admin-login")
+                .then()
+                .statusCode(204)
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }

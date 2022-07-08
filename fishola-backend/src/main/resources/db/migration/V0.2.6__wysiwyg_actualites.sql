@@ -22,6 +22,9 @@
 ALTER TABLE documentation DROP COLUMN news;
 
 CREATE TABLE news (
-
-
-) INHERITS (documentation);
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    content TEXT,
+    date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);

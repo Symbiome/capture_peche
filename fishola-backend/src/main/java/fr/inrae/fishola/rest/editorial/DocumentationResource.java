@@ -57,8 +57,6 @@ import org.apache.commons.lang3.tuple.Pair;
 @Produces(MediaType.APPLICATION_JSON)
 public class DocumentationResource extends AbstractFisholaResource {
 
-    public static final boolean IS_NEWS = false;
-
     @Inject
     protected EditorialAndDocumentationDao dao;
 
