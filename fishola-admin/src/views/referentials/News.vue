@@ -20,6 +20,163 @@
   -->
 <template>
   <div class="pages">
+    <div v-if="editor">
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleBold()
+            .run()
+        "
+        :disabled="
+          !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleBold()
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('bold') }"
+      >
+        gras
+      </button>
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleItalic()
+            .run()
+        "
+        :disabled="
+          !editor
+            .can()
+            .chain()
+            .focus()
+            .toggleItalic()
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('italic') }"
+      >
+        italique
+      </button>
+
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .setParagraph()
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('paragraph') }"
+      >
+        paragraphe
+      </button>
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: 1 })
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('heading', { level: 1 }) }"
+      >
+        titre 1
+      </button>
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: 2 })
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }"
+      >
+        titre 2
+      </button>
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: 3 })
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('heading', { level: 3 }) }"
+      >
+        titre 3
+      </button>
+
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .toggleBulletList()
+            .run()
+        "
+        :class="{ 'is-active': editor.isActive('bulletList') }"
+      >
+        liste
+      </button>
+
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .setHorizontalRule()
+            .run()
+        "
+      >
+        ligne horizontale
+      </button>
+
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .undo()
+            .run()
+        "
+        :disabled="
+          !editor
+            .can()
+            .chain()
+            .focus()
+            .undo()
+            .run()
+        "
+      >
+        undo
+      </button>
+      <button
+        @click="
+          editor
+            .chain()
+            .focus()
+            .redo()
+            .run()
+        "
+        :disabled="
+          !editor
+            .can()
+            .chain()
+            .focus()
+            .redo()
+            .run()
+        "
+      >
+        redo
+      </button>
+    </div>
+    <EditorContent v-if="editor" :editor="editor" />
+
     <Referential
       name="Actualités"
       url="/v1/news-all"
@@ -32,15 +189,21 @@
 
 <script lang="ts">
 import Referential from "@/components/Referential.vue";
-
+import { Editor, EditorContent } from "@tiptap/vue-2";
+import StarterKit from "@tiptap/starter-kit";
 import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
-    Referential
+    Referential,
+    EditorContent
   }
 })
 export default class DocumentationVue extends Vue {
+  editor = new Editor({
+    content: "",
+    extensions: [StarterKit]
+  });
   docColumns: any[] = [
     {
       field: "id",
@@ -64,6 +227,17 @@ export default class DocumentationVue extends Vue {
     }
   ];
 
+  mounted(): void {
+    this.editor = new Editor({
+      content:
+        "Ceci est un  <b>exemple</b> <ol><li>De</li><li>Liste</li></ol><hr/>",
+      extensions: [StarterKit]
+    });
+  }
+
+  beforeDestroy() {
+    this.editor?.destroy();
+  }
   createDocumentation() {
     return {
       name: "Nouvelle actualité",
