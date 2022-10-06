@@ -99,7 +99,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(news)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
-                .put("/api/v1/news/" + news.getId())
+                .put("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(204);
         News updated = newsDao.findById(news.getId());
@@ -123,7 +123,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(news)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
-                .post("/api/v1/news")
+                .post("/api/v1/news-all")
                 .then()
                 .statusCode(204);
 
@@ -143,7 +143,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
-                .delete("/api/v1/news/" + news.getId())
+                .delete("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(204);
 

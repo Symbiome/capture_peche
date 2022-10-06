@@ -22,18 +22,18 @@
   <div class="pages">
     <Referential
       name="Actualités"
-      url="/v1/news"
+      url="/v1/news-all"
       :columns="docColumns"
-      :createElement=createDocumentation
-      :canDelete=true
-      ></Referential>
+      :createElement="createDocumentation"
+      :canDelete="true"
+    ></Referential>
   </div>
 </template>
 
 <script lang="ts">
-import Referential from '@/components/Referential.vue'
+import Referential from "@/components/Referential.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -41,43 +41,40 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class DocumentationVue extends Vue {
-
-  docColumns:any[] = [
+  docColumns: any[] = [
     {
-      field: 'id',
-      label: 'Identifiant technique',
+      field: "id",
+      label: "Identifiant technique",
       visible: false,
       readOnly: true
     },
     {
-      field: 'naturalId',
-      label: 'Identifiant naturel',
-      readOnlyEdition: true
+      field: "name",
+      label: "Nom"
     },
     {
-      field: 'name',
-      label: 'Nom'
+      field: "datePublicationDebut",
+      label: "Début de publication",
+      isFile: false
     },
     {
-      field: 'url',
-      label: 'Fichier',
-      isFile: true
+      field: "datePublicationFin",
+      label: "Fin de publication",
+      isFile: false
     }
   ];
 
   createDocumentation() {
     return {
-      'naturalId': '',
-      'name': 'Nouvelle actualité',
-      'url': '',
-      'base64Content': ''
+      name: "Nouvelle actualité",
+      content: "",
+      datePublicationDebut: new Date(),
+      datePublicationFin: new Date()
     };
   }
 }
 </script>
 
 <style scoped lang="less">
-
 @import "../../less/main";
-
 </style>

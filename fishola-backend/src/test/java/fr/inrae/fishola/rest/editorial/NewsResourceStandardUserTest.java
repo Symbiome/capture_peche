@@ -105,7 +105,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .put("/api/v1/news/" + news.getId())
+                .put("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(401);
     }
@@ -118,7 +118,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(news)
-                .post("/api/v1/news")
+                .post("/api/v1/news-all")
                 .then()
                 .statusCode(401);
     }
@@ -132,7 +132,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .delete("/api/v1/news/" + news.getId())
+                .delete("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(401);
 

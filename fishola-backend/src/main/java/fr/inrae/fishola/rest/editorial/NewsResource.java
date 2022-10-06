@@ -65,7 +65,7 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     @DELETE
-    @Path("/news/{newsId}")
+    @Path("/news-all/{newsId}")
     public Response deleteNews(@PathParam("newsId") UUID newsId) {
         checkIsAdmin();
         dao.deleteById(newsId);
@@ -73,7 +73,7 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     @PUT
-    @Path("/news/{newsId}")
+    @Path("/news-all/{newsId}")
     public Response updateNews(@PathParam("newsId") UUID newsId, News news) {
         checkIsAdmin();
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
@@ -89,7 +89,7 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     @POST
-    @Path("/news")
+    @Path("/news-all")
     public Response createNews(News news) {
         checkIsAdmin();
         try {
