@@ -41,13 +41,18 @@
           <span v-if="col.isABoolean && props.row[col.field]">
             Oui
           </span>
-          <span v-if="col.isABoolean && !props.row[col.field]">
+          <span v-else-if="col.isABoolean && !props.row[col.field]">
             Non
           </span>
-          <span v-if="col.isADate && props.row[col.field]">
+          <span
+            v-else-if="
+              (col.isADate || col.isAPeriodBeginning || col.isAPeriodEnd) &&
+                props.row[col.field]
+            "
+          >
             {{ formatDate(props.row[col.field]) }}
           </span>
-          <span v-if="!col.isABoolean && !col.isADate">
+          <span v-else-if="!col.isABoolean && !col.isADate">
             {{ props.row[col.field] }}
           </span>
         </b-table-column>
@@ -121,11 +126,12 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import BackendService from "@/services/BackendService.ts";
+import BackendService from "@/services/BackendService";
 
 import ReferentialItem from "@/components/ReferentialItem.vue";
 
 import router from "@/router";
+import { LocalDate } from "@js-joda/core";
 
 @Component({
   components: {
@@ -158,15 +164,24 @@ export default class Refenretial extends Vue {
   }
 
   parseLocalDateTime(someLocalDateTime: number[]): Date {
-    const result: Date = new Date(
-      someLocalDateTime[0],
-      someLocalDateTime[1] - 1,
-      someLocalDateTime[2],
-      someLocalDateTime[3],
-      someLocalDateTime[4],
-      someLocalDateTime[5]
-    );
-    return result;
+    if (someLocalDateTime[5]) {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4],
+        someLocalDateTime[5]
+      );
+    } else {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4]
+      );
+    }
   }
 
   formatDate(puet: number[]): string {

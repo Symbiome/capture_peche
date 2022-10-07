@@ -52,17 +52,19 @@ export default class DocumentationVue extends Vue {
       label: "Nom"
     },
     {
-      field: "content",
-      label: "Contenu",
-      isHTML: true
-    },
-    {
       field: "datePublicationDebut",
-      label: "Début de publication"
+      label: "Début de publication",
+      isAPeriodBeginning: true
     },
     {
       field: "datePublicationFin",
-      label: "Fin de publication"
+      label: "Fin de publication",
+      isAPeriodEnd: true
+    },
+    {
+      field: "content",
+      label: "Contenu",
+      isHTML: true
     }
   ];
 

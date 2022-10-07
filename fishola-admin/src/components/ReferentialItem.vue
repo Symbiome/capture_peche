@@ -22,12 +22,35 @@
   <div class="referential-item">
     <h2 v-if="item.name">{{ item.name }}</h2>
     <div v-for="col in columns" v-bind:key="col.field">
-      <b-field :label="col.label">
+      <b-field
+        :label="
+          col.field == 'datePublicationDebut'
+            ? 'Période de publication'
+            : col.label
+        "
+        v-if="!col.isAPeriodEnd"
+      >
         <!-- HTML text -->
         <div v-if="col.isHTML">
           <EditorContent :editor="editor" />
         </div>
+        <!-- DateTime -->
+        <div v-else-if="col.isADate">
+          {{ formatDate(item[col.field]) }}
+        </div>
 
+        <!-- DateRange -->
+        <div v-else-if="col.isAPeriodBeginning">
+          <b-datepicker
+            v-model="dateRange"
+            placeholder="Type or select a date..."
+            icon="calendar-today"
+            locale="fr-FR"
+            range
+            editable
+          >
+          </b-datepicker>
+        </div>
         <!-- Short strings -->
         <b-input
           v-model="item[col.field]"
@@ -39,6 +62,7 @@
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
         ></b-input>
+
         <!-- Long strings -->
         <b-input
           v-model="item[col.field]"
@@ -51,11 +75,6 @@
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
         ></b-input>
-
-        <!-- DateTime -->
-        <div v-else-if="col.isADate">
-          {{ formatDate(item[col.field]) }}
-        </div>
 
         <!-- Files -->
         <b-upload
@@ -123,10 +142,11 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import BackendService from "@/services/BackendService.ts";
+import BackendService from "@/services/BackendService";
 
 import { Editor, EditorContent } from "@tiptap/vue-2";
 import StarterKit from "@tiptap/starter-kit";
+import { LocalDateTime, Instant, ZoneOffset, nativeJs } from "@js-joda/core";
 
 @Component({
   components: { EditorContent }
@@ -140,6 +160,7 @@ export default class RefenretialItem extends Vue {
     content: "",
     extensions: [StarterKit]
   });
+  dateRange: Date[] = [];
 
   mounted(): void {
     this.itemChanged();
@@ -156,6 +177,19 @@ export default class RefenretialItem extends Vue {
         this.editor.commands.setContent(htmlContent, false);
       }
     }
+
+    // Initialize dateRange
+    let rangeBeginningColumn = this.columns.filter(c => c.isAPeriodBeginning);
+    let rangeEndColumn = this.columns.filter(c => c.isAPeriodEnd);
+    if (rangeBeginningColumn.length && rangeEndColumn.length) {
+      this.dateRange = [];
+      this.dateRange.push(
+        this.parseLocalDateTime(this.item[rangeBeginningColumn[0].field])
+      );
+      this.dateRange.push(
+        this.parseLocalDateTime(this.item[rangeEndColumn[0].field])
+      );
+    }
   }
 
   beforeDestroy() {
@@ -169,6 +203,23 @@ export default class RefenretialItem extends Vue {
       // Get editor value
       this.item[htmlColumns[0].field] = this.editor.getHTML();
     }
+
+    // Translate dateRange into beggining/end dates
+    let rangeBeginningColumn = this.columns.filter(c => c.isAPeriodBeginning);
+    let rangeEndColumn = this.columns.filter(c => c.isAPeriodEnd);
+
+    this.dateRange[0].setHours(7);
+    this.dateRange[0].setMinutes(30);
+    this.item[rangeBeginningColumn[0].field] = LocalDateTime.from(
+      nativeJs(this.dateRange[0])
+    );
+
+    this.dateRange[1].setHours(21);
+    this.dateRange[1].setMinutes(0);
+    this.item[rangeEndColumn[0].field] = LocalDateTime.from(
+      nativeJs(this.dateRange[1])
+    );
+
     let onSavedCallback = () => {
       this.$emit("referential-updated");
       this.input.file = null;
@@ -228,18 +279,27 @@ export default class RefenretialItem extends Vue {
   }
 
   parseLocalDateTime(someLocalDateTime: number[]): Date {
-    const result: Date = new Date(
-      someLocalDateTime[0],
-      someLocalDateTime[1] - 1,
-      someLocalDateTime[2],
-      someLocalDateTime[3],
-      someLocalDateTime[4],
-      someLocalDateTime[5]
-    );
-    return result;
+    if (someLocalDateTime[5]) {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4],
+        someLocalDateTime[5]
+      );
+    } else {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4]
+      );
+    }
   }
 
-  formatDate(puet: number[]): string {
+  formatDate(puet: any): string {
     let theDate: Date = this.parseLocalDateTime(puet);
     var hourOptions = {
       month: "numeric",
