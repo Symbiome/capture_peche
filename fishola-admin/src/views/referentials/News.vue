@@ -26,6 +26,7 @@
       :columns="docColumns"
       :createElement="createDocumentation"
       :canDelete="true"
+      @elementsLoaded="computeIsPublic"
     ></Referential>
   </div>
 </template>
@@ -34,6 +35,7 @@
 import Referential from "@/components/Referential.vue";
 import { Component, Vue } from "vue-property-decorator";
 
+import { LocalDateTime, ZoneOffset, nativeJs } from "@js-joda/core";
 @Component({
   components: {
     Referential
@@ -59,7 +61,15 @@ export default class DocumentationVue extends Vue {
     {
       field: "datePublicationFin",
       label: "Fin de publication",
-      isAPeriodEnd: true
+      isAPeriodEnd: true,
+      hiddenInPopup: true
+    },
+
+    {
+      field: "isPublic",
+      label: "Visible sur le site",
+      isABoolean: true,
+      hiddenInPopup: true
     },
     {
       field: "content",
@@ -69,13 +79,59 @@ export default class DocumentationVue extends Vue {
   ];
 
   createDocumentation() {
+    const tomorow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
     return {
-      name: "Nouvelle actualité",
-      content:
-        "Ceci est un  <b>exemple</b> <ol><li>De</li><li>Liste</li></ol><hr/>",
-      datePublicationDebut: new Date(),
-      datePublicationFin: new Date()
+      name: "Titre de votre actualité",
+      content: "<h1>Partie 1</h1><p>Le corps de votre <b>actualité</b>",
+      datePublicationDebut: [
+        tomorow.year(),
+        tomorow.monthValue(),
+        tomorow.dayOfMonth(),
+        7,
+        30
+      ],
+      datePublicationFin: [
+        tomorow.year(),
+        tomorow.monthValue(),
+        tomorow.dayOfMonth(),
+        7,
+        30
+      ],
+      isPublished: false
     };
+  }
+
+  computeIsPublic(actualites: any[]) {
+    actualites.forEach(actualite => {
+      let now = LocalDateTime.now(ZoneOffset.UTC);
+      let dateDebut = this.parseLocalDateTime(actualite.datePublicationDebut);
+      let dateFin = this.parseLocalDateTime(actualite.datePublicationFin);
+
+      actualite.isPublic =
+        now.isAfter(LocalDateTime.from(nativeJs(dateDebut))) &&
+        now.isBefore(LocalDateTime.from(nativeJs(dateFin)));
+    });
+  }
+
+  parseLocalDateTime(someLocalDateTime: number[]): Date {
+    if (someLocalDateTime[5]) {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4],
+        someLocalDateTime[5]
+      );
+    } else {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4]
+      );
+    }
   }
 }
 </script>

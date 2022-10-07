@@ -203,6 +203,7 @@ export default class Refenretial extends Vue {
     this.allowedDeletionElements = [];
     BackendService.backendGet(this.url).then(res => {
       this.data = res;
+      this.$emit("elementsLoaded", this.data);
       this.checkCanDeletePredicate();
     });
   }

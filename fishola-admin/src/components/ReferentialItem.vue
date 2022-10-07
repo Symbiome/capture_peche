@@ -28,7 +28,7 @@
             ? 'Période de publication'
             : col.label
         "
-        v-if="!col.isAPeriodEnd"
+        v-if="!col.hiddenInPopup"
       >
         <!-- HTML text -->
         <div v-if="col.isHTML" class="editor-holder">
@@ -314,7 +314,7 @@ import BackendService from "@/services/BackendService";
 
 import { Editor, EditorContent } from "@tiptap/vue-2";
 import StarterKit from "@tiptap/starter-kit";
-import { LocalDateTime, Instant, ZoneOffset, nativeJs } from "@js-joda/core";
+import { LocalDateTime, nativeJs } from "@js-joda/core";
 
 @Component({
   components: { EditorContent }
