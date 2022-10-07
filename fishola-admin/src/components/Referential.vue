@@ -110,6 +110,7 @@
       trap-focus
       :destroy-on-hide="false"
       aria-role="dialog"
+      full-screen
       aria-modal
     >
       <ReferentialItem
