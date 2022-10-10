@@ -23,16 +23,15 @@ package fr.inrae.fishola.database;
 
 import fr.inrae.fishola.FisholaConfiguration;
 import io.agroal.api.AgroalDataSource;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import static javax.transaction.Transactional.TxType.MANDATORY;
 

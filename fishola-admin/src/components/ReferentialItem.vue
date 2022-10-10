@@ -175,6 +175,7 @@
                     .undo()
                     .run()
                 "
+                class="editor-button"
               >
                 Annuler
               </button>
@@ -194,9 +195,14 @@
                     .redo()
                     .run()
                 "
+                class="editor-button"
               >
                 Rétablir
               </button>
+              <ImageUploader
+                :item-id="item['id']"
+                @uploaded-pic="uploadedPic"
+              />
             </div>
           </div>
           <EditorContent class="editor" :editor="editor" />
@@ -313,11 +319,14 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
 
 import { Editor, EditorContent } from "@tiptap/vue-2";
+import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
+
 import { LocalDateTime, nativeJs } from "@js-joda/core";
+import ImageUploader from "./ImageUploader.vue";
 
 @Component({
-  components: { EditorContent }
+  components: { EditorContent, ImageUploader }
 })
 export default class RefenretialItem extends Vue {
   @Prop() item!: any;
@@ -326,7 +335,7 @@ export default class RefenretialItem extends Vue {
   input = { file: null };
   editor = new Editor({
     content: "",
-    extensions: [StarterKit]
+    extensions: [StarterKit, Image]
   });
   dateRange: Date[] = [];
 
@@ -362,6 +371,15 @@ export default class RefenretialItem extends Vue {
 
   beforeDestroy() {
     this.editor?.destroy();
+  }
+
+  uploadedPic(url: string): void {
+    console.error(url);
+    this.editor
+      .chain()
+      .focus()
+      .setImage({ src: url })
+      .run();
   }
 
   save(closeModal: () => void) {
@@ -558,6 +576,11 @@ export default class RefenretialItem extends Vue {
       list-style: circle;
       margin-left: 20px;
       padding-left: 5px;
+    }
+
+    img {
+      max-height: 500px;
+      max-width: 500px;
     }
 
     blockquote {

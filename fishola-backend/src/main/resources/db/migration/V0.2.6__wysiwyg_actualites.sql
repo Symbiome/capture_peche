@@ -28,3 +28,9 @@ CREATE TABLE news (
     date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
+
+CREATE TABLE news_picture (
+   id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+   news_id UUID,
+   content BYTEA NOT NULL
+);

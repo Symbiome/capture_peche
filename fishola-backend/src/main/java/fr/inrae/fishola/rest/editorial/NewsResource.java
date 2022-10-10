@@ -24,10 +24,12 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.News;
+import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -93,12 +95,38 @@ public class NewsResource extends AbstractFisholaResource {
     public Response createNews(News news) {
         checkIsAdmin();
         try {
-            dao.insert(news);
+            News inserted = dao.insert(news);
+            // Update all news pictures uploaded with temp id
+            dao.updateTempNewsPictureIds(inserted.getId());
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
             entity.put("error", "Impossible de créer la news : " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
+    }
+
+    @POST
+    @Path("/news-picture/{newsId}")
+    public NewsPicture postNewsPicture(@PathParam("newsId") String newsId, String content) {
+        checkIsAdmin();
+        try {
+            return dao.insertNewsPicture(newsId, content);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Impossible de créer l'image : " + e.getMessage());
+        }
+    }
+
+    @GET
+    @Path("/news-picture/{picId}")
+    @Produces("image/jpeg")
+    public Response getNewsPicture(@PathParam("picId") UUID picId) {
+         Optional<byte[]> bytes = dao.getNewsPicture(picId);
+
+        Response response = bytes.map(this::wrapAsStreamingOutput)
+                .map(Response::ok)
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
+                .build();
+        return response;
     }
 }
