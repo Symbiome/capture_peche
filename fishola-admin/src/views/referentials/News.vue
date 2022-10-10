@@ -23,6 +23,7 @@
     <Referential
       name="Actualités"
       url="/v1/news-all"
+      :default-sort="['datePublicationDebut', 'asc']"
       :columns="docColumns"
       :createElement="createDocumentation"
       :canDelete="true"

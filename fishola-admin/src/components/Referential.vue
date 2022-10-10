@@ -24,6 +24,7 @@
     <b-table
       :data="data"
       :striped="true"
+      :default-sort="defaultSort"
       :selected.sync="selection.item"
       :loading="!data"
     >
@@ -145,6 +146,7 @@ export default class Refenretial extends Vue {
   @Prop() columns!: any[];
   @Prop() data: any[] = [];
   @Prop({ default: true }) editable: boolean;
+  @Prop({ default: ["id", "desc"] }) defaultSort: string[];
   selection = { item: null };
 
   /* The function used to create new elements. If not specified, create button will not be displayed */
