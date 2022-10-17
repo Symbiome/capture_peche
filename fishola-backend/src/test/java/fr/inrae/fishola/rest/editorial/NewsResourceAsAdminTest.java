@@ -106,6 +106,8 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
         Assertions.assertEquals(modifiedName, updated.getName());
 
         // TODO #11679 notifications should be sent due to modified date
+
+        newsDao.deleteById(news.getId());
     }
 
     @Test
@@ -113,7 +115,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
     public void testNewsPost() {
         int newsCountBefore = this.newsDao.getNews(false).size();
         News news = new News();
-        news.setName("newnews");
+        news.setName("published-newnews");
         LocalDateTime now = LocalDateTime.now();
         news.setDatePublicationDebut(now.minusDays(1));
         news.setDatePublicationFin(now.plusDays(20));

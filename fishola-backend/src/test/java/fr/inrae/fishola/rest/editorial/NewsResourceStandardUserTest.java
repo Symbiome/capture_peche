@@ -27,10 +27,12 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +65,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
         News publishedNews = new News();
         publishedNews.setContent("Content");
         publishedNews.setName("published-" + token);
-        publishedNews.setDatePublicationDebut(now.minusDays(1));
+        publishedNews.setDatePublicationDebut(now.minusDays(10));
         publishedNews.setDatePublicationFin(now.plusDays(10));
         this.newsDao.insert(publishedNews);
     }
@@ -75,6 +77,8 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
         int expectedPublishedNewsCount = this.newsDao.getNews(false).stream().filter(
                 news -> news.getName().startsWith("published-")
         ).collect(Collectors.toList()).size();
+        List<News> publishedNews = this.newsDao.getNews(true);
+        Assertions.assertEquals(expectedPublishedNewsCount, publishedNews.size());
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
