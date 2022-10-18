@@ -1,6 +1,7 @@
 package fr.inrae.fishola.rest.metrics;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.DashboardDao;
@@ -131,6 +132,42 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
+    public void testPersonalDashboardForLake() {
+        // Goal : make sure that lake selections for personnal dashboard works as expected
+        UUID lakeId1 = this.lakes.get(0).getId();
+        UUID lakeId2 = this.lakes.get(1).getId();
+        Dashboard initialDashboardForLake1 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
+        Dashboard initialDashboardForLake2 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
+        Dashboard initialDashboardForAllLakes = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+        Dashboard initialDashboardForLake1LastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
+        Dashboard initialDashboardForLake2LastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
+        Dashboard initialDashboardForAllLakesLastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+
+        // Add 1 trip to lake 1
+        createTripWithCatch(lakeId1, LocalDateTime.now());
+        // Should not impact lake 2 dashboard but other ones
+        comparePersonalDashboards(initialDashboardForLake1, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 1);
+        comparePersonalDashboards(initialDashboardForAllLakes, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 1);
+        comparePersonalDashboards(initialDashboardForLake2, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
+        initialDashboardForLake1 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
+        initialDashboardForAllLakes = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+
+        // Add 1 trips to lake 2 - last year
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+        createTripWithCatch(lakeId2, oneYearAgo);
+        // For current year : should not be impacted
+        comparePersonalDashboards(initialDashboardForLake1, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 0);
+        comparePersonalDashboards(initialDashboardForLake2, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
+        comparePersonalDashboards(initialDashboardForAllLakes, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 0);
+
+        // For last year : Should not impact lake 1 dashboard but other ones
+        comparePersonalDashboards(initialDashboardForLake1LastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1), 0);
+        comparePersonalDashboards(initialDashboardForLake2LastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2), 1);
+        comparePersonalDashboards(initialDashboardForAllLakesLastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear()), 1);
+    }
+
+    @Test
+    @Transactional
     public void testDefaultGlobalDashboard() {
         // Goal : Ensure that Global dashboards defaults to "all lakes" and "current year"
         GlobalDashboard initialDashboard = this.getGlobalDashboard();
@@ -151,7 +188,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
     @Test
     @Transactional
     public void testGlobalDashboardForYear() {
-        // Goal : make sure that year selections for personnal dashboard works as expected
+        // Goal : make sure that year selections for global dashboard works as expected
         GlobalDashboard initialDashboardForCurrentYear = this.getGlobalDashboardForYear(LocalDateTime.now().getYear());
         GlobalDashboard initialDashboardForLastYear = this.getGlobalDashboardForYear(LocalDateTime.now().getYear() - 1);
 
@@ -173,6 +210,43 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
         compareGlobalDashboards(initialDashboardForLastYear, this.getGlobalDashboardForYear(LocalDateTime.now().getYear() - 1), 0);
     }
 
+    @Test
+    @Transactional
+    public void testGlobalDashboardForLake() {
+        // Goal : make sure that lake selections for global dashboard works as expected
+        UUID lakeId1 = this.lakes.get(0).getId();
+        UUID lakeId2 = this.lakes.get(1).getId();
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+
+        GlobalDashboard initialDashboardForLake1 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
+        GlobalDashboard initialDashboardForLake2 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
+        GlobalDashboard initialDashboardForAllLakes = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+        GlobalDashboard initialDashboardForLake1LastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1);
+        GlobalDashboard initialDashboardForLake2LastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2);
+        GlobalDashboard initialDashboardForAllLakesLastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear());
+
+        // Add 1 trip to lake 1
+        createTripWithCatch(lakeId1, LocalDateTime.now());
+        // Should not impact lake 2 dashboard but other ones
+        compareGlobalDashboards(initialDashboardForLake2, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
+        compareGlobalDashboards(initialDashboardForLake1, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 1);
+        compareGlobalDashboards(initialDashboardForAllLakes, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 1);
+        initialDashboardForLake1 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
+        initialDashboardForLake2 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
+        initialDashboardForAllLakes = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+
+        // Add 1 trips to lake 2 - last year
+        createTripWithCatch(lakeId2, oneYearAgo);
+        // For current year : should not be impacted
+        compareGlobalDashboards(initialDashboardForLake1, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 0);
+        compareGlobalDashboards(initialDashboardForLake2, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
+        compareGlobalDashboards(initialDashboardForAllLakes, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 0);
+
+        // For last year : Should not impact lake 1 dashboard but other ones
+        compareGlobalDashboards(initialDashboardForLake1LastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1), 0);
+        compareGlobalDashboards(initialDashboardForLake2LastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2), 1);
+        compareGlobalDashboards(initialDashboardForAllLakesLastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear()), 1);
+    }
     /**
      * Compares the two given dashboards. Fails if the second one does not have expectedAdditionalCatches more that the first.
      * @param d1 dashboard to compare
@@ -246,21 +320,37 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
         Optional<Integer> yearFilter = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
-        return this.dashboardDao.getPersonalDashboard(this.userId, yearFilter);
+        return this.dashboardDao.getPersonalDashboard(this.userId, yearFilter, Optional.empty());
     }
 
     private Dashboard getPersonalDashboardForYear(Integer year) {
-        return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year));
+        return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year), Optional.empty());
+    }
+
+    private Dashboard getPersonalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
+        Optional<List<UUID>> lakesFilter = Optional.empty();
+        if (lakeIds.length > 0) {
+            lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
+        }
+        return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year), lakesFilter);
     }
 
     private GlobalDashboard getGlobalDashboard() {
         Optional<Integer> yearFilter = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
-        return this.dashboardDao.computeGlobalDashboard(yearFilter, this.log);
+        return this.dashboardDao.computeGlobalDashboard(yearFilter, Optional.empty(), this.log);
     }
 
     private GlobalDashboard getGlobalDashboardForYear(Integer year) {
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty(), this.log);
+    }
+
+    private GlobalDashboard getGlobalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
+        Optional<List<UUID>> lakesFilter = Optional.empty();
+        if (lakeIds.length > 0) {
+            lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
+        }
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter, this.log);
     }
 }

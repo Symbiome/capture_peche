@@ -197,7 +197,7 @@ public class CatchsDao extends AbstractFisholaDao {
                 .forEach(this::delete);
     }
 
-    protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year) {
+    protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
         Multimap<Month, Catch> result = withContext(context -> {
             SelectConditionStep<Record> selectStep = context
                     .select(Tables.TRIP.DAY)
@@ -222,6 +222,9 @@ public class CatchsDao extends AbstractFisholaDao {
                 LocalDate max = LocalDate.of(year.get(), Month.DECEMBER, 31);
                 selectStep = selectStep.and(Tables.TRIP.DAY.between(min, max));
             }
+            if (lakesFilter.isPresent()) {
+                selectStep = selectStep.and(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
+            }
             Multimap<Month, Catch> multimap = selectStep
                     .stream()
                     .collect(Multimaps.toMultimap(
@@ -233,13 +236,13 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Multimap<Month, Catch> findMonthlyByUserId(UUID userId, Optional<Integer> year) {
-        Multimap<Month, Catch> result = findMonthly0(Optional.of(userId), year);
+    public Multimap<Month, Catch> findMonthlyByUserId(UUID userId, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.of(userId), year, lakesFilter);
         return result;
     }
 
-    public Multimap<Month, Catch> findAll(Optional<Integer> year) {
-        Multimap<Month, Catch> result = findMonthly0(Optional.empty(), year);
+    public Multimap<Month, Catch> findAll(Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.empty(), year, lakesFilter);
         return result;
     }
 

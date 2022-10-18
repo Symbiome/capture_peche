@@ -37,8 +37,8 @@ import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -46,6 +46,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.jboss.logging.Logger;
@@ -70,40 +71,56 @@ public class DashboardResource extends AbstractFisholaResource {
 
     @GET
     @Path("/dashboard")
-    public Response getDashboard() {
 
+    public Response getDefaultPersonalashboard(
+            @QueryParam("year") Integer year,
+            @QueryParam("lakes") List<UUID> lakes
+    ) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
-        Optional<Integer> yearFilter = getYearFilter();
-
-        Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter);
+        Optional<Integer> yearFilter = Optional.empty();
+        if (year != null) {
+            yearFilter = Optional.of(year);
+        }
+        Optional<List<UUID>> lakesFilter = Optional.empty();
+        if (lakes != null) {
+            lakesFilter = Optional.of(lakes);
+        }
+        Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, lakesFilter);
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
     }
 
-
-    protected Optional<Integer> getYearFilter() {
-        Optional<Integer> result = config.dashboardOnlyCurrentYear()
-                ? Optional.of(Year.now().getValue())
-                : Optional.empty();
-        return result;
-    }
-
     @GET
     @Path("/global-dashboard")
-    public GlobalDashboard getGlobalDashboard() {
-        final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
-                this::computeNewGlobalDashboard,
-                GlobalDashboard::computedOn,
-                Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
-                false
-        );
-
-        return result;
+    public GlobalDashboard getGlobalDashboard(
+        @QueryParam("year") Integer year,
+        @QueryParam("lakes") List<UUID> lakes
+    ) {
+        // Default current dashboard : use cached value
+        if (year == null && lakes == null) {
+            final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
+                    this::computeNewGlobalDashboard,
+                    GlobalDashboard::computedOn,
+                    Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
+                    false
+            );
+            return result;
+        } else {
+            Optional<Integer> yearFilter = Optional.empty();
+            if (year != null) {
+                yearFilter = Optional.of(year);
+            }
+            Optional<List<UUID>> lakesFilter = Optional.empty();
+            if (lakes != null) {
+                lakesFilter = Optional.of(lakes);
+            }
+            return this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log);
+        }
     }
 
     protected GlobalDashboard computeNewGlobalDashboard() {
-        return this.dashboardDao.computeGlobalDashboard(getYearFilter(), this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.empty(), Optional.empty(), this.log);
     }
 
     @GET

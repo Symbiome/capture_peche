@@ -84,7 +84,7 @@ public class TripsDao extends AbstractFisholaDao {
         return techniques.size();
     }
 
-    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
         List<Trip> result = withContext(context -> {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
@@ -96,6 +96,9 @@ public class TripsDao extends AbstractFisholaDao {
                 LocalDate min = LocalDate.of(year, Month.JANUARY, 1);
                 LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
                 conditions.add(Tables.TRIP.DAY.between(min, max));
+            });
+            lakesFilter.ifPresent(lakesIds -> {
+                conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
             });
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
@@ -122,20 +125,20 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year) {
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
         if (!page.getOrderClauses().isEmpty()) {
             PaginationOrder order = page.getOrderClauses().get(0);
             orderDesc = order.isDesc();
         }
-        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year);
+        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year,lakesFilter);
         PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
         return result;
     }
 
     public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
-        PaginationResult<Trip> result = listMyTrips(userId, page, searchTerm, Optional.empty());
+        PaginationResult<Trip> result = listMyTrips(userId, page, searchTerm, Optional.empty(), Optional.empty());
         return result;
     }
 

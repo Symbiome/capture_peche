@@ -73,9 +73,9 @@ public class DashboardDao  extends AbstractFisholaDao {
     protected TripsDao tripsDao;
 
 
-    public Dashboard getPersonalDashboard(UUID userId, Optional<Integer> yearFilter) {
+    public Dashboard getPersonalDashboard(UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
         ImmutableDashboard.Builder builder = ImmutableDashboard.builder();
-        Multimap<Month, Catch> monthlyCatchs = catchsDao.findMonthlyByUserId(userId, yearFilter);
+        Multimap<Month, Catch> monthlyCatchs = catchsDao.findMonthlyByUserId(userId, yearFilter, lakesFilter);
 
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
@@ -90,7 +90,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
-        PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches, yearFilter);
+        PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches, yearFilter, lakesFilter);
         builder.latestTripsCatchs(latestTrips.getElements());
         int allTripsCount = (int) latestTrips.getCount();
         if (allTripsCount > 0) {
@@ -129,11 +129,11 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Logger log) {
+    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter, Logger log) {
 
         ImmutableGlobalDashboard.Builder builder = ImmutableGlobalDashboard.builder();
 
-        Multimap<Month, Catch> monthlyCatchs = catchsDao.findAll(yearFilter);
+        Multimap<Month, Catch> monthlyCatchs = catchsDao.findAll(yearFilter, lakesFilter);
 
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
@@ -186,12 +186,12 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    protected PaginationResult<DashboardLastTrip> computeLatestTrips(UUID userId, Collection<Catch> allCatches, Optional<Integer> yearFilter) {
+    protected PaginationResult<DashboardLastTrip> computeLatestTrips(UUID userId, Collection<Catch> allCatches, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
         ImmutableListMultimap<UUID, Catch> allCatchsIndex = Multimaps.index(allCatches, Catch::getTripId);
         PaginationParameter page = PaginationParameter.builder(0, 9)
                 .addOrder("date", true)
                 .build();
-        PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty(), yearFilter);
+        PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty(), yearFilter, lakesFilter);
         PaginationResult<DashboardLastTrip> result = latestTripsEntities.transform(trip -> toDashboardLastTrip(trip, allCatchsIndex));
         return result;
     }
