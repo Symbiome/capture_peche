@@ -23,9 +23,11 @@
     <div class="two-sections">
       <div class="section shrinked">
         <h2><i class="icon-fish" />Mes poissons</h2>
-        <DistributionChart :distribution="caughtSpeciesDistribution"
-                           legend="Capturés"
-                           greenLegend="conservés"></DistributionChart>
+        <DistributionChart
+          :distribution="caughtSpeciesDistribution"
+          legend="Capturés"
+          greenLegend="conservés"
+        ></DistributionChart>
       </div>
 
       <div class="section shrinked">
@@ -34,69 +36,85 @@
           <span>Pas assez de données</span>
         </div>
         <div class="average-header" v-if="latestTrips.length > 0">
-          <div class="count">{{averageCatchsPerTripRounded}}</div>
+          <div class="count">{{ averageCatchsPerTripRounded }}</div>
           captures en moyenne / sortie
         </div>
         <div class="average">
-          <div v-for="(f, index) in latestTrips"
-                v-bind:key="f.tripId"
-                class="average-column"
-                v-on:click="openTrip(f.tripId)">
+          <div
+            v-for="(f, index) in latestTrips"
+            v-bind:key="f.tripId"
+            class="average-column"
+            v-on:click="openTrip(f.tripId)"
+          >
             <div class="count">
-              {{f.catchsCount}}
+              {{ f.catchsCount }}
             </div>
             <div class="average-row-bar">
-              <div class="average-row-bar-filled"
-                    v-if="f.catchsCount > 0"
-                    v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                    v-bind:style="'height: ' + (f.catchsCount * 100 / maxCatchsCount) + '%;'"></div>
+              <div
+                class="average-row-bar-filled"
+                v-if="f.catchsCount > 0"
+                v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
+                v-bind:style="
+                  'height: ' + (f.catchsCount * 100) / maxCatchsCount + '%;'
+                "
+              ></div>
             </div>
             <div class="date">
               <div class="day">
-                {{getDay(f.day)}}
+                {{ getDay(f.day) }}
               </div>
               <div class="month">
-                {{getMonth(f.day)}}
+                {{ getMonth(f.day) }}
               </div>
               <div class="year">
-                {{getYear(f.day)}}
+                {{ getYear(f.day) }}
               </div>
             </div>
           </div>
-          <div v-for="(f, index) in emptylatestTrips"
-                v-bind:key="'empty-' + index"
-                class="average-column">
-            <div class="count">
-              -
-            </div>
-            <div class="average-row-bar">
-            </div>
+          <div
+            v-for="(f, index) in emptylatestTrips"
+            v-bind:key="'empty-' + index"
+            class="average-column"
+          >
+            <div class="count">-</div>
+            <div class="average-row-bar"></div>
             <div class="date">
-              <div class="day">
-                -
-              </div>
+              <div class="day">-</div>
             </div>
           </div>
-          <div class="average-threshold"
-                v-if="latestTrips.length > 0"
-                v-bind:style="'bottom: ' + (54+(averageCatchsPerTrip * 150 / maxCatchsCount)) + 'px;'"></div>
+          <div
+            class="average-threshold"
+            v-if="latestTrips.length > 0"
+            v-bind:style="
+              'bottom: ' +
+              (54 + (averageCatchsPerTrip * 150) / maxCatchsCount) +
+              'px;'
+            "
+          ></div>
         </div>
       </div>
     </div>
 
     <div class="section">
       <div class="shrinked">
-        <h2><i class="icon-size" />Taille moyenne <span class="hide-if-small">par espèce</span> (cm)</h2>
+        <h2>
+          <i class="icon-size" />Taille moyenne
+          <span class="hide-if-small">par espèce</span> (cm)
+        </h2>
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
-      <OptionsList :items="monthlySizesOptions"
-                    v-if="monthlySizesOptions.length > 0"
-                    v-on:item-selected="onMonthlySizeSelected"></OptionsList>
+      <OptionsList
+        :items="monthlySizesOptions"
+        v-if="monthlySizesOptions.length > 0"
+        v-on:item-selected="onMonthlySizeSelected"
+      ></OptionsList>
       <div class="shrinked" v-if="monthlySizes">
-        <HistogramChart :values="monthlySizes"
-                        :orderedMonths="orderedMonths"></HistogramChart>
+        <HistogramChart
+          :values="monthlySizes"
+          :orderedMonths="orderedMonths"
+        ></HistogramChart>
       </div>
     </div>
 
@@ -107,17 +125,23 @@
       <div class="not-enough-data" v-if="topBySizeOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
-      <OptionsList :items="topBySizeOptions"
-                    v-if="topBySizeOptions.length > 0"
-                    v-on:item-selected="onTopSizeSelected"></OptionsList>
-      <div class="dashboard-top-catchs catch-preview-list-scrollable"
-          v-if="topBySizeCatchs">
-        <CatchPreviewList v-bind:modifiable="false"
-                          v-bind:reverse="false"
-                          lakeId=""
-                          v-bind:catchs="topBySizeCatchs"
-                          v-on:openCatchFromId="openCatch($event)"
-                          bottomMode="index"/>
+      <OptionsList
+        :items="topBySizeOptions"
+        v-if="topBySizeOptions.length > 0"
+        v-on:item-selected="onTopSizeSelected"
+      ></OptionsList>
+      <div
+        class="dashboard-top-catchs catch-preview-list-scrollable"
+        v-if="topBySizeCatchs"
+      >
+        <CatchPreviewList
+          v-bind:modifiable="false"
+          v-bind:reverse="false"
+          lakeId=""
+          v-bind:catchs="topBySizeCatchs"
+          v-on:openCatchFromId="openCatch($event)"
+          bottomMode="index"
+        />
       </div>
     </div>
 
@@ -128,50 +152,57 @@
       <div class="not-enough-data" v-if="topByWeightOptions.length == 0">
         <span>Pas assez de données</span>
       </div>
-      <OptionsList :items="topByWeightOptions"
-                    v-if="topByWeightOptions.length > 0"
-                    v-on:item-selected="onTopWeightSelected"></OptionsList>
-      <div class="dashboard-top-catchs catch-preview-list-scrollable"
-          v-if="topByWeightCatchs">
-        <CatchPreviewList v-bind:modifiable="false"
-                          v-bind:reverse="false"
-                          lakeId=""
-                          v-bind:catchs="topByWeightCatchs"
-                          v-on:openCatchFromId="openCatch($event)"
-                          metaMode="weight"
-                          bottomMode="index"/>
+      <OptionsList
+        :items="topByWeightOptions"
+        v-if="topByWeightOptions.length > 0"
+        v-on:item-selected="onTopWeightSelected"
+      ></OptionsList>
+      <div
+        class="dashboard-top-catchs catch-preview-list-scrollable"
+        v-if="topByWeightCatchs"
+      >
+        <CatchPreviewList
+          v-bind:modifiable="false"
+          v-bind:reverse="false"
+          lakeId=""
+          v-bind:catchs="topByWeightCatchs"
+          v-on:openCatchFromId="openCatch($event)"
+          metaMode="weight"
+          bottomMode="index"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
 
-import CatchPreviewList from '@/components/trip/CatchPreviewList.vue';
+import OptionsList from "@/components/common/OptionsList.vue";
 
-import OptionsList from '@/components/common/OptionsList.vue';
+import DistributionChart from "@/components/charts/DistributionChart.vue";
+import HistogramChart from "@/components/charts/HistogramChart.vue";
 
-import DistributionChart from '@/components/charts/DistributionChart.vue';
-import HistogramChart from '@/components/charts/HistogramChart.vue';
+import Constants from "@/services/Constants";
+import TripsService from "@/services/TripsService";
+import {
+  Dashboard,
+  SpeciesWithAlias,
+  DashboardLastTrip,
+  CatchBean,
+  Month,
+} from "@/pojos/BackendPojos";
+import DistributionEntry from "@/pojos/DistributionEntry";
+import OptionItem from "@/pojos/OptionItem";
+import { DashboardAndSpecies } from "@/services/DashboardService";
 
-import Constants from '@/services/Constants';
-import TripsService from '@/services/TripsService';
-import {Dashboard, SpeciesWithAlias, DashboardLastTrip, CatchBean, Month} from '@/pojos/BackendPojos';
-import DistributionEntry from '@/pojos/DistributionEntry';
-import OptionItem from '@/pojos/OptionItem';
-import {DashboardAndSpecies} from '@/services/DashboardService';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import router from "../../router";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
-
-import moment from 'moment';
+import moment from "moment";
 
 export class TopEntry {
-    constructor (
-        public species:SpeciesWithAlias,
-        public catchs:CatchBean[]
-        ) {
-    }
+  constructor(public species: SpeciesWithAlias, public catchs: CatchBean[]) {}
 }
 
 @Component({
@@ -179,73 +210,98 @@ export class TopEntry {
     DistributionChart,
     OptionsList,
     HistogramChart,
-    CatchPreviewList
-  }
+    CatchPreviewList,
+  },
 })
 export default class PersonalDashboard extends Vue {
+  speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
-  speciesIndex:{ [index: string]: SpeciesWithAlias } = {};
-
-  caughtSpeciesDistribution:DistributionEntry[] = [];
-  averageCatchsPerTripRounded:number = 0;
-  averageCatchsPerTrip:number = 0;
-  latestTrips:DashboardLastTrip[] = [];
-  emptylatestTrips:any[] = [];
-  maxCatchsCount:number = 100;
-  topBySizeOptions:OptionItem[] = [];
-  topBySizeCatchs:CatchBean[] | null = null;
-  topByWeightOptions:OptionItem[] = [];
-  topByWeightCatchs:CatchBean[] | null = null;
+  caughtSpeciesDistribution: DistributionEntry[] = [];
+  averageCatchsPerTripRounded: number = 0;
+  averageCatchsPerTrip: number = 0;
+  latestTrips: DashboardLastTrip[] = [];
+  emptylatestTrips: any[] = [];
+  maxCatchsCount: number = 100;
+  topBySizeOptions: OptionItem[] = [];
+  topBySizeCatchs: CatchBean[] | null = null;
+  topByWeightOptions: OptionItem[] = [];
+  topByWeightCatchs: CatchBean[] | null = null;
   orderedMonths: Month[] | null = null;
   monthlySizesOptions: OptionItem[] = [];
   monthlySizes: { [P in Month]?: number } | null = null;
 
   // On a besoin de maintenir un index de capture -> sortie
-  catchToTripId:{ [index: string]: string } = {};
+  catchToTripId: { [index: string]: string } = {};
 
-  @Prop() dashboardData:DashboardAndSpecies;
+  @Prop() dashboardData: DashboardAndSpecies;
 
   constructor() {
     super();
   }
 
   created() {
+    this.dashboardDataChanged();
+  }
+
+  @Watch("dashboardData")
+  dashboardDataChanged(): void {
+    this.speciesIndex = {};
+    this.caughtSpeciesDistribution = [];
+    this.averageCatchsPerTripRounded = 0;
+    this.averageCatchsPerTrip = 0;
+    this.latestTrips = [];
+    this.emptylatestTrips = [];
+    this.maxCatchsCount = 0;
+    this.topBySizeOptions = [];
+    this.topBySizeCatchs = [];
+    this.topByWeightOptions = [];
+    this.topBySizeCatchs = [];
+    this.orderedMonths = [];
+    this.monthlySizesOptions = [];
+    this.monthlySizes = null;
+    this.catchToTripId = {};
+
     const speciesAliases = this.dashboardData.dashboard.speciesAliases;
     this.dashboardData.species.forEach((species) => {
       this.speciesIndex[species.id] = species;
 
       const aliases = speciesAliases[species.id];
       if (aliases) {
-        species.alias = aliases.join(' ou ');
+        species.alias = aliases.join(" ou ");
       }
     });
 
     const speciesCount = this.dashboardData.dashboard.caughtSpeciesCount;
     const distribution = this.dashboardData.dashboard.caughtSpeciesDistribution;
-    const releasedDistribution = this.dashboardData.dashboard.caughtAndReleasedSpeciesDistribution;
-    Object.keys(distribution)
-      .forEach((speciesId) => {
-        const species:SpeciesWithAlias = this.speciesIndex[speciesId];
-        const percent:number = Math.round(distribution[speciesId]);
-        const releasedPercent:number = Math.round(releasedDistribution[speciesId]) | 0;
-        const keptPercent:number = percent - releasedPercent;
-        const count:number = speciesCount[speciesId];
-        const keptCount:number = percent == 0 ? 0 : Math.round(count * keptPercent / percent);
-        const keptLabel:string = 'conservé' + (keptCount > 1 ? 's':'');
-        const entry:DistributionEntry = new DistributionEntry(
-          speciesId,
-          species.name,
-          percent,
-          keptPercent,
-          count,
-          species.alias,
-          keptCount,
-          keptLabel);
-        this.caughtSpeciesDistribution.push(entry);
+    const releasedDistribution =
+      this.dashboardData.dashboard.caughtAndReleasedSpeciesDistribution;
+    Object.keys(distribution).forEach((speciesId) => {
+      const species: SpeciesWithAlias = this.speciesIndex[speciesId];
+      const percent: number = Math.round(distribution[speciesId]);
+      const releasedPercent: number =
+        Math.round(releasedDistribution[speciesId]) | 0;
+      const keptPercent: number = percent - releasedPercent;
+      const count: number = speciesCount[speciesId];
+      const keptCount: number =
+        percent == 0 ? 0 : Math.round((count * keptPercent) / percent);
+      const keptLabel: string = "conservé" + (keptCount > 1 ? "s" : "");
+      const entry: DistributionEntry = new DistributionEntry(
+        speciesId,
+        species.name,
+        percent,
+        keptPercent,
+        count,
+        species.alias,
+        keptCount,
+        keptLabel
+      );
+      this.caughtSpeciesDistribution.push(entry);
     });
 
-    this.averageCatchsPerTrip = this.dashboardData.dashboard.averageCatchsPerTrip || 0;
-    this.averageCatchsPerTripRounded = Math.round(10 * this.averageCatchsPerTrip) / 10;
+    this.averageCatchsPerTrip =
+      this.dashboardData.dashboard.averageCatchsPerTrip || 0;
+    this.averageCatchsPerTripRounded =
+      Math.round(10 * this.averageCatchsPerTrip) / 10;
 
     this.maxCatchsCount = 1;
     this.dashboardData.dashboard.latestTripsCatchs.forEach((trip) => {
@@ -254,107 +310,124 @@ export default class PersonalDashboard extends Vue {
         this.maxCatchsCount = trip.catchsCount;
       }
     });
-    this.maxCatchsCount = Math.max(this.maxCatchsCount, this.averageCatchsPerTripRounded);
-    while ((this.latestTrips.length + this.emptylatestTrips.length) < 9) {
+    this.maxCatchsCount = Math.max(
+      this.maxCatchsCount,
+      this.averageCatchsPerTripRounded
+    );
+    while (this.latestTrips.length + this.emptylatestTrips.length < 9) {
       this.emptylatestTrips.push({});
     }
 
-    const topBySize:TopEntry[] = this.parseTop(this.dashboardData.dashboard.topBySize);
+    const topBySize: TopEntry[] = this.parseTop(
+      this.dashboardData.dashboard.topBySize
+    );
     topBySize.forEach((top) => {
       this.topBySizeOptions.push({
         id: top.species.id,
         name: top.species.name,
         alias: top.species.alias,
-        whatever: top.catchs
+        whatever: top.catchs,
       });
     });
-    this.topBySizeOptions = Vue.lodash.orderBy(this.topBySizeOptions, 'name');
+    this.topBySizeOptions = Vue.lodash.orderBy(this.topBySizeOptions, "name");
 
-    const topByWeight:TopEntry[] = this.parseTop(this.dashboardData.dashboard.topByWeight);
+    const topByWeight: TopEntry[] = this.parseTop(
+      this.dashboardData.dashboard.topByWeight
+    );
     topByWeight.forEach((top) => {
       this.topByWeightOptions.push({
         id: top.species.id,
         name: top.species.name,
         alias: top.species.alias,
-        whatever: top.catchs
+        whatever: top.catchs,
       });
     });
-    this.topByWeightOptions = Vue.lodash.orderBy(this.topByWeightOptions, 'name');
+    this.topByWeightOptions = Vue.lodash.orderBy(
+      this.topByWeightOptions,
+      "name"
+    );
 
     this.orderedMonths = this.dashboardData.dashboard.orderedMonths;
-    const monthlySizesSpecies:string[] = Object.keys(this.dashboardData.dashboard.monthlySizes);
+    const monthlySizesSpecies: string[] = Object.keys(
+      this.dashboardData.dashboard.monthlySizes
+    );
     monthlySizesSpecies.forEach((speciesId) => {
-      const species:SpeciesWithAlias = this.speciesIndex[speciesId];
+      const species: SpeciesWithAlias = this.speciesIndex[speciesId];
       this.monthlySizesOptions.push({
         id: species.id,
         name: species.name,
         alias: species.alias,
-        whatever: this.dashboardData.dashboard.monthlySizes[speciesId]
+        whatever: this.dashboardData.dashboard.monthlySizes[speciesId],
       });
     });
-    this.monthlySizesOptions = Vue.lodash.orderBy(this.monthlySizesOptions, 'name');
-
+    this.monthlySizesOptions = Vue.lodash.orderBy(
+      this.monthlySizesOptions,
+      "name"
+    );
   }
 
-  parseTop(rawTop:{ [index: string]: CatchBean[] }):TopEntry[] {
-    const result:TopEntry[] = [];
-    const topSpecies:string[] = Object.keys(rawTop);
+  parseTop(rawTop: { [index: string]: CatchBean[] }): TopEntry[] {
+    const result: TopEntry[] = [];
+    const topSpecies: string[] = Object.keys(rawTop);
     topSpecies.forEach((speciesId) => {
-      const species:SpeciesWithAlias = this.speciesIndex[speciesId];
-      const catchs:CatchBean[] = [];
-      const rawCatchs:any[] = rawTop[speciesId];
-      rawCatchs.forEach((rawCatch:any) => {
+      const species: SpeciesWithAlias = this.speciesIndex[speciesId];
+      const catchs: CatchBean[] = [];
+      const rawCatchs: any[] = rawTop[speciesId];
+      rawCatchs.forEach((rawCatch: any) => {
         this.catchToTripId[rawCatch.id] = rawCatch.tripId;
-        const aCatch:CatchBean = TripsService.backendCatchToCatchBean(moment(), rawCatch);
+        const aCatch: CatchBean = TripsService.backendCatchToCatchBean(
+          moment(),
+          rawCatch
+        );
         catchs.push(aCatch);
-      })
-      const entry:TopEntry = new TopEntry(species, catchs);
+      });
+      const entry: TopEntry = new TopEntry(species, catchs);
       result.push(entry);
     });
     return result;
   }
 
-  onTopSizeSelected(item:OptionItem) {
+  onTopSizeSelected(item: OptionItem) {
     this.topBySizeCatchs = item.whatever;
   }
 
-  onTopWeightSelected(item:OptionItem) {
+  onTopWeightSelected(item: OptionItem) {
     this.topByWeightCatchs = item.whatever;
   }
 
-  onMonthlySizeSelected(item:OptionItem) {
+  onMonthlySizeSelected(item: OptionItem) {
     this.monthlySizes = item.whatever;
   }
 
-  openCatch(catchId:string) {
-    router.push({name:'catch', params: {tripId: this.catchToTripId[catchId], catchId:catchId}});
+  openCatch(catchId: string) {
+    router.push({
+      name: "catch",
+      params: { tripId: this.catchToTripId[catchId], catchId: catchId },
+    });
   }
 
-  openTrip(tripId:string) {
-    router.push({name:'trip', params: {id: tripId}});
+  openTrip(tripId: string) {
+    router.push({ name: "trip", params: { id: tripId } });
   }
 
-  getDay(date:number) {
+  getDay(date: number) {
     return new Date(date).getDate();
   }
 
-  getMonth(date:number) {
+  getMonth(date: number) {
     const month = new Date(date).getMonth();
     const result = Constants.MONTHS[month];
     return result;
   }
 
-  getYear(date:number) {
+  getYear(date: number) {
     return new Date(date).getFullYear();
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .average-header {
@@ -395,13 +468,12 @@ export default class PersonalDashboard extends Vue {
       width: calc(100% + 2 * @margin-large-desktop);
       left: calc(-1 * @margin-large-desktop);
     }
-
-}
+  }
 
   .average-column {
     display: flex;
     flex-direction: column;
-    align-items:center;
+    align-items: center;
 
     .count {
       font-weight: bold;
@@ -431,7 +503,6 @@ export default class PersonalDashboard extends Vue {
         &.odd {
           background: @summer-sky;
         }
-
       }
     }
 
@@ -444,11 +515,9 @@ export default class PersonalDashboard extends Vue {
       }
     }
   }
-
 }
 
 .dashboard-top-catchs {
-
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -456,7 +525,5 @@ export default class PersonalDashboard extends Vue {
   overflow-y: hidden;
   height: 200px;
   margin-bottom: @vertical-margin-medium;
-
 }
-
 </style>

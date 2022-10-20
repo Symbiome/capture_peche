@@ -72,7 +72,7 @@ public class DashboardResource extends AbstractFisholaResource {
     @GET
     @Path("/dashboard")
 
-    public Response getDefaultPersonalashboard(
+    public Response getDefaultPersonalDashboard(
             @QueryParam("year") Integer year,
             @QueryParam("lakes") List<UUID> lakes
     ) {
@@ -83,7 +83,7 @@ public class DashboardResource extends AbstractFisholaResource {
             yearFilter = Optional.of(year);
         }
         Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakes != null) {
+        if (lakes != null && !lakes.isEmpty()) {
             lakesFilter = Optional.of(lakes);
         }
         Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, lakesFilter);
@@ -112,7 +112,7 @@ public class DashboardResource extends AbstractFisholaResource {
                 yearFilter = Optional.of(year);
             }
             Optional<List<UUID>> lakesFilter = Optional.empty();
-            if (lakes != null) {
+            if (lakes != null && !lakes.isEmpty()) {
                 lakesFilter = Optional.of(lakes);
             }
             return this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log);
