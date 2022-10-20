@@ -56,8 +56,10 @@
       </div>
     </div>
 
-    <div class="update-hour">
-      <span> Heure de dernière mise à jour : {{ updateHour }} </span>
+    <div class="update-hour" v-if="showUpdateHour">
+      <span v-if="showUpdateHour">
+        Heure de dernière mise à jour : {{ updateHour }}
+      </span>
     </div>
   </div>
 </template>
@@ -91,6 +93,7 @@ export default class GlobalDashboardComponent extends Vue {
   updateHour: string = "";
 
   @Prop() dashboardData: GlobalDashboardAndSpecies;
+  @Prop({ default: false }) showUpdateHour: boolean;
 
   constructor() {
     super();
