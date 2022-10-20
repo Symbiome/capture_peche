@@ -38,6 +38,7 @@ import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,7 +75,7 @@ public class DashboardResource extends AbstractFisholaResource {
 
     public Response getDefaultPersonalDashboard(
             @QueryParam("year") Integer year,
-            @QueryParam("lakes") List<UUID> lakes
+            @QueryParam("lake") String lakeId
     ) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
@@ -83,8 +84,8 @@ public class DashboardResource extends AbstractFisholaResource {
             yearFilter = Optional.of(year);
         }
         Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakes != null && !lakes.isEmpty()) {
-            lakesFilter = Optional.of(lakes);
+        if (lakeId != null && !lakeId.isEmpty()) {
+            lakesFilter = Optional.of(Arrays.asList(UUID.fromString(lakeId)));
         }
         Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, lakesFilter);
         Response response = wrapEntity(result, userIdAndRenewal);
@@ -95,10 +96,10 @@ public class DashboardResource extends AbstractFisholaResource {
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard(
         @QueryParam("year") Integer year,
-        @QueryParam("lakes") List<UUID> lakes
+        @QueryParam("lake") String lakeId
     ) {
         // Default current dashboard : use cached value
-        if (year == null && lakes == null) {
+        if (year == null && lakeId == null) {
             final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
                     this::computeNewGlobalDashboard,
                     GlobalDashboard::computedOn,
@@ -112,8 +113,8 @@ public class DashboardResource extends AbstractFisholaResource {
                 yearFilter = Optional.of(year);
             }
             Optional<List<UUID>> lakesFilter = Optional.empty();
-            if (lakes != null && !lakes.isEmpty()) {
-                lakesFilter = Optional.of(lakes);
+            if (lakeId != null && !lakeId.isEmpty()) {
+                lakesFilter = Optional.of(Arrays.asList(UUID.fromString(lakeId)));
             }
             return this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log);
         }

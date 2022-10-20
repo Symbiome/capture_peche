@@ -56,9 +56,13 @@ export default class DashboardService extends AbstractFisholaService {
     return result;
   }
 
-  static loadDashboard(year: number): Promise<DashboardAndSpecies> {
+  static loadDashboard(
+    year: number,
+    lake: string
+  ): Promise<DashboardAndSpecies> {
     const params = {
       year: year,
+      lake: lake,
     };
     return new Promise<DashboardAndSpecies>((resolve, reject) => {
       Promise.all([
@@ -79,14 +83,21 @@ export default class DashboardService extends AbstractFisholaService {
     });
   }
 
-  static loadDashboardOrTimeout(year: number): Promise<DashboardAndSpecies> {
-    const promise = this.loadDashboard(year);
+  static loadDashboardOrTimeout(
+    year: number,
+    lake: string
+  ): Promise<DashboardAndSpecies> {
+    const promise = this.loadDashboard(year, lake);
     return this.timeout(5000, promise);
   }
 
-  static loadGlobalDashboard(year: number): Promise<GlobalDashboardAndSpecies> {
+  static loadGlobalDashboard(
+    year: number,
+    lake: string
+  ): Promise<GlobalDashboardAndSpecies> {
     const params = {
       year: year,
+      lake: lake,
     };
     return new Promise<GlobalDashboardAndSpecies>((resolve, reject) => {
       Promise.all([
@@ -107,9 +118,10 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static loadGlobalDashboardOrTimeout(
-    year: number
+    year: number,
+    lake: string
   ): Promise<GlobalDashboardAndSpecies> {
-    const promise = this.loadGlobalDashboard(year);
+    const promise = this.loadGlobalDashboard(year, lake);
     return this.timeout(5000, promise);
   }
 }

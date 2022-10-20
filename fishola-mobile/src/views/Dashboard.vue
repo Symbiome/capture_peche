@@ -36,6 +36,12 @@
               </option>
             </select>
 
+            <select placeholder="lake" v-model="selectedLakeUUID">
+              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                {{ lake.name }}
+              </option>
+            </select>
+
             <a
               @click="askForAsyncExport"
               v-if="!globalMode && asyncExport"
@@ -91,6 +97,7 @@
 
           <GlobalDashboardComponent
             v-if="globalMode && globalDashboard"
+            :showUpdateHour="year == new Date().getFullYear()"
             :dashboardData="globalDashboard"
           ></GlobalDashboardComponent>
         </div>
@@ -117,10 +124,11 @@ import {
   GlobalDashboardAndSpecies,
 } from "@/services/DashboardService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import router from "../router";
+import { Lake } from "@/pojos/BackendPojos";
 
-import moment from "moment";
+import ReferentialService from "../services/ReferentialService";
 
 @Component({
   components: {
@@ -146,16 +154,18 @@ export default class DashboardView extends Vue {
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
+  selectedLakeUUID = "";
+  lakes: Lake[] = [];
 
-  constructor() {
-    super();
+  created() {
+    this.loadLakes();
   }
 
   mounted() {
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-    DashboardService.loadDashboardOrTimeout(this.year).then(
+    DashboardService.loadDashboardOrTimeout(this.year, "").then(
       this.personalDashboardLoaded,
       this.cannotLoad
     );
@@ -164,23 +174,37 @@ export default class DashboardView extends Vue {
   }
 
   @Watch("year")
-  yearChanged(): void {
-    this.ready = false;
-    if (!this.globalDashboard) {
-      DashboardService.loadDashboardOrTimeout(this.year).then(
-        this.personalDashboardLoaded,
-        this.cannotLoad
-      );
+  @Watch("selectedLakeUUID")
+  yearOrSelectedLakesChanged(): void {
+    if (!this.globalMode) {
+      DashboardService.loadDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.personalDashboardLoaded, this.cannotLoad);
     } else {
-      DashboardService.loadGlobalDashboardOrTimeout(this.year).then(
-        this.globalDashboardLoaded,
-        this.cannotLoad
-      );
+      DashboardService.loadGlobalDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.globalDashboardLoaded, this.cannotLoad);
     }
   }
 
+  async loadLakes(): Promise<void> {
+    this.lakes = [];
+    const defaultLake = {
+      id: "",
+      name: "Tous les lacs",
+      exportAs: "",
+      latitude: 0,
+      longitude: 0,
+    };
+    this.lakes.push(defaultLake);
+    const allLakes = await ReferentialService.getLakes();
+    this.lakes = this.lakes.concat(allLakes);
+  }
+
   getDashboardYears(): number[] {
-    const rangeDesc = (from, to) =>
+    const rangeDesc = (from: number, to: number) =>
       [...Array(Math.floor(from - to) + 1)].map((_, i) => from + i * -1);
     return rangeDesc(new Date().getFullYear(), 2020);
   }
@@ -209,13 +233,12 @@ export default class DashboardView extends Vue {
 
   showGlobalDashboard() {
     this.globalMode = true;
-
     if (!this.globalDashboard) {
       this.ready = false;
-      DashboardService.loadGlobalDashboardOrTimeout(this.year).then(
-        this.globalDashboardLoaded,
-        this.cannotLoad
-      );
+      DashboardService.loadGlobalDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.globalDashboardLoaded, this.cannotLoad);
     }
   }
 
