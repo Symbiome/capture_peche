@@ -20,44 +20,62 @@
   -->
 <template>
   <div class="dashboard page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
+    <FisholaHeader />
     <div class="page dashboard-page">
       <div class="pane pane-only">
-
         <div class="pane-content large rounded">
-
           <h1 class="no-margin-pane">
-            <span>
-              Tableau de bord
-            </span>
-            <a @click="askForAsyncExport"
-               v-if="!globalMode && asyncExport"
-               class="export"
-               title="Exporter par email">
+            <span> Tableau de bord </span>
+            <select placeholder="Année" v-model="year">
+              <option
+                v-for="dashboardYear in getDashboardYears()"
+                :value="dashboardYear"
+                :key="dashboardYear"
+              >
+                {{ dashboardYear }}
+              </option>
+            </select>
+
+            <select placeholder="lake" v-model="selectedLakeUUID">
+              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                {{ lake.name }}
+              </option>
+            </select>
+
+            <a
+              @click="askForAsyncExport"
+              v-if="!globalMode && asyncExport"
+              class="export"
+              title="Exporter par email"
+            >
               <span>Exporter</span>
-              <i class="icon-download"/>
+              <i class="icon-download" />
             </a>
-            <a v-bind:href="exportUrl"
-               v-if="!globalMode && !asyncExport"
-               class="export"
-               title="Exporter"
-               target="_blank">
+            <a
+              v-bind:href="exportUrl"
+              v-if="!globalMode && !asyncExport"
+              class="export"
+              title="Exporter"
+              target="_blank"
+            >
               <span>Exporter</span>
-              <i class="icon-download"/>
+              <i class="icon-download" />
             </a>
           </h1>
 
           <div class="dashboard-modes">
-            <div class="dashboard-mode"
-                 v-bind:class="globalMode ? '' : 'selected'"
-                 v-on:click="showPersonalDashboard"
-                 >
+            <div
+              class="dashboard-mode"
+              v-bind:class="globalMode ? '' : 'selected'"
+              v-on:click="showPersonalDashboard"
+            >
               Personnel
             </div>
-            <div class="dashboard-mode"
-                 v-bind:class="globalMode ? 'selected' : ''"
-                 v-on:click="showGlobalDashboard"
-                 >
+            <div
+              class="dashboard-mode"
+              v-bind:class="globalMode ? 'selected' : ''"
+              v-on:click="showGlobalDashboard"
+            >
               Global
             </div>
           </div>
@@ -67,45 +85,50 @@
           </div>
 
           <div class="offline" v-if="ready && offline">
-            <span>Le tableau de bord n'est pas disponible sans connexion internet</span>
+            <span
+              >Le tableau de bord n'est pas disponible sans connexion
+              internet</span
+            >
           </div>
+          <PersonalDashboard
+            v-if="!globalMode && personalDashboard"
+            :dashboardData="personalDashboard"
+          ></PersonalDashboard>
 
-          <PersonalDashboard v-if="!globalMode && personalDashboard"
-                             :dashboardData="personalDashboard"></PersonalDashboard>
-
-          <GlobalDashboardComponent v-if="globalMode && globalDashboard"
-                                    :dashboardData="globalDashboard"></GlobalDashboardComponent>
-
+          <GlobalDashboardComponent
+            v-if="globalMode && globalDashboard"
+            :showUpdateHour="year == new Date().getFullYear()"
+            :dashboardData="globalDashboard"
+          ></GlobalDashboardComponent>
         </div>
-
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows"
-                      v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="logout,dashboard,home"
-                   selected="dashboard" />
+    <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" />
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
-import RunningOverlay from '@/components/layout/RunningOverlay.vue';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import PersonalDashboard from "@/components/charts/PersonalDashboard.vue";
+import GlobalDashboardComponent from "@/components/charts/GlobalDashboardComponent.vue";
 
-import PersonalDashboard from '@/components/charts/PersonalDashboard.vue';
-import GlobalDashboardComponent from '@/components/charts/GlobalDashboardComponent.vue';
+import DashboardService from "@/services/DashboardService";
+import Helpers from "@/services/Helpers";
+import TripsService from "@/services/TripsService";
+import {
+  DashboardAndSpecies,
+  GlobalDashboardAndSpecies,
+} from "@/services/DashboardService";
 
-import DashboardService from '@/services/DashboardService';
-import Helpers from '@/services/Helpers';
-import TripsService from '@/services/TripsService';
-import {DashboardAndSpecies, GlobalDashboardAndSpecies} from '@/services/DashboardService';
+import { Component, Vue, Watch } from "vue-property-decorator";
+import router from "../router";
+import { Lake } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../router';
-
-import moment from 'moment';
-
+import ReferentialService from "../services/ReferentialService";
 
 @Component({
   components: {
@@ -113,49 +136,90 @@ import moment from 'moment';
     RunningOverlay,
     FisholaFooter,
     PersonalDashboard,
-    GlobalDashboardComponent
-  }
+    GlobalDashboardComponent,
+  },
 })
 export default class DashboardView extends Vue {
+  globalMode: boolean = false;
 
-  globalMode:boolean = false;
+  exportUrl: string = "";
 
-  exportUrl:string = '';
+  ready: boolean = false;
+  offline: boolean = false;
 
-  ready:boolean = false;
-  offline:boolean = false;
+  asyncExport: boolean = false;
 
-  asyncExport:boolean = false;
+  personalDashboard: DashboardAndSpecies | null = null;
+  globalDashboard: GlobalDashboardAndSpecies | null = null;
 
-  personalDashboard:DashboardAndSpecies|null = null;
-  globalDashboard:GlobalDashboardAndSpecies|null = null;
+  hasRunningTrip: boolean = false;
+  year: number = new Date().getFullYear();
+  selectedLakeUUID = "";
+  lakes: Lake[] = [];
 
-  hasRunningTrip:boolean = false;
-
-  constructor() {
-    super();
+  created() {
+    this.loadLakes();
   }
 
   mounted() {
-    TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
-    DashboardService.loadDashboardOrTimeout()
-      .then(this.personalDashboardLoaded, this.cannotLoad);
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
+    DashboardService.loadDashboardOrTimeout(this.year, "").then(
+      this.personalDashboardLoaded,
+      this.cannotLoad
+    );
     this.exportUrl = DashboardService.getExportUrl();
-    Helpers.ifApplication(() => this.asyncExport = true);
+    Helpers.ifApplication(() => (this.asyncExport = true));
   }
 
-  personalDashboardLoaded(data:DashboardAndSpecies) {
+  @Watch("year")
+  @Watch("selectedLakeUUID")
+  yearOrSelectedLakesChanged(): void {
+    if (!this.globalMode) {
+      DashboardService.loadDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.personalDashboardLoaded, this.cannotLoad);
+    } else {
+      DashboardService.loadGlobalDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.globalDashboardLoaded, this.cannotLoad);
+    }
+  }
+
+  async loadLakes(): Promise<void> {
+    this.lakes = [];
+    const defaultLake = {
+      id: "",
+      name: "Tous les lacs",
+      exportAs: "",
+      latitude: 0,
+      longitude: 0,
+    };
+    this.lakes.push(defaultLake);
+    const allLakes = await ReferentialService.getLakes();
+    this.lakes = this.lakes.concat(allLakes);
+  }
+
+  getDashboardYears(): number[] {
+    const rangeDesc = (from: number, to: number) =>
+      [...Array(Math.floor(from - to) + 1)].map((_, i) => from + i * -1);
+    return rangeDesc(new Date().getFullYear(), 2020);
+  }
+
+  personalDashboardLoaded(data: DashboardAndSpecies) {
     this.personalDashboard = data;
     this.ready = true;
   }
 
-  cannotLoad(error:any) {
+  cannotLoad(error: any) {
     if (error && error.timeoutReached) {
       this.offline = true;
     } else if (error && error.status == 401) {
-      this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-      router.push('/login');
+      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      router.push("/login");
     }
     this.ready = true;
   }
@@ -169,49 +233,53 @@ export default class DashboardView extends Vue {
 
   showGlobalDashboard() {
     this.globalMode = true;
-
     if (!this.globalDashboard) {
       this.ready = false;
-      DashboardService.loadGlobalDashboardOrTimeout()
-        .then(this.globalDashboardLoaded, this.cannotLoad);
-   }
+      DashboardService.loadGlobalDashboardOrTimeout(
+        this.year,
+        this.selectedLakeUUID
+      ).then(this.globalDashboardLoaded, this.cannotLoad);
+    }
   }
 
-  globalDashboardLoaded(data:GlobalDashboardAndSpecies) {
+  globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
     this.globalDashboard = data;
     this.ready = true;
   }
 
   askForAsyncExport() {
-    DashboardService.asyncExport()
-      .then(
-        () => {
-          this.$root.$emit('toaster-success', 'Export envoyé par e-mail');
-        },
-        () => {
-          this.$root.$emit('toaster-error', 'Une erreur est survenue pendant l\'export');
-        }
-      );
+    DashboardService.asyncExport().then(
+      () => {
+        this.$root.$emit("toaster-success", "Export envoyé par e-mail");
+      },
+      () => {
+        this.$root.$emit(
+          "toaster-error",
+          "Une erreur est survenue pendant l'export"
+        );
+      }
+    );
   }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .dashboard-page {
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 
   text-align: center;
 
-
-  @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
 
   .alias {
     font-style: italic;
@@ -233,7 +301,7 @@ export default class DashboardView extends Vue {
       border-radius: 50%;
       border-top: 3px solid @pelorous;
       border-left: 3px solid @pelorous;
-      animation:spin 2s linear infinite;
+      animation: spin 2s linear infinite;
     }
   }
 
@@ -264,14 +332,13 @@ export default class DashboardView extends Vue {
   }
 
   .pane-content {
-
     overflow: auto;
 
-    text-align:center;
+    text-align: center;
 
     padding-top: @vertical-margin-large;
 
-    @media(max-height:579px) {
+    @media (max-height: 579px) {
       padding-top: @vertical-margin-small;
     }
 
@@ -328,7 +395,6 @@ export default class DashboardView extends Vue {
           }
         }
       }
-
     }
 
     .section {
@@ -339,7 +405,7 @@ export default class DashboardView extends Vue {
       padding-left: @margin-large;
       padding-right: @margin-large;
 
-      @media(max-width:350px) {
+      @media (max-width: 350px) {
         padding-left: @margin-medium;
         padding-right: @margin-medium;
       }
@@ -348,11 +414,9 @@ export default class DashboardView extends Vue {
         padding-left: @margin-large-desktop;
         padding-right: @margin-large-desktop;
       }
-
     }
 
     h2 {
-
       i {
         color: @pelorous;
         margin-right: @margin-small;
@@ -370,8 +434,6 @@ export default class DashboardView extends Vue {
         }
       }
     }
-
-
   }
 
   @media screen and (min-width: @desktop-min-width) {
@@ -393,7 +455,6 @@ export default class DashboardView extends Vue {
           width: 40%;
         }
       }
-
     }
   }
 
@@ -439,5 +500,4 @@ export default class DashboardView extends Vue {
     }
   }
 }
-
 </style>
