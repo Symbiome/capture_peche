@@ -926,7 +926,8 @@ export default class EditCatchView extends Vue {
 
   validateClicked() {
     let hasError: boolean = false;
-
+    // First make sure that the custom species enterred here is not an already available species
+    this.checkExistingSpecie(this.allSpeciesWithAliases);
     if (this.aCatch.speciesId == "__other__") {
       this.speciesIdError = "";
 
@@ -1155,6 +1156,41 @@ export default class EditCatchView extends Vue {
       );
     }
     this.$forceUpdate();
+  }
+
+  checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {
+    if (this.aCatch.speciesId == "__other__") {
+      // Search through existing species to see if the entered custom specie would match one of them
+      let foundMatchingSpecie: SpeciesWithAlias | undefined = undefined;
+      const customSpecie = this.lowerCaseAndRemovePlural(
+        this.aCatch.otherSpecies
+      );
+      existingSpecies.forEach((existingSpecie) => {
+        if (
+          this.lowerCaseAndRemovePlural(existingSpecie.name) == customSpecie ||
+          this.lowerCaseAndRemovePlural(existingSpecie.alias) == customSpecie
+        ) {
+          foundMatchingSpecie = existingSpecie;
+        }
+      });
+
+      // If we found an existing specie matching custom name, let's use the existing specie
+      if (foundMatchingSpecie) {
+        this.aCatch.speciesId = foundMatchingSpecie!.id;
+        this.aCatch.otherSpecies = "";
+      }
+    }
+  }
+
+  lowerCaseAndRemovePlural(specieName: string | undefined): string {
+    return specieName
+      ? specieName
+          .toLowerCase()
+          .replace("s", "")
+          .replace(" ", "")
+          .replace("(", "")
+          .replace(")", "")
+      : "";
   }
 }
 </script>
