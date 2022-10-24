@@ -51,7 +51,7 @@
           Espèces par lac
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
-          Autorisations de prélèvement
+          Autorisations de prélèvement et maillage
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Documentations">
