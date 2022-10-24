@@ -32,19 +32,37 @@
         <tr v-for="s in species" v-bind:key="s.id">
           <th>{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
-            <div class="field specie-container">
+            <div class="field" style="display: flex">
               <b-checkbox
                 v-model="authorizedSamplesMap[l.id][s.id]"
                 @input="$forceUpdate()"
               >
               </b-checkbox>
-              <b-input
+              <div
                 v-if="authorizedSamplesMap[l.id][s.id]"
-                class="minsize-input"
-                type="number"
-                v-model="minSizeMap[l.id][s.id]"
+                class="specie-container-with-size"
               >
-              </b-input>
+                <div class="input-holder">
+                  <b-input
+                    placeholder="Taille minimale"
+                    type="number"
+                    custom-class="minsize-input"
+                    v-model="minSizeMap[l.id][s.id]"
+                    @input="$forceUpdate()"
+                  >
+                  </b-input>
+                  <span style="margin-left:10px;float:right">cm</span>
+                </div>
+                <div
+                  v-if="!minSizeMap[l.id][s.id] || minSizeMap[l.id][s.id] <= 0"
+                  class="error"
+                >
+                  Taille invalide
+                </div>
+              </div>
+              <i v-else class="specie-container-without-size">
+                Prélèvement non autorisé
+              </i>
             </div>
           </td>
         </tr>
@@ -72,6 +90,12 @@ export default class AuthorizedSamplesVue extends Vue {
   minSizeMap = {};
 
   created() {
+    this.lakes = [];
+    this.species = [];
+    this.speciesPerLake = {};
+    this.authorizedSamplesMap = {};
+    this.minSizeMap = {};
+
     Promise.all([
       BackendService.backendGet("/v1/referential/lakes"),
       BackendService.backendGet("/v1/referential/species"),
@@ -83,6 +107,13 @@ export default class AuthorizedSamplesVue extends Vue {
 
       this.referentialLoaded();
     });
+  }
+
+  async reloadData() {
+    this.speciesPerLake = await BackendService.backendGet(
+      "/v1/referential/species-per-lake"
+    );
+    this.referentialLoaded();
   }
 
   referentialLoaded() {
@@ -98,14 +129,16 @@ export default class AuthorizedSamplesVue extends Vue {
         this.minSizeMap[lakeId][spl.id] = spl.minSize;
       });
     });
+    this.$forceUpdate();
   }
 
   save() {
-    BackendService.backendPut(
-      "/v1/referential/authorized-samples",
-      this.authorizedSamplesMap
-    ).then(
+    BackendService.backendPut("/v1/referential/authorized-samples", [
+      this.authorizedSamplesMap,
+      this.minSizeMap
+    ]).then(
       res => {
+        this.reloadData();
         this.$buefy.toast.open({
           message: "Autorisations de prélèvement enregistrées",
           type: "is-success"
@@ -142,6 +175,30 @@ export default class AuthorizedSamplesVue extends Vue {
 
   .specie-container {
     display: flex;
+  }
+  .error {
+    color: red;
+    font-weight: bold;
+  }
+
+  .specie-container {
+    .minsize-input {
+      width: 80px !important;
+      border: 2px solid green !important;
+      background-color: pink !important;
+      border-color: cyan !important;
+    }
+    max-width: 250px;
+  }
+
+  .specie-container-with-size {
+    max-width: 130px;
+    .input-holder {
+      display: flex;
+    }
+  }
+  .specie-container-without-size {
+    max-width: 250px;
   }
 }
 </style>

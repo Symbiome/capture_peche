@@ -335,4 +335,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.delete(entity));
     }
 
+    public void updateAuthorizeSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
+    }
 }
