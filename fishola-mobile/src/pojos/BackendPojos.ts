@@ -196,6 +196,7 @@ export interface Dashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: { [P in SizeType]?: number } } };
+    picturesPerTrip: PicturePerTripBean[];
 }
 
 export interface GlobalDashboard {
@@ -215,6 +216,12 @@ export interface DashboardLastTrip {
     tripId: string;
     day: Date;
     catchsCount: number;
+}
+
+export interface PicturePerTripBean {
+    tripDate: Date;
+    tripLakeName: string;
+    pictureURLs: string[];
 }
 
 export type TripMode = "Live" | "Afterwards";

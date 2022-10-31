@@ -42,6 +42,7 @@ import fr.inrae.fishola.rest.dashboard.ImmutableDashboardLastTrip;
 import fr.inrae.fishola.rest.dashboard.ImmutableGlobalDashboard;
 import fr.inrae.fishola.rest.dashboard.SizeType;
 import fr.inrae.fishola.rest.trips.CatchBean;
+import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import fr.inrae.fishola.rest.trips.TripResource;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -125,6 +126,13 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         Map<UUID, Map<Month, Map<SizeType, Double>>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizes(monthlySizes);
+
+        Integer year = LocalDateTime.now().getYear();
+        if (yearFilter.isPresent()) {
+            year = yearFilter.get();
+        }
+        List<PicturePerTripBean> picturePerTrip = tripsDao.getPicturesPerTripForYear(userId, year);
+        builder.picturesPerTrip(picturePerTrip);
 
         Dashboard result = builder.build();
         return result;

@@ -39,6 +39,7 @@ import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,6 +83,11 @@ public class CatchsDao extends AbstractFisholaDao {
     public List<Catch> listCatchs(UUID tripId) {
         List<Catch> result = withDao(CatchDao.class, dao -> dao.fetchByTripId(tripId));
         return result;
+    }
+
+    public Set<UUID> listCatchIds(UUID tripId) {
+        List<UUID> result = withContext(context -> context.select(Tables.CATCH.ID).from(Tables.CATCH).where(Tables.CATCH.TRIP_ID.eq(tripId)).fetch(Tables.CATCH.ID));
+        return new LinkedHashSet<>(result);
     }
 
     public void delete(UUID catchId) {

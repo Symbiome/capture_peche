@@ -21,7 +21,9 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import com.google.common.collect.ListMultimap;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.daos.TripDao;
 import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TripTechniquesDao;
@@ -29,11 +31,14 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
+import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -250,6 +255,33 @@ public class TripsDao extends AbstractFisholaDao {
     public List<Trip> findAll() {
         List<Trip> result = withDao(TripDao.class, TripDao::findAll);
         return result;
+    }
+
+    public List<PicturePerTripBean> getPicturesPerTripForYear(UUID userId, Integer year) {
+        List<PicturePerTripBean> picturesPerTripForYear = new ArrayList<>();
+        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), Optional.empty());
+        for(Trip trip : tripsForYear) {
+            Set<UUID> catchIds = catchsDao.listCatchIds(trip.getId());
+            PicturePerTripBean picturesForTrip = new PicturePerTripBean();
+            picturesForTrip.pictureURLs = new ArrayList<>();
+            picturesForTrip.tripDate = trip.getDay();
+            withDaoNoResult(LakeDao.class, lakeDao -> {
+                picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName();
+            });
+            ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
+            for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
+                picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/" + catchWithPicture.getValue());
+            }
+            Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
+            for (UUID measurementPictureCatchId: measurementPictures) {
+                picturesForTrip.pictureURLs.add("/v1/pictures/measure/"+ measurementPictureCatchId);
+            }
+
+            if (!picturesForTrip.pictureURLs.isEmpty()) {
+                picturesPerTripForYear.add(picturesForTrip);
+            }
+        }
+        return picturesPerTripForYear;
     }
 
 }
