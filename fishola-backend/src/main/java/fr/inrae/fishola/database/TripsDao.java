@@ -265,6 +265,7 @@ public class TripsDao extends AbstractFisholaDao {
             PicturePerTripBean picturesForTrip = new PicturePerTripBean();
             picturesForTrip.pictureURLs = new ArrayList<>();
             picturesForTrip.tripDate = trip.getDay();
+            picturesForTrip.tripId = trip.getId();
             withDaoNoResult(LakeDao.class, lakeDao -> {
                 picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName();
             });

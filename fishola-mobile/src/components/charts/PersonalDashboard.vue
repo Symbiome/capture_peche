@@ -20,6 +20,21 @@
   -->
 <template>
   <div>
+    <div class="section" v-if="picturesPerTrip && picturesPerTrip.length > 0">
+      <div class="shrinked">
+        <h2><i class="icon-photo" />Mes photos</h2>
+      </div>
+      <div class="dashboard-top-catchs catch-preview-list-scrollable">
+        <GaleryPreviewList
+          v-bind:modifiable="false"
+          v-bind:reverse="false"
+          lakeId=""
+          v-bind:picturesPerTrip="picturesPerTrip"
+          @openGalery="console.error('todo Alex')"
+          bottomMode="index"
+        />
+      </div>
+    </div>
     <div class="two-sections">
       <div class="section shrinked">
         <h2><i class="icon-fish" />Mes poissons</h2>
@@ -177,6 +192,7 @@
 
 <script lang="ts">
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
+import GaleryPreviewList from "@/components/galery/GaleryPreviewList.vue";
 
 import OptionsList from "@/components/common/OptionsList.vue";
 
@@ -191,6 +207,7 @@ import {
   DashboardLastTrip,
   CatchBean,
   Month,
+  PicturePerTripBean,
 } from "@/pojos/BackendPojos";
 import DistributionEntry from "@/pojos/DistributionEntry";
 import OptionItem from "@/pojos/OptionItem";
@@ -211,6 +228,7 @@ export class TopEntry {
     OptionsList,
     HistogramChart,
     CatchPreviewList,
+    GaleryPreviewList,
   },
 })
 export default class PersonalDashboard extends Vue {
@@ -229,6 +247,7 @@ export default class PersonalDashboard extends Vue {
   orderedMonths: Month[] | null = null;
   monthlySizesOptions: OptionItem[] = [];
   monthlySizes: { [P in Month]?: number } | null = null;
+  picturesPerTrip: PicturePerTripBean[] = [];
 
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId: { [index: string]: string } = {};
@@ -260,6 +279,7 @@ export default class PersonalDashboard extends Vue {
     this.monthlySizesOptions = [];
     this.monthlySizes = null;
     this.catchToTripId = {};
+    this.picturesPerTrip = [];
 
     const speciesAliases = this.dashboardData.dashboard.speciesAliases;
     this.dashboardData.species.forEach((species) => {
@@ -364,6 +384,7 @@ export default class PersonalDashboard extends Vue {
       this.monthlySizesOptions,
       "name"
     );
+    this.picturesPerTrip = this.dashboardData.dashboard.picturesPerTrip;
   }
 
   parseTop(rawTop: { [index: string]: CatchBean[] }): TopEntry[] {

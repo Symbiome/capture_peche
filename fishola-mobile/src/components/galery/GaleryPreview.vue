@@ -1,0 +1,187 @@
+<!--
+  #%L
+  Fishola :: Mobile
+  %%
+  Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
+  %%
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #L%
+  -->
+<template>
+  <div class="galery-preview">
+    <div class="preview-top">
+      <div class="preview-picture">
+        <PicturePreview
+          v-bind:src="pictureSrc"
+          v-bind:enableModal="false"
+          v-bind:deletable="false"
+        />
+      </div>
+    </div>
+    <div class="preview-bottom">
+      <div class="bottom-right">
+        Voir
+        <button v-on:click="$emit('openCatch')">
+          <i class="icon-arrow" />
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import CatchSummary from "@/pojos/CatchSummary";
+import { SpeciesWithAlias, Technique, TripBean } from "@/pojos/BackendPojos";
+
+import PicturePreview from "@/components/trip/PicturePreview.vue";
+import Top from "@/components/common/Top.vue";
+
+import PicturesService from "@/services/PicturesService";
+import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
+import ReferentialService from "@/services/ReferentialService";
+import Constants from "@/services/Constants";
+
+import { Component, Prop, Vue } from "vue-property-decorator";
+
+@Component({
+  components: {
+    PicturePreview,
+    Top,
+  },
+})
+export default class GaleryPreview extends Vue {
+  @Prop() lakeName: string;
+  @Prop() date: Date;
+  @Prop() pictureSrc: string;
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style lang="less">
+@import "../../less/main";
+
+.galery-preview {
+  width: calc(100vw - 80px);
+  height: 100%;
+  padding: @vertical-margin-xx-small;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .preview-top {
+    flex: 1;
+    background-color: @gainsboro;
+
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    position: relative;
+
+    cursor: pointer;
+
+    .meta {
+      position: absolute;
+      z-index: 20;
+      width: fit-content;
+      height: calc(108px + env(safe-area-inset-top));
+      background: @cyprus;
+      opacity: 0.8;
+      border-radius: 8px;
+
+      margin-top: @vertical-margin-medium;
+      margin-left: @margin-medium;
+
+      padding: @vertical-margin-medium;
+
+      @media (max-width: 350px) {
+        margin-top: @vertical-margin-small;
+        margin-left: @margin-small;
+        padding: @vertical-margin-small;
+      }
+
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
+      color: @white;
+      text-align: left;
+
+      .meta-row {
+        padding-bottom: @vertical-margin-small;
+
+        i {
+          margin-right: @margin-small;
+        }
+      }
+    }
+
+    .preview-picture {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      height: 100%;
+      width: 100%;
+      z-index: 15;
+
+      img.picture {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+    }
+  }
+
+  .preview-bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 50px;
+    background-color: @white;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+
+    cursor: pointer;
+
+    .bottom-left {
+      font-size: @fontsize-span-big;
+      margin-left: @margin-medium;
+      i {
+        color: @pelorous;
+        margin-right: @margin-small;
+      }
+    }
+
+    .bottom-right {
+      font-size: @fontsize-small-paragraph;
+      margin-right: @margin-medium;
+
+      button {
+        width: 32px;
+        height: 20px;
+        background-color: @summer-sky;
+        color: @white;
+        border: 0px;
+        border-radius: 50px;
+        margin-left: @margin-small;
+      }
+    }
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    width: 295px;
+  }
+}
+</style>
