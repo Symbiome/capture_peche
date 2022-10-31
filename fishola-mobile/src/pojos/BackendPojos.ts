@@ -195,7 +195,7 @@ export interface Dashboard {
     topByWeight: { [index: string]: CatchBean[] };
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
-    monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizes: { [index: string]: { [P in Month]?: { [P in SizeType]?: number } } };
 }
 
 export interface GlobalDashboard {
@@ -204,7 +204,7 @@ export interface GlobalDashboard {
     caughtAndReleasedSpeciesDistribution: { [index: string]: number };
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
-    monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizes: { [index: string]: { [P in Month]?: { [P in SizeType]?: number } } };
     computedOn: Date;
 }
 
@@ -224,3 +224,5 @@ export type TripType = "Border" | "Craft";
 export type DeviceType = "web" | "application";
 
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
+
+export type SizeType = "MAILLE" | "NON_MAILLE";

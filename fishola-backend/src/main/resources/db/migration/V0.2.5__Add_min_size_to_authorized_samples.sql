@@ -21,3 +21,6 @@
 
 ALTER TABLE authorized_sample
   ADD COLUMN min_size INTEGER DEFAULT 0;
+
+ALTER TABLE catch
+  ADD COLUMN maillee BOOLEAN default false;

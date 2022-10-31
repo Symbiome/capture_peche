@@ -40,6 +40,7 @@ import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import fr.inrae.fishola.rest.dashboard.ImmutableDashboard;
 import fr.inrae.fishola.rest.dashboard.ImmutableDashboardLastTrip;
 import fr.inrae.fishola.rest.dashboard.ImmutableGlobalDashboard;
+import fr.inrae.fishola.rest.dashboard.SizeType;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
 import java.time.LocalDateTime;
@@ -122,7 +123,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Double>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<SizeType, Double>>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizes(monthlySizes);
 
         Dashboard result = builder.build();
@@ -161,7 +162,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Double>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<SizeType, Double>>> monthlySizes = computeMonthlySizes(mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizes(monthlySizes);
 
         builder.computedOn(LocalDateTime.now());
@@ -208,36 +209,53 @@ public class DashboardDao  extends AbstractFisholaDao {
     /**
      * Calcule la moyenne mensuelle des tailles de poissons pour les espèces spécifiées
      */
-    protected Map<UUID, Map<Month, Double>> computeMonthlySizes(List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
+    protected  Map<UUID, Map<Month, Map<SizeType, Double>>> computeMonthlySizes(List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
         Map<UUID, Month> catchesMonths = monthlyCatches.entries().stream().collect(Collectors.toMap(e -> e.getValue().getId(), Map.Entry::getKey));
-        Map<UUID, Map<Month, Double>> result = computeMonthlySizes(catchesMonths, mostCaughtSpecies, monthlyCatches.values());
+        Map<UUID, Map<Month, Map<SizeType, Double>>> result = computeMonthlySizes(catchesMonths, mostCaughtSpecies, monthlyCatches.values());
         return result;
     }
 
-    protected Map<UUID, Map<Month, Double>> computeMonthlySizes(Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
+    protected  Map<UUID, Map<Month, Map<SizeType, Double>>> computeMonthlySizes(Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
         // On garde uniquement les captures avec une taille
         List<Catch> catchsWithSize = allCatches.stream()
                 .filter(c -> c.getSize() != null)
                 .collect(Collectors.toList());
-        ImmutableMap.Builder<UUID, Map<Month, Double>> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<UUID, Map<Month, Map<SizeType, Double>>> builder = ImmutableMap.builder();
         for (UUID speciesId : mostCaughtSpecies) {
             // On prend les captures de la bonne espèce
             List<Catch> catchs = catchsWithSize.stream()
                     .filter(c -> c.getSpeciesId().equals(speciesId))
                     .collect(Collectors.toList());
-            Map<Month, Double> speciesMonthlySizes = new HashMap<>();
+            Map<Month, Map<SizeType, Double>> speciesMonthlySizes = new HashMap<>();
             for (Month month : Month.values()) {
-                OptionalDouble average = catchs.stream()
-                        .filter(c -> month.equals(catchesMonths.get(c.getId())))
-                        .mapToInt(Catch::getSize)
-                        .average();
-                average.ifPresent(val -> speciesMonthlySizes.put(month, val));
+                Map<SizeType, Double> averagePerSizeType = new HashMap<>();
+                for(SizeType sizeType: SizeType.values()) {
+                    OptionalDouble average = catchs.stream()
+                            .filter(c -> {
+                                        if (month.equals(catchesMonths.get(c.getId()))) {
+                                            boolean isMaille = c.getMaillee() == null || c.getMaillee();
+                                            if (sizeType == SizeType.MAILLE) {
+                                                return isMaille;
+                                            } else {
+                                                return !isMaille;
+                                            }
+                                        }
+                                        return false;
+                                    }
+                            )
+                            .mapToInt(Catch::getSize)
+                            .average();
+                    average.ifPresent(val -> averagePerSizeType.put(sizeType, val));
+                }
+                if (!averagePerSizeType.isEmpty()) {
+                    speciesMonthlySizes.put(month, averagePerSizeType);
+                }
             }
             if (!speciesMonthlySizes.isEmpty()) {
                 builder.put(speciesId, speciesMonthlySizes);
             }
         }
-        Map<UUID, Map<Month, Double>> result = builder.build();
+        Map<UUID, Map<Month, Map<SizeType, Double>>> result = builder.build();
         return result;
     }
 

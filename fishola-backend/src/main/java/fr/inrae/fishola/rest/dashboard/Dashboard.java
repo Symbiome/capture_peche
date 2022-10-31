@@ -23,15 +23,13 @@ package fr.inrae.fishola.rest.dashboard;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.rest.trips.CatchBean;
-import org.immutables.value.Value;
-
 import java.time.Month;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableDashboard.class)
@@ -54,7 +52,6 @@ public interface Dashboard {
     Map<UUID, Set<String>> speciesAliases();
 
     List<Month> orderedMonths();
-
-    Map<UUID, Map<Month, Double>> monthlySizes();
+    Map<UUID, Map<Month, Map<SizeType, Double>>> monthlySizes();
 
 }

@@ -738,6 +738,7 @@ export default class EditCatchView extends Vue {
       builtIn: s.builtIn,
       mandatorySize: s.mandatorySize,
       authorizedSample: s.authorizedSample,
+      minSize: 0,
     };
     return result;
   }
@@ -765,6 +766,7 @@ export default class EditCatchView extends Vue {
           builtIn: false,
           mandatorySize: false,
           authorizedSample: false,
+          minSize: 0,
         };
         this.allSpeciesWithAliases.push(customSpecies);
       });
@@ -779,6 +781,7 @@ export default class EditCatchView extends Vue {
       builtIn: false,
       mandatorySize: false,
       authorizedSample: false,
+      minSize: 0,
     });
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));

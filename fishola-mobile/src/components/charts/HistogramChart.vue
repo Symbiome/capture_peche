@@ -21,82 +21,131 @@
 <template>
   <div class="histogram">
     <div class="values">
-      <div class="value" v-for="m in orderedMonths" v-bind:key="'value-' + m">
-        {{values[m] ? Math.round(values[m]) : ''}}
+      <div
+        class="value maille"
+        v-for="m in orderedMonths"
+        v-bind:key="'value-' + m"
+      >
+        {{
+          values[m] && values[m]["MAILLE"]
+            ? Math.round(values[m]["MAILLE"])
+            : ""
+        }}
       </div>
     </div>
     <div class="bars">
-      <div class="bar" v-for="(m, index) in orderedMonths" v-bind:key="'bar-' + m">
-        <div class="bar-filled"
-              v-if="values[m]"
-              v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-              v-bind:style="'height: ' + (values[m] * 100 / maxValue) + '%;'"></div>
+      <div
+        class="bar"
+        v-for="(m, index) in orderedMonths"
+        v-bind:key="'bar-' + m"
+      >
+        <div v-if="values[m]">
+          <div v-for="sizeType in ['MAILLE', 'NON_MAILLE']" :key="m + sizeType">
+            <div
+              class="bar-filled"
+              :class="{
+                maille: sizeType == 'MAILLE',
+                'non-maille': sizeType != 'MAILLE',
+                even: index % 2 == 0,
+                odd: index % 2 != 0,
+              }"
+              v-if="values[m][sizeType]"
+              v-bind:style="
+                'height: ' + (values[m][sizeType] * 100) / maxValue + '%;'
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="values">
+      <div
+        class="value non-maille"
+        v-for="m in orderedMonths"
+        v-bind:key="'value-' + m"
+      >
+        {{
+          values[m] && values[m]["NON_MAILLE"]
+            ? Math.round(values[m]["NON_MAILLE"])
+            : ""
+        }}
       </div>
     </div>
     <div class="labels">
-      <div class="label-short"
-           v-for="m in orderedMonths"
-           v-bind:key="'label-short-' + m">
-        {{m.substring(0,1)}}
+      <div
+        class="label-short"
+        v-for="m in orderedMonths"
+        v-bind:key="'label-short-' + m"
+      >
+        {{ m.substring(0, 1) }}
       </div>
-      <div class="label-mid"
-           v-for="m in orderedMonths"
-           v-bind:key="'label-mid-' + m">
-        {{midMonth(m)}}
+      <div
+        class="label-mid"
+        v-for="m in orderedMonths"
+        v-bind:key="'label-mid-' + m"
+      >
+        {{ midMonth(m) }}
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
 
-import Constants from '@/services/Constants';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-
-import { Month } from '@/pojos/BackendPojos';
+import { Month, SizeType } from "@/pojos/BackendPojos";
 
 @Component
 export default class HistogramChart extends Vue {
+  @Prop() orderedMonths: Month[];
+  @Prop() values: { [P in Month]?: { [S in SizeType]: number } };
 
-  @Prop() orderedMonths:Month[];
-  @Prop() values:{ [P in Month]?: number };
-
-  maxValue:number = 50;
+  maxValue: number = 50;
 
   mounted() {
     this.maxValue = this.findMaxValue(this.values);
   }
 
-  midMonth(m:Month) {
+  midMonth(m: Month) {
     let index = this.orderedMonths.indexOf(m);
     let result = Constants.MONTHS[index];
     return result;
   }
 
-  @Watch('values')
-  onValuesChanged(newValue:{ [P in Month]?: number }, oldValue:{ [P in Month]?: number }) {
+  @Watch("values")
+  onValuesChanged(
+    newValue: { [P in Month]?: {} },
+    oldValue: { [P in Month]?: {} }
+  ) {
+    console.error(newValue);
     this.maxValue = this.findMaxValue(newValue);
   }
 
-  findMaxValue(someValues:{ [P in Month]?: number }):number {
-    const numbers:(number|undefined)[] = Object.values(someValues);
-    let newMax:number = 0;
-    numbers.forEach((n) => {
-      if (n && n > newMax) {
-        newMax = n;
-      }
+  findMaxValue(someValues: {
+    [P in Month]?: {};
+  }): number {
+    let newMax: number = 0;
+    Object.keys(someValues).forEach((month) => {
+      // @ts-ignore
+      Object.keys(someValues[month]).forEach((st) => {
+        // @ts-ignore
+        const n = someValues[month][st];
+        if (n && n > newMax) {
+          newMax = n;
+        }
+      });
     });
+
     let result = Math.max(newMax, 50);
     return result;
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .histogram {
@@ -117,8 +166,15 @@ export default class HistogramChart extends Vue {
       width: 8%;
       font-weight: bold;
       font-size: @fontsize-smallest-paragraph;
-      color: @pelorous;
       text-align: center;
+
+      &.maille {
+        color: @pelorous;
+      }
+
+      &.non-maille {
+        color: @carrot-orange;
+      }
     }
   }
   .bars {
@@ -138,21 +194,31 @@ export default class HistogramChart extends Vue {
 
       position: relative;
 
-
       .bar-filled {
         position: absolute;
         bottom: 0px;
         width: 100%;
         border-radius: 2px;
 
-        &.even {
-          background: @pelorous;
+        &.maille {
+          &.even {
+            background: @pelorous;
+          }
+
+          &.odd {
+            background: @summer-sky;
+          }
         }
 
-        &.odd {
-          background: @summer-sky;
-        }
+        &.non-maille {
+          &.even {
+            background: @carrot-orange;
+          }
 
+          &.odd {
+            background: @terra-cotta;
+          }
+        }
       }
     }
   }
@@ -182,8 +248,6 @@ export default class HistogramChart extends Vue {
         display: none;
       }
     }
-
   }
 }
-
 </style>
