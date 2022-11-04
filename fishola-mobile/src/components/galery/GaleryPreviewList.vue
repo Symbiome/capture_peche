@@ -20,16 +20,7 @@
   -->
 <template>
   <div class="galery-preview-list">
-    <div class="new-catch" v-if="modifiable">
-      <div
-        class="new-galery-square-button"
-        id="new-galery-square-button"
-        v-on:click="newCatch"
-      >
-        <i class="pastille icon-plus" />
-      </div>
-    </div>
-    <div v-for="ppT in picturesPerTrip" :key="'trippic-' + ppT.tripId">
+    <div v-for="ppT in firstPictures" :key="'trippic-' + ppT.tripId">
       <GaleryPreview
         v-for="picURL in ppT.pictureURLs"
         :key="picURL"
@@ -47,7 +38,7 @@ import CatchSummary from "@/pojos/CatchSummary";
 import GaleryPreview from "@/components/galery/GaleryPreview.vue";
 import { PicturePerTripBean } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Constants from "../../services/Constants";
 
 @Component({
@@ -56,16 +47,25 @@ import Constants from "../../services/Constants";
   },
 })
 export default class GaleryPreviewList extends Vue {
-  @Prop() lakeId: string;
   @Prop() picturesPerTrip: PicturePerTripBean[];
-  @Prop() modifiable: boolean;
+  @Prop() year: number;
+
+  firstPictures: PicturePerTripBean[] = [];
 
   created() {}
 
   mounted() {
     if (this.picturesPerTrip && this.picturesPerTrip.length > 0) {
+      this.picturesPerTripChanged();
       this.scrollToFirstElement();
     }
+  }
+
+  @Watch("picturesPerTrip")
+  picturesPerTripChanged() {
+    // Only show the first 10 pictures
+    const numberOfPicsToKeep = Math.min(10, this.picturesPerTrip.length);
+    this.firstPictures = this.picturesPerTrip.slice(0, numberOfPicsToKeep);
   }
 
   scrollToFirstElement() {

@@ -76,12 +76,13 @@ public class PictureResource extends AbstractFisholaResource {
 
     @GET
     @Path("/all-pictures")
+    @Produces(MediaType.APPLICATION_JSON)
     public Map<Integer, List<PicturePerTripBean>> allPictures() {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> user = usersDao.findById(userId);
         Preconditions.checkArgument(user.isPresent(), "No user found");
-        LocalDateTime year = user.get().getCreatedOn();
+        LocalDateTime year = user.get().getCreatedOn().minusYears(1);
         LocalDateTime now = LocalDateTime.now();
         Map<Integer, List<PicturePerTripBean>> picturesPerYear = new LinkedHashMap<>();
         while (year.getYear() <= now.getYear()) {

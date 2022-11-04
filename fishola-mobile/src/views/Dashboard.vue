@@ -92,6 +92,7 @@
           </div>
           <PersonalDashboard
             v-if="!globalMode && personalDashboard"
+            :year="year"
             :dashboardData="personalDashboard"
           ></PersonalDashboard>
 

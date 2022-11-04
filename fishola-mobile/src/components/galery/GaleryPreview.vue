@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="galery-preview">
+  <div class="galery-preview" @click="openGallery(pictureSrc)">
     <div class="preview-top">
       <div class="preview-picture">
         <PicturePreview
@@ -32,7 +32,7 @@
     <div class="preview-bottom">
       <div class="bottom-right">
         Voir
-        <button v-on:click="$emit('openCatch')">
+        <button>
           <i class="icon-arrow" />
         </button>
       </div>
@@ -53,6 +53,7 @@ import ReferentialService from "@/services/ReferentialService";
 import Constants from "@/services/Constants";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
+import router from "@/router";
 
 @Component({
   components: {
@@ -64,6 +65,10 @@ export default class GaleryPreview extends Vue {
   @Prop() lakeName: string;
   @Prop() date: Date;
   @Prop() pictureSrc: string;
+
+  openGallery(pictureSrc: string) {
+    router.push({ name: "galery", params: { selectedDefaultPic: pictureSrc } });
+  }
 }
 </script>
 

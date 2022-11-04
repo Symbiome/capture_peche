@@ -8,56 +8,57 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import Vue from "vue";
+import VueRouter from "vue-router";
 
-import Dispatcher from '@/views/Dispatcher.vue'
+import Dispatcher from "@/views/Dispatcher.vue";
 
-import About from '@/views/About.vue'
+import About from "@/views/About.vue";
 
-import Login from '@/views/Login.vue'
-import Register from '@/views/Register.vue'
-import MyTrips from '@/views/MyTrips.vue'
-import Dashboard from '@/views/Dashboard.vue'
+import Login from "@/views/Login.vue";
+import Register from "@/views/Register.vue";
+import MyTrips from "@/views/MyTrips.vue";
+import Dashboard from "@/views/Dashboard.vue";
 
-import NewTrip from '@/views/trip/NewTrip.vue'
-import TripMeta from '@/views/trip/TripMeta.vue'
-import TripSpecies from '@/views/trip/TripSpecies.vue'
-import TripTechniques from '@/views/trip/TripTechniques.vue'
-import TripCatchs from '@/views/trip/TripCatchs.vue'
-import TripSummary from '@/views/trip/TripSummary.vue'
-import EditTrip from '@/views/trip/EditTrip.vue'
+import NewTrip from "@/views/trip/NewTrip.vue";
+import TripMeta from "@/views/trip/TripMeta.vue";
+import TripSpecies from "@/views/trip/TripSpecies.vue";
+import TripTechniques from "@/views/trip/TripTechniques.vue";
+import TripCatchs from "@/views/trip/TripCatchs.vue";
+import TripSummary from "@/views/trip/TripSummary.vue";
+import EditTrip from "@/views/trip/EditTrip.vue";
 
-import EditCatch from '@/views/trip/EditCatch.vue'
+import EditCatch from "@/views/trip/EditCatch.vue";
 
-import Faq from '@/views/Faq.vue'
-import Documentation from '@/views/Documentation.vue'
-import News from '@/views/News.vue'
-import Credits from '@/views/Credits.vue'
+import Faq from "@/views/Faq.vue";
+import Documentation from "@/views/Documentation.vue";
+import News from "@/views/News.vue";
+import Credits from "@/views/Credits.vue";
 
+import GaleryFull from "@/components/galery/GaleryFull.vue";
 
 import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
 
-import Settings from '@/views/Settings.vue'
-import Profile from '@/views/Profile.vue'
-import ProfilePassword from '@/views/ProfilePassword.vue'
+import Settings from "@/views/Settings.vue";
+import Profile from "@/views/Profile.vue";
+import ProfilePassword from "@/views/ProfilePassword.vue";
 
-import ResetPassword from '@/views/ResetPassword.vue'
-import VerifyAccount from '@/views/VerifyAccount.vue'
+import ResetPassword from "@/views/ResetPassword.vue";
+import VerifyAccount from "@/views/VerifyAccount.vue";
 
-import ProfileService from '@/services/ProfileService';
+import ProfileService from "@/services/ProfileService";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
@@ -205,6 +206,12 @@ const routes = [
     component: VerifyAccount,
   },
   {
+    path: "/galery",
+    name: "galery",
+    component: GaleryFull,
+    props: true,
+  },
+  {
     path: "/fish-measure-test",
     name: "fish-measure-test",
     meta: {
@@ -223,25 +230,24 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  routes
-})
+  routes,
+});
 
 // Protect routes according to authentication status
 router.beforeEach((to, from, next) => {
   if (to.meta && to.meta.public) {
     next();
   } else {
-    ProfileService.getProfile()
-    .then(
+    ProfileService.getProfile().then(
       (profile) => {
         next();
       },
       (status) => {
         console.error("VOUS NE PASSEREZ PAS !", to.name);
-        next('/login');
+        next("/login");
       }
     );
   }
-})
+});
 
-export default router
+export default router;

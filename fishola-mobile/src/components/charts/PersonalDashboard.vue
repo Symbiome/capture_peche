@@ -23,13 +23,15 @@
     <div class="section" v-if="picturesPerTrip && picturesPerTrip.length > 0">
       <div class="shrinked">
         <h2><i class="icon-photo" />Mes photos</h2>
+        <div class="average-header" v-if="picturesPerTrip.length > 0">
+          <div class="count">{{ picturesPerTrip.length }}</div>
+          photos en {{ year }}
+        </div>
       </div>
       <div class="dashboard-top-catchs catch-preview-list-scrollable">
         <GaleryPreviewList
-          v-bind:modifiable="false"
-          v-bind:reverse="false"
-          lakeId=""
           v-bind:picturesPerTrip="picturesPerTrip"
+          :year="year"
           @openGalery="console.error('todo Alex')"
           bottomMode="index"
         />
@@ -232,6 +234,9 @@ export class TopEntry {
   },
 })
 export default class PersonalDashboard extends Vue {
+  @Prop() dashboardData: DashboardAndSpecies;
+  @Prop() year: number;
+
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
   caughtSpeciesDistribution: DistributionEntry[] = [];
@@ -251,8 +256,6 @@ export default class PersonalDashboard extends Vue {
 
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId: { [index: string]: string } = {};
-
-  @Prop() dashboardData: DashboardAndSpecies;
 
   constructor() {
     super();
