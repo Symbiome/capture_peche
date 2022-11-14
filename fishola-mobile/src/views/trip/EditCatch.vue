@@ -1186,7 +1186,7 @@ export default class EditCatchView extends Vue {
   }
 
   lowerCaseAndRemovePlural(specieName: string | undefined): string {
-    return specieName
+    let lowerCaseAndPluralRemoved = specieName
       ? specieName
           .toLowerCase()
           .replace("s", "")
@@ -1194,6 +1194,11 @@ export default class EditCatchView extends Vue {
           .replace("(", "")
           .replace(")", "")
       : "";
+    lowerCaseAndPluralRemoved = lowerCaseAndPluralRemoved.replace(
+      "chevaine",
+      "chevesne"
+    );
+    return lowerCaseAndPluralRemoved;
   }
 }
 </script>
