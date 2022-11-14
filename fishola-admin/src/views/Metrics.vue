@@ -20,8 +20,13 @@
   -->
 <template>
   <div>
-    <div class="referential">
-      <h1>Chiffres clés</h1>
+    <div class="referential metrics-container">
+      <h1 class="metrics-super-title">
+        Chiffres clés
+        <b-button type="is-primary" @click="exportAllAsCSV()"
+          >Tout exporter en csv</b-button
+        >
+      </h1>
 
       <div class="metrics-container">
         <h2 class="metrics-title is-primary">
@@ -116,7 +121,13 @@ import { Component, Vue } from "vue-property-decorator";
 })
 export default class Metrics extends Vue {
   url = "/v1/metrics";
-  metrics = {};
+  metrics = {
+    activeUsersPerYear: [],
+    userRegistrationsPerYear: [],
+    tripsPerLake: [],
+    catchesPerLake: [],
+    automaticMeasuresPerLake: []
+  };
   activeUsersColumns = [
     { field: "annee", label: "Année", sortable: true },
     { field: "lac", label: "Lac", sortable: true },
@@ -148,8 +159,50 @@ export default class Metrics extends Vue {
     });
   }
 
+  exportAllAsCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    const columns = [
+      { field: "annee", label: "Année", sortable: true },
+      { field: "lac", label: "Lac", sortable: true },
+      { field: "total", label: "Indicateur", sortable: true }
+    ];
+    for (var i = 0; i < columns.length; i++) {
+      if (i > 0) {
+        csvContent += ",";
+      }
+      csvContent += ((columns[i] as unknown) as Column).label;
+    }
+    csvContent += this.getCSVRows(
+      columns,
+      this.metrics.activeUsersPerYear,
+      "Nombre d'utilisateurs actifs (au moins une sortie dans l'année)"
+    );
+    csvContent += this.getCSVRows(
+      columns,
+      this.metrics.userRegistrationsPerYear,
+      "Nombre d'inscriptions par an"
+    );
+    csvContent += this.getCSVRows(
+      columns,
+      this.metrics.tripsPerLake,
+      "Nombre de sorties par lac et par an"
+    );
+    csvContent += this.getCSVRows(
+      columns,
+      this.metrics.catchesPerLake,
+      "Nombre de captures par lac et par an "
+    );
+    csvContent += this.getCSVRows(
+      columns,
+      this.metrics.automaticMeasuresPerLake,
+      "Nombre de mesures automatiques par lac et par an"
+    );
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+  }
+
   exportAsCSV(columns: Array<string>, array: Array<any>) {
-    console.error(array);
     let csvContent = "data:text/csv;charset=utf-8,";
     for (var i = 0; i < columns.length; i++) {
       if (i > 0) {
@@ -171,9 +224,25 @@ export default class Metrics extends Vue {
         return csvRow;
       })
       .join("\n");
-    console.error(csvContent);
     var encodedUri = encodeURI(csvContent);
     window.open(encodedUri);
+  }
+
+  getCSVRows(columns: Array<Column>, array: any, prefixLine: string) {
+    let csvContent = "\n" + prefixLine + "," + ",\n";
+    csvContent += (array as Array<any>)
+      .map(row => {
+        var csvRow = "";
+        for (var i = 0; i < columns.length; i++) {
+          if (i > 0) {
+            csvRow += ",";
+          }
+          csvRow += row[((columns[i] as unknown) as Column).field];
+        }
+        return csvRow;
+      })
+      .join("\n");
+    return csvContent;
   }
 }
 
@@ -186,6 +255,11 @@ class Column {
 <style lang="less">
 .metrics-container {
   padding-left: 0px;
+  .metrics-super-title {
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+  }
   .metrics-title {
     max-width: 900px;
     display: flex;
