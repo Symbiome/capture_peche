@@ -3,8 +3,10 @@ package fr.inrae.fishola.database;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
+import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
+import fr.inrae.fishola.entities.tables.pojos.NextScheduledCourrielNotificationCheck;
 import fr.inrae.fishola.entities.tables.records.NewsRecord;
 import fr.inrae.fishola.rest.ImageHelper;
 import java.time.LocalDateTime;
@@ -31,7 +33,6 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             ).collect(Collectors.toList());
         }
         return allNews;
-
     }
 
     public void deleteById(UUID newsId) {
@@ -101,5 +102,20 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         NewsPicture picture = withDao(NewsPictureDao.class, dao -> dao.findById(picId));
         Optional<byte[]> result = Optional.ofNullable(picture).map(NewsPicture::getContent);
         return result;
+    }
+
+    public LocalDateTime getNextScheduledNotificationCheckDate() {
+        List<NextScheduledCourrielNotificationCheck> nextScheduledCourrielNotificationCheckDates = withDao(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.findAll());
+        if (nextScheduledCourrielNotificationCheckDates.isEmpty()) {
+            // If no date defined, schedule for tomorrow at 7h30
+            LocalDateTime nextSchedule = LocalDateTime.now();
+            nextSchedule = nextSchedule.plusDays(1).withHour(7).withMinute(30).withSecond(0);
+            NextScheduledCourrielNotificationCheck nextCheck = new NextScheduledCourrielNotificationCheck();
+            nextCheck.setNextCheckDate(nextSchedule);
+            withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.insert(nextCheck));
+            return nextSchedule;
+        } else {
+            return nextScheduledCourrielNotificationCheckDates.iterator().next().getNextCheckDate();
+        }
     }
 }

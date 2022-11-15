@@ -28,6 +28,8 @@
       :createElement="createDocumentation"
       :canDelete="true"
       @elementsLoaded="computeIsPublic"
+      @send-notification="sendNotification"
+      :nextPlannifiedDate="nextPlannifiedDate"
     ></Referential>
   </div>
 </template>
@@ -37,6 +39,7 @@ import Referential from "@/components/Referential.vue";
 import { Component, Vue } from "vue-property-decorator";
 
 import { LocalDateTime, ZoneOffset, nativeJs } from "@js-joda/core";
+import BackendService from "@/services/BackendService";
 @Component({
   components: {
     Referential
@@ -68,7 +71,7 @@ export default class DocumentationVue extends Vue {
     {
       field: "dateNotificationSent",
       label: "Date d'envoi de la notification mail",
-      isADate: true,
+      isANotificationDate: true,
       hiddenInPopup: true
     },
     {
@@ -83,6 +86,24 @@ export default class DocumentationVue extends Vue {
       isHTML: true
     }
   ];
+
+  nextPlannifiedDate: number[] = [];
+
+  created() {
+    BackendService.backendGet("/v1/news-notifications/next-check").then(
+      nextCheckDate => {
+        this.nextPlannifiedDate = nextCheckDate;
+      },
+      error => {
+        this.$buefy.toast.open({
+          message: "Vous n'êtes plus connecté\u00B7e",
+          type: "is-danger"
+        });
+        console.error(error);
+        //  this.$router.push("/login");
+      }
+    );
+  }
 
   createDocumentation() {
     const tomorow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
@@ -116,6 +137,17 @@ export default class DocumentationVue extends Vue {
       actualite.isPublic =
         now.isAfter(LocalDateTime.from(nativeJs(dateDebut))) &&
         now.isBefore(LocalDateTime.from(nativeJs(dateFin)));
+    });
+  }
+
+  sendNotification(actualite: any) {
+    this.$buefy.dialog.confirm({
+      title: "Envoi de notification mail",
+      message: `Confirmez-vous souhaiter vouloir envoyer immédiatement un courriel aux utilisateurs de Fishola avec le contenue de l'actualité <i><b>${actualite["name"]}</b></i> ?`,
+      cancelText: "Annuler",
+      confirmText: "Envoyer notification immédiatement",
+      type: "is-success",
+      onConfirm: () => this.$buefy.toast.open("User agreed")
     });
   }
 

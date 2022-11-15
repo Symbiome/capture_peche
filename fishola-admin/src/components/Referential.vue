@@ -42,6 +42,22 @@
           <span v-if="col.isABoolean && props.row[col.field]">
             Oui
           </span>
+          <span v-else-if="col.isANotificationDate">
+            <span v-if="props.row[col.field]">
+              {{ formatDate(props.row[col.field]) }}
+            </span>
+            <span v-else-if="props.row['isPublic']">
+              Plannifié le {{ formatDate(nextPlannifiedDate) }}
+              <b-button
+                class="button is-small is-primary"
+                @click="sendNotification(props.row, $event)"
+                >Envoyer maintenant</b-button
+              >
+            </span>
+            <span v-else>
+              Non envoyé
+            </span>
+          </span>
           <span v-else-if="col.isABoolean && !props.row[col.field]">
             Non
           </span>
@@ -55,9 +71,6 @@
           </span>
           <span v-else-if="!col.isABoolean && !col.isADate">
             {{ props.row[col.field] }}
-          </span>
-          <span v-else-if="col.isADate">
-            Non envoyée
           </span>
         </b-table-column>
         <b-table-column
@@ -147,6 +160,7 @@ export default class Refenretial extends Vue {
   @Prop() data: any[] = [];
   @Prop({ default: true }) editable: boolean;
   @Prop({ default: ["id", "desc"] }) defaultSort: string[];
+  @Prop() nextPlannifiedDate: number[];
   selection = { item: null };
 
   /* The function used to create new elements. If not specified, create button will not be displayed */
@@ -216,6 +230,11 @@ export default class Refenretial extends Vue {
     let newElement = this.createElement();
     // This will trigger modal appearance
     this.selection.item = newElement;
+  }
+
+  sendNotification(target: any, event: Event) {
+    event.stopPropagation();
+    this.$emit("send-notification", target);
   }
 
   /**
