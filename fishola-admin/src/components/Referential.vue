@@ -56,6 +56,9 @@
           <span v-else-if="!col.isABoolean && !col.isADate">
             {{ props.row[col.field] }}
           </span>
+          <span v-else-if="col.isADate">
+            Non envoyée
+          </span>
         </b-table-column>
         <b-table-column
           v-for="col in columns.filter(

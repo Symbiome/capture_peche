@@ -26,7 +26,8 @@ CREATE TABLE news (
     name TEXT NOT NULL UNIQUE,
     content TEXT,
     date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    date_notification_sent TIMESTAMP WITHOUT TIME ZONE
 );
 
 CREATE TABLE news_picture (

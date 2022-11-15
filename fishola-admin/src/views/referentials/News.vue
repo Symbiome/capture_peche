@@ -65,7 +65,12 @@ export default class DocumentationVue extends Vue {
       isAPeriodEnd: true,
       hiddenInPopup: true
     },
-
+    {
+      field: "dateNotificationSent",
+      label: "Date d'envoi de la notification mail",
+      isADate: true,
+      hiddenInPopup: true
+    },
     {
       field: "isPublic",
       label: "Visible sur le site",
