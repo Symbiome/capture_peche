@@ -93,7 +93,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 import router from "@/router";
 
-import BackendService from "@/services/BackendService.ts";
+import BackendService from "@/services/BackendService";
 
 @Component
 export default class Menu extends Vue {

@@ -31,6 +31,7 @@ CREATE TABLE news (
 
 CREATE TABLE news_picture (
    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+   -- No REFERENCES news(id) as id can be temporary
    news_id UUID,
    content BYTEA NOT NULL
 );

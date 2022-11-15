@@ -487,7 +487,7 @@ export default class RefenretialItem extends Vue {
 
   formatDate(puet: any): string {
     let theDate: Date = this.parseLocalDateTime(puet);
-    var hourOptions = {
+    var hourOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "numeric",

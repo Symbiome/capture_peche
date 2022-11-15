@@ -25,115 +25,110 @@
       <thead>
         <tr>
           <th></th>
-          <th v-for="l in lakes" v-bind:key="l.id">{{l.name}}</th>
+          <th v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
-          <th>{{s.name}}</th>
+          <th>{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field">
-              <b-input v-model="speciesPerLakeAliases[l.id][s.id]"
-                       placeholder="Nom spécifique"
-                       ></b-input>
+              <b-input
+                v-model="speciesPerLakeAliases[l.id][s.id]"
+                placeholder="Nom spécifique"
+              ></b-input>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
     <div class="buttons">
-        <button class="button is-primary"
-            @click="save()">
-            Enregistrer
-        </button>
+      <button class="button is-primary" @click="save()">
+        Enregistrer
+      </button>
     </div>
   </div>
 </template>
 
 <script lans="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
 
-import { Component, Prop, Vue } from 'vue-property-decorator'
-
-import BackendService from '@/services/BackendService.ts';
+import BackendService from "@/services/BackendService";
 
 @Component
 export default class SpeciesPerLakeVue extends Vue {
+  lakes = [];
+  species = [];
+  speciesPerLake = {};
+  speciesPerLakeAliases = {};
 
-    lakes = [];
-    species = [];
-    speciesPerLake = {};
-    speciesPerLakeAliases = {};
+  created() {
+    Promise.all([
+      BackendService.backendGet("/v1/referential/lakes"),
+      BackendService.backendGet("/v1/referential/species"),
+      BackendService.backendGet("/v1/referential/species-per-lake")
+    ]).then(data => {
+      this.lakes = data[0];
+      this.species = data[1];
+      this.speciesPerLake = data[2];
 
-    created() {
+      this.referentialLoaded();
+    });
+  }
 
-      Promise.all([
-        BackendService.backendGet("/v1/referential/lakes"),
-        BackendService.backendGet("/v1/referential/species"),
-        BackendService.backendGet("/v1/referential/species-per-lake")
-      ]).then(data => {
-        this.lakes = data[0];
-        this.species = data[1];
-        this.speciesPerLake = data[2];
+  referentialLoaded() {
+    this.lakes.forEach(l => {
+      this.speciesPerLakeAliases[l.id] = {};
+    });
 
-        this.referentialLoaded();
-
+    Object.keys(this.speciesPerLake).forEach(lakeId => {
+      let items = this.speciesPerLake[lakeId];
+      items.forEach(spl => {
+        if (spl.alias) {
+          this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
+        }
       });
-    }
+    });
+  }
 
-    referentialLoaded() {
-
-      this.lakes.forEach((l) => {
-        this.speciesPerLakeAliases[l.id] = {};
-      });
-
-      Object.keys(this.speciesPerLake).forEach((lakeId) => {
-        let items = this.speciesPerLake[lakeId];
-        items.forEach((spl) => {
-          if (spl.alias) {
-            this.speciesPerLakeAliases[lakeId][spl.id] = spl.alias;
-          }
+  save() {
+    BackendService.backendPut(
+      "/v1/referential/species-aliases-per-lake",
+      this.speciesPerLakeAliases
+    ).then(
+      res => {
+        this.$buefy.toast.open({
+          message: "Espèces par lac enregistrées",
+          type: "is-success"
         });
-      });
-    }
-
-    save() {
-      BackendService.backendPut("/v1/referential/species-aliases-per-lake", this.speciesPerLakeAliases)
-        .then(
-          (res) => {
-              this.$buefy.toast.open({
-                  message:'Espèces par lac enregistrées',
-                  type: 'is-success'
-              });
-          },
-          (error) => {
-              this.$buefy.toast.open({
-                  message: 'Erreur lors de l\'enregistrement des espèces par lac : ' + error.message,
-                  type: 'is-danger'
-              });
-          }
-        );
-    }
+      },
+      error => {
+        this.$buefy.toast.open({
+          message:
+            "Erreur lors de l'enregistrement des espèces par lac : " +
+            error.message,
+          type: "is-danger"
+        });
+      }
+    );
+  }
 }
 </script>
 
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .species-per-lake {
-
   .table {
     width: 100%;
   }
 
   .buttons {
-      width: 100%;
-      display: flex;
-      flex-direction: row-reverse;
-      padding-right: 30px;
-      padding-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    padding-right: 30px;
+    padding-top: 10px;
   }
-
 }
-
 </style>

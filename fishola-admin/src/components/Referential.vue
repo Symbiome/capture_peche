@@ -132,9 +132,6 @@ import BackendService from "@/services/BackendService";
 
 import ReferentialItem from "@/components/ReferentialItem.vue";
 
-import router from "@/router";
-import { LocalDate } from "@js-joda/core";
-
 @Component({
   components: {
     ReferentialItem
@@ -189,7 +186,7 @@ export default class Refenretial extends Vue {
 
   formatDate(puet: number[]): string {
     let theDate: Date = this.parseLocalDateTime(puet);
-    var hourOptions = {
+    var hourOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "numeric",
@@ -201,7 +198,9 @@ export default class Refenretial extends Vue {
   }
 
   loadData() {
-    delete this.data;
+    while (this.data && this.data.length) {
+      this.data.pop();
+    }
     this.allowedDeletionElements = [];
     BackendService.backendGet(this.url).then(res => {
       this.data = res;
