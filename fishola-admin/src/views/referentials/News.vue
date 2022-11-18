@@ -90,19 +90,7 @@ export default class DocumentationVue extends Vue {
   nextPlannifiedDate: number[] = [];
 
   created() {
-    BackendService.backendGet("/v1/news-notifications/next-check").then(
-      nextCheckDate => {
-        this.nextPlannifiedDate = nextCheckDate;
-      },
-      error => {
-        this.$buefy.toast.open({
-          message: "Vous n'êtes plus connecté\u00B7e",
-          type: "is-danger"
-        });
-        console.error(error);
-        //  this.$router.push("/login");
-      }
-    );
+    this.refreshNextPlannifiedDate();
   }
 
   createDocumentation() {
@@ -143,11 +131,28 @@ export default class DocumentationVue extends Vue {
   sendNotification(actualite: any) {
     this.$buefy.dialog.confirm({
       title: "Envoi de notification mail",
-      message: `Confirmez-vous souhaiter vouloir envoyer immédiatement un courriel aux utilisateurs de Fishola avec le contenue de l'actualité <i><b>${actualite["name"]}</b></i> ?`,
+      message: `Confirmez-vous souhaiter vouloir envoyer immédiatement un courriel aux utilisateurs de Fishola avec le contenu de l'actualité <i><b>${actualite["name"]}</b></i> ?`,
       cancelText: "Annuler",
       confirmText: "Envoyer notification immédiatement",
       type: "is-success",
-      onConfirm: () => this.$buefy.toast.open("User agreed")
+      onConfirm: async () => {
+        try {
+          await BackendService.backendGet(
+            "/v1/news-notifications/send/" + actualite.id
+          );
+          this.$buefy.toast.open({
+            type: "is-success",
+            message: "Notification envoyée"
+          });
+          this.refreshNextPlannifiedDate();
+        } catch (e) {
+          this.$buefy.toast.open({
+            message:
+              "Une erreur est survenue lors de l'envoi de la notification",
+            type: "is-danger"
+          });
+        }
+      }
     });
   }
 
@@ -170,6 +175,21 @@ export default class DocumentationVue extends Vue {
         someLocalDateTime[4]
       );
     }
+  }
+
+  refreshNextPlannifiedDate(): void {
+    BackendService.backendGet("/v1/news-notifications/next-check").then(
+      nextCheckDate => {
+        this.nextPlannifiedDate = nextCheckDate;
+      },
+      error => {
+        this.$buefy.toast.open({
+          message: "Vous n'êtes plus connecté\u00B7e",
+          type: "is-danger"
+        });
+        this.$router.push("/login");
+      }
+    );
   }
 }
 </script>

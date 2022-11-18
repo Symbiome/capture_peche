@@ -104,7 +104,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         return result;
     }
 
-    public LocalDateTime getNextScheduledNotificationCheckDate() {
+    public NextScheduledCourrielNotificationCheck getNextScheduledNotificationCheck() {
         List<NextScheduledCourrielNotificationCheck> nextScheduledCourrielNotificationCheckDates = withDao(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.findAll());
         if (nextScheduledCourrielNotificationCheckDates.isEmpty()) {
             // If no date defined, schedule for tomorrow at 7h30
@@ -113,9 +113,15 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             NextScheduledCourrielNotificationCheck nextCheck = new NextScheduledCourrielNotificationCheck();
             nextCheck.setNextCheckDate(nextSchedule);
             withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.insert(nextCheck));
-            return nextSchedule;
+            return nextCheck;
         } else {
-            return nextScheduledCourrielNotificationCheckDates.iterator().next().getNextCheckDate();
+            return nextScheduledCourrielNotificationCheckDates.iterator().next();
         }
+    }
+
+    public void scheduleNestNotificationCheck(int newsMailSendingDelayHours) {
+        NextScheduledCourrielNotificationCheck nextScheduledNotificationCheck = getNextScheduledNotificationCheck();
+        nextScheduledNotificationCheck.setNextCheckDate(nextScheduledNotificationCheck.getNextCheckDate().plusHours(newsMailSendingDelayHours));
+        withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.update(nextScheduledNotificationCheck));
     }
 }

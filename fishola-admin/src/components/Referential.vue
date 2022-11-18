@@ -142,7 +142,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
 
@@ -177,6 +177,11 @@ export default class Refenretial extends Vue {
   allowedDeletionElements: any[] = [];
 
   mounted() {
+    this.loadData();
+  }
+
+  @Watch("nextPlannifiedDate")
+  nextPlannifiedDateChanged(): void {
     this.loadData();
   }
 

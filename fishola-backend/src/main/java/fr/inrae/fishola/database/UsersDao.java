@@ -112,4 +112,7 @@ public class UsersDao extends AbstractFisholaDao {
         });
     }
 
+    public List<FisholaUser> findAllUsersAllowingCourriel() {
+       return withDao(FisholaUserDao.class, dao -> dao.fetchByAcceptsMailNotifications(true));
+    }
 }
