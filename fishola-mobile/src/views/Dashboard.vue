@@ -157,6 +157,7 @@ export default class DashboardView extends Vue {
   year: number = new Date().getFullYear();
   selectedLakeUUID = "";
   lakes: Lake[] = [];
+  isFirstLoad = true;
 
   created() {
     this.loadLakes();
@@ -211,8 +212,19 @@ export default class DashboardView extends Vue {
   }
 
   personalDashboardLoaded(data: DashboardAndSpecies) {
-    this.personalDashboard = data;
-    this.ready = true;
+    // If no data for current year and this is first load, select year - 1 by default
+    if (
+      this.isFirstLoad &&
+      data.dashboard &&
+      data.dashboard.latestTripsCatchs.length == 0
+    ) {
+      this.isFirstLoad = false;
+      this.year = this.year - 1;
+      this.yearOrSelectedLakesChanged();
+    } else {
+      this.personalDashboard = data;
+      this.ready = true;
+    }
   }
 
   cannotLoad(error: any) {
