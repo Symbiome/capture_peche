@@ -19,7 +19,9 @@
 -- #L%
 ---
 
-ALTER TABLE fishola_user ADD COLUMN accepts_mail_notifications BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE fishola_user
+ADD COLUMN accepts_mail_notifications BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN last_news_seen_date TIMESTAMP WITHOUT TIME ZONE DEFAULT '2021-06-06 12:00:00';
 
 CREATE TABLE next_scheduled_courriel_notification_check (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,

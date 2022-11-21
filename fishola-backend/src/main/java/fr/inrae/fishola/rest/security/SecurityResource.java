@@ -454,7 +454,7 @@ public class SecurityResource extends AbstractFisholaResource {
     }
 
     protected UserProfile toUserProfile(FisholaUser input) {
-        ImmutableUserProfile result = ImmutableUserProfile.builder()
+        ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder()
                 .email(input.getEmail())
                 .firstName(input.getFirstName())
                 .lastName(Optional.ofNullable(input.getLastName()))
@@ -462,7 +462,8 @@ public class SecurityResource extends AbstractFisholaResource {
                 .gender(Optional.ofNullable(input.getGender()))
                 .sampleBaseId(encodeSampleBaseId(input.getSampleBaseId()))
                 .acceptsMailNotifications(input.getAcceptsMailNotifications())
-                .build();
+                .lastNewsSeenDate(input.getLastNewsSeenDate());
+        ImmutableUserProfile result = builder.build();
         return result;
     }
 
@@ -505,6 +506,7 @@ public class SecurityResource extends AbstractFisholaResource {
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
         user.setAcceptsMailNotifications(profile.acceptsMailNotifications());
+        user.setLastNewsSeenDate(profile.lastNewsSeenDate());
 
         Map<String, String> validationErrors = validateProfile(user);
 

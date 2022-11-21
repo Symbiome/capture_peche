@@ -32,7 +32,8 @@ export default class UserProfile {
     public email: string,
     public initials: string,
     public sampleBaseId: string,
-    public acceptsMailNotifications: boolean
+    public acceptsMailNotifications: boolean,
+    public lastNewsSeenDate: Date
   ) {}
 
   static fullName(p: UserProfile) {
@@ -49,7 +50,8 @@ export default class UserProfile {
       input.email,
       input.initials,
       input.sampleBaseId,
-      input.acceptsMailNotifications
+      input.acceptsMailNotifications,
+      input.lastNewsSeenDate
     );
     result.lastName = input.lastName;
     result.gender = input.gender;

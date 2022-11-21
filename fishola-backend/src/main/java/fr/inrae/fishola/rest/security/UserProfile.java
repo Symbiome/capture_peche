@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import fr.inrae.fishola.entities.enums.Gender;
+import java.time.LocalDateTime;
 import org.immutables.value.Value;
 
 import java.util.LinkedList;
@@ -50,6 +51,8 @@ public interface UserProfile {
     String sampleBaseId();
 
     Boolean acceptsMailNotifications();
+
+    LocalDateTime lastNewsSeenDate();
 
     @Value.Derived
     default String initials() {

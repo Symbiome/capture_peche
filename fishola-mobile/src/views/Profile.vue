@@ -117,6 +117,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import router from "@/router";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
+import Helpers from "../services/Helpers";
 
 @Component({
   components: {
@@ -136,6 +137,7 @@ export default class ProfileView extends Vue {
     sampleBaseId: "",
     offlineMarker: false,
     acceptsMailNotifications: false,
+    lastNewsSeenDate: new Date(),
   };
   fullName: string = "";
 
@@ -195,7 +197,10 @@ export default class ProfileView extends Vue {
     } else {
       this.profile.gender = this.gender;
     }
-
+    this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+      // @ts-ignore
+      this.profile.lastNewsSeenDate
+    );
     ProfileService.saveProfile(this.profile).then(
       () => {
         this.loadProfile();
