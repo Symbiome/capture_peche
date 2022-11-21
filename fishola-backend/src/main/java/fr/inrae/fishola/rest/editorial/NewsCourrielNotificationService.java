@@ -8,8 +8,10 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import io.quarkus.scheduler.Scheduled;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -59,10 +61,26 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
     public Response sendCourrielNotificationForNews(@Context HttpServletRequest request, @PathParam("news-id") UUID newsId) {
         checkIsAdmin();
         News newsById = dao.findById(newsId);
-        if (newsById != null) {
+        if (newsById != null && newsById.getDateNotificationSent() == null) {
             this.notifyUsersByCourrielAboutNews(Lists.newArrayList(newsById));
         }
         return Response.noContent().build();
+    }
+
+    /**
+     * Sends immetialy a courriel to notify about the news with the given id (only if it is public).
+     */
+    @GET
+    @Path("/unsubscribe/{user-id}")
+    public Response unsubscribe(@Context HttpServletRequest request, @PathParam("user-id") UUID userId) {
+        Optional<FisholaUser> userById = usersDao.findById(userId);
+        if (userById.isPresent()) {
+           userById.get().setAcceptsMailNotifications(false);
+           usersDao.updateUser(userById.get());
+        }
+        String unsubscribedUrl = config.getApiUrl("/api/unsubscribed.html", request);
+        Response success = Response.temporaryRedirect(URI.create(unsubscribedUrl)).build();
+        return success;
     }
 
     @Scheduled(every="20m", concurrentExecution = SKIP, delayed = "5m")
@@ -101,9 +119,16 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
                 news.setDateNotificationSent(now);
                 dao.update(news);
             }
+            htmlContent +=" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.";
 
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
-                ImmutableFisholaMail mail = mailService.newMail(htmlContent)
+                String baseURL = "https://fishola.fr";
+                if (config.backendBaseUrl().isPresent()) {
+                    baseURL = config.backendBaseUrl().get();
+                }
+                String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
+                String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
+                ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
                 .subject(subject)
                 .addTos(user.getEmail())
                 .build();
