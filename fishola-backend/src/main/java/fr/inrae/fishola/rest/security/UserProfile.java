@@ -49,6 +49,8 @@ public interface UserProfile {
 
     String sampleBaseId();
 
+    Boolean acceptsMailNotifications();
+
     @Value.Derived
     default String initials() {
         List<Character> initials = new LinkedList<>(splitToInitials(firstName()));

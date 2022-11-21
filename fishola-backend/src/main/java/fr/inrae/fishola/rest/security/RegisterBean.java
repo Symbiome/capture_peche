@@ -27,5 +27,6 @@ public class RegisterBean {
     public String lastName;
     public String email;
     public String password;
+    public boolean acceptsMailNotifications;
 
 }

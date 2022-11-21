@@ -20,69 +20,88 @@
   -->
 <template>
   <div class="register page-with-header shifted-background">
-    <FisholaHeader v-bind:title="true"
-                   v-bind:avatar="false"
-                   v-bind:menu="false"/>
+    <FisholaHeader
+      v-bind:title="true"
+      v-bind:avatar="false"
+      v-bind:menu="false"
+    />
     <div class="page register-page keyboardSensitive">
       <div class="register-form keyboardSensitive">
-
         <h1 class="keyboardSensitive">Inscription</h1>
 
-        <FormInput name="firstName"
-                    label="Prénom"
-                    placeholder="Renseignez votre prénom"
-                    v-model="bean.firstName"
-                    v-bind:error="validationErrors['firstName']"
-                    />
-        <FormInput name="lastName"
-                    label="Nom (optionnel)"
-                    placeholder="Renseignez votre nom"
-                    v-model="bean.lastName"
-                    v-bind:error="validationErrors['lastName']"
-                    />
-        <FormInput name="email"
-                    label="E-mail"
-                    placeholder="Renseignez votre E-mail"
-                    v-model="bean.email"
-                    v-bind:error="validationErrors['email']"
-                    />
-        <FormInput name="password"
-                    type="password"
-                    label="Mot de passe"
-                    placeholder="Choisissez un mot de passe"
-                    v-model="bean.password"
-                    v-bind:error="validationErrors['password']"
-                    />
-        <FormInput name="passwordConfirm"
-                    type="password"
-                    label="Confirmation du mot de passe"
-                    placeholder="Confirmez votre mot de passe"
-                    v-model="passwordConfirm"
-                    v-bind:error="validationErrors['passwordConfirm']"
-                    />
+        <FormInput
+          name="firstName"
+          label="Prénom"
+          placeholder="Renseignez votre prénom"
+          v-model="bean.firstName"
+          v-bind:error="validationErrors['firstName']"
+        />
+        <FormInput
+          name="lastName"
+          label="Nom (optionnel)"
+          placeholder="Renseignez votre nom"
+          v-model="bean.lastName"
+          v-bind:error="validationErrors['lastName']"
+        />
+        <FormInput
+          name="email"
+          label="E-mail"
+          placeholder="Renseignez votre E-mail"
+          v-model="bean.email"
+          v-bind:error="validationErrors['email']"
+        />
+        <FormInput
+          name="password"
+          type="password"
+          label="Mot de passe"
+          placeholder="Choisissez un mot de passe"
+          v-model="bean.password"
+          v-bind:error="validationErrors['password']"
+        />
+        <FormInput
+          name="passwordConfirm"
+          type="password"
+          label="Confirmation du mot de passe"
+          placeholder="Confirmez votre mot de passe"
+          v-model="passwordConfirm"
+          v-bind:error="validationErrors['passwordConfirm']"
+        />
 
         <div class="form-checkbox">
-          <input type="checkbox"
-                  id="register-cgu"
-                  class="pelorous-checkbox"
-                  v-model="cgu" />
+          <input
+            type="checkbox"
+            id="register-cgu"
+            class="pelorous-checkbox"
+            v-model="cgu"
+          />
           <label for="register-cgu"></label>
           <label for="register-cgu" class="register-cgu-label">
-            J'ai lu et j'accepte les <a :href="cguUrl" target="_blank">Conditions Générales d'Utilisation</a>
+            J'ai lu et j'accepte les
+            <a :href="cguUrl" target="_blank"
+              >Conditions Générales d'Utilisation</a
+            >
+          </label>
+        </div>
+        <div class="form-checkbox" style="padding-top: 12px">
+          <input
+            type="checkbox"
+            id="receive-mail"
+            class="pelorous-checkbox"
+            v-model="bean.acceptsMailNotifications"
+          />
+          <label for="receive-mail"></label>
+          <label for="receive-mail" class="register-cgu-label">
+            Je souhaite être informé des communications Fishola par mail
           </label>
         </div>
         <div class="bottom-page-spacer"></div>
       </div>
       <div class="register-buttons">
         <div class="register-button back">
-          <button v-on:click="cancel">
-            Retour
-          </button>
+          <button v-on:click="cancel">Retour</button>
         </div>
         <div class="register-button register">
-          <button v-on:click="register">
-            S'enregistrer
-          </button>
+          <button v-on:click="register">S'enregistrer</button>
         </div>
       </div>
     </div>
@@ -90,36 +109,34 @@
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
+import UserRegister from "@/pojos/UserRegister";
 
-import Constants from '@/services/Constants';
-import UserRegister from '@/pojos/UserRegister';
+import Helpers from "@/services/Helpers";
 
-import Helpers from '@/services/Helpers';
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import router from "@/router";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import FormInput from '@/components/common/FormInput.vue'
-import router from '@/router'
+import DocumentationService from "@/services/DocumentationService";
+import ProfileService from "@/services/ProfileService";
 
-import DocumentationService from '@/services/DocumentationService';
-import ProfileService from '@/services/ProfileService';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
     FisholaHeader,
-    FormInput
-  }
+    FormInput,
+  },
 })
 export default class RegisterView extends Vue {
-
-  bean:UserRegister = new UserRegister();
-  passwordConfirm:string = '';
-  validationErrors:any = {
-    passwordConfirm : ''
+  bean: UserRegister = new UserRegister();
+  passwordConfirm: string = "";
+  validationErrors: any = {
+    passwordConfirm: "",
   };
-  cgu:boolean = false;
-  cguUrl:string = '';
+  cgu: boolean = false;
+  cguUrl: string = "";
 
   constructor() {
     super();
@@ -130,57 +147,69 @@ export default class RegisterView extends Vue {
   }
 
   cancel() {
-    router.push('/login');
+    router.push("/login");
   }
 
   register() {
     this.cleanValidationErros();
 
     if (this.passwordConfirm == this.bean.password && this.cgu) {
-      ProfileService.register(this.bean, this.registrationOk, this.setValidationErrors, this.technicalError);
+      ProfileService.register(
+        this.bean,
+        this.registrationOk,
+        this.setValidationErrors,
+        this.technicalError
+      );
     } else if (!this.cgu) {
-      this.$root.$emit('toaster-error', 'Vous devez accepter les CGU');
+      this.$root.$emit("toaster-error", "Vous devez accepter les CGU");
     } else {
-      this.validationErrors['passwordConfirm'] = 'Les mots de passe ne correspondent pas';
+      this.validationErrors["passwordConfirm"] =
+        "Les mots de passe ne correspondent pas";
     }
   }
 
   cleanValidationErros() {
     if (this.validationErrors) {
       const keys = Object.keys(this.validationErrors);
-      keys.forEach(key => this.validationErrors[key] = '');
+      keys.forEach((key) => (this.validationErrors[key] = ""));
     }
   }
 
   registrationOk() {
-
-    Helpers.alert(this.$modal, 'Vous devez confirmer votre adresse e-mail avant d\'utiliser FISHOLA. Merci de vérifier votre boîte e-mail', 'Compte enregistré')
-      .then(() => {
-        this.$root.$emit('toaster-success', 'Compte enregistré. Vous devez valider votre e-mail', 10000);
-        router.push('/login');
-      });
-
+    Helpers.alert(
+      this.$modal,
+      "Vous devez confirmer votre adresse e-mail avant d'utiliser FISHOLA. Merci de vérifier votre boîte e-mail",
+      "Compte enregistré"
+    ).then(() => {
+      this.$root.$emit(
+        "toaster-success",
+        "Compte enregistré. Vous devez valider votre e-mail",
+        10000
+      );
+      router.push("/login");
+    });
   }
 
-  setValidationErrors(validationErrors:any) {
+  setValidationErrors(validationErrors: any) {
     this.validationErrors = validationErrors;
-    this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
+    this.$root.$emit("toaster-error", "Veuillez corriger les erreurs");
   }
 
-  technicalError(status:number) {
-    this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
+  technicalError(status: number) {
+    this.$root.$emit(
+      "toaster-error",
+      "Erreur technique, merci de réessayer plus tard"
+    );
   }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .register.page-with-header {
-  .page.register-page  {
+  .page.register-page {
     height: calc(100% - @header-height - @vertical-margin-xx-large);
 
     &.keyboardShowing {
@@ -190,17 +219,15 @@ export default class RegisterView extends Vue {
     @media screen and (min-width: @desktop-min-width) {
       height: 100%;
     }
-
   }
 }
 
 .register-page {
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 
-  text-align:center;
+  text-align: center;
 
   background-color: @white-smoke;
   border-top-left-radius: 30px;
@@ -210,7 +237,7 @@ export default class RegisterView extends Vue {
   &.keyboardShowing {
     margin-top: calc(5px + env(safe-area-inset-top));
     padding-top: 0px;
-    padding-bottom:2px;
+    padding-bottom: 2px;
     height: calc(100% - 5px);
   }
 
@@ -234,16 +261,15 @@ export default class RegisterView extends Vue {
     //   height: calc(100% - 5px);
     // }
 
-    @media(max-height:579px) {
+    @media (max-height: 579px) {
       margin-top: @margin-medium;
       margin-bottom: @margin-medium;
     }
 
-    @media(max-height:450px) {
+    @media (max-height: 450px) {
       margin-top: @margin-small;
       margin-bottom: @margin-small;
     }
-
   }
 
   .register-form {
@@ -256,9 +282,9 @@ export default class RegisterView extends Vue {
     }
 
     display: flex;
-    flex-direction: column;;
+    flex-direction: column;
 
-    text-align:left;
+    text-align: left;
     overflow: auto;
 
     .form-input label {
@@ -279,7 +305,9 @@ export default class RegisterView extends Vue {
       margin-left: @margin-small;
       color: @gunmetal;
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
       font-weight: 300;
 
       a {
@@ -316,22 +344,21 @@ export default class RegisterView extends Vue {
       //   // margin-top: -22px;
       // }
       button {
+        height: 100%;
+        width: 100%;
+        border-radius: 38px;
 
-          height: 100%;
-          width: 100%;
-          border-radius: 38px;
+        font-style: normal;
+        font-weight: bold;
+        font-size: @fontsize-button;
+        line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-          font-style: normal;
-          font-weight: bold;
-          font-size: @fontsize-button;
-          line-height: calc(@fontsize-button + @line-height-padding-x-large);
+        border: 0px;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
 
-          border: 0px;
-          padding-left: @margin-medium;
-          padding-right: @margin-medium;
-
-          background-color: @terra-cotta;
-          color: @white;
+        background-color: @terra-cotta;
+        color: @white;
       }
     }
 
@@ -339,31 +366,26 @@ export default class RegisterView extends Vue {
       height: 45px;
 
       button {
+        height: 100%;
+        width: 100%;
+        border-radius: 38px;
 
-          height: 100%;
-          width: 100%;
-          border-radius: 38px;
+        font-style: normal;
+        font-weight: bold;
+        font-size: @fontsize-button;
+        line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-          font-style: normal;
-          font-weight: bold;
-          font-size: @fontsize-button;
-          line-height: calc(@fontsize-button + @line-height-padding-x-large);
+        border: 1px solid @pelorous;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
 
-          border: 1px solid @pelorous;
-          padding-left: @margin-medium;
-          padding-right: @margin-medium;
-
-          background-color: transparent;
-          color: @pelorous;
-
+        background-color: transparent;
+        color: @pelorous;
       }
     }
-
   }
 
-
   @media screen and (min-width: @desktop-min-width) {
-
     justify-content: flex-start;
 
     border-top-left-radius: unset;
@@ -379,7 +401,9 @@ export default class RegisterView extends Vue {
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(
+        @fontsize-title-desktop + @line-height-padding-xx-large
+      );
       text-align: left;
     }
 
@@ -404,10 +428,6 @@ export default class RegisterView extends Vue {
         margin-right: @margin-small;
       }
     }
-
   }
-
-
 }
-
 </style>

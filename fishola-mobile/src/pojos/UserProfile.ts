@@ -8,59 +8,64 @@
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
 export default class UserProfile {
+  static currentUser?: UserProfile;
 
-    static currentUser?:UserProfile;
+  lastName?: string;
+  gender?: string;
+  birthYear?: number;
+  offlineMarker: boolean = false;
 
-    lastName?:string;
-    gender?:string;
-    birthYear?:number;
-    offlineMarker:boolean = false;
+  constructor(
+    public firstName: string,
+    public email: string,
+    public initials: string,
+    public sampleBaseId: string,
+    public acceptsMailNotifications: boolean
+  ) {}
 
-    constructor(
-        public firstName:string,
-        public email:string,
-        public initials:string,
-        public sampleBaseId:string) {
+  static fullName(p: UserProfile) {
+    let result = p.firstName;
+    if (p.lastName) {
+      result += " " + p.lastName;
     }
+    return result;
+  }
 
-    static fullName(p:UserProfile) {
-        let result = p.firstName;
-        if (p.lastName) {
-            result += " " + p.lastName;
-        }
-        return result;
-    }
+  static fromJson(input: any) {
+    const result = new UserProfile(
+      input.firstName,
+      input.email,
+      input.initials,
+      input.sampleBaseId,
+      input.acceptsMailNotifications
+    );
+    result.lastName = input.lastName;
+    result.gender = input.gender;
+    result.birthYear = input.birthYear;
+    return result;
+  }
 
-    static fromJson(input:any) {
-        const result = new UserProfile(input.firstName, input.email, input.initials, input.sampleBaseId);
-        result.lastName = input.lastName;
-        result.gender = input.gender;
-        result.birthYear = input.birthYear;
-        return result;
-    }
+  static getCurrent(): UserProfile {
+    return this.currentUser!;
+  }
 
-    static getCurrent():UserProfile {
-        return this.currentUser!;
-    }
+  static setCurrent(newProfile: UserProfile) {
+    this.currentUser = newProfile;
+  }
 
-    static setCurrent(newProfile:UserProfile) {
-        this.currentUser = newProfile;
-    }
-
-    static unsetCurrent() {
-        delete this.currentUser;
-    }
-
+  static unsetCurrent() {
+    delete this.currentUser;
+  }
 }
