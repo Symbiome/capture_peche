@@ -26,22 +26,22 @@
         <div class="pane-content large rounded">
           <h1 class="no-margin-pane">
             <span> Tableau de bord </span>
-            <select placeholder="Année" v-model="year">
-              <option
-                v-for="dashboardYear in getDashboardYears()"
-                :value="dashboardYear"
-                :key="dashboardYear"
-              >
-                {{ dashboardYear }}
-              </option>
-            </select>
-
-            <select placeholder="lake" v-model="selectedLakeUUID">
-              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                {{ lake.name }}
-              </option>
-            </select>
-
+            <div class="selects-holder">
+              <select placeholder="lake" v-model="selectedLakeUUID">
+                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+                </option>
+              </select>
+              <select placeholder="Année" v-model="year">
+                <option
+                  v-for="dashboardYear in getDashboardYears()"
+                  :value="dashboardYear"
+                  :key="dashboardYear"
+                >
+                  {{ dashboardYear }}
+                </option>
+              </select>
+            </div>
             <a
               @click="askForAsyncExport"
               v-if="!globalMode && asyncExport"
@@ -442,13 +442,18 @@ export default class DashboardView extends Vue {
       h1 {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
 
         a.export {
           font-size: 30px;
           margin-left: 0px;
+          margin-left: auto;
         }
+      }
+      .selects-holder {
+        margin-left: 40px;
+        margin-top: -10px;
       }
 
       .dashboard-modes {
@@ -458,14 +463,50 @@ export default class DashboardView extends Vue {
       }
     }
   }
-
+  @media screen and (max-width: 1180px) {
+    .pane-content {
+      h1 {
+        margin-top: 60px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .selects-holder {
+        margin-left: 0px;
+        margin-top: 0px;
+        margin-bottom: 20px;
+      }
+    }
+  }
   @media screen and (max-width: 899px) {
     .pane-content {
       h1 {
+        margin-top: 60px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
         a.export {
+          position: absolute;
+          top: 30px;
+          right: 80px;
           span {
             display: none;
           }
+        }
+      }
+    }
+  }
+
+  @media screen and (max-width: 770px) {
+    .pane-content {
+      h1 {
+        height: 60px;
+        margin-top: 0px;
+        a.export {
+          position: relative;
+          float: right;
+          top: -90px;
+          right: 40px;
         }
       }
     }
@@ -475,6 +516,9 @@ export default class DashboardView extends Vue {
     .pane-content {
       h1 {
         a.export {
+          position: absolute;
+          top: 30px;
+          right: 80px;
           font-weight: bold;
           line-height: 22px;
           height: 33px;
@@ -494,11 +538,20 @@ export default class DashboardView extends Vue {
       }
     }
   }
-
   @media screen and (min-width: 431px) {
     .show-if-small {
       display: none;
     }
+  }
+}
+.selects-holder {
+  select {
+    background-color: white;
+    padding: 10px;
+    height: 40px;
+    border: 1px solid @pale-sky;
+    border-radius: 3px;
+    margin-left: 10px;
   }
 }
 </style>
