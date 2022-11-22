@@ -94,12 +94,14 @@
             v-if="!globalMode && personalDashboard"
             :year="year"
             :dashboardData="personalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"
           ></PersonalDashboard>
 
           <GlobalDashboardComponent
             v-if="globalMode && globalDashboard"
             :showUpdateHour="year == new Date().getFullYear()"
             :dashboardData="globalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"
           ></GlobalDashboardComponent>
         </div>
       </div>
@@ -218,13 +220,13 @@ export default class DashboardView extends Vue {
       data.dashboard &&
       data.dashboard.latestTripsCatchs.length == 0
     ) {
-      this.isFirstLoad = false;
       this.year = this.year - 1;
       this.yearOrSelectedLakesChanged();
     } else {
       this.personalDashboard = data;
       this.ready = true;
     }
+    this.isFirstLoad = false;
   }
 
   cannotLoad(error: any) {

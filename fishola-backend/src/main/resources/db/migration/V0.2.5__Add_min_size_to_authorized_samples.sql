@@ -22,5 +22,7 @@
 ALTER TABLE authorized_sample
   ADD COLUMN min_size INTEGER DEFAULT 0;
 
+CREATE TYPE maillage AS ENUM ('MAILLEE', 'NON_MAILLEE', 'NON_DEFINI');
+
 ALTER TABLE catch
-  ADD COLUMN maillee BOOLEAN default false;
+  ADD COLUMN maillee maillage default 'NON_DEFINI';

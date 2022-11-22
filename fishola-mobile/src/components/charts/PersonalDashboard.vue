@@ -113,11 +113,15 @@
     </div>
 
     <div class="section">
-      <div class="shrinked">
+      <div class="shrinked avg-size">
         <h2>
           <i class="icon-size" />Taille moyenne
           <span class="hide-if-small">par espèce</span> (cm)
         </h2>
+        <MaillageLegend
+          :selectedLakeUUID="selectedLakeUUID"
+          :maillages="maillages"
+        />
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
@@ -126,7 +130,8 @@
         :items="monthlySizesOptions"
         v-if="monthlySizesOptions.length > 0"
         v-on:item-selected="onMonthlySizeSelected"
-      ></OptionsList>
+      >
+      </OptionsList>
       <div class="shrinked" v-if="monthlySizes">
         <HistogramChart
           :values="monthlySizes"
@@ -210,6 +215,7 @@ import {
   CatchBean,
   Month,
   PicturePerTripBean,
+  Maillage,
 } from "@/pojos/BackendPojos";
 import DistributionEntry from "@/pojos/DistributionEntry";
 import OptionItem from "@/pojos/OptionItem";
@@ -219,6 +225,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
 
 import moment from "moment";
+import MaillageLegend from "./MaillageLegend.vue";
 
 export class TopEntry {
   constructor(public species: SpeciesWithAlias, public catchs: CatchBean[]) {}
@@ -231,11 +238,13 @@ export class TopEntry {
     HistogramChart,
     CatchPreviewList,
     GaleryPreviewList,
+    MaillageLegend,
   },
 })
 export default class PersonalDashboard extends Vue {
   @Prop() dashboardData: DashboardAndSpecies;
   @Prop() year: number;
+  @Prop() selectedLakeUUID: string;
 
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
@@ -256,6 +265,7 @@ export default class PersonalDashboard extends Vue {
 
   // On a besoin de maintenir un index de capture -> sortie
   catchToTripId: { [index: string]: string } = {};
+  maillages: Maillage[] = [];
 
   constructor() {
     super();
@@ -421,6 +431,17 @@ export default class PersonalDashboard extends Vue {
 
   onMonthlySizeSelected(item: OptionItem) {
     this.monthlySizes = item.whatever;
+    this.maillages = [];
+    // @ts-ignore
+    Object.keys(this.monthlySizes).forEach((month) => {
+      // @ts-ignore
+      Object.keys(this.monthlySizes[month]).forEach((maillage) => {
+        if (this.maillages.indexOf(maillage as Maillage) == -1) {
+          this.maillages.push(maillage as Maillage);
+        }
+      });
+    });
+    this.maillages = this.maillages.sort();
   }
 
   openCatch(catchId: string) {
@@ -549,5 +570,11 @@ export default class PersonalDashboard extends Vue {
   overflow-y: hidden;
   height: 200px;
   margin-bottom: @vertical-margin-medium;
+}
+
+.avg-size {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 </style>

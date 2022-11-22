@@ -22,13 +22,13 @@
   <div class="histogram">
     <div class="values">
       <div
-        class="value maille"
+        class="value maillee"
         v-for="m in orderedMonths"
         v-bind:key="'value-' + m"
       >
         {{
-          values[m] && values[m]["MAILLE"]
-            ? Math.round(values[m]["MAILLE"])
+          values[m] && values[m]["MAILLEE"]
+            ? Math.round(values[m]["MAILLEE"])
             : ""
         }}
       </div>
@@ -40,12 +40,15 @@
         v-bind:key="'bar-' + m"
       >
         <div v-if="values[m]">
-          <div v-for="sizeType in ['MAILLE', 'NON_MAILLE']" :key="m + sizeType">
+          <div
+            v-for="sizeType in ['MAILLEE', 'NON_MAILLEE', 'NON_DEFINI']"
+            :key="m + sizeType"
+          >
             <div
               class="bar-filled"
               :class="{
-                maille: sizeType == 'MAILLE',
-                'non-maille': sizeType != 'MAILLE',
+                maillee: sizeType != 'NON_MAILLEE',
+                'non-maillee': sizeType == 'NON_MAILLEE',
                 even: index % 2 == 0,
                 odd: index % 2 != 0,
               }"
@@ -60,13 +63,13 @@
     </div>
     <div class="values">
       <div
-        class="value non-maille"
+        class="value non-maillee"
         v-for="m in orderedMonths"
         v-bind:key="'value-' + m"
       >
         {{
-          values[m] && values[m]["NON_MAILLE"]
-            ? Math.round(values[m]["NON_MAILLE"])
+          values[m] && values[m]["NON_MAILLEE"]
+            ? Math.round(values[m]["NON_MAILLEE"])
             : ""
         }}
       </div>
@@ -95,12 +98,12 @@ import Constants from "@/services/Constants";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import { Month, SizeType } from "@/pojos/BackendPojos";
+import { Month, Maillage } from "@/pojos/BackendPojos";
 
 @Component
 export default class HistogramChart extends Vue {
   @Prop() orderedMonths: Month[];
-  @Prop() values: { [P in Month]?: { [S in SizeType]: number } };
+  @Prop() values: { [P in Month]?: { [S in Maillage]: number } };
 
   maxValue: number = 50;
 
@@ -119,7 +122,6 @@ export default class HistogramChart extends Vue {
     newValue: { [P in Month]?: {} },
     oldValue: { [P in Month]?: {} }
   ) {
-    console.error(newValue);
     this.maxValue = this.findMaxValue(newValue);
   }
 
@@ -168,11 +170,11 @@ export default class HistogramChart extends Vue {
       font-size: @fontsize-smallest-paragraph;
       text-align: center;
 
-      &.maille {
+      &.maillee {
         color: @pelorous;
       }
 
-      &.non-maille {
+      &.non-maillee {
         color: @carrot-orange;
       }
     }
@@ -200,7 +202,7 @@ export default class HistogramChart extends Vue {
         width: 100%;
         border-radius: 2px;
 
-        &.maille {
+        &.maillee {
           &.even {
             background: @pelorous;
           }
@@ -210,7 +212,7 @@ export default class HistogramChart extends Vue {
           }
         }
 
-        &.non-maille {
+        &.non-maillee {
           &.even {
             background: @carrot-orange;
           }

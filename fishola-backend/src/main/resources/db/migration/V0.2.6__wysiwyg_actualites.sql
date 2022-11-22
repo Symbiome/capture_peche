@@ -27,7 +27,8 @@ CREATE TABLE news (
     content TEXT,
     date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    date_notification_sent TIMESTAMP WITHOUT TIME ZONE
+    date_notification_sent TIMESTAMP WITHOUT TIME ZONE,
+    miniature_pic BYTEA
 );
 
 CREATE TABLE news_picture (
