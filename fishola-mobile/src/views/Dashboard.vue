@@ -500,9 +500,10 @@ export default class DashboardView extends Vue {
         justify-content: center;
         align-items: flex-start;
         a.export {
-          position: absolute;
-          top: 30px;
-          right: 80px;
+          position: relative;
+          float: right;
+          top: -118px;
+          right: 18px;
           span {
             display: none;
           }
@@ -530,9 +531,9 @@ export default class DashboardView extends Vue {
     .pane-content {
       h1 {
         a.export {
-          position: absolute;
-          top: 30px;
-          right: 80px;
+          position: relative;
+          top: -115px;
+          right: 18px;
           font-weight: bold;
           line-height: 22px;
           height: 33px;
@@ -548,6 +549,15 @@ export default class DashboardView extends Vue {
           span {
             margin-right: 10px;
           }
+        }
+      }
+    }
+  }
+  @media screen and (min-width: 1178px) {
+    .pane-content {
+      h1 {
+        a.export {
+          top: 0px;
         }
       }
     }

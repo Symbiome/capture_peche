@@ -9,6 +9,7 @@ import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
@@ -134,8 +135,8 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
     @Transactional
     public void testPersonalDashboardForLake() {
         // Goal : make sure that lake selections for personnal dashboard works as expected
-        UUID lakeId1 = this.lakes.get(0).getId();
-        UUID lakeId2 = this.lakes.get(1).getId();
+        UUID lakeId1 = this.lakes.get(1).getId();
+        UUID lakeId2 = this.lakes.get(2).getId();
         Dashboard initialDashboardForLake1 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
         Dashboard initialDashboardForLake2 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
         Dashboard initialDashboardForAllLakes = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
@@ -313,6 +314,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
         aCatch.setSize((int)System.currentTimeMillis());
         aCatch.setWeight((int)System.currentTimeMillis());
         aCatch.setKept(true);
+        aCatch.setMaillee(Maillage.NON_DEFINI);
         catchsDao.create(aCatch);
     }
 
