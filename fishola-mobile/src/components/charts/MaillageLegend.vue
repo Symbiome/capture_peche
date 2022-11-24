@@ -30,7 +30,7 @@
       ></div>
       <span v-if="maillage == 'MAILLEE'"> Poissons maillés </span>
       <span v-else-if="maillage == 'NON_MAILLEE'"> Poissons non maillés </span>
-      <span v-else
+      <span class="line-break-on-small-screen" v-else
         >Sans distrinction de maillage
         <i v-if="!selectedLakeUUID"
           >(filtrer par Lac pour consulter les tailles en fonction du maillage)
@@ -74,6 +74,16 @@ export default class MaillageLegend extends Vue {
       &.square-non-maillee {
         background-color: @carrot-orange;
       }
+    }
+  }
+
+  @media screen and (max-width: 1400px) {
+    margin: -20px;
+    padding-bottom: 20px;
+    .line-break-on-small-screen {
+      flex-direction: column;
+      align-items: flex-start;
+      display: flex;
     }
   }
 }

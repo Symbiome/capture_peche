@@ -20,19 +20,6 @@
   -->
 <template>
   <div class="histogram">
-    <div class="values">
-      <div
-        class="value maillee"
-        v-for="m in orderedMonths"
-        v-bind:key="'value-' + m"
-      >
-        {{
-          values[m] && values[m]["MAILLEE"]
-            ? Math.round(values[m]["MAILLEE"])
-            : ""
-        }}
-      </div>
-    </div>
     <div class="bars">
       <div
         class="bar"
@@ -44,6 +31,34 @@
             v-for="sizeType in ['MAILLEE', 'NON_MAILLEE', 'NON_DEFINI']"
             :key="m + sizeType"
           >
+            <div
+              v-if="values[m][sizeType]"
+              class="value"
+              :class="{
+                maillee: sizeType != 'NON_MAILLEE',
+                'non-maillee': sizeType == 'NON_MAILLEE',
+                even: index % 2 == 0,
+                odd: index % 2 != 0,
+              }"
+              :style="
+                ('background-color:red',
+                'height: ' +
+                  Math.min(
+                    108,
+                    ((values[m][sizeType] +
+                      (sizeType != 'NON_MAILLEE' ? 6 : -1)) *
+                      100) /
+                      maxValue
+                  ) +
+                  '%')
+              "
+            >
+              {{
+                values[m] && values[m][sizeType]
+                  ? Math.round(values[m][sizeType])
+                  : ""
+              }}
+            </div>
             <div
               class="bar-filled"
               :class="{
@@ -59,19 +74,6 @@
             ></div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="values">
-      <div
-        class="value non-maillee"
-        v-for="m in orderedMonths"
-        v-bind:key="'value-' + m"
-      >
-        {{
-          values[m] && values[m]["NON_MAILLEE"]
-            ? Math.round(values[m]["NON_MAILLEE"])
-            : ""
-        }}
       </div>
     </div>
     <div class="labels">
@@ -157,15 +159,19 @@ export default class HistogramChart extends Vue {
   justify-content: space-between;
   height: 250px;
 
-  .values {
+  .bars {
+    padding-top: 10px;
     width: 100%;
-    height: 18px;
+    height: calc(100% - 18px - 25px);
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
 
     .value {
-      width: 8%;
+      position: absolute;
+      bottom: 0px;
+      width: 100%;
+      z-index: 1;
       font-weight: bold;
       font-size: @fontsize-smallest-paragraph;
       text-align: center;
@@ -175,16 +181,9 @@ export default class HistogramChart extends Vue {
       }
 
       &.non-maillee {
-        color: @carrot-orange;
+        color: white;
       }
     }
-  }
-  .bars {
-    width: 100%;
-    height: calc(100% - 18px - 25px);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
 
     .bar {
       width: 6%;
@@ -214,11 +213,11 @@ export default class HistogramChart extends Vue {
 
         &.non-maillee {
           &.even {
-            background: @carrot-orange;
+            background: @orange-even;
           }
 
           &.odd {
-            background: @terra-cotta;
+            background: @orange-odd;
           }
         }
       }
@@ -226,6 +225,7 @@ export default class HistogramChart extends Vue {
   }
 
   .labels {
+    margin-top: 10px;
     width: 100%;
     height: 25px;
     display: flex;
