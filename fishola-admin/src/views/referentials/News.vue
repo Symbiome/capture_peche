@@ -58,6 +58,12 @@ export default class DocumentationVue extends Vue {
       label: "Nom"
     },
     {
+      field: "miniaturePic",
+      label: "Miniature",
+      visible: false,
+      isPicture: true
+    },
+    {
       field: "datePublicationDebut",
       label: "Début de publication",
       isAPeriodBeginning: true

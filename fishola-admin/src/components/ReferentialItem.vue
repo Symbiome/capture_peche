@@ -229,6 +229,7 @@
           v-model="item[col.field]"
           v-else-if="
             !col.isFile &&
+              !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
               ('' + item[col.field]).length < 200
@@ -242,6 +243,7 @@
           type="textarea"
           v-else-if="
             !col.isFile &&
+              !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
               ('' + item[col.field]).length >= 200
@@ -249,7 +251,7 @@
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
         ></b-input>
 
-        <!-- Files -->
+        <!-- PDF Files -->
         <b-upload
           v-model="input.file"
           v-else-if="col.isFile"
@@ -268,6 +270,27 @@
           </a>
           <span v-if="input.file" :href="item[col.field]" target="blank">
             {{ input.file.name }}
+          </span>
+        </b-upload>
+
+        <b-upload
+          v-model="picture.file"
+          v-else-if="col.isPicture"
+          accept="image/png, image/gif, image/jpeg"
+        >
+          <a class="button is-primary">
+            <b-icon icon="upload"></b-icon>
+            <span>Cliquez pour téléverser une nouvelle miniature</span>
+          </a>
+          <img
+            v-if="
+              !picture.file && item[col.field] && item[col.field].length > 10
+            "
+            :src="item[col.field]"
+            target="blank"
+          />
+          <span v-if="picture.file" :href="item[col.field]" target="blank">
+            {{ picture.file.name }}
           </span>
         </b-upload>
 
@@ -333,6 +356,7 @@ export default class RefenretialItem extends Vue {
   @Prop() columns!: any[];
   @Prop() backendUrl!: string;
   input = { file: null };
+  picture = { file: null };
   editor = new Editor({
     content: "",
     extensions: [StarterKit, Image]
@@ -409,6 +433,7 @@ export default class RefenretialItem extends Vue {
     let onSavedCallback = () => {
       this.$emit("referential-updated");
       this.input.file = null;
+      this.picture.file = null;
       this.$buefy.toast.open({
         message: "Modifications enregistrées",
         type: "is-success"
@@ -431,6 +456,19 @@ export default class RefenretialItem extends Vue {
           });
         }
       );
+    } else if (this.picture.file) {
+      this.getBase64(this.picture.file).then(
+        base64 => {
+          this.item["miniaturePic"] = base64;
+          this.doSave(onSavedCallback);
+        },
+        err => {
+          this.$buefy.toast.open({
+            message: "Erreur lors de la lecture du fichier.",
+            type: "is-danger"
+          });
+        }
+      );
     } else {
       this.doSave(onSavedCallback);
     }
@@ -442,6 +480,7 @@ export default class RefenretialItem extends Vue {
       let url = this.backendUrl + "/" + this.item.id;
       BackendService.backendPut(url, this.item).then(onSavedCallback, err => {
         this.input.file = null;
+        this.picture.file = null;
         this.$buefy.toast.open({
           message:
             "Erreur lors de la modification de " +
@@ -455,6 +494,7 @@ export default class RefenretialItem extends Vue {
       let url = this.backendUrl;
       BackendService.backendPost(url, this.item).then(onSavedCallback, err => {
         this.input.file = null;
+        this.picture.file = null;
         this.$buefy.toast.open({
           message:
             "Erreur lors de la création. Veuillez vérifier qu'un élément avec ce nom n'existe pas déjà.",
@@ -514,6 +554,7 @@ export default class RefenretialItem extends Vue {
   onSaved(closeModal: () => void) {
     this.$emit("referential-updated");
     this.input.file = null;
+    this.picture.file = null;
     if (closeModal) {
       closeModal();
     }

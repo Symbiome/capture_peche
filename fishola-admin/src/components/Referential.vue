@@ -32,7 +32,11 @@
         <b-table-column
           v-for="col in columns.filter(
             col =>
-              col.visible !== false && !col.isUrl && !col.isFile && !col.isHTML
+              col.visible !== false &&
+              !col.isUrl &&
+              !col.isFile &&
+              !col.isHTML &&
+              !col.isPicture
           )"
           :field="col.field"
           :label="col.label"
@@ -75,7 +79,9 @@
         </b-table-column>
         <b-table-column
           v-for="col in columns.filter(
-            col => col.visible !== false && (col.isUrl || col.isFile)
+            col =>
+              col.visible !== false &&
+              (col.isUrl || col.isFile || col.isPicture)
           )"
           :field="col.field"
           :label="col.label"
