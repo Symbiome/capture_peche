@@ -27,7 +27,7 @@
       :columns="docColumns"
       :createElement="createDocumentation"
       :canDelete="true"
-      @elementsLoaded="computeIsPublic"
+      @elementsLoaded="computeIsPublicAndMiniatureURLs"
       @send-notification="sendNotification"
       :nextPlannifiedDate="nextPlannifiedDate"
     ></Referential>
@@ -40,6 +40,7 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { LocalDateTime, ZoneOffset, nativeJs } from "@js-joda/core";
 import BackendService from "@/services/BackendService";
+import Constants from "@/services/Constants";
 @Component({
   components: {
     Referential
@@ -58,7 +59,7 @@ export default class DocumentationVue extends Vue {
       label: "Nom"
     },
     {
-      field: "miniaturePic",
+      field: "miniatureUrl",
       label: "Miniature",
       visible: false,
       isPicture: true
@@ -122,7 +123,7 @@ export default class DocumentationVue extends Vue {
     };
   }
 
-  computeIsPublic(actualites: any[]) {
+  computeIsPublicAndMiniatureURLs(actualites: any[]) {
     actualites.forEach(actualite => {
       let now = LocalDateTime.now(ZoneOffset.UTC);
       let dateDebut = this.parseLocalDateTime(actualite.datePublicationDebut);
@@ -131,6 +132,11 @@ export default class DocumentationVue extends Vue {
       actualite.isPublic =
         now.isAfter(LocalDateTime.from(nativeJs(dateDebut))) &&
         now.isBefore(LocalDateTime.from(nativeJs(dateFin)));
+
+      actualite.miniatureURL = actualite.miniatureId
+        ? Constants.apiUrl("/v1/news-picture/" + actualite.miniatureId)
+        : "";
+      console.error(actualite.miniatureId + " => " + actualite.miniatureURL);
     });
   }
 

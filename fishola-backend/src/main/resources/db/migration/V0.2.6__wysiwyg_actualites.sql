@@ -28,12 +28,13 @@ CREATE TABLE news (
     date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     date_notification_sent TIMESTAMP WITHOUT TIME ZONE,
-    miniature_pic BYTEA
+    miniature_id UUID
 );
 
 CREATE TABLE news_picture (
    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
    -- No REFERENCES news(id) as id can be temporary
    news_id UUID,
-   content BYTEA NOT NULL
+   content BYTEA NOT NULL,
+   is_miniature BOOLEAN DEFAULT false
 );

@@ -39,6 +39,7 @@ import Constants from "../../../fishola-mobile/src/services/Constants";
 @Component
 export default class ImageUploader extends Vue {
   @Prop() itemId: string;
+  @Prop() isMiniature: boolean;
 
   async uploadImageFile(e: InputEvent): Promise<void> {
     const uploadedFile = this.$refs.upload as HTMLInputElement;
@@ -46,10 +47,11 @@ export default class ImageUploader extends Vue {
       const file = uploadedFile.files[0];
       const base64 = await this.getBase64(file);
       const id = this.itemId ? this.itemId : "temp-id";
-      const newsPicture = await BackendService.backendPost(
-        "/v1/news-picture/" + id,
-        base64
-      );
+      let url = "/v1/news-picture/";
+      if (this.isMiniature) {
+        url = "/v1/news-miniature/";
+      }
+      const newsPicture = await BackendService.backendPost(url + id, base64);
       const newsPicturesURL = Constants.apiUrl(
         "/v1/news-picture/" + newsPicture["id"]
       );

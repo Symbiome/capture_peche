@@ -273,26 +273,18 @@
           </span>
         </b-upload>
 
-        <b-upload
-          v-model="picture.file"
-          v-else-if="col.isPicture"
-          accept="image/png, image/gif, image/jpeg"
-        >
-          <a class="button is-primary">
-            <b-icon icon="upload"></b-icon>
-            <span>Cliquez pour téléverser une nouvelle miniature</span>
-          </a>
+        <div v-else-if="col.isPicture">
           <img
-            v-if="
-              !picture.file && item[col.field] && item[col.field].length > 10
-            "
-            :src="item[col.field]"
-            target="blank"
+            class="miniture-pic"
+            v-if="item['miniatureURL']"
+            :src="item['miniatureURL']"
           />
-          <span v-if="picture.file" :href="item[col.field]" target="blank">
-            {{ picture.file.name }}
-          </span>
-        </b-upload>
+          <ImageUploader
+            :isMiniature="true"
+            :item-id="item['id']"
+            @uploaded-pic="uploadedMiniature"
+          />
+        </div>
 
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
@@ -357,6 +349,7 @@ export default class RefenretialItem extends Vue {
   @Prop() backendUrl!: string;
   input = { file: null };
   picture = { file: null };
+  miniaturePicURL = "";
   editor = new Editor({
     content: "",
     extensions: [StarterKit, Image]
@@ -404,6 +397,13 @@ export default class RefenretialItem extends Vue {
       .focus()
       .setImage({ src: url })
       .run();
+  }
+
+  uploadedMiniature(url: string): void {
+    this.item["miniatureURL"] = url;
+    const splitted = url.split("/");
+    this.item["miniatureId"] = splitted[splitted.length - 1];
+    this.$forceUpdate();
   }
 
   save(closeModal: () => void) {
@@ -683,5 +683,10 @@ export default class RefenretialItem extends Vue {
     color: white;
     font-weight: bold;
   }
+}
+
+.miniture-pic {
+  width: 80px;
+  height: auto;
 }
 </style>

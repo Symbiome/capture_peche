@@ -111,7 +111,18 @@ public class NewsResource extends AbstractFisholaResource {
     public NewsPicture postNewsPicture(@PathParam("newsId") String newsId, String content) {
         checkIsAdmin();
         try {
-            return dao.insertNewsPicture(newsId, content);
+            return dao.insertNewsPicture(newsId, content, false);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Impossible de créer l'image : " + e.getMessage());
+        }
+    }
+
+    @POST
+    @Path("/news-miniature/{newsId}")
+    public NewsPicture postNewsMiniature(@PathParam("newsId") String newsId, String content) {
+        checkIsAdmin();
+        try {
+            return dao.insertNewsPicture(newsId, content, true);
         } catch (Exception e) {
             throw new IllegalArgumentException("Impossible de créer l'image : " + e.getMessage());
         }

@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Singleton;
 import org.jooq.DSLContext;
+import org.jooq.Record1;
 
 @Singleton
 public class NewsFisholaDao extends AbstractFisholaDao {
@@ -58,9 +59,10 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         return inserted;
     }
 
-    public NewsPicture insertNewsPicture(String newsId, String content) {
+    public NewsPicture insertNewsPicture(String newsId, String content, boolean isMiniature) {
         DSLContext dslContext = newContext();
         NewsPicture newsPicture = new NewsPicture();
+        newsPicture.setIsMiniature(isMiniature);
         // Step 1: convert content to JPEG base 64 string
         String[] contentSplitted = content.split(",");
         String base64Image = contentSplitted[1].replaceAll("\"", "");
@@ -74,24 +76,49 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             newsPicture.setNewsId(UUID.fromString(newsId));
         }
 
+        // If miniature, delete previous one
+        if (isMiniature) {
+            dslContext.deleteFrom(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsPicture.getNewsId()).and(Tables.NEWS_PICTURE.IS_MINIATURE.eq(true))).execute();
+        }
+
         // Step 3: create pic and return id
-        return dslContext
+        final NewsPicture inserted =  dslContext
                 .insertInto(Tables.NEWS_PICTURE)
-                .columns(Tables.NEWS_PICTURE.CONTENT, Tables.NEWS_PICTURE.NEWS_ID)
-                .values(newsPicture.getContent(), newsPicture.getNewsId())
+                .columns(Tables.NEWS_PICTURE.CONTENT, Tables.NEWS_PICTURE.NEWS_ID, Tables.NEWS_PICTURE.IS_MINIATURE)
+                .values(newsPicture.getContent(), newsPicture.getNewsId(), isMiniature)
                 .returningResult(Tables.NEWS_PICTURE.ID)
                 .fetchOne()
                 .into(NewsPicture.class);
+        NewsPicture picture = withDao(NewsPictureDao.class, dao -> dao.findById(inserted.getId()));
+        if (picture.getIsMiniature()) {
+            // If miniature, update news to indicate url
+            News news = findById(picture.getNewsId());
+            if (news != null) {
+                news.setMiniatureId(picture.getId());
+                this.update(news);
+            }
+        }
+
+        return picture;
 
     }
 
-    public void updateTempNewsPictureIds(UUID newsPictureId) {
+    public void updateTempNewsPictureIds(UUID newsId) {
         DSLContext dslContext = newContext();
         dslContext
             .update(Tables.NEWS_PICTURE)
-            .set(Tables.NEWS_PICTURE.NEWS_ID, newsPictureId)
+            .set(Tables.NEWS_PICTURE.NEWS_ID, newsId)
             .where(Tables.NEWS_PICTURE.NEWS_ID.eq(TEMPORARY_NEWS_ID))
             .execute();
+
+        List<Record1<UUID>> miniature = dslContext.select(Tables.NEWS_PICTURE.ID).from(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId).and(Tables.NEWS_PICTURE.IS_MINIATURE.eq(true))).fetch().collect(Collectors.toList());
+        if (miniature.size() > 0) {
+            News news = findById(newsId);
+            if (news != null) {
+                news.setMiniatureId(miniature.get(0).component1());
+                this.update(news);
+            }
+        }
     }
 
     public News findById(UUID newsId) {
@@ -124,4 +151,5 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         nextScheduledNotificationCheck.setNextCheckDate(nextScheduledNotificationCheck.getNextCheckDate().plusHours(newsMailSendingDelayHours));
         withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.update(nextScheduledNotificationCheck));
     }
+
 }
