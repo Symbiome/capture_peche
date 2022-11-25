@@ -20,20 +20,20 @@
   -->
 <template>
   <div class="my-trips-header secondary-header hiddenWhenKeyboardShows">
-    <div class="hide-on-desktop">
-      <span>Mes sorties</span>
-    </div>
+    <slot></slot>
     <div class="header-icons">
-      <div class="header-icons-group clickable"
-           v-on:click="$emit('reverseSortOrder')"
-           title="Inverser le tri">
+      <div
+        class="header-icons-group clickable"
+        v-on:click="$emit('reverseSortOrder')"
+        title="Inverser le tri"
+      >
         <i class="icon-calendar"></i>
         <i class="icon-chevron" v-if="sortDown"></i>
         <i class="icon-chevron icon-chevron-up" v-if="!sortDown"></i>
       </div>
       <div class="header-icons-group">
         <span v-if="offline">?</span>
-        <span v-if="!offline">{{count}}</span>
+        <span v-if="!offline">{{ count }}</span>
         <i class="icon-fishing"></i>
       </div>
     </div>
@@ -41,26 +41,24 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class MyTripsHeader extends Vue {
-  @Prop() offline!:boolean;
-  @Prop() count!:number;
-  @Prop() sortDown!:boolean;
+  @Prop() offline!: boolean;
+  @Prop() count!: number;
+  @Prop() sortDown!: boolean;
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .my-trips-header {
-
   display: flex;
   justify-content: space-between;
-
+  align-items: center;
   font-weight: bold;
   font-size: @fontsize-header-paragraph;
 
@@ -81,7 +79,7 @@ export default class MyTripsHeader extends Vue {
 
       .icon-chevron {
         margin-top: calc(@fontsize-small-chevron - 1px);
-        font-size:@fontsize-small-chevron;
+        font-size: @fontsize-small-chevron;
       }
       &.clickable {
         cursor: pointer;
@@ -95,6 +93,19 @@ export default class MyTripsHeader extends Vue {
     .header-icons {
       flex-direction: row-reverse;
     }
+  }
+
+  @media screen and (max-width: 1000px) and (min-width: 770px) {
+    .header-icons {
+      margin-right: -180px;
+    }
+  }
+}
+
+@media screen and (max-width: 770px) {
+  .my-trips-header {
+    padding-top: 20px;
+    margin-left: -40px;
   }
 }
 </style>

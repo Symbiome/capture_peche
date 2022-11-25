@@ -19,90 +19,77 @@
   #L%
   -->
 <template>
-  <div class="news page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
-    <div class="page news-page">
-      <div class="pane pane-only">
-        <div class="pane-content rounded">
-          <h1 class="no-margin-pane">On en parle</h1>
-
-          <div v-if="!elements || elements.length == 0" class="empty">
-            Il n'y a pas encore d'actualités ...
-          </div>
-
-          <div class="news-row"
-               v-for="doc in elements"
-               v-bind:key="doc.id">
-            <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url"
-               title="Télécharger"
-               target="_blank">
-              <i class="icon-download"/>
-            </a>
-          </div>
-
-          <div class="bottom-page-spacer"></div>
-        </div>
-      </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
+  <div class="news">
+    <div v-if="!elements || elements.length == 0" class="empty">
+      Il n'y a pas encore d'actualités ...
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation"
-                   selected="documentation" />
+
+    <div class="news-row" v-for="doc in elements" v-bind:key="doc.id">
+      <span>{{ doc.name }}</span>
+      <a v-bind:href="doc.url" title="Télécharger" target="_blank">
+        <i class="icon-download" />
+      </a>
+    </div>
+    <div class="bottom">
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
+
+      <FisholaFooter
+        shortcuts="back,credits,documentation"
+        selected="documentation"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
-import RunningOverlay from '@/components/layout/RunningOverlay.vue';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import DocumentationService from "@/services/DocumentationService";
+import TripsService from "@/services/TripsService";
+import { DocumentationLight } from "@/pojos/BackendPojos";
 
-import DocumentationService from '@/services/DocumentationService';
-import TripsService from '@/services/TripsService';
-import {DocumentationLight} from '@/pojos/BackendPojos';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class NewsView extends Vue {
-  
-  elements:DocumentationLight[] = [];
+  elements: DocumentationLight[] = [];
 
-  hasRunningTrip:boolean = false;
+  hasRunningTrip: boolean = false;
 
   constructor() {
     super();
   }
 
   mounted() {
-    DocumentationService.getNews()
-      .then(this.documentationsLoaded);
-    TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+    DocumentationService.getNews().then(this.documentationsLoaded);
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
   }
 
-  documentationsLoaded(docs:DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, 'name');
+  documentationsLoaded(docs: DocumentationLight[]) {
+    const sortedDocs = Vue.lodash.orderBy(docs, "name");
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
+.news {
+  height: 100%;
+}
 .news-page {
-
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
@@ -120,11 +107,11 @@ export default class NewsView extends Vue {
     padding-right: @margin-x-large;
     height: 56px;
 
-    @media(max-height:579px) {
+    @media (max-height: 579px) {
       height: 46px;
     }
 
-    @media(max-width:370px) {
+    @media (max-width: 370px) {
       padding-left: @margin-large;
       padding-right: @margin-large;
     }
@@ -137,7 +124,9 @@ export default class NewsView extends Vue {
 
     span {
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
       color: @gunmetal;
     }
 
@@ -160,8 +149,6 @@ export default class NewsView extends Vue {
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;
     }
-
   }
 }
-
 </style>

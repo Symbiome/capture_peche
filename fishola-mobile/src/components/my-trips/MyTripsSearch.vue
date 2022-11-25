@@ -22,32 +22,32 @@
   <div class="my-trips-search">
     <div :class="offline ? 'offline' : ''">
       <i class="icon-magnifying-glass"></i>
-      <input type="text"
-             v-bind:placeholder="offline ? 'Recherche non disponible' : 'Rechercher une sortie'"
-             name="search_term"
-             v-bind:value="value"
-             v-bind:disabled="offline"
-             v-on:input="$emit('input', $event.target.value)"/>
+      <input
+        type="text"
+        v-bind:placeholder="
+          offline ? 'Recherche non disponible' : 'Rechercher une sortie'
+        "
+        name="search_term"
+        v-bind:value="value"
+        v-bind:disabled="offline"
+        v-on:input="$emit('input', $event.target.value)"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class MyTripsSearch extends Vue {
-
   @Prop() value!: string;
   @Prop() offline!: boolean;
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .my-trips-search {
@@ -56,16 +56,20 @@ export default class MyTripsSearch extends Vue {
   padding-right: @margin-medium;
   padding-top: @margin-header-top;
   padding-bottom: @margin-header-top;
-  
-  @media(max-width:350px) {
+
+  @media (max-width: 350px) {
     height: 40px;
     padding-left: @margin-x-small;
     padding-right: @margin-x-small;
     padding-top: 0px;
     padding-bottom: 0px;
   }
+  @media screen and (max-width: 1000px) and (min-width: 770px) {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
 
-  @media(max-height:579px) {
+  @media (max-height: 579px) {
     height: 40px;
     padding-left: @margin-x-small;
     padding-right: @margin-x-small;
@@ -80,7 +84,7 @@ export default class MyTripsSearch extends Vue {
     padding-left: @margin-medium;
     border-radius: 30px;
     line-height: 40px;
-    @media(max-width:350px) {
+    @media (max-width: 350px) {
       padding-left: @margin-small;
       border-radius: 20px;
     }
@@ -102,7 +106,6 @@ export default class MyTripsSearch extends Vue {
       font-size: @fontsize-form-input;
     }
 
-
     &.offline {
       background-color: @solitude;
 
@@ -115,12 +118,9 @@ export default class MyTripsSearch extends Vue {
       }
     }
 
-
     @media screen and (min-width: @desktop-min-width) {
       border: 1px solid @link-water;
     }
-
   }
 }
-
 </style>

@@ -27,7 +27,7 @@ import About from "@/views/About.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
-import MyTrips from "@/views/MyTrips.vue";
+import TripsAndNews from "@/views/TripsAndNews.vue";
 import Dashboard from "@/views/Dashboard.vue";
 
 import NewTrip from "@/views/trip/NewTrip.vue";
@@ -94,7 +94,7 @@ const routes = [
   {
     path: "/trips",
     name: "trips",
-    component: MyTrips,
+    component: TripsAndNews,
   },
   {
     path: "/trips/new",
