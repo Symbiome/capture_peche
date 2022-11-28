@@ -26,6 +26,7 @@ import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.nuiton.util.ResourceNotFoundException;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -65,6 +67,18 @@ public class NewsResource extends AbstractFisholaResource {
         checkIsAdmin();
         return dao.getNews(false);
     }
+    @GET
+    @Path("/news/{newsId}")
+    public News getPublishedNews(@Context HttpServletRequest request, @PathParam("newsId") UUID newsId) {
+       News news = dao.findById(newsId);
+        LocalDateTime now = LocalDateTime.now();
+       if (news == null || news.getDatePublicationDebut() == null || now.isBefore(news.getDatePublicationDebut()) ||
+                news.getDatePublicationFin() == null || now.isAfter(news.getDatePublicationFin())) {
+           throw new ResourceNotFoundException("News not found or not published yet");
+       }
+       return news;
+    }
+
 
     @DELETE
     @Path("/news-all/{newsId}")

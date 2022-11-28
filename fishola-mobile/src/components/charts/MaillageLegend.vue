@@ -33,7 +33,7 @@
       <span class="line-break-on-small-screen" v-else
         >Sans distrinction de maillage
         <i v-if="!selectedLakeUUID"
-          >(filtrer par Lac pour consulter les tailles en fonction du maillage)
+          >(sélectionner un lac pour une meilleure visualisation du graphique)
         </i>
       </span>
     </span>

@@ -21,14 +21,43 @@
 <template>
   <div class="news">
     <div v-if="!elements || elements.length == 0" class="empty">
-      Il n'y a pas encore d'actualités ...
+      Pas de communications autour de Fishola pour le moment, revenez consultez
+      cette page prochainement !
     </div>
 
-    <div class="news-row" v-for="doc in elements" v-bind:key="doc.id">
-      <span>{{ doc.name }}</span>
-      <a v-bind:href="doc.url" title="Télécharger" target="_blank">
-        <i class="icon-download" />
-      </a>
+    <div
+      class="news-holder"
+      v-for="doc in elements"
+      v-bind:key="doc.id"
+      @click="showNewsDetails(doc.id)"
+    >
+      <div class="news-row">
+        <div class="left-pic">
+          <img :src="getMiniatureURl(doc)" class="news-pic" />
+        </div>
+        <div class="right-content">
+          <strong>{{ doc.name }}</strong> <br />
+          <span class="publication-date">
+            <i class="icon-send" />Publié le
+            {{ formatPublicationDate(doc.datePublicationDebut) }}
+          </span>
+          <div class="news-content only-on-big-screen">
+            <i class="icon-files" />
+            {{ treatHTMLContent(doc.content) }}
+          </div>
+          <div class="only-on-big-screen">
+            <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
+          </div>
+        </div>
+      </div>
+      <div class="news-content only-on-small-screen">
+        <i class="icon-files" />
+        {{ treatHTMLContent(doc.content) }}
+      </div>
+
+      <div class="only-on-small-screen">
+        <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
+      </div>
     </div>
     <div class="bottom">
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -51,6 +80,9 @@ import TripsService from "@/services/TripsService";
 import { DocumentationLight } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
+import Constants from "../services/Constants";
+import Helpers from "../services/Helpers";
+import router from "../router";
 
 @Component({
   components: {
@@ -79,75 +111,106 @@ export default class NewsView extends Vue {
     const sortedDocs = Vue.lodash.orderBy(docs, "name");
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
+
+  getMiniatureURl(news: DocumentationLight) {
+    if (news.miniatureId) {
+      return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
+    } else {
+      return "img/logo-small.svg";
+    }
+  }
+
+  formatPublicationDate(date: number[]) {
+    if (date) {
+      const toDate = Helpers.parseLocalDate(date);
+      if (toDate) {
+        return Helpers.formatToDate(toDate);
+      }
+    }
+    return Helpers.formatToDate(new Date());
+  }
+
+  treatHTMLContent(htmlContent: string) {
+    return htmlContent.replace(/<[^>]+>/g, "");
+  }
+
+  showNewsDetails(newsId: string) {
+    router.push("/news/" + newsId);
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../less/main";
-
-.news {
-  height: 100%;
+.empty {
+  padding-top: 20px;
 }
-.news-page {
-  .pane .pane-content {
-    padding-left: 0px;
-    padding-right: 0px;
+.news {
+  cursor: pointer;
+  padding-top: 20px;
+  .news-holder {
+    border-bottom: 1px solid @gainsboro;
+    margin-bottom: 40px;
+    .news-row {
+      display: flex;
+      padding-left: @margin-x-large;
+      padding-right: @margin-x-large;
+      .news-pic {
+        width: 20vw;
+        height: 20vw;
+        max-width: 20vh;
+        max-height: 20vh;
+        object-fit: cover;
+      }
+      .right-content {
+        padding-left: 30px;
+        .publication-date {
+          padding-top: 10px;
+          display: flex;
+          gap: 10px;
+          color: @pale-sky;
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+  .news-content {
+    padding-top: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .empty {
-    color: @pale-sky;
-    text-align: center;
-    font-style: italic;
-    font-size: @fontsize-button;
-  }
-
-  .news-row {
-    padding-left: @margin-x-large;
-    padding-right: @margin-x-large;
-    height: 56px;
-
-    @media (max-height: 579px) {
-      height: 46px;
-    }
-
-    @media (max-width: 370px) {
-      padding-left: @margin-large;
-      padding-right: @margin-large;
-    }
-
-    border-bottom: 1px solid @solitude;
-
+  .read-more {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    span {
-      font-size: @fontsize-small-paragraph;
-      line-height: calc(
-        @fontsize-small-paragraph + @line-height-padding-medium
-      );
-      color: @gunmetal;
+    justify-content: end;
+    gap: 10px;
+    width: 100%;
+    color: @pelorous;
+    font-weight: bold;
+    padding: 10px;
+    i {
+      background-color: @pelorous;
+      color: white;
+      padding-left: 15px;
+      padding-right: 15px;
+      border-radius: 10px;
     }
+  }
 
-    a {
-      color: @pelorous;
-      font-size: @fontsize-paragraph;
+  .only-on-small-screen {
+    display: none;
+  }
+  @media (max-width: 1200px) {
+    .only-on-small-screen {
+      max-height: 80px;
+      display: block;
     }
-
-    @media screen and (min-width: @desktop-min-width) {
-      span {
-        font-size: @fontsize-paragraph;
-        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
-      }
-      a {
-        font-size: @fontsize-paragraph-desktop;
-      }
-    }
-
-    @media screen and (min-width: 800px) {
-      padding-left: @margin-large-desktop;
-      padding-right: @margin-large-desktop;
+    .only-on-big-screen {
+      display: none;
     }
   }
 }

@@ -42,7 +42,7 @@ import EditCatch from "@/views/trip/EditCatch.vue";
 
 import Faq from "@/views/Faq.vue";
 import Documentation from "@/views/Documentation.vue";
-import News from "@/views/News.vue";
+import NewsDetailsVue from "@/views/NewsDetails.vue";
 import Credits from "@/views/Credits.vue";
 
 import GaleryFull from "@/components/galery/GaleryFull.vue";
@@ -155,10 +155,10 @@ const routes = [
     component: Documentation,
   },
   {
-    path: "/news",
-    name: "news",
-    meta: { public: true },
-    component: News,
+    path: "/news/:newsId",
+    name: "news-details",
+    component: NewsDetailsVue,
+    props: true,
   },
   {
     path: "/faq",
