@@ -320,7 +320,6 @@ export default class MyTripsView extends Vue {
       flex-direction: row-reverse;
       justify-content: space-between;
       align-items: center;
-      margin-left: @margin-large-desktop;
       margin-right: @margin-large-desktop;
 
       .search-and-new {

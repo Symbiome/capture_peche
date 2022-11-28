@@ -78,7 +78,7 @@ export default class MaillageLegend extends Vue {
   }
 
   @media screen and (max-width: 1400px) {
-    margin: -20px;
+    margin-top: -20px;
     padding-bottom: 20px;
     .line-break-on-small-screen {
       flex-direction: column;

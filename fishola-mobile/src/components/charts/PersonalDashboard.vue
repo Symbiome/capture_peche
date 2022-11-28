@@ -575,7 +575,7 @@ export default class PersonalDashboard extends Vue {
 .avg-size {
   display: flex;
   gap: 8px;
-  align-items: center;
+  justify-content: start;
   @media screen and (max-width: 1400px) {
     flex-direction: column;
   }
