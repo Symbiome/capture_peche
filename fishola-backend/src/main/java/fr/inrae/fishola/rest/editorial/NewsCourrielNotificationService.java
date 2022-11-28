@@ -1,5 +1,9 @@
 package fr.inrae.fishola.rest.editorial;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
@@ -8,7 +12,7 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import io.quarkus.scheduler.Scheduled;
-import java.net.URI;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -72,15 +77,33 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
      */
     @GET
     @Path("/unsubscribe/{user-id}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response unsubscribeForm(@Context HttpServletRequest request, @PathParam("user-id") UUID userId) {
+        MustacheFactory mf = new DefaultMustacheFactory();
+        Mustache mustache = mf.compile("emails/unsubscribe.html");
+        StringWriter stringWriter = new StringWriter();
+        mustache.execute(stringWriter, ImmutableMap.of("userId", userId));
+        String body = stringWriter.toString();
+        body = body.replace("{userId}", userId.toString());
+        return Response.ok(body).build();
+    }
+
+    @POST
+    @Path("/unsubscribe/{user-id}")
+    @Produces(MediaType.TEXT_HTML)
     public Response unsubscribe(@Context HttpServletRequest request, @PathParam("user-id") UUID userId) {
         Optional<FisholaUser> userById = usersDao.findById(userId);
         if (userById.isPresent()) {
-           userById.get().setAcceptsMailNotifications(false);
-           usersDao.updateUser(userById.get());
+            userById.get().setAcceptsMailNotifications(false);
+            usersDao.updateUser(userById.get());
         }
-        String unsubscribedUrl = config.getApiUrl("/api/unsubscribed.html", request);
-        Response success = Response.temporaryRedirect(URI.create(unsubscribedUrl)).build();
-        return success;
+        MustacheFactory mf = new DefaultMustacheFactory();
+        Mustache mustache = mf.compile("emails/unsubscribed.html");
+        StringWriter stringWriter = new StringWriter();
+        mustache.execute(stringWriter, ImmutableMap.of("userId", userId));
+        String body = stringWriter.toString();
+        body = body.replace("{userId}", userId.toString());
+        return Response.ok(body).build();
     }
 
     @Scheduled(every="20m", concurrentExecution = SKIP, delayed = "5m")

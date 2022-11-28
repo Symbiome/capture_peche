@@ -33,7 +33,7 @@
     <meta name="msapplication-navbutton-color" content="#1E9BC4">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#1E9BC4">
-    <link rel="stylesheet" href="backend.css">
+    <link rel="stylesheet" href="/api/backend.css">
     <title>Bienvenue sur FISHOLA</title>
 </head>
 
@@ -46,16 +46,17 @@
         <div class="verified-page">
             <div class="welcome-title">
                 <div class="welcome">Bienvenue sur</div>
-                <img class="logo" src="logo-big.svg" alt="FISHOLA" />
+                <img class="logo" src="/api/logo-big.svg" alt="FISHOLA" />
             </div>
-            <div class="message success">
+            <form action="/api/v1/news-notifications/unsubscribe/{userId}" method="POST">
+            <div class="message warning">
                 <p>Vous ne recevrez plus de notifications par mail des actualités Fishola.</p>
                 <p>Vous pourrez modifier cette préférence à tout moment dans sur profil Fishola.</p>
             </div>
-            <div class="welcome-apps">
-                <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"><img class="app" src="GooglePlay.png" alt="GooglePlay" /></a>
-                <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank"><img class="app" src="AppStore.png" alt="AppStore" /></a>
+            <div style="width:100%;text-align: center">
+                <button >Confirmer</button>
             </div>
+            </form>
 
         </div>
     </div>
