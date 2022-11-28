@@ -35,6 +35,7 @@
       </MyTripsHeader>
       <div class="search-and-new hide-on-mobile">
         <div
+          v-if="!hasRunningTrip"
           class="button button-primary"
           :class="{ delete: selectedTripIds.length > 0 }"
         >
