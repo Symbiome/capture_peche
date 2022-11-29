@@ -1199,10 +1199,9 @@ export default class AboutView extends Vue {
       width: 350px;
       margin: 15px;
       padding: 30px;
-      border-radius: 15px;
+      border-radius: 5px;
       background-color: @white-smoke-alpha-20;
-      box-shadow: 5px 5px 5px @gunmetal;
-
+      border: 1px solid #1e9bc4;
       h4 {
         margin: 5px;
       }

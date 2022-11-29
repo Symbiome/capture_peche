@@ -117,9 +117,9 @@ export default class CommunicationsOnAboutPage extends Vue {
       width: 350px;
       margin: 15px;
       padding: 30px;
-      border-radius: 15px;
+      border-radius: 5px;
       background-color: @white;
-      box-shadow: 5px 5px 5px @gunmetal;
+      border: 1px solid @pale-sky;
       .news-title {
         display: flex;
       }
