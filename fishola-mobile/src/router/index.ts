@@ -157,6 +157,7 @@ const routes = [
   {
     path: "/news/:newsId",
     name: "news-details",
+    meta: { public: true },
     component: NewsDetailsVue,
     props: true,
   },

@@ -588,9 +588,6 @@ export default class AboutView extends Vue {
     );
     DocumentationService.getNews().then((zeNews) => {
       this.news = zeNews;
-      this.news = this.news.concat(zeNews);
-      this.news = this.news.concat(zeNews);
-      this.news = this.news.concat(zeNews);
     });
   }
 
@@ -755,6 +752,11 @@ export default class AboutView extends Vue {
         @media only screen and (max-width: 899px) {
           display: none;
         }
+
+        @media only screen and (min-width: 900px) and (max-width: 999px) {
+          width: 140px;
+          padding-top: 20px;
+        }
       }
 
       .Navigation {
@@ -767,11 +769,10 @@ export default class AboutView extends Vue {
 
         li a {
           padding: 22px 30px;
-
-          @media only screen and (min-width: 1024px) and (max-width: 1200px) {
+          @media only screen and (min-width: 1124px) and (max-width: 1200px) {
             padding: 22px 20px;
           }
-          @media only screen and (min-width: 900px) and (max-width: 1023px) {
+          @media only screen and (min-width: 800px) and (max-width: 1323px) {
             padding: 22px 10px;
             font-size: 14px;
           }
