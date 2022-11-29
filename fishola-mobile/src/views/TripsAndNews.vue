@@ -36,13 +36,16 @@
             <div
               class="trips-or-news"
               :class="showNews ? 'selected' : ''"
-              @click="showNews = true"
+              @click="showNewsTab"
             >
-              Communication
+              <span> Communication </span>
+              <div class="news-badge" v-if="unreadNewsCount > 0">
+                {{ unreadNewsCount }}
+              </div>
             </div>
           </div>
           <MyTrips v-if="!showNews" />
-          <News v-else />
+          <News :news="news" v-else />
         </div>
       </div>
     </div>
@@ -55,6 +58,10 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import News from "@/views/News.vue";
 import { Component, Vue } from "vue-property-decorator";
+import Helpers from "../services/Helpers";
+import DocumentationService from "../services/DocumentationService";
+import ProfileService from "../services/ProfileService";
+import { DocumentationLight } from "@/pojos/BackendPojos";
 
 @Component({
   components: {
@@ -64,8 +71,41 @@ import { Component, Vue } from "vue-property-decorator";
     News,
   },
 })
-export default class DashboardView extends Vue {
+export default class TripsAndNews extends Vue {
+  unreadNewsCount = 0;
   showNews = false;
+  news: DocumentationLight[] = [];
+
+  mounted() {
+    this.updateUnreadNewsCount();
+  }
+
+  async updateUnreadNewsCount() {
+    this.news = await DocumentationService.getNews();
+    let profile = await ProfileService.getProfile();
+    if (profile.lastNewsSeenDate) {
+      const lastSeenDate = Helpers.parseLocalDateTime(
+        // @ts-ignore
+        profile.lastNewsSeenDate
+      );
+
+      this.unreadNewsCount = this.news.filter((n) => {
+        return (
+          Helpers.parseLocalDateTime(n.datePublicationDebut) > lastSeenDate
+        );
+      }).length;
+    }
+  }
+
+  async showNewsTab() {
+    this.showNews = true;
+    if (this.unreadNewsCount > 0) {
+      let profile = await ProfileService.getProfile();
+      profile.lastNewsSeenDate = new Date();
+      ProfileService.saveProfile(profile);
+      this.updateUnreadNewsCount();
+    }
+  }
 }
 </script>
 
@@ -80,8 +120,11 @@ export default class DashboardView extends Vue {
   margin-top: -30px;
 
   .trips-or-news {
-    width: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
     text-align: center;
+    gap: 5px;
     color: @pale-sky;
     padding-bottom: 5px;
     padding-left: 20px;
@@ -100,5 +143,13 @@ export default class DashboardView extends Vue {
     padding-top: 20px;
     margin-top: 0px;
   }
+}
+
+.news-badge {
+  width: 30px;
+  border-radius: 15px;
+  background-color: @terra-cotta;
+  color: @white;
+  margin-right: @margin-small;
 }
 </style>

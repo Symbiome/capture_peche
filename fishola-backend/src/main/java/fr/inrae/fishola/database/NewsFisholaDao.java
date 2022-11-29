@@ -27,12 +27,15 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         List<News> allNews = withDao(NewsDao.class, dao -> dao.findAll());
         if (onlyListPublishedNews) {
             LocalDateTime now = LocalDateTime.now();
-            return allNews.stream().filter(
+            allNews = allNews.stream().filter(
                     news ->
                             news.getDatePublicationDebut() != null && now.isAfter(news.getDatePublicationDebut()) &&
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
             ).collect(Collectors.toList());
         }
+        allNews = allNews.stream().sorted(
+                (n1, n2) -> -1 * n1.getDatePublicationDebut().compareTo(n2.getDatePublicationDebut())
+        ).collect(Collectors.toList());
         return allNews;
     }
 

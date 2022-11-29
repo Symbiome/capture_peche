@@ -20,14 +20,14 @@
   -->
 <template>
   <div class="news">
-    <div v-if="!elements || elements.length == 0" class="empty">
+    <div v-if="!news || news.length == 0" class="empty">
       Pas de communications autour de Fishola pour le moment, revenez consultez
       cette page prochainement !
     </div>
 
     <div
       class="news-holder"
-      v-for="doc in elements"
+      v-for="doc in news"
       v-bind:key="doc.id"
       @click="showNewsDetails(doc.id)"
     >
@@ -75,7 +75,6 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import DocumentationService from "@/services/DocumentationService";
 import TripsService from "@/services/TripsService";
 import { DocumentationLight } from "@/pojos/BackendPojos";
 
@@ -92,24 +91,14 @@ import router from "../router";
   },
 })
 export default class NewsView extends Vue {
-  elements: DocumentationLight[] = [];
+  @Prop() news: DocumentationLight[];
 
   hasRunningTrip: boolean = false;
 
-  constructor() {
-    super();
-  }
-
   mounted() {
-    DocumentationService.getNews().then(this.documentationsLoaded);
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-  }
-
-  documentationsLoaded(docs: DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, "name");
-    sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 
   getMiniatureURl(news: DocumentationLight) {
@@ -164,6 +153,7 @@ export default class NewsView extends Vue {
         object-fit: cover;
       }
       .right-content {
+        width: 100%;
         padding-left: 30px;
         .publication-date {
           padding-top: 10px;
