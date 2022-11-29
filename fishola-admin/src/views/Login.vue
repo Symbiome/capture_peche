@@ -23,16 +23,16 @@
     <p>Interface d'administration de FISHOLA.</p>
     <div class="field is-grouped">
       <p class="control is-expanded">
-        <b-field :type="errorMessage ? 'is-danger' : ''" :message="errorMessage">
-            <b-input type="password"
-                v-model="password">
-            </b-input>
+        <b-field
+          :type="errorMessage ? 'is-danger' : ''"
+          :message="errorMessage"
+        >
+          <b-input type="password" v-model="password"> </b-input>
         </b-field>
       </p>
       <p class="control">
-        <button class="button is-primary"
-            @click="doLogin()">
-            Connexion
+        <button class="button is-primary" @click="doLogin()">
+          Connexion
         </button>
       </p>
     </div>
@@ -40,49 +40,45 @@
 </template>
 
 <script lang="ts">
+import router from "@/router";
 
-import router from '@/router'
+import BackendService from "@/services/BackendService";
 
-import BackendService from '@/services/BackendService.ts';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
-  components: {
-  }
+  components: {}
 })
 export default class LoginView extends Vue {
-
-  password = '';
-  errorMessage = '';
+  password = "";
+  errorMessage = "";
 
   constructor() {
     super();
   }
 
   doLogin() {
-    this.errorMessage = '';
-    BackendService.backendPost("/v1/security/admin-login", {password: this.password})
-      .then(
-        () => {
-          router.push('home');
-        },
-        (err) => {
-          if (err.status == 401) {
-            this.errorMessage = 'Mot de passe incorrect';
-          } else {
-            this.errorMessage = err;
-          }
-        });
+    this.errorMessage = "";
+    BackendService.backendPost("/v1/security/admin-login", {
+      password: this.password
+    }).then(
+      () => {
+        router.push("home");
+      },
+      err => {
+        if (err.status == 401) {
+          this.errorMessage = "Mot de passe incorrect";
+        } else {
+          this.errorMessage = err;
+        }
+      }
+    );
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .login {
@@ -97,5 +93,4 @@ export default class LoginView extends Vue {
     margin: 5px;
   }
 }
-
 </style>

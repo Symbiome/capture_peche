@@ -1,71 +1,36 @@
-<!--
-  #%L
-  Fishola :: Mobile
-  %%
-  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
-  %%
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  #L%
-  -->
 <template>
-  <div class="news">
-    <div v-if="!news || news.length == 0" class="empty">
+  <div class="news-about">
+    <div class="news-holder no-news" v-if="news.length == 0">
       Pas de communications autour de Fishola pour le moment, revenez consultez
       cette page prochainement !
     </div>
-
     <div
+      v-else
       class="news-holder"
       v-for="doc in news"
       v-bind:key="doc.id"
       @click="showNewsDetails(doc.id)"
     >
       <div class="news-row">
-        <div class="left-pic">
-          <img :src="getMiniatureURl(doc)" class="news-pic" />
-        </div>
-        <div class="right-content">
-          <strong>{{ doc.name }}</strong> <br />
-          <span class="publication-date">
-            <i class="icon-send" />Publié le
-            {{ formatPublicationDate(doc.datePublicationDebut) }}
-          </span>
-          <div class="news-content only-on-big-screen">
-            <i class="icon-files" />
-            {{ treatHTMLContent(doc.content) }}
+        <div class="news-title">
+          <div class="left-pic">
+            <img :src="getMiniatureURl(doc)" class="news-pic" />
           </div>
-          <div class="only-on-big-screen">
-            <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
+          <div class="right-content">
+            <strong>{{ doc.name }}</strong> <br />
           </div>
         </div>
+        <span class="publication-date">
+          <i class="icon-send" />Publié le
+          {{ formatPublicationDate(doc.datePublicationDebut) }}
+        </span>
+        <div class="news-content">
+          {{ treatHTMLContent(doc.content) }}
+        </div>
+        <div>
+          <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
+        </div>
       </div>
-      <div class="news-content only-on-small-screen">
-        <i class="icon-files" />
-        {{ treatHTMLContent(doc.content) }}
-      </div>
-
-      <div class="only-on-small-screen">
-        <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
-      </div>
-    </div>
-    <div class="bottom">
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
-
-      <FisholaFooter
-        shortcuts="back,credits,documentation"
-        selected="documentation"
-      />
     </div>
   </div>
 </template>
@@ -90,7 +55,7 @@ import router from "../router";
     FisholaFooter,
   },
 })
-export default class NewsView extends Vue {
+export default class CommunicationsOnAboutPage extends Vue {
   @Prop() news: News[];
 
   hasRunningTrip: boolean = false;
@@ -132,37 +97,50 @@ export default class NewsView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../less/main";
-.empty {
-  padding-top: 20px;
+.no-news {
+  color: @pale-sky;
+  padding: 20px;
 }
-.news {
+.news-about {
   cursor: pointer;
-  padding-top: 20px;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
   .news-holder {
-    border-bottom: 1px solid @gainsboro;
-    margin-bottom: 40px;
     .news-row {
-      display: flex;
       padding-left: @margin-x-large;
       padding-right: @margin-x-large;
+      height: fit-content;
+      width: 350px;
+      margin: 15px;
+      padding: 30px;
+      background-color: @white;
+      border: 1px solid #c4c4c4;
+      .news-title {
+        display: flex;
+      }
       .news-pic {
-        width: 20vw;
-        height: 20vw;
-        max-width: 20vh;
-        max-height: 20vh;
+        width: 15vw;
+        height: 15vw;
+        max-width: 15vh;
+        max-height: 15vh;
         object-fit: cover;
       }
       .right-content {
         width: 100%;
         padding-left: 30px;
-        .publication-date {
-          padding-top: 10px;
-          display: flex;
-          gap: 10px;
-          color: @pale-sky;
-          text-transform: uppercase;
-        }
+        color: black;
       }
+    }
+    .publication-date {
+      padding-top: 10px;
+      display: flex;
+      gap: 10px;
+      color: @pale-sky;
+      text-transform: uppercase;
     }
   }
   .news-content {
@@ -172,6 +150,7 @@ export default class NewsView extends Vue {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: black;
   }
 
   .read-more {
@@ -191,16 +170,14 @@ export default class NewsView extends Vue {
     }
   }
 
-  .only-on-small-screen {
-    display: none;
-  }
   @media (max-width: 1200px) {
-    .only-on-small-screen {
-      max-height: 80px;
-      display: block;
-    }
-    .only-on-big-screen {
-      display: none;
+    .news-about {
+      max-width: 100vw;
+      .news-holder {
+        .news-row {
+          width: 100%;
+        }
+      }
     }
   }
 }

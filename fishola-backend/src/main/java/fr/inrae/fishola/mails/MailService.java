@@ -54,6 +54,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
+
 @RequestScoped
 public class MailService {
 
@@ -172,7 +174,7 @@ public class MailService {
 
     }
 
-    @Scheduled(every="{fishola.async-emails-every}")
+    @Scheduled(every="{fishola.async-emails-every}", concurrentExecution = SKIP)
     protected void sendPendingEmails() {
 
         int pendingEmailsCount = PENDING_EMAILS.size();

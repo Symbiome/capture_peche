@@ -23,18 +23,16 @@
 </template>
 
 <script lang="ts">
+import BackendService from "@/services/BackendService";
 
-import BackendService from '@/services/BackendService.ts';
+import router from "@/router";
 
-import router from '@/router'
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {}
 })
 export default class DispatcherView extends Vue {
-
   constructor() {
     super();
   }
@@ -44,25 +42,23 @@ export default class DispatcherView extends Vue {
   }
 
   checkForActiveSession() {
-    BackendService.backendGet("/v1/security/admin-check")
-        .then(
-            () => {
-                router.push('/home');
-            },
-            (error) => {
-                router.push("/login");
-            });
+    BackendService.backendGet("/v1/security/admin-check").then(
+      () => {
+        router.push("/home");
+      },
+      error => {
+        router.push("/login");
+      }
+    );
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../less/main";
 
 .dispatcher {
-
   height: 100%;
 
   display: flex;
@@ -70,7 +66,12 @@ export default class DispatcherView extends Vue {
   justify-content: center;
   align-items: center;
 
-  @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+  @keyframes spin {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
 
   .spinner {
     height: 60px;
@@ -78,9 +79,7 @@ export default class DispatcherView extends Vue {
     border-radius: 50%;
     border-top: 3px solid @white;
     border-left: 3px solid @white;
-    animation:spin 2s linear infinite;
+    animation: spin 2s linear infinite;
   }
-
 }
-
 </style>

@@ -26,22 +26,22 @@
         <div class="pane-content large rounded">
           <h1 class="no-margin-pane">
             <span> Tableau de bord </span>
-            <select placeholder="Année" v-model="year">
-              <option
-                v-for="dashboardYear in getDashboardYears()"
-                :value="dashboardYear"
-                :key="dashboardYear"
-              >
-                {{ dashboardYear }}
-              </option>
-            </select>
-
-            <select placeholder="lake" v-model="selectedLakeUUID">
-              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                {{ lake.name }}
-              </option>
-            </select>
-
+            <div class="selects-holder">
+              <select placeholder="lake" v-model="selectedLakeUUID">
+                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+                </option>
+              </select>
+              <select placeholder="Année" v-model="year">
+                <option
+                  v-for="dashboardYear in getDashboardYears()"
+                  :value="dashboardYear"
+                  :key="dashboardYear"
+                >
+                  {{ dashboardYear }}
+                </option>
+              </select>
+            </div>
             <a
               @click="askForAsyncExport"
               v-if="!globalMode && asyncExport"
@@ -94,12 +94,14 @@
             v-if="!globalMode && personalDashboard"
             :year="year"
             :dashboardData="personalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"
           ></PersonalDashboard>
 
           <GlobalDashboardComponent
             v-if="globalMode && globalDashboard"
             :showUpdateHour="year == new Date().getFullYear()"
             :dashboardData="globalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"
           ></GlobalDashboardComponent>
         </div>
       </div>
@@ -157,6 +159,7 @@ export default class DashboardView extends Vue {
   year: number = new Date().getFullYear();
   selectedLakeUUID = "";
   lakes: Lake[] = [];
+  isFirstLoad = true;
 
   created() {
     this.loadLakes();
@@ -211,8 +214,19 @@ export default class DashboardView extends Vue {
   }
 
   personalDashboardLoaded(data: DashboardAndSpecies) {
-    this.personalDashboard = data;
-    this.ready = true;
+    // If no data for current year and this is first load, select year - 1 by default
+    if (
+      this.isFirstLoad &&
+      data.dashboard &&
+      data.dashboard.latestTripsCatchs.length == 0
+    ) {
+      this.year = this.year - 1;
+      this.yearOrSelectedLakesChanged();
+    } else {
+      this.personalDashboard = data;
+      this.ready = true;
+    }
+    this.isFirstLoad = false;
   }
 
   cannotLoad(error: any) {
@@ -442,13 +456,18 @@ export default class DashboardView extends Vue {
       h1 {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
 
         a.export {
           font-size: 30px;
           margin-left: 0px;
+          margin-left: auto;
         }
+      }
+      .selects-holder {
+        margin-left: 40px;
+        margin-top: -10px;
       }
 
       .dashboard-modes {
@@ -458,14 +477,51 @@ export default class DashboardView extends Vue {
       }
     }
   }
-
+  @media screen and (max-width: 1180px) {
+    .pane-content {
+      h1 {
+        margin-top: 60px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .selects-holder {
+        margin-left: 0px;
+        margin-top: 0px;
+        margin-bottom: 20px;
+      }
+    }
+  }
   @media screen and (max-width: 899px) {
     .pane-content {
       h1 {
+        margin-top: 60px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
         a.export {
+          position: relative;
+          float: right;
+          top: -118px;
+          right: 18px;
           span {
             display: none;
           }
+        }
+      }
+    }
+  }
+
+  @media screen and (max-width: 770px) {
+    .pane-content {
+      h1 {
+        height: 60px;
+        margin-top: 0px;
+        a.export {
+          position: relative;
+          float: right;
+          top: -90px;
+          right: 40px;
         }
       }
     }
@@ -475,6 +531,9 @@ export default class DashboardView extends Vue {
     .pane-content {
       h1 {
         a.export {
+          position: relative;
+          top: -115px;
+          right: 18px;
           font-weight: bold;
           line-height: 22px;
           height: 33px;
@@ -494,11 +553,29 @@ export default class DashboardView extends Vue {
       }
     }
   }
-
+  @media screen and (min-width: 1178px) {
+    .pane-content {
+      h1 {
+        a.export {
+          top: 0px;
+        }
+      }
+    }
+  }
   @media screen and (min-width: 431px) {
     .show-if-small {
       display: none;
     }
+  }
+}
+.selects-holder {
+  select {
+    background-color: white;
+    padding: 10px;
+    height: 40px;
+    border: 1px solid @pale-sky;
+    border-radius: 3px;
+    margin-left: 10px;
   }
 }
 </style>

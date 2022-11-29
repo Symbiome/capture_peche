@@ -19,47 +19,50 @@
   #L%
   -->
 <template>
-    <div class="options-list">
-        <div class="item"
-            v-bind:class="((itemSelected && i == itemSelected) ? 'selected':'')"
-            v-for="i in items"
-            v-bind:key="'item-' + i.id"
-            v-on:click="selectItem(i)">
-            {{i.name}}
-            <span class="alias" v-if="i.alias">({{i.alias}})</span>
-        </div>
+  <div class="options-list">
+    <div
+      class="item"
+      v-bind:class="itemSelected && i == itemSelected ? 'selected' : ''"
+      v-for="i in items"
+      v-bind:key="'item-' + i.id"
+      v-on:click="selectItem(i)"
+    >
+      {{ i.name }}
+      <span class="alias" v-if="i.alias">({{ i.alias }})</span>
     </div>
+  </div>
 </template>
 
 <script lang="ts">
+import OptionItem from "@/pojos/OptionItem";
 
-import OptionItem from '@/pojos/OptionItem';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component
 export default class OptionsList extends Vue {
-
-  @Prop() items:OptionItem[];
-  itemSelected:OptionItem|null = null;
+  @Prop() items: OptionItem[];
+  itemSelected: OptionItem | null = null;
 
   mounted() {
+    this.selectFirstItem();
+  }
+
+  @Watch("items")
+  selectFirstItem() {
     if (this.items) {
       this.selectItem(this.items[0]);
     }
   }
 
-  selectItem(item:OptionItem) {
+  selectItem(item: OptionItem) {
     this.itemSelected = item;
-    this.$emit('item-selected', item);
+    this.$emit("item-selected", item);
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .options-list {
@@ -71,10 +74,9 @@ export default class OptionsList extends Vue {
   padding-left: @margin-large;
   padding-right: @margin-large;
 
-  overflow:auto;
+  overflow: auto;
 
   div.item {
-
     font-size: @fontsize-small-paragraph;
 
     margin-right: @margin-medium;
@@ -87,9 +89,7 @@ export default class OptionsList extends Vue {
     }
   }
 
-
   @media screen and (min-width: @desktop-min-width) {
-
     padding-left: @margin-large-desktop;
     padding-right: @margin-large-desktop;
 
@@ -97,6 +97,5 @@ export default class OptionsList extends Vue {
       font-size: @fontsize-paragraph;
     }
   }
-
 }
 </style>

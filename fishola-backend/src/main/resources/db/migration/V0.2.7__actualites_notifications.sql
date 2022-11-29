@@ -8,21 +8,22 @@
 -- it under the terms of the GNU Affero General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
---
+-- 
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
---
+-- 
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -- #L%
 ---
 
-ALTER TABLE authorized_sample
-  ADD COLUMN min_size INTEGER DEFAULT 0;
+ALTER TABLE fishola_user
+ADD COLUMN accepts_mail_notifications BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN last_news_seen_date TIMESTAMP WITHOUT TIME ZONE DEFAULT '2021-06-06 12:00:00';
 
-CREATE TYPE maillage AS ENUM ('MAILLEE', 'NON_MAILLEE', 'NON_DEFINI');
-
-ALTER TABLE catch
-  ADD COLUMN maillee maillage default 'NON_DEFINI';
+CREATE TABLE next_scheduled_courriel_notification_check (
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    next_check_date TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);

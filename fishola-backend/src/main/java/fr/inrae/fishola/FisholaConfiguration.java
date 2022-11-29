@@ -79,6 +79,11 @@ public interface FisholaConfiguration {
 
     Optional<String> backendDeeplinkSafeBaseUrl();
 
+    // Délai en heure à attendre entre deux envois de notification d'actualité
+    // Au moment du check, un unique courriel regroupant toutes les nouvelles actualités publiques est envoyé
+    @WithDefault("168")
+    int newsMailSendingDelayHours();
+
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = backendBaseUrl();
         String result;

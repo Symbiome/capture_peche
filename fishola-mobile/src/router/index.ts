@@ -27,7 +27,7 @@ import About from "@/views/About.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
-import MyTrips from "@/views/MyTrips.vue";
+import TripsAndNews from "@/views/TripsAndNews.vue";
 import Dashboard from "@/views/Dashboard.vue";
 
 import NewTrip from "@/views/trip/NewTrip.vue";
@@ -42,7 +42,7 @@ import EditCatch from "@/views/trip/EditCatch.vue";
 
 import Faq from "@/views/Faq.vue";
 import Documentation from "@/views/Documentation.vue";
-import News from "@/views/News.vue";
+import NewsDetailsVue from "@/views/NewsDetails.vue";
 import Credits from "@/views/Credits.vue";
 
 import GaleryFull from "@/components/galery/GaleryFull.vue";
@@ -94,7 +94,7 @@ const routes = [
   {
     path: "/trips",
     name: "trips",
-    component: MyTrips,
+    component: TripsAndNews,
   },
   {
     path: "/trips/new",
@@ -155,10 +155,11 @@ const routes = [
     component: Documentation,
   },
   {
-    path: "/news",
-    name: "news",
+    path: "/news/:newsId",
+    name: "news-details",
     meta: { public: true },
-    component: News,
+    component: NewsDetailsVue,
+    props: true,
   },
   {
     path: "/faq",

@@ -19,63 +19,75 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header-and-footer shifted-background">
-    <FisholaHeader />
-    <div class="page my-trips-page">
-      <h1 class="hide-on-mobile">Mes sorties</h1>
-      <div class="my-trips-top">
-        <MyTripsHeader v-bind:count="count"
-                      v-bind:offline="offline"
-                      v-bind:sortDown="sortDown"
-                      v-on:reverseSortOrder="reverseSortOrder"/>
-        <div class="search-and-new">
-          <div class="button button-primary hide-on-mobile"
-               :class="{'delete': selectedTripIds.length > 0}">
-            <button v-on:click="footerButtonClicked">
-              <i v-bind:class="getButtonIcon()"/>
-              {{getButtonText()}}
-            </button>
-          </div>
-          <MyTripsSearch v-model="term"
-                        v-bind:offline="offline"/>
+  <div>
+    <div class="my-trips-top">
+      <MyTripsHeader
+        v-bind:count="count"
+        v-bind:offline="offline"
+        v-bind:sortDown="sortDown"
+        v-on:reverseSortOrder="reverseSortOrder"
+      >
+        <MyTripsSearch
+          class="hide-on-desktop"
+          v-model="term"
+          v-bind:offline="offline"
+        />
+      </MyTripsHeader>
+      <div class="search-and-new hide-on-mobile">
+        <div
+          v-if="!hasRunningTrip"
+          class="button button-primary"
+          :class="{ delete: selectedTripIds.length > 0 }"
+        >
+          <button v-on:click="footerButtonClicked" class="new-button">
+            <i v-bind:class="getButtonIcon()" />
+            {{ getButtonText() }}
+          </button>
         </div>
+        <MyTripsSearch v-model="term" v-bind:offline="offline" />
       </div>
-      <MyTripsList v-bind:trips="trips"
-                   v-bind:hasSearchTerm="!!currentSearchTerm"
-                   v-bind:noTripYet="totalCount == 0"
-                   v-bind:offline="offline"
-                   v-bind:loading="loading"
-                   v-on:more-trips="loadNextPage"
-                   v-on:trip-selected="tripSelected"
-                   v-on:trip-unselected="tripUnselected"/>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
     </div>
-    <FisholaFooter shortcuts="logout,dashboard,home"
-                   v-bind:hideButton="hasRunningTrip"
-                   v-bind:button-icon="getButtonIcon()"
-                   v-bind:button-text="getButtonText()"
-                   v-on:buttonClicked="footerButtonClicked"
-                   selected="home"/>
+    <MyTripsList
+      v-bind:trips="trips"
+      v-bind:hasSearchTerm="!!currentSearchTerm"
+      v-bind:noTripYet="totalCount == 0"
+      v-bind:offline="offline"
+      v-bind:loading="loading"
+      v-on:more-trips="loadNextPage"
+      v-on:trip-selected="tripSelected"
+      v-on:trip-unselected="tripUnselected"
+    />
+    <div class="bottom">
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
+      <FisholaFooter
+        shortcuts="logout,dashboard,home"
+        v-bind:hideButton="hasRunningTrip"
+        v-bind:button-icon="getButtonIcon()"
+        v-bind:button-text="getButtonText()"
+        v-on:buttonClicked="footerButtonClicked"
+        selected="home"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import router from '@/router'
+import router from "@/router";
 
-import {TripLight} from '@/pojos/BackendPojos';
+import { TripLight } from "@/pojos/BackendPojos";
 
-import TripsService from '@/services/TripsService';
-import {TripsAndCount} from '@/services/TripsService';
-import Helpers from '@/services/Helpers';
+import TripsService from "@/services/TripsService";
+import { TripsAndCount } from "@/services/TripsService";
+import Helpers from "@/services/Helpers";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import MyTripsHeader from '@/components/my-trips/MyTripsHeader.vue'
-import MyTripsSearch from '@/components/my-trips/MyTripsSearch.vue'
-import MyTripsList from '@/components/my-trips/MyTripsList.vue'
-import RunningOverlay from '@/components/layout/RunningOverlay.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import MyTripsHeader from "@/components/my-trips/MyTripsHeader.vue";
+import MyTripsSearch from "@/components/my-trips/MyTripsSearch.vue";
+import MyTripsList from "@/components/my-trips/MyTripsList.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
+import { Component, Prop, Watch, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -84,28 +96,27 @@ import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
     MyTripsSearch,
     MyTripsList,
     RunningOverlay,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class MyTripsView extends Vue {
-  
-  trips:TripLight[] = [];
-  loading:boolean = true;
-  offline:boolean = false;
-  sortDown:boolean = true;
-  term:string = '';
-  currentSearchTerm:string = '';
-  currentPage:number = 0;
-  count:number = 0;
-  totalCount:number = -1;
+  trips: TripLight[] = [];
+  loading: boolean = true;
+  offline: boolean = false;
+  sortDown: boolean = true;
+  term: string = "";
+  currentSearchTerm: string = "";
+  currentPage: number = 0;
+  count: number = 0;
+  totalCount: number = -1;
 
-  refreshTimer:any = undefined;
+  refreshTimer: any = undefined;
 
-  hasRunningTrip:boolean = false;
+  hasRunningTrip: boolean = false;
 
-  selectedTripIds:string[] = [];
+  selectedTripIds: string[] = [];
 
-  @Watch('term')
+  @Watch("term")
   onTermChanged(value: string, oldValue: string) {
     if (this.refreshTimer) {
       this.refreshTimer.cancel();
@@ -123,37 +134,45 @@ export default class MyTripsView extends Vue {
     this.currentPage = 0;
     this.currentSearchTerm = this.term;
     this.selectedTripIds = [];
-    TripsService.listTrips(this.sortDown, this.term)
-      .then(this.tripsLoaded, this.loadError);
+    TripsService.listTrips(this.sortDown, this.term).then(
+      this.tripsLoaded,
+      this.loadError
+    );
     this.loading = true;
   }
 
   loadNextPage() {
     if (this.trips.length < this.count) {
-      TripsService.listTrips(this.sortDown, this.currentSearchTerm, this.currentPage + 1)
-        .then(this.moreTripsLoaded, this.loadError);
+      TripsService.listTrips(
+        this.sortDown,
+        this.currentSearchTerm,
+        this.currentPage + 1
+      ).then(this.moreTripsLoaded, this.loadError);
     }
   }
 
   created() {
     this.loadTrips();
-    TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
   }
 
   mounted() {
-    this.$root.$on('trips-saved', () => {
-      console.debug("La liste des sorties a été mise à jour, on rafraichit ...");
+    this.$root.$on("trips-saved", () => {
+      console.debug(
+        "La liste des sorties a été mise à jour, on rafraichit ..."
+      );
       this.loadTrips();
     });
   }
 
   beforeDestroy() {
     // On fait en sortie de ne plus écouter les évènements si le composant n'est plus actif
-    this.$root.$off('trips-saved');
+    this.$root.$off("trips-saved");
   }
 
-  tripsLoaded(data:TripsAndCount) {
+  tripsLoaded(data: TripsAndCount) {
     this.trips.slice();
     this.trips = data.trips;
     this.loading = false;
@@ -166,16 +185,16 @@ export default class MyTripsView extends Vue {
     }
   }
 
-  moreTripsLoaded(data:TripsAndCount) {
+  moreTripsLoaded(data: TripsAndCount) {
     this.currentPage++;
     data.trips.forEach((t) => this.trips.push(t));
   }
 
-  loadError(data:any) {
+  loadError(data: any) {
     console.error("Erreur au chargement des sorties", data);
     if (data && data.status == 401) {
-      this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-      router.push('/login');
+      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      router.push("/login");
     }
   }
 
@@ -186,14 +205,18 @@ export default class MyTripsView extends Vue {
 
   getButtonIcon() {
     return this.selectedTripIds.length == 0
-      ? (this.totalCount == 0 ? 'icon-fishing':'icon-plus')
-      : 'icon-delete'
+      ? this.totalCount == 0
+        ? "icon-fishing"
+        : "icon-plus"
+      : "icon-delete";
   }
 
   getButtonText() {
     return this.selectedTripIds.length == 0
-      ? (this.totalCount == 0 ? 'Commencer':'Nouvelle sortie')
-      : 'Supprimer';
+      ? this.totalCount == 0
+        ? "Commencer"
+        : "Nouvelle sortie"
+      : "Supprimer";
   }
 
   footerButtonClicked() {
@@ -204,29 +227,27 @@ export default class MyTripsView extends Vue {
       if (this.selectedTripIds.length > 1) {
         message = "Voulez-vous supprimer ces sorties ?";
       }
-      Helpers.confirm(this.$modal, message)
-        .then(this.deleteSelectedTrips);
+      Helpers.confirm(this.$modal, message).then(this.deleteSelectedTrips);
     }
   }
 
   newTrip() {
-    Helpers.getDeviceType()
-      .then((source) => {
-        if (source == 'web') {
-          TripsService.newAfterwardsTrip().then((id:string) => {
-            router.push({name:'trip-meta', params: {id: id}});
-          });
-        } else {
-          router.push('/trips/new');
-        }
-      })
+    Helpers.getDeviceType().then((source) => {
+      if (source == "web") {
+        TripsService.newAfterwardsTrip().then((id: string) => {
+          router.push({ name: "trip-meta", params: { id: id } });
+        });
+      } else {
+        router.push("/trips/new");
+      }
+    });
   }
 
-  tripSelected(tripId:string) {
+  tripSelected(tripId: string) {
     this.selectedTripIds.push(tripId);
   }
 
-  tripUnselected(tripId:string) {
+  tripUnselected(tripId: string) {
     const index = this.selectedTripIds.indexOf(tripId);
     if (index != -1) {
       this.selectedTripIds.splice(index, 1);
@@ -234,36 +255,44 @@ export default class MyTripsView extends Vue {
   }
 
   deleteSelectedTrips() {
-    TripsService.deleteTrips(this.selectedTripIds)
-      .then(this.tripsDeleted);
+    TripsService.deleteTrips(this.selectedTripIds).then(this.tripsDeleted);
   }
 
   tripsDeleted() {
-    const plural = this.selectedTripIds.length > 1 ? 's' : '';
+    const plural = this.selectedTripIds.length > 1 ? "s" : "";
     const message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
-    this.$root.$emit('toaster-success', message);
+    this.$root.$emit("toaster-success", message);
     this.loadTrips();
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .my-trips-page {
-
   display: flex;
   flex-direction: column;
 
   .my-trips-list {
     flex-grow: 1;
     overflow: auto;
+    padding-bottom: 100px;
   }
 
+  .bottom {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    margin-left: -30px;
+  }
+
+  @media screen and (max-width: 1150px) and (min-width: 770px) {
+    .new-button {
+      font-size: 14px;
+    }
+  }
   @media screen and (min-width: @desktop-min-width) {
     background-color: @white-smoke;
 
@@ -276,7 +305,9 @@ export default class MyTripsView extends Vue {
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
+      line-height: calc(
+        @fontsize-title-desktop + @line-height-padding-xx-large
+      );
       text-align: left;
 
       margin-left: @margin-large-desktop;
@@ -289,7 +320,6 @@ export default class MyTripsView extends Vue {
       flex-direction: row-reverse;
       justify-content: space-between;
       align-items: center;
-      margin-left: @margin-large-desktop;
       margin-right: @margin-large-desktop;
 
       .search-and-new {
@@ -308,9 +338,12 @@ export default class MyTripsView extends Vue {
         }
       }
     }
-
+    .bottom {
+      position: absolute;
+      bottom: 0px;
+      width: calc(100% - @desktop-menu-width);
+      margin-left: -66px;
+    }
   }
-
 }
-
 </style>

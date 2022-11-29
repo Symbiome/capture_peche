@@ -79,7 +79,7 @@
 <script lans="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import BackendService from "@/services/BackendService.ts";
+import BackendService from "@/services/BackendService";
 
 @Component
 export default class AuthorizedSamplesVue extends Vue {

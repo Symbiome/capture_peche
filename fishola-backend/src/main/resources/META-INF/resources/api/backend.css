@@ -90,6 +90,21 @@ html {
     justify-content: center;
 }
 
+button {
+    color: #1E9BC4;
+    background-color: white;
+    padding: 5px;
+    font-size: 18px;
+    border-radius: 5px;
+    border: 2px solid black;
+    cursor: pointer;
+}
+
+button:hover {
+        background-color: #1E9BC4;
+        color: white;
+}
+
 @media(max-height:649px) {
     .welcome {
         font-size: 24px;

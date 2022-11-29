@@ -32,6 +32,7 @@ import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
@@ -444,11 +445,13 @@ public class TripResource extends AbstractFisholaResource {
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
         if (minSize.isPresent()) {
-            // If no minimal size defined, consired it as maille
-            catchPojo.setMaillee(catchPojo.getSize() >= minSize.get());
+            if (catchPojo.getSize() >= minSize.get()) {
+                catchPojo.setMaillee(Maillage.MAILLEE);
+            } else {
+                catchPojo.setMaillee(Maillage.NON_MAILLEE);
+            }
         } else {
-            // If no minimal size defined, consired it as maille
-            catchPojo.setMaillee(true);
+            catchPojo.setMaillee(Maillage.NON_DEFINI);
         }
         UUID catchId = catchsDao.create(catchPojo);
 
@@ -472,11 +475,13 @@ public class TripResource extends AbstractFisholaResource {
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
         if (minSize.isPresent()) {
-            // If no minimal size defined, consired it as maille
-            existingCatch.setMaillee(existingCatch.getSize() >= minSize.get());
+            if (existingCatch.getSize() >= minSize.get()) {
+                existingCatch.setMaillee(Maillage.MAILLEE);
+            } else {
+                existingCatch.setMaillee(Maillage.NON_MAILLEE);
+            }
         } else {
-            // If no minimal size defined, consired it as maille
-            existingCatch.setMaillee(true);
+            existingCatch.setMaillee(Maillage.NON_DEFINI);
         }
         catchsDao.update(existingCatch);
 

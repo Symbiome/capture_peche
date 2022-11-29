@@ -34,11 +34,15 @@
     </div>
 
     <div class="section">
-      <div class="shrinked">
+      <div class="shrinked avg-size">
         <h2>
           <i class="icon-size" />Taille moyenne
           <span class="hide-if-small">par espèce</span> (cm)
         </h2>
+        <MaillageLegend
+          :selectedLakeUUID="selectedLakeUUID"
+          :maillages="maillages"
+        />
       </div>
       <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
         <span>Pas assez de données</span>
@@ -67,7 +71,12 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import { GlobalDashboard, SpeciesWithAlias, Month } from "@/pojos/BackendPojos";
+import {
+  GlobalDashboard,
+  SpeciesWithAlias,
+  Month,
+  Maillage,
+} from "@/pojos/BackendPojos";
 import { GlobalDashboardAndSpecies } from "@/services/DashboardService";
 import Helpers from "@/services/Helpers";
 import DistributionEntry from "@/pojos/DistributionEntry";
@@ -76,12 +85,14 @@ import OptionItem from "@/pojos/OptionItem";
 import OptionsList from "@/components/common/OptionsList.vue";
 import DistributionChart from "@/components/charts/DistributionChart.vue";
 import HistogramChart from "@/components/charts/HistogramChart.vue";
+import MaillageLegend from "./MaillageLegend.vue";
 
 @Component({
   components: {
     DistributionChart,
     HistogramChart,
     OptionsList,
+    MaillageLegend,
   },
 })
 export default class GlobalDashboardComponent extends Vue {
@@ -94,6 +105,9 @@ export default class GlobalDashboardComponent extends Vue {
 
   @Prop() dashboardData: GlobalDashboardAndSpecies;
   @Prop({ default: false }) showUpdateHour: boolean;
+  @Prop() selectedLakeUUID: string;
+
+  maillages: Maillage[] = [];
 
   constructor() {
     super();
@@ -172,6 +186,17 @@ export default class GlobalDashboardComponent extends Vue {
 
   onMonthlySizeSelected(item: OptionItem) {
     this.monthlySizes = item.whatever;
+    this.maillages = [];
+    // @ts-ignore
+    Object.keys(this.monthlySizes).forEach((month) => {
+      // @ts-ignore
+      Object.keys(this.monthlySizes[month]).forEach((maillage) => {
+        if (this.maillages.indexOf(maillage as Maillage) == -1) {
+          this.maillages.push(maillage as Maillage);
+        }
+      });
+    });
+    this.maillages = this.maillages.sort();
   }
 
   parseLocalDateTime(input: any): Date {

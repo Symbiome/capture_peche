@@ -20,54 +20,71 @@
   -->
 <template>
   <div class="profile page-with-header-and-footer shifted-background">
-    <FisholaHeader v-bind:avatar="false"/>
+    <FisholaHeader v-bind:avatar="false" />
     <div class="page profile-page">
       <div class="profile-header keyboardSensitive">
-        <Avatar v-bind:initials='profile.initials'/>
+        <Avatar v-bind:initials="profile.initials" />
         <div class="profile-header-name">
-          {{fullName}}
+          {{ fullName }}
         </div>
       </div>
       <div class="pane">
         <div class="pane-content rounded">
           <h1>Profil</h1>
-          <FormInput name="firstName"
-                     label="Prénom"
-                     placeholder="Renseignez votre prénom"
-                     v-model="profile.firstName"
-                     v-bind:error="validationErrors['firstName']"
-                     />
-          <FormInput name="lastName"
-                     label="Nom (optionnel)"
-                     placeholder="Renseignez votre nom"
-                     v-model="profile.lastName"
-                     v-bind:error="validationErrors['lastName']"
-                     />
-          <FormInput name="email"
-                     label="E-mail"
-                     placeholder="Renseignez votre E-mail"
-                     v-model="profile.email"
-                     v-bind:error="validationErrors['email']"
-                     />
-          <FormSelect name="birthYear"
-                      label="Année de naissance (optionnelle)"
-                      v-bind:options="years"
-                      v-model="birthYear"
-                      />
-          <FormSelect name="gender"
-                      label="Sexe (optionnel)"
-                      v-bind:options="genders"
-                      v-model="gender"/>
-          <FormMultiValues name="password"
-                           label="Mot de passe"
-                           v-bind:values="['********']"
-                           v-on:clicked="editPassword"/>
-
+          <FormInput
+            name="firstName"
+            label="Prénom"
+            placeholder="Renseignez votre prénom"
+            v-model="profile.firstName"
+            v-bind:error="validationErrors['firstName']"
+          />
+          <FormInput
+            name="lastName"
+            label="Nom (optionnel)"
+            placeholder="Renseignez votre nom"
+            v-model="profile.lastName"
+            v-bind:error="validationErrors['lastName']"
+          />
+          <FormInput
+            name="email"
+            label="E-mail"
+            placeholder="Renseignez votre E-mail"
+            v-model="profile.email"
+            v-bind:error="validationErrors['email']"
+          />
+          <FormSelect
+            name="birthYear"
+            label="Année de naissance (optionnelle)"
+            v-bind:options="years"
+            v-model="birthYear"
+          />
+          <FormSelect
+            name="gender"
+            label="Sexe (optionnel)"
+            v-bind:options="genders"
+            v-model="gender"
+          />
+          <FormMultiValues
+            name="password"
+            label="Mot de passe"
+            v-bind:values="['********']"
+            v-on:clicked="editPassword"
+          />
+          <div class="form-checkbox">
+            <input
+              type="checkbox"
+              id="receive-mail"
+              class="pelorous-checkbox"
+              v-model="profile.acceptsMailNotifications"
+            />
+            <label for="receive-mail"></label>
+            <label for="receive-mail" class="real-label">
+              Je souhaite être informé des communications Fishola par mail
+            </label>
+          </div>
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="saveProfile">
-                Modifier
-              </button>
+              <button v-on:click="saveProfile">Modifier</button>
             </div>
           </div>
 
@@ -75,30 +92,32 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Modifier"
-                   v-on:buttonClicked="saveProfile"
-                   shortcuts="back,settings,profile"
-                   selected="profile" />
+    <FisholaFooter
+      button-text="Modifier"
+      v-on:buttonClicked="saveProfile"
+      shortcuts="back,settings,profile"
+      selected="profile"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
+import Avatar from "@/components/common/Avatar.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import FormSelect from "@/components/common/FormSelect.vue";
+import FormMultiValues from "@/components/common/FormMultiValues.vue";
 
-import Avatar from '@/components/common/Avatar.vue';
-import FormInput from '@/components/common/FormInput.vue';
-import FormSelect from '@/components/common/FormSelect.vue';
-import FormMultiValues from '@/components/common/FormMultiValues.vue';
+import UserProfile from "@/pojos/UserProfile";
+import ProfileService from "@/services/ProfileService";
 
-import UserProfile from '@/pojos/UserProfile';
-import ProfileService from '@/services/ProfileService';
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import router from "@/router";
 
-import router from '@/router';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import Helpers from "../services/Helpers";
 
 @Component({
   components: {
@@ -107,29 +126,34 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
     FormInput,
     FormSelect,
     FormMultiValues,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class ProfileView extends Vue {
+  profile: UserProfile = {
+    firstName: "",
+    email: "",
+    initials: "",
+    sampleBaseId: "",
+    offlineMarker: false,
+    acceptsMailNotifications: false,
+    lastNewsSeenDate: new Date(),
+  };
+  fullName: string = "";
 
-  profile:UserProfile = {firstName:'', email:'', initials:'', sampleBaseId:'', offlineMarker:false};
-  fullName:string = '';
+  birthYear: string = "0";
+  gender: string = "EMPTY";
 
-  birthYear:string = '0';
-  gender:string = 'EMPTY';
+  validationErrors: any = {};
 
-  validationErrors:any = {};
-
-  genders:any[] = [
-      {id: 'EMPTY', name: ''},
-      {id: 'Female', name: 'Femme'},
-      {id: 'Male', name: 'Homme'},
-      {id: 'NonBinary', name: 'Non binaire'}
+  genders: any[] = [
+    { id: "EMPTY", name: "" },
+    { id: "Female", name: "Femme" },
+    { id: "Male", name: "Homme" },
+    { id: "NonBinary", name: "Non binaire" },
   ];
 
-  years:any[] = [
-    {id: '0', name: ''}
-  ];
+  years: any[] = [{ id: "0", name: "" }];
 
   constructor() {
     super();
@@ -139,85 +163,83 @@ export default class ProfileView extends Vue {
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 110;
     const endYear = currentYear - 10;
-    for (let i=startYear; i<=endYear; i++) {
-      this.years.push({id: '' + i, name: i});
+    for (let i = startYear; i <= endYear; i++) {
+      this.years.push({ id: "" + i, name: i });
     }
     this.loadProfile();
   }
 
   loadProfile() {
-    ProfileService.getProfile()
-        .then(
-          this.profileLoaded,
-          () => {
-            this.$root.$emit('toaster-warning', 'Vous n\'êtes plus connecté\u00B7e');
-            router.push('/login');
-          });
+    ProfileService.getProfile().then(this.profileLoaded, () => {
+      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      router.push("/login");
+    });
   }
 
-  profileLoaded(profile:UserProfile) {
+  profileLoaded(profile: UserProfile) {
     this.profile = profile;
     this.fullName = UserProfile.fullName(profile);
-    this.birthYear = '' + (profile.birthYear || 0);
-    this.gender = profile.gender || 'EMPTY';
+    this.birthYear = "" + (profile.birthYear || 0);
+    this.gender = profile.gender || "EMPTY";
   }
 
   saveProfile() {
     this.cleanValidationErros();
 
-    if (this.birthYear == '0') {
+    if (this.birthYear == "0") {
       delete this.profile.birthYear;
     } else {
       this.profile.birthYear = parseInt(this.birthYear);
     }
 
-    if (this.gender == 'EMPTY') {
+    if (this.gender == "EMPTY") {
       delete this.profile.gender;
     } else {
       this.profile.gender = this.gender;
     }
-
-    ProfileService.saveProfile(this.profile)
-      .then(
-        () => {
-          this.loadProfile();
-          this.$root.$emit('profile-updated');
-          this.$root.$emit('toaster-success', 'Profil enregistré');
-        },
-        (response) => {
-          if (response.status == 400) {
-            this.validationErrors = response.content;
-            this.$root.$emit('toaster-error', 'Veuillez corriger les erreurs');
-          } else {
-            console.error("ProfileService.saveProfile", response);
-            this.$root.$emit('toaster-error', "Erreur technique, merci de réessayer plus tard");
-          }
+    this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+      // @ts-ignore
+      this.profile.lastNewsSeenDate
+    );
+    ProfileService.saveProfile(this.profile).then(
+      () => {
+        this.loadProfile();
+        this.$root.$emit("profile-updated");
+        this.$root.$emit("toaster-success", "Profil enregistré");
+      },
+      (response) => {
+        if (response.status == 400) {
+          this.validationErrors = response.content;
+          this.$root.$emit("toaster-error", "Veuillez corriger les erreurs");
+        } else {
+          console.error("ProfileService.saveProfile", response);
+          this.$root.$emit(
+            "toaster-error",
+            "Erreur technique, merci de réessayer plus tard"
+          );
         }
-      );
+      }
+    );
   }
 
   cleanValidationErros() {
     if (this.validationErrors) {
       const keys = Object.keys(this.validationErrors);
-      keys.forEach(key => this.validationErrors[key] = '');
+      keys.forEach((key) => (this.validationErrors[key] = ""));
     }
   }
 
   editPassword() {
-    router.push('/profile-password');
+    router.push("/profile-password");
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .profile-page {
-
   .profile-header {
     height: 150px;
     width: 100%;
@@ -244,7 +266,7 @@ export default class ProfileView extends Vue {
       color: @white;
     }
 
-    @media(max-height:600px) {
+    @media (max-height: 600px) {
       height: 100px;
 
       .pastille {
@@ -252,7 +274,6 @@ export default class ProfileView extends Vue {
         height: 60px;
       }
     }
-
   }
 
   @media screen and (min-width: @desktop-min-width) {
@@ -260,7 +281,5 @@ export default class ProfileView extends Vue {
       height: 200px;
     }
   }
-
 }
-
 </style>

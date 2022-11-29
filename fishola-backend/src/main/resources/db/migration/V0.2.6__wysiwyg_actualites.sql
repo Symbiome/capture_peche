@@ -8,21 +8,33 @@
 -- it under the terms of the GNU Affero General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
---
+-- 
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
---
+-- 
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -- #L%
 ---
 
-ALTER TABLE authorized_sample
-  ADD COLUMN min_size INTEGER DEFAULT 0;
+ALTER TABLE documentation DROP COLUMN news;
 
-CREATE TYPE maillage AS ENUM ('MAILLEE', 'NON_MAILLEE', 'NON_DEFINI');
+CREATE TABLE news (
+    id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    content TEXT,
+    date_publication_debut TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    date_publication_fin TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    date_notification_sent TIMESTAMP WITHOUT TIME ZONE,
+    miniature_id UUID
+);
 
-ALTER TABLE catch
-  ADD COLUMN maillee maillage default 'NON_DEFINI';
+CREATE TABLE news_picture (
+   id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
+   -- No REFERENCES news(id) as id can be temporary
+   news_id UUID,
+   content BYTEA NOT NULL,
+   is_miniature BOOLEAN DEFAULT false
+);

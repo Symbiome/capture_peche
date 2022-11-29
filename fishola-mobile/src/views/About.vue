@@ -19,294 +19,469 @@
   #L%
   -->
 <template>
-<!-- \\ Begin Holder \\ -->
-<div class="DesignHolder" v-on:scroll="scrolled" id="about-scroll-container">
-  <!-- \\ Begin Frame \\ -->
-  <div class="LayoutFrame" id="top">
-        <!-- \\ Begin Header \\ -->
-        <header class="smaller">
-          <div class="site-logo site-logo-smartphone">
-            <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
-          </div>
-
-          <div class="burger" v-if="closed" @click="closed = !closed">
-            <i class="icon-menu"></i>
-          </div>
-
-          <div class="whatever" :class="{'closed':closed}">
-            <div class="site-logo site-logo-desktop">
-              <h1><a href="#/about" v-scroll-to="{el: '#top', container: '#about-scroll-container'}"  @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"/></a></h1>
-            </div>
-            <nav class="Navigation">
-              <ul>
-                <li v-bind:class="activeSection=='presentation'?'active':''">
-                  <a href="#/about" v-scroll-to="{el: '#presentation', container: '#about-scroll-container'}" @click="closed = !closed">Présentation</a>
-                  <span class="menu-item-bg"></span>
-                </li>
-                <li v-bind:class="activeSection=='contribute'?'active':''">
-                  <a href="#/about" v-scroll-to="{el: '#contribute', container: '#about-scroll-container'}" @click="closed = !closed">Comment participer ?</a>
-                  <span class="menu-item-bg"></span>
-                </li>
-                <li v-bind:class="activeSection=='contact'?'active':''">
-                  <a href="#/about" v-scroll-to="{el: '#contact', container: '#about-scroll-container'}" @click="closed = !closed">Contact</a>
-                  <span class="menu-item-bg"></span>
-                </li>
-                <li>
-                  <a href="#/faq" @click="closed = !closed">FAQ</a>
-                  <span class="menu-item-bg"></span>
-                </li>
-                <li>
-                  <a href="#/news" @click="closed = !closed">On en parle</a>
-                  <span class="menu-item-bg"></span>
-                </li>
-              </ul>
-            </nav>
-            <div class="authentication">
-              <button v-on:click="goToLogin">Connexion</button>
-            </div>
-          </div>
-        </header>
-        <!-- // End Header // -->
-
-        <div class="under-header-zone">
-          FISHOLA : La science tous ensemble
+  <!-- \\ Begin Holder \\ -->
+  <div class="DesignHolder" v-on:scroll="scrolled" id="about-scroll-container">
+    <!-- \\ Begin Frame \\ -->
+    <div class="LayoutFrame" id="top">
+      <!-- \\ Begin Header \\ -->
+      <header class="smaller">
+        <div class="site-logo site-logo-smartphone">
+          <h1>
+            <a
+              href="#/about"
+              v-scroll-to="{ el: '#top', container: '#about-scroll-container' }"
+              ><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"
+            /></a>
+          </h1>
         </div>
 
-        <!-- \\ Begin Banner Section \\ -->
-        <div class="Title_sec" id="title">
-            <!--  \\ Begin banner Side -->
-            <div class="title-banner">
-              <div class="main-title">
-                La science tous ensemble
-              </div>
-              <div class="sub-title">
-                En utilisant FISHOLA vous participez à la compréhension et la préservation des lacs
-              </div>
-            </div>
+        <div class="burger" v-if="closed" @click="closed = !closed">
+          <i class="icon-menu"></i>
         </div>
-        <!-- // End Banner Section // -->
 
-        <!-- \\ Begin Banner Section \\ -->
-        <div class="Banner_sec" id="presentation">
-          <!--  \\ Begin banner Side -->
-          <div class="left-panel">
-            <h3><span>FISHOLA</span></h3>
-            <p>{{titleText}}</p>
-            <!-- <a href="#about">MORE DETAILS</a> -->
+        <div class="whatever" :class="{ closed: closed }">
+          <div class="site-logo site-logo-desktop">
+            <h1>
+              <a
+                href="#/about"
+                v-scroll-to="{
+                  el: '#top',
+                  container: '#about-scroll-container',
+                }"
+                @click="closed = true"
+                ><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"
+              /></a>
+            </h1>
           </div>
-          <div class="right-panel">
-            <img src="/img/dashboard.png" alt="Tableau de bord" />
-            <img src="/img/trip.png" alt="Sortie" />
-            <!-- <img src="/img/trips.png" alt="Liste des sorties" /> -->
+          <nav class="Navigation">
+            <ul>
+              <li
+                v-bind:class="activeSection == 'presentation' ? 'active' : ''"
+              >
+                <a
+                  href="#/about"
+                  v-scroll-to="{
+                    el: '#presentation',
+                    container: '#about-scroll-container',
+                  }"
+                  @click="closed = !closed"
+                  >Présentation</a
+                >
+                <span class="menu-item-bg"></span>
+              </li>
+              <li
+                v-bind:class="activeSection == 'communications' ? 'active' : ''"
+              >
+                <a
+                  href="#/about"
+                  v-scroll-to="{
+                    el: '#communications',
+                    container: '#about-scroll-container',
+                  }"
+                  @click="closed = !closed"
+                  >Communications</a
+                >
+                <span class="menu-item-bg"></span>
+              </li>
+              <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
+                <a
+                  href="#/about"
+                  v-scroll-to="{
+                    el: '#contribute',
+                    container: '#about-scroll-container',
+                  }"
+                  @click="closed = !closed"
+                  >Comment participer ?</a
+                >
+                <span class="menu-item-bg"></span>
+              </li>
+              <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
+                <a
+                  href="#/about"
+                  v-scroll-to="{
+                    el: '#contact',
+                    container: '#about-scroll-container',
+                  }"
+                  @click="closed = !closed"
+                  >Contact</a
+                >
+                <span class="menu-item-bg"></span>
+              </li>
+              <li>
+                <a href="#/faq" @click="closed = !closed">FAQ</a>
+                <span class="menu-item-bg"></span>
+              </li>
+              <li>
+                <a href="#/news" @click="closed = !closed">On en parle</a>
+                <span class="menu-item-bg"></span>
+              </li>
+            </ul>
+          </nav>
+          <div class="authentication">
+            <button v-on:click="goToLogin">Connexion</button>
           </div>
         </div>
-        <!-- // End Banner Section // -->
+      </header>
+      <!-- // End Header // -->
 
-        <!-- \\ Begin Video Section \\ -->
-        <div class="Video_sec">
-          <iframe class="youtube"
-                  width="640"
-                  height="360"
-                  src="https://www.youtube-nocookie.com/embed/lXZwwBofql4"
-                  frameborder="10"
-                  allow="encrypted-media"
-                  allowfullscreen></iframe>
+      <div class="under-header-zone">FISHOLA : La science tous ensemble</div>
+
+      <!-- \\ Begin Banner Section \\ -->
+      <div class="Title_sec" id="title">
+        <!--  \\ Begin banner Side -->
+        <div class="title-banner">
+          <div class="main-title">La science tous ensemble</div>
+          <div class="sub-title">
+            En utilisant FISHOLA vous participez à la compréhension et la
+            préservation des lacs
+          </div>
         </div>
-        <!-- // End Video Section // -->
+      </div>
+      <!-- // End Banner Section // -->
 
-        <!-- \\ Begin Container \\ -->
-        <div id="Container">
-            <!-- \\ Begin About Section \\ -->
-            <div class="About_sec" id="about">
-                <div class="Center">
-                  <div class="key-figures" v-observe-visibility="keyFiguresItemsVisibilityChanged">
-                    <div class="kf-item">
-                      <div class="kf-number">
-                        <Counter :n="tripsCount"></Counter>
-                      </div>
-                      <div class="kf-label">
-                        sorties
-                      </div>
-                    </div>
-                    <div class="kf-item">
-                      <div class="kf-number">
-                        <Counter :n="catchsCount"></Counter>
-                      </div>
-                      <div class="kf-label">
-                        captures
-                      </div>
-                    </div>
-                    <div class="kf-item">
-                      <div class="kf-number">
-                        <Counter :n="picturesCount"></Counter>
-                      </div>
-                      <div class="kf-label">
-                        photos
-                      </div>
-                    </div>
-                  </div>
-                    <!-- <div class="Line"></div> -->
-                    <div class="map">
-                      <l-map
-                        :zoom="9"
-                        :center="center"
-                        :options="{
-                          zoomSnap: 0.5
-                        }"
-                        style="height: 100%; width: 100%;"
-                      >
-                        <l-tile-layer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                        />
+      <!-- \\ Begin Banner Section \\ -->
+      <div class="Banner_sec" id="presentation">
+        <!--  \\ Begin banner Side -->
+        <div class="left-panel">
+          <h3><span>FISHOLA</span></h3>
+          <p>{{ titleText }}</p>
+          <!-- <a href="#about">MORE DETAILS</a> -->
+        </div>
+        <div class="right-panel">
+          <img src="/img/dashboard.png" alt="Tableau de bord" />
+          <img src="/img/trip.png" alt="Sortie" />
+          <!-- <img src="/img/trips.png" alt="Liste des sorties" /> -->
+        </div>
+      </div>
+      <!-- // End Banner Section // -->
 
-                        <l-marker v-for="l in lakes" v-bind:key="l.id" :lat-lng="asLatLng(l)">
-                          <l-popup>
-                            <div >
-                              {{l.name}}
-                              <span v-if="catchsCountPerLakeId[l.id]">
-                               : {{catchsCountPerLakeId[l.id]}} captures
-                              </span>
-                            </div>
-                          </l-popup>
-                        </l-marker>
+      <!-- \\ Begin Video Section \\ -->
+      <div class="Video_sec">
+        <iframe
+          class="youtube"
+          width="640"
+          height="360"
+          src="https://www.youtube-nocookie.com/embed/lXZwwBofql4"
+          frameborder="10"
+          allow="encrypted-media"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <!-- // End Video Section // -->
 
-                      </l-map>
-                    </div>
-                    <!-- // End Tab Side // -->
+      <!-- \\ Begin Container \\ -->
+      <div id="Container">
+        <!-- \\ Begin About Section \\ -->
+        <div class="About_sec" id="about">
+          <div class="Center">
+            <div
+              class="key-figures"
+              v-observe-visibility="keyFiguresItemsVisibilityChanged"
+            >
+              <div class="kf-item">
+                <div class="kf-number">
+                  <Counter :n="tripsCount"></Counter>
                 </div>
+                <div class="kf-label">sorties</div>
+              </div>
+              <div class="kf-item">
+                <div class="kf-number">
+                  <Counter :n="catchsCount"></Counter>
+                </div>
+                <div class="kf-label">captures</div>
+              </div>
+              <div class="kf-item">
+                <div class="kf-number">
+                  <Counter :n="picturesCount"></Counter>
+                </div>
+                <div class="kf-label">photos</div>
+              </div>
             </div>
-            <!-- // End About Section // -->
+            <!-- <div class="Line"></div> -->
+            <div class="map">
+              <l-map
+                :zoom="9"
+                :center="center"
+                :options="{
+                  zoomSnap: 0.5,
+                }"
+                style="height: 100%; width: 100%"
+              >
+                <l-tile-layer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                />
+
+                <l-marker
+                  v-for="l in lakes"
+                  v-bind:key="l.id"
+                  :lat-lng="asLatLng(l)"
+                >
+                  <l-popup>
+                    <div>
+                      {{ l.name }}
+                      <span v-if="catchsCountPerLakeId[l.id]">
+                        : {{ catchsCountPerLakeId[l.id] }} captures
+                      </span>
+                    </div>
+                  </l-popup>
+                </l-marker>
+              </l-map>
+            </div>
+            <!-- // End Tab Side // -->
+          </div>
+        </div>
+        <!-- // End About Section // -->
+        <!-- \\ Begin Communications Section \\ -->
+        <div class="Communications_sec" id="communications">
+          <div class="Center">
+            <h3>Communications</h3>
+          </div>
+          <CommunicationsOnAboutPage :news="news" />
+        </div>
+        <!-- // End Contribute Section // -->
+
+        <!-- \\ Begin Pricing Section \\ -->
         <!-- \\ Begin Contribute Section \\ -->
         <div class="Contribute_sec" id="contribute">
-            <div class="Center">
-                <h2>Comment participer ?</h2>
-                <div class="contribute-editable" v-html="contributeText"></div>
-            </div>                
+          <div class="Center">
+            <h2>Comment participer ?</h2>
+            <div class="contribute-editable" v-html="contributeText"></div>
+          </div>
         </div>
         <!-- // End Contribute Section // -->
 
         <!-- \\ Begin Pricing Section \\ -->
         <div class="Pricing_sec" id="pricing">
-            <div class="Center">
-                <!-- // End Pricing Side // -->
-                <h3>Applications</h3>
-                <div class="welcome-apps">
-                    <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank" rel="noopener"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
-                    <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank" rel="noopener"><img class="app" src="/img/AppStore.png" alt="AppStore" /></a>
-                </div>
+          <div class="Center">
+            <!-- // End Pricing Side // -->
+            <h3>Applications</h3>
+            <div class="welcome-apps">
+              <a
+                href="https://play.google.com/store/apps/details?id=fr.inrae.fishola"
+                target="_blank"
+                rel="noopener"
+                ><img class="app" src="/img/GooglePlay.png" alt="GooglePlay"
+              /></a>
+              <a
+                href="https://apps.apple.com/fr/app/fishola/id1521226635"
+                target="_blank"
+                rel="noopener"
+                ><img class="app" src="/img/AppStore.png" alt="AppStore"
+              /></a>
             </div>
+          </div>
         </div>
         <!-- // End Pricing Section // -->
         <!-- \\ Begin Contact Section \\ -->
         <div class="Contact_sec" id="contact">
-            <div class="Contactside">
-
-            </div>
-                <!-- \\ Begin Get Section \\ -->
-                <div class="Get_sec">
-                    <div class="Center">
-                        <h2>Nous contacter</h2>
-                        <p>La communication et l'échange sont au c&oelig;ur de l'application FISHOLA. Vous pouvez nous suivre sur les différents réseaux sociaux ou nous contacter par l'intermédiaire du formulaire ci-dessous.</p>
-                        <div class="Line"></div>
-                    </div>  
-                    <div class="Mid">          
-                        <!-- \\ Begin Left Side \\ -->
-                        <div class="Leftside">
-                            <form action="#">
-                                <fieldset>
-                                    <p><input type="email" v-model="contactEmail" placeholder="Votre e-mail" class="field"></p>
-                                    <p><textarea cols="2"  rows="4" v-model="contactMessage"  placeholder="Votre message"></textarea></p>
-                                    <p><input type="button" value="Envoyer" class="button" v-on:click="sendContact"></p>
-                                </fieldset>
-                            </form>
-                        </div>
-                        <!-- // End Left Side // -->
-                        <!-- \\ Begin Right Side \\ -->
-                        <div class="Rightside">
-                            <h3>Contactez-nous !</h3>
-                            <p>Une suggestion, une question ou une envie de démarrer un projet avec nous, n'hésitez pas à nous contacter !</p>
-                                <address>
-                                    UMR CARRTEL (INRAE - USMB)<br/>
-                                    75bis Avenue de Corzent<br/>
-                                    74200 Thonon-les-Bains (France)
-                                </address>  
-                                <address class="Number">
-                                    +33 (0)4 50 26 78 00
-                                </address>  
-                                <div class="clear"></div>
-                                <p>Retrouvez-nous sur :</p>
-                                <ul>
-                                    <li><a rel="noopener, nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img src="/img/facebook-icn.png" alt="Facebook"></a></li>
-                                    <li><a rel="noopener, nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img src="/img/twitter-icn.png" alt="Twitter"></a></li>
-                                    <li><a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img src="/img/youtube-icn.png" alt="Youtube"></a></li>
-                                </ul>
-                        </div>
-                        <!-- // End Right Side // -->
-                    </div>
-
-                </div>
-                <!-- // End Get Section // -->
-            
-            </div>
-            <!-- // End Contact Section // -->
-
-
-            <!-- \\ Begin Producted_by Section \\ -->
-            <div class="Producted_by_sec" id="producted_by">
-              <div class="partners">
-                <h3>Nos partenaires</h3>
-                <div class="credits-logos">
-                  <a href="https://www.annecylacpeche.com" target="_blank" rel="noopener"><img src='/img/credits/88b994/ALP.png' alt="AAPPMA - Annecy Lac Pêche"/></a>
-                  <a href="https://www.peche-leman-apallf.com" target="_blank" rel="noopener"><img src='/img/credits/88b994/APALLF.png' alt="APALLF"/></a>
-                  <a href="https://fipal.ch" target="_blank" rel="noopener"><img src='/img/credits/88b994/FIPAL.jpg' alt="Fédération Internationale des Pêcheurs Amateurs du Léman"/></a>
-                  <a href="http://www.pecheurs-chamberiens.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png' alt="AAPPMA - Pêcheurs chambériens"/></a>
-                  <a href="https://aappma-aix-les-bains.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-Bourget.png' alt="AAPPMA - Aix-les-Bains"/></a>
-                  <a href="http://www.aappma-aiguebelette.org" target="_blank" rel="noopener"><img src='/img/credits/88b994/AAPPMA-Aiguebelette.jpg' alt="AAPPMA - Aiguebelette"/></a>
-                </div>
-              </div>
+          <div class="Contactside"></div>
+          <!-- \\ Begin Get Section \\ -->
+          <div class="Get_sec">
+            <div class="Center">
+              <h2>Nous contacter</h2>
+              <p>
+                La communication et l'échange sont au c&oelig;ur de
+                l'application FISHOLA. Vous pouvez nous suivre sur les
+                différents réseaux sociaux ou nous contacter par l'intermédiaire
+                du formulaire ci-dessous.
+              </p>
               <div class="Line"></div>
-              <div class="producers">
-                <h3>FISHOLA est produit par</h3>
-                <div class="credits-logos">
-                  <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img src='/img/credits/88b994/CARRTEL.png' alt="CARRTEL"/></a>
-                  <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
-                  <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/USMB.png' alt="USMB"/></a>
-                  <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank" rel="noopener"><img src='/img/credits/88b994/ECLA.png' alt="ECLA"/></a>
-                  <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"><img src='/img/credits/ofb.png' alt="OFB"/></a>
-                  <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/OLA.png' alt="OLA"/></a>
-                  <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
-                  <a href="https://www.cisalb.fr" target="_blank" rel="noopener"><img src='/img/credits/88b994/CISALB.png' alt="CISALB"/></a>
-                </div>
-              </div>
             </div>
-            <!-- // End Producted_by Section // -->
-
-            <!-- \\ Begin Footer \\-->
-            <footer>
-                <div class="Cntr">
-                    <p>COPYRIGHT © 2021 UMR CARRTEL (INRAE - USMB) - Pôle ECLA</p>
-                </div>
-            </footer>
-            <!-- // End Footer // -->
+            <div class="Mid">
+              <!-- \\ Begin Left Side \\ -->
+              <div class="Leftside">
+                <form action="#">
+                  <fieldset>
+                    <p>
+                      <input
+                        type="email"
+                        v-model="contactEmail"
+                        placeholder="Votre e-mail"
+                        class="field"
+                      />
+                    </p>
+                    <p>
+                      <textarea
+                        cols="2"
+                        rows="4"
+                        v-model="contactMessage"
+                        placeholder="Votre message"
+                      ></textarea>
+                    </p>
+                    <p>
+                      <input
+                        type="button"
+                        value="Envoyer"
+                        class="button"
+                        v-on:click="sendContact"
+                      />
+                    </p>
+                  </fieldset>
+                </form>
+              </div>
+              <!-- // End Left Side // -->
+              <!-- \\ Begin Right Side \\ -->
+              <div class="Rightside">
+                <h3>Contactez-nous !</h3>
+                <p>
+                  Une suggestion, une question ou une envie de démarrer un
+                  projet avec nous, n'hésitez pas à nous contacter !
+                </p>
+                <address>
+                  UMR CARRTEL (INRAE - USMB)<br />
+                  75bis Avenue de Corzent<br />
+                  74200 Thonon-les-Bains (France)
+                </address>
+                <address class="Number">+33 (0)4 50 26 78 00</address>
+                <div class="clear"></div>
+                <p>Retrouvez-nous sur :</p>
+                <ul>
+                  <li>
+                    <a
+                      rel="noopener, nofollow"
+                      href="https://www.facebook.com/FisholaFR"
+                      target="_blank"
+                      ><img src="/img/facebook-icn.png" alt="Facebook"
+                    /></a>
+                  </li>
+                  <li>
+                    <a
+                      rel="noopener, nofollow"
+                      href="https://twitter.com/FisholaFr"
+                      target="_blank"
+                      ><img src="/img/twitter-icn.png" alt="Twitter"
+                    /></a>
+                  </li>
+                  <li>
+                    <a
+                      rel="noopener, nofollow"
+                      href="https://www.youtube.com/UmrCarrtel"
+                      target="_blank"
+                      ><img src="/img/youtube-icn.png" alt="Youtube"
+                    /></a>
+                  </li>
+                </ul>
+              </div>
+              <!-- // End Right Side // -->
+            </div>
+          </div>
+          <!-- // End Get Section // -->
         </div>
-        <!-- // End Container // -->
-  </div>
-  <!-- // End Layout Frame // -->
+        <!-- // End Contact Section // -->
 
-</div>
+        <!-- \\ Begin Producted_by Section \\ -->
+        <div class="Producted_by_sec" id="producted_by">
+          <div class="partners">
+            <h3>Nos partenaires</h3>
+            <div class="credits-logos">
+              <a
+                href="https://www.annecylacpeche.com"
+                target="_blank"
+                rel="noopener"
+                ><img
+                  src="/img/credits/88b994/ALP.png"
+                  alt="AAPPMA - Annecy Lac Pêche"
+              /></a>
+              <a
+                href="https://www.peche-leman-apallf.com"
+                target="_blank"
+                rel="noopener"
+                ><img src="/img/credits/88b994/APALLF.png" alt="APALLF"
+              /></a>
+              <a href="https://fipal.ch" target="_blank" rel="noopener"
+                ><img
+                  src="/img/credits/88b994/FIPAL.jpg"
+                  alt="Fédération Internationale des Pêcheurs Amateurs du Léman"
+              /></a>
+              <a
+                href="http://www.pecheurs-chamberiens.fr"
+                target="_blank"
+                rel="noopener"
+                ><img
+                  src="/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png"
+                  alt="AAPPMA - Pêcheurs chambériens"
+              /></a>
+              <a
+                href="https://aappma-aix-les-bains.fr"
+                target="_blank"
+                rel="noopener"
+                ><img
+                  src="/img/credits/88b994/AAPPMA-Bourget.png"
+                  alt="AAPPMA - Aix-les-Bains"
+              /></a>
+              <a
+                href="http://www.aappma-aiguebelette.org"
+                target="_blank"
+                rel="noopener"
+                ><img
+                  src="/img/credits/88b994/AAPPMA-Aiguebelette.jpg"
+                  alt="AAPPMA - Aiguebelette"
+              /></a>
+            </div>
+          </div>
+          <div class="Line"></div>
+          <div class="producers">
+            <h3>FISHOLA est produit par</h3>
+            <div class="credits-logos">
+              <a
+                href="https://www6.lyon-grenoble.inrae.fr/carrtel"
+                target="_blank"
+                rel="noopener"
+                ><img src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL"
+              /></a>
+              <a href="https://www.inrae.fr" target="_blank" rel="noopener"
+                ><img src="/img/credits/inrae.svg" alt="INRAE"
+              /></a>
+              <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"
+                ><img src="/img/credits/88b994/USMB.png" alt="USMB"
+              /></a>
+              <a
+                href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres"
+                target="_blank"
+                rel="noopener"
+                ><img src="/img/credits/88b994/ECLA.png" alt="ECLA"
+              /></a>
+              <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"
+                ><img src="/img/credits/ofb.png" alt="OFB"
+              /></a>
+              <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"
+                ><img src="/img/credits/88b994/OLA.png" alt="OLA"
+              /></a>
+              <a href="https://www.codelutin.com" target="_blank" rel="noopener"
+                ><img src="/img/credits/code-lutin.svg" alt="Code Lutin"
+              /></a>
+              <a href="https://www.cisalb.fr" target="_blank" rel="noopener"
+                ><img src="/img/credits/88b994/CISALB.png" alt="CISALB"
+              /></a>
+            </div>
+          </div>
+        </div>
+        <!-- // End Producted_by Section // -->
+
+        <!-- \\ Begin Footer \\-->
+        <footer>
+          <div class="Cntr">
+            <p>COPYRIGHT © 2021 UMR CARRTEL (INRAE - USMB) - Pôle ECLA</p>
+          </div>
+        </footer>
+        <!-- // End Footer // -->
+      </div>
+      <!-- // End Container // -->
+    </div>
+    <!-- // End Layout Frame // -->
+  </div>
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
+import Counter from "@/components/common/Counter.vue";
+import ProfileService from "@/services/ProfileService";
+import AboutService from "@/services/AboutService";
+import FeedbackService from "@/services/FeedbackService";
+import router from "@/router";
 
-import Constants from '@/services/Constants';
-import Counter from '@/components/common/Counter.vue'
-import ProfileService from '@/services/ProfileService';
-import AboutService from '@/services/AboutService';
-import FeedbackService from '@/services/FeedbackService';
-import router from '@/router';
-
-import { latLng, LatLng, Icon } from 'leaflet';
+import { latLng, LatLng, Icon } from "leaflet";
 
 type D = Icon.Default & {
   _getIconUrl?: string;
@@ -315,15 +490,17 @@ type D = Icon.Default & {
 delete (Icon.Default.prototype as D)._getIconUrl;
 
 Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet';
+import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { Lake, Feedback } from '@/pojos/BackendPojos';
+import { Component, Vue } from "vue-property-decorator";
+import { Lake, Feedback, News } from "@/pojos/BackendPojos";
+import DocumentationService from "../services/DocumentationService";
+import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 
 @Component({
   components: {
@@ -331,41 +508,42 @@ import { Lake, Feedback } from '@/pojos/BackendPojos';
     LTileLayer,
     LMarker,
     LPopup,
-    Counter
-  }
+    Counter,
+    CommunicationsOnAboutPage,
+  },
 })
 export default class AboutView extends Vue {
-
   center = latLng(46.071623, 5.890511);
 
-  titleText:string = "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
-  contributeText:string = "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
-  tripsCount:number = 0;
-  realTripsCount:number = 442;
-  catchsCount:number = 0;
-  realCatchsCount:number = 1726;
-  picturesCount:number = 0;
-  realPicturesCount:number = 212;
-  lakes:Lake[] = [];
+  titleText: string =
+    "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
+  contributeText: string =
+    "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
+  tripsCount: number = 0;
+  realTripsCount: number = 442;
+  catchsCount: number = 0;
+  realCatchsCount: number = 1726;
+  picturesCount: number = 0;
+  realPicturesCount: number = 212;
+  lakes: Lake[] = [];
+  news: News[] = [];
   catchsCountPerLakeId: { [index: string]: number } = {};
 
-  contactEmail:string = '';
-  contactMessage:string = '';
+  contactEmail: string = "";
+  contactMessage: string = "";
 
   // version:string = process.env.VUE_APP_VERSION;
-  projectVersion:string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision:string = process.env.VUE_APP_GIT_REVISION;
-  frontendVersion:string = `${this.projectVersion} (${this.gitRevision})`;
+  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
+  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
+  frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
-  closed:boolean = true;
+  closed: boolean = true;
   constructor() {
     super();
   }
 
   created() {
-
-    AboutService.getKeyFigures()
-    .then(
+    AboutService.getKeyFigures().then(
       (kf) => {
         console.debug("Chiffres clés", kf);
         this.realTripsCount = kf.tripsCount;
@@ -378,67 +556,110 @@ export default class AboutView extends Vue {
       },
       (error) => {
         // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
-        this.lakes.push({id:'leman', name:"Léman", exportAs:'whatever', latitude:46.439783, longitude:6.480641});
-        this.lakes.push({id:'bourget', name:"Lac du Bourget", exportAs:'whatever', latitude:45.7249, longitude:5.8684});
-        this.lakes.push({id:'annecy', name:"Lac d'Annecy", exportAs:'whatever', latitude:45.856166, longitude:6.173468});
-        this.lakes.push({id:'aiguebelette', name:"Lac dAiguebelette", exportAs:'whatever', latitude:45.5508, longitude:5.8015});
+        this.lakes.push({
+          id: "leman",
+          name: "Léman",
+          exportAs: "whatever",
+          latitude: 46.439783,
+          longitude: 6.480641,
+        });
+        this.lakes.push({
+          id: "bourget",
+          name: "Lac du Bourget",
+          exportAs: "whatever",
+          latitude: 45.7249,
+          longitude: 5.8684,
+        });
+        this.lakes.push({
+          id: "annecy",
+          name: "Lac d'Annecy",
+          exportAs: "whatever",
+          latitude: 45.856166,
+          longitude: 6.173468,
+        });
+        this.lakes.push({
+          id: "aiguebelette",
+          name: "Lac dAiguebelette",
+          exportAs: "whatever",
+          latitude: 45.5508,
+          longitude: 5.8015,
+        });
       }
     );
+    DocumentationService.getNews().then((zeNews) => {
+      this.news = zeNews;
+    });
   }
 
-  asLatLng(lake:Lake):LatLng {
+  asLatLng(lake: Lake): LatLng {
     let result = latLng(lake.latitude, lake.longitude);
     return result;
   }
 
   sendContact() {
     if (!this.contactEmail) {
-      this.$root.$emit('toaster-error', 'L\'email est obligatoire');
+      this.$root.$emit("toaster-error", "L'email est obligatoire");
       return;
     }
     if (!this.contactMessage) {
-      this.$root.$emit('toaster-error', 'Le message est obligatoire');
+      this.$root.$emit("toaster-error", "Le message est obligatoire");
       return;
     }
 
-    let feedback:Feedback = { 
-      id: '' + new Date().getTime(),
-      category: 'CONTACT',
+    let feedback: Feedback = {
+      id: "" + new Date().getTime(),
+      category: "CONTACT",
       date: new Date(),
       frontendVersion: this.frontendVersion,
       email: this.contactEmail,
-      description: this.contactMessage
+      description: this.contactMessage,
     };
 
-    FeedbackService.sendFeedbackNoAsync(feedback)
-      .then(
-        () => {
-          this.$root.$emit('toaster-success', 'Votre message a bien été envoyé à l\'équipe projet, merci', 10000);
-        },
-        (error) => {
-          this.$root.$emit('toaster-error', 'Une erreur est survenue, merci de réessayer ultérieurement');
-        });
+    FeedbackService.sendFeedbackNoAsync(feedback).then(
+      () => {
+        this.$root.$emit(
+          "toaster-success",
+          "Votre message a bien été envoyé à l'équipe projet, merci",
+          10000
+        );
+      },
+      (error) => {
+        this.$root.$emit(
+          "toaster-error",
+          "Une erreur est survenue, merci de réessayer ultérieurement"
+        );
+      }
+    );
   }
 
-  sectionIds:string[] = ['presentation', 'contribute', 'contact'];
-  activeSection:string = '';
-  refreshSelectedSectionTimer:any = undefined;
+  sectionIds: string[] = [
+    "presentation",
+    "communications",
+    "contribute",
+    "contact",
+  ];
+  activeSection: string = "";
+  refreshSelectedSectionTimer: any = undefined;
 
   scrolled() {
     if (this.refreshSelectedSectionTimer) {
       this.refreshSelectedSectionTimer.cancel();
     }
-    this.refreshSelectedSectionTimer = Vue.lodash.debounce(this.refreshSelectedSection, 100);
+    this.refreshSelectedSectionTimer = Vue.lodash.debounce(
+      this.refreshSelectedSection,
+      100
+    );
     this.refreshSelectedSectionTimer();
   }
 
   refreshSelectedSection() {
-    const elem = document.getElementById('about-scroll-container');
+    const elem = document.getElementById("about-scroll-container");
     if (elem) {
-      let foundSection:string = '';
+      let foundSection: string = "";
       this.sectionIds.forEach((sectionId) => {
         const sectionElem = document.getElementById(sectionId);
-        if (sectionElem && elem.scrollTop >= (sectionElem.offsetTop - 73)) { // 73 étant la hauteur du header
+        if (sectionElem && elem.scrollTop >= sectionElem.offsetTop - 73) {
+          // 73 étant la hauteur du header
           foundSection = sectionId;
         }
       });
@@ -446,7 +667,7 @@ export default class AboutView extends Vue {
     }
   }
 
-  keyFiguresItemsVisibilityChanged (isVisible:boolean) {
+  keyFiguresItemsVisibilityChanged(isVisible: boolean) {
     if (isVisible) {
       this.tripsCount = this.realTripsCount;
       this.catchsCount = this.realCatchsCount;
@@ -454,25 +675,22 @@ export default class AboutView extends Vue {
     }
   }
 
-  goToLogin () {
+  goToLogin() {
     this.closed = true;
-    ProfileService.fetchProfile()
-      .then(
-        (profile) => {
-          router.push('/trips');
-        },
-        (status) => {
-          router.push('/login');
-        }
-      );
+    ProfileService.fetchProfile().then(
+      (profile) => {
+        router.push("/trips");
+      },
+      (status) => {
+        router.push("/login");
+      }
+    );
   }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../less/libs/473-november";
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
@@ -502,7 +720,6 @@ export default class AboutView extends Vue {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-
 
     .site-logo-smartphone {
       @media only screen and (min-width: 900px) {
@@ -535,26 +752,31 @@ export default class AboutView extends Vue {
         @media only screen and (max-width: 899px) {
           display: none;
         }
+
+        @media only screen and (min-width: 900px) and (max-width: 999px) {
+          width: 140px;
+          padding-top: 20px;
+        }
       }
 
       .Navigation {
         width: unset;
         float: initial;
 
-        li { height: 73px; }
+        li {
+          height: 73px;
+        }
 
         li a {
-          padding: 22px 30px; 
-
-          @media only screen and (min-width: 1024px) and (max-width: 1200px) {
-            padding: 22px 20px; 
+          padding: 22px 30px;
+          @media only screen and (min-width: 1124px) and (max-width: 1200px) {
+            padding: 22px 20px;
           }
-          @media only screen and (min-width: 900px) and (max-width: 1023px) {
+          @media only screen and (min-width: 800px) and (max-width: 1323px) {
             padding: 22px 10px;
             font-size: 14px;
           }
         }
-
       }
 
       .authentication {
@@ -580,7 +802,6 @@ export default class AboutView extends Vue {
           padding-left: @margin-medium;
           padding-right: @margin-medium;
 
-
           @media only screen and (max-width: 1023px) {
             height: 31px;
             font-size: 14px;
@@ -589,7 +810,6 @@ export default class AboutView extends Vue {
       }
 
       @media only screen and (max-width: 899px) {
-
         position: absolute;
         z-index: 2;
         top: 0;
@@ -613,15 +833,12 @@ export default class AboutView extends Vue {
           }
         }
 
-
         .authentication {
           height: 81px;
 
           padding: 20px;
         }
-
       }
-
     }
   }
 }
@@ -630,12 +847,14 @@ export default class AboutView extends Vue {
   color: @gunmetal;
 }
 .Navigation li span {
-	background: @pelorous;
+  background: @pelorous;
 }
-.Navigation li:hover span, .Navigation li.active span {
+.Navigation li:hover span,
+.Navigation li.active span {
   opacity: 1;
 }
-.Navigation li:hover a, .Navigation li.active a {
+.Navigation li:hover a,
+.Navigation li.active a {
   color: @white;
 }
 
@@ -647,12 +866,12 @@ export default class AboutView extends Vue {
 }
 
 .Title_sec {
-	width: 100%;
-	background: url(/img/about-coregones5.jpg) top center no-repeat;
-	height: 680px;
-	position: relative;
+  width: 100%;
+  background: url(/img/about-coregones5.jpg) top center no-repeat;
+  height: 680px;
+  position: relative;
   background-size: cover;
-  
+
   .title-banner {
     background: #020a3058;
     color: @white;
@@ -686,7 +905,7 @@ export default class AboutView extends Vue {
   padding: 20px;
 
   .left-panel {
-    width:  25%;
+    width: 25%;
     h3 {
       font-size: 42px;
       color: @white;
@@ -711,7 +930,6 @@ export default class AboutView extends Vue {
       word-spacing: 2px;
       line-height: 22px;
     }
-
   }
   .right-panel {
     width: 50%;
@@ -723,20 +941,17 @@ export default class AboutView extends Vue {
 
     img {
       border-radius: 20px;
-        max-width: calc(50% - 20px);
+      max-width: calc(50% - 20px);
     }
   }
-
 
   @media only screen and (max-width: 899px) {
     height: unset;
     flex-direction: column;
     justify-content: flex-start;
 
-
     .left-panel {
       width: 80%;
-
     }
     .right-panel {
       width: 100%;
@@ -750,7 +965,6 @@ export default class AboutView extends Vue {
         border-radius: 20px;
       }
     }
-
   }
 
   @media only screen and (max-width: 630px) {
@@ -760,9 +974,7 @@ export default class AboutView extends Vue {
         border-radius: 10px;
       }
     }
-
   }
-
 }
 
 .Video_sec {
@@ -822,8 +1034,14 @@ export default class AboutView extends Vue {
     }
   }
 }
-.Contribute_sec{ background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
-.Get_sec { background: url(/img/about-background.jpg) top center no-repeat; background-size: cover; }
+.Contribute_sec {
+  background: url(/img/about-background.jpg) top center no-repeat;
+  background-size: cover;
+}
+.Get_sec {
+  background: url(/img/about-background.jpg) top center no-repeat;
+  background-size: cover;
+}
 
 .Contribute_sec p,
 .Contact_sec p {
@@ -832,6 +1050,33 @@ export default class AboutView extends Vue {
 .Pricing_sec h3,
 .About_sec h3 {
   color: @gunmetal;
+}
+
+.Communications_sec {
+  background-color: @solitude;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 30px;
+  padding-bottom: 30px;
+
+  .Center {
+    h3 {
+      color: @pelorous;
+      font-size: 57px;
+      font-family: "Oswald", sans-serif;
+      font-weight: 400;
+      margin: 0px;
+      text-transform: uppercase;
+      line-height: 60px;
+      padding-bottom: 50px;
+      @media only screen and (max-width: 1023px) {
+        padding-bottom: 20px;
+        font-size: 42px;
+      }
+    }
+  }
 }
 
 .Get_sec .Leftside textarea,
@@ -879,7 +1124,6 @@ export default class AboutView extends Vue {
 }
 
 .Producted_by_sec {
-
   background-color: @solitude;
   display: flex;
   flex-direction: column;
@@ -888,7 +1132,8 @@ export default class AboutView extends Vue {
   padding-top: 30px;
   padding-bottom: 30px;
 
-  .partners, .producers {
+  .partners,
+  .producers {
     h3 {
       text-align: center;
       font-weight: lighter;
@@ -931,8 +1176,12 @@ export default class AboutView extends Vue {
     }
   }
 
-  .Line { border: solid 1px #E17055; height: 2px; width: 252px; margin: 30px; }
-
+  .Line {
+    border: solid 1px #e17055;
+    height: 2px;
+    width: 252px;
+    margin: 30px;
+  }
 }
 
 .contribute-editable {
@@ -950,10 +1199,8 @@ export default class AboutView extends Vue {
       width: 350px;
       margin: 15px;
       padding: 30px;
-      border-radius: 15px;
       background-color: @white-smoke-alpha-20;
-      box-shadow: 5px 5px 5px @gunmetal;
-
+      border: 1px solid #1e9bc4;
       h4 {
         margin: 5px;
       }
@@ -982,16 +1229,12 @@ export default class AboutView extends Vue {
           margin-top: 5px;
           margin-bottom: 5px;
         }
-
       }
     }
-
   }
-
 }
 
 footer {
   background: #0c2b34;
 }
-
 </style>

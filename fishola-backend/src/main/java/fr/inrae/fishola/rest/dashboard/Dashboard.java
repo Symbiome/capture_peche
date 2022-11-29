@@ -22,6 +22,7 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import java.time.Month;
@@ -53,8 +54,7 @@ public interface Dashboard {
     Map<UUID, Set<String>> speciesAliases();
 
     List<Month> orderedMonths();
-
-    Map<UUID, Map<Month, Map<SizeType, Double>>> monthlySizes();
+    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes();
 
     List<PicturePerTripBean> picturesPerTrip();
 

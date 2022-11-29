@@ -190,34 +190,38 @@ export default class TripSpeciesView extends Vue {
   checkOtherSpecies() {
     // Check for existing species withing other
     const unexistingSpecies: Array<string> = [];
-    const allCustomSpecies = this.trip.otherSpecies.split(",");
-    allCustomSpecies.forEach((customOtherSpecie) => {
-      // Search through existing species to see if the entered custom specie would match one of them
-      let foundMatchingSpecie = false;
-      const customSpecie = this.lowerCaseAndRemovePlural(customOtherSpecie);
-      this.species.forEach((existingSpecie) => {
-        const existingSpecieWithAlias = existingSpecie as SpeciesWithAlias;
-        if (
-          this.lowerCaseAndRemovePlural(existingSpecieWithAlias.name) ==
-            customSpecie ||
-          this.lowerCaseAndRemovePlural(existingSpecieWithAlias.alias) ==
-            customSpecie
-        ) {
-          foundMatchingSpecie = true;
-          if (this.trip.speciesIds.indexOf(existingSpecieWithAlias.id) == -1) {
-            this.trip.speciesIds.push(existingSpecieWithAlias.id);
+    if (this.trip.otherSpecies) {
+      const allCustomSpecies = this.trip.otherSpecies.split(",");
+      allCustomSpecies.forEach((customOtherSpecie) => {
+        // Search through existing species to see if the entered custom specie would match one of them
+        let foundMatchingSpecie = false;
+        const customSpecie = this.lowerCaseAndRemovePlural(customOtherSpecie);
+        this.species.forEach((existingSpecie) => {
+          const existingSpecieWithAlias = existingSpecie as SpeciesWithAlias;
+          if (
+            this.lowerCaseAndRemovePlural(existingSpecieWithAlias.name) ==
+              customSpecie ||
+            this.lowerCaseAndRemovePlural(existingSpecieWithAlias.alias) ==
+              customSpecie
+          ) {
+            foundMatchingSpecie = true;
+            if (
+              this.trip.speciesIds.indexOf(existingSpecieWithAlias.id) == -1
+            ) {
+              this.trip.speciesIds.push(existingSpecieWithAlias.id);
+            }
           }
+        });
+
+        // If we found an existing specie matching custom name, let's use the existing specie
+        if (!foundMatchingSpecie) {
+          unexistingSpecies.push(customOtherSpecie.trim());
         }
       });
-
-      // If we found an existing specie matching custom name, let's use the existing specie
-      if (!foundMatchingSpecie) {
-        unexistingSpecies.push(customOtherSpecie.trim());
+      this.trip.otherSpecies = unexistingSpecies.join(",");
+      if (!this.trip.otherSpecies) {
+        this.hasOtherSpecies = false;
       }
-    });
-    this.trip.otherSpecies = unexistingSpecies.join(",");
-    if (!this.trip.otherSpecies) {
-      this.hasOtherSpecies = false;
     }
   }
 

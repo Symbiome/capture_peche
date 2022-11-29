@@ -262,6 +262,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Optional<String> lastName = readText(node, "lastName");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");
+            Boolean acceptsMailNotifications = readBoolean(node, "acceptsMailNotifications");
 
             ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder();
 
@@ -270,6 +271,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             lastName.ifPresent(builder::lastName);
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
+            builder.acceptsMailNotifications(acceptsMailNotifications);
+            readText(node, "lastNewsSeenDate").flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::lastNewsSeenDate);
+
 
             // Le champ est nécessaire côté Java mais on attend rien de la part du front
             builder.sampleBaseId("########");

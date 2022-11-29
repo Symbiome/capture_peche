@@ -75,6 +75,7 @@ public class SecurityResource extends AbstractFisholaResource {
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
     private static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
+    private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
 
     @Inject
     protected MailService mailService;
@@ -134,6 +135,7 @@ public class SecurityResource extends AbstractFisholaResource {
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_FIRST_NAME, bean.firstName);
         claims.put(CLAIM_LAST_NAME, bean.lastName);
+        claims.put(CLAIM_RECEIVE_MAIL_NOTIFICATIONS, ""+ bean.acceptsMailNotifications);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
@@ -234,7 +236,8 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrFail.apply(CLAIM_FIRST_NAME),
                     getClaimOrNull.apply(CLAIM_LAST_NAME),
                     email,
-                    getClaimOrFail.apply(CLAIM_PASSWORD_HASHED)
+                    getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
+                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS))
             );
 
             return true;
@@ -451,14 +454,16 @@ public class SecurityResource extends AbstractFisholaResource {
     }
 
     protected UserProfile toUserProfile(FisholaUser input) {
-        ImmutableUserProfile result = ImmutableUserProfile.builder()
+        ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder()
                 .email(input.getEmail())
                 .firstName(input.getFirstName())
                 .lastName(Optional.ofNullable(input.getLastName()))
                 .birthYear(Optional.ofNullable(input.getBirthYear()))
                 .gender(Optional.ofNullable(input.getGender()))
                 .sampleBaseId(encodeSampleBaseId(input.getSampleBaseId()))
-                .build();
+                .acceptsMailNotifications(input.getAcceptsMailNotifications())
+                .lastNewsSeenDate(input.getLastNewsSeenDate());
+        ImmutableUserProfile result = builder.build();
         return result;
     }
 
@@ -500,6 +505,8 @@ public class SecurityResource extends AbstractFisholaResource {
         user.setEmail(profile.email().toLowerCase());
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
+        user.setAcceptsMailNotifications(profile.acceptsMailNotifications());
+        user.setLastNewsSeenDate(profile.lastNewsSeenDate());
 
         Map<String, String> validationErrors = validateProfile(user);
 
