@@ -45,7 +45,7 @@
             </div>
           </div>
           <MyTrips v-if="!showNews" />
-          <News :news="news" v-else />
+          <NewsView :news="news" v-else />
         </div>
       </div>
     </div>
@@ -56,25 +56,25 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
-import News from "@/views/News.vue";
+import NewsView from "@/views/News.vue";
 import { Component, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { DocumentationLight } from "@/pojos/BackendPojos";
+import { News } from "@/pojos/BackendPojos";
 
 @Component({
   components: {
     FisholaHeader,
     MyTrips,
     FisholaFooter,
-    News,
+    NewsView,
   },
 })
 export default class TripsAndNews extends Vue {
   unreadNewsCount = 0;
   showNews = false;
-  news: DocumentationLight[] = [];
+  news: News[] = [];
 
   mounted() {
     this.updateUnreadNewsCount();
@@ -91,6 +91,7 @@ export default class TripsAndNews extends Vue {
 
       this.unreadNewsCount = this.news.filter((n) => {
         return (
+          // @ts-ignore
           Helpers.parseLocalDateTime(n.datePublicationDebut) > lastSeenDate
         );
       }).length;

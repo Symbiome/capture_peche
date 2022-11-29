@@ -76,7 +76,7 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import TripsService from "@/services/TripsService";
-import { DocumentationLight } from "@/pojos/BackendPojos";
+import { News } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
@@ -91,7 +91,7 @@ import router from "../router";
   },
 })
 export default class NewsView extends Vue {
-  @Prop() news: DocumentationLight[];
+  @Prop() news: News[];
 
   hasRunningTrip: boolean = false;
 
@@ -101,7 +101,7 @@ export default class NewsView extends Vue {
     );
   }
 
-  getMiniatureURl(news: DocumentationLight) {
+  getMiniatureURl(news: News) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {

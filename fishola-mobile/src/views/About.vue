@@ -498,7 +498,7 @@ Icon.Default.mergeOptions({
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 
 import { Component, Vue } from "vue-property-decorator";
-import { Lake, Feedback, DocumentationLight } from "@/pojos/BackendPojos";
+import { Lake, Feedback, News } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 
@@ -526,7 +526,7 @@ export default class AboutView extends Vue {
   picturesCount: number = 0;
   realPicturesCount: number = 212;
   lakes: Lake[] = [];
-  news: DocumentationLight[] = [];
+  news: News[] = [];
   catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail: string = "";
@@ -1199,7 +1199,6 @@ export default class AboutView extends Vue {
       width: 350px;
       margin: 15px;
       padding: 30px;
-      border-radius: 5px;
       background-color: @white-smoke-alpha-20;
       border: 1px solid #1e9bc4;
       h4 {

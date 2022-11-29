@@ -122,6 +122,16 @@ export interface DocumentationLight {
     url: string;
 }
 
+export interface News extends Serializable {
+    id: string;
+    name: string;
+    content: string;
+    datePublicationDebut: Date;
+    datePublicationFin: Date;
+    dateNotificationSent: Date;
+    miniatureId: string;
+}
+
 export interface UserSettings {
     promptWeight: boolean;
     promptSamples: boolean;

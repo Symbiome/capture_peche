@@ -56,7 +56,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import documentationService from "@/services/DocumentationService";
-import { DocumentationLight } from "@/pojos/BackendPojos";
+import { News } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
@@ -71,7 +71,15 @@ import router from "@/router";
 })
 export default class NewsDetailsView extends Vue {
   @Prop() newsId: string;
-  news: DocumentationLight = {};
+  news: News = {
+    id: "",
+    name: "",
+    content: "",
+    datePublicationDebut: new Date(),
+    datePublicationFin: new Date(),
+    dateNotificationSent: new Date(),
+    miniatureId: "",
+  };
 
   mounted() {
     this.loadSingleNews();
@@ -80,7 +88,7 @@ export default class NewsDetailsView extends Vue {
   async loadSingleNews(): Promise<void> {
     this.news = await documentationService.getSingleNews(this.newsId);
   }
-  getMiniatureURl(news: DocumentationLight) {
+  getMiniatureURl(news: News) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {
