@@ -1,6 +1,11 @@
 <template>
   <div class="news-about">
+    <div class="news-holder no-news" v-if="news.length == 0">
+      Pas de communications autour de Fishola pour le moment, revenez consultez
+      cette page prochainement !
+    </div>
     <div
+      v-else
       class="news-holder"
       v-for="doc in news"
       v-bind:key="doc.id"
@@ -94,6 +99,9 @@ export default class CommunicationsOnAboutPage extends Vue {
 @import "../less/main";
 .empty {
   padding-top: 20px;
+}
+.no-news {
+  color: @pale-sky;
 }
 .news-about {
   cursor: pointer;
