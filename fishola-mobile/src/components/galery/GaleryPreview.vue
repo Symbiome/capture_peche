@@ -31,7 +31,8 @@
     </div>
     <div class="preview-bottom">
       <div class="bottom-right">
-        Voir
+        <span v-if="pictureSrc">Voir</span>
+        <span v-else>Voir toutes mes photos</span>
         <button>
           <i class="icon-arrow" />
         </button>
@@ -148,7 +149,7 @@ export default class GaleryPreview extends Vue {
 
   .preview-bottom {
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
     align-items: center;
     justify-content: space-between;
 

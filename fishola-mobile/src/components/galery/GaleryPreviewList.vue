@@ -28,6 +28,11 @@
       :enableModal="false"
       :deletable="false"
     />
+    <GaleryPreview
+      v-if="firstPictures.length == 0"
+      :enableModal="false"
+      :deletable="false"
+    />
   </div>
 </template>
 

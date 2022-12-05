@@ -20,7 +20,7 @@
   -->
 <template>
   <div>
-    <div class="section" v-if="picturesPerTrip && picturesPerTrip.length > 0">
+    <div class="section" v-if="picturesPerTrip">
       <div class="shrinked">
         <h2><i class="icon-photo" />Mes photos</h2>
       </div>
