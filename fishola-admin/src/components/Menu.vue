@@ -62,7 +62,7 @@
           En téléchargement
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'news' }">
-          Actualités
+          Communications
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">

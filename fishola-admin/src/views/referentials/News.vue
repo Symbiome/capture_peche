@@ -21,7 +21,7 @@
 <template>
   <div class="pages">
     <Referential
-      name="Actualités"
+      name="Communications"
       url="/v1/news-all"
       :default-sort="['isPublic', 'desc']"
       :columns="docColumns"
@@ -103,8 +103,8 @@ export default class DocumentationVue extends Vue {
   createDocumentation() {
     const tomorow = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
     return {
-      name: "Titre de votre actualité",
-      content: "<h1>Partie 1</h1><p>Le corps de votre <b>actualité</b>",
+      name: "Titre de votre communication",
+      content: "<h1>Partie 1</h1><p>Le corps de votre <b>communication</b>",
       datePublicationDebut: [
         tomorow.year(),
         tomorow.monthValue(),
