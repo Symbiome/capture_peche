@@ -591,6 +591,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 .gender(Optional.ofNullable(input.getGender()))
                 .excludeFromExports(input.getExcludeFromExports())
                 .createdOn(input.getCreatedOn())
+                .acceptsEmailNotifications(input.getAcceptsMailNotifications())
                 .build();
         return result;
     }

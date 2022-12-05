@@ -20,18 +20,23 @@
   -->
 <template>
   <div class="lakes">
+    <b-button type="is-primary" @click="copyMails" class="contact-button">
+      Copier les emails de tous les utilisateurs acceptant d'être contactés
+    </b-button>
     <Referential
       name="Utilisateurs"
       url="/v1/security/users"
       :columns="userColumns"
-      :canDelete=true></Referential>
+      @elementsLoaded="usersLoaded"
+      :canDelete="true"
+    ></Referential>
   </div>
 </template>
 
 <script lang="ts">
-import Referential from '@/components/Referential.vue'
+import Referential from "@/components/Referential.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -39,56 +44,80 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class UsersVue extends Vue {
-
-  userColumns:any[] = [
+  userEmails = "";
+  userColumns: any[] = [
     {
-      field: 'id',
-      label: 'Identifiant',
+      field: "id",
+      label: "Identifiant",
       visible: false,
       readOnly: true
     },
     {
-      field: 'firstName',
-      label: 'Prénom',
+      field: "firstName",
+      label: "Prénom",
       readOnly: true
     },
     {
-      field: 'lastName',
-      label: 'Nom',
+      field: "lastName",
+      label: "Nom",
       readOnly: true
     },
     {
-      field: 'email',
-      label: 'E-mail',
+      field: "email",
+      label: "E-mail",
       readOnly: true
     },
     {
-      field: 'gender',
-      label: 'Genre',
+      field: "gender",
+      label: "Genre",
       readOnly: true
     },
     {
-      field: 'birthYear',
-      label: 'Année de naissance',
+      field: "birthYear",
+      label: "Année de naissance",
       readOnly: true
     },
     {
-      field: 'excludeFromExports',
-      label: 'Exclu des exports',
+      field: "excludeFromExports",
+      label: "Exclu des exports",
       isABoolean: true
     },
     {
-      field: 'createdOn',
-      label: 'Date de création',
+      field: "createdOn",
+      label: "Date de création",
       isADate: true,
       readOnly: true
     }
   ];
+
+  usersLoaded(zeUsers: any[]) {
+    this.userEmails = zeUsers
+      .filter(u => u.acceptsEmailNotifications)
+      .map(u => u.email)
+      .join(";");
+  }
+
+  copyMails() {
+    navigator.clipboard.writeText(this.userEmails);
+    const nbUsers = this.userEmails.split(";").length;
+    this.$buefy.toast.open({
+      message:
+        "Les emails des " +
+        nbUsers +
+        " utilisateurs acceptant d'être contactés par mails ont été copiés dans votre presse-papier. Vous pouvez les coller directement dans le champ 'destinataire' de votre email.",
+      type: "is-success",
+      duration: 7000
+    });
+  }
 }
 </script>
 
 <style scoped lang="less">
-
 @import "../less/main";
 
+.contact-button {
+  position: absolute;
+  right: 40px;
+  top: 80px;
+}
 </style>
