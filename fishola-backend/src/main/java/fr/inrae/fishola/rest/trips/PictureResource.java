@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,9 +76,26 @@ public class PictureResource extends AbstractFisholaResource {
     protected TripResource tripResource;
 
     @GET
-    @Path("/all-pictures")
+    @Path("/for-lake/{lakeId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<Integer, List<PicturePerTripBean>> allPicturesForLake(@PathParam("lakeId") String lakeId) {
+        Optional<List<UUID>> lakesFilter = Optional.empty();
+        if (lakeId != null && !lakeId.isEmpty()) {
+            List<UUID> lakeIds = new ArrayList<>();
+            lakeIds.add(UUID.fromString(lakeId));
+            lakesFilter = Optional.of(lakeIds);
+        }
+        return this.doGetAllPicturesForLake(lakesFilter);
+    }
+
+    @GET
+    @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<Integer, List<PicturePerTripBean>> allPictures() {
+        return this.doGetAllPicturesForLake(Optional.empty());
+    }
+
+    public Map<Integer, List<PicturePerTripBean>> doGetAllPicturesForLake(Optional<List<UUID>> lakesFilter) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> user = usersDao.findById(userId);
@@ -86,7 +104,7 @@ public class PictureResource extends AbstractFisholaResource {
         LocalDateTime now = LocalDateTime.now();
         Map<Integer, List<PicturePerTripBean>> picturesPerYear = new LinkedHashMap<>();
         while (year.getYear() <= now.getYear()) {
-            List<PicturePerTripBean> picturesPerTripForYear = tripsDao.getPicturesPerTripForYear(userId, year.getYear());
+            List<PicturePerTripBean> picturesPerTripForYear = tripsDao.getPicturesPerTripForYearAndLakes(userId, year.getYear(), lakesFilter);
             if (!picturesPerTripForYear.isEmpty()) {
                 picturesPerYear.put(year.getYear(), picturesPerTripForYear);
             }

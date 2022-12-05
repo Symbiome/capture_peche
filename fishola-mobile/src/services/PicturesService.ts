@@ -336,9 +336,17 @@ export default class PicturesService extends AbstractFisholaService {
     });
   }
 
-  static async getAllPicsPerYear(): Promise<Map<number, PicturePerTripBean>> {
+  static async getAllPicsPerYearAndLake(
+    lakeId: string
+  ): Promise<Map<number, PicturePerTripBean>> {
+    let url = "/v1/pictures/";
+    if (lakeId) {
+      url += "for-lake/" + lakeId;
+    } else {
+      url += "all";
+    }
     const onlinePics: Map<number, PicturePerTripBean> = await this.backendGet(
-      "/v1/pictures/all-pictures"
+      url
     );
     return onlinePics;
   }

@@ -23,16 +23,12 @@
     <div class="section" v-if="picturesPerTrip && picturesPerTrip.length > 0">
       <div class="shrinked">
         <h2><i class="icon-photo" />Mes photos</h2>
-        <div class="average-header" v-if="picturesPerTrip.length > 0">
-          <div class="count">{{ picturesPerTrip.length }}</div>
-          photos en {{ year }}
-        </div>
       </div>
       <div class="dashboard-top-catchs catch-preview-list-scrollable">
         <GaleryPreviewList
           v-bind:picturesPerTrip="picturesPerTrip"
           :year="year"
-          @openGalery="console.error('todo Alex')"
+          :selectedLakeUUID="selectedLakeUUID"
           bottomMode="index"
         />
       </div>

@@ -257,9 +257,9 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<PicturePerTripBean> getPicturesPerTripForYear(UUID userId, Integer year) {
+    public List<PicturePerTripBean> getPicturesPerTripForYearAndLakes(UUID userId, Integer year, Optional<List<UUID>> lakesFilter) {
         List<PicturePerTripBean> picturesPerTripForYear = new ArrayList<>();
-        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), Optional.empty());
+        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), lakesFilter);
         for(Trip trip : tripsForYear) {
             Set<UUID> catchIds = catchsDao.listCatchIds(trip.getId());
             PicturePerTripBean picturesForTrip = new PicturePerTripBean();

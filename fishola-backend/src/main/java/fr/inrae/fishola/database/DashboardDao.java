@@ -131,7 +131,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         if (yearFilter.isPresent()) {
             year = yearFilter.get();
         }
-        List<PicturePerTripBean> picturePerTrip = tripsDao.getPicturesPerTripForYear(userId, year);
+        List<PicturePerTripBean> picturePerTrip = tripsDao.getPicturesPerTripForYearAndLakes(userId, year, lakesFilter);
         builder.picturesPerTrip(picturePerTrip);
 
         Dashboard result = builder.build();

@@ -41,16 +41,8 @@
 </template>
 
 <script lang="ts">
-import CatchSummary from "@/pojos/CatchSummary";
-import { SpeciesWithAlias, Technique, TripBean } from "@/pojos/BackendPojos";
-
 import PicturePreview from "@/components/trip/PicturePreview.vue";
 import Top from "@/components/common/Top.vue";
-
-import PicturesService from "@/services/PicturesService";
-import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
-import ReferentialService from "@/services/ReferentialService";
-import Constants from "@/services/Constants";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "@/router";
@@ -65,9 +57,16 @@ export default class GaleryPreview extends Vue {
   @Prop() lakeName: string;
   @Prop() date: Date;
   @Prop() pictureSrc: string;
+  @Prop() selectedLakeUUID: string;
 
   openGallery(pictureSrc: string) {
-    router.push({ name: "galery", params: { selectedDefaultPic: pictureSrc } });
+    router.push({
+      name: "galery",
+      params: {
+        selectedDefaultPic: pictureSrc,
+        selectedLakeUUIDProp: this.selectedLakeUUID,
+      },
+    });
   }
 }
 </script>

@@ -26,6 +26,11 @@
         <div class="pane-content rounded" id="scroller">
           <div class="two-sides">
             <div class="left-part" id="galery-div">
+              <select placeholder="lake" v-model="selectedLakeUUID">
+                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+                </option>
+              </select>
               <div v-for="year in years" :key="'gal-' + year" class="">
                 <h1>{{ year }}</h1>
                 <div
@@ -69,10 +74,11 @@
 
 <script lang="ts">
 import GaleryPreview from "@/components/galery/GaleryPreview.vue";
-import { PicturePerTripBean } from "@/pojos/BackendPojos";
+import { PicturePerTripBean, Lake } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PicturesService from "@/services/PicturesService";
+import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -86,12 +92,22 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 })
 export default class GaleryFull extends Vue {
   @Prop() selectedDefaultPic: string;
+  @Prop({ default: "" }) selectedLakeUUIDProp: string;
   allPicsPerYear: Map<number, PicturePerTripBean> = new Map();
   years: string[] = [];
+  lakes: Lake[] = [];
+  selectedLakeUUID = "";
 
   selectedPic = "";
+
   mounted() {
-    this.selectedDefaultPicChanged();
+    this.reload();
+  }
+
+  async reload() {
+    await this.loadLakes();
+    await this.selectedDefaultPicChanged();
+    this.selectedLakeUUID = this.selectedLakeUUIDProp;
     this.loadFullGaleryAndSelectCorrectPic();
   }
 
@@ -101,8 +117,11 @@ export default class GaleryFull extends Vue {
   }
 
   @Watch("picturesPerTrip")
+  @Watch("selectedLakeUUID")
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
-    this.allPicsPerYear = await PicturesService.getAllPicsPerYear();
+    this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
+      this.selectedLakeUUID
+    );
     this.years = Object.keys(this.allPicsPerYear).reverse();
     if (!this.selectedPic) {
       this.selectedPic = this.selectedDefaultPic;
@@ -110,6 +129,8 @@ export default class GaleryFull extends Vue {
     if (
       !this.selectedPic &&
       this.years.length &&
+      this.allPicsPerYear &&
+      this.allPicsPerYear.values &&
       this.allPicsPerYear.values()
     ) {
       const ppT = [...this.allPicsPerYear.values()][0];
@@ -127,6 +148,20 @@ export default class GaleryFull extends Vue {
 
   getPicURL(picURL: string): string {
     return Constants.apiUrl(picURL);
+  }
+
+  async loadLakes(): Promise<void> {
+    this.lakes = [];
+    const defaultLake = {
+      id: "",
+      name: "Tous les lacs",
+      exportAs: "",
+      latitude: 0,
+      longitude: 0,
+    };
+    this.lakes.push(defaultLake);
+    const allLakes = await ReferentialService.getLakes();
+    this.lakes = this.lakes.concat(allLakes);
   }
 }
 </script>

@@ -20,15 +20,14 @@
   -->
 <template>
   <div class="galery-preview-list">
-    <div v-for="ppT in firstPictures" :key="'trippic-' + ppT.tripId">
-      <GaleryPreview
-        v-for="picURL in ppT.pictureURLs"
-        :key="picURL"
-        :pictureSrc="getPicURL(picURL)"
-        :enableModal="false"
-        :deletable="false"
-      />
-    </div>
+    <GaleryPreview
+      :selectedLakeUUID="selectedLakeUUID"
+      v-for="picURL in firstPictures"
+      :key="picURL"
+      :pictureSrc="getPicURL(picURL)"
+      :enableModal="false"
+      :deletable="false"
+    />
   </div>
 </template>
 
@@ -49,8 +48,9 @@ import Constants from "../../services/Constants";
 export default class GaleryPreviewList extends Vue {
   @Prop() picturesPerTrip: PicturePerTripBean[];
   @Prop() year: number;
+  @Prop({ default: "" }) selectedLakeUUID: string;
 
-  firstPictures: PicturePerTripBean[] = [];
+  firstPictures: string[] = [];
 
   created() {}
 
@@ -63,9 +63,14 @@ export default class GaleryPreviewList extends Vue {
 
   @Watch("picturesPerTrip")
   picturesPerTripChanged() {
-    // Only show the first 10 pictures
-    const numberOfPicsToKeep = Math.min(10, this.picturesPerTrip.length);
-    this.firstPictures = this.picturesPerTrip.slice(0, numberOfPicsToKeep);
+    var i = 0;
+    this.firstPictures = [];
+    while (this.firstPictures.length < 4 && i < this.picturesPerTrip.length) {
+      this.firstPictures = this.firstPictures.concat(
+        this.picturesPerTrip[i].pictureURLs
+      );
+      i++;
+    }
   }
 
   scrollToFirstElement() {
