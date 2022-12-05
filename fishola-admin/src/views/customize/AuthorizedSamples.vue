@@ -20,7 +20,21 @@
   -->
 <template>
   <div class="authorized-samples">
-    <h1>Autorisations de prélèvement et taille des maillages</h1>
+    <h1>
+      Autorisations de prélèvement et taille des maillages
+      <div class="align-right">
+        <b-upload
+          class="button is-primary export-button"
+          accept=".csv"
+          @input="importCsv"
+        >
+          Importer un csv
+        </b-upload>
+        <b-button type="is-primary export-button" @click="exportCsv">
+          Exporter en csv
+        </b-button>
+      </div>
+    </h1>
     <table class="table is-striped">
       <thead>
         <tr>
@@ -77,7 +91,7 @@
 </template>
 
 <script lans="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
 
@@ -139,6 +153,7 @@ export default class AuthorizedSamplesVue extends Vue {
     ]).then(
       res => {
         this.reloadData();
+        console.info(res);
         this.$buefy.toast.open({
           message: "Autorisations de prélèvement enregistrées",
           type: "is-success"
@@ -154,6 +169,116 @@ export default class AuthorizedSamplesVue extends Vue {
       }
     );
   }
+
+  importCsv(file) {
+    var reader = new FileReader();
+    let getSpecieWithName = this.getSpecieWithName;
+    let getLakeWithName = this.getLakeWithName;
+    let buefy = this.$buefy;
+
+    this.authorizedSamplesMap = {};
+    this.minSizeMap = {};
+    this.lakes.forEach(l => {
+      this.authorizedSamplesMap[l.id] = {};
+      this.minSizeMap[l.id] = {};
+    });
+    let authorizedSamplesMap = this.authorizedSamplesMap;
+    let minSizeMap = this.minSizeMap;
+    let updateFromCsv = this.updateFromCsv;
+
+    reader.readAsText(file, "UTF-8");
+    reader.onload = function(evt) {
+      let csvContent = evt.target.result;
+      const csvLines = csvContent.split("\n");
+      const csvLakes = csvLines[0].split(";");
+      for (var i = 1; i < csvLines.length - 1; i++) {
+        const csvColumns = csvLines[i].split(";");
+        const specieId = getSpecieWithName(csvColumns[0]);
+        if (!specieId) {
+          buefy.toast.open({
+            message: "Espèce inconnue : " + csvColumns[0],
+            type: "is-danger"
+          });
+          return;
+        }
+
+        for (var j = 1; j < csvColumns.length; j++) {
+          const lakeId = getLakeWithName(csvLakes[j]);
+          if (!lakeId) {
+            buefy.toast.open({
+              message: "Lac inconnu : " + csvLakes[j],
+              type: "is-danger"
+            });
+            return;
+          }
+
+          if (csvColumns[j]) {
+            authorizedSamplesMap[lakeId][specieId] = true;
+            minSizeMap[lakeId][specieId] = csvColumns[j];
+          } else {
+            authorizedSamplesMap[lakeId][specieId] = false;
+            minSizeMap[lakeId][specieId] = undefined;
+          }
+        }
+      }
+      updateFromCsv(authorizedSamplesMap, minSizeMap);
+    };
+  }
+
+  updateFromCsv(authorizedSamplesMap, minSizeMap) {
+    console.error(authorizedSamplesMap, minSizeMap);
+    this.authorizedSamplesMap = authorizedSamplesMap;
+    this.minSizeMap = minSizeMap;
+
+    this.$forceUpdate();
+  }
+
+  exportCsv() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += ";";
+    const columns = this.lakes.map(l => l.name);
+    for (var i = 0; i < columns.length; i++) {
+      if (i > 0) {
+        csvContent += ";";
+      }
+      csvContent += columns[i];
+    }
+    csvContent += "\n";
+
+    this.species.forEach(specie => {
+      var csvRow = "";
+      csvRow += specie.name + ";";
+      this.lakes
+        .map(l => l.id)
+        .forEach(lakeId => {
+          const maillageSize = this.minSizeMap[lakeId]
+            ? this.minSizeMap[lakeId][specie.id]
+            : "";
+          csvRow += (maillageSize ? maillageSize : "") + ";";
+        });
+      csvContent += csvRow + "\n";
+    });
+    var encodedUri = encodeURI(csvContent);
+    window.open(encodedUri);
+  }
+
+  getSpecieWithName(specieName) {
+    let specie = this.species.filter(s => s.name == specieName);
+    if (specie.length == 1) {
+      return specie[0].id;
+    } else {
+      return;
+    }
+  }
+
+  getLakeWithName(lakeName) {
+    let lake = this.lakes.filter(l => l.name == lakeName);
+    if (lake.length == 1) {
+      return lake[0].id;
+    } else {
+      return;
+    }
+  }
 }
 </script>
 
@@ -161,6 +286,13 @@ export default class AuthorizedSamplesVue extends Vue {
 @import "../../less/main";
 
 .authorized-samples {
+  h1 {
+    display: flex;
+    justify-content: space-between;
+    .export-button {
+      margin-left: 10px;
+    }
+  }
   .table {
     width: 100%;
   }

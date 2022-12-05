@@ -418,18 +418,19 @@ export default class RefenretialItem extends Vue {
     let rangeBeginningColumn = this.columns.filter(c => c.isAPeriodBeginning);
     let rangeEndColumn = this.columns.filter(c => c.isAPeriodEnd);
 
-    this.dateRange[0].setHours(7);
-    this.dateRange[0].setMinutes(30);
-    this.item[rangeBeginningColumn[0].field] = LocalDateTime.from(
-      nativeJs(this.dateRange[0])
-    );
+    if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
+      this.dateRange[0].setHours(7);
+      this.dateRange[0].setMinutes(30);
+      this.item[rangeBeginningColumn[0].field] = LocalDateTime.from(
+        nativeJs(this.dateRange[0])
+      );
 
-    this.dateRange[1].setHours(21);
-    this.dateRange[1].setMinutes(0);
-    this.item[rangeEndColumn[0].field] = LocalDateTime.from(
-      nativeJs(this.dateRange[1])
-    );
-
+      this.dateRange[1].setHours(21);
+      this.dateRange[1].setMinutes(0);
+      this.item[rangeEndColumn[0].field] = LocalDateTime.from(
+        nativeJs(this.dateRange[1])
+      );
+    }
     let onSavedCallback = () => {
       this.$emit("referential-updated");
       this.input.file = null;
