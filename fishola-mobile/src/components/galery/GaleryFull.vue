@@ -26,38 +26,58 @@
         <div class="pane-content rounded" id="scroller">
           <div class="two-sides">
             <div class="left-part" id="galery-div">
-              <select placeholder="lake" v-model="selectedLakeUUID">
+              <select
+                v-if="selectedLakeUUID"
+                class="lake-gallery-select"
+                placeholder="lake"
+                v-model="selectedLakeUUID"
+              >
                 <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
                   {{ lake.name }}
                 </option>
               </select>
-              <div v-for="year in years" :key="'gal-' + year" class="">
-                <h1>{{ year }}</h1>
-                <div
-                  class="trip-holder"
-                  v-for="ppT in allPicsPerYear[year]"
-                  :key="'trippic-' + ppT.tripId"
-                >
-                  <span class="trip-date"
-                    >{{ formatTripDate(ppT.tripDate) }}
-                  </span>
-                  <div class="galery-pics-container">
-                    <img
-                      class="galery-pic"
-                      :class="{ selected: getPicURL(picURL) == selectedPic }"
-                      v-for="picURL in ppT.pictureURLs"
-                      :key="picURL"
-                      @click="selectedPic = getPicURL(picURL)"
-                      :src="getPicURL(picURL)"
-                      :enableModal="false"
-                      :deletable="false"
-                    />
+              <div class="years">
+                <div v-for="year in years" :key="'gal-' + year" class="">
+                  <h1>{{ year }}</h1>
+                  <div
+                    class="trip-holder"
+                    v-for="ppT in allPicsPerYear[year]"
+                    :key="'trippic-' + ppT.tripId"
+                  >
+                    <span class="trip-date"
+                      >{{ formatTripDate(ppT.tripDate) }}
+                    </span>
+                    <div class="galery-pics-container">
+                      <img
+                        class="galery-pic"
+                        :class="{ selected: getPicURL(picURL) == selectedPic }"
+                        v-for="picURL in ppT.pictureURLs"
+                        :key="picURL"
+                        @click="selectedPic = getPicURL(picURL)"
+                        :src="getPicURL(picURL)"
+                        :enableModal="false"
+                        :deletable="false"
+                      />
+                    </div>
                   </div>
+                </div>
+                <div
+                  v-if="!years || years.length == 0"
+                  class="no-pic-in-galery"
+                >
+                  <img
+                    src="/img/camera.svg"
+                    class="galery-pic selected"
+                    :enableModal="false"
+                    :deletable="false"
+                  />
+                  Aucune photo
                 </div>
               </div>
             </div>
             <div class="right-part">
               <img
+                v-if="selectedPic"
                 class="main-pic"
                 :src="selectedPic"
                 :enableModal="false"
@@ -205,6 +225,16 @@ export default class GaleryFull extends Vue {
   display: flex;
 
   .left-part {
+    .lake-gallery-select {
+      background-color: white;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      margin-left: 0px;
+      height: 40px;
+      border: 1px solid @pale-sky;
+      border-radius: 3px;
+    }
     h1 {
       color: white;
       font-size: 20px;
@@ -243,6 +273,33 @@ export default class GaleryFull extends Vue {
 
     @media screen and (max-width: 1300px) {
       display: none;
+    }
+  }
+
+  .no-pic-in-galery {
+    height: 100%;
+    width: 134px;
+    height: 93px;
+    margin-top: 40px;
+    background-color: #e7e7e7;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: @link-water;
+
+    cursor: pointer;
+
+    span {
+      margin-top: @vertical-margin-small;
+      color: @pale-sky;
+      font-weight: 300;
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
     }
   }
 }
