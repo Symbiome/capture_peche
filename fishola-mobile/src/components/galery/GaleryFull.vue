@@ -34,13 +34,14 @@
               <div v-for="year in years" :key="'gal-' + year" class="">
                 <h1>{{ year }}</h1>
                 <div
+                  class="trip-holder"
                   v-for="ppT in allPicsPerYear[year]"
                   :key="'trippic-' + ppT.tripId"
                 >
-                  {{ ppT.tripLakeName }} {{ ppT.tripDate }} <br />
-                  <div
-                    class="dashboard-top-catchs catch-preview-list-scrollable"
-                  >
+                  <span class="trip-date"
+                    >{{ formatTripDate(ppT.tripDate) }}
+                  </span>
+                  <div class="galery-pics-container">
                     <img
                       class="galery-pic"
                       :class="{ selected: getPicURL(picURL) == selectedPic }"
@@ -82,6 +83,7 @@ import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import Helpers from "../../services/Helpers";
 
 @Component({
   components: {
@@ -102,48 +104,50 @@ export default class GaleryFull extends Vue {
 
   mounted() {
     this.reload();
+    this.selectedPic = this.selectedDefaultPic;
   }
 
   async reload() {
     await this.loadLakes();
-    await this.selectedDefaultPicChanged();
     this.selectedLakeUUID = this.selectedLakeUUIDProp;
     this.loadFullGaleryAndSelectCorrectPic();
   }
 
-  @Watch("selectedDefaultPic")
-  selectedDefaultPicChanged(): void {
-    this.selectedPic = this.selectedDefaultPic;
+  @Watch("selectedLakeUUID")
+  selectedLakeChanged(): void {
+    this.selectedPic = "";
+    this.loadFullGaleryAndSelectCorrectPic();
+  }
+
+  @Watch("selectedPic")
+  selectedPicChanged() {
+    if (this.selectedPic) {
+      this.$nextTick(() => {
+        var selectedPicImg = document.getElementsByClassName("selected");
+        var container = document.getElementById("scroller");
+        if (selectedPicImg.length && container) {
+          var topPos = (selectedPicImg[0] as HTMLElement).offsetTop;
+          container.scrollTop = Math.max(0, topPos - 400);
+        }
+      });
+    }
   }
 
   @Watch("picturesPerTrip")
-  @Watch("selectedLakeUUID")
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
     this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
       this.selectedLakeUUID
     );
     this.years = Object.keys(this.allPicsPerYear).reverse();
-    if (!this.selectedPic) {
-      this.selectedPic = this.selectedDefaultPic;
-    }
     if (
       !this.selectedPic &&
       this.years.length &&
       this.allPicsPerYear &&
-      this.allPicsPerYear.values &&
-      this.allPicsPerYear.values()
+      this.allPicsPerYear[this.years[0]]
     ) {
-      const ppT = [...this.allPicsPerYear.values()][0];
+      const ppT = [...this.allPicsPerYear[this.years[0]]][0];
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
     }
-    this.$nextTick(() => {
-      var selectedPicImg = document.getElementsByClassName("selected");
-      var container = document.getElementById("scroller");
-      if (selectedPicImg.length && container) {
-        var topPos = (selectedPicImg[0] as HTMLElement).offsetTop;
-        container.scrollTop = Math.max(0, topPos - 400);
-      }
-    });
   }
 
   getPicURL(picURL: string): string {
@@ -163,6 +167,10 @@ export default class GaleryFull extends Vue {
     const allLakes = await ReferentialService.getLakes();
     this.lakes = this.lakes.concat(allLakes);
   }
+
+  formatTripDate(input: any): string {
+    return Helpers.formatToDateWithoutYear(Helpers.parseLocalDate(input));
+  }
 }
 </script>
 
@@ -170,27 +178,26 @@ export default class GaleryFull extends Vue {
 <style scoped lang="less">
 @import "../../less/main";
 
-.galery-preview-list {
-  height: 100%;
-  display: flex;
-
-  padding-left: calc(@margin-large + 5px);
-  padding-right: calc(@margin-large + 5px);
-
-  @media screen and (min-width: @desktop-min-width) {
-    padding-left: calc(@margin-large-desktop + 5px);
-    padding-right: calc(@margin-large-desktop + 5px);
+.galery-page {
+  .pane {
+    background-color: @galery-background !important;
   }
 }
 
-.galery-pic {
-  object-fit: cover;
-  width: 230px;
-  height: 230px;
-  padding: 10px;
+.galery-pics-container {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-direction: row;
+  .galery-pic {
+    object-fit: cover;
+    width: 134px;
+    height: 93px;
 
-  &.selected {
-    border: 10px solid red;
+    &.selected {
+      border: 5px solid @orange-odd;
+    }
   }
 }
 
@@ -198,13 +205,44 @@ export default class GaleryFull extends Vue {
   display: flex;
 
   .left-part {
-    width: 35vw;
+    h1 {
+      color: white;
+      font-size: 20px;
+      padding: 0px;
+      margin-bottom: 5px;
+      margin-top: 5px;
+      margin-left: 0px;
+      margin-right: 0px;
+    }
+    width: 40vw;
+    min-width: 450px;
+    max-width: 100vw;
+
+    .trip-holder {
+      font-size: 16px;
+      color: white;
+      padding-bottom: 20px;
+      .trip-date {
+        display: block;
+        padding-bottom: 5px;
+      }
+    }
+    @media screen and (max-width: 1300px) {
+      width: 100%;
+    }
   }
   .right-part {
-    height: 60vh;
-    width: 65vw;
+    width: 100%;
+    padding-top: 20px;
     .main-pic {
-      width: 60vw;
+      position: fixed;
+      object-fit: contain;
+      width: 50vw;
+      height: 95vh;
+    }
+
+    @media screen and (max-width: 1300px) {
+      display: none;
     }
   }
 }

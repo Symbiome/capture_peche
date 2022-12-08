@@ -135,6 +135,14 @@ export default class Helpers {
     return result;
   }
 
+  static formatToDateWithoutYear(date: Date): string {
+    const dayOptions = {
+      day: "numeric",
+      month: "long",
+    };
+    const result = date.toLocaleDateString("fr-FR", dayOptions);
+    return result;
+  }
   static formatToLongDate(date: Date): string {
     const dayOptions = {
       weekday: "long",
