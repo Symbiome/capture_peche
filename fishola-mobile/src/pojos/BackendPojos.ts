@@ -211,6 +211,7 @@ export interface DashboardLastTrip {
 export interface PicturePerTripBean {
     tripDate: Date;
     tripId: string;
+    tripName: string;
     tripLakeName: string;
     pictureURLs: string[];
 }

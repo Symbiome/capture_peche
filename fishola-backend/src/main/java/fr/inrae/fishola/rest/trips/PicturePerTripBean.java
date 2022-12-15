@@ -7,6 +7,7 @@ import java.util.UUID;
 public class PicturePerTripBean {
     public LocalDate tripDate;
     public UUID tripId;
+    public String tripName;
     public String tripLakeName;
     public List<String> pictureURLs;
 }

@@ -53,7 +53,12 @@
                         :class="{ selected: getPicURL(picURL) == selectedPic }"
                         v-for="picURL in ppT.pictureURLs"
                         :key="picURL"
-                        @click="selectedPic = getPicURL(picURL)"
+                        @click="
+                          selectedPic = getPicURL(picURL);
+                          tripDate = formatTripDate(ppT.tripDate);
+                          tripLake = ppT.tripLakeName;
+                          tripTitel = ppT.tripTitle;
+                        "
                         :src="getPicURL(picURL)"
                         :enableModal="false"
                         :deletable="false"
@@ -83,6 +88,15 @@
                 :enableModal="false"
                 :deletable="false"
               />
+              <div class="main-pic-bottom">
+                <div class="main-pic-bottom-delete-button">
+                  <button>Supprimer</button>
+                </div>
+                <div class="main-pic-bottom-bar">
+                  {{ tripTitle }} <br />
+                  {{ tripDate }} | {{ tripLake }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -119,6 +133,9 @@ export default class GaleryFull extends Vue {
   years: string[] = [];
   lakes: Lake[] = [];
   selectedLakeUUID = "";
+  tripDate = "";
+  tripLake = "";
+  tripTitle = "";
 
   selectedPic = "";
 
@@ -163,10 +180,14 @@ export default class GaleryFull extends Vue {
       !this.selectedPic &&
       this.years.length &&
       this.allPicsPerYear &&
-      this.allPicsPerYear[this.years[0]]
+      this.allPicsPerYear.get(parseInt(this.years[0]))
     ) {
-      const ppT = [...this.allPicsPerYear[this.years[0]]][0];
+      // @ts-ignore
+      const ppT = [...this.allPicsPerYear.get(parseInt(this.years[0]))][0];
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
+      this.tripDate = this.formatTripDate(ppT.tripDate);
+      this.tripLake = ppT.tripLakeName;
+      this.tripTitle = ppT.tripTitle;
     }
   }
 
@@ -225,6 +246,9 @@ export default class GaleryFull extends Vue {
   display: flex;
 
   .left-part {
+    width: 25vw;
+    min-width: 450px;
+    max-width: 100vw;
     .lake-gallery-select {
       background-color: white;
       margin-top: 10px;
@@ -244,9 +268,6 @@ export default class GaleryFull extends Vue {
       margin-left: 0px;
       margin-right: 0px;
     }
-    width: 40vw;
-    min-width: 450px;
-    max-width: 100vw;
 
     .trip-holder {
       font-size: 16px;
@@ -262,17 +283,131 @@ export default class GaleryFull extends Vue {
     }
   }
   .right-part {
-    width: 100%;
-    padding-top: 20px;
+    position: absolute;
+    right: 0px;
+    width: 65vw;
+    height: 100vh;
     .main-pic {
       position: fixed;
+      right: 0px;
       object-fit: contain;
-      width: 50vw;
+      width: 55vw;
       height: 95vh;
+      background-color: @galery-pick-background;
+    }
+
+    .main-pic-bottom {
+      position: absolute;
+      right: 0px;
+      width: 55vw;
+      bottom: 0px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .main-pic-bottom-delete-button {
+        position: absolute;
+        top: -20px;
+        z-index: 10;
+
+        height: 41px;
+        width: fit-content;
+
+        display: flex;
+        justify-content: center;
+
+        z-index: 10;
+
+        div {
+          height: 41px;
+        }
+
+        button {
+          height: 100%;
+          width: 100%;
+          border-radius: 22px;
+
+          font-style: normal;
+          font-weight: bold;
+          font-size: @fontsize-button;
+          line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+          color: @white;
+          background-color: @terra-cotta;
+
+          border: 0px;
+          padding-left: @margin-medium;
+          padding-right: @margin-medium;
+        }
+      }
+
+      .main-pic-bottom-bar {
+        height: 76px;
+        padding: 20px;
+
+        @media (max-height: 650px) {
+          height: 56px;
+        }
+
+        background-color: @cyprus;
+        font-size: @fontsize-button;
+        line-height: calc(@fontsize-button + @line-height-padding-x-large);
+        color: @white;
+        width: 100%;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        .right,
+        .left {
+          height: fit-content;
+          text-align: center;
+          margin-left: @margin-large;
+          margin-right: @margin-large;
+
+          @media (max-width: 400px) {
+            margin-left: @margin-medium;
+            margin-right: @margin-medium;
+          }
+        }
+      }
     }
 
     @media screen and (max-width: 1300px) {
       display: none;
+    }
+
+    @media screen and (max-width: 1500px) {
+      .main-pic {
+        width: 40vw;
+      }
+
+      .main-pic-bottom {
+        width: 40vw;
+      }
+    }
+
+    @media screen and (min-width: 1500px) and (max-width: 1600px) {
+      .main-pic {
+        width: 45vw;
+      }
+
+      .main-pic-bottom {
+        width: 45vw;
+      }
+    }
+
+    @media screen and (min-width: 1600px) and (max-width: 1750px) {
+      .main-pic {
+        width: 50vw;
+      }
+
+      .main-pic-bottom {
+        width: 50vw;
+      }
     }
   }
 
