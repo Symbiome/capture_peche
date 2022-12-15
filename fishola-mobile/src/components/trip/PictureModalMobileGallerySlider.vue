@@ -81,6 +81,7 @@
           v-if="currentSlide < slides.length - 1"
         ></i>
       </div>
+      <i class="icon-share share" @click="sharePic"></i>
     </div>
   </div>
 </template>
@@ -89,6 +90,7 @@
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import FooterButton from "@/components/layout/FooterButton.vue";
+import ShareService from "@/services/ShareService";
 
 @Component({
   components: { FooterButton },
@@ -142,6 +144,10 @@ export default class PictureModalMobileGallerySlider extends Vue {
       }
     }
   }
+
+  sharePic(): void {
+    ShareService.sharePicture(this.slides[this.currentSlide].src, "prise.png");
+  }
 }
 
 class GallerySlide {
@@ -163,7 +169,8 @@ class GallerySlide {
     img {
       height: 68vh;
       width: 100vw;
-      object-fit: cover;
+      object-fit: contain;
+      background-color: @galery-pick-background;
     }
     .add-picture {
       padding-top: 10vh;
@@ -231,5 +238,12 @@ class GallerySlide {
   to {
     opacity: 1;
   }
+}
+
+.share {
+  font-weight: bolder;
+  font-size: 28px !important;
+  cursor: pointer;
+  width: 50px;
 }
 </style>

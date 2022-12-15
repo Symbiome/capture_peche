@@ -122,6 +122,11 @@
                 <div class="main-pic-bottom-bar" v-else>
                   Aucune photo sélectionnée
                 </div>
+                <div class="download-button" v-if="selectedPic">
+                  <button @click="downloadSelectedPic">
+                    <i class="icon-download" /> Télécharger
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -140,6 +145,7 @@ import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PicturesService from "@/services/PicturesService";
+import ShareService from "@/services/ShareService";
 import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
@@ -225,7 +231,9 @@ export default class GaleryFull extends Vue {
     this.tripLake = ppT.tripLakeName;
     this.tripId = ppT.tripId;
     this.tripTitle = ppT.tripName;
+    // @ts-ignore
     this.tripPics = ppT.pictureURLs.map((pictureURL) => {
+      // @ts-ignore
       let pic: PictureContentWithOrder = {};
       pic.content = this.getPicURL(pictureURL);
       return pic;
@@ -276,6 +284,16 @@ export default class GaleryFull extends Vue {
 
   async seeTrip(tripId: string) {
     router.push("/trips/" + tripId);
+  }
+
+  async downloadSelectedPic() {
+    const fileName =
+      "capture_" +
+      this.tripLake.replace(" ", "").replace("'", "") +
+      "_" +
+      this.formatTripDate(this.tripDate).replace(" ", "-") +
+      ".png";
+    ShareService.sharePicture(this.selectedPic, fileName);
   }
 }
 </script>
@@ -517,6 +535,51 @@ export default class GaleryFull extends Vue {
       line-height: calc(
         @fontsize-small-paragraph + @line-height-padding-medium
       );
+    }
+  }
+  .download-button {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    height: 20px;
+
+    z-index: 10;
+
+    height: 41px;
+    width: fit-content;
+
+    display: flex;
+    justify-content: center;
+
+    z-index: 10;
+
+    button {
+      height: 100%;
+      width: 100%;
+      border-radius: 22px;
+
+      font-style: normal;
+      font-weight: bold;
+      font-size: @fontsize-button;
+      line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+      color: @pelorous;
+      background-color: #dadada;
+
+      border: 0px;
+      border: 1px solid @pelorous;
+      padding-left: @margin-medium;
+      padding-right: @margin-medium;
+
+      .icon-download {
+        padding-right: 10px;
+      }
+
+      &:hover {
+        border-color: #dadada;
+        background-color: @pelorous;
+        color: #dadada;
+      }
     }
   }
 }
