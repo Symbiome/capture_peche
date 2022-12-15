@@ -47,6 +47,7 @@
     <div class="footer">
       <FooterButton
         v-if="
+          !readOnly &&
           !slides[currentSlide].isAddPicButton &&
           !slides[currentSlide].isMeasurementPic
         "
@@ -92,6 +93,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
   @Prop({ default: false }) deleteButton: boolean;
   @Prop() otherPics: PictureContentWithOrder[];
   @Prop({ default: "" }) measurementPictureSrc: "";
+  @Prop() readOnly: boolean;
   slides: GallerySlide[] = [];
   lastSwipe = Date.now();
   currentSlide = 0;
@@ -112,7 +114,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
       this.slides.push(gallerySlide);
     }
     // Push a last slide for adding new pics
-    if (this.slides.length < 5) {
+    if (this.slides.length < 5 && !this.readOnly) {
       const gallerySlide = new GallerySlide();
       gallerySlide.order = i;
       gallerySlide.isAddPicButton = true;
@@ -120,7 +122,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
     }
     for (var j = 0; j < this.slides.length; j++) {
       if (this.slides[j].src == this.src) {
-        this.currentSlide = i;
+        this.currentSlide = j;
       }
     }
   }

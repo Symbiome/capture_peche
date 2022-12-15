@@ -21,6 +21,22 @@
 <template>
   <div class="page-with-header-and-footer shifted-background">
     <FisholaHeader />
+    <PictureModal
+      class="picture-modal-gallery-full"
+      :forceMobileMode="true"
+      v-if="selectedPic && modalOpened"
+      :deleteButton="false"
+      @closeModal="modalOpened = false"
+      :src="selectedPic"
+      :otherPics="tripPics"
+      :readOnly="true"
+    >
+      <p style="text-align: center">
+        {{ tripTitle }} <br />
+        {{ tripDate }} | {{ tripLake }}
+      </p>
+    </PictureModal>
+
     <div class="page galery-page">
       <div class="pane pane-only">
         <div class="pane-content rounded" id="scroller">
@@ -55,9 +71,7 @@
                         :key="picURL"
                         @click="
                           selectedPic = getPicURL(picURL);
-                          tripDate = formatTripDate(ppT.tripDate);
-                          tripLake = ppT.tripLakeName;
-                          tripTitle = ppT.tripName;
+                          picturePerTripChanged(ppT);
                         "
                         :src="getPicURL(picURL)"
                         :enableModal="false"
@@ -120,6 +134,7 @@
 <script lang="ts">
 import GaleryPreview from "@/components/galery/GaleryPreview.vue";
 import { PicturePerTripBean, Lake } from "@/pojos/BackendPojos";
+import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import PicturesService from "@/services/PicturesService";
@@ -129,11 +144,13 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
+import PictureModal from "../trip/PictureModal.vue";
 
 @Component({
   components: {
     GaleryPreview,
     FisholaHeader,
+    PictureModal,
     FisholaFooter,
   },
 })
@@ -143,11 +160,13 @@ export default class GaleryFull extends Vue {
   allPicsPerYear: Map<number, PicturePerTripBean> = new Map();
   years: string[] = [];
   lakes: Lake[] = [];
+  tripPics = [];
   selectedLakeUUID = "";
   tripDate = "";
   tripLake = "";
   tripTitle = "";
   tripId = "";
+  modalOpened = true;
 
   selectedPic = "";
 
@@ -186,15 +205,25 @@ export default class GaleryFull extends Vue {
         this.allPicsPerYear[year].forEach((ppT: PicturePerTripBean) => {
           ppT.pictureURLs.forEach((picURL: string) => {
             if (this.getPicURL(picURL) == this.selectedPic) {
-              this.tripDate = this.formatTripDate(ppT.tripDate);
-              this.tripLake = ppT.tripLakeName;
-              this.tripId = ppT.tripId;
-              this.tripTitle = ppT.tripName;
+              this.picturePerTripChanged(ppT);
             }
           });
         });
       });
+      this.modalOpened = true;
     }
+  }
+
+  picturePerTripChanged(ppT: PicturePerTripBean) {
+    this.tripDate = this.formatTripDate(ppT.tripDate);
+    this.tripLake = ppT.tripLakeName;
+    this.tripId = ppT.tripId;
+    this.tripTitle = ppT.tripName;
+    this.tripPics = ppT.pictureURLs.map((pictureURL) => {
+      let pic: PictureContentWithOrder = {};
+      pic.content = this.getPicURL(pictureURL);
+      return pic;
+    });
   }
 
   @Watch("picturesPerTrip")
@@ -213,11 +242,7 @@ export default class GaleryFull extends Vue {
       // @ts-ignore
       const ppT = [...this.allPicsPerYear[this.years[0]]][0];
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
-      this.tripDate = this.formatTripDate(ppT.tripDate);
-      this.tripLake = ppT.tripLakeName;
-      this.tripId = ppT.tripId;
-      this.tripTitle = ppT.tripName;
-      console.error(this.tripTitle, this.selectedPic);
+      this.picturePerTripChanged(ppT);
     }
   }
 
@@ -253,6 +278,12 @@ export default class GaleryFull extends Vue {
 <style scoped lang="less">
 @import "../../less/main";
 
+.picture-modal-gallery-full {
+  display: none;
+  @media screen and (max-width: 1300px) {
+    display: block;
+  }
+}
 .galery-page {
   .pane {
     background-color: @galery-background !important;
@@ -269,6 +300,11 @@ export default class GaleryFull extends Vue {
     object-fit: cover;
     width: 134px;
     height: 93px;
+
+    @media screen and (max-width: 1300px) {
+      width: 180px;
+      height: 130px;
+    }
 
     &.selected {
       border: 5px solid @orange-odd;
