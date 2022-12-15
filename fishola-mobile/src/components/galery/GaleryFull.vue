@@ -57,7 +57,7 @@
                           selectedPic = getPicURL(picURL);
                           tripDate = formatTripDate(ppT.tripDate);
                           tripLake = ppT.tripLakeName;
-                          tripTitel = ppT.tripTitle;
+                          tripTitle = ppT.tripName;
                         "
                         :src="getPicURL(picURL)"
                         :enableModal="false"
@@ -88,13 +88,23 @@
                 :enableModal="false"
                 :deletable="false"
               />
+              <img
+                v-else
+                src="/img/camera.svg"
+                class="main-pic no-pic"
+                :enableModal="false"
+                :deletable="false"
+              />
               <div class="main-pic-bottom">
-                <div class="main-pic-bottom-delete-button">
+                <div class="main-pic-bottom-delete-button" v-if="selectedPic">
                   <button>Supprimer</button>
                 </div>
-                <div class="main-pic-bottom-bar">
+                <div class="main-pic-bottom-bar" v-if="selectedPic">
                   {{ tripTitle }} <br />
                   {{ tripDate }} | {{ tripLake }}
+                </div>
+                <div class="main-pic-bottom-bar" v-else>
+                  Aucune photo sélectionnée
                 </div>
               </div>
             </div>
@@ -140,14 +150,16 @@ export default class GaleryFull extends Vue {
   selectedPic = "";
 
   mounted() {
-    this.reload();
-    this.selectedPic = this.selectedDefaultPic;
+    this.reload(true);
   }
 
-  async reload() {
+  async reload(useSelectedDefaultPic: boolean) {
     await this.loadLakes();
     this.selectedLakeUUID = this.selectedLakeUUIDProp;
-    this.loadFullGaleryAndSelectCorrectPic();
+    await this.loadFullGaleryAndSelectCorrectPic();
+    if (useSelectedDefaultPic && this.selectedDefaultPic) {
+      this.selectedPic = this.selectedDefaultPic;
+    }
   }
 
   @Watch("selectedLakeUUID")
@@ -167,6 +179,18 @@ export default class GaleryFull extends Vue {
           container.scrollTop = Math.max(0, topPos - 400);
         }
       });
+      this.years.forEach((year) => {
+        // @ts-ignore
+        this.allPicsPerYear[year].forEach((ppT: PicturePerTripBean) => {
+          ppT.pictureURLs.forEach((picURL: string) => {
+            if (this.getPicURL(picURL) == this.selectedPic) {
+              this.tripDate = this.formatTripDate(ppT.tripDate);
+              this.tripLake = ppT.tripLakeName;
+              this.tripTitle = ppT.tripName;
+            }
+          });
+        });
+      });
     }
   }
 
@@ -180,14 +204,16 @@ export default class GaleryFull extends Vue {
       !this.selectedPic &&
       this.years.length &&
       this.allPicsPerYear &&
-      this.allPicsPerYear.get(parseInt(this.years[0]))
+      // @ts-ignore
+      this.allPicsPerYear[this.years[0]]
     ) {
       // @ts-ignore
-      const ppT = [...this.allPicsPerYear.get(parseInt(this.years[0]))][0];
+      const ppT = [...this.allPicsPerYear[this.years[0]]][0];
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
       this.tripDate = this.formatTripDate(ppT.tripDate);
       this.tripLake = ppT.tripLakeName;
-      this.tripTitle = ppT.tripTitle;
+      this.tripTitle = ppT.tripName;
+      console.error(this.tripTitle, this.selectedPic);
     }
   }
 
@@ -246,7 +272,6 @@ export default class GaleryFull extends Vue {
   display: flex;
 
   .left-part {
-    width: 25vw;
     min-width: 450px;
     max-width: 100vw;
     .lake-gallery-select {
@@ -285,7 +310,7 @@ export default class GaleryFull extends Vue {
   .right-part {
     position: absolute;
     right: 0px;
-    width: 65vw;
+    width: 55vw;
     height: 100vh;
     .main-pic {
       position: fixed;
@@ -294,6 +319,10 @@ export default class GaleryFull extends Vue {
       width: 55vw;
       height: 95vh;
       background-color: @galery-pick-background;
+
+      &.no-pic {
+        object-fit: none;
+      }
     }
 
     .main-pic-bottom {
@@ -381,6 +410,7 @@ export default class GaleryFull extends Vue {
     }
 
     @media screen and (max-width: 1500px) {
+      width: 40vw;
       .main-pic {
         width: 40vw;
       }
@@ -391,6 +421,7 @@ export default class GaleryFull extends Vue {
     }
 
     @media screen and (min-width: 1500px) and (max-width: 1600px) {
+      width: 45vw;
       .main-pic {
         width: 45vw;
       }
@@ -401,6 +432,7 @@ export default class GaleryFull extends Vue {
     }
 
     @media screen and (min-width: 1600px) and (max-width: 1750px) {
+      width: 50vw;
       .main-pic {
         width: 50vw;
       }
