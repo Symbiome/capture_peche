@@ -97,7 +97,7 @@
               />
               <div class="main-pic-bottom">
                 <div class="main-pic-bottom-delete-button" v-if="selectedPic">
-                  <button>Supprimer</button>
+                  <button @click="seeTrip(tripId)">Voir la sortie</button>
                 </div>
                 <div class="main-pic-bottom-bar" v-if="selectedPic">
                   {{ tripTitle }} <br />
@@ -128,6 +128,7 @@ import Constants from "../../services/Constants";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import Helpers from "../../services/Helpers";
+import router from "../../router";
 
 @Component({
   components: {
@@ -146,6 +147,7 @@ export default class GaleryFull extends Vue {
   tripDate = "";
   tripLake = "";
   tripTitle = "";
+  tripId = "";
 
   selectedPic = "";
 
@@ -186,6 +188,7 @@ export default class GaleryFull extends Vue {
             if (this.getPicURL(picURL) == this.selectedPic) {
               this.tripDate = this.formatTripDate(ppT.tripDate);
               this.tripLake = ppT.tripLakeName;
+              this.tripId = ppT.tripId;
               this.tripTitle = ppT.tripName;
             }
           });
@@ -212,6 +215,7 @@ export default class GaleryFull extends Vue {
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
       this.tripDate = this.formatTripDate(ppT.tripDate);
       this.tripLake = ppT.tripLakeName;
+      this.tripId = ppT.tripId;
       this.tripTitle = ppT.tripName;
       console.error(this.tripTitle, this.selectedPic);
     }
@@ -237,6 +241,10 @@ export default class GaleryFull extends Vue {
 
   formatTripDate(input: any): string {
     return Helpers.formatToDateWithoutYear(Helpers.parseLocalDate(input));
+  }
+
+  async seeTrip(tripId: string) {
+    router.push("/trips/" + tripId);
   }
 }
 </script>
