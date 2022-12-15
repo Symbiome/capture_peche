@@ -55,6 +55,11 @@
         text="Supprimer"
         v-on:clicked="$emit('delete', slides[currentSlide].src)"
       />
+      <FooterButton
+        v-if="readOnly"
+        text="Voir la sortie"
+        @clicked="$emit('seeTrip')"
+      />
 
       <div class="footer-element pastille" @click="swiped('right')">
         <i class="icon-arrow icon-back" v-if="currentSlide > 0"></i>

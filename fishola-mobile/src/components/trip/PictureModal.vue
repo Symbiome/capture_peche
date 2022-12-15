@@ -37,6 +37,7 @@
             :measurementPictureSrc="measurementPictureSrc"
             @delete="deletePicture"
             @take-picture="takePicture"
+            @seeTrip="$emit('seeTrip')"
           />
         </div>
       </div>

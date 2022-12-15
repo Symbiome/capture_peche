@@ -24,9 +24,10 @@
     <PictureModal
       class="picture-modal-gallery-full"
       :forceMobileMode="true"
-      v-if="selectedPic && modalOpened"
+      v-if="selectedPic && modalOpened && !loading"
       :deleteButton="false"
       @closeModal="modalOpened = false"
+      @seeTrip="seeTrip(tripId)"
       :src="selectedPic"
       :otherPics="tripPics"
       :readOnly="true"
@@ -72,6 +73,7 @@
                         @click="
                           selectedPic = getPicURL(picURL);
                           picturePerTripChanged(ppT);
+                          modalOpened = true;
                         "
                         :src="getPicURL(picURL)"
                         :enableModal="false"
@@ -167,20 +169,24 @@ export default class GaleryFull extends Vue {
   tripTitle = "";
   tripId = "";
   modalOpened = true;
-
   selectedPic = "";
+  loading = true;
 
   mounted() {
     this.reload(true);
   }
 
   async reload(useSelectedDefaultPic: boolean) {
+    this.loading = true;
     await this.loadLakes();
     this.selectedLakeUUID = this.selectedLakeUUIDProp;
     await this.loadFullGaleryAndSelectCorrectPic();
     if (useSelectedDefaultPic && this.selectedDefaultPic) {
       this.selectedPic = this.selectedDefaultPic;
     }
+    this.$nextTick(() => {
+      this.loading = false;
+    });
   }
 
   @Watch("selectedLakeUUID")

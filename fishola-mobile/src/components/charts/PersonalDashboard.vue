@@ -566,6 +566,12 @@ export default class PersonalDashboard extends Vue {
   overflow-y: hidden;
   height: 200px;
   margin-bottom: @vertical-margin-medium;
+  .galery-preview-list {
+    .galery-preview {
+      width: 15vw;
+      min-width: 150px;
+    }
+  }
 }
 
 .avg-size {
