@@ -20,6 +20,7 @@ import { CatchBean, PicturePerTripBean, TripBean } from "@/pojos/BackendPojos";
  * #L%
  */
 import AbstractFisholaService from "@/services/AbstractFisholaService";
+import { FileSharer } from "@byteowls/capacitor-filesharer";
 
 export default class ShareService extends AbstractFisholaService {
   constructor() {
@@ -27,16 +28,31 @@ export default class ShareService extends AbstractFisholaService {
   }
 
   static async sharePicture(pictureURL: string, fileName: string) {
-    const a = document.createElement("a");
-    a.href = await ShareService.toDataURL(pictureURL);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const base64 = await ShareService.getBase64FromUrl(pictureURL);
+    FileSharer.share({
+      filename: fileName,
+      contentType: "application/png",
+      // If you want to save base64:
+      base64Data: base64,
+    })
+      .then(() => {})
+      .catch((error) => {
+        console.error("Impossible de partager l'image ", error.message);
+      });
   }
 
-  static async toDataURL(url: string) {
-    const blob = await fetch(url).then((res) => res.blob());
-    return URL.createObjectURL(blob);
+  static async getBase64FromUrl(url: string): Promise<string> {
+    const getBase64StringFromDataURL = (dataURL: string) =>
+      dataURL.replace("data:", "").replace(/^.+,/, "");
+    const data = await fetch(url);
+    const blob = await data.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        const base64data = getBase64StringFromDataURL(reader.result as string);
+        resolve(base64data as string);
+      };
+    });
   }
 }

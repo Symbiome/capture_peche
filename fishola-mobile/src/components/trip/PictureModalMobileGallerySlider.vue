@@ -146,7 +146,8 @@ export default class PictureModalMobileGallerySlider extends Vue {
   }
 
   sharePic(): void {
-    ShareService.sharePicture(this.slides[this.currentSlide].src, "prise.png");
+    const displayedSlide = this.slides[this.currentSlide];
+    ShareService.sharePicture(displayedSlide.src, "prise.png");
   }
 }
 
