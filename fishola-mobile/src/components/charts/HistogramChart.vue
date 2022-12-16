@@ -46,7 +46,11 @@
                   Math.min(
                     108,
                     ((values[m][sizeType] +
-                      (sizeType != 'NON_MAILLEE' ? 6 : -1)) *
+                      (sizeType != 'NON_MAILLEE'
+                        ? values[m][sizeType] > 65
+                          ? 10
+                          : 6
+                        : -1)) *
                       100) /
                       maxValue
                   ) +
