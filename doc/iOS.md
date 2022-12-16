@@ -10,6 +10,14 @@ mv target/dist-production target/dist
 npx cap copy
 gist stash (pour supprimer la modif de capacitor.config.json)
 
+Selon à quel serveur vous souhaitez pouvoir vous connecter, il faut vous assurer que le fichier ios/App/App/capacitor.config.json contient bien la bonne url : 
+"linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
+	"server" : {
+		"hostname": "fishola.demo.codelutin.com" // demo
+        "hostname": "api-fishola.inrae.fr" // prod
+	},
+"plugins": {
+
 ## Vérifier la version
 npx cap open ios pour lancer xcode sur le bon workspace
 dans le menu en haut, choisir un modèle de simulateur d'iphone à lancer (e.g. "iPhone 8 plus")
