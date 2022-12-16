@@ -23,7 +23,7 @@
     <FisholaHeader />
     <div class="page dashboard-page">
       <div class="pane pane-only">
-        <div class="pane-content large rounded">
+        <div id="scrollable" class="pane-content large rounded">
           <h1 class="no-margin-pane">
             <span> Tableau de bord </span>
             <div class="selects-holder">
@@ -43,17 +43,9 @@
               </select>
             </div>
             <a
-              @click="askForAsyncExport"
-              v-if="!globalMode && asyncExport"
-              class="export"
-              title="Exporter par email"
-            >
-              <span>Exporter</span>
-              <i class="icon-download" />
-            </a>
-            <a
               v-bind:href="exportUrl"
               v-if="!globalMode && !asyncExport"
+              id="export-button"
               class="export"
               title="Exporter"
               target="_blank"
@@ -175,6 +167,16 @@ export default class DashboardView extends Vue {
     );
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));
+    const scrolllistener = document.getElementById("scrollable");
+    scrolllistener?.addEventListener("scroll", (_event: Event) => {
+      const exportButton = document.getElementById("export-button");
+      // @ts-ignore
+      if (exportButton && scrolllistener.scrollTop > 50) {
+        exportButton.style.display = "none";
+      } else {
+        exportButton.style.display = "block";
+      }
+    });
   }
 
   @Watch("year")
@@ -500,9 +502,9 @@ export default class DashboardView extends Vue {
         justify-content: center;
         align-items: flex-start;
         a.export {
-          position: relative;
+          position: absolute;
           float: right;
-          top: -118px;
+          top: 20px;
           right: 18px;
           span {
             display: none;
@@ -518,10 +520,10 @@ export default class DashboardView extends Vue {
         height: 60px;
         margin-top: 0px;
         a.export {
-          position: relative;
+          position: absolute;
           float: right;
-          top: -90px;
-          right: 40px;
+          top: 80px;
+          right: 18px;
         }
       }
     }
