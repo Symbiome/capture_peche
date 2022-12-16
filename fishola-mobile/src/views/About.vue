@@ -107,14 +107,6 @@
                 >
                 <span class="menu-item-bg"></span>
               </li>
-              <li>
-                <a href="#/documentation/faq" @click="closed = !closed">FAQ</a>
-                <span class="menu-item-bg"></span>
-              </li>
-              <li>
-                <a href="#/news" @click="closed = !closed">On en parle</a>
-                <span class="menu-item-bg"></span>
-              </li>
             </ul>
           </nav>
           <div class="authentication">
@@ -247,6 +239,12 @@
           <div class="Center">
             <h2>Comment participer ?</h2>
             <div class="contribute-editable" v-html="contributeText"></div>
+            <div class="consult-faq">
+              Pour plus d'informations
+              <div class="consult-faq-button" @click="goFaq">
+                Consulter la FAQ
+              </div>
+            </div>
           </div>
         </div>
         <!-- // End Contribute Section // -->
@@ -298,7 +296,7 @@
                         type="email"
                         v-model="contactEmail"
                         placeholder="Votre e-mail"
-                        class="field"
+                        class="field noshadow"
                       />
                     </p>
                     <p>
@@ -307,13 +305,14 @@
                         rows="4"
                         v-model="contactMessage"
                         placeholder="Votre message"
+                        class="noshadow"
                       ></textarea>
                     </p>
                     <p>
                       <input
                         type="button"
                         value="Envoyer"
-                        class="button"
+                        class="button noshadow send-button"
                         v-on:click="sendContact"
                       />
                     </p>
@@ -685,6 +684,10 @@ export default class AboutView extends Vue {
         router.push("/login");
       }
     );
+  }
+
+  goFaq() {
+    router.push("/documentation/faq");
   }
 }
 </script>
@@ -1199,6 +1202,7 @@ export default class AboutView extends Vue {
       width: 350px;
       margin: 15px;
       padding: 30px;
+      min-height: 300px;
       background-color: @white-smoke-alpha-20;
       border: 1px solid #1e9bc4;
       h4 {
@@ -1236,5 +1240,34 @@ export default class AboutView extends Vue {
 
 footer {
   background: #0c2b34;
+}
+
+.consult-faq {
+  padding-top: 25px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  .consult-faq-button {
+    background-color: white;
+    color: #e17055;
+    border: 1px solid #e17055;
+    width: 200px;
+    font-weight: bolder;
+    padding: 10px;
+    cursor: pointer;
+
+    &:hover {
+      color: white;
+      background-color: #e17055;
+      border: 1px solid white;
+    }
+  }
+}
+.noshadow {
+  box-shadow: none !important;
+}
+.send-button {
+  margin-left: 0px;
 }
 </style>

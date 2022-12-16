@@ -93,7 +93,7 @@ import router from "@/router";
   },
 })
 export default class DocumentationView extends Vue {
-  @Prop() tab;
+  @Prop() tab: string;
   activeTab = "doc";
   elements: DocumentationLight[] = [];
   faqRows: string = "";
