@@ -170,11 +170,12 @@ export default class DashboardView extends Vue {
     const scrolllistener = document.getElementById("scrollable");
     scrolllistener?.addEventListener("scroll", (_event: Event) => {
       const exportButton = document.getElementById("export-button");
-      // @ts-ignore
-      if (exportButton && scrolllistener.scrollTop > 50) {
-        exportButton.style.display = "none";
-      } else {
-        exportButton.style.display = "block";
+      if (exportButton && exportButton.style) {
+        if (scrolllistener.scrollTop > 50) {
+          exportButton.style.display = "none";
+        } else {
+          exportButton.style.display = "block";
+        }
       }
     });
   }

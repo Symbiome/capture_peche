@@ -325,7 +325,7 @@ export default class GaleryFull extends Vue {
     width: 134px;
     height: 93px;
 
-    @media screen and (max-width: 1300px) {
+    @media screen and (min-width: 900px) and (max-width: 1300px) {
       width: 180px;
       height: 130px;
     }
@@ -338,6 +338,12 @@ export default class GaleryFull extends Vue {
 
 .two-sides {
   display: flex;
+
+  @media screen and (max-width: 1000px) {
+    .left-part {
+      min-width: 150px !important;
+    }
+  }
 
   .left-part {
     min-width: 450px;
