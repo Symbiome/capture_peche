@@ -269,7 +269,7 @@ export default class Menu extends Vue {
 
   goDocumentation() {
     this.closeMenu();
-    router.push("/documentation");
+    router.push("/documentation/doc");
   }
 
   goSettings() {

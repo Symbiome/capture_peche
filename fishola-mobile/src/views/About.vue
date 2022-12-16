@@ -108,7 +108,7 @@
                 <span class="menu-item-bg"></span>
               </li>
               <li>
-                <a href="#/faq" @click="closed = !closed">FAQ</a>
+                <a href="#/documentation/faq" @click="closed = !closed">FAQ</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li>

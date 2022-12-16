@@ -40,7 +40,6 @@ import EditTrip from "@/views/trip/EditTrip.vue";
 
 import EditCatch from "@/views/trip/EditCatch.vue";
 
-import Faq from "@/views/Faq.vue";
 import Documentation from "@/views/Documentation.vue";
 import NewsDetailsVue from "@/views/NewsDetails.vue";
 import Credits from "@/views/Credits.vue";
@@ -162,10 +161,11 @@ const routes = [
     props: true,
   },
   {
-    path: "/faq",
-    name: "faq",
+    path: "/documentation/:tab",
+    name: "documentationFaq",
     meta: { public: true },
-    component: Faq,
+    component: Documentation,
+    props: true,
   },
   {
     path: "/settings",

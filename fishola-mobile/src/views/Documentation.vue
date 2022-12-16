@@ -20,85 +20,126 @@
   -->
 <template>
   <div class="documentation page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
+    <FisholaHeader />
+
     <div class="page documentation-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">Documentation</h1>
+          <div class="docs-and-faq-tab">
+            <div
+              class="docs-or-faq"
+              :class="{ selected: activeTab == 'doc' }"
+              @click="goDoc"
+            >
+              Documents à télécharger
+            </div>
+            <div
+              class="docs-or-faq"
+              :class="{ selected: activeTab == 'faq' }"
+              @click="goFaq"
+            >
+              <span> FAQ </span>
+            </div>
+          </div>
+          <div v-if="activeTab === 'doc'">
+            <div
+              class="documentation-row"
+              v-for="doc in elements"
+              v-bind:key="doc.id"
+            >
+              <span>{{ doc.name }}</span>
+              <a v-bind:href="doc.url" title="Télécharger" target="_blank">
+                <i class="icon-download" />
+              </a>
+            </div>
+          </div>
 
-          <div class="documentation-row"
-               v-for="doc in elements"
-               v-bind:key="doc.id">
-            <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url"
-               title="Télécharger"
-               target="_blank">
-              <i class="icon-download"/>
-            </a>
+          <div v-else>
+            <div class="faq-rows" v-html="faqRows"></div>
+
+            <div class="bottom-page-spacer"></div>
           </div>
 
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation"
-                   selected="documentation" />
+    <FisholaFooter
+      shortcuts="back,credits,documentation"
+      selected="documentation"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
-import RunningOverlay from '@/components/layout/RunningOverlay.vue';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import DocumentationService from "@/services/DocumentationService";
+import TripsService from "@/services/TripsService";
+import { DocumentationLight, Editorial } from "@/pojos/BackendPojos";
 
-import DocumentationService from '@/services/DocumentationService';
-import TripsService from '@/services/TripsService';
-import {DocumentationLight} from '@/pojos/BackendPojos';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import router from "@/router";
 
 @Component({
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class DocumentationView extends Vue {
-  
-  elements:DocumentationLight[] = [];
+  @Prop() tab;
+  activeTab = "doc";
+  elements: DocumentationLight[] = [];
+  faqRows: string = "";
 
-  hasRunningTrip:boolean = false;
-
-  constructor() {
-    super();
-  }
+  hasRunningTrip: boolean = false;
 
   mounted() {
-    DocumentationService.getDocumentations()
-      .then(this.documentationsLoaded);
-    TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+    if (this.tab) {
+      this.activeTab = this.tab;
+    }
+    DocumentationService.getDocumentations().then(this.documentationsLoaded);
+    DocumentationService.getFaq().then(this.faqLoaded);
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
   }
 
-  documentationsLoaded(docs:DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, 'name');
+  @Watch("tab")
+  activeTabChanged() {
+    this.activeTab = this.tab;
+  }
+
+  documentationsLoaded(docs: DocumentationLight[]) {
+    const sortedDocs = Vue.lodash.orderBy(docs, "name");
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 
-}
+  faqLoaded(editorial: Editorial) {
+    this.faqRows = editorial.content;
+  }
 
+  goDoc() {
+    router.push("/documentation/doc");
+  }
+
+  goFaq() {
+    router.push("/documentation/faq");
+  }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .documentation-page {
-
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
@@ -109,11 +150,11 @@ export default class DocumentationView extends Vue {
     padding-right: @margin-x-large;
     height: 56px;
 
-    @media(max-height:579px) {
+    @media (max-height: 579px) {
       height: 46px;
     }
 
-    @media(max-width:370px) {
+    @media (max-width: 370px) {
       padding-left: @margin-large;
       padding-right: @margin-large;
     }
@@ -126,7 +167,9 @@ export default class DocumentationView extends Vue {
 
     span {
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-medium
+      );
       color: @gunmetal;
     }
 
@@ -149,8 +192,71 @@ export default class DocumentationView extends Vue {
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;
     }
+  }
 
+  .faq-rows {
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
+
+    @media (max-width: 370px) {
+      padding-left: @margin-large;
+      padding-right: @margin-large;
+    }
+
+    display: flex;
+    flex-direction: column;
+    /deep/ .faq {
+      margin-top: 10px;
+      margin-bottom: 10px;
+
+      h4 {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        font-size: 18px;
+        font-weight: normal;
+      }
+
+      p {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        font-size: 16px;
+        color: @pale-sky;
+      }
+    }
   }
 }
 
+.docs-and-faq-tab {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-top: -30px;
+  padding-bottom: 20px;
+
+  .docs-or-faq {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    gap: 5px;
+    color: @pale-sky;
+    padding-bottom: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    cursor: pointer;
+
+    &.selected {
+      color: @gunmetal;
+      border-bottom: 2px solid @pelorous;
+    }
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .docs-and-faq-tab {
+    padding-top: 20px;
+    margin-top: 0px;
+  }
+}
 </style>
