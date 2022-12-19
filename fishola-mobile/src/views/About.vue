@@ -24,7 +24,7 @@
     <!-- \\ Begin Frame \\ -->
     <div class="LayoutFrame" id="top">
       <!-- \\ Begin Header \\ -->
-      <header class="smaller">
+      <header class="smaller" v-if="!wrappedInTab">
         <div class="site-logo site-logo-smartphone">
           <h1>
             <a
@@ -116,10 +116,12 @@
       </header>
       <!-- // End Header // -->
 
-      <div class="under-header-zone">FISHOLA : La science tous ensemble</div>
+      <div class="under-header-zone" v-if="!wrappedInTab">
+        FISHOLA : La science tous ensemble
+      </div>
 
       <!-- \\ Begin Banner Section \\ -->
-      <div class="Title_sec" id="title">
+      <div class="Title_sec" id="title" v-if="!wrappedInTab">
         <!--  \\ Begin banner Side -->
         <div class="title-banner">
           <div class="main-title">La science tous ensemble</div>
@@ -225,7 +227,11 @@
         </div>
         <!-- // End About Section // -->
         <!-- \\ Begin Communications Section \\ -->
-        <div class="Communications_sec" id="communications">
+        <div
+          class="Communications_sec"
+          id="communications"
+          v-if="!wrappedInTab"
+        >
           <div class="Center">
             <h3>Communications</h3>
           </div>
@@ -496,7 +502,7 @@ Icon.Default.mergeOptions({
 
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { Lake, Feedback, News } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
@@ -512,6 +518,7 @@ import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
   },
 })
 export default class AboutView extends Vue {
+  @Prop({ default: false }) wrappedInTab: boolean;
   center = latLng(46.071623, 5.890511);
 
   titleText: string =

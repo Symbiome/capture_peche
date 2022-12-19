@@ -24,6 +24,7 @@ import VueRouter from "vue-router";
 import Dispatcher from "@/views/Dispatcher.vue";
 
 import About from "@/views/About.vue";
+import OfflineHome from "@/views/OfflineHome.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
@@ -77,6 +78,15 @@ const routes = [
       public: true,
     },
     component: About,
+  },
+  {
+    path: "/offline-home/:defaultTab",
+    name: "offline-home",
+    component: OfflineHome,
+    props: true,
+    meta: {
+      public: true,
+    },
   },
   {
     path: "/login",

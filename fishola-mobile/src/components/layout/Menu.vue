@@ -48,7 +48,7 @@
         v-for="i in availableMenuItems()"
         :key="'menu-item-' + i.name"
         v-on:click="i.clickHandler"
-        :class="isActive(i.name) ? 'active' : ''"
+        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }"
       >
         <span>
           {{ i.label }}
@@ -81,7 +81,8 @@ export class MenuItem {
     public label: string,
     public iconName: string,
     public clickHandler: any,
-    public onlyConnected: boolean
+    public onlyConnected: boolean,
+    public onlyUnlogged: boolean
   ) {}
 }
 
@@ -99,11 +100,12 @@ export default class Menu extends Vue {
 
   menuItems: MenuItem[] = [
     {
-      name: "trips",
-      label: "Accueil",
-      iconName: "home",
-      clickHandler: this.goHome,
+      name: "back",
+      label: "Retour",
+      iconName: "arrow icon-back",
+      clickHandler: this.back,
       onlyConnected: false,
+      onlyUnlogged: true,
     },
     {
       name: "dashboard",
@@ -111,6 +113,7 @@ export default class Menu extends Vue {
       iconName: "dashboard",
       clickHandler: this.goDashboard,
       onlyConnected: true,
+      onlyUnlogged: false,
     },
     {
       name: "settings",
@@ -118,13 +121,31 @@ export default class Menu extends Vue {
       iconName: "settings",
       clickHandler: this.goSettings,
       onlyConnected: true,
+      onlyUnlogged: false,
     },
     {
-      name: "documentation",
+      name: "trips",
+      label: "Accueil",
+      iconName: "home",
+      clickHandler: this.goHome,
+      onlyConnected: true,
+      onlyUnlogged: false,
+    },
+    {
+      name: "offline-home",
+      label: "Accueil",
+      iconName: "home",
+      clickHandler: this.goHome,
+      onlyConnected: false,
+      onlyUnlogged: true,
+    },
+    {
+      name: "documentationFaq",
       label: "Documentation",
       iconName: "files",
       clickHandler: this.goDocumentation,
       onlyConnected: false,
+      onlyUnlogged: false,
     },
     {
       name: "credits",
@@ -132,6 +153,7 @@ export default class Menu extends Vue {
       iconName: "info",
       clickHandler: this.goCredits,
       onlyConnected: false,
+      onlyUnlogged: false,
     },
     {
       name: "feedback",
@@ -139,6 +161,7 @@ export default class Menu extends Vue {
       iconName: "faq",
       clickHandler: this.openFeedback,
       onlyConnected: false,
+      onlyUnlogged: false,
     },
     {
       name: "logout",
@@ -146,6 +169,7 @@ export default class Menu extends Vue {
       iconName: "logout",
       clickHandler: this.logout,
       onlyConnected: true,
+      onlyUnlogged: false,
     },
   ];
 
@@ -164,7 +188,9 @@ export default class Menu extends Vue {
 
   availableMenuItems() {
     let result = this.menuItems.filter(
-      (item) => this.connected || !item.onlyConnected
+      (item) =>
+        (this.connected && !item.onlyUnlogged) ||
+        (!this.connected && !item.onlyConnected)
     );
     return result;
   }
@@ -214,6 +240,10 @@ export default class Menu extends Vue {
     this.profileLoaded(profile);
   }
 
+  back() {
+    router.push("/about");
+  }
+
   profileLoaded(profile: UserProfile) {
     this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
@@ -241,20 +271,24 @@ export default class Menu extends Vue {
 
   goHome() {
     this.closeMenu();
-    // Si on est sur application -> toujours trips
-    Helpers.ifApplication(() => {
-      router.push("/trips");
-    });
-
-    // Si on est sur navigateur et qu'on est connecté -> trips
-    // Si on est sur navigateur et qu'on est pas connecté -> about
-    Helpers.ifWeb(() => {
-      if (this.connected) {
+    if (this.connected) {
+      // Si on est sur application -> toujours trips
+      Helpers.ifApplication(() => {
         router.push("/trips");
-      } else {
-        router.push("/about");
-      }
-    });
+      });
+
+      // Si on est sur navigateur et qu'on est connecté -> trips
+      // Si on est sur navigateur et qu'on est pas connecté -> about
+      Helpers.ifWeb(() => {
+        if (this.connected) {
+          router.push("/trips");
+        } else {
+          router.push("/about");
+        }
+      });
+    } else {
+      router.push("/offline-home/presentation");
+    }
   }
 
   goProfile() {
@@ -500,6 +534,14 @@ export default class Menu extends Vue {
           .pastille {
             color: @pelorous;
             background: @white;
+          }
+        }
+        &.is-back {
+          background-color: #0f3845;
+          width: @desktop-menu-width;
+          justify-items: flex-start;
+          span {
+            width: 100%;
           }
         }
         &:hover {
