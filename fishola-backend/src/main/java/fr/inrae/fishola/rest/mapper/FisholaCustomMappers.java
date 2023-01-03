@@ -272,8 +272,15 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
             builder.acceptsMailNotifications(acceptsMailNotifications);
-            readText(node, "lastNewsSeenDate").flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::lastNewsSeenDate);
 
+            // Old version may not convert the "lastNewsSeenDate" field, ignore them
+            if (node.get("lastNewsSeenDate") instanceof ArrayNode) {
+                // Use the default value in this case
+                builder.lastNewsSeenDate(LocalDateTime.of(2021,06,06,12,0,0));
+            } else {
+                Optional<String> lastSeendDateText = readText(node, "lastNewsSeenDate");
+                lastSeendDateText.flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::lastNewsSeenDate);
+            }
 
             // Le champ est nécessaire côté Java mais on attend rien de la part du front
             builder.sampleBaseId("########");
