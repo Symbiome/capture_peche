@@ -108,22 +108,6 @@ export default class Menu extends Vue {
       onlyUnlogged: true,
     },
     {
-      name: "dashboard",
-      label: "Tableau de bord",
-      iconName: "dashboard",
-      clickHandler: this.goDashboard,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "settings",
-      label: "Paramètres",
-      iconName: "settings",
-      clickHandler: this.goSettings,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
       name: "trips",
       label: "Accueil",
       iconName: "home",
@@ -139,6 +123,23 @@ export default class Menu extends Vue {
       onlyConnected: false,
       onlyUnlogged: true,
     },
+    {
+      name: "dashboard",
+      label: "Tableau de bord",
+      iconName: "dashboard",
+      clickHandler: this.goDashboard,
+      onlyConnected: true,
+      onlyUnlogged: false,
+    },
+    {
+      name: "settings",
+      label: "Paramètres",
+      iconName: "settings",
+      clickHandler: this.goSettings,
+      onlyConnected: true,
+      onlyUnlogged: false,
+    },
+
     {
       name: "documentationFaq",
       label: "Documentation",
