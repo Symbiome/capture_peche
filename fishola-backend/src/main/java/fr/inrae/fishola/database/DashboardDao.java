@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,11 @@ public class DashboardDao  extends AbstractFisholaDao {
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
         Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(lakesFilter, mostCaughtSpecies, monthlyCatchs);
-        builder.monthlySizes(monthlySizes);
+        builder.monthlySizesPerMaillage(monthlySizes);
+        // Legacy field for old applications that do not know maillage
+        // This legacy field may be deleted in a few versions.
+        builder.monthlySizes(getLegacyMonthlySizesWithoutMaillage(monthlySizes));
+
 
         Integer year = LocalDateTime.now().getYear();
         if (yearFilter.isPresent()) {
@@ -136,6 +141,19 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         Dashboard result = builder.build();
         return result;
+    }
+
+    private Map<UUID, Map<Month, Double>> getLegacyMonthlySizesWithoutMaillage(Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes) {
+        Map<UUID, Map<Month, Double>> monthlySizesWithoutMaillage = new LinkedHashMap<>();
+        for (UUID uuid : monthlySizes.keySet()) {
+            Map<Month, Double> sizesForSpecie = new LinkedHashMap<>();
+            for (Month month: monthlySizes.get(uuid).keySet()) {
+                Double size = monthlySizes.get(uuid).get(month).get(Maillage.NON_DEFINI);
+                sizesForSpecie.put(month, size);
+            }
+            monthlySizesWithoutMaillage.put(uuid, sizesForSpecie);
+        }
+        return monthlySizesWithoutMaillage;
     }
 
     public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter, Logger log) {
@@ -171,7 +189,10 @@ public class DashboardDao  extends AbstractFisholaDao {
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
         Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(lakesFilter, mostCaughtSpecies, monthlyCatchs);
-        builder.monthlySizes(monthlySizes);
+        // Legacy field for old applications that do not know maillage
+        // This legacy field may be deleted in a few versions.
+        builder.monthlySizes(getLegacyMonthlySizesWithoutMaillage(monthlySizes));
+        builder.monthlySizesPerMaillage(monthlySizes);
 
         builder.computedOn(LocalDateTime.now());
 

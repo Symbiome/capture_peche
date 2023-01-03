@@ -185,7 +185,8 @@ export interface Dashboard {
     topByWeight: { [index: string]: CatchBean[] };
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
-    monthlySizes: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
     picturesPerTrip: PicturePerTripBean[];
 }
 
@@ -195,7 +196,8 @@ export interface GlobalDashboard {
     caughtAndReleasedSpeciesDistribution: { [index: string]: number };
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
-    monthlySizes: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
     computedOn: Date;
 }
 

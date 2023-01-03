@@ -54,7 +54,10 @@ public interface Dashboard {
     Map<UUID, Set<String>> speciesAliases();
 
     List<Month> orderedMonths();
-    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes();
+
+    Map<UUID, Map<Month, Double>> monthlySizes();
+
+    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizesPerMaillage();
 
     List<PicturePerTripBean> picturesPerTrip();
 

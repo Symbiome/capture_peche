@@ -378,7 +378,7 @@ export default class PersonalDashboard extends Vue {
 
     this.orderedMonths = this.dashboardData.dashboard.orderedMonths;
     const monthlySizesSpecies: string[] = Object.keys(
-      this.dashboardData.dashboard.monthlySizes
+      this.dashboardData.dashboard.monthlySizesPerMaillage
     );
     monthlySizesSpecies.forEach((speciesId) => {
       const species: SpeciesWithAlias = this.speciesIndex[speciesId];
@@ -386,7 +386,8 @@ export default class PersonalDashboard extends Vue {
         id: species.id,
         name: species.name,
         alias: species.alias,
-        whatever: this.dashboardData.dashboard.monthlySizes[speciesId],
+        whatever:
+          this.dashboardData.dashboard.monthlySizesPerMaillage[speciesId],
       });
     });
     this.monthlySizesOptions = Vue.lodash.orderBy(

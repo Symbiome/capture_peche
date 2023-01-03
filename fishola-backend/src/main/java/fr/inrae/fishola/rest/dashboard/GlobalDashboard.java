@@ -45,7 +45,9 @@ public interface GlobalDashboard {
 
     List<Month> orderedMonths();
 
-    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes();
+    Map<UUID, Map<Month, Double>> monthlySizes();
+
+    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizesPerMaillage();
 
     LocalDateTime computedOn();
 
