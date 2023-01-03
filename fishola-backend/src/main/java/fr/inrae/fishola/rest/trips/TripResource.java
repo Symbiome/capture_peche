@@ -444,7 +444,7 @@ public class TripResource extends AbstractFisholaResource {
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
-        if (minSize.isPresent()) {
+        if (minSize.isPresent() && catchPojo.getSize() != null) {
             if (catchPojo.getSize() >= minSize.get()) {
                 catchPojo.setMaillee(Maillage.MAILLEE);
             } else {

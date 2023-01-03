@@ -30,12 +30,13 @@
       ></div>
       <span v-if="maillage == 'MAILLEE'"> Poissons maillés </span>
       <span v-else-if="maillage == 'NON_MAILLEE'"> Poissons non maillés </span>
-      <span class="line-break-on-small-screen" v-else
-        >Sans distrinction de maillage
-        <i v-if="!selectedLakeUUID"
+      <span class="line-break-on-small-screen" v-else-if="!selectedLakeUUID">
+        Sans distrinction de maillage
+        <i
           >(sélectionner un lac pour une meilleure visualisation du graphique)
         </i>
       </span>
+      <span v-else> Sans taille réglementaire </span>
     </span>
   </div>
 </template>
