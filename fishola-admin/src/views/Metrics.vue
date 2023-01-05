@@ -181,7 +181,8 @@ export default class Metrics extends Vue {
     const columns = [
       { field: "annee", label: "Année", sortable: true },
       { field: "lac", label: "Lac", sortable: true },
-      { field: "total", label: "Indicateur", sortable: true }
+      { field: "indic_type", label: "Indicateur", sortable: true },
+      { field: "total", label: "Valeur", sortable: true }
     ];
     for (var i = 0; i < columns.length; i++) {
       if (i > 0) {
@@ -243,7 +244,7 @@ export default class Metrics extends Vue {
   }
 
   getCSVRows(columns: Array<Column>, array: any, prefixLine: string) {
-    let csvContent = "\n" + prefixLine + ";" + ",\n";
+    let csvContent = "\n";
     csvContent += (array as Array<any>)
       .map(row => {
         var csvRow = "";
@@ -251,7 +252,12 @@ export default class Metrics extends Vue {
           if (i > 0) {
             csvRow += ";";
           }
-          csvRow += row[((columns[i] as unknown) as Column).field];
+          const columnName = ((columns[i] as unknown) as Column).field;
+          if (columnName == "indic_type") {
+            csvRow += prefixLine;
+          } else {
+            csvRow += row[columnName];
+          }
         }
         return csvRow;
       })
