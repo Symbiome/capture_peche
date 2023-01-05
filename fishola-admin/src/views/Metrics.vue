@@ -33,7 +33,13 @@
           Nombre d'utilisateurs actifs (au moins une sortie dans l'année)
           <b-button
             type="is-primary"
-            @click="exportAsCSV(activeUsersColumns, metrics.activeUsersPerYear)"
+            @click="
+              exportAsCSV(
+                'utilisateurs',
+                activeUsersColumns,
+                metrics.activeUsersPerYear
+              )
+            "
             >Exporter en csv</b-button
           >
         </h2>
@@ -49,6 +55,7 @@
             type="is-primary"
             @click="
               exportAsCSV(
+                'inscriptions',
                 userRegistrationsColumns,
                 metrics.userRegistrationsPerYear
               )
@@ -66,7 +73,9 @@
           Nombre de sorties par lac et par an
           <b-button
             type="is-primary"
-            @click="exportAsCSV(tripsPerLakeColumns, metrics.tripsPerLake)"
+            @click="
+              exportAsCSV('sorties', tripsPerLakeColumns, metrics.tripsPerLake)
+            "
             >Exporter en csv</b-button
           >
         </h2>
@@ -80,7 +89,13 @@
           Nombre de captures par lac et par an
           <b-button
             type="is-primary"
-            @click="exportAsCSV(catchesPerLakeColumns, metrics.catchesPerLake)"
+            @click="
+              exportAsCSV(
+                'captures',
+                catchesPerLakeColumns,
+                metrics.catchesPerLake
+              )
+            "
             >Exporter en csv</b-button
           >
         </h2>
@@ -95,6 +110,7 @@
             type="is-primary"
             @click="
               exportAsCSV(
+                'mesures',
                 automaticMeasuresPerLakeColumns,
                 metrics.automaticMeasuresPerLake
               )
@@ -160,7 +176,7 @@ export default class Metrics extends Vue {
   }
 
   exportAllAsCSV() {
-    let csvContent = "data:text/csv;charset=utf-8,";
+    let csvContent = "";
 
     const columns = [
       { field: "annee", label: "Année", sortable: true },
@@ -169,7 +185,7 @@ export default class Metrics extends Vue {
     ];
     for (var i = 0; i < columns.length; i++) {
       if (i > 0) {
-        csvContent += ",";
+        csvContent += ";";
       }
       csvContent += ((columns[i] as unknown) as Column).label;
     }
@@ -198,15 +214,14 @@ export default class Metrics extends Vue {
       this.metrics.automaticMeasuresPerLake,
       "Nombre de mesures automatiques par lac et par an"
     );
-    var encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+    this.downloadCSV("ensemble_indicateurs", csvContent);
   }
 
-  exportAsCSV(columns: Array<string>, array: Array<any>) {
-    let csvContent = "data:text/csv;charset=utf-8,";
+  exportAsCSV(fileName: string, columns: Array<string>, array: Array<any>) {
+    let csvContent = "";
     for (var i = 0; i < columns.length; i++) {
       if (i > 0) {
-        csvContent += ",";
+        csvContent += ";";
       }
       csvContent += ((columns[i] as unknown) as Column).label;
     }
@@ -217,25 +232,24 @@ export default class Metrics extends Vue {
         var csvRow = "";
         for (var i = 0; i < columns.length; i++) {
           if (i > 0) {
-            csvRow += ",";
+            csvRow += ";";
           }
           csvRow += row[((columns[i] as unknown) as Column).field];
         }
         return csvRow;
       })
       .join("\n");
-    var encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+    this.downloadCSV(fileName, csvContent);
   }
 
   getCSVRows(columns: Array<Column>, array: any, prefixLine: string) {
-    let csvContent = "\n" + prefixLine + "," + ",\n";
+    let csvContent = "\n" + prefixLine + ";" + ",\n";
     csvContent += (array as Array<any>)
       .map(row => {
         var csvRow = "";
         for (var i = 0; i < columns.length; i++) {
           if (i > 0) {
-            csvRow += ",";
+            csvRow += ";";
           }
           csvRow += row[((columns[i] as unknown) as Column).field];
         }
@@ -243,6 +257,27 @@ export default class Metrics extends Vue {
       })
       .join("\n");
     return csvContent;
+  }
+
+  downloadCSV(fileName: string, csvContent: string) {
+    var hiddenElement = document.createElement("a");
+    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
+    hiddenElement.target = "_blank";
+
+    //provide the name for the CSV file to be downloaded
+    const d = new Date();
+    var mm = d.getMonth() + 1;
+    var dd = d.getDate();
+    let dateString =
+      d.getFullYear() +
+      "-" +
+      (mm > 9 ? "" : "0") +
+      mm +
+      "-" +
+      (dd > 9 ? "" : "0") +
+      dd;
+    hiddenElement.download = "Fishola_" + fileName + "_" + dateString + ".csv";
+    hiddenElement.click();
   }
 }
 
