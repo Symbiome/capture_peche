@@ -43,16 +43,25 @@
         <div class="pane-content rounded" id="scroller">
           <div class="two-sides">
             <div class="left-part" id="galery-div">
-              <select
-                v-if="selectedLakeUUID"
-                class="lake-gallery-select"
-                placeholder="lake"
-                v-model="selectedLakeUUID"
-              >
-                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                  {{ lake.name }}
-                </option>
-              </select>
+              <div class="galery-header">
+                <span @click="goBack">
+                  <i class="icon-news-back icon-arrow hide-on-mobile" />
+                  <span class="back-text"> Retour </span>
+                </span>
+                <select
+                  class="lake-gallery-select"
+                  placeholder="lake"
+                  v-model="selectedLakeUUID"
+                >
+                  <option
+                    v-for="lake in lakes"
+                    :value="lake.id"
+                    :key="lake.uuid"
+                  >
+                    {{ lake.name }}
+                  </option>
+                </select>
+              </div>
               <div class="years">
                 <div v-for="year in years" :key="'gal-' + year" class="">
                   <h1>{{ year }}</h1>
@@ -286,6 +295,10 @@ export default class GaleryFull extends Vue {
     router.push("/trips/" + tripId);
   }
 
+  goBack() {
+    router.push("/dashboard");
+  }
+
   async downloadSelectedPic() {
     const fileName =
       "capture_" +
@@ -348,6 +361,7 @@ export default class GaleryFull extends Vue {
   .left-part {
     min-width: 450px;
     max-width: 100vw;
+
     .lake-gallery-select {
       background-color: white;
       margin-top: 10px;
@@ -586,6 +600,27 @@ export default class GaleryFull extends Vue {
         background-color: @pelorous;
         color: #dadada;
       }
+    }
+  }
+
+  .galery-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    .icon-news-back {
+      color: @pelorous;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 22px;
+      transform: rotate(180deg);
+    }
+    .back-text {
+      cursor: pointer;
+      color: @pelorous;
+      padding-left: 20px;
+      font-size: 18px;
     }
   }
 }
