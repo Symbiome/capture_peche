@@ -19,11 +19,12 @@ Selon à quel serveur vous souhaitez pouvoir vous connecter, il faut vous assure
 "plugins": {
 
 ## Vérifier la version
-npx cap open ios pour lancer xcode sur le bon workspace
-dans le menu en haut, choisir un modèle de simulateur d'iphone à lancer (e.g. "iPhone 8 plus")
+Lancez xcode et ouvrir le workspace Fishola
+dans le menu en haut, choisir un modèle de simulateur d'iphone à lancer (e.g. "iPhone 8 plus ios 15.2")
 cliquer sur le bouton play pour lancer l'application sur le simulateur
 Passé la phase de build, l'application va se lancer dans le simulateur (si le simulateur est masqué, commande espace "Simulator")
-Tester l'application, à minima le login poiur vérifier les cookies et vérifier le sha1 de commit dans les retours
+Tester l'application, à minima le login pour vérifier les cookies et vérifier le sha1 de commit dans les retours
+exemple de login : lagarde.alex@gmail.com / azerty
 
 ## Packager la version
 Une fois tous les tests effectués, cliquer sur "App" en haut du project explorer à gauche
