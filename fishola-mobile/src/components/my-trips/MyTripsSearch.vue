@@ -24,9 +24,7 @@
       <i class="icon-magnifying-glass"></i>
       <input
         type="text"
-        v-bind:placeholder="
-          offline ? 'Recherche non disponible' : 'Rechercher une sortie'
-        "
+        v-bind:placeholder="offline ? 'Recherche non disponible' : 'Rechercher'"
         name="search_term"
         v-bind:value="value"
         v-bind:disabled="offline"

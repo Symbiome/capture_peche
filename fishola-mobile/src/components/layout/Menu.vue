@@ -219,8 +219,8 @@ export default class Menu extends Vue {
       try {
         await Helpers.confirm(
           this.$modal,
-          `Vous pouvez désormais suivre l'actualité Fishola par mail. Souhaitez-vous être informé par mail des communications autour de Fishola ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-          "Du nouveau sur Fishola",
+          `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+          "Du nouveau sur FISHOLA",
           "Non",
           "Oui"
         );
