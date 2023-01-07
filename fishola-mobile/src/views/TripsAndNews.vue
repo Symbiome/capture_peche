@@ -38,7 +38,7 @@
               :class="showNews ? 'selected' : ''"
               @click="showNewsTab"
             >
-              <span> Communication </span>
+              <span> Communications </span>
               <div class="news-badge" v-if="unreadNewsCount > 0">
                 {{ unreadNewsCount }}
               </div>

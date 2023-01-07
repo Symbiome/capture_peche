@@ -38,7 +38,7 @@
               :class="showNews ? 'selected' : ''"
               @click="goNews"
             >
-              <span> Communication </span>
+              <span> Communications </span>
             </div>
           </div>
           <div class="about-container" v-if="!showNews">
