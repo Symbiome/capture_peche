@@ -300,7 +300,10 @@ export default class GaleryFull extends Vue {
   }
 
   async seeTrip(tripId: string) {
-    router.push("/trips/" + tripId);
+    router.push({
+      name: "trip-summary",
+      params: { id: tripId, fromGallery: "true" },
+    });
   }
 
   goBack() {
