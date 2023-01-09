@@ -21,8 +21,8 @@
 <template>
   <div>
     <div class="section" v-if="picturesPerTrip">
-      <div class="shrinked">
-        <h2><i class="icon-photo" />Mes photos</h2>
+      <div class="shrinked pointer">
+        <h2 @click="openGalery"><i class="icon-photo" />Mes photos</h2>
       </div>
       <div class="dashboard-top-catchs catch-preview-list-scrollable">
         <GaleryPreviewList
@@ -452,6 +452,10 @@ export default class PersonalDashboard extends Vue {
     router.push({ name: "trip", params: { id: tripId } });
   }
 
+  openGalery() {
+    router.push("/galery");
+  }
+
   getDay(date: number) {
     return new Date(date).getDate();
   }
@@ -582,5 +586,9 @@ export default class PersonalDashboard extends Vue {
   @media screen and (max-width: 1400px) {
     flex-direction: column;
   }
+}
+
+.pointer {
+  cursor: pointer;
 }
 </style>

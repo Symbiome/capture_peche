@@ -44,7 +44,7 @@
           <div class="two-sides">
             <div class="left-part" id="galery-div">
               <div class="galery-header">
-                <span @click="goBack">
+                <span @click="goBack" class="hide-on-mobile">
                   <i class="icon-news-back icon-arrow hide-on-mobile" />
                   <span class="back-text"> Retour </span>
                 </span>
@@ -183,7 +183,7 @@ export default class GaleryFull extends Vue {
   tripLake = "";
   tripTitle = "";
   tripId = "";
-  modalOpened = true;
+  modalOpened = false;
   selectedPic = "";
   loading = true;
 
@@ -202,12 +202,16 @@ export default class GaleryFull extends Vue {
     this.$nextTick(() => {
       this.loading = false;
     });
+    if (useSelectedDefaultPic && !this.selectedDefaultPic) {
+      this.modalOpened = false;
+    }
   }
 
   @Watch("selectedLakeUUID")
   selectedLakeChanged(): void {
     this.selectedPic = "";
     this.loadFullGaleryAndSelectCorrectPic();
+    this.modalOpened = false;
   }
 
   @Watch("selectedPic")
@@ -231,6 +235,7 @@ export default class GaleryFull extends Vue {
           });
         });
       });
+
       this.modalOpened = true;
     }
   }
@@ -266,6 +271,9 @@ export default class GaleryFull extends Vue {
       const ppT = [...this.allPicsPerYear[this.years[0]]][0];
       this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
       this.picturePerTripChanged(ppT);
+      this.$nextTick(() => {
+        this.modalOpened = false;
+      });
     }
   }
 
@@ -621,6 +629,10 @@ export default class GaleryFull extends Vue {
       color: @pelorous;
       padding-left: 20px;
       font-size: 18px;
+    }
+
+    @media screen and (max-width: @desktop-min-width) {
+      justify-content: center;
     }
   }
 }
