@@ -128,8 +128,8 @@ export default class TripsAndNews extends Vue {
     gap: 5px;
     color: @pale-sky;
     padding-bottom: 5px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 5px;
+    padding-right: 5px;
     cursor: pointer;
 
     &.selected {
@@ -148,6 +148,8 @@ export default class TripsAndNews extends Vue {
 
 .news-badge {
   width: 30px;
+  height: 25px;
+  font-size: 16px;
   border-radius: 15px;
   background-color: @terra-cotta;
   color: @white;
