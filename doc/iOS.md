@@ -6,7 +6,7 @@ S'assurer que Docker est bien lancé (commande espace "Docker")
 Se rendre à la racine du projet (e.g. /Users/username/Documents/Git/fishola)
 mvn clean package (ou mvn clean package -pl fishola-mobile -DjavaVersion=1.8 pour builder uniquement le mobile)
 cd fishola-mobile
-mv target/dist-production target/dist (ou mv target/dist-demo target/dist pour demo)
+mv target/dist-mobile target/dist (ou mv target/dist-demo target/dist pour demo)
 npx cap copy
 gist stash (pour supprimer la modif de capacitor.config.json)
 
