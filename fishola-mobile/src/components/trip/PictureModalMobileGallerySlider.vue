@@ -47,12 +47,18 @@
     <div class="footer">
       <FooterButton
         v-if="
+          !readOnly &&
           !slides[currentSlide].isAddPicButton &&
           !slides[currentSlide].isMeasurementPic
         "
         icon="icon-delete"
         text="Supprimer"
         v-on:clicked="$emit('delete', slides[currentSlide].src)"
+      />
+      <FooterButton
+        v-if="readOnly"
+        text="Voir la sortie"
+        @clicked="$emit('seeTrip')"
       />
 
       <div class="footer-element pastille" @click="swiped('right')">
@@ -75,6 +81,7 @@
           v-if="currentSlide < slides.length - 1"
         ></i>
       </div>
+      <i class="icon-share share" @click="sharePic"></i>
     </div>
   </div>
 </template>
@@ -83,6 +90,7 @@
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import FooterButton from "@/components/layout/FooterButton.vue";
+import ShareService from "@/services/ShareService";
 
 @Component({
   components: { FooterButton },
@@ -92,6 +100,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
   @Prop({ default: false }) deleteButton: boolean;
   @Prop() otherPics: PictureContentWithOrder[];
   @Prop({ default: "" }) measurementPictureSrc: "";
+  @Prop() readOnly: boolean;
   slides: GallerySlide[] = [];
   lastSwipe = Date.now();
   currentSlide = 0;
@@ -112,7 +121,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
       this.slides.push(gallerySlide);
     }
     // Push a last slide for adding new pics
-    if (this.slides.length < 5) {
+    if (this.slides.length < 5 && !this.readOnly) {
       const gallerySlide = new GallerySlide();
       gallerySlide.order = i;
       gallerySlide.isAddPicButton = true;
@@ -120,7 +129,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
     }
     for (var j = 0; j < this.slides.length; j++) {
       if (this.slides[j].src == this.src) {
-        this.currentSlide = i;
+        this.currentSlide = j;
       }
     }
   }
@@ -131,9 +140,17 @@ export default class PictureModalMobileGallerySlider extends Vue {
       if (direction == "right") {
         this.currentSlide = Math.max(0, this.currentSlide - 1);
       } else {
-        this.currentSlide = Math.min(this.slides.length, this.currentSlide + 1);
+        this.currentSlide = Math.min(
+          this.slides.length - 1,
+          this.currentSlide + 1
+        );
       }
     }
+  }
+
+  sharePic(): void {
+    const displayedSlide = this.slides[this.currentSlide];
+    ShareService.sharePicture(displayedSlide.src, "prise.png");
   }
 }
 
@@ -156,7 +173,8 @@ class GallerySlide {
     img {
       height: 68vh;
       width: 100vw;
-      object-fit: cover;
+      object-fit: contain;
+      background-color: @galery-pick-background;
     }
     .add-picture {
       padding-top: 10vh;
@@ -224,5 +242,12 @@ class GallerySlide {
   to {
     opacity: 1;
   }
+}
+
+.share {
+  font-weight: bolder;
+  font-size: 28px !important;
+  cursor: pointer;
+  width: 50px;
 }
 </style>

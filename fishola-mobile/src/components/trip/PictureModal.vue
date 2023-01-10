@@ -20,24 +20,33 @@
   -->
 <template>
   <div class="modal-container">
-    <div class="mobile-gallery hide-on-desktop">
+    <div
+      class="mobile-gallery"
+      :class="{ 'hide-on-desktop': !forceMobileMode }"
+    >
       <div class="transparent-background" @click="$emit('closeModal')"></div>
       <div class="pane popup-content">
         <div class="no-scroll">
-          <h2 class="title">Galerie Photos</h2>
+          <slot></slot>
           <!-- pictures required for measurement -->
           <PictureModalMobileGallerySlider
+            v-if="focusedPicSrc"
             :src="focusedPicSrc"
             :otherPics="otherPics"
+            :readOnly="readOnly"
             :measurementPictureSrc="measurementPictureSrc"
             @delete="deletePicture"
             @take-picture="takePicture"
+            @seeTrip="$emit('seeTrip')"
           />
         </div>
       </div>
     </div>
     <!-- Gallery on desktop-->
-    <div class="gallery hide-on-mobile">
+    <div
+      class="gallery"
+      :class="{ 'hide-on-mobile': !forceMobileMode, hidden: forceMobileMode }"
+    >
       <div class="pic-miniatures-container">
         <!-- Show all gallery pics -->
         <div
@@ -93,6 +102,7 @@
       <div class="picture-wrapper" v-on:click="$emit('closeModal')">
         <div class="picture-content">
           <img
+            :class="{ hidden: forceMobileMode }"
             class="picture"
             v-bind:src="focusedPicSrc"
             alt="Photo de la capture"
@@ -125,6 +135,8 @@ export default class PictureModal extends Vue {
   @Prop({ default: false }) deleteButton: boolean;
   @Prop() otherPics: PictureContentWithOrder[];
   @Prop({ default: "" }) measurementPictureSrc: "";
+  @Prop() readOnly: boolean;
+  @Prop() forceMobileMode: boolean;
   focusedPicSrc: string = "";
   allNonMeasurePictures: PictureContentWithOrder[] = [];
   allowDeletion = false;

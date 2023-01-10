@@ -135,6 +135,14 @@ export default class Helpers {
     return result;
   }
 
+  static formatToDateWithoutYear(date: Date): string {
+    const dayOptions = {
+      day: "numeric",
+      month: "long",
+    };
+    const result = date.toLocaleDateString("fr-FR", dayOptions);
+    return result;
+  }
   static formatToLongDate(date: Date): string {
     const dayOptions = {
       weekday: "long",
@@ -191,15 +199,25 @@ export default class Helpers {
   }
 
   static parseLocalDateTime(someLocalDateTime: number[]): Date {
-    const result: Date = new Date(
-      someLocalDateTime[0],
-      someLocalDateTime[1] - 1,
-      someLocalDateTime[2],
-      someLocalDateTime[3],
-      someLocalDateTime[4],
-      someLocalDateTime[5]
-    );
-    return result;
+    if (someLocalDateTime.length == 5) {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4],
+        0
+      );
+    } else {
+      return new Date(
+        someLocalDateTime[0],
+        someLocalDateTime[1] - 1,
+        someLocalDateTime[2],
+        someLocalDateTime[3],
+        someLocalDateTime[4],
+        someLocalDateTime[5]
+      );
+    }
   }
 
   static truncateTimeToMinutes(input: string): string {

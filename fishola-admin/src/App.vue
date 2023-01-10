@@ -21,26 +21,30 @@
 <template>
   <div id="app">
     <router-link v-if="!$router.currentRoute.name" to="/">Perdu ?</router-link>
-    <Menu v-if="$router.currentRoute.name && $router.currentRoute.name != 'login' && $router.currentRoute.name != 'dispatcher'"/>
-    <router-view class="page-content"/>
+    <Menu
+      v-if="
+        $router.currentRoute.name &&
+          $router.currentRoute.name != 'login' &&
+          $router.currentRoute.name != 'dispatcher'
+      "
+    />
+    <router-view class="page-content" />
   </div>
 </template>
 
 <script lang="ts">
-
-import Menu from '@/components/Menu.vue'
-import '@mdi/font/css/materialdesignicons.css'
+import Menu from "@/components/Menu.vue";
+import "@mdi/font/css/materialdesignicons.css";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     Menu
   }
-}
+};
 </script>
 
 <style lang="less">
-
 @import "less/main";
 
 body {
@@ -62,7 +66,7 @@ html {
 }
 
 #app {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: @gunmetal;
@@ -73,8 +77,8 @@ html {
 }
 
 .page-content {
-
   padding: 10px;
-
+  padding-left: 50px;
+  padding-right: 50px;
 }
 </style>

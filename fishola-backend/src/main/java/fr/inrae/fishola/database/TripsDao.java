@@ -21,7 +21,9 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import com.google.common.collect.ListMultimap;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.daos.TripDao;
 import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TripTechniquesDao;
@@ -29,11 +31,14 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
+import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -84,7 +89,7 @@ public class TripsDao extends AbstractFisholaDao {
         return techniques.size();
     }
 
-    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
         List<Trip> result = withContext(context -> {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
@@ -96,6 +101,9 @@ public class TripsDao extends AbstractFisholaDao {
                 LocalDate min = LocalDate.of(year, Month.JANUARY, 1);
                 LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
                 conditions.add(Tables.TRIP.DAY.between(min, max));
+            });
+            lakesFilter.ifPresent(lakesIds -> {
+                conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
             });
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
@@ -122,20 +130,20 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year) {
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
         if (!page.getOrderClauses().isEmpty()) {
             PaginationOrder order = page.getOrderClauses().get(0);
             orderDesc = order.isDesc();
         }
-        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year);
+        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year,lakesFilter);
         PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
         return result;
     }
 
     public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm) {
-        PaginationResult<Trip> result = listMyTrips(userId, page, searchTerm, Optional.empty());
+        PaginationResult<Trip> result = listMyTrips(userId, page, searchTerm, Optional.empty(), Optional.empty());
         return result;
     }
 
@@ -247,6 +255,35 @@ public class TripsDao extends AbstractFisholaDao {
     public List<Trip> findAll() {
         List<Trip> result = withDao(TripDao.class, TripDao::findAll);
         return result;
+    }
+
+    public List<PicturePerTripBean> getPicturesPerTripForYearAndLakes(UUID userId, Integer year, Optional<List<UUID>> lakesFilter) {
+        List<PicturePerTripBean> picturesPerTripForYear = new ArrayList<>();
+        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), lakesFilter);
+        for(Trip trip : tripsForYear) {
+            Set<UUID> catchIds = catchsDao.listCatchIds(trip.getId());
+            PicturePerTripBean picturesForTrip = new PicturePerTripBean();
+            picturesForTrip.pictureURLs = new ArrayList<>();
+            picturesForTrip.tripDate = trip.getDay();
+            picturesForTrip.tripId = trip.getId();
+            picturesForTrip.tripName = trip.getName();
+            withDaoNoResult(LakeDao.class, lakeDao -> {
+                picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName();
+            });
+            ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
+            for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
+                picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/" + catchWithPicture.getValue());
+            }
+            Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
+            for (UUID measurementPictureCatchId: measurementPictures) {
+                picturesForTrip.pictureURLs.add("/v1/pictures/measure/"+ measurementPictureCatchId);
+            }
+
+            if (!picturesForTrip.pictureURLs.isEmpty()) {
+                picturesPerTripForYear.add(picturesForTrip);
+            }
+        }
+        return picturesPerTripForYear;
     }
 
 }

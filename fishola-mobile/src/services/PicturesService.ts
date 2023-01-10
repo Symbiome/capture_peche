@@ -1,4 +1,4 @@
-import { CatchBean, TripBean } from "@/pojos/BackendPojos";
+import { CatchBean, PicturePerTripBean, TripBean } from "@/pojos/BackendPojos";
 /*-
  * #%L
  * Fishola :: Mobile
@@ -23,6 +23,7 @@ import AbstractFisholaService from "@/services/AbstractFisholaService";
 import StoredPicture from "@/pojos/StoredPicture";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import TripsService from "./TripsService";
+import { pick } from "lodash";
 
 export default class PicturesService extends AbstractFisholaService {
   constructor() {
@@ -333,5 +334,20 @@ export default class PicturesService extends AbstractFisholaService {
         }
       );
     });
+  }
+
+  static async getAllPicsPerYearAndLake(
+    lakeId: string
+  ): Promise<Map<number, PicturePerTripBean>> {
+    let url = "/v1/pictures/";
+    if (lakeId) {
+      url += "for-lake/" + lakeId;
+    } else {
+      url += "all";
+    }
+    const onlinePics: Map<number, PicturePerTripBean> = await this.backendGet(
+      url
+    );
+    return onlinePics;
   }
 }

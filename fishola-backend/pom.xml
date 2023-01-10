@@ -29,7 +29,7 @@
   <parent>
     <groupId>fr.inrae</groupId>
     <artifactId>fishola</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
   </parent>
 
   <artifactId>fishola-backend</artifactId>
@@ -389,6 +389,7 @@
             <class>fr.inrae.fishola.entities.tables.pojos.Editorial</class>
             <class>fr.inrae.fishola.entities.tables.pojos.SampleType</class>
             <class>fr.inrae.fishola.rest.editorial.DocumentationLight</class>
+            <class>fr.inrae.fishola.entities.tables.pojos.News</class>
             <class>fr.inrae.fishola.rest.security.UserSettings</class>
             <class>fr.inrae.fishola.rest.security.UpdatePasswordBean</class>
             <class>fr.inrae.fishola.rest.about.KeyFigures</class>

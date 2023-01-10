@@ -1,23 +1,3 @@
-/*-
- * #%L
- * Fishola :: Mobile
- * %%
- * Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * #L%
- */
 /* tslint:disable */
 /* eslint-disable */
 
@@ -84,6 +64,7 @@ export interface SpeciesWithAlias {
     mandatorySize: boolean;
     alias?: string;
     authorizedSample: boolean;
+    minSize: number;
 }
 
 export interface Lake extends Serializable {
@@ -141,6 +122,16 @@ export interface DocumentationLight {
     url: string;
 }
 
+export interface News extends Serializable {
+    id: string;
+    name: string;
+    content: string;
+    datePublicationDebut: Date;
+    datePublicationFin: Date;
+    dateNotificationSent: Date;
+    miniatureId: string;
+}
+
 export interface UserSettings {
     promptWeight: boolean;
     promptSamples: boolean;
@@ -195,6 +186,8 @@ export interface Dashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    picturesPerTrip: PicturePerTripBean[];
 }
 
 export interface GlobalDashboard {
@@ -204,6 +197,7 @@ export interface GlobalDashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
     computedOn: Date;
 }
 
@@ -216,6 +210,14 @@ export interface DashboardLastTrip {
     catchsCount: number;
 }
 
+export interface PicturePerTripBean {
+    tripDate: Date;
+    tripId: string;
+    tripName: string;
+    tripLakeName: string;
+    pictureURLs: string[];
+}
+
 export type TripMode = "Live" | "Afterwards";
 
 export type TripType = "Border" | "Craft";
@@ -223,3 +225,5 @@ export type TripType = "Border" | "Craft";
 export type DeviceType = "web" | "application";
 
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
+
+export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";

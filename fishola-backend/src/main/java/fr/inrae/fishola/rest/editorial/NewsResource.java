@@ -22,13 +22,16 @@ package fr.inrae.fishola.rest.editorial;
  */
 
 import com.google.common.base.Preconditions;
-import fr.inrae.fishola.database.EditorialAndDocumentationDao;
-import fr.inrae.fishola.entities.tables.pojos.Documentation;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import fr.inrae.fishola.exceptions.NotFoundException;
+import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.entities.tables.pojos.News;
+import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-import org.apache.commons.lang3.tuple.Pair;
-
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -41,105 +44,114 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import org.nuiton.util.ResourceNotFoundException;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class NewsResource extends AbstractFisholaResource {
 
-    public static final boolean IS_NEWS = true;
-
     @Inject
-    protected EditorialAndDocumentationDao dao;
+    protected NewsFisholaDao dao;
 
     @GET
     @Path("/news")
-    public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
-        List<DocumentationWithBase64ContentBean> result = docs.entrySet()
-                .stream()
-                .map(entry -> toDocumentationWithBase64Content(entry, request))
-                .collect(Collectors.toList());
-        return result;
+    public List<News> getPublishedNews(@Context HttpServletRequest request) {
+        // Return all news for which publication date is active
+        return dao.getNews(true);
     }
 
-    @DELETE
-    @Path("/news/{documentId}")
-    public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
+    @GET
+    @Path("/news-all")
+    public List<News> getAllNews(@Context HttpServletRequest request) {
+        // Return all news
         checkIsAdmin();
-        dao.deleteDocumentation(documentId);
+        return dao.getNews(false);
+    }
+    @GET
+    @Path("/news/{newsId}")
+    public News getPublishedNews(@Context HttpServletRequest request, @PathParam("newsId") UUID newsId) {
+       News news = dao.findById(newsId);
+        LocalDateTime now = LocalDateTime.now();
+       if (news == null || news.getDatePublicationDebut() == null || now.isBefore(news.getDatePublicationDebut()) ||
+                news.getDatePublicationFin() == null || now.isAfter(news.getDatePublicationFin())) {
+           throw new ResourceNotFoundException("News not found or not published yet");
+       }
+       return news;
+    }
+
+
+    @DELETE
+    @Path("/news-all/{newsId}")
+    public Response deleteNews(@PathParam("newsId") UUID newsId) {
+        checkIsAdmin();
+        dao.deleteById(newsId);
         return Response.noContent().build();
     }
 
-    protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
-        String url = config.getDeeplinkSafeApiUrl("/api/v1/documentation/" + entry.getKey(), request);
-        DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
-        result.setId(entry.getKey());
-        result.setNaturalId(entry.getValue().getLeft());
-        result.setName(entry.getValue().getRight());
-        result.setUrl(url);
-        result.setBase64Content("");
-        return result;
-    }
-
     @PUT
-    @Path("/news/{docId}")
-    public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
+    @Path("/news-all/{newsId}")
+    public Response updateNews(@PathParam("newsId") UUID newsId, News news) {
         checkIsAdmin();
-        Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
-        Preconditions.checkArgument(docId.equals(documentationBase64Content.id()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
+        Preconditions.checkArgument(newsId.equals(news.getId()), "L'identifiant ne correspond pas");
         try {
-            Documentation documentation = documentationFromBase64Content(Optional.of(docId), documentationBase64Content);
-            dao.updateDocumentation(documentation);
+            dao.update(news);
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
-            entity.put("error", "Impossible de mettre à jour la documentation : " + e.getMessage());
+            entity.put("error", "Impossible de mettre à jour la news : " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
     }
 
     @POST
-    @Path("/news")
-    public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
+    @Path("/news-all")
+    public Response createNews(News news) {
         checkIsAdmin();
         try {
-            Documentation documentation = documentationFromBase64Content(Optional.empty(), documentationBase64Content);
-            dao.createDocumentation(documentation);
+            News inserted = dao.insert(news);
+            // Update all news pictures uploaded with temp id
+            dao.updateTempNewsPictureIds(inserted.getId());
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
-            entity.put("error", "Impossible de créer la documentation : " + e.getMessage());
+            entity.put("error", "Impossible de créer la news : " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
     }
 
-    protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws FisholaTechnicalException {
-        Documentation documentation = new Documentation();
-        docId.ifPresent(documentation::setId);
-        documentation.setNaturalId(documentationBase64Content.naturalId());
-        documentation.setName(documentationBase64Content.name());
-        documentation.setNews(IS_NEWS);
-        // If new documentation was sent in base64
-        if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
-            String[] contentSplitted = documentationBase64Content.base64Content().split(",");
-            String base64PDF = contentSplitted[1];
-            byte[] bytes = Base64.getDecoder().decode(base64PDF);
-            documentation.setContent(bytes);
-        } else {
-            Preconditions.checkArgument(docId.isPresent(), "Pas de contenu base64 spécifié, il faut avoir donné un identifiant de documentation");
-            // Reuse existing content if none sent
-            Optional<Documentation> existingDoc = dao.getDocumentation(docId.get());
-            NotFoundException.check(existingDoc.isPresent(), "Missing documentation " + docId.get());
-            documentation.setContent(existingDoc.get().getContent());
+    @POST
+    @Path("/news-picture/{newsId}")
+    public NewsPicture postNewsPicture(@PathParam("newsId") String newsId, String content) {
+        checkIsAdmin();
+        try {
+            return dao.insertNewsPicture(newsId, content, false);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Impossible de créer l'image : " + e.getMessage());
         }
-        return documentation;
     }
 
+    @POST
+    @Path("/news-miniature/{newsId}")
+    public NewsPicture postNewsMiniature(@PathParam("newsId") String newsId, String content) {
+        checkIsAdmin();
+        try {
+            return dao.insertNewsPicture(newsId, content, true);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Impossible de créer l'image : " + e.getMessage());
+        }
+    }
+
+    @GET
+    @Path("/news-picture/{picId}")
+    @Produces("image/jpeg")
+    public Response getNewsPicture(@PathParam("picId") UUID picId) {
+         Optional<byte[]> bytes = dao.getNewsPicture(picId);
+
+        Response response = bytes.map(this::wrapAsStreamingOutput)
+                .map(Response::ok)
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
+                .build();
+        return response;
+    }
 }

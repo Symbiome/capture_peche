@@ -20,45 +20,70 @@
   -->
 <template>
   <div class="login page-with-header full-background">
-    <FisholaHeader v-bind:title="false" 
-                   v-bind:avatar="false"
-                   v-bind:menu="true"/>
+    <FisholaHeader
+      v-bind:title="false"
+      v-bind:avatar="false"
+      v-bind:menu="true"
+    />
     <div class="page login-page">
       <div class="login-pane">
+        <span @click="goHome" class="icon-home home hide-on-mobile">
+          <span style="padding-left: 10px">Accueil</span></span
+        >
         <div class="login-title keyboardSensitive">
-          <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">Bienvenue sur</div>
-          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-desktop" src="img/logo-big.svg" alt="FISHOLA"/>
-          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-mobile" src="img/logo-big-positif.svg" alt="FISHOLA"/>
+          <div
+            class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly"
+          >
+            Bienvenue sur
+          </div>
+          <img
+            class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-desktop"
+            src="img/logo-big.svg"
+            alt="FISHOLA"
+          />
+          <img
+            class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-mobile"
+            src="img/logo-big-positif.svg"
+            alt="FISHOLA"
+          />
         </div>
         <div class="login-form">
-          <FormInput name="email"
-                     type="email"
-                     label="E-mail"
-                     placeholder="Renseignez votre E-mail"
-                     v-model="email"
-                     v-bind:error="emailError"
-                     v-on:keyupEnter="signIn"
-                     />
-          <FormInput name="password"
-                      type="password"
-                      label="Mot de passe"
-                      placeholder="Renseignez votre mot de passe"
-                      v-model="password"
-                      v-bind:error="passwordError"
-                      v-on:keyupEnter="signIn"
-                      />
+          <FormInput
+            name="email"
+            type="email"
+            label="E-mail"
+            placeholder="Renseignez votre E-mail"
+            v-model="email"
+            v-bind:error="emailError"
+            v-on:keyupEnter="signIn"
+          />
+          <FormInput
+            name="password"
+            type="password"
+            label="Mot de passe"
+            placeholder="Renseignez votre mot de passe"
+            v-model="password"
+            v-bind:error="passwordError"
+            v-on:keyupEnter="signIn"
+          />
           <ForgottenPassword
-              v-bind:alreadTypedEmail="email"
-              v-bind:tohideSelector="'.login-form .form-input,.login-buttons'"
-              class="hide-on-mobile"/>
+            v-bind:alreadTypedEmail="email"
+            v-bind:tohideSelector="'.login-form .form-input,.login-buttons'"
+            class="hide-on-mobile"
+          />
         </div>
         <div class="login-buttons keyboardSensitive">
-          <div class="login-button signin keyboardSensitive"><button v-on:click="signIn">Connexion</button></div>
-          <div class="login-button signup keyboardSensitive"><button v-on:click="signUp">Créer un compte</button></div>
+          <div class="login-button signin keyboardSensitive">
+            <button v-on:click="signIn">Connexion</button>
+          </div>
+          <div class="login-button signup keyboardSensitive">
+            <button v-on:click="signUp">Créer un compte</button>
+          </div>
           <ForgottenPassword
-              v-bind:alreadTypedEmail="email"
-              v-bind:tohideSelector="'.login-form,.signin,.signup'"
-              class="hide-on-desktop"/>
+            v-bind:alreadTypedEmail="email"
+            v-bind:tohideSelector="'.login-form,.signin,.signup'"
+            class="hide-on-desktop"
+          />
         </div>
       </div>
     </div>
@@ -66,77 +91,83 @@
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
+import ProfileService from "@/services/ProfileService";
+import FormInput from "@/components/common/FormInput.vue";
+import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import router from "@/router";
 
-import Constants from '@/services/Constants'
-import ProfileService from '@/services/ProfileService'
-import FormInput from '@/components/common/FormInput.vue'
-import ForgottenPassword from '@/components/common/ForgottenPassword.vue'
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import router from '@/router'
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
     FisholaHeader,
     FormInput,
-    ForgottenPassword
-  }
+    ForgottenPassword,
+  },
 })
 export default class LoginView extends Vue {
-
-  email = '';
-  emailError = '';
-  password = '';
-  passwordError = '';
+  email = "";
+  emailError = "";
+  password = "";
+  passwordError = "";
 
   constructor() {
     super();
   }
 
   mounted() {
-    this.email = '';
-    this.emailError = '';
-    this.password = '';
-    this.passwordError = '';
+    this.email = "";
+    this.emailError = "";
+    this.password = "";
+    this.passwordError = "";
     if (localStorage && localStorage.latestEmail) {
       this.email = localStorage.latestEmail;
     }
   }
 
   signIn() {
-    this.emailError = '';
-    this.passwordError = '';
-    ProfileService
-      .signin({"email": this.email, "password": this.password})
-      .then(this.signInResult, () => {this.signInResult(404)}); 
+    this.emailError = "";
+    this.passwordError = "";
+    ProfileService.signin({ email: this.email, password: this.password }).then(
+      this.signInResult,
+      () => {
+        this.signInResult(404);
+      }
+    );
   }
 
-  signInResult(status:number) {
-    switch(status) {
+  signInResult(status: number) {
+    switch (status) {
       case 200:
-
         if (localStorage) {
           localStorage.latestEmail = this.email;
         }
 
-        this.$root.$emit('profile-updated');
-        router.push('trips');
+        this.$root.$emit("profile-updated");
+        router.push("trips");
 
         // Après login, on tente de télécharger les settings
-        ProfileService.prepareCaches()
-          .then(
-            () => console.debug("Préparation des caches du profil utilisateur terminée"),
-            (error) => console.error("Erreur lors de la préparation des caches du profil utilisateur", error)
-          );
+        ProfileService.prepareCaches().then(
+          () =>
+            console.debug(
+              "Préparation des caches du profil utilisateur terminée"
+            ),
+          (error) =>
+            console.error(
+              "Erreur lors de la préparation des caches du profil utilisateur",
+              error
+            )
+        );
         break;
       case 401:
-        this.$root.$emit('toaster-error', 'E-mail ou mot de passe incorrect');
-        this.passwordError = 'Mot de passe erroné';
+        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        this.passwordError = "Mot de passe erroné";
         break;
       case 404:
-        this.$root.$emit('toaster-error', 'E-mail ou mot de passe incorrect');
-        this.emailError = 'E-mail inconnu';
+        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        this.emailError = "E-mail inconnu";
         break;
       default:
         console.error("Unexpected status: " + status);
@@ -144,22 +175,23 @@ export default class LoginView extends Vue {
   }
 
   signUp() {
-    router.push('register');
+    router.push("register");
   }
 
   autoLogin() {
-    this.email = 'thimel@codelutin.com';
-    this.password = 'sispea';
+    this.email = "thimel@codelutin.com";
+    this.password = "sispea";
     this.signIn();
   }
 
+  goHome() {
+    router.push("/");
+  }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 @media screen and (min-width: @desktop-min-width) {
@@ -179,22 +211,21 @@ export default class LoginView extends Vue {
 }
 
 .login-pane {
-
   height: 100%;
   width: 100%;
 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  
-  text-align:center;
+
+  text-align: center;
 
   .login-title {
     height: 140px;
     &.keyboardShowing {
       margin-top: calc(2 * env(safe-area-inset-top));
       height: 81px;
-      @media(max-height:500px) {
+      @media (max-height: 500px) {
         margin-top: 0px;
         height: 0px;
       }
@@ -205,22 +236,27 @@ export default class LoginView extends Vue {
 
     .welcome {
       font-size: @fontsize-header-title;
-      line-height: calc(@fontsize-header-title + @line-height-padding-xxx-large);
-      @media(max-height:579px) {
+      line-height: calc(
+        @fontsize-header-title + @line-height-padding-xxx-large
+      );
+      @media (max-height: 579px) {
         font-size: @fontsize-header-title-small;
-        line-height: calc(@fontsize-header-title-small + @line-height-padding-xxx-large);
+        line-height: calc(
+          @fontsize-header-title-small + @line-height-padding-xxx-large
+        );
       }
 
       &.keyboardShowing {
         font-size: @fontsize-title-keyboardshowing;
-        line-height: calc(@fontsize-title-keyboardshowing + @line-height-padding-small);
+        line-height: calc(
+          @fontsize-title-keyboardshowing + @line-height-padding-small
+        );
       }
     }
     .logo {
-
       height: 100px;
 
-      @media(max-height:579px) {
+      @media (max-height: 579px) {
         height: 80px;
       }
 
@@ -237,8 +273,7 @@ export default class LoginView extends Vue {
     display: flex;
     flex-direction: column;
 
-    text-align:right;
-
+    text-align: right;
 
     .form-input label {
       color: @white;
@@ -264,7 +299,6 @@ export default class LoginView extends Vue {
       padding-left: @margin-x-small;
       padding-right: @margin-x-small;
     }
-
   }
 
   .login-buttons {
@@ -277,13 +311,12 @@ export default class LoginView extends Vue {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    
+
     &.keyboardShowing {
-        padding-top: 5px;
-        background-color: @transparent;
+      padding-top: 5px;
+      background-color: @transparent;
     }
     .login-button {
-
       height: 45px;
       margin-left: @margin-large;
       margin-right: @margin-large;
@@ -291,7 +324,7 @@ export default class LoginView extends Vue {
 
       &.signin {
         &.keyboardShowing {
-          margin-bottom: -30px; 
+          margin-bottom: -30px;
         }
 
         button {
@@ -319,7 +352,6 @@ export default class LoginView extends Vue {
         }
 
         button {
-
           height: 100%;
           width: 100%;
           border-radius: 50px;
@@ -335,13 +367,10 @@ export default class LoginView extends Vue {
 
           background-color: @white-smoke;
           color: @pelorous;
-
         }
       }
     }
-
   }
-
 
   @media screen and (min-width: @desktop-min-width) {
     width: 640px;
@@ -353,7 +382,9 @@ export default class LoginView extends Vue {
 
       .welcome {
         font-size: @fontsize-header-title-desktop;
-        line-height: calc(@fontsize-header-title-desktop + @line-height-padding-xxx-large);
+        line-height: calc(
+          @fontsize-header-title-desktop + @line-height-padding-xxx-large
+        );
         margin-bottom: @margin-small;
       }
     }
@@ -366,28 +397,33 @@ export default class LoginView extends Vue {
       .form-input label {
         color: @black;
       }
-
     }
 
+    .login-buttons {
+      margin-left: @margin-xx-large-desktop;
+      margin-right: @margin-xx-large-desktop;
+      background-color: @white-smoke;
 
-  .login-buttons {
-    margin-left: @margin-xx-large-desktop;
-    margin-right: @margin-xx-large-desktop;
-    background-color: @white-smoke;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
 
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-
-    .login-button {
-      height: 45px;
-      margin-left: 0px;
-      margin-right: 0px;
-      margin-bottom: @vertical-margin-medium;
+      .login-button {
+        height: 45px;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-bottom: @vertical-margin-medium;
+      }
     }
   }
-
+  .home {
+    position: absolute;
+    cursor: pointer;
+    top: 20px;
+    left: 20px;
+    color: @pelorous;
+    font-size: 30px;
+    font-size: @fontsize-header-title;
   }
 }
-
 </style>

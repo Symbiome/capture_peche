@@ -27,6 +27,7 @@ import com.mortennobel.imagescaling.ResampleOp;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
@@ -34,8 +35,18 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import org.jboss.logging.Logger;
-
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -47,13 +58,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
+import org.jboss.logging.Logger;
 
 @Path("/api/v1/pictures")
 public class PictureResource extends AbstractFisholaResource {
@@ -69,6 +74,45 @@ public class PictureResource extends AbstractFisholaResource {
 
     @Inject
     protected TripResource tripResource;
+
+    @GET
+    @Path("/for-lake/{lakeId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<Integer, List<PicturePerTripBean>> allPicturesForLake(@PathParam("lakeId") String lakeId) {
+        Optional<List<UUID>> lakesFilter = Optional.empty();
+        if (lakeId != null && !lakeId.isEmpty()) {
+            List<UUID> lakeIds = new ArrayList<>();
+            lakeIds.add(UUID.fromString(lakeId));
+            lakesFilter = Optional.of(lakeIds);
+        }
+        return this.doGetAllPicturesForLake(lakesFilter);
+    }
+
+    @GET
+    @Path("/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<Integer, List<PicturePerTripBean>> allPictures() {
+        return this.doGetAllPicturesForLake(Optional.empty());
+    }
+
+    public Map<Integer, List<PicturePerTripBean>> doGetAllPicturesForLake(Optional<List<UUID>> lakesFilter) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        Optional<FisholaUser> user = usersDao.findById(userId);
+        Preconditions.checkArgument(user.isPresent(), "No user found");
+        LocalDateTime year = user.get().getCreatedOn().minusYears(1);
+        LocalDateTime now = LocalDateTime.now();
+        Map<Integer, List<PicturePerTripBean>> picturesPerYear = new LinkedHashMap<>();
+        while (year.getYear() <= now.getYear()) {
+            List<PicturePerTripBean> picturesPerTripForYear = tripsDao.getPicturesPerTripForYearAndLakes(userId, year.getYear(), lakesFilter);
+            if (!picturesPerTripForYear.isEmpty()) {
+                picturesPerYear.put(year.getYear(), picturesPerTripForYear);
+            }
+            year = year.plusYears(1);
+        }
+        return picturesPerYear;
+    }
+
 
     @PUT
     @Path("/{catchId}/{order}")

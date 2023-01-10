@@ -214,6 +214,7 @@ package:docker-demo-feature:
     - docker
 
 deploy:demo:
+  image: alpine:latest
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
@@ -221,7 +222,7 @@ deploy:demo:
   dependencies:
     - package:docker-demo
   script:
-    - curl https://webhooks.demo.codelutin.com/redeploy-fishola-demo
+    - wget -O- https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
   image: maven:3.8-openjdk-17

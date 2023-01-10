@@ -77,9 +77,7 @@
               </button>
             </div>
             <div class="button button-secondary">
-              <button v-on:click="closeFeedback">
-                Annuler
-              </button>
+              <button v-on:click="closeFeedback">Annuler</button>
             </div>
           </div>
 
@@ -282,8 +280,16 @@ export default class FeedbackModal extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style lang="less">
 @import "../../less/main";
+
+.form-checkbox {
+  width: 100%;
+
+  .real-label {
+    margin-left: @margin-small;
+  }
+}
 
 .feedback-page {
   &.keyboardShowing {
@@ -326,18 +332,9 @@ export default class FeedbackModal extends Vue {
         p {
           text-align: center;
         }
-
-        .form-checkbox {
-          width: 100%;
-
-          .real-label {
-            margin-left: @margin-small;
-          }
-        }
       }
     }
   }
-
   @media screen and (min-width: @desktop-min-width) {
     top: 0px;
     z-index: 101; // Juste au dessus du menu

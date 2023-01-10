@@ -21,35 +21,33 @@
 <template>
   <div class="my-trips-item">
     <div class="item-selection">
-      <input type="checkbox"
-             v-bind:id="'checkbox-' + trip.id"
-             class="pelorous-checkbox"
-             v-model="selected"/>
+      <input
+        type="checkbox"
+        v-bind:id="'checkbox-' + trip.id"
+        class="pelorous-checkbox"
+        v-model="selected"
+      />
       <label v-bind:for="'checkbox-' + trip.id"></label>
     </div>
     <div class="item-description" v-on:click="openTrip">
       <div class="item-row">
-        <div class="name">{{trip.name}}</div>
+        <div class="name">{{ trip.name }}</div>
         <div class="right-part">
-          <i v-if="trip.modifiable"
-             class="icon-edit warning"
-             title="La sortie est encore modifiable"/>
+          <i
+            v-if="trip.modifiable"
+            class="icon-edit warning"
+            title="La sortie est encore modifiable"
+          />
         </div>
       </div>
       <div class="item-row">
-        <div class="left-part">
-          <i class="icon-calendar"/>{{date}}
-        </div>
-        <div class="right-part">
-          {{duration}}<i class="icon-clock"/>
-        </div>
+        <div class="left-part"><i class="icon-calendar" />{{ date }}</div>
+        <div class="right-part">{{ duration }}<i class="icon-clock" /></div>
       </div>
       <div class="item-row">
-        <div class="left-part">
-          <i class="icon-lake"/>{{lakeName}}
-        </div>
+        <div class="left-part"><i class="icon-lake" />{{ lakeName }}</div>
         <div class="right-part">
-          {{trip.catchsCount}}<i class="icon-fish"/>
+          {{ trip.catchsCount }}<i class="icon-fish" />
         </div>
       </div>
     </div>
@@ -57,136 +55,130 @@
 </template>
 
 <script lang="ts">
+import { TripLight, Lake } from "@/pojos/BackendPojos";
 
-import {TripLight, Lake} from '@/pojos/BackendPojos';
+import ReferentialService from "@/services/ReferentialService";
+import Helpers from "@/services/Helpers";
 
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/services/Helpers';
-
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import router from '../../router';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import router from "../../router";
 
 @Component
 export default class MyTripItem extends Vue {
   @Prop() trip!: TripLight;
 
-  selected:boolean = false;
-  date:string = '';
-  lakeName:string = '';
-  duration:string = '';
+  selected: boolean = false;
+  date: string = "";
+  lakeName: string = "";
+  duration: string = "";
 
   created() {
     ReferentialService.getLakesIndex().then(this.lakesIndexLoaded);
 
-    var dayOptions = {weekday: "long", month: "long", day: "numeric", year: "numeric"};
-    this.date = this.trip.date.toLocaleDateString('fr-FR', dayOptions);
+    var dayOptions = {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    };
+    this.date = this.trip.date.toLocaleDateString("fr-FR", dayOptions);
 
     this.duration = Helpers.formatSecondsDuration(this.trip.durationInSeconds);
   }
 
-  lakesIndexLoaded(lakes:Map<string, Lake>) {
+  lakesIndexLoaded(lakes: Map<string, Lake>) {
     this.lakeName = lakes.get(this.trip.lakeId)!.name;
   }
 
   openTrip() {
-    router.push({name:'trip', params: {id: this.trip.id}});
+    router.push({ name: "trip", params: { id: this.trip.id } });
   }
 
-  @Watch('selected')
+  @Watch("selected")
   onSelectedChanged(value: boolean, oldValue: boolean) {
     if (value) {
-      this.$emit('selected');
+      this.$emit("selected");
     } else {
-      this.$emit('unselected');
+      this.$emit("unselected");
     }
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .my-trips-item {
+  display: flex;
+  align-items: center;
 
-    display: flex;
-    align-items: center;
+  margin: 0px;
+  padding-right: @margin-large;
+  padding-top: @vertical-margin-medium;
+  padding-bottom: @vertical-margin-medium;
 
-    margin: 0px;
-    padding-left: @margin-large;
-    padding-right: @margin-large;
-    padding-top: @vertical-margin-medium;
-    padding-bottom: @vertical-margin-medium;
+  border-bottom: 1px solid @gainsboro;
 
-    border-bottom: 1px solid @gainsboro;
+  width: 100%;
+  height: 110px;
 
+  .item-selection {
+    width: 16px;
+    height: 16px;
+
+    input {
+      margin: 0px;
+    }
+  }
+
+  .item-description {
+    margin-left: @margin-medium;
     width: 100%;
-    height: 110px;
 
-    .item-selection {
-      width: 16px;
-      height: 16px;
+    font-size: @fontsize-small-paragraph;
+    line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
 
-      input {
-        margin: 0px;
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: @vertical-margin-xx-small;
+
+      color: @pale-sky;
+
+      .name {
+        font-weight: bold;
+        font-size: @fontsize-header-paragraph;
+        color: @gunmetal;
       }
 
-    }
-
-    .item-description {
-      margin-left: @margin-medium;
-      width: 100%;
-
-      font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
-
-      .item-row {
-        display: flex;
-        justify-content: space-between;
-        margin-top: @vertical-margin-xx-small;
-
-        color: @pale-sky;
-
-        .name {
-          font-weight: bold;
-          font-size: @fontsize-header-paragraph;
-          color: @gunmetal;
-        }
-
-        .left-part {
-          i {
-            margin-right: @margin-small;
-            color: @pale-sky;
-          }
-        }
-
-        .right-part {
-          i {
-            margin-left: @margin-small;
-            color: @pelorous;
-          }
-
-          .warning {
-            color: @terra-cotta;
-          }
-
+      .left-part {
+        i {
+          margin-right: @margin-small;
+          color: @pale-sky;
         }
       }
 
+      .right-part {
+        i {
+          margin-left: @margin-small;
+          color: @pelorous;
+        }
+
+        .warning {
+          color: @terra-cotta;
+        }
+      }
     }
+  }
 
-
-  @media(max-width:350px) {
-    padding-left: @margin-medium;
+  @media (max-width: 350px) {
     padding-right: @margin-medium;
 
     .item-description {
       margin-left: @margin-small;
 
       .item-row {
-
         .left-part {
           i {
             margin-right: @margin-x-small;
@@ -199,13 +191,10 @@ export default class MyTripItem extends Vue {
           }
         }
       }
-
-
     }
   }
 
-  @media(max-height:650px) {
-
+  @media (max-height: 650px) {
     height: 90px;
 
     .item-description {
@@ -213,10 +202,8 @@ export default class MyTripItem extends Vue {
     }
   }
 
-
   @media screen and (min-width: @desktop-min-width) {
     height: 110px;
-    padding-left: @margin-large-desktop;
     padding-right: @margin-large-desktop;
     &:hover {
       background-color: @gainsboro;
@@ -235,10 +222,7 @@ export default class MyTripItem extends Vue {
           font-size: @fontsize-paragraph-desktop;
         }
       }
-
     }
-
   }
 }
-
 </style>

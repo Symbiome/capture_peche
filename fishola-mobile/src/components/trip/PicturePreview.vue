@@ -33,6 +33,7 @@
       />
     </div>
     <PictureModal
+      :forceMobileMode="false"
       v-if="src && showModal && enableModal"
       v-bind:src="src"
       v-bind:deleteButton="deletable"
@@ -41,7 +42,9 @@
       :otherPics="otherPics"
       :measurementPictureSrc="measurementPictureSrc"
       @take-picture="$emit('take-picture')"
-    />
+    >
+      <h2 class="title">Galerie Photos</h2>
+    </PictureModal>
   </div>
 </template>
 

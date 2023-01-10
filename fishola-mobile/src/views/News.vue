@@ -19,149 +19,189 @@
   #L%
   -->
 <template>
-  <div class="news page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
-    <div class="page news-page">
-      <div class="pane pane-only">
-        <div class="pane-content rounded">
-          <h1 class="no-margin-pane">On en parle</h1>
+  <div class="news">
+    <div v-if="!news || news.length == 0" class="empty">
+      Pas de communications autour de Fishola pour le moment, revenez consultez
+      cette page prochainement !
+    </div>
 
-          <div v-if="!elements || elements.length == 0" class="empty">
-            Il n'y a pas encore d'actualités ...
+    <div
+      class="news-holder"
+      v-for="doc in news"
+      v-bind:key="doc.id"
+      @click="showNewsDetails(doc.id)"
+    >
+      <div class="news-row">
+        <div class="left-pic">
+          <img :src="getMiniatureURl(doc)" class="news-pic" />
+        </div>
+        <div class="right-content">
+          <strong>{{ doc.name }}</strong> <br />
+          <span class="publication-date">
+            <i class="icon-send" />Publié le
+            {{ formatPublicationDate(doc.datePublicationDebut) }}
+          </span>
+          <div class="news-content only-on-big-screen">
+            <i class="icon-files" />
+            {{ treatHTMLContent(doc.content) }}
           </div>
-
-          <div class="news-row"
-               v-for="doc in elements"
-               v-bind:key="doc.id">
-            <span>{{doc.name}}</span>
-            <a v-bind:href="doc.url"
-               title="Télécharger"
-               target="_blank">
-              <i class="icon-download"/>
-            </a>
+          <div class="only-on-big-screen">
+            <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
           </div>
-
-          <div class="bottom-page-spacer"></div>
         </div>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
+      <div class="news-content only-on-small-screen">
+        <i class="icon-files" />
+        {{ treatHTMLContent(doc.content) }}
+      </div>
+
+      <div class="only-on-small-screen">
+        <div class="read-more">Lire la suite <i class="icon-arrow" /></div>
+      </div>
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation"
-                   selected="documentation" />
+    <div class="bottom">
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
+
+      <FisholaFooter
+        shortcuts="back,credits,documentation"
+        selected="documentation"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
-import RunningOverlay from '@/components/layout/RunningOverlay.vue';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import TripsService from "@/services/TripsService";
+import { News } from "@/pojos/BackendPojos";
 
-import DocumentationService from '@/services/DocumentationService';
-import TripsService from '@/services/TripsService';
-import {DocumentationLight} from '@/pojos/BackendPojos';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import Constants from "../services/Constants";
+import Helpers from "../services/Helpers";
+import router from "../router";
 
 @Component({
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class NewsView extends Vue {
-  
-  elements:DocumentationLight[] = [];
+  @Prop() news: News[];
 
-  hasRunningTrip:boolean = false;
-
-  constructor() {
-    super();
-  }
+  hasRunningTrip: boolean = false;
 
   mounted() {
-    DocumentationService.getNews()
-      .then(this.documentationsLoaded);
-    TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
   }
 
-  documentationsLoaded(docs:DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, 'name');
-    sortedDocs.forEach((doc) => this.elements.push(doc));
+  getMiniatureURl(news: News) {
+    if (news.miniatureId) {
+      return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
+    } else {
+      return "img/logo-small.svg";
+    }
   }
 
+  formatPublicationDate(date: number[]) {
+    if (date) {
+      const toDate = Helpers.parseLocalDate(date);
+      if (toDate) {
+        return Helpers.formatToDate(toDate);
+      }
+    }
+    return Helpers.formatToDate(new Date());
+  }
+
+  treatHTMLContent(htmlContent: string) {
+    return htmlContent.replace(/<[^>]+>/g, "");
+  }
+
+  showNewsDetails(newsId: string) {
+    router.push("/news/" + newsId);
+  }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
-
-.news-page {
-
-  .pane .pane-content {
-    padding-left: 0px;
-    padding-right: 0px;
+.empty {
+  padding-top: 20px;
+}
+.news {
+  cursor: pointer;
+  padding-top: 20px;
+  .news-holder {
+    border-bottom: 1px solid @gainsboro;
+    margin-bottom: 40px;
+    .news-row {
+      display: flex;
+      padding-left: @margin-x-large;
+      padding-right: @margin-x-large;
+      .news-pic {
+        width: 20vw;
+        height: 20vw;
+        max-width: 20vh;
+        max-height: 20vh;
+        object-fit: cover;
+      }
+      .right-content {
+        width: 100%;
+        padding-left: 30px;
+        .publication-date {
+          padding-top: 10px;
+          display: flex;
+          gap: 10px;
+          color: @pale-sky;
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+  .news-content {
+    padding-top: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .empty {
-    color: @pale-sky;
-    text-align: center;
-    font-style: italic;
-    font-size: @fontsize-button;
-  }
-
-  .news-row {
-    padding-left: @margin-x-large;
-    padding-right: @margin-x-large;
-    height: 56px;
-
-    @media(max-height:579px) {
-      height: 46px;
-    }
-
-    @media(max-width:370px) {
-      padding-left: @margin-large;
-      padding-right: @margin-large;
-    }
-
-    border-bottom: 1px solid @solitude;
-
+  .read-more {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    span {
-      font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
-      color: @gunmetal;
+    justify-content: end;
+    gap: 10px;
+    width: 100%;
+    color: @pelorous;
+    font-weight: bold;
+    padding: 10px;
+    i {
+      background-color: @pelorous;
+      color: white;
+      padding-left: 15px;
+      padding-right: 15px;
+      border-radius: 10px;
     }
+  }
 
-    a {
-      color: @pelorous;
-      font-size: @fontsize-paragraph;
+  .only-on-small-screen {
+    display: none;
+  }
+  @media (max-width: 1200px) {
+    .only-on-small-screen {
+      max-height: 80px;
+      display: block;
     }
-
-    @media screen and (min-width: @desktop-min-width) {
-      span {
-        font-size: @fontsize-paragraph;
-        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
-      }
-      a {
-        font-size: @fontsize-paragraph-desktop;
-      }
+    .only-on-big-screen {
+      display: none;
     }
-
-    @media screen and (min-width: 800px) {
-      padding-left: @margin-large-desktop;
-      padding-right: @margin-large-desktop;
-    }
-
   }
 }
-
 </style>

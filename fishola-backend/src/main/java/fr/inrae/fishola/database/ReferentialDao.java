@@ -43,18 +43,18 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.Logger;
 
 @Singleton
 public class ReferentialDao extends AbstractFisholaDao {
@@ -327,6 +327,15 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
+    public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
+        List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
+        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample -> authorizedSample.getSpeciesId().equals(specieId)).map(AuthorizedSample::getMinSize).collect(Collectors.toList());
+        if (minSize.size() > 0) {
+            return Optional.of(minSize.get(0));
+        }
+        return Optional.empty();
+    }
+
     public void createAuthorizedSample(AuthorizedSample entity) {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.insert(entity));
     }
@@ -335,4 +344,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.delete(entity));
     }
 
+    public void updateAuthorizeSample(AuthorizedSample entity) {
+        withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
+    }
 }

@@ -22,61 +22,66 @@
   <div class="edit-trip-species page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-species-page page">
-      <SomeTripHeader v-bind:trip="trip"
-                      class="hide-on-desktop"/>
+      <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">
-            <BackButton class="hide-on-mobile"/>
+            <BackButton class="hide-on-mobile" />
             Espèce recherchée
           </h1>
-          <div v-for="s in sortedSpecies()"
-               v-bind:key="s.id"
-               class="species-item"
-               v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
+          <div
+            v-for="s in sortedSpecies()"
+            v-bind:key="s.id"
+            class="species-item"
+            v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'"
+          >
             <div class="item-selection">
-              <input type="checkbox" 
-                     v-bind:id="'checkbox-' + s.id"
-                     v-bind:value="s.id"
-                     v-model="trip.speciesIds"
-                     class="pelorous-checkbox" />
+              <input
+                type="checkbox"
+                v-bind:id="'checkbox-' + s.id"
+                v-bind:value="s.id"
+                v-model="trip.speciesIds"
+                class="pelorous-checkbox"
+              />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
             <div class="item-description" v-on:click="toggle(s)">
-              {{s.alias ? s.alias : s.name}}
-              <span v-if="s.alias" class="real-name">({{s.name}})</span>
+              {{ s.alias ? s.alias : s.name }}
+              <span v-if="s.alias" class="real-name">({{ s.name }})</span>
             </div>
           </div>
           <div class="species-item">
             <div class="item-selection">
-              <input type="checkbox" 
-                     id="checkbox-other"
-                     class="pelorous-checkbox"
-                     v-model="hasOtherSpecies" />
+              <input
+                type="checkbox"
+                id="checkbox-other"
+                class="pelorous-checkbox"
+                v-model="hasOtherSpecies"
+              />
               <label for="checkbox-other"></label>
             </div>
             <div class="item-description">
               <label for="checkbox-other">Autre</label>
-              <input type="text" 
-                     name="other"
-                     placeholder="Renseignez l'espèce"
-                     v-model="trip.otherSpecies"
-                     v-bind:disabled="!hasOtherSpecies"
-                     />
+              <input
+                type="text"
+                name="other"
+                placeholder="Renseignez l'espèce"
+                v-model="trip.otherSpecies"
+                v-bind:disabled="!hasOtherSpecies"
+              />
             </div>
           </div>
-          <div class="info">Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en renseigner plusieurs</div>
+          <div class="info">
+            Séparez les espèces par une virgule (&nbsp;,&nbsp;) pour en
+            renseigner plusieurs
+          </div>
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="next">
-                Suivant
-              </button>
+              <button v-on:click="next">Suivant</button>
             </div>
             <div class="button button-secondary">
-              <button v-on:click="giveup">
-                Abandon
-              </button>
+              <button v-on:click="giveup">Abandon</button>
             </div>
           </div>
 
@@ -84,71 +89,80 @@
         </div>
       </div>
     </div>
-    <FisholaFooter v-bind:button-text="buttonLabel"
-                   v-on:buttonClicked="next"
-                   :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"
-                   shortcuts="back,step-2-4,giveup"/>
+    <FisholaFooter
+      v-bind:button-text="buttonLabel"
+      v-on:buttonClicked="next"
+      :isWaitingForPositionBeforeGoingToNextPage="
+        isWaitingForPositionBeforeGoingToNextPage
+      "
+      shortcuts="back,step-2-4,giveup"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import TripSpecies from '@/pojos/TripSpecies';
-import {SpeciesWithAlias} from '@/pojos/BackendPojos';
-import Constants from '@/services/Constants';
-import Helpers from '@/services/Helpers';
-import TripsService from '@/services/TripsService';
-import ReferentialService from '@/services/ReferentialService';
+import TripSpecies from "@/pojos/TripSpecies";
+import { SpeciesWithAlias } from "@/pojos/BackendPojos";
+import Constants from "@/services/Constants";
+import Helpers from "@/services/Helpers";
+import TripsService from "@/services/TripsService";
+import ReferentialService from "@/services/ReferentialService";
 
-import BackButton from '@/components/common/BackButton.vue'
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import BackButton from "@/components/common/BackButton.vue";
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
-  
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import router from "../../router";
+
 @Component({
   components: {
     BackButton,
     FisholaHeader,
     SomeTripHeader,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class TripSpeciesView extends Vue {
-  
-  @Prop() id!:string;
+  @Prop() id!: string;
 
-  trip:TripSpecies = { id:'', speciesIds:[], lakeId:'', mode:'Live', startedAt: '', otherSpecies:'' };
+  trip: TripSpecies = {
+    id: "",
+    speciesIds: [],
+    lakeId: "",
+    mode: "Live",
+    startedAt: "",
+    otherSpecies: "",
+  };
 
-  hasOtherSpecies:boolean = false;
+  hasOtherSpecies: boolean = false;
 
-  species:SpeciesWithAlias[] = [];
-  speciesIndex:Map<string, SpeciesWithAlias[]> = new Map();
+  species: SpeciesWithAlias[] = [];
+  speciesIndex: Map<string, SpeciesWithAlias[]> = new Map();
 
-  buttonLabel:string;
+  buttonLabel: string;
 
-  isWaitingForPositionBeforeGoingToNextPage = false
+  isWaitingForPositionBeforeGoingToNextPage = false;
 
   created() {
-    this.buttonLabel = this.id == Constants.NEW_TRIP_ID ? 'Commencer' : 'Enregistrer'
-    ReferentialService.getSpeciesPerLakePlusCustom()
-      .then(this.speciesLoaded);
+    this.buttonLabel =
+      this.id == Constants.NEW_TRIP_ID ? "Commencer" : "Enregistrer";
+    ReferentialService.getSpeciesPerLakePlusCustom().then(this.speciesLoaded);
   }
 
-  mounted() {
+  mounted() {}
+
+  sortedSpecies(): SpeciesWithAlias[] {
+    return Vue.lodash.orderBy(this.species, "name");
   }
 
-  sortedSpecies():SpeciesWithAlias[] {
-    return Vue.lodash.orderBy(this.species, 'name');
-  }
-
-  speciesLoaded(map:Map<string, SpeciesWithAlias[]>) {
+  speciesLoaded(map: Map<string, SpeciesWithAlias[]>) {
     this.speciesIndex = map;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  tripLoaded(someTrip:TripSpecies) {
+  tripLoaded(someTrip: TripSpecies) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
     const lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
@@ -163,7 +177,7 @@ export default class TripSpeciesView extends Vue {
     }
   }
 
-  toggle(s:SpeciesWithAlias) {
+  toggle(s: SpeciesWithAlias) {
     const speciesId = s.id;
     const index = this.trip.speciesIds.indexOf(speciesId);
     if (index == -1) {
@@ -173,20 +187,80 @@ export default class TripSpeciesView extends Vue {
     }
   }
 
+  checkOtherSpecies() {
+    // Check for existing species withing other
+    const unexistingSpecies: Array<string> = [];
+    if (this.trip.otherSpecies) {
+      const allCustomSpecies = this.trip.otherSpecies.split(",");
+      allCustomSpecies.forEach((customOtherSpecie) => {
+        // Search through existing species to see if the entered custom specie would match one of them
+        let foundMatchingSpecie = false;
+        const customSpecie = this.lowerCaseAndRemovePlural(customOtherSpecie);
+        this.species.forEach((existingSpecie) => {
+          const existingSpecieWithAlias = existingSpecie as SpeciesWithAlias;
+          if (
+            this.lowerCaseAndRemovePlural(existingSpecieWithAlias.name) ==
+              customSpecie ||
+            this.lowerCaseAndRemovePlural(existingSpecieWithAlias.alias) ==
+              customSpecie
+          ) {
+            foundMatchingSpecie = true;
+            if (
+              this.trip.speciesIds.indexOf(existingSpecieWithAlias.id) == -1
+            ) {
+              this.trip.speciesIds.push(existingSpecieWithAlias.id);
+            }
+          }
+        });
+
+        // If we found an existing specie matching custom name, let's use the existing specie
+        if (!foundMatchingSpecie) {
+          unexistingSpecies.push(customOtherSpecie.trim());
+        }
+      });
+      this.trip.otherSpecies = unexistingSpecies.join(",");
+      if (!this.trip.otherSpecies) {
+        this.hasOtherSpecies = false;
+      }
+    }
+  }
+
+  lowerCaseAndRemovePlural(specieName: string | undefined): string {
+    let lowerCaseAndPluralRemoved = specieName
+      ? specieName
+          .toLowerCase()
+          .replace("s", "")
+          .replace(" ", "")
+          .replace("(", "")
+          .replace(")", "")
+      : "";
+    lowerCaseAndPluralRemoved = lowerCaseAndPluralRemoved.replace(
+      "chevaine",
+      "chevesne"
+    );
+    return lowerCaseAndPluralRemoved;
+  }
   next() {
+    this.checkOtherSpecies();
     let hasError = false;
 
     if (this.hasOtherSpecies) {
       if (!this.trip.otherSpecies) {
         hasError = true;
-        this.$root.$emit('toaster-error', 'Vous devez saisir le nom de l\'espèce');
+        this.$root.$emit(
+          "toaster-error",
+          "Vous devez saisir le nom de l'espèce"
+        );
       }
     } else {
-      this.trip.otherSpecies = '';
+      this.trip.otherSpecies = "";
     }
     if (this.trip.speciesIds.length == 0 && !this.hasOtherSpecies) {
       hasError = true;
-      this.$root.$emit('toaster-error', 'Vous devez sélectionner au moins une espèce');
+      this.$root.$emit(
+        "toaster-error",
+        "Vous devez sélectionner au moins une espèce"
+      );
     }
 
     // if (this.name) {
@@ -204,48 +278,49 @@ export default class TripSpeciesView extends Vue {
     if (hasError) {
       //
     } else {
-      this.isWaitingForPositionBeforeGoingToNextPage = true
+      this.isWaitingForPositionBeforeGoingToNextPage = true;
       TripsService.finishTripBootstrap(this.trip, this.tripSaved);
     }
   }
 
   giveup() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
-      .then(this.giveupConfirmed);
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vraiment abandonner cette sortie ?"
+    ).then(this.giveupConfirmed);
   }
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push('/trips');
+    router.push("/trips");
   }
 
-  summaryNotYetSaved(tripAsAny:any) {
+  summaryNotYetSaved(tripAsAny: any) {
     // Si on a pas encore la liste des techniques c'est qu'on est pas
     // encore passé par la sauvegarde sur l'écran de résumé #JoeLaBidouille
     return !tripAsAny.techniqueIds;
   }
 
-  tripSaved(savedId:string) {
-    this.isWaitingForPositionBeforeGoingToNextPage = false
-    if (this.id == Constants.NEW_TRIP_ID || this.summaryNotYetSaved(this.trip)) {
-      router.push({name:'trip-catchs', params: {id: savedId}});
-    } else if (this.id == 'RUNNING') {
-      router.push({name:'trip-summary', params: {id: savedId}});
+  tripSaved(savedId: string) {
+    this.isWaitingForPositionBeforeGoingToNextPage = false;
+    if (
+      this.id == Constants.NEW_TRIP_ID ||
+      this.summaryNotYetSaved(this.trip)
+    ) {
+      router.push({ name: "trip-catchs", params: { id: savedId } });
+    } else if (this.id == "RUNNING") {
+      router.push({ name: "trip-summary", params: { id: savedId } });
     } else {
-      router.push({name:'trip', params: {id: savedId}});
+      router.push({ name: "trip", params: { id: savedId } });
     }
   }
-
 }
-
 </script>
 
 <style lang="less">
-
 @import "../../less/main";
 
 .edit-trip-species-page {
-
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
@@ -262,7 +337,8 @@ export default class TripSpeciesView extends Vue {
 
     border-top: 1px solid @gainsboro;
 
-    &.selected, &:hover {
+    &.selected,
+    &:hover {
       background-color: @solitude;
     }
 
@@ -277,7 +353,6 @@ export default class TripSpeciesView extends Vue {
       input {
         margin: 0px;
       }
-
     }
 
     .item-description {
@@ -286,7 +361,9 @@ export default class TripSpeciesView extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-x-large
+      );
 
       text-align: left;
 
@@ -314,7 +391,6 @@ export default class TripSpeciesView extends Vue {
           font-size: @fontsize-form-input;
           color: @pale-sky;
         }
-
       }
 
       .real-name {
@@ -322,16 +398,14 @@ export default class TripSpeciesView extends Vue {
         color: @pale-sky;
         margin-left: @margin-x-small;
       }
-
     }
 
-    @media(max-height:600px) {
+    @media (max-height: 600px) {
       height: 46px;
       padding-left: @margin-large;
     }
 
-    @media(max-width:360px) {
-
+    @media (max-width: 360px) {
       padding-left: @margin-medium;
 
       .item-description {
@@ -342,7 +416,6 @@ export default class TripSpeciesView extends Vue {
         }
       }
     }
-
   }
 
   .info {
@@ -355,7 +428,6 @@ export default class TripSpeciesView extends Vue {
   }
 
   @media screen and (min-width: @desktop-min-width) {
-
     .species-item {
       height: 65px;
       padding-left: @margin-large-desktop;
@@ -370,8 +442,6 @@ export default class TripSpeciesView extends Vue {
       font-size: @fontsize-paragraph;
       line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
     }
-
   }
 }
-
 </style>

@@ -20,83 +20,140 @@
   -->
 <template>
   <div class="histogram">
-    <div class="values">
-      <div class="value" v-for="m in orderedMonths" v-bind:key="'value-' + m">
-        {{values[m] ? Math.round(values[m]) : ''}}
-      </div>
-    </div>
     <div class="bars">
-      <div class="bar" v-for="(m, index) in orderedMonths" v-bind:key="'bar-' + m">
-        <div class="bar-filled"
-              v-if="values[m]"
-              v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-              v-bind:style="'height: ' + (values[m] * 100 / maxValue) + '%;'"></div>
+      <div
+        class="bar"
+        v-for="(m, index) in orderedMonths"
+        v-bind:key="'bar-' + m"
+      >
+        <div v-if="values[m]">
+          <div
+            v-for="sizeType in ['MAILLEE', 'NON_MAILLEE', 'NON_DEFINI']"
+            :key="m + sizeType"
+          >
+            <div
+              v-if="values[m][sizeType]"
+              class="value"
+              :class="{
+                maillee: sizeType != 'NON_MAILLEE',
+                'non-maillee': sizeType == 'NON_MAILLEE',
+                even: index % 2 == 0,
+                odd: index % 2 != 0,
+              }"
+              :style="
+                ('background-color:red',
+                'height: ' +
+                  Math.min(
+                    108,
+                    ((values[m][sizeType] +
+                      (sizeType != 'NON_MAILLEE'
+                        ? values[m][sizeType] > 65
+                          ? 10
+                          : 6
+                        : -1)) *
+                      100) /
+                      maxValue
+                  ) +
+                  '%')
+              "
+            >
+              {{
+                values[m] && values[m][sizeType]
+                  ? Math.round(values[m][sizeType])
+                  : ""
+              }}
+            </div>
+            <div
+              class="bar-filled"
+              :class="{
+                maillee: sizeType != 'NON_MAILLEE',
+                'non-maillee': sizeType == 'NON_MAILLEE',
+                even: index % 2 == 0,
+                odd: index % 2 != 0,
+              }"
+              v-if="values[m][sizeType]"
+              v-bind:style="
+                'height: ' + (values[m][sizeType] * 100) / maxValue + '%;'
+              "
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="labels">
-      <div class="label-short"
-           v-for="m in orderedMonths"
-           v-bind:key="'label-short-' + m">
-        {{m.substring(0,1)}}
+      <div
+        class="label-short"
+        v-for="m in orderedMonths"
+        v-bind:key="'label-short-' + m"
+      >
+        {{ m.substring(0, 1) }}
       </div>
-      <div class="label-mid"
-           v-for="m in orderedMonths"
-           v-bind:key="'label-mid-' + m">
-        {{midMonth(m)}}
+      <div
+        class="label-mid"
+        v-for="m in orderedMonths"
+        v-bind:key="'label-mid-' + m"
+      >
+        {{ midMonth(m) }}
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import Constants from "@/services/Constants";
 
-import Constants from '@/services/Constants';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-
-import { Month } from '@/pojos/BackendPojos';
+import { Month, Maillage } from "@/pojos/BackendPojos";
 
 @Component
 export default class HistogramChart extends Vue {
+  @Prop() orderedMonths: Month[];
+  @Prop() values: { [P in Month]?: { [S in Maillage]: number } };
 
-  @Prop() orderedMonths:Month[];
-  @Prop() values:{ [P in Month]?: number };
-
-  maxValue:number = 50;
+  maxValue: number = 50;
 
   mounted() {
     this.maxValue = this.findMaxValue(this.values);
   }
 
-  midMonth(m:Month) {
+  midMonth(m: Month) {
     let index = this.orderedMonths.indexOf(m);
     let result = Constants.MONTHS[index];
     return result;
   }
 
-  @Watch('values')
-  onValuesChanged(newValue:{ [P in Month]?: number }, oldValue:{ [P in Month]?: number }) {
+  @Watch("values")
+  onValuesChanged(
+    newValue: { [P in Month]?: {} },
+    oldValue: { [P in Month]?: {} }
+  ) {
     this.maxValue = this.findMaxValue(newValue);
   }
 
-  findMaxValue(someValues:{ [P in Month]?: number }):number {
-    const numbers:(number|undefined)[] = Object.values(someValues);
-    let newMax:number = 0;
-    numbers.forEach((n) => {
-      if (n && n > newMax) {
-        newMax = n;
-      }
+  findMaxValue(someValues: {
+    [P in Month]?: {};
+  }): number {
+    let newMax: number = 0;
+    Object.keys(someValues).forEach((month) => {
+      // @ts-ignore
+      Object.keys(someValues[month]).forEach((st) => {
+        // @ts-ignore
+        const n = someValues[month][st];
+        if (n && n > newMax) {
+          newMax = n;
+        }
+      });
     });
+
     let result = Math.max(newMax, 50);
     return result;
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .histogram {
@@ -106,27 +163,31 @@ export default class HistogramChart extends Vue {
   justify-content: space-between;
   height: 250px;
 
-  .values {
-    width: 100%;
-    height: 18px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-
-    .value {
-      width: 8%;
-      font-weight: bold;
-      font-size: @fontsize-smallest-paragraph;
-      color: @pelorous;
-      text-align: center;
-    }
-  }
   .bars {
+    padding-top: 10px;
     width: 100%;
     height: calc(100% - 18px - 25px);
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+
+    .value {
+      position: absolute;
+      bottom: 0px;
+      width: 100%;
+      z-index: 1;
+      font-weight: bold;
+      font-size: @fontsize-smallest-paragraph;
+      text-align: center;
+
+      &.maillee {
+        color: @pelorous;
+      }
+
+      &.non-maillee {
+        color: white;
+      }
+    }
 
     .bar {
       width: 6%;
@@ -138,26 +199,37 @@ export default class HistogramChart extends Vue {
 
       position: relative;
 
-
       .bar-filled {
         position: absolute;
         bottom: 0px;
         width: 100%;
         border-radius: 2px;
 
-        &.even {
-          background: @pelorous;
+        &.maillee {
+          &.even {
+            background: @pelorous;
+          }
+
+          &.odd {
+            background: @summer-sky;
+          }
         }
 
-        &.odd {
-          background: @summer-sky;
-        }
+        &.non-maillee {
+          &.even {
+            background: @orange-even;
+          }
 
+          &.odd {
+            background: @orange-odd;
+          }
+        }
       }
     }
   }
 
   .labels {
+    margin-top: 10px;
     width: 100%;
     height: 25px;
     display: flex;
@@ -182,8 +254,6 @@ export default class HistogramChart extends Vue {
         display: none;
       }
     }
-
   }
 }
-
 </style>

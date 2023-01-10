@@ -32,6 +32,7 @@ import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
@@ -238,7 +239,7 @@ public class TripResource extends AbstractFisholaResource {
                 log.tracef("Détails de la capture : %s", aCatch);
             }
 
-            UUID catchId = createCatch(tripId, aCatch);
+            UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
                 log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -337,13 +338,13 @@ public class TripResource extends AbstractFisholaResource {
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
             if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
                 Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
-                updateCatch(existingCatch, aCatch);
+                updateCatch(trip.lakeId, existingCatch, aCatch);
                 updatedCatchsIds.add(parsedCatchId.get());
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture mise à jour : %s", parsedCatchId.get());
                 }
             } else {
-                UUID catchId = createCatch(tripId, aCatch);
+                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
                 replacements.put(aCatch.id, catchId);
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -421,7 +422,7 @@ public class TripResource extends AbstractFisholaResource {
         }
     }
 
-    protected UUID createCatch(UUID tripId, CatchBean aCatch) {
+    protected UUID createCatch(UUID lakeId, UUID tripId, CatchBean aCatch) {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(LocalDateTime.now());
@@ -441,11 +442,23 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.longitude.ifPresent(catchPojo::setLongitude);
         aCatch.sampleId.ifPresent(catchPojo::setSampleId);
 
+        // Get min size to determine if catch is maillee or not
+        Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
+        if (minSize.isPresent() && catchPojo.getSize() != null) {
+            if (catchPojo.getSize() >= minSize.get()) {
+                catchPojo.setMaillee(Maillage.MAILLEE);
+            } else {
+                catchPojo.setMaillee(Maillage.NON_MAILLEE);
+            }
+        } else {
+            catchPojo.setMaillee(Maillage.NON_DEFINI);
+        }
         UUID catchId = catchsDao.create(catchPojo);
+
         return catchId;
     }
 
-    protected void updateCatch(Catch existingCatch, CatchBean aCatch) {
+    protected void updateCatch(UUID lakeId, Catch existingCatch, CatchBean aCatch) {
 
         existingCatch.setCatchTime(aCatch.caughtAt.map(LocalTime::parse).orElse(null));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
@@ -459,6 +472,17 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
 
+        // Get min size to determine if catch is maillee or not
+        Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
+        if (minSize.isPresent()) {
+            if (existingCatch.getSize() >= minSize.get()) {
+                existingCatch.setMaillee(Maillage.MAILLEE);
+            } else {
+                existingCatch.setMaillee(Maillage.NON_MAILLEE);
+            }
+        } else {
+            existingCatch.setMaillee(Maillage.NON_DEFINI);
+        }
         catchsDao.update(existingCatch);
 
     }

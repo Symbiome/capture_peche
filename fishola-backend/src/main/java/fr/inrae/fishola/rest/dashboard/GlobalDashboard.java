@@ -22,14 +22,14 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
-
+import fr.inrae.fishola.entities.enums.Maillage;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableGlobalDashboard.class)
@@ -46,6 +46,8 @@ public interface GlobalDashboard {
     List<Month> orderedMonths();
 
     Map<UUID, Map<Month, Double>> monthlySizes();
+
+    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizesPerMaillage();
 
     LocalDateTime computedOn();
 

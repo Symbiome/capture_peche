@@ -57,15 +57,13 @@ import org.apache.commons.lang3.tuple.Pair;
 @Produces(MediaType.APPLICATION_JSON)
 public class DocumentationResource extends AbstractFisholaResource {
 
-    public static final boolean IS_NEWS = false;
-
     @Inject
     protected EditorialAndDocumentationDao dao;
 
     @GET
     @Path("/documentations")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations(IS_NEWS);
+        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
@@ -146,7 +144,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         docId.ifPresent(documentation::setId);
         documentation.setNaturalId(documentationBase64Content.naturalId());
         documentation.setName(documentationBase64Content.name());
-        documentation.setNews(IS_NEWS);
+
         // If new documentation was sent in base64
         if (documentationBase64Content.base64Content() != null && documentationBase64Content.base64Content().length() > 10) {
             String[] contentSplitted = documentationBase64Content.base64Content().split(",");

@@ -49,4 +49,6 @@ public interface UserProfileForAdmin {
 
     LocalDateTime createdOn();
 
+    boolean acceptsEmailNotifications();
+
 }
