@@ -60,7 +60,7 @@
     <gitlabProjectName>fishola</gitlabProjectName>
 
     <quarkusVersion>2.6.3.Final</quarkusVersion>
-    <jooqVersion>3.16.2</jooqVersion>
+    <jooqVersion>3.17.6</jooqVersion>
     <flywayVersion>7.3.2</flywayVersion>
     <postgresqlDriverVersion>42.3.1</postgresqlDriverVersion>
     <testcontainersVersion>1.16.3</testcontainersVersion>
