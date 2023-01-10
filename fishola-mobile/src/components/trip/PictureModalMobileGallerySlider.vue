@@ -140,7 +140,10 @@ export default class PictureModalMobileGallerySlider extends Vue {
       if (direction == "right") {
         this.currentSlide = Math.max(0, this.currentSlide - 1);
       } else {
-        this.currentSlide = Math.min(this.slides.length, this.currentSlide + 1);
+        this.currentSlide = Math.min(
+          this.slides.length - 1,
+          this.currentSlide + 1
+        );
       }
     }
   }

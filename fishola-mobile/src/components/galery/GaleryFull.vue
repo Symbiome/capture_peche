@@ -62,7 +62,7 @@
                   </option>
                 </select>
               </div>
-              <div class="years">
+              <div class="years" v-if="!loading">
                 <div v-for="year in years" :key="'gal-' + year" class="">
                   <h1>{{ year }}</h1>
                   <div
