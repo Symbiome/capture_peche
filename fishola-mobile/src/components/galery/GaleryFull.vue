@@ -143,7 +143,7 @@
         <div class="bottom-page-spacer"></div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
+    <FisholaFooter shortcuts="back,dashboard,home" selected="dashboard" />
   </div>
 </template>
 
