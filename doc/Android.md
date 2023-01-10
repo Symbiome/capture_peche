@@ -17,6 +17,13 @@ tester à minima de vous connecter et de vérifier que vous êtes sur le bon ser
 
 ## Packager la version
 
+### Via gitlab
+
+Lancer la tâche package:android-demo ou package:android-production et télécharger l'artifact.
+Le fichier apk est installable sur n'importe quel appareil android
+
+### En local (où cas où gitlab serait en carafe)
+
 Si vous ne l'avez pas encore fait, allez récupérer les variables gitlab KEYSTORE_FISHOLA_JKS et SIGNING_CONFIG
 pour créer les fichiers keystore-fishola.jks et app/signin.properties dans le dossier android
 
