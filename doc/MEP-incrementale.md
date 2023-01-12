@@ -59,6 +59,20 @@ docker-compose up -d
 
 Et commit/push les changements sur la forge mia
 
+## Mise en production du back-office
+
+
+Aller sur le pipeline du tag (exemple https://gitlab.nuiton.org/inrae/fishola/-/jobs/128799)
+Télécharger les artefacts 
+
+Décompresser le zip et ouvrir un terminal dedans.
+
+Copier le contenu du dossier fishola-admin/target/dist-production 
+dans demo4:/var/local/demo4/inrae/fishola-production/assets/fishola-admin-production (n'hésitez pas à faire un backup avant ^^)
+depuis le dossier ~/demo4/inrae/fishola-production
+docker-compose down
+docker-compose build --no-cache
+docker-compose up-d
 
 
 

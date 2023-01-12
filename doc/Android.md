@@ -46,4 +46,10 @@ Les testeurs pourront installer cet apk sur leurs téléphones (vous pouvez par 
 
 ## Envoyer la version sur le Playstore
 
-TODO
+Se connecter sur https://play.google.com/console/u/0/signup
+avec les identifiants indiqués dans le wiki
+
+Cliquer sur Fishola / Production / Créer une release
+
+Vérifier que le versionCode du fichier app/build.gradle est bien supérieur à la dernière version uploadée
+Et que le targetSDK ets assez récent (dans le fichier variables.gradle)
