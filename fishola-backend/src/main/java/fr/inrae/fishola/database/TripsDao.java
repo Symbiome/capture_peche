@@ -272,11 +272,11 @@ public class TripsDao extends AbstractFisholaDao {
             });
             ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
             for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
-                picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/" + catchWithPicture.getValue());
+                picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/preview/" + catchWithPicture.getValue());
             }
             Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
             for (UUID measurementPictureCatchId: measurementPictures) {
-                picturesForTrip.pictureURLs.add("/v1/pictures/measure/"+ measurementPictureCatchId);
+                picturesForTrip.pictureURLs.add("/v1/pictures/measure/"+ measurementPictureCatchId+"/preview");
             }
 
             if (!picturesForTrip.pictureURLs.isEmpty()) {

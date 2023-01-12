@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header-and-footer shifted-background">
+  <div class="my-trips page-with-header shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">
