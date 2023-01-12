@@ -30,7 +30,7 @@
       >
         <img
           v-if="!slide.isAddPicButton"
-          :src="slide.src"
+          :src="getFullPicURL(slide.src)"
           v-touch:swipe="swiped"
         />
         <div v-else @click="$emit('take-picture')">
@@ -150,7 +150,14 @@ export default class PictureModalMobileGallerySlider extends Vue {
 
   sharePic(): void {
     const displayedSlide = this.slides[this.currentSlide];
-    ShareService.sharePicture(displayedSlide.src, "prise.png");
+    ShareService.sharePicture(
+      this.getFullPicURL(displayedSlide.src),
+      "prise.png"
+    );
+  }
+
+  getFullPicURL(picURL: string): string {
+    return picURL.replace("/preview", "");
   }
 }
 

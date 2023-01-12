@@ -28,7 +28,7 @@
       :deleteButton="false"
       @closeModal="modalOpened = false"
       @seeTrip="seeTrip(tripId)"
-      :src="selectedPic"
+      :src="getFullPicURL(selectedPic)"
       :otherPics="tripPics"
       :readOnly="true"
     >
@@ -76,15 +76,17 @@
                     <div class="galery-pics-container">
                       <img
                         class="galery-pic"
-                        :class="{ selected: getPicURL(picURL) == selectedPic }"
+                        :class="{
+                          selected: getPreviewPicURL(picURL) == selectedPic,
+                        }"
                         v-for="picURL in ppT.pictureURLs"
                         :key="picURL"
                         @click="
-                          selectedPic = getPicURL(picURL);
+                          selectedPic = getPreviewPicURL(picURL);
                           picturePerTripChanged(ppT);
                           modalOpened = true;
                         "
-                        :src="getPicURL(picURL)"
+                        :src="getPreviewPicURL(picURL)"
                         :enableModal="false"
                         :deletable="false"
                       />
@@ -109,7 +111,7 @@
               <img
                 v-if="selectedPic"
                 class="main-pic"
-                :src="selectedPic"
+                :src="getFullPicURL(selectedPic)"
                 :enableModal="false"
                 :deletable="false"
               />
@@ -229,7 +231,7 @@ export default class GaleryFull extends Vue {
         // @ts-ignore
         this.allPicsPerYear[year].forEach((ppT: PicturePerTripBean) => {
           ppT.pictureURLs.forEach((picURL: string) => {
-            if (this.getPicURL(picURL) == this.selectedPic) {
+            if (this.getPreviewPicURL(picURL) == this.selectedPic) {
               this.picturePerTripChanged(ppT);
             }
           });
@@ -249,7 +251,7 @@ export default class GaleryFull extends Vue {
     this.tripPics = ppT.pictureURLs.map((pictureURL) => {
       // @ts-ignore
       let pic: PictureContentWithOrder = {};
-      pic.content = this.getPicURL(pictureURL);
+      pic.content = this.getPreviewPicURL(pictureURL);
       return pic;
     });
   }
@@ -269,7 +271,7 @@ export default class GaleryFull extends Vue {
     ) {
       // @ts-ignore
       const ppT = [...this.allPicsPerYear[this.years[0]]][0];
-      this.selectedPic = this.getPicURL(ppT.pictureURLs[0]);
+      this.selectedPic = this.getPreviewPicURL(ppT.pictureURLs[0]);
       this.picturePerTripChanged(ppT);
       this.$nextTick(() => {
         this.modalOpened = false;
@@ -277,8 +279,12 @@ export default class GaleryFull extends Vue {
     }
   }
 
-  getPicURL(picURL: string): string {
+  getPreviewPicURL(picURL: string): string {
     return Constants.apiUrl(picURL);
+  }
+
+  getFullPicURL(picURL: string): string {
+    return picURL.replace("/preview", "");
   }
 
   async loadLakes(): Promise<void> {
