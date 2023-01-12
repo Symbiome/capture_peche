@@ -408,12 +408,12 @@ export default class GaleryFull extends Vue {
   }
   .right-part {
     position: absolute;
-    right: 0px;
+    right: 15px;
     width: 55vw;
     height: 100vh;
     .main-pic {
       position: fixed;
-      right: 0px;
+      right: 15px;
       object-fit: contain;
       width: 55vw;
       height: 95vh;
