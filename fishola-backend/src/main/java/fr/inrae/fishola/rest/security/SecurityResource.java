@@ -271,7 +271,10 @@ public class SecurityResource extends AbstractFisholaResource {
             String token = jwtHelper.createUserToken(userId);
 
             NewCookie loginCookie = createUserTokenCookie(token);
-            Response result = Response.ok().cookie(loginCookie).build();
+            Response result = Response.ok()
+            // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
+            .header("Set-Cookie", loginCookie+";SameSite=None")
+            .build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
