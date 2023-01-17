@@ -23,6 +23,7 @@ package fr.inrae.fishola.database;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import fr.inrae.fishola.entities.Sequences;
+import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 
@@ -100,6 +101,17 @@ public class UsersDao extends AbstractFisholaDao {
 
     public void deleteUser(FisholaUser existingUser) {
         withDaoNoResult(FisholaUserDao.class, dao -> dao.delete(existingUser));
+    }
+
+    public void safeDeleteByAnonymiseUser(FisholaUser existingUser ) {
+        // Anonymise user but keep his fishing data so that we can still make stat
+        existingUser.setAcceptsMailNotifications(false);
+        existingUser.setBirthYear(1920);
+        existingUser.setEmail(existingUser.getId().toString().replace("-", "") + "@anonymised.fr");
+        existingUser.setGender(Gender.NonBinary);
+        existingUser.setFirstName("Anonymisé");
+        existingUser.setLastName("Anonymisé");
+        withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
     }
 
     public void increaseSampleBaseId(UUID userId) {

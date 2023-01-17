@@ -82,8 +82,14 @@
               Je souhaite être informé des communications Fishola par mail
             </label>
           </div>
+          <br />
+          <a @click="safeDeleteAccount" class="safe-delete-button"
+            >Supprimer mon compte</a
+          >
+          <br />
+          <br />
           <div class="buttons-bar hide-on-mobile">
-            <div class="button button-primary">
+            <div class="button button-primary modify-button">
               <button v-on:click="saveProfile">Modifier</button>
             </div>
           </div>
@@ -222,6 +228,24 @@ export default class ProfileView extends Vue {
     );
   }
 
+  safeDeleteAccount() {
+    Helpers.confirm(
+      this.$modal,
+      "Confirmez-vous vouloir supprimer définitivement votre compte ? Cette opération est irreversible",
+      "Supprimer mon compte définitivement"
+    ).then(() => {
+      ProfileService.safeDeleteAccount(this.profile).then(() => {
+        this.$root.$emit(
+          "toaster-success",
+          "Votre compte a été supprimé",
+          5000
+        );
+        router.push("/login");
+        this.$root.$emit("loggued-out");
+      });
+    });
+  }
+
   cleanValidationErros() {
     if (this.validationErrors) {
       const keys = Object.keys(this.validationErrors);
@@ -280,6 +304,20 @@ export default class ProfileView extends Vue {
     .profile-header {
       height: 200px;
     }
+  }
+
+  .safe-delete-button {
+    font-weight: bold;
+    color: @pelorous;
+    cursor: pointer;
+    &:hover {
+      color: @terra-cotta;
+    }
+  }
+
+  .modify-button {
+    position: absolute;
+    bottom: 10px;
   }
 }
 </style>
