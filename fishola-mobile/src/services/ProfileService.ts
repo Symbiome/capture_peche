@@ -70,6 +70,15 @@ export default class ProfileService extends AbstractFisholaService {
     });
   }
 
+  static safeDeleteAccount(profile: UserProfile): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.backendDelete("/v1/security/profile").then(() => {
+        UserProfile.unsetCurrent();
+        resolve();
+      }, reject);
+    });
+  }
+
   /**
    * Tries to signin with the given credentials.
    *  @param credentials the credentials to use for trying to log in

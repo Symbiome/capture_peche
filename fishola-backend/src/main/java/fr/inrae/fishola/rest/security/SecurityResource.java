@@ -527,6 +527,19 @@ public class SecurityResource extends AbstractFisholaResource {
         return response;
     }
 
+    @DELETE
+    @Path("/profile")
+    public Response safeDeleteByAnonymiseUser() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {
+            throw new NotAuthenticatedException("Utilisateur inconnu");
+        });
+        usersDao.safeDeleteByAnonymiseUser(user);
+
+        return logout();
+    }
     protected Map<String, String> validateProfile(FisholaUser bean) {
 
         Map<String, String> result = new HashMap<>();
@@ -624,6 +637,7 @@ public class SecurityResource extends AbstractFisholaResource {
         usersDao.updateUser(existingUser);
         return Response.noContent().build();
     }
+
 
     @DELETE
     @Path("/users/{userId}")
