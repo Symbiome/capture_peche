@@ -452,7 +452,10 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response logout() {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
         NewCookie logoutCookie = dropUserTokenCookie();
-        Response result = Response.noContent().cookie(logoutCookie).build();
+        Response result = Response.noContent()
+                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
+                .header("Set-Cookie", logoutCookie+";SameSite=None")
+        .build();
         return result;
     }
 
@@ -661,7 +664,10 @@ public class SecurityResource extends AbstractFisholaResource {
             String token = jwtHelper.createAdminToken();
 
             NewCookie loginCookie = createAdminTokenCookie(token);
-            Response result = Response.noContent().cookie(loginCookie).build();
+            Response result = Response.noContent()
+                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
+                .header("Set-Cookie", loginCookie+";SameSite=None")
+            .build();
             return result;
         } else {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -683,7 +689,10 @@ public class SecurityResource extends AbstractFisholaResource {
     public Response adminLogout() {
         // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
         NewCookie logoutCookie = dropAdminTokenCookie();
-        Response result = Response.noContent().cookie(logoutCookie).build();
+        Response result = Response.noContent()
+                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
+                .header("Set-Cookie", logoutCookie+";SameSite=None")
+        .build();
         return result;
     }
 

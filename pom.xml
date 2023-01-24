@@ -34,7 +34,7 @@
 
   <groupId>fr.inrae</groupId>
   <artifactId>fishola</artifactId>
-  <version>2.0.3</version>
+  <version>2.0.4</version>
 
   <name>Fishola</name>
   <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
