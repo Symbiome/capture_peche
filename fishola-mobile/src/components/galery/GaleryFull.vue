@@ -308,7 +308,11 @@ export default class GaleryFull extends Vue {
   async seeTrip(tripId: string) {
     router.push({
       name: "trip-summary",
-      params: { id: tripId, fromGallery: "true" },
+      params: {
+        id: tripId,
+        fromGallery: "true",
+        lakeFilter: this.selectedLakeUUID,
+      },
     });
   }
 
