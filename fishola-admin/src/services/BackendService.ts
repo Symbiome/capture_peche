@@ -43,6 +43,27 @@ export default abstract class BackendService {
     });
   }
 
+  static backendGetRaw(uri: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const apiUrl = Constants.apiUrl(uri);
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", apiUrl, true);
+      xhr.withCredentials = true;
+      xhr.onload = function() {
+        if (this.status == 200) {
+          const responseText = this["responseText"];
+          resolve(responseText);
+        } else if (this.status == 204) {
+          resolve(undefined);
+        } else {
+          const result = BackendService.wrapResponseReject(this);
+          reject(result);
+        }
+      };
+      xhr.send();
+    });
+  }
+
   static backendGetWithArgs(uri: string, args: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       let apiUrl = Constants.apiUrl(uri);

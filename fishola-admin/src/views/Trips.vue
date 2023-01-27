@@ -21,23 +21,42 @@
 <template>
   <div class="trips">
     <p>Vous pouvez exporter les sorties.</p>
-    <a :href="exportCsvURL"> <button class="button is-primary">Lancer un export CSV</button></a>
+    <a @click="exportCsv">
+      <button class="button is-primary">Lancer un export CSV</button></a
+    >
   </div>
 </template>
 
 <script lans="ts">
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import Constants from '@/services/Constants';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import BackendService from "@/services/BackendService";
+import Constants from "@/services/Constants";
 
 @Component
 export default class TripsVue extends Vue {
-  exportCsvURL = Constants.apiUrl("/v1/trips/export");
+  async exportCsv() {
+    let csvContent = await BackendService.backendGetRaw("/v1/trips/export");
+    var hiddenElement = document.createElement("a");
+    hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
+    hiddenElement.target = "_blank";
+    const d = new Date();
+    var mm = d.getMonth() + 1;
+    var dd = d.getDate();
+    let dateString =
+      d.getFullYear() +
+      "-" +
+      (mm > 9 ? "" : "0") +
+      mm +
+      "-" +
+      (dd > 9 ? "" : "0") +
+      dd;
+    hiddenElement.download = "Fishola_Export_" + "_" + dateString + ".csv";
+    hiddenElement.click();
+  }
 }
 </script>
 
 <style scoped lang="less">
-
 @import "../less/main";
 
 .trips {
@@ -53,5 +72,4 @@ export default class TripsVue extends Vue {
     margin: 5px;
   }
 }
-
 </style>
