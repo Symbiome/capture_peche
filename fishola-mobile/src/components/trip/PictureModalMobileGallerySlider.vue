@@ -128,7 +128,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
       this.slides.push(gallerySlide);
     }
     for (var j = 0; j < this.slides.length; j++) {
-      if (this.slides[j].src == this.src) {
+      if (this.slides[j].src.replace("/preview", "") == this.src) {
         this.currentSlide = j;
       }
     }

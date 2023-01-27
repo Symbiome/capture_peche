@@ -19,11 +19,14 @@
   #L%
   -->
 <template>
-  <div class="options-list">
+  <div class="options-list" v-if="!isLoading">
     <div
       class="item"
-      v-bind:class="itemSelected && i == itemSelected ? 'selected' : ''"
+      v-bind:class="
+        itemSelected && i.name == itemSelected.name ? 'selected' : ''
+      "
       v-for="i in items"
+      v-bind:id="'item-' + i.id"
       v-bind:key="'item-' + i.id"
       v-on:click="selectItem(i)"
     >
@@ -42,6 +45,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 export default class OptionsList extends Vue {
   @Prop() items: OptionItem[];
   itemSelected: OptionItem | null = null;
+  isLoading = true;
 
   mounted() {
     this.selectFirstItem();
@@ -49,14 +53,31 @@ export default class OptionsList extends Vue {
 
   @Watch("items")
   selectFirstItem() {
+    this.isLoading = true;
     if (this.items) {
       this.selectItem(this.items[0]);
     }
   }
 
   selectItem(item: OptionItem) {
+    this.isLoading = true;
     this.itemSelected = item;
     this.$emit("item-selected", item);
+    this.$nextTick(() => {
+      this.isLoading = false;
+      this.$nextTick(() => {
+        const itemElement = document.getElementById("item-" + item.id);
+        const scrollableParent = itemElement?.parentElement;
+        if (scrollableParent && itemElement) {
+          scrollableParent.scrollLeft = Math.max(
+            0,
+            itemElement.offsetLeft -
+              scrollableParent.offsetLeft -
+              itemElement.clientWidth
+          );
+        }
+      });
+    });
   }
 }
 </script>

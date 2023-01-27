@@ -30,7 +30,10 @@
               {{ duration }}
             </h1>
             <h1 class="no-margin-pane hide-on-mobile">
-              <BackButton />
+              <BackButton
+                back-event="onBackButton"
+                v-on:onBackButton="backToGaleryOrTrips"
+              />
               {{ trip.name }}
             </h1>
             <div v-if="modifiable" class="edit-trip-modifiable-until">
@@ -136,6 +139,7 @@ export type ActionType = "UpdateTrip" | "EditSpecies" | "EditTechniques";
 export default class EditTripView extends Vue {
   @Prop() id!: string;
   @Prop({ default: false }) fromGallery: boolean;
+  @Prop({ default: "" }) lakeFilter: string;
 
   actionRequested: ActionType = "UpdateTrip";
 
@@ -250,7 +254,13 @@ export default class EditTripView extends Vue {
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      router.push("/galery");
+      router.push({
+        name: "galery",
+        params: {
+          selectedDefaultPic: "",
+          selectedLakeUUIDProp: this.lakeFilter,
+        },
+      });
     } else {
       router.push("/trips");
     }

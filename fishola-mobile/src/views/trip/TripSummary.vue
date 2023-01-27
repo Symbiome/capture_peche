@@ -22,32 +22,34 @@
   <div class="edit-trip-summary page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-summary-page page">
-      <SomeTripHeader v-bind:trip="trip"
-                      class="hide-on-desktop"/>
+      <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
         <div class="pane-content rounded">
           <h1>
-            <BackButton class="hide-on-mobile"/>
+            <BackButton
+              class="hide-on-mobile"
+              back-event="onBackButton"
+              v-on:onBackButton="backToGaleryOrTrips"
+            />
             Récapitulatif
           </h1>
-          <SomeTripSummary ref="summary"
-                           v-if="trip.lakeId"
-                           v-bind:trip="trip"
-                           v-on:trip-modified="onUpdatedTrip"
-                           v-on:goEditSpecies="goEditSpecies"
-                           v-on:goEditTechniques="goEditTechniques"
-                           />
+          <SomeTripSummary
+            ref="summary"
+            v-if="trip.lakeId"
+            v-bind:trip="trip"
+            v-on:trip-modified="onUpdatedTrip"
+            v-on:goEditSpecies="goEditSpecies"
+            v-on:goEditTechniques="goEditTechniques"
+          />
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="startSave">            
-                <i class="icon-send"/> Terminer                 
+              <button v-on:click="startSave">
+                <i class="icon-send" /> Terminer
               </button>
             </div>
             <div class="button button-secondary">
-              <button v-on:click="giveup">
-                Abandon
-              </button>
+              <button v-on:click="giveup">Abandon</button>
             </div>
           </div>
 
@@ -55,31 +57,37 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Terminer"
-                   button-icon="icon-send"
-                   v-on:buttonClicked="startSave"
-                   shortcuts="back,step-4-4,giveup"
-                  :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"/>
+    <FisholaFooter
+      button-text="Terminer"
+      button-icon="icon-send"
+      v-on:buttonClicked="startSave"
+      back-event="onBackButton"
+      v-on:onBackButton="backToGaleryOrTrips"
+      shortcuts="back,step-4-4,giveup"
+      :isWaitingForPositionBeforeGoingToNextPage="
+        isWaitingForPositionBeforeGoingToNextPage
+      "
+    />
   </div>
 </template>
 
 <script lang="ts">
-import TripSummary from '@/pojos/TripSummary';
-import { Technique } from '@/pojos/BackendPojos';
+import TripSummary from "@/pojos/TripSummary";
+import { Technique } from "@/pojos/BackendPojos";
 
-import TripsService from '@/services/TripsService';
+import TripsService from "@/services/TripsService";
 
-import Helpers from '@/services/Helpers';
+import Helpers from "@/services/Helpers";
 
-import BackButton from '@/components/common/BackButton.vue'
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import SomeTripSummary from '@/components/trip/SomeTripSummary.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import BackButton from "@/components/common/BackButton.vue";
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
+import SomeTripSummary from "@/components/trip/SomeTripSummary.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
-import ReferentialService from '../../services/ReferentialService';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import router from "../../router";
+import ReferentialService from "../../services/ReferentialService";
 
 export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
 
@@ -89,78 +97,103 @@ export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
     SomeTripHeader,
     BackButton,
     SomeTripSummary,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class TripSummaryView extends Vue {
+  @Prop() id!: string;
+  @Prop({ default: false }) fromGallery: boolean;
+  @Prop({ default: "" }) lakeFilter: string;
 
-  @Prop() id!:string;
+  trip?: TripSummary = {
+    id: "",
+    name: "",
+    mode: "Live",
+    startedAt: "",
+    lakeId: "",
+    date: new Date(),
+    type: "Craft",
+    speciesIds: [],
+    otherSpecies: "",
+    techniqueIds: [],
+  };
+  techniquesIndex: Map<string, Technique>;
 
-  trip?:TripSummary = { id:'', name:'',  mode:'Live', startedAt: '', lakeId:'', date: new Date(), type:'Craft', speciesIds:[], otherSpecies:'', techniqueIds:[] };
-  techniquesIndex:Map<string, Technique>;
+  actionRequested: ActionType = "SendTrip";
 
-  actionRequested:ActionType = "SendTrip";
-
-  isWaitingForPositionBeforeGoingToNextPage = false
+  isWaitingForPositionBeforeGoingToNextPage = false;
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
-    ReferentialService.getTechniquesIndex().then((index:Map<string, Technique>) => this.techniquesIndex = index);
+    ReferentialService.getTechniquesIndex().then(
+      (index: Map<string, Technique>) => (this.techniquesIndex = index)
+    );
   }
 
-  mounted() {
-  }
+  mounted() {}
 
-  tripLoaded(someTrip:TripSummary) {
+  tripLoaded(someTrip: TripSummary) {
     this.trip = someTrip;
   }
 
   startSave() {
     // On demande au composant enfant de fournir le modèle mis à jour
-    const summaryComponent:any = this.$refs.summary;
+    const summaryComponent: any = this.$refs.summary;
     summaryComponent.emitUpdatedTrip();
   }
 
   giveup() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
-      .then(this.giveupConfirmed);
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vraiment abandonner cette sortie ?"
+    ).then(this.giveupConfirmed);
   }
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push('/trips');
+    router.push("/trips");
   }
 
-  onUpdatedTrip(trip:any) {
+  onUpdatedTrip(trip: any) {
     // On reçoit le modèle mis à jour, on le sauvegarde
     if (this.actionRequested == "SendTrip") {
       if (!trip.techniqueIds || trip.techniqueIds.length < 1) {
-        this.$root.$emit('toaster-error', 'Vous devez définir les techniques de pêche utilisées');
+        this.$root.$emit(
+          "toaster-error",
+          "Vous devez définir les techniques de pêche utilisées"
+        );
         this.goEditTechniques();
       } else {
         // On force l'utilisateur à vérifier les techniques via la popup
-        let liList:string = '';
-        trip.techniqueIds.forEach((techniqueId:string) => {
+        let liList: string = "";
+        trip.techniqueIds.forEach((techniqueId: string) => {
           const techniqueName = this.techniquesIndex!.get(techniqueId)!.name;
           liList += `<li>${techniqueName}</li>`;
         });
         const confirmText = `Les techniques suivantes ont été détectées. Est-ce correct ?<br/><ul>${liList}</ul>`;
 
-        Helpers.confirm(this.$modal, confirmText, 'Techniques de pêche', 'Corriger', 'C\'est bon')
-          .then(
-            () => {
-              this.isWaitingForPositionBeforeGoingToNextPage = true
-              TripsService.sendTripAndCancelCreations(trip)
-                .then(
-                  this.tripSaved,
-                  (e) => console.error("Unexpected error during sendTripAndCancelCreations", e)
-                );
-            },
-            () => {
-              this.goEditTechniques();
-            }
-          );
-
+        Helpers.confirm(
+          this.$modal,
+          confirmText,
+          "Techniques de pêche",
+          "Corriger",
+          "C'est bon"
+        ).then(
+          () => {
+            this.isWaitingForPositionBeforeGoingToNextPage = true;
+            TripsService.sendTripAndCancelCreations(trip).then(
+              this.tripSaved,
+              (e) =>
+                console.error(
+                  "Unexpected error during sendTripAndCancelCreations",
+                  e
+                )
+            );
+          },
+          () => {
+            this.goEditTechniques();
+          }
+        );
       }
     } else {
       TripsService.saveTrip(trip, this.tripSaved);
@@ -178,24 +211,34 @@ export default class TripSummaryView extends Vue {
   }
 
   tripSaved() {
-    this.isWaitingForPositionBeforeGoingToNextPage = false
+    this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
-      router.push('/trips');
-      this.$root.$emit('ask-for-sync-check');
+      router.push("/trips");
+      this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      router.push({name:'trip-species', params: {id: this.trip!.id}});
+      router.push({ name: "trip-species", params: { id: this.trip!.id } });
     } else if (this.actionRequested == "EditTechniques") {
-      router.push({name:'trip-techniques', params: {id: this.trip!.id}});
+      router.push({ name: "trip-techniques", params: { id: this.trip!.id } });
     }
   }
 
+  backToGaleryOrTrips() {
+    if (this.fromGallery) {
+      router.push({
+        name: "galery",
+        params: {
+          selectedDefaultPic: "",
+          selectedLakeUUIDProp: this.lakeFilter,
+        },
+      });
+    } else {
+      router.push("/trips");
+    }
+  }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
-
 </style>
