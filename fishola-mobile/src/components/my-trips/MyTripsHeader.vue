@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="my-trips-header secondary-header hiddenWhenKeyboardShows">
+  <div class="my-trips-header secondary-header">
     <slot></slot>
     <div class="header-icons">
       <div
