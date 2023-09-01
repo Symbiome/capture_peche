@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "fr.inrae.fishola"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "fr.inrae.fishola"
