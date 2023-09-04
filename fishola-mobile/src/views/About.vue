@@ -877,7 +877,7 @@ export default class AboutView extends Vue {
 
 .Title_sec {
   width: 100%;
-  background: url(/img/about-coregones5.jpg) top center no-repeat;
+  background: url(~/public/img/about-coregones5.jpg) top center no-repeat;
   height: 680px;
   position: relative;
   background-size: cover;
@@ -1045,11 +1045,11 @@ export default class AboutView extends Vue {
   }
 }
 .Contribute_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 .Get_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 
