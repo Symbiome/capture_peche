@@ -1179,7 +1179,7 @@ export default class EditCatchView extends Vue {
 
       // If we found an existing specie matching custom name, let's use the existing specie
       if (foundMatchingSpecie) {
-        this.aCatch.speciesId = foundMatchingSpecie!.id;
+        this.aCatch.speciesId = (foundMatchingSpecie as SpeciesWithAlias)!.id;
         this.aCatch.otherSpecies = "";
       }
     }

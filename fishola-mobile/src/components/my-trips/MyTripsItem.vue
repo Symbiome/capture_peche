@@ -75,7 +75,7 @@ export default class MyTripItem extends Vue {
   created() {
     ReferentialService.getLakesIndex().then(this.lakesIndexLoaded);
 
-    var dayOptions = {
+    var dayOptions: Intl.DateTimeFormatOptions = {
       weekday: "long",
       month: "long",
       day: "numeric",

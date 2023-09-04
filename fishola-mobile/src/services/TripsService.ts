@@ -67,7 +67,7 @@ export default class TripsService extends AbstractFisholaService {
         }
 
         if (mode == 'Live') {
-            const options = {weekday: "long", month: "long", day: "numeric"};
+            const options: Intl.DateTimeFormatOptions = {weekday: "long", month: "long", day: "numeric"};
             const now = new Date();
 
             newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
