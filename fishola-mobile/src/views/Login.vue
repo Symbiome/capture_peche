@@ -91,14 +91,13 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import router from "@/router";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {

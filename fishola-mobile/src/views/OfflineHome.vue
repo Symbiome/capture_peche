@@ -81,8 +81,12 @@ export default class OfflineHome extends Vue {
 
   @Watch("defaultTab")
   async loadNews() {
-    this.news = await DocumentationService.getNews();
-    this.showNews = this.defaultTab == "news";
+    try {
+      this.news = await DocumentationService.getNews();
+      this.showNews = this.defaultTab == "news";
+    } catch (e) {
+      // News section will be left empty
+    }
   }
 
   async showNewsTab() {

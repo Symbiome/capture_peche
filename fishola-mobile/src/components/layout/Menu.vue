@@ -203,42 +203,46 @@ export default class Menu extends Vue {
   }
 
   async loadProfile() {
-    let profile = await ProfileService.getProfile();
+    try {
+      let profile = await ProfileService.getProfile();
 
-    // Notify user if it is an old user and he does not know it is possible
-    // To receive notification par mail
-    if (
-      !profile.acceptsMailNotifications &&
-      (!profile.lastNewsSeenDate ||
+      // Notify user if it is an old user and he does not know it is possible
+      // To receive notification par mail
+      if (
+        !profile.acceptsMailNotifications &&
+        (!profile.lastNewsSeenDate ||
+          // @ts-ignore
+          !profile.lastNewsSeenDate[0] ||
+          // @ts-ignore
+          profile.lastNewsSeenDate[0] == 2021)
+      ) {
+        let acceptsMailNotifications = false;
+        try {
+          await Helpers.confirm(
+            this.$modal,
+            `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+            "Du nouveau sur FISHOLA",
+            "Non",
+            "Oui"
+          );
+          acceptsMailNotifications = true;
+        } catch (_e) {
+          acceptsMailNotifications = false;
+        }
+        profile.acceptsMailNotifications = acceptsMailNotifications;
         // @ts-ignore
-        !profile.lastNewsSeenDate[0] ||
-        // @ts-ignore
-        profile.lastNewsSeenDate[0] == 2021)
-    ) {
-      let acceptsMailNotifications = false;
-      try {
-        await Helpers.confirm(
-          this.$modal,
-          `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-          "Du nouveau sur FISHOLA",
-          "Non",
-          "Oui"
+        profile.lastNewsSeenDate[0] = 2022;
+        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+          // @ts-ignore
+          profile.lastNewsSeenDate
         );
-        acceptsMailNotifications = true;
-      } catch (_e) {
-        acceptsMailNotifications = false;
+        ProfileService.saveProfile(profile);
       }
-      profile.acceptsMailNotifications = acceptsMailNotifications;
-      // @ts-ignore
-      profile.lastNewsSeenDate[0] = 2022;
-      profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-        // @ts-ignore
-        profile.lastNewsSeenDate
-      );
-      ProfileService.saveProfile(profile);
-    }
 
-    this.profileLoaded(profile);
+      this.profileLoaded(profile);
+    } catch (e) {
+      this.connected = false;
+    }
   }
 
   back() {

@@ -86,7 +86,11 @@ export default class NewsDetailsView extends Vue {
   }
 
   async loadSingleNews(): Promise<void> {
-    this.news = await documentationService.getSingleNews(this.newsId);
+    try {
+      this.news = await documentationService.getSingleNews(this.newsId);
+    } catch (e) {
+      // news will be left empty
+    }
   }
   getMiniatureURl(news: News) {
     if (news.miniatureId) {

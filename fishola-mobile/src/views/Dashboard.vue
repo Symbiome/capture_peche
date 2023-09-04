@@ -206,8 +206,12 @@ export default class DashboardView extends Vue {
       longitude: 0,
     };
     this.lakes.push(defaultLake);
-    const allLakes = await ReferentialService.getLakes();
-    this.lakes = this.lakes.concat(allLakes);
+    try {
+      const allLakes = await ReferentialService.getLakes();
+      this.lakes = this.lakes.concat(allLakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
   }
 
   getDashboardYears(): number[] {

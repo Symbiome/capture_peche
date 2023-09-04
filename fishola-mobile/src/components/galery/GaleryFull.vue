@@ -258,24 +258,28 @@ export default class GaleryFull extends Vue {
 
   @Watch("picturesPerTrip")
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
-    this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
-      this.selectedLakeUUID
-    );
-    this.years = Object.keys(this.allPicsPerYear).reverse();
-    if (
-      !this.selectedPic &&
-      this.years.length &&
-      this.allPicsPerYear &&
-      // @ts-ignore
-      this.allPicsPerYear[this.years[0]]
-    ) {
-      // @ts-ignore
-      const ppT = [...this.allPicsPerYear[this.years[0]]][0];
-      this.selectedPic = this.getPreviewPicURL(ppT.pictureURLs[0]);
-      this.picturePerTripChanged(ppT);
-      this.$nextTick(() => {
-        this.modalOpened = false;
-      });
+    try {
+      this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
+        this.selectedLakeUUID
+      );
+      this.years = Object.keys(this.allPicsPerYear).reverse();
+      if (
+        !this.selectedPic &&
+        this.years.length &&
+        this.allPicsPerYear &&
+        // @ts-ignore
+        this.allPicsPerYear[this.years[0]]
+      ) {
+        // @ts-ignore
+        const ppT = [...this.allPicsPerYear[this.years[0]]][0];
+        this.selectedPic = this.getPreviewPicURL(ppT.pictureURLs[0]);
+        this.picturePerTripChanged(ppT);
+        this.$nextTick(() => {
+          this.modalOpened = false;
+        });
+      }
+    } catch (e) {
+      // Silent catch, gallery will be empty
     }
   }
 
@@ -297,8 +301,12 @@ export default class GaleryFull extends Vue {
       longitude: 0,
     };
     this.lakes.push(defaultLake);
-    const allLakes = await ReferentialService.getLakes();
-    this.lakes = this.lakes.concat(allLakes);
+    try {
+      const allLakes = await ReferentialService.getLakes();
+      this.lakes = this.lakes.concat(allLakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
   }
 
   formatTripDate(input: any): string {

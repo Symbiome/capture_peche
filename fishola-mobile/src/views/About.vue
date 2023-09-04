@@ -684,10 +684,10 @@ export default class AboutView extends Vue {
   goToLogin() {
     this.closed = true;
     ProfileService.fetchProfile().then(
-      (profile) => {
+      (_profile) => {
         router.push("/trips");
       },
-      (status) => {
+      (_status) => {
         router.push("/login");
       }
     );
