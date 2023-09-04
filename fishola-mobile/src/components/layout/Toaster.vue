@@ -38,7 +38,7 @@
 <script lang="ts">
 import Helpers from "@/services/Helpers";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { StatusBar } from "@capacitor/status-bar";
 
 @Component

@@ -156,7 +156,7 @@ export default class PictureModal extends Vue {
   }
 
   @Watch("src")
-  srcChanged(newValue: string) {
+  srcChanged(_newValue: string) {
     this.focusedPicSrc = this.src;
   }
 

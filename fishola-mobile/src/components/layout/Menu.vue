@@ -73,7 +73,7 @@ import UserProfile from "@/pojos/UserProfile";
 
 import router from "@/router";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 export class MenuItem {
   constructor(

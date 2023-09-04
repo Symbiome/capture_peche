@@ -262,7 +262,7 @@ export default class Helpers {
   }
 
   static alert(modal: any, text: string, title?: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, _reject) => {
       const params: any = {
         title: title,
         text: text,

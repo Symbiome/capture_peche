@@ -19,17 +19,14 @@
   #L%
   -->
 <template>
-  <span @click="goBack" class="back-button">
-    &larr;
-  </span>
+  <span @click="goBack" class="back-button"> &larr; </span>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class Counter extends Vue {
-
   @Prop() backEvent?: string;
 
   goBack() {
@@ -39,16 +36,13 @@ export default class Counter extends Vue {
       window.history.back();
     }
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 .back-button {
   cursor: pointer;
   margin-right: 30px;
 }
-
 </style>

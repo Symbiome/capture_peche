@@ -25,18 +25,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from "vue-property-decorator";
 
 @Component
 export default class FeedbackAnchor extends Vue {
-
   openFeedback() {
-    this.$root.$emit('open-feedback');
+    this.$root.$emit("open-feedback");
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

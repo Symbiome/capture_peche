@@ -205,7 +205,6 @@ import HistogramChart from "@/components/charts/HistogramChart.vue";
 import Constants from "@/services/Constants";
 import TripsService from "@/services/TripsService";
 import {
-  Dashboard,
   SpeciesWithAlias,
   DashboardLastTrip,
   CatchBean,

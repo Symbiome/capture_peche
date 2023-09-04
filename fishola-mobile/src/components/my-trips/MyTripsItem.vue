@@ -95,7 +95,7 @@ export default class MyTripItem extends Vue {
   }
 
   @Watch("selected")
-  onSelectedChanged(value: boolean, oldValue: boolean) {
+  onSelectedChanged(value: boolean, _oldValue: boolean) {
     if (value) {
       this.$emit("selected");
     } else {
