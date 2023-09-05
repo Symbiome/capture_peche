@@ -30,6 +30,7 @@
 
 <script lang="ts">
 import Helpers from "@/services/Helpers";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import Toaster from "@/components/layout/Toaster.vue";
 
@@ -89,10 +90,16 @@ export default class AppView extends Vue {
         const token = actionAndToken.substring(actionAndToken.indexOf("=") + 1);
         if ("reset-password" === action) {
           console.info("Detected reset password request");
-          router.push({ name: "reset-password", params: { token: token } });
+          RouterUtils.pushRouteNoDuplicate(router, {
+            name: "reset-password",
+            params: { token: token },
+          });
         } else if ("verify" === action) {
           console.info("Detected verify request");
-          router.push({ name: "verify", params: { token: token } });
+          RouterUtils.pushRouteNoDuplicate(router, {
+            name: "verify",
+            params: { token: token },
+          });
         }
 
         // Hide splashscreen

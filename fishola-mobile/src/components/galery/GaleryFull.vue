@@ -163,6 +163,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
+import { RouterUtils } from "../../router/RouterUtils";
 import PictureModal from "../trip/PictureModal.vue";
 
 @Component({
@@ -314,7 +315,7 @@ export default class GaleryFull extends Vue {
   }
 
   async seeTrip(tripId: string) {
-    router.push({
+    RouterUtils.pushRouteNoDuplicate(router, {
       name: "trip-summary",
       params: {
         id: tripId,
@@ -325,7 +326,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    router.push("/dashboard");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
   }
 
   async downloadSelectedPic() {

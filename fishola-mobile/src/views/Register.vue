@@ -109,7 +109,6 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import UserRegister from "@/pojos/UserRegister";
 
 import Helpers from "@/services/Helpers";
@@ -117,11 +116,12 @@ import Helpers from "@/services/Helpers";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import DocumentationService from "@/services/DocumentationService";
 import ProfileService from "@/services/ProfileService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -147,7 +147,7 @@ export default class RegisterView extends Vue {
   }
 
   cancel() {
-    router.push("/login");
+    RouterUtils.pushRouteNoDuplicate(router, "/login");
   }
 
   register() {
@@ -186,7 +186,7 @@ export default class RegisterView extends Vue {
         "Compte enregistré. Vous devez valider votre e-mail",
         10000
       );
-      router.push("/login");
+      RouterUtils.pushRouteNoDuplicate(router, "/login");
     });
   }
 

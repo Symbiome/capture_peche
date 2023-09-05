@@ -61,6 +61,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import DocumentationService from "../services/DocumentationService";
 import { News } from "@/pojos/BackendPojos";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -76,6 +77,7 @@ export default class OfflineHome extends Vue {
   showNews = false;
   news: News[] = [];
   mounted(): void {
+    Prop;
     this.loadNews();
   }
 
@@ -94,11 +96,11 @@ export default class OfflineHome extends Vue {
   }
 
   goNews() {
-    router.push("/offline-home/news");
+    RouterUtils.pushRouteNoDuplicate(router, "/offline-home/news");
   }
 
   goPresentation() {
-    router.push("/offline-home/presentation");
+    RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
   }
 }
 </script>
@@ -133,7 +135,7 @@ export default class OfflineHome extends Vue {
 }
 
 @media screen and (max-width: 760px) {
-  .trips-and-news-tab { Commu
+  .trips-and-news-tab {
     padding-top: 20px;
     margin-top: 0px;
   }

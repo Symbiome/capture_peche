@@ -22,85 +22,102 @@
   <div class="new-trip page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="page new-trip-page">
-      <SomeTripHeader/>
+      <SomeTripHeader />
       <div class="pane">
         <div class="new-trip-option">
           <div class="item">
             <div class="left">
-              <img src="img/illustration_live.svg" alt="En direct"/>
+              <img src="img/illustration_live.svg" alt="En direct" />
             </div>
             <div class="right">
               <div class="title">En direct</div>
-              <div class="detail">C’est parti, démarrez une sortie et renseignez vos captures en direct&nbsp;!</div>
-              <div class="action"><button v-on:click="newLiveTrip"><i class="icon-arrow" /></button></div>
+              <div class="detail">
+                C’est parti, démarrez une sortie et renseignez vos captures en
+                direct&nbsp;!
+              </div>
+              <div class="action">
+                <button v-on:click="newLiveTrip">
+                  <i class="icon-arrow" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
         <div class="new-trip-option">
           <div class="item">
             <div class="left">
-              <img src="img/illustration_house.svg" alt="À la maison"/>
+              <img src="img/illustration_house.svg" alt="À la maison" />
             </div>
             <div class="right">
               <div class="title">À la maison</div>
-              <div class="detail">Vous rentrez d’une sortie de pêche&nbsp;? Renseignez vos captures à posteriori</div>
-              <div class="action"><button v-on:click="newAfterwardsTrip"><i class="icon-arrow" /></button></div>
+              <div class="detail">
+                Vous rentrez d’une sortie de pêche&nbsp;? Renseignez vos
+                captures à posteriori
+              </div>
+              <div class="action">
+                <button v-on:click="newAfterwardsTrip">
+                  <i class="icon-arrow" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,spacer,giveup"/>
+    <FisholaFooter shortcuts="back,spacer,giveup" />
   </div>
 </template>
 
 <script lang="ts">
-import TripsService from '@/services/TripsService';
+import TripsService from "@/services/TripsService";
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
-  
+import { Component, Vue } from "vue-property-decorator";
+import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
+
 @Component({
   components: {
     FisholaHeader,
     SomeTripHeader,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class NewTripView extends Vue {
-  
   constructor() {
     super();
   }
 
   newLiveTrip() {
-    TripsService.newLiveTrip().then((id:string) => {
-      router.push({name:'trip-meta', params: {id: id}});
+    TripsService.newLiveTrip().then((id: string) => {
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-meta",
+        params: { id: id },
+      });
     });
   }
 
   newAfterwardsTrip() {
-    TripsService.newAfterwardsTrip().then((id:string) => {
-      router.push({name:'trip-meta', params: {id: id}});
+    TripsService.newAfterwardsTrip().then((id: string) => {
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-meta",
+        params: { id: id },
+      });
     });
   }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .new-trip-page {
-
   .pane {
-    flex:auto;
+    flex: auto;
 
     display: flex;
     flex-direction: column;
@@ -122,7 +139,6 @@ export default class NewTripView extends Vue {
       align-items: center;
 
       .item {
-
         display: flex;
         flex-direction: row;
         justify-content: center;
@@ -149,20 +165,23 @@ export default class NewTripView extends Vue {
           .title {
             font-weight: bold;
             font-size: @fontsize-span-big;
-            line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
+            line-height: calc(
+              @fontsize-span-big + @line-height-padding-x-large
+            );
             color: @pelorous;
             margin-bottom: @vertical-margin-small;
           }
 
           .detail {
             font-size: @fontsize-header-paragraph;
-            line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
+            line-height: calc(
+              @fontsize-header-paragraph + @line-height-padding-large
+            );
             color: @gunmetal;
             margin-bottom: @vertical-margin-small;
           }
 
           .action {
-
             width: 100%;
             text-align: right;
 
@@ -179,8 +198,7 @@ export default class NewTripView extends Vue {
           }
         }
 
-        @media(max-height:579px) {
-
+        @media (max-height: 579px) {
           .left {
             img {
               width: 50px;
@@ -191,7 +209,9 @@ export default class NewTripView extends Vue {
           .right {
             .title {
               font-size: @fontsize-paragraph;
-              line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
+              line-height: calc(
+                @fontsize-paragraph + @line-height-padding-x-large
+              );
               margin-bottom: @vertical-margin-x-small;
             }
 
@@ -200,7 +220,6 @@ export default class NewTripView extends Vue {
             }
 
             .action {
-
               button {
                 font-size: @fontsize-button-big;
                 height: 30px;
@@ -209,12 +228,8 @@ export default class NewTripView extends Vue {
               }
             }
           }
-
         }
-
       }
-
-
     }
 
     div.new-trip-option:first-child {
@@ -222,5 +237,4 @@ export default class NewTripView extends Vue {
     }
   }
 }
-
 </style>

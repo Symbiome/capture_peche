@@ -62,6 +62,7 @@ import Helpers from "@/services/Helpers";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
 export default class MyTripItem extends Vue {
@@ -91,7 +92,10 @@ export default class MyTripItem extends Vue {
   }
 
   openTrip() {
-    router.push({ name: "trip", params: { id: this.trip.id } });
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip",
+      params: { id: this.trip.id },
+    });
   }
 
   @Watch("selected")

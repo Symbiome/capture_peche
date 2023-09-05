@@ -84,6 +84,7 @@ import { DocumentationLight, Editorial } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -126,11 +127,11 @@ export default class DocumentationView extends Vue {
   }
 
   goDoc() {
-    router.push("/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
   }
 
   goFaq() {
-    router.push("/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
   }
 }
 </script>

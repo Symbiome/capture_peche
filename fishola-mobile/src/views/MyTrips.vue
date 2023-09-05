@@ -73,6 +73,7 @@
 
 <script lang="ts">
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import { TripLight } from "@/pojos/BackendPojos";
 
@@ -87,7 +88,7 @@ import MyTripsList from "@/components/my-trips/MyTripsList.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Watch, Vue } from "vue-property-decorator";
+import { Component, Watch, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -117,7 +118,7 @@ export default class MyTripsView extends Vue {
   selectedTripIds: string[] = [];
 
   @Watch("term")
-  onTermChanged(value: string, oldValue: string) {
+  onTermChanged(_value: string, _oldValue: string) {
     if (this.refreshTimer) {
       this.refreshTimer.cancel();
     }
@@ -194,7 +195,7 @@ export default class MyTripsView extends Vue {
     console.error("Erreur au chargement des sorties", data);
     if (data && data.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      router.push("/login");
+      RouterUtils.pushRouteNoDuplicate(router, "/login");
     }
   }
 
@@ -235,10 +236,13 @@ export default class MyTripsView extends Vue {
     Helpers.getDeviceType().then((source) => {
       if (source == "web") {
         TripsService.newAfterwardsTrip().then((id: string) => {
-          router.push({ name: "trip-meta", params: { id: id } });
+          RouterUtils.pushRouteNoDuplicate(router, {
+            name: "trip-meta",
+            params: { id: id },
+          });
         });
       } else {
-        router.push("/trips/new");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips/new");
       }
     });
   }

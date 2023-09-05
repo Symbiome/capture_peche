@@ -194,6 +194,7 @@
 </template>
 
 <script lang="ts">
+import { RouterUtils } from "@/router/RouterUtils";
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
 import GaleryPreviewList from "@/components/galery/GaleryPreviewList.vue";
 
@@ -441,18 +442,21 @@ export default class PersonalDashboard extends Vue {
   }
 
   openCatch(catchId: string) {
-    router.push({
+    RouterUtils.pushRouteNoDuplicate(router, {
       name: "catch",
       params: { tripId: this.catchToTripId[catchId], catchId: catchId },
     });
   }
 
   openTrip(tripId: string) {
-    router.push({ name: "trip", params: { id: tripId } });
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip",
+      params: { id: tripId },
+    });
   }
 
   openGalery() {
-    router.push("/galery");
+    RouterUtils.pushRouteNoDuplicate(router, "/galery");
   }
 
   getDay(date: number) {

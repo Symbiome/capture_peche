@@ -47,6 +47,7 @@ import Top from "@/components/common/Top.vue";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -61,7 +62,7 @@ export default class GaleryPreview extends Vue {
   @Prop() selectedLakeUUID: string;
 
   openGallery(pictureSrc: string) {
-    router.push({
+    RouterUtils.pushRouteNoDuplicate(router, {
       name: "galery",
       params: {
         selectedDefaultPic: pictureSrc,

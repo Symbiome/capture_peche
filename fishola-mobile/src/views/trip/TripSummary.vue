@@ -72,6 +72,7 @@
 </template>
 
 <script lang="ts">
+import { RouterUtils } from "@/router/RouterUtils";
 import TripSummary from "@/pojos/TripSummary";
 import { Technique } from "@/pojos/BackendPojos";
 
@@ -151,7 +152,7 @@ export default class TripSummaryView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push("/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   onUpdatedTrip(trip: any) {
@@ -213,18 +214,24 @@ export default class TripSummaryView extends Vue {
   tripSaved() {
     this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
-      router.push("/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      router.push({ name: "trip-species", params: { id: this.trip!.id } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-species",
+        params: { id: this.trip!.id },
+      });
     } else if (this.actionRequested == "EditTechniques") {
-      router.push({ name: "trip-techniques", params: { id: this.trip!.id } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-techniques",
+        params: { id: this.trip!.id },
+      });
     }
   }
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      router.push({
+      RouterUtils.pushRouteNoDuplicate(router, {
         name: "galery",
         params: {
           selectedDefaultPic: "",
@@ -232,7 +239,7 @@ export default class TripSummaryView extends Vue {
         },
       });
     } else {
-      router.push("/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips");
     }
   }
 }

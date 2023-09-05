@@ -400,6 +400,8 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
+
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
@@ -806,7 +808,7 @@ export default class EditCatchView extends Vue {
   }
 
   @Watch("aCatch.speciesId")
-  speciesChanged(newValue: string, oldValue: string) {
+  speciesChanged(newValue: string, _oldValue: string) {
     this.sizeLabel = this.defaultSizeLabel;
     this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
@@ -916,7 +918,7 @@ export default class EditCatchView extends Vue {
   }
 
   @Watch("withSample")
-  onWithSampleChanged(value: boolean, oldValue: boolean) {
+  onWithSampleChanged(value: boolean, _oldValue: boolean) {
     if (value && !this.aCatch.sampleId) {
       TripsService.newSampleId().then(this.onNewSampleId);
     }
@@ -1112,9 +1114,15 @@ export default class EditCatchView extends Vue {
 
   leavePage() {
     if (this.inTripCreation) {
-      router.push({ name: "trip-catchs", params: { id: this.tripId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-catchs",
+        params: { id: this.tripId },
+      });
     } else {
-      router.push({ name: "trip", params: { id: this.tripId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip",
+        params: { id: this.tripId },
+      });
     }
   }
 

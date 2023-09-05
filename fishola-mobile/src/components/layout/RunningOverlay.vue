@@ -21,62 +21,58 @@
 <template>
   <div class="running-overlay">
     <div class="running-overlay-see-button">
-      <button v-on:click="goToRunningTrip">
-        Voir
-      </button>
+      <button v-on:click="goToRunningTrip">Voir</button>
     </div>
     <div class="running-overlay-bar">
       <div class="left">
-        {{label}}
-        <Running v-if="live" :negative="true"/>
+        {{ label }}
+        <Running v-if="live" :negative="true" />
       </div>
       <div class="right" v-on:click="finish">
-        Fin <i class="icon icon-stop"/>
+        Fin <i class="icon icon-stop" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import TripsService from "@/services/TripsService";
+import Constants from "@/services/Constants";
 
-import TripsService from '@/services/TripsService';
-import Constants from '@/services/Constants';
+import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
-import router from '@/router';
+import { Component, Vue } from "vue-property-decorator";
+import TripMain from "@/pojos/TripMain";
+import Helpers from "@/services/Helpers";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import TripMain from '@/pojos/TripMain';
-import Helpers from '@/services/Helpers';
-
-import Running from '@/components/common/Running.vue'
+import Running from "@/components/common/Running.vue";
 
 @Component({
   components: {
-    Running
-  }
+    Running,
+  },
 })
 export default class RunningOverlay extends Vue {
-
-  label: string = '';
+  label: string = "";
   startedAt: string;
 
-  trip?:TripMain;
-  interval?:number;
-  live:boolean = true;
+  trip?: TripMain;
+  interval?: number;
+  live: boolean = true;
 
   mounted() {
-    TripsService.getRunningTrip()
-      .then(this.tripLoaded);
+    TripsService.getRunningTrip().then(this.tripLoaded);
   }
 
   beforeDestroy() {
     clearInterval(this.interval);
   }
 
-  tripLoaded(trip:TripMain) {
+  tripLoaded(trip: TripMain) {
     this.trip = trip;
 
-    this.live = trip.mode == 'Live';
+    this.live = trip.mode == "Live";
     if (this.live) {
       this.startedAt = trip.startedAt;
       this.computeDuration();
@@ -84,7 +80,6 @@ export default class RunningOverlay extends Vue {
     } else {
       this.label = trip.name;
     }
-
   }
 
   computeDuration() {
@@ -92,7 +87,10 @@ export default class RunningOverlay extends Vue {
   }
 
   goToRunningTrip() {
-    router.push({name:'trip-catchs', params: {id: Constants.RUNNING_ID}});
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip-catchs",
+      params: { id: Constants.RUNNING_ID },
+    });
   }
 
   finish() {
@@ -100,15 +98,16 @@ export default class RunningOverlay extends Vue {
   }
 
   tripSaved() {
-    router.push({name:'trip-summary', params: {id: Constants.RUNNING_ID}});
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip-summary",
+      params: { id: Constants.RUNNING_ID },
+    });
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .running-overlay {
@@ -152,15 +151,13 @@ export default class RunningOverlay extends Vue {
       border: 0px;
       padding-left: @margin-medium;
       padding-right: @margin-medium;
-
     }
-
   }
 
   .running-overlay-bar {
     height: 76px;
 
-    @media(max-height:650px) {
+    @media (max-height: 650px) {
       height: 56px;
     }
 
@@ -175,20 +172,18 @@ export default class RunningOverlay extends Vue {
     align-items: center;
     justify-content: space-between;
 
-    .right, .left {
+    .right,
+    .left {
       height: fit-content;
       text-align: center;
       margin-left: @margin-large;
       margin-right: @margin-large;
 
-
-      @media(max-width:400px) {
+      @media (max-width: 400px) {
         margin-left: @margin-medium;
         margin-right: @margin-medium;
       }
-
     }
   }
 }
-
 </style>

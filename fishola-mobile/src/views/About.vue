@@ -479,12 +479,12 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import Counter from "@/components/common/Counter.vue";
 import ProfileService from "@/services/ProfileService";
 import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import { latLng, LatLng, Icon } from "leaflet";
 
@@ -685,16 +685,16 @@ export default class AboutView extends Vue {
     this.closed = true;
     ProfileService.fetchProfile().then(
       (_profile) => {
-        router.push("/trips");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips");
       },
       (_status) => {
-        router.push("/login");
+        RouterUtils.pushRouteNoDuplicate(router, "/login");
       }
     );
   }
 
   goFaq() {
-    router.push("/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
   }
 }
 </script>

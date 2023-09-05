@@ -72,6 +72,7 @@ import Avatar from "@/components/common/Avatar.vue";
 import UserProfile from "@/pojos/UserProfile";
 
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
 
@@ -246,7 +247,7 @@ export default class Menu extends Vue {
   }
 
   back() {
-    router.push("/about");
+    RouterUtils.pushRouteNoDuplicate(router, "/about");
   }
 
   profileLoaded(profile: UserProfile) {
@@ -271,7 +272,7 @@ export default class Menu extends Vue {
 
   goDispatcher() {
     this.closeMenu();
-    router.push("/");
+    RouterUtils.pushRouteNoDuplicate(router, "/");
   }
 
   goHome() {
@@ -279,46 +280,46 @@ export default class Menu extends Vue {
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        router.push("/trips");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips");
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          router.push("/trips");
+          RouterUtils.pushRouteNoDuplicate(router, "/trips");
         } else {
-          router.push("/about");
+          RouterUtils.pushRouteNoDuplicate(router, "/about");
         }
       });
     } else {
-      router.push("/offline-home/presentation");
+      RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
     }
   }
 
   goProfile() {
     this.closeMenu();
-    router.push("/profile");
+    RouterUtils.pushRouteNoDuplicate(router, "/profile");
   }
 
   goDashboard() {
     this.closeMenu();
-    router.push("/dashboard");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
   }
 
   goDocumentation() {
     this.closeMenu();
-    router.push("/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
   }
 
   goSettings() {
     this.closeMenu();
-    router.push("/settings");
+    RouterUtils.pushRouteNoDuplicate(router, "/settings");
   }
 
   goCredits() {
     this.closeMenu();
-    router.push("/credits");
+    RouterUtils.pushRouteNoDuplicate(router, "/credits");
   }
 
   logout() {
@@ -357,7 +358,7 @@ export default class Menu extends Vue {
   }
 
   logguedOut() {
-    router.push("/login");
+    RouterUtils.pushRouteNoDuplicate(router, "/login");
     this.onLogguedOut();
   }
 

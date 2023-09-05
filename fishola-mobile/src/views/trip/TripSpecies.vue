@@ -115,6 +115,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -292,7 +293,7 @@ export default class TripSpeciesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push("/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   summaryNotYetSaved(tripAsAny: any) {
@@ -307,11 +308,20 @@ export default class TripSpeciesView extends Vue {
       this.id == Constants.NEW_TRIP_ID ||
       this.summaryNotYetSaved(this.trip)
     ) {
-      router.push({ name: "trip-catchs", params: { id: savedId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-catchs",
+        params: { id: savedId },
+      });
     } else if (this.id == "RUNNING") {
-      router.push({ name: "trip-summary", params: { id: savedId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-summary",
+        params: { id: savedId },
+      });
     } else {
-      router.push({ name: "trip", params: { id: savedId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip",
+        params: { id: savedId },
+      });
     }
   }
 }
