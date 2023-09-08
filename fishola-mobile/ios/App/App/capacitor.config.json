@@ -8,6 +8,7 @@
 	"linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
 	"server" : {
 		"hostname": "api-fishola.inrae.fr"
+		"androidScheme": "http"
 	},
 	"plugins": {
 		"SplashScreen": {
