@@ -20,6 +20,10 @@ export interface CatchBean {
     pictureOrders: number[];
     hasMeasurementPicture: boolean;
     tripId?: string;
+    editedSpeciesId?: string;
+    editedSize?: number;
+    editedWeight?: number;
+    excludeFromExport: boolean;
 }
 
 export interface TripBean {

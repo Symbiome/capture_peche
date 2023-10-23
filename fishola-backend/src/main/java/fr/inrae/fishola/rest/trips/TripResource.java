@@ -609,7 +609,10 @@ public class TripResource extends AbstractFisholaResource {
         result.hasPicture = !pictureIndexes.isEmpty();
         result.hasMeasurementPicture = catchsWithMeasurementPicture.contains(catchId);
         result.sampleId = Optional.ofNullable(aCatch.getSampleId());
+        result.excludeFromExport = aCatch.getExcludeFromExports();
+        result.editedSize = Optional.ofNullable(aCatch.getEditedSize());
+        result.editedSpeciesId = Optional.ofNullable(aCatch.getEditedSpeciesId());
+        result.editedWeight = Optional.ofNullable(aCatch.getEditedWeight());
         return result;
     }
-
 }

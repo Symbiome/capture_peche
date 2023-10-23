@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.Lake;
@@ -37,8 +38,12 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
+import fr.inrae.fishola.rest.trips.CatchBean;
+import fr.inrae.fishola.rest.trips.PaginatedCatchBeans;
+import fr.inrae.fishola.rest.trips.TripResource;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,15 +51,19 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.inject.Singleton;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Query;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.Select;
 import org.jooq.SelectConditionStep;
+import org.jooq.impl.DSL;
 
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.or;
@@ -180,6 +189,30 @@ public class CatchsDao extends AbstractFisholaDao {
             return multimap;
         });
         return result;
+    }
+
+    public PaginatedCatchBeans getAllCatchesPaginated(Integer offset) {
+        int catchesPerPage = 50;
+        return withContext(context -> {
+            PaginatedCatchBeans pcb = new PaginatedCatchBeans();
+            pcb.catches = context.select(Tables.CATCH.fields())
+                        .from(Tables.CATCH)
+                        .where(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq(false))
+                        .orderBy(Tables.CATCH.CREATED_ON)
+                        .limit(catchesPerPage)
+                        .offset(offset).fetch()
+                        .into(Catch.class)
+                        .stream()
+                        .map(aCatch -> TripResource.toCatchBean(aCatch, null, new LinkedHashSet<>()))
+                        .collect(Collectors.toList());
+
+            pcb.offset = offset;
+            pcb.total = context.select(Tables.CATCH.fields())
+                    .from(Tables.CATCH)
+                    .where(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq(false))
+                    .stream().count();
+            return pcb;
+        });
     }
 
     /**
