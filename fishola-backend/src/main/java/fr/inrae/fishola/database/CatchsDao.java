@@ -219,6 +219,7 @@ public class CatchsDao extends AbstractFisholaDao {
             } else {
                 // Sinon on inclut seulement les sorties dont les utilisateurs ne sont pas à exclure
                 Condition nonExcludedUserCondition = Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false);
+                nonExcludedUserCondition = nonExcludedUserCondition.and(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq((false)));
                 // ... ou les sorties où il n'y a pas d'utilisateur
                 Condition noUserCondition = Tables.TRIP.OWNER_ID.isNull();
                 selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));

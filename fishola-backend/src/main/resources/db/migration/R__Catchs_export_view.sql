@@ -149,6 +149,7 @@ LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
+AND c.exclude_from_exports = false
 AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
@@ -196,6 +197,7 @@ LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
+AND c.exclude_from_exports = false
 AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
 
 COMMENT ON VIEW catchs_openadom_export IS 'Génère le CSV pour les exports OpenAdom';
