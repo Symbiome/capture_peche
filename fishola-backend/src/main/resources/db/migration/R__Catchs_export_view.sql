@@ -22,6 +22,7 @@
 -- Suppression des vues d'export
 
 DROP VIEW IF EXISTS catchs_export;
+DROP VIEW IF EXISTS catchs_openadom_export;
 DROP VIEW IF EXISTS personal_catchs_export;
 
 -- VUE : trip_species_names
@@ -83,6 +84,13 @@ GROUP BY cpu.catch_id;
 COMMENT ON VIEW catch_picture_joined_urls IS 'Permet d''avoir, pour chaque capture, la concaténation des URLs pour télécharger les images';
 
 -- VUE : catchs_export
+CREATE EXTENSION IF NOT EXISTS unaccent;
+CREATE OR REPLACE FUNCTION normalize_for_export(target VARCHAR) returns VARCHAR language plpgsql as
+$$
+begin
+    return REPLACE(REPLACE(REPLACE(REPLACE(lower(unaccent(target)),' _', '_'),' ', '_'), '-', '_'), ':', '_');
+end;
+$$;
 
 CREATE VIEW catchs_export AS
 SELECT
@@ -145,9 +153,55 @@ AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone '
 
 COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
+CREATE VIEW catchs_openadom_export AS
+SELECT
+    'FISHOLA' AS nom_du_projet,
+    normalize_for_export(l.export_as) AS nom_du_site,
+    normalize_for_export(l.export_as || ':peche amateur') AS nom_de_la_plateforme,
+    to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
+    u.id AS id_login,
+    to_char(t.day, 'MM') AS mois_de_la_sortie,
+    to_char(t.day, 'YYYY') AS annee_de_la_sortie,
+    CASE t.type WHEN 'Craft' THEN 'Embarcation'
+                WHEN 'Border' THEN 'Bord'
+                END AS type_de_peche,
+    t.id AS id_sortie,
+    normalize_for_export(tsn.species) AS espece_recherchee,
+    to_char(t.start_time, 'HH24:MI:SS') AS debut_de_peche,
+    to_char(t.end_time, 'HH24:MI:SS') AS fin_de_peche,
+    (t.end_time - t.start_time) AS duree_de_la_sortie,
+    ttn.techniques AS technique_de_peche_par_sortie,
+    c.id AS id_capture,
+    normalize_for_export(ct.export_as) AS technique_de_peche_par_capture,
+    normalize_for_export(s.export_as) AS espece_capturee,
+    c.size * 10 AS longueur_totale_du_poisson,
+    c.automatic_measure * 10 AS longueur_totale_du_poisson_calculee,
+    c.weight AS poids_du_poisson,
+    CASE c.kept WHEN true THEN 'non'
+                WHEN false THEN 'oui'
+                END AS poisson_relache,
+    c.sample_id AS id_prelevement,
+    normalize_for_export(w.export_as) AS conditions_meteo,
+    CASE t.mode WHEN 'Live' THEN 'en_direct'
+                WHEN 'Afterwards' THEN 'a_posteriori'
+                END AS mode_de_peche
+FROM trip t
+INNER JOIN lake l ON l.id = t.lake_id
+LEFT JOIN fishola_user u ON u.id = t.owner_id
+LEFT JOIN trip_species_names tsn ON tsn.trip_id = t.id
+LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
+LEFT JOIN weather w ON w.id = t.weather_id
+LEFT JOIN catch c ON t.id = c.trip_id
+LEFT JOIN technique ct ON ct.id = c.technique_id
+LEFT JOIN species s ON s.id = c.species_id
+LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
+WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
+AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
+
+COMMENT ON VIEW catchs_openadom_export IS 'Génère le CSV pour les exports OpenAdom';
 
 -- On peut ensuite extraire l'ensemble dans du CSV via l'une des 2 commandes suivante :
---   COPY (select * from catchs_export) TO '/tmp/catchs.csv' DELIMITER ';' CSV HEADER;
+--   COPY (select * from catchs_openadom_export) TO '/tmp/catchs.csv' DELIMITER ';' CSV HEADER;
 -- ou
 --   psql -h 172.17.0.2 -U postgres fishola -A -F";" -c "select * from catchs_export" | head -n -1 > /tmp/catchs.csv
 
