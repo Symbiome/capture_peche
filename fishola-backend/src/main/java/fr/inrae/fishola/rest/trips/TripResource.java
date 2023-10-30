@@ -38,6 +38,7 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import java.util.ArrayList;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
@@ -604,7 +605,7 @@ public class TripResource extends AbstractFisholaResource {
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern("HH:mm")));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
-        List<Integer> pictureIndexes = catchsWithPictures.get(catchId);
+        List<Integer> pictureIndexes = catchsWithPictures != null ? catchsWithPictures.get(catchId) : new ArrayList<>();
         result.pictureOrders = pictureIndexes;
         result.hasPicture = !pictureIndexes.isEmpty();
         result.hasMeasurementPicture = catchsWithMeasurementPicture.contains(catchId);

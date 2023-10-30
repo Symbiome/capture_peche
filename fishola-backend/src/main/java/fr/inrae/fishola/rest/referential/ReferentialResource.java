@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
@@ -34,6 +35,7 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.trips.PaginatedCatchBean;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,6 +65,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @Inject
     protected ReferentialDao referentialDao;
+
+    @Inject
+    protected CatchsDao catchsDao;
 
     @GET
     @Path("/lakes")
@@ -392,6 +397,17 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/authorized-samples")
     public List<AuthorizedSample> getAuthorizedSamples() {
         List<AuthorizedSample> result = referentialDao.listAuthorizedSamples();
+        return result;
+    }
+
+    @GET
+    @Path("/catches/{pageOffset}/{sortField}/{sortDirection}")
+    public PaginatedCatchBean getAllCatchesPaginated(
+            @PathParam("pageOffset") Integer pageOffset,
+            @PathParam("sortField") String sortField,
+            @PathParam("sortDirection") String sortDirection
+    ) {
+        PaginatedCatchBean result = catchsDao.getAllCatchesPaginated(pageOffset, sortField, sortDirection);
         return result;
     }
 

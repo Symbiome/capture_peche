@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.Lake;
@@ -38,12 +37,10 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
-import fr.inrae.fishola.rest.trips.CatchBean;
-import fr.inrae.fishola.rest.trips.PaginatedCatchBeans;
+import fr.inrae.fishola.rest.trips.PaginatedCatchBean;
 import fr.inrae.fishola.rest.trips.TripResource;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,13 +53,14 @@ import javax.inject.Singleton;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Query;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
-import org.jooq.Select;
 import org.jooq.SelectConditionStep;
+import org.jooq.SelectSeekStep1;
+import org.jooq.SortField;
 import org.jooq.impl.DSL;
 
 import static org.jooq.impl.DSL.count;
@@ -191,16 +189,21 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginatedCatchBeans getAllCatchesPaginated(Integer offset) {
-        int catchesPerPage = 50;
+    public PaginatedCatchBean getAllCatchesPaginated(Integer offset, String orderBy, String direction) {
+        int catchesPerPage = 15;
         return withContext(context -> {
-            PaginatedCatchBeans pcb = new PaginatedCatchBeans();
-            pcb.catches = context.select(Tables.CATCH.fields())
+            PaginatedCatchBean pcb = new PaginatedCatchBean();
+            SortField<Object> orderByField;
+            if ("asc".equals(direction)) {
+                orderByField = DSL.field(orderBy).asc();
+            } else {
+                orderByField =  DSL.field(orderBy).desc();
+            }
+            pcb.elements = context.select(Tables.CATCH.fields())
                         .from(Tables.CATCH)
-                        .where(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq(false))
-                        .orderBy(Tables.CATCH.CREATED_ON)
+                        .orderBy(orderByField)
                         .limit(catchesPerPage)
-                        .offset(offset).fetch()
+                        .offset(offset * catchesPerPage).fetch()
                         .into(Catch.class)
                         .stream()
                         .map(aCatch -> TripResource.toCatchBean(aCatch, null, new LinkedHashSet<>()))
