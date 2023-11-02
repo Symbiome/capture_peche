@@ -35,6 +35,7 @@ export default class UtilityServices {
 
   static camelCaseToUnderscore(cameCase: string) {
     return cameCase
+      .replace("xport", "xports")
       .replace(/\.?([A-Z])/g, function(x, y) {
         return "_" + y.toLowerCase();
       })

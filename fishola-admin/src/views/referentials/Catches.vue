@@ -24,12 +24,14 @@
       :data="catches"
       paginated
       backend-pagination
+      backend-filtering
       backend-sorting
       pagination-simple
       @page-change="onPageChange"
+      @filters-change="onFiltersChange"
       @sort="onSort"
       per-page="15"
-      :current-page.sync="offset"
+      :current-page.sync="page"
       :striped="true"
       :default-sort="[sortField, sortOrder]"
       :loading="!catches"
@@ -48,7 +50,8 @@
           :field="col.field"
           :label="col.label"
           :key="col.name"
-          sortable
+          :sortable="col.sortable"
+          :searchable="col.searchable"
         >
           <span v-if="col.isABoolean && props.row[col.field]">
             Oui
@@ -101,9 +104,12 @@ import UtilityServices from "@/services/UtilityServices";
   }
 })
 export default class LakesVue extends Vue {
-  offset = 1;
+  page = 1;
   total = 0;
+  loading = false;
+  lastTimerId: number;
   catches = [];
+  filters: any = {};
   selection = { item: null };
   speciesIdMap = new Map<string, string>();
   sortField = "size";
@@ -111,36 +117,50 @@ export default class LakesVue extends Vue {
   columns: any[] = [
     {
       field: "id",
-      label: "Identifiant"
+      label: "Identifiant",
+      searchable: true,
+      sortable: true
     },
     {
       field: "speciesId",
-      label: "Espèce"
+      label: "Espèce",
+      searchable: true
     },
     {
       field: "editedSpeciesId",
-      label: "Espèce corrigée"
+      label: "Espèce corrigée",
+      searchable: true
     },
     {
       field: "size",
-      label: "Taille"
+      label: "Taille",
+      searchable: true,
+      sortable: true
     },
     {
       field: "editedSize",
-      label: "Taille corrigée"
+      label: "Taille corrigée",
+      searchable: true,
+      sortable: true
     },
     {
       field: "weight",
-      label: "Poids"
+      label: "Poids",
+      searchable: true,
+      sortable: true
     },
     {
       field: "editedWeight",
-      label: "Poids corrigé"
+      label: "Poids corrigé",
+      searchable: true,
+      sortable: true
     },
     {
       field: "excludeFromExport",
       label: "Exclure des exports",
-      isABoolean: true
+      isABoolean: true,
+      searchable: true,
+      sortable: true
     }
   ];
 
@@ -148,32 +168,39 @@ export default class LakesVue extends Vue {
     this.onSort("size", "desc");
   }
 
-  @Watch("offset")
   async loadData() {
-    while (this.catches && this.catches.length) {
-      this.catches.pop();
-    }
-    try {
-      if (this.speciesIdMap.size == 0) {
-        let species = await BackendService.backendGet(
-          "/v1/referential/raw-species"
-        );
-        species.forEach((specie: { id: string; name: string }) => {
-          this.speciesIdMap.set(specie.id, specie.name);
-        });
+    if (!this.loading) {
+      this.loading = true;
+      while (this.catches && this.catches.length) {
+        this.catches.pop();
       }
-      let res = await BackendService.backendGet(
-        "/v1/referential/catches/" +
-          this.offset +
+      try {
+        // Step 1 :load species referential if not already loaded
+        if (this.speciesIdMap.size == 0) {
+          let species = await BackendService.backendGet(
+            "/v1/referential/raw-species"
+          );
+          species.forEach((specie: { id: string; name: string }) => {
+            this.speciesIdMap.set(specie.id, specie.name);
+          });
+        }
+        // Step 2 : load catches with current pagination, sort and filters
+        let url =
+          "/v1/referential/catches/" +
+          (this.page - 1) +
           "/" +
           this.sortField +
           "/" +
-          this.sortOrder
-      );
-      this.catches = res.elements;
-      this.total = res.total;
-    } catch (e) {
-      console.error(e);
+          this.sortOrder;
+        url += this.computeFiltersQueryParameters(this.filters);
+        let res = await BackendService.backendGet(url);
+        this.catches = res.elements;
+        this.total = res.total;
+      } catch (e) {
+        console.error(e);
+      }
+
+      this.loading = false;
     }
   }
 
@@ -182,14 +209,83 @@ export default class LakesVue extends Vue {
   }
 
   onPageChange(page: number) {
-    this.offset = page;
+    this.page = page;
     this.loadData();
   }
 
   onSort(field: string, order: string) {
     this.sortField = UtilityServices.camelCaseToUnderscore(field);
     this.sortOrder = order;
+    this.page = 1;
     this.loadData();
+  }
+
+  onFiltersChange(filters: any) {
+    this.filters = filters;
+    this.page = 1;
+    this.loadDataDebounced();
+  }
+
+  /**
+   * Waits 500ms calling loadData. If during this delay another call is made, cancels the first call and schedules the second.
+   */
+  loadDataDebounced() {
+    clearTimeout(this.lastTimerId);
+    this.lastTimerId = setTimeout(this.loadData, 450);
+  }
+
+  /**
+   * Returns a query parameters url corresponding to the given filter object
+   * e.g. {
+   *   'weight': '42',
+   *   'speciesId': 'Perche'
+   * }
+   * will return '?weight=42&speciesId='
+   */
+  computeFiltersQueryParameters(filterObject: any) {
+    let url = "";
+    let firstKey = true;
+    Object.keys(filterObject).forEach(filter => {
+      let filteredValue = filterObject[filter].trim();
+      if (filteredValue) {
+        let column = this.columns.find(c => {
+          return c.field == filter;
+        });
+        // Boolean column : replace "oui" by 'true', otherwise false
+        if (column?.isABoolean) {
+          if (filteredValue.toLowerCase() == "oui") {
+            filteredValue = "true";
+          } else if (filteredValue.toLowerCase() == "non") {
+            filteredValue = "false";
+          }
+        }
+        // Species column : get the id matching the specie
+        if (column?.field.indexOf("peciesId") > -1) {
+          for (let [specieId, specieName] of this.speciesIdMap.entries()) {
+            console.error(
+              `${specieName.toLowerCase()}.indexOf(${filteredValue.toLowerCase()}) = specieName.toLowerCase().indexOf(filteredValue.toLowerCase()`
+            );
+            if (
+              specieName.toLowerCase().indexOf(filteredValue.toLowerCase()) == 0
+            ) {
+              filteredValue = specieId;
+              break;
+            }
+          }
+        }
+        if (filteredValue) {
+          if (firstKey) {
+            url += "?";
+            firstKey = false;
+          } else {
+            url += "&";
+          }
+          url +=
+            UtilityServices.camelCaseToUnderscore(filter) + "=" + filteredValue;
+        }
+      }
+    });
+    return url;
   }
 }
 </script>
