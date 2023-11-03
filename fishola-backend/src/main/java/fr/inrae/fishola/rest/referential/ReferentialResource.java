@@ -36,6 +36,7 @@ import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.trips.PaginatedCatchBean;
+import fr.inrae.fishola.rest.trips.TripBean;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -403,17 +404,5 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
-    @GET
-    @Path("/catches/{pageOffset}/{sortField}/{sortDirection}")
-    public PaginatedCatchBean getAllCatchesPaginated(
-            @PathParam("pageOffset") Integer pageOffset,
-            @PathParam("sortField") String sortField,
-            @PathParam("sortDirection") String sortDirection,
-            @Context UriInfo uriInfo
-    ) {
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        PaginatedCatchBean result = catchsDao.getAllCatchesPaginated(pageOffset, sortField, sortDirection, queryParameters);
-        return result;
-    }
 
 }

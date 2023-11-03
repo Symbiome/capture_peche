@@ -20,6 +20,7 @@
   -->
 <template>
   <div class="catches">
+    {{ selection }}
     <b-table
       :data="catches"
       paginated
@@ -34,6 +35,7 @@
       :current-page.sync="page"
       :striped="true"
       :default-sort="[sortField, sortOrder]"
+      :selected.sync="selection.item"
       :loading="!catches"
       :total="total"
     >
@@ -88,19 +90,37 @@
         </b-table-column>
       </template>
     </b-table>
+
+    <b-modal
+      :active.sync="selection.item"
+      trap-focus
+      :destroy-on-hide="false"
+      aria-role="dialog"
+      full-screen
+      aria-modal
+    >
+      <CatchModal
+        v-if="selection.item"
+        :catchId="selection.item.id"
+        v-on:referential-updated="loadData"
+      >
+      </CatchModal>
+    </b-modal>
   </div>
 </template>
 
 <script lang="ts">
-import Referential from "@/components/Referential.vue";
+import ReferentialItem from "@/components/ReferentialItem.vue";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
+import CatchModal from "@/components/CatchModal.vue";
 
 @Component({
   components: {
-    Referential
+    ReferentialItem,
+    CatchModal
   }
 })
 export default class LakesVue extends Vue {
@@ -186,7 +206,7 @@ export default class LakesVue extends Vue {
         }
         // Step 2 : load catches with current pagination, sort and filters
         let url =
-          "/v1/referential/catches/" +
+          "/v1/trips/catches/" +
           (this.page - 1) +
           "/" +
           this.sortField +

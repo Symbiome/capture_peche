@@ -38,32 +38,13 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import java.util.ArrayList;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
-import org.nuiton.util.pagination.PaginationParameter;
-import org.nuiton.util.pagination.PaginationResult;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -74,6 +55,27 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.Logger;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -500,52 +502,17 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/{tripId}")
     public Response getTrip(@PathParam("tripId") UUID tripId) {
-
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
-
         Trip entity = tripsDao.getTrip(tripId);
-
         AccessDeniedException.check(userId.equals(entity.getOwnerId()), "Vous ne pouvez consulter que les sorties vous appartenant");
 
-        TripBean result = new TripBean();
-        result.createdOn = Optional.ofNullable(entity.getCreatedOn());
-        result.id = entity.getId().toString();
-        result.name = entity.getName();
-        result.mode = entity.getMode();
-        result.type = entity.getType();
-        result.lakeId = entity.getLakeId();
-        result.date = entity.getDay();
-        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        result.weatherId = Optional.ofNullable(entity.getWeatherId());
-
-        result.speciesIds = tripsDao.getTripSpecies(tripId);
-        result.techniqueIds = tripsDao.getTripTechniques(tripId);
-
-        result.modifiableUntil = getModifiableUntil(entity);
-
-        List<Catch> catchs = catchsDao.listCatchs(tripId);
-        Set<UUID> catchIds = catchs.stream()
-                .map(Catch::getId)
-                .collect(Collectors.toSet());
-        ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
-        Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
-        result.catchs = catchs.stream()
-                .map(aCatch -> toCatchBean(aCatch, catchsWithPictures, measurementPictures))
-                .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
-                .collect(Collectors.toList());
-
-//        Set<UUID> allSpeciesIds = new HashSet<>(result.speciesIds);
-//        result.catchs
-//                .stream()
-//                .map(c -> c.speciesId)
-//                .forEach(allSpeciesIds::add);
-//        result.customSpecies = referentialDao.customSpeciesIndex(allSpeciesIds);
-
+        TripBean result = doGetTrip(tripId, entity);
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
     }
+
+
 
     @GET
     @Path("/export")
@@ -559,6 +526,34 @@ public class TripResource extends AbstractFisholaResource {
             .header("Content-Disposition", disposition)
             .build();
         return response;
+    }
+
+
+    @GET
+    @Path("/catches/{pageOffset}/{sortField}/{sortDirection}")
+    public PaginatedCatchBean getAllCatchesPaginated(
+            @PathParam("pageOffset") Integer pageOffset,
+            @PathParam("sortField") String sortField,
+            @PathParam("sortDirection") String sortDirection,
+            @Context UriInfo uriInfo
+    ) {
+        checkIsAdmin();
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        PaginatedCatchBean result = catchsDao.getAllCatchesPaginated(pageOffset, sortField, sortDirection, queryParameters);
+        return result;
+    }
+
+    @GET
+    @Path("/catches/{catchId}")
+    public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
+        checkIsAdmin();
+        Catch aCatch = catchsDao.getCatch(catchId);
+        Preconditions.checkNotNull(aCatch);
+        Trip trip = tripsDao.getTrip(aCatch.getTripId());
+        Preconditions.checkNotNull(trip);
+
+        TripBean tripBean = doGetTrip(trip.getId(), trip);
+        return tripBean;
     }
 
     protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {
@@ -614,6 +609,37 @@ public class TripResource extends AbstractFisholaResource {
         result.editedSize = Optional.ofNullable(aCatch.getEditedSize());
         result.editedSpeciesId = Optional.ofNullable(aCatch.getEditedSpeciesId());
         result.editedWeight = Optional.ofNullable(aCatch.getEditedWeight());
+        return result;
+    }
+
+    private TripBean doGetTrip(UUID tripId, Trip entity) {
+        TripBean result = new TripBean();
+        result.createdOn = Optional.ofNullable(entity.getCreatedOn());
+        result.id = entity.getId().toString();
+        result.name = entity.getName();
+        result.mode = entity.getMode();
+        result.type = entity.getType();
+        result.lakeId = entity.getLakeId();
+        result.date = entity.getDay();
+        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        result.weatherId = Optional.ofNullable(entity.getWeatherId());
+
+        result.speciesIds = tripsDao.getTripSpecies(tripId);
+        result.techniqueIds = tripsDao.getTripTechniques(tripId);
+
+        result.modifiableUntil = getModifiableUntil(entity);
+
+        List<Catch> catchs = catchsDao.listCatchs(tripId);
+        Set<UUID> catchIds = catchs.stream()
+                .map(Catch::getId)
+                .collect(Collectors.toSet());
+        ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
+        Set<UUID> measurementPictures = catchsDao.getMeasurementPictures(catchIds);
+        result.catchs = catchs.stream()
+                .map(aCatch -> toCatchBean(aCatch, catchsWithPictures, measurementPictures))
+                .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
+                .collect(Collectors.toList());
         return result;
     }
 }
