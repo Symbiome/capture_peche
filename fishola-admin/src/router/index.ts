@@ -31,6 +31,7 @@ import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
 import Catches from "@/views/Catches.vue";
+import CatchEditionPage from "@/views/CatchEditionPage.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
@@ -38,9 +39,6 @@ import Metrics from "@/views/Metrics.vue";
 
 import SpeciesPerLake from "@/views/customize/SpeciesPerLake.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
-
-import Trips from "@/views/Trips.vue";
-
 import Users from "@/views/Users.vue";
 
 Vue.use(VueRouter);
@@ -95,6 +93,12 @@ const routes: Array<RouteConfig> = [
     path: "/trips",
     name: "trips",
     component: Catches
+  },
+  {
+    path: "/catch/:catchId",
+    name: "catch-edition",
+    props: true,
+    component: CatchEditionPage
   },
   {
     path: "/users",

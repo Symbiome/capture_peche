@@ -556,6 +556,28 @@ public class TripResource extends AbstractFisholaResource {
         return tripBean;
     }
 
+    @PUT
+    @Path("/catches/{catchId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
+        checkIsAdmin();
+        Catch aCatch = catchsDao.getCatch(catchId);
+        Preconditions.checkNotNull(aCatch);
+        if (updatedCatch.editedSize.isPresent()) {
+            aCatch.setEditedSize(updatedCatch.editedSize.get());
+        }
+        if (updatedCatch.editedWeight.isPresent()) {
+            aCatch.setEditedWeight(updatedCatch.editedWeight.get());
+        }
+        if (updatedCatch.editedSpeciesId.isPresent()) {
+            aCatch.setEditedSpeciesId(updatedCatch.editedSpeciesId.get());
+        }
+        aCatch.setExcludeFromExports(updatedCatch.excludeFromExport);
+        catchsDao.update(aCatch);
+        return updatedCatch;
+    }
+
     protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {
         if (speciesId.isPresent()) {
             if (UUID_PATTERN.matcher(speciesId.get()).matches()) {

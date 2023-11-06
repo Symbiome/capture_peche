@@ -175,9 +175,9 @@ SELECT
     c.id AS id_capture,
     normalize_for_export(ct.export_as) AS technique_de_peche_par_capture,
     normalize_for_export(s.export_as) AS espece_capturee,
-    c.size * 10 AS longueur_totale_du_poisson,
+    CASE WHEN c.edited_size is not null and c.edited_size > 0 THEN c.edited_size * 10 ELSE c.size * 10 END AS longueur_totale_du_poisson,
     c.automatic_measure * 10 AS longueur_totale_du_poisson_calculee,
-    c.weight AS poids_du_poisson,
+    CASE WHEN c.edited_weight is not null and c.edited_weight > 0 THEN c.edited_weight ELSE c.weight END AS poids_du_poisson,
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
@@ -196,7 +196,7 @@ LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
 LEFT JOIN weather w ON w.id = t.weather_id
 LEFT JOIN catch c ON t.id = c.trip_id
 LEFT JOIN technique ct ON ct.id = c.technique_id
-LEFT JOIN species s ON s.id = c.species_id
+LEFT JOIN species s ON s.id = (CASE WHEN c.edited_species_id is not null THEN c.edited_species_id ELSE c.species_id END)
 LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
 AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');

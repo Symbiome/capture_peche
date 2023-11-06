@@ -9,6 +9,7 @@ public class ExportBean {
     public String typeDePeche;
     public String especeCapturee;
     public Integer longueurTotaleDuPoisson;
+    public Integer longueurTotaleDuPoissonCalculee;
     public Integer poidsDuPoisson;
     public String aExclure;
     public UUID catchId;
@@ -25,7 +26,6 @@ public class ExportBean {
     public String techniqueDePecheParSortie;
     public UUID idCapture;
     public String techniqueDePecheParCapture;
-    Integer longueurTotaleDuPoissonCalculee;
     public String poissonRelache;
     public UUID idPrelevement;
     public String conditionsMeteo;

@@ -40,11 +40,11 @@
       @page-change="onPageChange"
       @filters-change="onFiltersChange"
       @sort="onSort"
+      @click="rowClicked"
       per-page="15"
       :current-page.sync="page"
       :striped="true"
       :default-sort="[sortField, sortOrder]"
-      :selected.sync="selection.item"
       :loading="!catches"
       :total="total"
     >
@@ -96,36 +96,18 @@
         </b-table-column>
       </template>
     </b-table>
-    <b-modal
-      :active.sync="selection.item"
-      trap-focus
-      :destroy-on-hide="false"
-      aria-role="dialog"
-      full-screen
-      aria-modal
-    >
-      <CatchModal
-        v-if="selection.item"
-        :catchId="selection.item.catchId"
-        v-on:referential-updated="loadData"
-      >
-      </CatchModal>
-    </b-modal>
   </div>
 </template>
 
 <script lang="ts">
 import ReferentialItem from "@/components/ReferentialItem.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
-import CatchModal from "@/components/CatchModal.vue";
-
 @Component({
   components: {
-    ReferentialItem,
-    CatchModal
+    ReferentialItem
   }
 })
 export default class LakesVue extends Vue {
@@ -135,7 +117,6 @@ export default class LakesVue extends Vue {
   lastTimerId: number;
   catches = [];
   filters: any = {};
-  selection = { item: null };
   sortField = "size";
   sortOrder = "desc";
   columns: any[] = [
@@ -170,14 +151,20 @@ export default class LakesVue extends Vue {
       sortable: true
     },
     {
+      field: "poidsDuPoisson",
+      label: "Poids du poisson",
+      searchable: true,
+      sortable: true
+    },
+    {
       field: "longueurTotaleDuPoisson",
       label: "Taille du poisson",
       searchable: true,
       sortable: true
     },
     {
-      field: "poidsDuPoisson",
-      label: "Poids du poisson",
+      field: "longueurTotaleDuPoissonCalculee",
+      label: "Mesure automatique",
       searchable: true,
       sortable: true
     },
@@ -295,6 +282,10 @@ export default class LakesVue extends Vue {
       dd;
     hiddenElement.download = "Fishola_Export_" + "_" + dateString + ".csv";
     hiddenElement.click();
+  }
+
+  rowClicked(row: any) {
+    this.$router.push("/catch/" + row.catchId);
   }
 }
 </script>
