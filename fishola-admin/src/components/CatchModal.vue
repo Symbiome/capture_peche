@@ -20,11 +20,79 @@
   -->
 <template>
   <div class="referential-aCatch">
-    <h2 v-if="trip.name">{{ trip.name }}</h2>
+    <h1 v-if="trip.name">
+      {{ trip.name }} -
+      <span>
+        {{ speciesIdMap.get(aCatch.editedSpeciesId) }}
+      </span>
+    </h1>
     <div>
-      <b-field label="Identifiant">
-        <b-input v-model="aCatch.id" />
-      </b-field>
+      <section class="section">
+        <h2 class="title">Informations éditables</h2>
+        <div class="columns">
+          <b-field label="Espèce corrigée" class="column">
+            <b-select
+              placeholder="Sélectionnez une espèce"
+              v-model="aCatch.editedSpeciesId"
+            >
+              <option
+                v-for="specie in sortedSpeciesNames"
+                :value="speciesNamesMap.get(specie)"
+                :key="specie"
+              >
+                {{ specie }}
+              </option>
+            </b-select>
+          </b-field>
+
+          <b-field label="Espèce renseignée par le pêcheur" class="column">
+            <b-select v-model="aCatch.speciesId" disabled>
+              <option
+                v-for="specie in sortedSpeciesNames"
+                :value="speciesNamesMap.get(specie)"
+                :key="specie"
+              >
+                {{ specie }}
+              </option>
+            </b-select>
+          </b-field>
+        </div>
+
+        <div class="columns">
+          <b-field label="Taille corrigée (cm)" class="column">
+            <b-numberinput
+              v-model="aCatch.editedSize"
+              type="numeric"
+              class="number-input"
+            />
+          </b-field>
+          <b-field label="Taille renseignée par le pêcheur" class="column">
+            <b-numberinput
+              v-model="aCatch.size"
+              disabled
+              type="numeric"
+              class="number-input"
+            />
+          </b-field>
+        </div>
+        <div class="columns">
+          <b-field label="Poids corrigé (g)" class="column">
+            <b-numberinput
+              v-model="aCatch.editedWeight"
+              type="numeric"
+              class="number-input"
+            />
+          </b-field>
+          <b-field label="Poids renseigné par le pêcheur" class="column">
+            <b-numberinput
+              v-model="aCatch.weight"
+              disabled
+              type="numeric"
+              class="number-input"
+            />
+          </b-field>
+        </div>
+      </section>
       <b-field label="Image">
         <img
           class="miniture-pic"
@@ -53,6 +121,7 @@
     </div>
 
     {{ aCatch }}
+    <hr />
     {{ trip }}
     <div class="buttons">
       <button
@@ -85,16 +154,28 @@ export default class CatchModal extends Vue {
   @Prop() catchId: string;
   aCatch: any = {};
   trip: any = {};
+  speciesIdMap = new Map<string, string>();
+  speciesNamesMap = new Map<string, string>();
+  sortedSpeciesNames: Array<string> = [];
 
   mounted(): void {
     this.loadCatch();
   }
 
   async loadCatch() {
-    this.trip = await await BackendService.backendGet(
+    let species = await BackendService.backendGet(
+      "/v1/referential/raw-species"
+    );
+    species.forEach((specie: { id: string; name: string }) => {
+      this.speciesIdMap.set(specie.id, specie.name);
+      this.speciesNamesMap.set(specie.name, specie.id);
+      this.sortedSpeciesNames.push(specie.name);
+    });
+    this.sortedSpeciesNames = this.sortedSpeciesNames.sort();
+    this.trip = await BackendService.backendGet(
       "/v1/trips/catches/" + this.catchId
     );
-    this.aCatch = this.trip.catchs.find(c => c.id == this.catchId);
+    this.aCatch = this.trip.catchs.find((c: any) => c.id == this.catchId);
   }
 
   async save(closeModal: () => void) {
@@ -136,119 +217,11 @@ export default class CatchModal extends Vue {
 
   background-color: @white;
 
-  display: flex;
-  flex-direction: column;
-
-  .buttons {
-    margin-top: 20px;
-
-    width: 100%;
-
-    display: flex;
-    flex-direction: row-reverse;
-
-    button {
-      margin-left: 5px;
-      margin-right: 5px;
-    }
+  .number-input {
+    max-width: 250px;
   }
-
-  .spacer {
-    height: 8px;
+  .section {
+    max-width: 900px;
   }
-
-  .editor-holder {
-    min-height: 200px;
-    padding: 10px;
-    border: 2px solid grey;
-    border-radius: 20px;
-  }
-
-  .editor-buttons-holder {
-    padding-bottom: 10px;
-    .editor-button {
-      margin-left: 2px;
-      margin-right: 2px;
-      border-radius: 2px;
-    }
-  }
-
-  .editor {
-    padding-left: 30px;
-    li {
-      list-style: circle;
-      margin-left: 20px;
-      padding-left: 5px;
-    }
-
-    img {
-      max-height: 500px;
-      max-width: 500px;
-    }
-
-    blockquote {
-      min-height: 80px;
-      padding: 40px;
-      position: relative;
-      margin: 40px 0;
-      padding: 1.6em 2.4em 0.7em calc(1.4em + var(--quote-image-width));
-      font: italic 1.2rem var(--type-quote);
-      background: var(--quote-bg) no-repeat left / var(--quote-image-width);
-      border-radius: var(--border-rad);
-      box-shadow: 2px 2px 4px hsl(0 0% 0% / 20%);
-      text-indent: 1.6em;
-    }
-
-    @media (min-width: 768px) {
-      blockquote {
-        margin: 40px 60px;
-      }
-    }
-
-    blockquote::before {
-      content: "";
-      pointer-events: none;
-      position: absolute;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: var(--border-rad);
-      box-shadow: inset -2px -2px 1px hsl(0 0% 100%),
-        inset 2px 2px 4px hsl(0 0% 0% / 20%);
-    }
-
-    blockquote::after {
-      content: "❝";
-      position: absolute;
-      z-index: 1;
-      left: 50%;
-      top: -2px;
-      transform: translate(-50%, -50%);
-      width: 1.3em;
-      height: 1.3em;
-      background: @pelorous;
-      box-shadow: 0 4px 5px -1px hsla(0 0% 0% / 20%);
-      border-radius: 999px;
-      display: grid;
-      place-content: center;
-      padding-top: 0.5em;
-      color: var(--accent-color);
-      font-size: 36px;
-      font-style: normal;
-      text-indent: 0;
-    }
-  }
-  .is-active {
-    background-color: @pelorous;
-    color: white;
-    font-weight: bold;
-  }
-}
-
-.miniture-pic {
-  width: 80px;
-  height: auto;
 }
 </style>

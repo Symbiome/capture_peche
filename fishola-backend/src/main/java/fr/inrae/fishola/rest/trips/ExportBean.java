@@ -1,6 +1,8 @@
 package fr.inrae.fishola.rest.trips;
 
 
+import java.util.UUID;
+
 public class ExportBean {
     public String nomDeLaPlateforme;
     public String dateDeLaSortie;
@@ -9,6 +11,7 @@ public class ExportBean {
     public Integer longueurTotaleDuPoisson;
     public Integer poidsDuPoisson;
     public String aExclure;
+    public UUID catchId;
     /*
      Unused fields in B.O (no need to add them in the the Bean)
     public UUID idLogin;

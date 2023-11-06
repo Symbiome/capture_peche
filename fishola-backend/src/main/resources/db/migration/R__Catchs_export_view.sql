@@ -186,7 +186,8 @@ SELECT
     CASE t.mode WHEN 'Live' THEN 'en_direct'
                 WHEN 'Afterwards' THEN 'a_posteriori'
                 END AS mode_de_peche,
-    CASE c.exclude_from_exports WHEN true THEN 'oui' ELSE 'non' END as a_exclure
+    CASE c.exclude_from_exports WHEN true THEN 'oui' ELSE 'non' END as a_exclure,
+    c.id as catch_id
 FROM trip t
 INNER JOIN lake l ON l.id = t.lake_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
