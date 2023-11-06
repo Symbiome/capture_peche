@@ -68,9 +68,6 @@
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
         Chiffres Clés
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'catches' }">
-        Prises
-      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
         Sorties
       </b-navbar-item>

@@ -530,8 +530,8 @@ public class TripResource extends AbstractFisholaResource {
 
 
     @GET
-    @Path("/catches/{pageOffset}/{sortField}/{sortDirection}")
-    public PaginatedCatchBean getAllCatchesPaginated(
+    @Path("/export/{pageOffset}/{sortField}/{sortDirection}")
+    public PaginatedExportBean getExportPaginated(
             @PathParam("pageOffset") Integer pageOffset,
             @PathParam("sortField") String sortField,
             @PathParam("sortDirection") String sortDirection,
@@ -539,7 +539,7 @@ public class TripResource extends AbstractFisholaResource {
     ) {
         checkIsAdmin();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        PaginatedCatchBean result = catchsDao.getAllCatchesPaginated(pageOffset, sortField, sortDirection, queryParameters);
+        PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection, queryParameters);
         return result;
     }
 

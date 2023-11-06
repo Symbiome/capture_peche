@@ -37,11 +37,8 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
-import fr.inrae.fishola.rest.trips.PaginatedCatchBean;
-import fr.inrae.fishola.rest.trips.TripResource;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,9 +46,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -60,8 +55,6 @@ import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
-import org.jooq.SortField;
-import org.jooq.impl.DSL;
 
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.or;
@@ -187,47 +180,6 @@ public class CatchsDao extends AbstractFisholaDao {
             return multimap;
         });
         return result;
-    }
-
-    public PaginatedCatchBean getAllCatchesPaginated(Integer offset, String orderBy, String direction, MultivaluedMap<String, String> filters) {
-        int catchesPerPage = 15;
-        return withContext(context -> {
-            PaginatedCatchBean pcb = new PaginatedCatchBean();
-            // Compute sorting
-            SortField<Object> orderByField;
-            if ("asc".equals(direction)) {
-                orderByField = DSL.field(orderBy).asc();
-            } else {
-                orderByField =  DSL.field(orderBy).desc();
-            }
-
-            // Compute filters
-            List<Condition> conditions = new ArrayList<>();
-            for (Map.Entry<String, List<String>> filter: filters.entrySet()) {
-                String condition =filter.getKey() + "::varchar(255) LIKE '" + filter.getValue().get(0) + "%'";
-                System.err.println(condition);
-                conditions.add(DSL.condition(condition));
-            }
-
-            // Execute paginated query
-            pcb.elements = context.select(Tables.CATCH.fields())
-                        .from(Tables.CATCH)
-                        .where(conditions)
-                        .orderBy(orderByField)
-                        .limit(catchesPerPage)
-                        .offset(offset * catchesPerPage).fetch()
-                        .into(Catch.class)
-                        .stream()
-                        .map(aCatch -> TripResource.toCatchBean(aCatch, null, new LinkedHashSet<>()))
-                        .collect(Collectors.toList());
-
-            pcb.offset = offset;
-            pcb.total = context.select(Tables.CATCH.fields())
-                    .from(Tables.CATCH)
-                    .where(conditions)
-                    .stream().count();
-            return pcb;
-        });
     }
 
     /**

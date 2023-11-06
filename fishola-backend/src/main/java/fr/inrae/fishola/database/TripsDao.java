@@ -31,6 +31,8 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
+import fr.inrae.fishola.rest.trips.ExportBean;
+import fr.inrae.fishola.rest.trips.PaginatedExportBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,10 +47,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.MultivaluedMap;
 import org.jooq.Condition;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectSeekStep2;
+import org.jooq.SortField;
+import org.jooq.impl.DSL;
 import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -215,12 +220,49 @@ public class TripsDao extends AbstractFisholaDao {
 
     public String getTripsCSV() {
         return withContext(context -> {
-            String result = context.selectFrom("catchs_export")
+            String result = context.selectFrom("catchs_openadom_export")
+                    .where("a_exclure='non'")
                     .fetch()
                     .formatCSV(';');
             return result;
         });
     }
+
+    /**
+     * Paginated view of catchs_openadom_export.
+     */
+    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction, MultivaluedMap<String, String> filters) {
+        int catchesPerPage = 15;
+        return withContext(context -> {
+            PaginatedExportBean pcb = new PaginatedExportBean();
+            // Compute sorting
+            SortField<Object> orderByField;
+            if ("asc".equals(direction)) {
+                orderByField = DSL.field(orderBy).asc();
+            } else {
+                orderByField =  DSL.field(orderBy).desc();
+            }
+
+            // Compute filters
+            List<Condition> conditions = new ArrayList<>();
+            for (Map.Entry<String, List<String>> filter: filters.entrySet()) {
+                String condition =filter.getKey() + "::varchar(255) LIKE '%" + filter.getValue().get(0) + "%'";
+                conditions.add(DSL.condition(condition));
+            }
+
+            // Execute paginated query
+            pcb.elements = context.selectFrom("catchs_openadom_export")
+                    .where(conditions)
+                    .orderBy(orderByField)
+                    .limit(catchesPerPage)
+                    .offset(offset * catchesPerPage)
+                    .fetchInto(ExportBean.class);
+            pcb.offset = offset;
+            pcb.total =  context.selectFrom("catchs_openadom_export").where(conditions).stream().count();
+            return pcb;
+        });
+    }
+
 
     public String getPersonalTripsCSV(UUID userId) {
         return withContext(context -> {

@@ -163,8 +163,8 @@ SELECT
     u.id AS id_login,
     to_char(t.day, 'MM') AS mois_de_la_sortie,
     to_char(t.day, 'YYYY') AS annee_de_la_sortie,
-    CASE t.type WHEN 'Craft' THEN 'Embarcation'
-                WHEN 'Border' THEN 'Bord'
+    CASE t.type WHEN 'Craft' THEN 'embarcation'
+                WHEN 'Border' THEN 'bord'
                 END AS type_de_peche,
     t.id AS id_sortie,
     normalize_for_export(tsn.species) AS espece_recherchee,
@@ -185,7 +185,8 @@ SELECT
     normalize_for_export(w.export_as) AS conditions_meteo,
     CASE t.mode WHEN 'Live' THEN 'en_direct'
                 WHEN 'Afterwards' THEN 'a_posteriori'
-                END AS mode_de_peche
+                END AS mode_de_peche,
+    CASE c.exclude_from_exports WHEN true THEN 'oui' ELSE 'non' END as a_exclure
 FROM trip t
 INNER JOIN lake l ON l.id = t.lake_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
@@ -197,7 +198,6 @@ LEFT JOIN technique ct ON ct.id = c.technique_id
 LEFT JOIN species s ON s.id = c.species_id
 LEFT JOIN catch_picture_joined_urls cpju ON cpju.catch_id = c.id
 WHERE (t.owner_id IS NULL OR u.exclude_from_exports = false)
-AND c.exclude_from_exports = false
 AND t.created_on < ((now() - INTERVAL '${exportSafeHours} hours') at time zone 'Europe/Paris');
 
 COMMENT ON VIEW catchs_openadom_export IS 'Génère le CSV pour les exports OpenAdom';

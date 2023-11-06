@@ -30,7 +30,7 @@ import Lakes from "@/views/referentials/Lakes.vue";
 import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
-import Catches from "@/views/referentials/Catches.vue";
+import Catches from "@/views/Catches.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
@@ -94,11 +94,6 @@ const routes: Array<RouteConfig> = [
   {
     path: "/trips",
     name: "trips",
-    component: Trips
-  },
-  {
-    path: "/catches",
-    name: "catches",
     component: Catches
   },
   {
