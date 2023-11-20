@@ -21,8 +21,8 @@
 
 ALTER TABLE catch
     ADD COLUMN edited_species_id UUID,
-    ADD COLUMN edited_size INT,
-    ADD COLUMN edited_weight INT,
-    ADD COLUMN exclude_from_exports BOOLEAN default false;
+    ADD COLUMN edited_size INT NOT NULL DEFAULT 0,
+    ADD COLUMN edited_weight INT NOT NULL DEFAULT 0,
+    ADD COLUMN exclude_from_exports BOOLEAN NOT NULL default false;
 
 UPDATE catch c SET edited_species_id = species_id, edited_size = c.size, edited_weight = weight, exclude_from_exports = false;

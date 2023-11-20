@@ -64,6 +64,18 @@ import static org.jooq.impl.DSL.trueCondition;
 public class CatchsDao extends AbstractFisholaDao {
 
     public UUID create(Catch c) {
+        if (c.getEditedSpeciesId() == null) {
+            c.setEditedSpeciesId(c.getSpeciesId());
+        }
+        if (c.getEditedSize() == null || c.getEditedSize() == 0) {
+            c.setEditedSize(c.getSize());
+        }
+        if (c.getEditedWeight() == null || c.getEditedWeight() == 0) {
+            c.setEditedWeight(c.getWeight());
+        }
+        if (c.getExcludeFromExports() == null) {
+            c.setExcludeFromExports(false);
+        }
         return withContext(context -> {
             CatchRecord record = context.newRecord(Tables.CATCH, c);
             CatchRecord recordInserted = context.insertInto(Tables.CATCH)

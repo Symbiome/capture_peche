@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
@@ -257,9 +258,9 @@ public class DashboardDao  extends AbstractFisholaDao {
             List<Catch> catchs = catchsWithSize.stream()
                     .filter(c -> {
                         if (useEditedInBoInformation) {
-                           return c.getSpeciesId().equals(speciesId);
+                           return Objects.equals(c.getEditedSpeciesId(),speciesId);
                         } else {
-                            return c.getEditedSpeciesId().equals(speciesId);
+                            return  Objects.equals(c.getSpeciesId(), speciesId);
                         }
                      })
                     .collect(Collectors.toList());
