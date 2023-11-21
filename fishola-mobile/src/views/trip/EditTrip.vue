@@ -123,9 +123,9 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 export type ActionType = "UpdateTrip" | "EditSpecies" | "EditTechniques";
-
 @Component({
   components: {
     FisholaHeader,
@@ -215,18 +215,24 @@ export default class EditTripView extends Vue {
 
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
-      router.push("/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      router.push({ name: "trip-species", params: { id: this.id } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-species",
+        params: { id: this.id },
+      });
     } else if (this.actionRequested == "EditTechniques") {
-      router.push({ name: "trip-techniques", params: { id: this.id } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-techniques",
+        params: { id: this.id },
+      });
     }
   }
 
   newCatch() {
     if (this.modifiable) {
-      router.push({
+      RouterUtils.pushRouteNoDuplicate(router, {
         name: "catch",
         params: { tripId: this.id, catchId: Constants.NEW_CATCH_ID },
       });
@@ -234,7 +240,7 @@ export default class EditTripView extends Vue {
   }
 
   openCatch(catchId: string) {
-    router.push({
+    RouterUtils.pushRouteNoDuplicate(router, {
       name: "catch",
       params: { tripId: this.id, catchId: catchId },
     });
@@ -249,12 +255,12 @@ export default class EditTripView extends Vue {
   }
 
   tripDeleted() {
-    router.push("/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      router.push({
+      RouterUtils.pushRouteNoDuplicate(router, {
         name: "galery",
         params: {
           selectedDefaultPic: "",
@@ -262,7 +268,7 @@ export default class EditTripView extends Vue {
         },
       });
     } else {
-      router.push("/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips");
     }
   }
 }

@@ -136,7 +136,7 @@ export default class Helpers {
   }
 
   static formatToDateWithoutYear(date: Date): string {
-    const dayOptions = {
+    const dayOptions: Intl.DateTimeFormatOptions = {
       day: "numeric",
       month: "long",
     };
@@ -144,7 +144,7 @@ export default class Helpers {
     return result;
   }
   static formatToLongDate(date: Date): string {
-    const dayOptions = {
+    const dayOptions: Intl.DateTimeFormatOptions = {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -262,7 +262,7 @@ export default class Helpers {
   }
 
   static alert(modal: any, text: string, title?: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, _reject) => {
       const params: any = {
         title: title,
         text: text,

@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
@@ -63,6 +64,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @Inject
     protected ReferentialDao referentialDao;
+
+    @Inject
+    protected CatchsDao catchsDao;
 
     @GET
     @Path("/lakes")
@@ -394,5 +398,6 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<AuthorizedSample> result = referentialDao.listAuthorizedSamples();
         return result;
     }
+
 
 }

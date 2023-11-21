@@ -85,4 +85,5 @@ public abstract class AbstractFisholaTest {
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }
+
 }

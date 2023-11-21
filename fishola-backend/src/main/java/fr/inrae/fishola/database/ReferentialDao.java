@@ -47,6 +47,7 @@ import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -329,7 +330,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
         List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
-        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample -> authorizedSample.getSpeciesId().equals(specieId)).map(AuthorizedSample::getMinSize).collect(Collectors.toList());
+        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).collect(Collectors.toList());
         if (minSize.size() > 0) {
             return Optional.of(minSize.get(0));
         }

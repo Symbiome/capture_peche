@@ -170,7 +170,11 @@ export default class ReferentialService extends AbstractFisholaService {
             this.getSpeciesPerLake().then(
                 (map) => {
                     const species = map.get(lakeId);
-                    resolve(species);
+                    if (species) {
+                        resolve(species);
+                    } else {
+                        resolve([])
+                    }
                 },
                 reject);
         });
@@ -181,7 +185,11 @@ export default class ReferentialService extends AbstractFisholaService {
             this.getSpeciesPerLakePlusCustom().then(
                 (map) => {
                     const species = map.get(lakeId);
-                    resolve(species);
+                     if (species) {
+                       resolve(species);
+                     } else {
+                       resolve([]);
+                     }
                 },
                 reject);
         });

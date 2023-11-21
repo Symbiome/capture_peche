@@ -121,8 +121,9 @@ import ProfileService from "@/services/ProfileService";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 
 @Component({
@@ -178,7 +179,7 @@ export default class ProfileView extends Vue {
   loadProfile() {
     ProfileService.getProfile().then(this.profileLoaded, () => {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      router.push("/login");
+      RouterUtils.pushRouteNoDuplicate(router, "/login");
     });
   }
 
@@ -240,7 +241,7 @@ export default class ProfileView extends Vue {
           "Votre compte a été supprimé",
           5000
         );
-        router.push("/login");
+        RouterUtils.pushRouteNoDuplicate(router, "/login");
         this.$root.$emit("loggued-out");
       });
     });
@@ -254,7 +255,7 @@ export default class ProfileView extends Vue {
   }
 
   editPassword() {
-    router.push("/profile-password");
+    RouterUtils.pushRouteNoDuplicate(router, "/profile-password");
   }
 }
 </script>

@@ -479,12 +479,12 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import Counter from "@/components/common/Counter.vue";
 import ProfileService from "@/services/ProfileService";
 import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import { latLng, LatLng, Icon } from "leaflet";
 
@@ -684,17 +684,17 @@ export default class AboutView extends Vue {
   goToLogin() {
     this.closed = true;
     ProfileService.fetchProfile().then(
-      (profile) => {
-        router.push("/trips");
+      (_profile) => {
+        RouterUtils.pushRouteNoDuplicate(router, "/trips");
       },
-      (status) => {
-        router.push("/login");
+      (_status) => {
+        RouterUtils.pushRouteNoDuplicate(router, "/login");
       }
     );
   }
 
   goFaq() {
-    router.push("/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
   }
 }
 </script>
@@ -877,7 +877,7 @@ export default class AboutView extends Vue {
 
 .Title_sec {
   width: 100%;
-  background: url(/img/about-coregones5.jpg) top center no-repeat;
+  background: url(~/public/img/about-coregones5.jpg) top center no-repeat;
   height: 680px;
   position: relative;
   background-size: cover;
@@ -1045,11 +1045,11 @@ export default class AboutView extends Vue {
   }
 }
 .Contribute_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 .Get_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 

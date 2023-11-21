@@ -62,6 +62,7 @@ import Helpers from "@/services/Helpers";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
 export default class MyTripItem extends Vue {
@@ -75,7 +76,7 @@ export default class MyTripItem extends Vue {
   created() {
     ReferentialService.getLakesIndex().then(this.lakesIndexLoaded);
 
-    var dayOptions = {
+    var dayOptions: Intl.DateTimeFormatOptions = {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -91,11 +92,14 @@ export default class MyTripItem extends Vue {
   }
 
   openTrip() {
-    router.push({ name: "trip", params: { id: this.trip.id } });
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip",
+      params: { id: this.trip.id },
+    });
   }
 
   @Watch("selected")
-  onSelectedChanged(value: boolean, oldValue: boolean) {
+  onSelectedChanged(value: boolean, _oldValue: boolean) {
     if (value) {
       this.$emit("selected");
     } else {

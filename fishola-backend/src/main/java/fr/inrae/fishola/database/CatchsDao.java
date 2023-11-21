@@ -64,6 +64,18 @@ import static org.jooq.impl.DSL.trueCondition;
 public class CatchsDao extends AbstractFisholaDao {
 
     public UUID create(Catch c) {
+        if (c.getEditedSpeciesId() == null) {
+            c.setEditedSpeciesId(c.getSpeciesId());
+        }
+        if (c.getEditedSize() == null || c.getEditedSize() == 0) {
+            c.setEditedSize(c.getSize());
+        }
+        if (c.getEditedWeight() == null || c.getEditedWeight() == 0) {
+            c.setEditedWeight(c.getWeight());
+        }
+        if (c.getExcludeFromExports() == null) {
+            c.setExcludeFromExports(false);
+        }
         return withContext(context -> {
             CatchRecord record = context.newRecord(Tables.CATCH, c);
             CatchRecord recordInserted = context.insertInto(Tables.CATCH)
@@ -219,6 +231,7 @@ public class CatchsDao extends AbstractFisholaDao {
             } else {
                 // Sinon on inclut seulement les sorties dont les utilisateurs ne sont pas à exclure
                 Condition nonExcludedUserCondition = Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false);
+                nonExcludedUserCondition = nonExcludedUserCondition.and(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq((false)));
                 // ... ou les sorties où il n'y a pas d'utilisateur
                 Condition noUserCondition = Tables.TRIP.OWNER_ID.isNull();
                 selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));

@@ -126,7 +126,7 @@ export default class HistogramChart extends Vue {
   @Watch("values")
   onValuesChanged(
     newValue: { [P in Month]?: {} },
-    oldValue: { [P in Month]?: {} }
+    _oldValue: { [P in Month]?: {} }
   ) {
     this.maxValue = this.findMaxValue(newValue);
   }

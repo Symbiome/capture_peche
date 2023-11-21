@@ -68,7 +68,7 @@
             <div class="params" v-if="openCVLoaded">
               <div class="params-item">
                 <img
-                  style="display:none"
+                  style="display: none"
                   id="sourcePicture"
                   alt="No Image"
                   @load="onNewImageSourceLoad"
@@ -77,7 +77,7 @@
                 Taille marqueur (mm)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="markerSizeInCm"
                   @change="launchSizeComputation"
                   v-model.number="config.markerSizeInMm"
@@ -86,7 +86,7 @@
                 Redimensionnement (px)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="resizeSize"
                   @change="launchSizeComputation"
                   v-model.number="config.resizeSize"
@@ -101,7 +101,7 @@
                   />
                 </div>
                 <img
-                  style="width:80px;height:80px;"
+                  style="width: 80px; height: 80px"
                   id="marker"
                   alt=""
                   @load="onNewMarkerSourceLoad"
@@ -112,7 +112,7 @@
                 % d'occupation minimal (0 à 1)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="minSizeRatio"
                   step="0.1"
                   @change="launchSizeComputation"
@@ -122,7 +122,7 @@
                 % d'occupation maximal (0 à 1)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="maxSizeRatio"
                   step="0.1"
                   @change="launchSizeComputation"
@@ -132,7 +132,7 @@
                 Ratio hauteur/largeur min (0 à 1)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="minWithLengthRatio"
                   step="0.1"
                   @change="launchSizeComputation"
@@ -142,7 +142,7 @@
                 Ratio hauteur/largeur min (0 à 1)
                 <input
                   type="number"
-                  style="width:100px"
+                  style="width: 100px"
                   id="maxWithLengthRatio"
                   step="0.1"
                   @change="launchSizeComputation"
@@ -151,21 +151,21 @@
                 FeatureMatching si 1 seul candidat
                 <input
                   type="checkbox"
-                  style="width:100px"
+                  style="width: 100px"
                   id="alwaysCheckMarkerCandidates"
                   v-model.number="config.alwaysCheckMarkerCandidates"
                 /><br />
                 La photo contient un marqueur
                 <input
                   type="checkbox"
-                  style="width:100px"
+                  style="width: 100px"
                   id="pictureIsSupposedToContainMarker"
                   v-model.number="config.pictureIsSupposedToContainMarker"
                 /><br />
                 La photo contient un poisson
                 <input
                   type="checkbox"
-                  style="width:100px"
+                  style="width: 100px"
                   id="pictureIsSupposedToContainFish"
                   v-model.number="config.pictureIsSupposedToContainFish"
                 /><br />
@@ -183,7 +183,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
@@ -236,7 +236,7 @@ export default class OpenCVSizeComputation extends Vue {
     }
   }
 
-  onNewImageSourceLoad(e: Event): void {
+  onNewImageSourceLoad(_e: Event): void {
     this.calculating = true;
     this.$forceUpdate();
     setTimeout(this.launchSizeComputation, 200);
@@ -249,12 +249,13 @@ export default class OpenCVSizeComputation extends Vue {
     this.calculating = true;
     if (imageElement && markerElement) {
       try {
-        const detectedShapes: Array<DetectedShape> = await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-          imageElement,
-          markerElement,
-          this.config,
-          "canvasOutput3"
-        );
+        const detectedShapes: Array<DetectedShape> =
+          await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
+            imageElement,
+            markerElement,
+            this.config,
+            "canvasOutput3"
+          );
 
         const markers = detectedShapes.filter(
           (shape: DetectedShape) => shape.isMarker

@@ -67,6 +67,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
 import router from "../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -109,7 +110,7 @@ export default class CommunicationsOnAboutPage extends Vue {
   }
 
   showNewsDetails(newsId: string) {
-    router.push("/news/" + newsId);
+    RouterUtils.pushRouteNoDuplicate(router, "/news/" + newsId);
   }
 }
 </script>

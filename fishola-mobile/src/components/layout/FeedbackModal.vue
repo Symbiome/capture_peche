@@ -105,8 +105,8 @@ import FormInput from "@/components/common/FormInput.vue";
 import FormRadio from "@/components/common/FormRadio.vue";
 import FormTextarea from "@/components/common/FormTextarea.vue";
 
-import { Feedback } from "@/pojos/BackendPojos.ts";
-import UserProfile from "@/pojos/UserProfile.ts";
+import { Feedback } from "@/pojos/BackendPojos";
+import UserProfile from "@/pojos/UserProfile";
 
 import ProfileService from "@/services/ProfileService";
 import FeedbackService from "@/services/FeedbackService";

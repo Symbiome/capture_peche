@@ -47,6 +47,10 @@ public class CatchBean {
     public List<Integer> pictureOrders = new LinkedList<>();
     public boolean hasMeasurementPicture = false;
     public Optional<UUID> tripId = Optional.empty();
+    public Optional<UUID> editedSpeciesId = Optional.empty();
+    public Optional<Integer> editedSize = Optional.empty();
+    public Optional<Integer> editedWeight = Optional.empty();
+    public boolean excludeFromExport = false;
 
     @Override
     public String toString() {
