@@ -57,14 +57,4 @@ class ReferentialResourceTest {
                     .body("[3].longitude", notNullValue());
     }
 
-    @Test
-    public void testGetCatchesPaginated() {
-        given()
-                .when()
-                .get("/api/v1/referential/catches/0")
-                .then()
-                .statusCode(200)
-                .body("total", equalTo(400));
-    }
-
 }

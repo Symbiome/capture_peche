@@ -86,13 +86,13 @@ public class DashboardDao  extends AbstractFisholaDao {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(false, allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
-        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(false, allCatches, aCatch -> !aCatch.getKept());
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
@@ -168,13 +168,13 @@ public class DashboardDao  extends AbstractFisholaDao {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(true, allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
-        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(true, allCatches, aCatch -> !aCatch.getKept());
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
@@ -208,11 +208,17 @@ public class DashboardDao  extends AbstractFisholaDao {
     }
 
 
-    protected Map<UUID, Integer> computeDistribution(Collection<Catch> allCatches, Predicate<Catch> predicate) {
-        ImmutableMultiset<UUID> caughtSpeciesDistributionSet = allCatches.stream()
-                .filter(predicate)
-                .map(Catch::getSpeciesId)
-                .collect(ImmutableMultiset.toImmutableMultiset());
+    protected Map<UUID, Integer> computeDistribution(boolean useEditedInBoInformation, Collection<Catch> allCatches, Predicate<Catch> predicate) {
+        Stream<Catch> catchStream = allCatches.stream()
+                .filter(predicate);
+        Stream<UUID> catchSpeciesStream = null;
+        if (useEditedInBoInformation) {
+            catchSpeciesStream = catchStream.map(Catch::getEditedSpeciesId);
+        } else {
+            catchSpeciesStream = catchStream.map(Catch::getSpeciesId);
+        }
+        ImmutableMultiset<UUID> caughtSpeciesDistributionSet =
+                catchSpeciesStream.collect(ImmutableMultiset.toImmutableMultiset());
         Map<UUID, Integer> result = caughtSpeciesDistributionSet.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount));
