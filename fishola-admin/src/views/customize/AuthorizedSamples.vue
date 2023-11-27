@@ -21,7 +21,7 @@
 <template>
   <div class="authorized-samples">
     <h1>
-      Autorisations de prélèvement et taille des maillages
+      Autorisations de prélèvement, maillages et tailles maximum
       <div class="align-right">
         <b-upload
           class="button is-primary export-button"
@@ -56,6 +56,7 @@
                 v-if="authorizedSamplesMap[l.id][s.id]"
                 class="specie-container-with-size"
               >
+                Taille maillage : <br />
                 <div class="input-holder">
                   <b-input
                     placeholder="Taille minimale"
@@ -67,11 +68,32 @@
                   </b-input>
                   <span style="margin-left:10px;float:right">cm</span>
                 </div>
+                Taille maximale : <br />
+                <div class="input-holder">
+                  <b-input
+                    placeholder="Taille maximale"
+                    type="number"
+                    custom-class="minsize-input"
+                    v-model="maxSizeMap[l.id][s.id]"
+                    @input="$forceUpdate()"
+                  >
+                  </b-input>
+                  <span style="margin-left:10px;float:right">cm</span>
+                </div>
                 <div
                   v-if="!minSizeMap[l.id][s.id] || minSizeMap[l.id][s.id] <= 0"
                   class="error"
                 >
-                  Taille invalide
+                  Taille de maillage invalide
+                </div>
+                <div
+                  v-if="
+                    !maxSizeMap[l.id][s.id] ||
+                      maxSizeMap[l.id][s.id] < minSizeMap[l.id][s.id] * 1.5
+                  "
+                  class="error"
+                >
+                  Taille maximale invalide
                 </div>
               </div>
               <i v-else class="specie-container-without-size">
@@ -102,6 +124,7 @@ export default class AuthorizedSamplesVue extends Vue {
   speciesPerLake = {};
   authorizedSamplesMap = {};
   minSizeMap = {};
+  maxSizeMap = {};
 
   created() {
     this.lakes = [];
@@ -109,6 +132,7 @@ export default class AuthorizedSamplesVue extends Vue {
     this.speciesPerLake = {};
     this.authorizedSamplesMap = {};
     this.minSizeMap = {};
+    this.maxSizeMap = {};
 
     Promise.all([
       BackendService.backendGet("/v1/referential/lakes"),
@@ -134,6 +158,7 @@ export default class AuthorizedSamplesVue extends Vue {
     this.lakes.forEach(l => {
       this.authorizedSamplesMap[l.id] = {};
       this.minSizeMap[l.id] = {};
+      this.maxSizeMap[l.id] = {};
     });
 
     Object.keys(this.speciesPerLake).forEach(lakeId => {
@@ -141,6 +166,7 @@ export default class AuthorizedSamplesVue extends Vue {
       items.forEach(spl => {
         this.authorizedSamplesMap[lakeId][spl.id] = spl.authorizedSample;
         this.minSizeMap[lakeId][spl.id] = spl.minSize;
+        this.maxSizeMap[lakeId][spl.id] = spl.maxSize;
       });
     });
     this.$forceUpdate();
@@ -149,7 +175,8 @@ export default class AuthorizedSamplesVue extends Vue {
   save() {
     BackendService.backendPut("/v1/referential/authorized-samples", [
       this.authorizedSamplesMap,
-      this.minSizeMap
+      this.minSizeMap,
+      this.maxSizeMap
     ]).then(
       res => {
         this.reloadData();
@@ -178,12 +205,15 @@ export default class AuthorizedSamplesVue extends Vue {
 
     this.authorizedSamplesMap = {};
     this.minSizeMap = {};
+    this.maxSizeMap = {};
     this.lakes.forEach(l => {
       this.authorizedSamplesMap[l.id] = {};
       this.minSizeMap[l.id] = {};
+      this.maxSizeMap[l.id] = {};
     });
     let authorizedSamplesMap = this.authorizedSamplesMap;
     let minSizeMap = this.minSizeMap;
+    let maxSizeMap = this.maxSizeMap;
     let updateFromCsv = this.updateFromCsv;
 
     reader.readAsText(file, "UTF-8");
@@ -212,23 +242,26 @@ export default class AuthorizedSamplesVue extends Vue {
             return;
           }
 
-          if (csvColumns[j]) {
+          if (csvColumns[j] && csvColumns[j].split("-").length == 2) {
             authorizedSamplesMap[lakeId][specieId] = true;
-            minSizeMap[lakeId][specieId] = csvColumns[j];
+            minSizeMap[lakeId][specieId] = csvColumns[j].split("-")[0];
+            maxSizeMap[lakeId][specieId] = csvColumns[j].split("-")[1];
           } else {
             authorizedSamplesMap[lakeId][specieId] = false;
             minSizeMap[lakeId][specieId] = undefined;
+            maxSizeMap[lakeId][specieId] = undefined;
           }
         }
       }
-      updateFromCsv(authorizedSamplesMap, minSizeMap);
+      updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap);
     };
   }
 
-  updateFromCsv(authorizedSamplesMap, minSizeMap) {
-    console.error(authorizedSamplesMap, minSizeMap);
+  updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap) {
+    console.error(authorizedSamplesMap, minSizeMap, maxSizeMap);
     this.authorizedSamplesMap = authorizedSamplesMap;
     this.minSizeMap = minSizeMap;
+    this.maxSizeMap = maxSizeMap;
 
     this.$forceUpdate();
   }
@@ -244,7 +277,6 @@ export default class AuthorizedSamplesVue extends Vue {
       csvContent += columns[i];
     }
     csvContent += "\n";
-
     this.species.forEach(specie => {
       var csvRow = "";
       csvRow += specie.name + ";";
@@ -254,12 +286,36 @@ export default class AuthorizedSamplesVue extends Vue {
           const maillageSize = this.minSizeMap[lakeId]
             ? this.minSizeMap[lakeId][specie.id]
             : "";
-          csvRow += (maillageSize ? maillageSize : "") + ";";
+          const maximumSize = this.maxSizeMap[lakeId]
+            ? this.maxSizeMap[lakeId][specie.id]
+            : "";
+          if (maillageSize) {
+            csvRow +=
+              (maillageSize ? maillageSize : "") +
+              "-" +
+              (maximumSize ? maximumSize : "1000") +
+              ";";
+          } else {
+            csvRow += ";";
+          }
         });
       csvContent += csvRow + "\n";
     });
     var encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+    var hiddenElement = document.createElement("a");
+    hiddenElement.href = encodedUri;
+    hiddenElement.target = "_blank";
+    var m = new Date();
+    const fileName =
+      "Fishola_Export__" +
+      m.getUTCFullYear() +
+      "-" +
+      (m.getUTCMonth() + 1) +
+      "-" +
+      m.getUTCDate() +
+      ".csv";
+    hiddenElement.download = fileName;
+    hiddenElement.click();
   }
 
   getSpecieWithName(specieName) {
@@ -324,7 +380,7 @@ export default class AuthorizedSamplesVue extends Vue {
   }
 
   .specie-container-with-size {
-    max-width: 130px;
+    max-width: 170px;
     .input-holder {
       display: flex;
     }

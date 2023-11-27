@@ -22,10 +22,11 @@
   <div class="catches">
     <h1>Sorties</h1>
     <b-message type="is-info">
-      Liste de toutes les prises enregistrées sur Fishola (hors les prises de
+      Liste de toutes les prises enregistrées sur Fishola (hors prises de
       l'équipe Fishola exclues d'office). <br />Vous pouvez filtrer et trier
-      selon chaque champ. Seuls les lignes non exclus de l'export seront
-      exportées dans le fichier CSV.
+      selon chaque champ. Seules les lignes non exclues de l'export seront
+      exportées dans le fichier CSV et incluses dans les tableaux de bords
+      globaux.
     </b-message>
     <a @click="exportCsv">
       <button class="button is-primary">Lancer un export CSV</button></a

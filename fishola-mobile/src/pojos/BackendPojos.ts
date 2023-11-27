@@ -69,6 +69,7 @@ export interface SpeciesWithAlias {
     alias?: string;
     authorizedSample: boolean;
     minSize: number;
+    maxSize: number;
 }
 
 export interface Lake extends Serializable {

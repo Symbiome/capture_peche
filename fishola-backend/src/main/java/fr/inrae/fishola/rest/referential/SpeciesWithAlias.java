@@ -42,13 +42,14 @@ public interface SpeciesWithAlias {
     Optional<String> alias();
     boolean authorizedSample();
     Integer minSize();
+    Integer maxSize();
 
     static SpeciesWithAlias of(Species source) {
-        SpeciesWithAlias result = of(source, Optional.empty(), false, 0);
+        SpeciesWithAlias result = of(source, Optional.empty(), false, 0, 1000);
         return result;
     }
 
-    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample, Integer minSize) {
+    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample, Integer minSize, Integer maxSize) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
@@ -56,6 +57,7 @@ public interface SpeciesWithAlias {
                 .mandatorySize(source.getMandatorySize())
                 .alias(alias)
                 .minSize(minSize)
+                .maxSize(maxSize)
                 .authorizedSample(authorizedSample)
                 .build();
         return result;

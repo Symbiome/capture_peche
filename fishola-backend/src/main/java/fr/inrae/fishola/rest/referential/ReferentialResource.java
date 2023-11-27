@@ -216,6 +216,10 @@ public class ReferentialResource extends AbstractFisholaResource {
         authorizedSamples.stream().forEach(as -> {
             authorizedSamplesMinSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMinSize());
         });
+        Map<Pair<UUID, UUID>, Integer> authorizedSamplesMaxSizes = new LinkedHashMap<>();
+        authorizedSamples.stream().forEach(as -> {
+            authorizedSamplesMaxSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMaxSize());
+        });
 
         // On compile le tout
         Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
@@ -225,10 +229,14 @@ public class ReferentialResource extends AbstractFisholaResource {
                 Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
                 boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
                 Integer minSize = 0;
+                Integer maxSize = 1000;
                 if (authorizedSamplesMinSizes.get(lakePlusSpeciesIds) != null) {
                     minSize = authorizedSamplesMinSizes.get(lakePlusSpeciesIds);
                 }
-                SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize);
+                if (authorizedSamplesMaxSizes.get(lakePlusSpeciesIds) != null) {
+                    maxSize = authorizedSamplesMaxSizes.get(lakePlusSpeciesIds);
+                }
+                SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
                 result.put(lakeId, speciesWithAlias);
             });
         });
@@ -288,14 +296,16 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/authorized-samples")
-    public Response saveAuthorizedSamples(List<Map<UUID, Map<UUID, Object>>> authorizationsAndMinSizes) {
+    public Response saveAuthorizedSamples(List<Map<UUID, Map<UUID, Object>>> authorizationsAndMinMaxSizes) {
         checkIsAdmin();
 
         // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
         Map<Pair<UUID, UUID>, Integer> minSizesMap = new LinkedHashMap();
-        Map<UUID, Map<UUID, Object>> authorizations = authorizationsAndMinSizes.get(0);
-        Map<UUID, Map<UUID, Object>> minSizes = authorizationsAndMinSizes.get(1);
+        Map<Pair<UUID, UUID>, Integer> maxSizesMap = new LinkedHashMap();
+        Map<UUID, Map<UUID, Object>> authorizations = authorizationsAndMinMaxSizes.get(0);
+        Map<UUID, Map<UUID, Object>> minSizes = authorizationsAndMinMaxSizes.get(1);
+        Map<UUID, Map<UUID, Object>> maxSizes = authorizationsAndMinMaxSizes.get(2);
         for (Map.Entry<UUID, Map<UUID, Object>> byLakeEntry : authorizations.entrySet()) {
             Map<UUID, Object> bySpeciesEntries = byLakeEntry.getValue();
             for (Map.Entry<UUID, Object> entry : bySpeciesEntries.entrySet()) {
@@ -306,6 +316,9 @@ public class ReferentialResource extends AbstractFisholaResource {
                 }
                 if (minSizes.get(byLakeEntry.getKey()) != null && minSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
                     minSizesMap.put(lakePluSpeciesId, Integer.parseInt(minSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
+                }
+                if (maxSizes.get(byLakeEntry.getKey()) != null && maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
+                    maxSizesMap.put(lakePluSpeciesId, Integer.parseInt(maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
                 }
             }
         }
@@ -324,7 +337,12 @@ public class ReferentialResource extends AbstractFisholaResource {
                 if (minSizesMap.get(lakePluSpeciesId) != null) {
                     minSize = minSizesMap.get(lakePluSpeciesId);
                 }
+                Integer maxSize = 0;
+                if (maxSizesMap.get(lakePluSpeciesId) != null) {
+                    maxSize = maxSizesMap.get(lakePluSpeciesId);
+                }
                 entity.setMinSize(minSize);
+                entity.setMaxSize(maxSize);
                 referentialDao.updateAuthorizeSample(entity);
             }
             authorizationsSet.remove(lakePluSpeciesId);
@@ -335,10 +353,19 @@ public class ReferentialResource extends AbstractFisholaResource {
             .stream()
             .map(entry -> {
                 Integer minSize = 0;
+                Integer maxSize = 0;
                 if (minSizesMap.get(entry) != null) {
                     minSize = minSizesMap.get(entry);
                 }
-                return new AuthorizedSample(entry.getKey(), entry.getValue(), minSize);
+                if (maxSizesMap.get(entry) != null) {
+                    maxSize = maxSizesMap.get(entry);
+                }
+                AuthorizedSample authorizedSample = new AuthorizedSample();
+                authorizedSample.setLakeId(entry.getKey());
+                authorizedSample.setSpeciesId(entry.getValue());
+                authorizedSample.setMinSize(minSize);
+                authorizedSample.setMaxSize(maxSize);
+                return authorizedSample;
             })
             .forEach(referentialDao::createAuthorizedSample);
 
