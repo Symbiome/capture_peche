@@ -156,7 +156,7 @@ COMMENT ON VIEW catchs_export IS 'Génère le CSV pour les exports';
 
 CREATE VIEW catchs_openadom_export AS
 SELECT
-    'FISHOLA' AS nom_du_projet,
+    'fishola' AS nom_du_projet,
     normalize_for_export(l.export_as) AS nom_du_site,
     normalize_for_export(l.export_as || ':peche amateur') AS nom_de_la_plateforme,
     to_char(t.day, 'DD/MM/YYYY') AS date_de_la_sortie,
@@ -218,8 +218,8 @@ SELECT
     u.id AS id_login,
     to_char(t.day, 'MM') AS mois_de_la_sortie,
     to_char(t.day, 'YYYY') AS annee_de_la_sortie,
-    CASE t.type WHEN 'Craft' THEN 'Embarcation'
-                WHEN 'Border' THEN 'Bord'
+    CASE t.type WHEN 'Craft' THEN 'embarcation'
+                WHEN 'Border' THEN 'bord'
                 END AS type_de_peche,
     t.name AS nom_de_la_sortie,
     tsn.species AS espece_recherchee,
