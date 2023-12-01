@@ -51,6 +51,8 @@ public abstract class AbstractFisholaResource {
 
     public static final String ADMIN_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Admin-Token";
 
+    public static final Integer COOKIE_MAX_AGE = 7200;
+
     @Inject
     protected JwtHelper jwtHelper;
 
@@ -67,22 +69,22 @@ public abstract class AbstractFisholaResource {
     protected String adminToken;
 
     protected NewCookie createUserTokenCookie(String token) {
-        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, token, COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie dropUserTokenCookie() {
-        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie createAdminTokenCookie(String token) {
-        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, token, COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie dropAdminTokenCookie() {
-        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", COOKIE_MAX_AGE);
         return result;
     }
 
