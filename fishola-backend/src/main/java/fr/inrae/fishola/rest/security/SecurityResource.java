@@ -623,7 +623,7 @@ public class SecurityResource extends AbstractFisholaResource {
         List<FisholaUser> users = usersDao.findAll();
         List<UserProfileForAdmin> result = users.stream()
                 .map(this::toUserProfileForAdmin)
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 

@@ -39,7 +39,6 @@ import java.util.UUID;
 
 import static javax.transaction.Transactional.TxType.REQUIRED;
 import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {

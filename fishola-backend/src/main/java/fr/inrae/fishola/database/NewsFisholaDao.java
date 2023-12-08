@@ -52,11 +52,11 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                     news ->
                             news.getDatePublicationDebut() != null && now.isAfter(news.getDatePublicationDebut()) &&
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
-            ).collect(Collectors.toList());
+            ).toList();
         }
         allNews = allNews.stream().sorted(
                 (n1, n2) -> -1 * n1.getDatePublicationDebut().compareTo(n2.getDatePublicationDebut())
-        ).collect(Collectors.toList());
+        ).toList();
         return allNews;
     }
 
@@ -135,7 +135,9 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             .where(Tables.NEWS_PICTURE.NEWS_ID.eq(TEMPORARY_NEWS_ID))
             .execute();
 
-        List<Record1<UUID>> miniature = dslContext.select(Tables.NEWS_PICTURE.ID).from(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId).and(Tables.NEWS_PICTURE.IS_MINIATURE.eq(true))).fetch().collect(Collectors.toList());
+        List<Record1<UUID>> miniature = dslContext.select(Tables.NEWS_PICTURE.ID)
+                .from(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId).and(Tables.NEWS_PICTURE.IS_MINIATURE
+                .eq(true))).fetch().collect(Collectors.toList());
         if (miniature.size() > 0) {
             News news = findById(newsId);
             if (news != null) {

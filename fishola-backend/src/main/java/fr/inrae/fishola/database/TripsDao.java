@@ -61,6 +61,7 @@ import org.nuiton.util.pagination.PaginationResult;
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
 
+    public static final String CATCHS_OPENADOM_EXPORT_VIEW = "catchs_openadom_export";
     @Inject
     protected CatchsDao catchsDao;
 
@@ -220,7 +221,7 @@ public class TripsDao extends AbstractFisholaDao {
 
     public String getTripsCSV() {
         return withContext(context -> {
-            String result = context.selectFrom("catchs_openadom_export")
+            String result = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
                     .where("a_exclure='non'")
                     .fetch()
                     .formatCSV(';');

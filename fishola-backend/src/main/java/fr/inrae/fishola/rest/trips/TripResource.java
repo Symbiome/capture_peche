@@ -87,6 +87,7 @@ public class TripResource extends AbstractFisholaResource {
             .onResultOf(c -> c.caughtAt.orElse(null));
 
     private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
+    public static final String HOURS_AND_MINUTES = "HH:mm";
 
     @Inject
     protected Logger log;
@@ -619,7 +620,7 @@ public class TripResource extends AbstractFisholaResource {
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
-        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern("HH:mm")));
+        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES)));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
         List<Integer> pictureIndexes = catchsWithPictures != null ? catchsWithPictures.get(catchId) : new ArrayList<>();
@@ -661,7 +662,7 @@ public class TripResource extends AbstractFisholaResource {
         result.catchs = catchs.stream()
                 .map(aCatch -> toCatchBean(aCatch, catchsWithPictures, measurementPictures))
                 .sorted(CATCH_ORDERING_ON_CAUGHT_AT)
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 }

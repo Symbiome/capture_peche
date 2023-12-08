@@ -63,7 +63,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.swing.text.html.Option;
 import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -257,7 +256,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         // On garde uniquement les captures avec une taille
         List<Catch> catchsWithSize = allCatches.stream()
                 .filter(c -> c.getSize() != null)
-                .collect(Collectors.toList());
+                .toList();
         ImmutableMap.Builder<UUID, Map<Month, Map<Maillage, Double>>> builder = ImmutableMap.builder();
         for (UUID speciesId : mostCaughtSpecies) {
             // On prend les captures de la bonne espèce
@@ -269,7 +268,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                             return  Objects.equals(c.getSpeciesId(), speciesId);
                         }
                      })
-                    .collect(Collectors.toList());
+                    .toList();
             Map<Month, Map<Maillage, Double>> speciesMonthlySizes = new HashMap<>();
             for (Month month : Month.values()) {
                 Map<Maillage, Double> averagePerMaillage = new HashMap<>();
@@ -348,7 +347,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                 .stream()
                 .limit(5)
                 .map(aCatch -> TripResource.toCatchBean(aCatch, catchsWithPictures, measurementPictures))
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 

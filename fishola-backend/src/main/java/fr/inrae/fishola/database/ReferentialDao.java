@@ -256,7 +256,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         if (dashParts.size() > 1) {
             List<String> list = dashParts.stream()
                     .map(ReferentialDao::normalizeSpeciesName)
-                    .collect(Collectors.toList());
+                    .toList();
             String result = Joiner.on("-")
                     .skipNulls()
                     .join(list);
@@ -330,7 +330,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
         List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
-        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).collect(Collectors.toList());
+        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).toList();
         if (minSize.size() > 0) {
             return Optional.of(minSize.get(0));
         }

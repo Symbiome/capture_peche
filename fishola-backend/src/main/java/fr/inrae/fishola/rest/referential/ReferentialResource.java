@@ -179,7 +179,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<Species> species = referentialDao.listBuiltInSpecies();
         List<SpeciesWithAlias> result = species.stream()
                 .map(SpeciesWithAlias::of)
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 
@@ -189,7 +189,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<Species> species = referentialDao.listCustomSpecies();
         List<SpeciesWithAlias> result = species.stream()
                 .map(SpeciesWithAlias::of)
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 
@@ -213,13 +213,13 @@ public class ReferentialResource extends AbstractFisholaResource {
                 .map(authorizedSample -> Pair.of(authorizedSample.getLakeId(), authorizedSample.getSpeciesId()))
                 .collect(Collectors.toSet());
         Map<Pair<UUID, UUID>, Integer> authorizedSamplesMinSizes = new LinkedHashMap<>();
-        authorizedSamples.stream().forEach(as -> {
-            authorizedSamplesMinSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMinSize());
-        });
+        authorizedSamples.stream().forEach(as ->
+            authorizedSamplesMinSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMinSize())
+        );
         Map<Pair<UUID, UUID>, Integer> authorizedSamplesMaxSizes = new LinkedHashMap<>();
-        authorizedSamples.stream().forEach(as -> {
-            authorizedSamplesMaxSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMaxSize());
-        });
+        authorizedSamples.stream().forEach(as ->
+            authorizedSamplesMaxSizes.put(Pair.of(as.getLakeId(), as.getSpeciesId()), as.getMaxSize())
+        );
 
         // On compile le tout
         Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
@@ -301,8 +301,8 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
-        Map<Pair<UUID, UUID>, Integer> minSizesMap = new LinkedHashMap();
-        Map<Pair<UUID, UUID>, Integer> maxSizesMap = new LinkedHashMap();
+        Map<Pair<UUID, UUID>, Integer> minSizesMap = new LinkedHashMap<>();
+        Map<Pair<UUID, UUID>, Integer> maxSizesMap = new LinkedHashMap<>();
         Map<UUID, Map<UUID, Object>> authorizations = authorizationsAndMinMaxSizes.get(0);
         Map<UUID, Map<UUID, Object>> minSizes = authorizationsAndMinMaxSizes.get(1);
         Map<UUID, Map<UUID, Object>> maxSizes = authorizationsAndMinMaxSizes.get(2);
