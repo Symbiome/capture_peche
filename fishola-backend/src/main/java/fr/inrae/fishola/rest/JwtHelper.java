@@ -112,7 +112,7 @@ public class JwtHelper {
         Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
 
         // On convertit en secondes
-        long seconds = config.jwtRenewalHours() * 60 * 60;
+        long seconds = (long) config.jwtRenewalHours() * 60 * 60;
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)

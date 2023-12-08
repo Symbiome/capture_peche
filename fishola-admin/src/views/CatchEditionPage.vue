@@ -143,7 +143,11 @@
           <hr />
           <b-field label="Photo de mesure automatique" v-if="measurementPicURL">
             <a :href="measurementPicURL" target="blank">
-              <img class="bo-detail-pic" :src="measurementPicURL" />
+              <img
+                alt="photo de mesure"
+                class="bo-detail-pic"
+                :src="measurementPicURL"
+              />
             </a>
           </b-field>
 
@@ -156,7 +160,11 @@
             :href="otherPicURL"
             target="blank"
           >
-            <img class="bo-detail-pic" :src="otherPicURL" />
+            <img
+              class="bo-detail-pic"
+              alt="photo de la prise"
+              :src="otherPicURL"
+            />
           </a>
         </section>
       </div>

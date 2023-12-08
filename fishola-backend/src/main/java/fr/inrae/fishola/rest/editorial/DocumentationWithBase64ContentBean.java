@@ -8,7 +8,7 @@ package fr.inrae.fishola.rest.editorial;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either versiclasson 3 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
@@ -27,11 +27,11 @@ import java.util.UUID;
 
 @JsonSerialize(as = DocumentationWithBase64ContentBean.class)
 public class DocumentationWithBase64ContentBean implements DocumentationLight {
-    public UUID id;
-    public String naturalId;
-    public String name;
-    public String url;
-    public String base64Content;
+    private UUID id;
+    private String naturalId;
+    private String name;
+    private String url;
+    private String base64Content;
 
     public UUID id() {
         return id;

@@ -34,7 +34,7 @@
         <h4 v-if="errorMessage" class="error">{{ errorMessage }}</h4>
         <!-- pictures required for measurement -->
         <div class="picture-holder hiddenWhenKeyboardShows">
-          <img id="marker" v-show="false" :src="markerSourceSRC" />
+          <img id="marker" v-show="false" :src="markerSourceSRC" alt="marker"/>
           <canvas
             v-show="measurementPictureSrc && !calculating"
             id="resultCanvas"

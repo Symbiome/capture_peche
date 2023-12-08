@@ -275,6 +275,7 @@
 
         <div v-else-if="col.isPicture">
           <img
+            alt="miniature"
             class="miniture-pic"
             v-if="item['miniatureURL']"
             :src="item['miniatureURL']"

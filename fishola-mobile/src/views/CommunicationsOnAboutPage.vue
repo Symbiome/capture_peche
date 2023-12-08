@@ -34,7 +34,7 @@
       <div class="news-row">
         <div class="news-title">
           <div class="left-pic">
-            <img :src="getMiniatureURl(doc)" class="news-pic" />
+            <img :src="getMiniatureURl(doc)" class="news-pic" alt="news-pic" />
           </div>
           <div class="right-content">
             <strong>{{ doc.name }}</strong> <br />

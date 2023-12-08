@@ -279,8 +279,6 @@
               </div>
 
               <div v-if="!inCreation" class="location">
-                <!-- <div class="separator"></div>
-                <p>Emplacement de la capture</p> -->
                 <div class="empty" v-if="!gpsLocation">
                   <i class="icon icon-warning"></i> Aucune position enregistrée
                   pour cette prise
@@ -354,7 +352,7 @@
     />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
     <!-- Invisible marker & pic (required for silent size computation) -->
-    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
+    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
     <img

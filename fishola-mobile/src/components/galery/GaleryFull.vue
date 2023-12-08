@@ -75,6 +75,7 @@
                     </span>
                     <div class="galery-pics-container">
                       <img
+                        alt="galery"
                         class="galery-pic"
                         :class="{
                           selected: getPreviewPicURL(picURL) == selectedPic,
@@ -98,6 +99,7 @@
                   class="no-pic-in-galery"
                 >
                   <img
+                    alt="camera"
                     src="/img/camera.svg"
                     class="galery-pic selected"
                     :enableModal="false"
@@ -110,6 +112,7 @@
             <div class="right-part">
               <img
                 v-if="selectedPic"
+                alt="image sélectionnée"
                 class="main-pic"
                 :src="getFullPicURL(selectedPic)"
                 :enableModal="false"
@@ -117,6 +120,7 @@
               />
               <img
                 v-else
+                alt="camera"
                 src="/img/camera.svg"
                 class="main-pic no-pic"
                 :enableModal="false"
