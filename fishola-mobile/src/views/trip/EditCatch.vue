@@ -356,6 +356,7 @@
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
     <img
+      alt="Photo de mesure automatique"
       id="sourcePictureAutomatic"
       :src="measurementPictureCandidateSrc"
       v-show="false"

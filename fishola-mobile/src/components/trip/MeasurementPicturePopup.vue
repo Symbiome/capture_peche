@@ -26,6 +26,7 @@
       style="position: absolute"
       @load="sourcePictureLoaded(0)"
       :src="measurementPictureSrc"
+      alt="Photo de mesure"
     />
     <div class="transparent-background" @click="$emit('close')"></div>
     <div class="pane popup-content">
@@ -41,6 +42,7 @@
             class="picture-display"
           />
           <img
+            alt="Calcul en cours"
             v-show="calculating"
             class="picture-display"
             :src="measurementPictureSrc"

@@ -150,6 +150,7 @@
       <!-- \\ Begin Video Section \\ -->
       <div class="Video_sec">
         <iframe
+          title="Vidéo youtube"
           class="youtube"
           width="640"
           height="360"
@@ -293,7 +294,7 @@
               <!-- \\ Begin Left Side \\ -->
               <div class="Leftside">
                 <form action="#">
-                  <fieldset>
+                  <fieldset legend="formulaire de contact">
                     <p>
                       <input
                         type="email"
