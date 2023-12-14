@@ -26,7 +26,7 @@ import fr.inrae.fishola.rest.security.LoginBean;
 import jakarta.inject.Inject;
 import org.hamcrest.CustomMatcher;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;

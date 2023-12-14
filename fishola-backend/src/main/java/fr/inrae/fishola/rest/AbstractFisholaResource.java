@@ -28,12 +28,12 @@ import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.jboss.logging.Logger;
 
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.util.Optional;
 import java.util.UUID;
 

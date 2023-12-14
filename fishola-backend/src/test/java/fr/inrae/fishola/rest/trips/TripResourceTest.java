@@ -57,16 +57,15 @@ import java.util.ArrayList;
 import java.util.Set;
 import javax.swing.text.html.Option;
 import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.nullness.Opt;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
-import javax.ws.rs.core.MediaType;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.MediaType;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
