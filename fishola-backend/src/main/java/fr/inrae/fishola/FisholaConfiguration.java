@@ -23,8 +23,6 @@ package fr.inrae.fishola;
 
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import io.quarkus.runtime.configuration.ProfileManager;
-import io.smallrye.config.ConfigMapping;
-import io.smallrye.config.WithDefault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -34,6 +32,8 @@ import java.io.File;
 import java.util.Optional;
 import java.util.Properties;
 
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 @ConfigMapping(prefix = "fishola")
 public interface FisholaConfiguration {
 

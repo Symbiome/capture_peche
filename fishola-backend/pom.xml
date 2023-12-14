@@ -55,11 +55,6 @@
     </dependency>
 
     <dependency>
-      <groupId>io.smallrye.config</groupId>
-      <artifactId>smallrye-config-core</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>jakarta.transaction</groupId>
       <artifactId>jakarta.transaction-api</artifactId>
     </dependency>
@@ -171,12 +166,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy</artifactId>
       <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>io.smallrye</groupId>
-          <artifactId>smallrye-config</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
