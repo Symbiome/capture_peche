@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest;
 
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.security.LoginBean;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.hamcrest.CustomMatcher;
 
 import javax.ws.rs.core.MediaType;

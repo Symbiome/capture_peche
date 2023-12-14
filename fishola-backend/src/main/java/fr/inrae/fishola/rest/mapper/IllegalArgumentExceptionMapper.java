@@ -24,10 +24,10 @@ package fr.inrae.fishola.rest.mapper;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import jakarta.inject.Inject;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
