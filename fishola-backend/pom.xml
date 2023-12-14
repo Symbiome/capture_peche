@@ -43,6 +43,11 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-core</artifactId>
       <scope>compile</scope>
