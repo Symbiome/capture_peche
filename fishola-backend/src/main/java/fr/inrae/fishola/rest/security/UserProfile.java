@@ -24,17 +24,18 @@ package fr.inrae.fishola.rest.security;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Gender;
-import java.time.LocalDateTime;
 import org.immutables.value.Value;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableUserProfile.class)
 public interface UserProfile {
 

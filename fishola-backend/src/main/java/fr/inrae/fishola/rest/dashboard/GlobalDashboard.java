@@ -22,16 +22,17 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Maillage;
+
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.immutables.value.Value;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableGlobalDashboard.class)
 public interface GlobalDashboard {
 

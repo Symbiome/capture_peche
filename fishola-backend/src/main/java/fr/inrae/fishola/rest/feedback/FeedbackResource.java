@@ -32,13 +32,14 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import org.jboss.logging.Logger;
 
-import javax.imageio.ImageIO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -85,7 +86,7 @@ public class FeedbackResource extends AbstractFisholaResource {
         }
 
         ImmutableFeedback feedback = ImmutableFeedback.builder()
-                .from(bean)
+                .fromInstance(bean)
                 .backendVersion(config.getFullVersion())
                 .build();
 
