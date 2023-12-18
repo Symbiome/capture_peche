@@ -34,7 +34,7 @@ build:compile:
       - fishola-mobile/node
       - fishola-mobile/node_modules
   script:
-    - mvn clean package
+    - TESTCONTAINERS_RYUK_DISABLED=true mvn clean package
   rules:
     - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_TAG =~ "/^$/"'
       when: always
