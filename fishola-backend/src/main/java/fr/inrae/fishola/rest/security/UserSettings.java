@@ -22,9 +22,9 @@ package fr.inrae.fishola.rest.security;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
+import fr.inrae.fishola.ImmutableObject;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableUserSettings.class)
 public interface UserSettings {
 
