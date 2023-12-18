@@ -297,6 +297,7 @@
               <div class="Leftside">
                 <form action="#">
                   <fieldset>
+                    <legend style="display:none">Formulaire de contact</legend>
                     <p>
                       <input
                         type="email"

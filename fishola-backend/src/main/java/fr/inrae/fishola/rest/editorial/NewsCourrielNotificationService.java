@@ -137,7 +137,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
             dao.scheduleNestNotificationCheck(config.newsMailSendingDelayHours());
             // Notify user by mail about all public news that have not been notified yet
             List<News> publicNewsThatHaveNotBeenNotifiedByMail = dao.getNews(true).stream().filter(news -> news.getDateNotificationSent() == null).collect(Collectors.toList());
-            if (publicNewsThatHaveNotBeenNotifiedByMail.size() > 0) {
+            if (!publicNewsThatHaveNotBeenNotifiedByMail.isEmpty()) {
                 log.info(publicNewsThatHaveNotBeenNotifiedByMail.size() + " News became public since last check, notify users by courriel");
             } else {
                 log.info("No News became public since last check.");
@@ -149,22 +149,22 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
 
 
     protected void notifyUsersByCourrielAboutNews(List<News> newsToNotifyByMail) {
-        if( newsToNotifyByMail.size() > 0) {
+        if(!newsToNotifyByMail.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
-            String htmlContent = "";
+            StringBuilder htmlContent = new StringBuilder();
             String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
             if (newsToNotifyByMail.size() > 1) {
                 subject += " et autres actualités";
             }
             for (News news : newsToNotifyByMail) {
                 if (newsToNotifyByMail.size() > 1) {
-                    htmlContent += "<h1>" + news.getName() + "</h1>";
+                    htmlContent.append("<h1>").append(news.getName()).append("</h1>");
                 }
-                htmlContent += news.getContent();
+                htmlContent.append(news.getContent());
                 news.setDateNotificationSent(now);
                 dao.update(news);
             }
-            htmlContent +=" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.";
+            htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
 
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
                 String baseURL = "https://fishola.fr";

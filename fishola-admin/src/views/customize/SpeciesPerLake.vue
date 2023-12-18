@@ -20,17 +20,19 @@
   -->
 <template>
   <div class="species-per-lake">
-    <h1>Espèces par lac</h1>
-    <table class="table is-striped">
+    <h1 id="table-title">Espèces par lac</h1>
+    <table class="table is-striped" aria-describedby="table-title">
       <thead>
         <tr>
-          <th></th>
-          <th v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
+          <th id="empty-lake-cell"></th>
+          <th :id="l.name" v-for="l in lakes" v-bind:key="l.id">
+            {{ l.name }}
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
-          <th>{{ s.name }}</th>
+          <th :id="s.name">{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field">
               <b-input
