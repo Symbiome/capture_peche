@@ -112,6 +112,11 @@
         </dependency>
 
         <dependency>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
         </dependency>
@@ -258,7 +263,13 @@
 
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-scheduler</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
