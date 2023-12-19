@@ -28,7 +28,7 @@ build:compile:
       - fishola-mobile/target/dist-web
       - fishola-admin/target/dist-demo
       - fishola-admin/target/dist-production
-    expire_in: 2 hours
+    expire_in: 2 weeks
   cache:
     paths:
       - fishola-mobile/node
@@ -36,35 +36,11 @@ build:compile:
   script:
     - TESTCONTAINERS_RYUK_DISABLED=true mvn clean package
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_TAG =~ "/^$/"'
-      when: always
-  tags:
-    - h3n1r1
-
-build:compile-stable:
-  image: maven:3.8-openjdk-17
-  stage: build
-  artifacts:
-    name: "fishola-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - fishola-backend/target/quarkus-app
-      - fishola-mobile/target/dist-demo
-      - fishola-mobile/target/dist-mobile
-      - fishola-mobile/target/dist-web
-      - fishola-admin/target/dist-demo
-      - fishola-admin/target/dist-production
-    expire_in: 2 weeks
-  cache:
-    paths:
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-  script:
-    - mvn clean package
-  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(?:master|develop)/
+    - if: $CI_COMMIT_BRANCH =~ /^(?:master|develop)/
     - if: $CI_COMMIT_TAG
-      when: always
   tags:
-    - h3n1r1
+    - docker
 
 # must be run after the build stage
 package:android-demo:
