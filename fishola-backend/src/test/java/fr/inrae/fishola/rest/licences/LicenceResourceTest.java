@@ -103,14 +103,14 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .get("/api/v1/licences/" + licence.getUserId() + "/" + licence.getId())
+                .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
                 .then()
                 .statusCode(200);
 
         // Then we check that the content matches
         InputStream responseStream = given()
                 .when()
-                .get("/api/v1/licences/" + licence.getUserId() + "/" + licence.getId())
+                .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
         Assertions.assertArrayEquals(licence.getContent(), responseBytes);
@@ -123,7 +123,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .get("/api/v1/licences/" + badUserId + "/" + pdfLicence.getId())
+                .get("/api/v1/licences/%s/%s".formatted(badUserId, pdfLicence.getId()))
                 .then()
                 .statusCode(404);
     }
@@ -165,13 +165,8 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    void testPostLicence() throws IOException {
-        URL fishingLicenceUrl = getClass().getResource("/fishing-licence-document.pdf");
-        if (fishingLicenceUrl == null) {
-            throw new RuntimeException("Resource not found.");
-        }
-        File pdfFile = new File(fishingLicenceUrl.getFile());
-        byte[] content = Files.readAllBytes(Path.of(pdfFile.getAbsolutePath()));
+    void testPostLicence() {
+        byte[] content = pdfLicence.getContent();
 
         LicenceFromClientBean licenceSentByClient = new LicenceFromClientBean();
         licenceSentByClient.name = "createdLicence";
@@ -197,7 +192,10 @@ class LicenceResourceTest extends AbstractFisholaTest {
             UUID retrievedLicenceId = matchingLicence.get().id;
             Optional<FisholaUserLicences> retrievedLicence = fishingLicencesDao.getLicence(retrievedLicenceId);
             Assertions.assertTrue(retrievedLicence.isPresent());
-            Assertions.assertArrayEquals(pdfLicence.getContent(), retrievedLicence.get().getContent());
+            Assertions.assertEquals(licenceSentByClient.name, retrievedLicence.get().getName());
+            Assertions.assertEquals(licenceSentByClient.type, retrievedLicence.get().getType());
+            Assertions.assertEquals(licenceSentByClient.expirationDate, retrievedLicence.get().getExpirationDate());
+            Assertions.assertArrayEquals(content, retrievedLicence.get().getContent());
         } else {
             Assertions.fail();
         }
@@ -211,13 +209,13 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
         given()
                 .when()
-                .delete("api/v1/licences/" + userId + "/" + pdfLicence.getId())
+                .delete("api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
                 .then()
                 .statusCode(204);
 
         given()
                 .when()
-                .delete("api/v1/licences/" + userId + "/" + jpegLicence.getId())
+                .delete("api/v1/licences/%s/%s".formatted(userId, jpegLicence.getId()))
                 .then()
                 .statusCode(204);
 

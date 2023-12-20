@@ -21,8 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// TODO Add authentification.
-//  Currently, ownership is not verified : any user can read/create/delete a licence.
+// TODO Add authentication. Currently, ownership is not verified : any user can read/create/delete a licence.
 @Path("/api/v1/licences")
 public class LicenceResource extends AbstractFisholaResource {
 
@@ -58,7 +57,9 @@ public class LicenceResource extends AbstractFisholaResource {
                                .header("Content-Disposition", String.format(headerPayload, filename))
                                .build();
         } else {
-            response = Response.noContent().status(Response.Status.BAD_REQUEST).build();
+            response = Response.noContent()
+                               .status(Response.Status.BAD_REQUEST)
+                               .build();
         }
 
         return response;
@@ -89,7 +90,8 @@ public class LicenceResource extends AbstractFisholaResource {
         licenceToSend.name = licence.getName();
         licenceToSend.userId = licence.getUserId();
         licenceToSend.expirationDate = licence.getExpirationDate();
-        return Response.ok(licenceToSend).build();
+        return Response.ok(licenceToSend)
+                       .build();
     }
 
     @DELETE
@@ -104,11 +106,14 @@ public class LicenceResource extends AbstractFisholaResource {
                 log.debugf("Fishing licence deleted : id=%s; owner=%s", licenceId, userId);
             }
 
-            return Response.noContent().build();
+            return Response.noContent()
+                           .build();
         } catch (IllegalArgumentException e) {
             Map<String, String> entity = new LinkedHashMap<>();
             entity.put("error", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity(entity)
+                           .build();
         }
     }
 }
