@@ -37,7 +37,11 @@ public class FishingLicencesDao extends AbstractFisholaDao {
 
     public Optional<FisholaUserLicences> getLicence(UUID licenceId) {
         Optional<FisholaUserLicences> result;
-        result = Optional.of(withDao(FisholaUserLicencesDao.class, dao -> dao.fetchOneById(licenceId)));
+        try {
+            result = Optional.ofNullable(withDao(FisholaUserLicencesDao.class, dao -> dao.fetchOneById(licenceId)));
+        } catch (NullPointerException e) {
+            result = Optional.empty();
+        }
         return result;
     }
 
@@ -48,5 +52,6 @@ public class FishingLicencesDao extends AbstractFisholaDao {
     public void deleteLicence(UUID licenceId) {
         withDaoNoResult(FisholaUserLicencesDao.class, dao -> dao.deleteById(licenceId));
     }
+
 
 }

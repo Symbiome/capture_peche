@@ -5,6 +5,7 @@ import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
+import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
@@ -37,19 +38,27 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
-
     @Inject
     protected UsersDao usersDao;
-
     private UUID userId;
     private FisholaUserLicences pdfLicence;
     private FisholaUserLicences jpegLicence;
+    private String token;
+    private UUID badUserId;
+    private String badToken;
 
     @BeforeEach
     @Transactional
     public void loginAndInit() throws IOException {
-        FisholaUser fisholaUser = this.usersDao.findByEmail("thimel@codelutin.com").get();
-        this.userId = fisholaUser.getId();
+        Optional<FisholaUser> fisholaUser = this.usersDao.findByEmail("thimel@codelutin.com");
+        Assertions.assertTrue(fisholaUser.isPresent());
+        this.userId = fisholaUser.get().getId();
+        this.token = login("thimel@codelutin.com", "sispea");
+
+        Optional<FisholaUser> badFisholaUser = this.usersDao.findByEmail("chloe.goulon@inrae.fr");
+        Assertions.assertTrue(badFisholaUser.isPresent());
+        this.badUserId = badFisholaUser.get().getId();
+        this.badToken = "0000".concat(token.substring(4));
 
         LocalDate expirationDate = LocalDate.now().plusYears(2);
 
@@ -103,6 +112,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
                 .then()
                 .statusCode(200);
@@ -110,6 +120,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         // Then we check that the content matches
         InputStream responseStream = given()
                 .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
@@ -118,14 +129,38 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    void testGetLicenceForBadUser() {
-        String badUserId = "1234";
+    void testGetLicenceForbidden() {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .get("/api/v1/licences/%s/%s".formatted(badUserId, pdfLicence.getId()))
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .get("/api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
                 .then()
-                .statusCode(404);
+                // badToken is not a valid token for userId
+                .statusCode(401);
+    }
+
+    @Test
+    @Transactional
+    void testGetNotOwnedLicence() throws IOException {
+        byte[] jpegFishingLicenceAsBytes = readFishingLicenceFile("fishing-licence-picture.jpeg");
+        FisholaUserLicences notOwnedLicence = new FisholaUserLicences();
+        notOwnedLicence.setUserId(badUserId);
+        notOwnedLicence.setName("notOwnedLicence");
+        notOwnedLicence.setType(LicenceType.JPEG);
+        notOwnedLicence.setExpirationDate(LocalDate.now());
+        notOwnedLicence.setContent(jpegFishingLicenceAsBytes);
+        fishingLicencesDao.createLicence(notOwnedLicence);
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s/%s".formatted(userId, notOwnedLicence.getId()))
+                .then()
+                .log().all()
+                // user cannot access a licence that it does not own
+                .statusCode(400);
     }
 
 
@@ -135,7 +170,8 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/licences/" + userId)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s".formatted(userId))
                 .then()
                 .statusCode(200)
                 .body("size()", equalTo(2))
@@ -149,6 +185,18 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .body("[1].type", equalTo(jpegLicence.getType().toString()));
     }
 
+    @Test
+    @Transactional
+    void testGetAllLicencesForbidden() {
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .get("/api/v1/licences/%s".formatted(userId))
+                .then()
+                .statusCode(401);
+    }
+
 
     @Test
     @Transactional
@@ -157,8 +205,9 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
         given()
                 .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/licences/" + badUserId)
+                .get("/api/v1/licences/%s".formatted(badUserId))
                 .then()
                 .statusCode(404);
     }
@@ -178,7 +227,8 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(licenceSentByClient)
-                .post("api/v1/licences/" + userId)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .post("api/v1/licences/%s".formatted(userId))
                 .then()
                 .statusCode(200);
 
@@ -203,23 +253,50 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
+    void testPostLicenceForbidden() {
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .post("api/v1/licences/%s".formatted(userId))
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @Transactional
     void testDeleteLicence() {
         List<LicenceResponseBean> licences = fishingLicencesDao.getLicencesByUser(userId);
         Assertions.assertEquals(2, licences.size());
 
         given()
                 .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
                 .then()
                 .statusCode(204);
 
         given()
                 .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("api/v1/licences/%s/%s".formatted(userId, jpegLicence.getId()))
                 .then()
                 .statusCode(204);
 
         List<LicenceResponseBean> retrievedLicences = fishingLicencesDao.getLicencesByUser(userId);
         Assertions.assertTrue(retrievedLicences.isEmpty());
+    }
+
+    @Test
+    @Transactional
+    void testDeleteLicenceForbidden() {
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .delete("/api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
+                .then()
+                // badToken is not a valid token for userId
+                .statusCode(401);
     }
 }

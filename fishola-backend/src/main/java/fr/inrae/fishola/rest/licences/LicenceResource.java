@@ -3,7 +3,9 @@ package fr.inrae.fishola.rest.licences;
 import fr.inrae.fishola.database.FishingLicencesDao;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
+import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -21,28 +23,38 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// TODO Add authentication. Currently, ownership is not verified : any user can read/create/delete a licence.
+
 @Path("/api/v1/licences")
 public class LicenceResource extends AbstractFisholaResource {
 
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
 
+    private void checkIsAuthenticated(UUID userId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID loggedUserId = userIdAndRenewal.userId();
+        AccessDeniedException.check(userId.equals(loggedUserId), "Access denied.");
+    }
+
     @GET
     @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllLicences(@PathParam("userId") UUID userId) {
+        checkIsAuthenticated(userId);
+
+        Response response;
         List<LicenceResponseBean> licences = fishingLicencesDao.getLicencesByUser(userId);
-        Response response = Response.ok(licences)
-                                    .build();
+        response = Response.ok(licences)
+                           .build();
         return response;
     }
 
     @GET
     @Path("/{userId}/{licenceId}")
     public Response getLicence(@PathParam("userId") UUID userId, @PathParam("licenceId") UUID licenceId) {
-        Optional<FisholaUserLicences> optionalLicence = fishingLicencesDao.getLicence(licenceId);
+        checkIsAuthenticated(userId);
 
+        Optional<FisholaUserLicences> optionalLicence = fishingLicencesDao.getLicence(licenceId);
         Response response;
         if (optionalLicence.isPresent()) {
             FisholaUserLicences licence = optionalLicence.get();
@@ -69,6 +81,7 @@ public class LicenceResource extends AbstractFisholaResource {
     @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response postLicence(@PathParam("userId") UUID userId, LicenceFromClientBean licenceFromClientBean) {
+        checkIsAuthenticated(userId);
 
         FisholaUserLicences licence = new FisholaUserLicences();
         byte[] contentAsBytes = Base64.getDecoder().decode(licenceFromClientBean.content);
@@ -98,6 +111,7 @@ public class LicenceResource extends AbstractFisholaResource {
     @Path("/{userId}/{licenceId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteLicence(@PathParam("userId") UUID userId, @PathParam("licenceId") UUID licenceId) {
+        checkIsAuthenticated(userId);
 
         try {
             fishingLicencesDao.deleteLicence(licenceId);
