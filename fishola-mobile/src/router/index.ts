@@ -31,6 +31,8 @@ import Register from "@/views/Register.vue";
 import TripsAndNews from "@/views/TripsAndNews.vue";
 import Dashboard from "@/views/Dashboard.vue";
 
+import FishingLicences from "@/views/FishingLicences.vue";
+
 import NewTrip from "@/views/trip/NewTrip.vue";
 import TripMeta from "@/views/trip/TripMeta.vue";
 import TripSpecies from "@/views/trip/TripSpecies.vue";
@@ -169,6 +171,12 @@ const routes = [
     meta: { public: true },
     component: NewsDetailsVue,
     props: true,
+  },
+  {
+    path: "/licences",
+    name: "licences",
+    meta: { public: true },
+    component: FishingLicences,
   },
   {
     path: "/documentation/:tab",
