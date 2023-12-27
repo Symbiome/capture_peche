@@ -40,6 +40,8 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
+import { LicenceResponseBean, LicenceFromClientBean } from "@/pojos/BackendPojos";
+
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
