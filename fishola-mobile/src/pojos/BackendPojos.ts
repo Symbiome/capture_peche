@@ -206,6 +206,21 @@ export interface GlobalDashboard {
     computedOn: Date;
 }
 
+export interface LicenceFromClientBean {
+    name: string;
+    expirationDate: Date;
+    type: LicenceType;
+    content: string;
+}
+
+export interface LicenceResponseBean {
+    id: string;
+    name: string;
+    userId: string;
+    expirationDate: Date;
+    type: LicenceType;
+}
+
 export interface Serializable {
 }
 
@@ -232,3 +247,5 @@ export type DeviceType = "web" | "application";
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
+
+export type LicenceType = "PDF" | "JPEG";
