@@ -113,7 +113,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
+                .get("/api/v1/licences/%s".formatted(licence.getId()))
                 .then()
                 .statusCode(200);
 
@@ -121,7 +121,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         InputStream responseStream = given()
                 .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s/%s".formatted(licence.getUserId(), licence.getId()))
+                .get("/api/v1/licences/%s".formatted(licence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
         Assertions.assertArrayEquals(licence.getContent(), responseBytes);
@@ -134,7 +134,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
-                .get("/api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
+                .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 // badToken is not a valid token for userId
                 .statusCode(401);
@@ -156,7 +156,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s/%s".formatted(userId, notOwnedLicence.getId()))
+                .get("/api/v1/licences/%s".formatted(notOwnedLicence.getId()))
                 .then()
                 .log().all()
                 // user cannot access a licence that it does not own
@@ -171,7 +171,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s".formatted(userId))
+                .get("/api/v1/licences")
                 .then()
                 .statusCode(200)
                 .body("size()", equalTo(2))
@@ -192,7 +192,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
-                .get("/api/v1/licences/%s".formatted(userId))
+                .get("/api/v1/licences")
                 .then()
                 .statusCode(401);
     }
@@ -228,7 +228,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(licenceSentByClient)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .post("api/v1/licences/%s".formatted(userId))
+                .post("api/v1/licences")
                 .then()
                 .statusCode(200);
 
@@ -258,7 +258,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
-                .post("api/v1/licences/%s".formatted(userId))
+                .post("api/v1/licences")
                 .then()
                 .statusCode(401);
     }
@@ -272,14 +272,14 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .delete("api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
+                .delete("api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 .statusCode(204);
 
         given()
                 .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .delete("api/v1/licences/%s/%s".formatted(userId, jpegLicence.getId()))
+                .delete("api/v1/licences/%s".formatted(jpegLicence.getId()))
                 .then()
                 .statusCode(204);
 
@@ -294,7 +294,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
-                .delete("/api/v1/licences/%s/%s".formatted(userId, pdfLicence.getId()))
+                .delete("/api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 // badToken is not a valid token for userId
                 .statusCode(401);

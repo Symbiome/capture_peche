@@ -3,7 +3,6 @@ package fr.inrae.fishola.rest.licences;
 import fr.inrae.fishola.database.FishingLicencesDao;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
-import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 
@@ -23,39 +22,31 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Path("/api/v1/licences")
 public class LicenceResource extends AbstractFisholaResource {
 
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
 
-    private void checkIsAuthenticated(UUID userId) {
-        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
-        UUID loggedUserId = userIdAndRenewal.userId();
-        AccessDeniedException.check(userId.equals(loggedUserId), "Access denied.");
-    }
-
     @GET
-    @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLicences(@PathParam("userId") UUID userId) {
-        checkIsAuthenticated(userId);
+    public Response getAllLicences() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
 
         Response response;
         List<LicenceResponseBean> licences = fishingLicencesDao.getLicencesByUser(userId);
-        response = Response.ok(licences)
-                           .build();
+        response = wrapEntity(licences, userIdAndRenewal);
         return response;
     }
 
     @GET
-    @Path("/{userId}/{licenceId}")
-    public Response getLicence(@PathParam("userId") UUID userId, @PathParam("licenceId") UUID licenceId) {
-        checkIsAuthenticated(userId);
+    @Path("/{licenceId}")
+    public Response getLicence(@PathParam("licenceId") UUID licenceId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
 
         Optional<FisholaUserLicences> optionalLicence = fishingLicencesDao.getLicence(licenceId);
-        Response response;
+        Response.ResponseBuilder responseBuilder;
         if (optionalLicence.isPresent()) {
             FisholaUserLicences licence = optionalLicence.get();
             LicenceType type = licence.getType();
@@ -64,24 +55,25 @@ public class LicenceResource extends AbstractFisholaResource {
                                      .replaceAll("[ ]", "_");
             String mediaType = type == LicenceType.PDF ? "application/pdf" : "application/jpeg";
             String headerPayload = type == LicenceType.PDF ? "filename=\"%s.pdf\"" : "filename=\"%s.jpeg\"";
-            response = Response.ok(this.wrapAsStreamingOutput(bytes))
-                               .type(mediaType)
-                               .header("Content-Disposition", String.format(headerPayload, filename))
-                               .build();
+
+            responseBuilder = Response.ok(this.wrapAsStreamingOutput(bytes))
+                                      .type(mediaType)
+                                      .header("Content-Disposition", String.format(headerPayload, filename));
+
         } else {
-            response = Response.noContent()
-                               .status(Response.Status.BAD_REQUEST)
-                               .build();
+            responseBuilder = Response.noContent()
+                                      .status(Response.Status.BAD_REQUEST);
         }
 
+        Response response = buildResponse(responseBuilder, userIdAndRenewal);
         return response;
     }
 
     @POST
-    @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response postLicence(@PathParam("userId") UUID userId, LicenceFromClientBean licenceFromClientBean) {
-        checkIsAuthenticated(userId);
+    public Response postLicence(LicenceFromClientBean licenceFromClientBean) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
 
         FisholaUserLicences licence = new FisholaUserLicences();
         byte[] contentAsBytes = Base64.getDecoder().decode(licenceFromClientBean.content);
@@ -103,15 +95,17 @@ public class LicenceResource extends AbstractFisholaResource {
         licenceToSend.name = licence.getName();
         licenceToSend.userId = licence.getUserId();
         licenceToSend.expirationDate = licence.getExpirationDate();
-        return Response.ok(licenceToSend)
-                       .build();
+
+        Response response = wrapEntity(licenceToSend, userIdAndRenewal);
+        return response;
     }
 
     @DELETE
-    @Path("/{userId}/{licenceId}")
+    @Path("/{licenceId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteLicence(@PathParam("userId") UUID userId, @PathParam("licenceId") UUID licenceId) {
-        checkIsAuthenticated(userId);
+    public Response deleteLicence(@PathParam("licenceId") UUID licenceId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
 
         try {
             fishingLicencesDao.deleteLicence(licenceId);
@@ -120,14 +114,14 @@ public class LicenceResource extends AbstractFisholaResource {
                 log.debugf("Fishing licence deleted : id=%s; owner=%s", licenceId, userId);
             }
 
-            return Response.noContent()
-                           .build();
+            return noContent(userIdAndRenewal);
         } catch (IllegalArgumentException e) {
             Map<String, String> entity = new LinkedHashMap<>();
             entity.put("error", e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST)
-                           .entity(entity)
-                           .build();
+            Response.ResponseBuilder responseBuilder = Response.noContent()
+                                                               .status(Response.Status.BAD_REQUEST);
+            Response response = buildResponse(responseBuilder, userIdAndRenewal);
+            return response;
         }
     }
 }
