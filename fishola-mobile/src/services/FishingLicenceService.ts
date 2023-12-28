@@ -3,6 +3,7 @@ import {
   LicenceResponseBean,
 } from "@/pojos/BackendPojos";
 import AbstractFisholaService from "@/services/AbstractFisholaService";
+import Constants from "./Constants";
 
 export default class FishingLicenceService extends AbstractFisholaService {
   constructor() {
@@ -13,14 +14,31 @@ export default class FishingLicenceService extends AbstractFisholaService {
     return this.backendGet("/v1/licences/");
   }
 
-  static getLicence(licenceId: string): Promise<void> {
-    return this.backendGet("/v1/licences/" + licenceId);
+  static async getLicence(licenceId: string): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const apiUrl = Constants.apiUrl(`/v1/licences/${licenceId}`);
+      xhr.open("GET", apiUrl, true);
+      xhr.withCredentials = true;
+      xhr.responseType = "blob";
+
+      xhr.onload = function () {
+        if (xhr.status == 200) {
+          resolve(xhr.response);
+        } else {
+          reject(xhr.status);
+        }
+      };
+
+      xhr.onerror = function () {
+        reject("Impossible de contacter le serveur");
+      };
+
+      xhr.send();
+    });
   }
 
-  static postLicence(
-    userId: string,
-    licence: LicenceFromClientBean
-  ): Promise<void> {
+  static postLicence(licence: LicenceFromClientBean): Promise<void> {
     return this.backendPost("/v1/licences/", licence);
   }
 
