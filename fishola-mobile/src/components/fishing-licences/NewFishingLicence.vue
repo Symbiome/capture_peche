@@ -24,21 +24,34 @@
     <FisholaHeader />
     <div class="page new-licence-page keyboardSensitive">
       <div class="pane pane-only">
+        <h1 class="no-margin-pane">
+          <BackButton class="hide-on-mobile" />
+          Nouvelle carte de pêche
+        </h1>
         <div class="pane-content rounded">
-          <h1 class="no-margin-pane keyboardSensitive">
-            Nouvelle carte de pêche
-          </h1>
+          <div class="save">
+            <button
+              class="button hide-on-mobile"
+              type="submit"
+              @click="saveFile"
+            >
+              Enregistrer le fichier
+            </button>
+          </div>
           <div class="container">
             <div class="container-form keyboardSensitive">
               <form @submit.prevent="saveFile">
                 <label>Nom </label>
                 <input
                   v-model="newLicenceName"
+                  :class="{ 'field-error': isEmpty }"
                   placeholder="Donnez un nom à cette carte de pêche"
-                  required
                 />
 
-                <label>Date d'expiration</label>
+                <label
+                  >Date d'expiration (Défaut :
+                  {{ formattedDate(getDefaultDate()) }})</label
+                >
                 <input type="date" v-model="newLicenceExpirationDate" />
 
                 <label>Fichier (au format PDF ou JPEG)</label>
@@ -48,16 +61,6 @@
             <div class="container-preview">
               <embed class="preview-item" v-if="url" :src="url" />
             </div>
-          </div>
-
-          <div class="save">
-            <button
-              class="button hide-on-mobile"
-              type="submit"
-              @click="saveFile"
-            >
-              Enregistrer le fichier
-            </button>
           </div>
         </div>
       </div>
@@ -77,17 +80,18 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BackButton from "@/components/common/BackButton.vue";
 
 import FishingLicenceService from "@/services/FishingLicenceService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
-import Constants from "@/services/Constants";
 
 @Component({
   components: {
     FisholaHeader,
     FisholaFooter,
+    BackButton,
     NewFishingLicence,
     RouterUtils,
     router,
@@ -99,6 +103,7 @@ export default class NewFishingLicence extends Vue {
   private newLicenceExpirationDate: Date = new Date();
   private newLicenceType: LicenceType = "PDF";
   private url: string = "";
+  private isEmpty: boolean = false;
 
   fileTypeMap: {
     [key: string]: string;
@@ -108,6 +113,17 @@ export default class NewFishingLicence extends Vue {
     "application/pdf": "PDF",
     "image/jpeg": "JPEG",
   };
+
+  formattedDate(date: Date): string {
+    var dayOptions: Intl.DateTimeFormatOptions = {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+    };
+
+    const dateString = date.toLocaleDateString("fr-FR", dayOptions);
+    return dateString;
+  }
 
   created() {
     this.resetExpirationDate();
@@ -121,14 +137,23 @@ export default class NewFishingLicence extends Vue {
     }
   }
 
-  resetExpirationDate() {
-    // Expiration date is set to 2 years from now
+  getDefaultDate(): Date {
     const twoYearsLater = new Date();
     twoYearsLater.setFullYear(twoYearsLater.getFullYear() + 2);
-    this.newLicenceExpirationDate = twoYearsLater;
+    return twoYearsLater;
+  }
+
+  resetExpirationDate() {
+    // Expiration date is set to 2 years from now
+    this.newLicenceExpirationDate = this.getDefaultDate();
   }
 
   async saveFile(): Promise<void> {
+    if (this.newLicenceName.trim() === "") {
+      this.isEmpty = true;
+      return;
+    }
+
     try {
       if (!this.selectedFile) {
         console.error("Veuillez sélectionner un fichier");
@@ -155,10 +180,7 @@ export default class NewFishingLicence extends Vue {
         content: contentBase64,
       };
 
-      let licenceId = await FishingLicenceService.postLicence(licenceDto);
-
-      const licenceURL = Constants.apiUrl(`/v1/licences/${licenceId}`);
-      this.$emit("uploaded-licence", licenceURL);
+      await FishingLicenceService.postLicence(licenceDto);
 
       RouterUtils.pushRouteNoDuplicate(router, "/licences");
     } catch (error) {
@@ -283,8 +305,11 @@ export default class NewFishingLicence extends Vue {
   }
 
   .save {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
     display: flex;
-    flex-direction: row;
+    justify-content: center;
     align-items: center;
 
     .button {
@@ -317,6 +342,7 @@ export default class NewFishingLicence extends Vue {
     .container-form,
     .container-preview {
       flex: 1;
+      min-width: 400px;
     }
 
     .container-preview {

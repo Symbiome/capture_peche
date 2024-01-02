@@ -31,7 +31,7 @@
       <label v-bind:for="'checkbox-' + licence.id"></label>
     </div>
 
-    <div id="preview" class="hide-on-mobile">
+    <div id="preview" class="hide-on-mobile" v-on:click="openLicence()">
       <img
         v-if="licence.type === 'JPEG'"
         class="preview-img"
@@ -76,7 +76,6 @@ export default class FishingLicenceItem extends Vue {
     );
     this.licenceUrl = URL.createObjectURL(fileBlob);
   }
-
 
   formattedDate(): string {
     var dayOptions: Intl.DateTimeFormatOptions = {
@@ -195,21 +194,20 @@ export default class FishingLicenceItem extends Vue {
           margin-left: @margin-small;
           color: @pelorous;
         }
-
-        .warning {
-          color: @terra-cotta;
-        }
       }
     }
   }
 
-  @media (max-width: 350px) {
+  @media (max-width: 500px) {
     padding-right: @margin-medium;
 
     .item-description {
       margin-left: @margin-small;
 
       .item-row {
+        display: flex;
+        flex-direction: column;
+
         .left-part {
           i {
             margin-right: @margin-x-small;
@@ -225,11 +223,18 @@ export default class FishingLicenceItem extends Vue {
     }
   }
 
-  @media (max-height: 650px) {
-    height: 90px;
+  // @media (max-height: 650px) {
+  //   height: 90px;
 
-    .item-description {
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);
+  //   .item-description {
+  //     line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);
+  //   }
+  // }
+
+  @media screen and (min-width: @desktop-min-width) and (max-width: 1200px) {
+    .item-row {
+      display: flex;
+      flex-direction: column;
     }
   }
 
@@ -240,8 +245,12 @@ export default class FishingLicenceItem extends Vue {
       background-color: @gainsboro;
     }
 
+    #preview,
     .item-description {
       cursor: pointer;
+    }
+
+    .item-description {
       margin-left: @margin-medium;
       width: 100%;
 
