@@ -31,17 +31,21 @@
       <label v-bind:for="'checkbox-' + licence.id"></label>
     </div>
 
-    <div class="item-description" v-on:click="openLicence(licence)">
+    <div id="preview" class="hide-on-mobile">
+      <img
+        v-if="licence.type === 'JPEG'"
+        class="preview-img"
+        :src="licenceUrl"
+        alt="Miniature"
+      />
+      <img v-else :src="previewPdf" alt="PDF Preview" />
+    </div>
+
+    <div class="item-description" v-on:click="openLicence()">
       <div class="item-row">
-        <div class="name">{{ licence.name }}</div>
-        <div class="right-part">
-          [ Miniature ]
-        </div>
+        <div class="left-part name">{{ licence.name }}</div>
+        <div class="right-part">Expire le {{ formattedDate() }}</div>
       </div>
-      <div class="item-row">
-        <div class="left-part">Expire le {{ formattedDate() }}</div>
-      </div>
-      <span></span>
     </div>
   </div>
 </template>
@@ -63,12 +67,20 @@ export default class FishingLicenceItem extends Vue {
 
   selected: boolean = false;
   date: string = "";
+  licenceUrl: string = "";
+  previewPdf: string = "";
 
-  created() {}
+  async mounted() {
+    const fileBlob: Blob = await FishingLicenceService.getLicence(
+      this.licence.id
+    );
+    this.licenceUrl = URL.createObjectURL(fileBlob);
+  }
+
 
   formattedDate(): string {
     var dayOptions: Intl.DateTimeFormatOptions = {
-      month: "long",
+      month: "numeric",
       day: "numeric",
       year: "numeric",
     };
@@ -87,16 +99,13 @@ export default class FishingLicenceItem extends Vue {
     }
   }
 
-  async openLicence(licence: LicenceResponseBean): Promise<void> {
+  async openLicence(): Promise<void> {
     try {
-      const fileBlob: Blob = await FishingLicenceService.getLicence(licence.id);
-      const fileUrl = URL.createObjectURL(fileBlob);
-
-      if (licence.type === "PDF") {
-        window.open(fileUrl, "_blank");
+      if (this.licence.type === "PDF") {
+        window.open(this.licenceUrl, "_blank");
       } else {
         const img = new Image();
-        img.src = fileUrl;
+        img.src = this.licenceUrl;
         const imgWindow = window.open("", "_blank");
         if (imgWindow) {
           imgWindow.document.write(img.outerHTML);
@@ -132,6 +141,18 @@ export default class FishingLicenceItem extends Vue {
 
   width: 100%;
   height: 110px;
+
+  #preview {
+    display: flex;
+    padding-left: @margin-medium;
+    width: 200px;
+    justify-content: center;
+  }
+
+  .preview-img {
+    max-width: 100%;
+    max-height: 110px;
+  }
 
   .item-selection {
     width: 16px;

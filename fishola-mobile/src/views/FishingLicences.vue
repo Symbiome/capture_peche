@@ -194,6 +194,7 @@ export default class FishingLicencesView extends Vue {
       font-size: 14px;
     }
   }
+  
   @media screen and (min-width: @desktop-min-width) {
     background-color: @white-smoke;
 
