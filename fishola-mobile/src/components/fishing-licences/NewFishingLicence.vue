@@ -41,11 +41,11 @@
           <div class="container">
             <div class="container-form keyboardSensitive">
               <form @submit.prevent="saveFile">
-                <label>Nom </label>
+                <label>Nom de la carte de pêche </label>
                 <input
                   v-model="newLicenceName"
-                  :class="{ 'field-error': isEmpty }"
-                  placeholder="Donnez un nom à cette carte de pêche"
+                  :class="{ 'field-error': nameError }"
+                  placeholder="Nommez la carte de pêche"
                 />
 
                 <label
@@ -54,7 +54,7 @@
                 >
                 <input type="date" v-model="newLicenceExpirationDate" />
 
-                <label>Fichier (au format PDF ou JPEG)</label>
+                <label>Sélectionnez un fichier au format PDF ou JPEG</label>
                 <input type="file" @change="handleFileChange" />
               </form>
             </div>
@@ -103,7 +103,7 @@ export default class NewFishingLicence extends Vue {
   private newLicenceExpirationDate: Date = new Date();
   private newLicenceType: LicenceType = "PDF";
   private url: string = "";
-  private isEmpty: boolean = false;
+  private nameError: boolean = false;
 
   fileTypeMap: {
     [key: string]: string;
@@ -126,14 +126,18 @@ export default class NewFishingLicence extends Vue {
   }
 
   created() {
-    this.resetExpirationDate();
+    this.newLicenceExpirationDate = this.getDefaultDate();
   }
 
   handleFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      this.url = URL.createObjectURL(this.selectedFile);
+    try {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length > 0) {
+        this.selectedFile = input.files[0];
+        this.url = URL.createObjectURL(this.selectedFile);
+      }
+    } catch (error) {
+      console.error("Error handling file change:", error);
     }
   }
 
@@ -143,20 +147,19 @@ export default class NewFishingLicence extends Vue {
     return twoYearsLater;
   }
 
-  resetExpirationDate() {
-    // Expiration date is set to 2 years from now
-    this.newLicenceExpirationDate = this.getDefaultDate();
-  }
-
   async saveFile(): Promise<void> {
-    if (this.newLicenceName.trim() === "") {
-      this.isEmpty = true;
-      return;
-    }
-
     try {
+      if (this.newLicenceName.trim() === "") {
+        this.nameError = true;
+        this.$root.$emit(
+          "toaster-error",
+          "Vous devez nommer la carte de pêche"
+        );
+        return;
+      }
+
       if (!this.selectedFile) {
-        console.error("Veuillez sélectionner un fichier");
+        this.$root.$emit("toaster-error", "Vous devez sélectionner un fichier");
         return;
       }
 
@@ -165,7 +168,7 @@ export default class NewFishingLicence extends Vue {
       if (this.fileTypeMap[selectedFileType]) {
         this.newLicenceType = this.fileTypeMap[selectedFileType] as LicenceType;
       } else {
-        console.error("Format de fichier invalide");
+        this.$root.$emit("toaster-error", "Format de fichier invalide");
         return;
       }
 
@@ -181,10 +184,18 @@ export default class NewFishingLicence extends Vue {
       };
 
       await FishingLicenceService.postLicence(licenceDto);
+      this.$root.$emit(
+        "toaster-success",
+        "Une nouvelle carte de pêche a été ajoutée."
+      );
 
       RouterUtils.pushRouteNoDuplicate(router, "/licences");
     } catch (error) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
+      this.$root.$emit(
+        "toaster-error",
+        "Une erreur s'est produite. Veuillez réessayer."
+      );
     }
   }
 

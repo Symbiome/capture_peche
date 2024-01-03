@@ -125,8 +125,6 @@ export default class FishingLicencesView extends Vue {
 
   licenceSelected(licenceId: string) {
     this.selectedLicencesIds.push(licenceId);
-    console.log("Selected licence " + licenceId);
-    console.log(this.selectedLicencesIds);
   }
 
   licenceUnselected(licenceId: string) {
@@ -134,7 +132,6 @@ export default class FishingLicencesView extends Vue {
     if (index != -1) {
       this.selectedLicencesIds.splice(index, 1);
     }
-    console.log("Unselected licence " + licenceId);
   }
 
   getButtonIcon() {
@@ -160,9 +157,18 @@ export default class FishingLicencesView extends Vue {
   }
 
   deleteSelectedLicences() {
+    let message;
+    if (this.selectedLicencesIds.length > 1) {
+      message = "Les cartes sélectionnées ont été supprimées.";
+    } else {
+      message = "La carte sélectionnée a été supprimée.";
+    }
+
     this.selectedLicencesIds.forEach((licenceId) =>
       FishingLicenceService.deleteLicence(licenceId).then(this.fetchAllLicences)
     );
+
+    this.$root.$emit("toaster-success", message);
     this.selectedLicencesIds = [];
   }
 }
@@ -194,7 +200,7 @@ export default class FishingLicencesView extends Vue {
       font-size: 14px;
     }
   }
-  
+
   @media screen and (min-width: @desktop-min-width) {
     background-color: @white-smoke;
 
