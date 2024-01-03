@@ -37,7 +37,7 @@
         class="preview-img"
         :src="licenceUrl"
         alt="Miniature"
-      />
+      />      
       <img v-else :src="previewPdf" alt="PDF Preview" />
     </div>
 
@@ -222,14 +222,6 @@ export default class FishingLicenceItem extends Vue {
       }
     }
   }
-
-  // @media (max-height: 650px) {
-  //   height: 90px;
-
-  //   .item-description {
-  //     line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);
-  //   }
-  // }
 
   @media screen and (min-width: @desktop-min-width) and (max-width: 1200px) {
     .item-row {

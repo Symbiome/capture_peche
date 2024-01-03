@@ -29,15 +29,6 @@
           Nouvelle carte de pêche
         </h1>
         <div class="pane-content rounded">
-          <div class="save">
-            <button
-              class="button hide-on-mobile"
-              type="submit"
-              @click="saveFile"
-            >
-              Enregistrer le fichier
-            </button>
-          </div>
           <div class="container">
             <div class="container-form keyboardSensitive">
               <form @submit.prevent="saveFile">
@@ -61,6 +52,15 @@
             <div class="container-preview">
               <embed class="preview-item" v-if="url" :src="url" />
             </div>
+          </div>
+          <div class="save">
+            <button
+              class="button hide-on-mobile"
+              type="submit"
+              @click="saveFile"
+            >
+              Enregistrer
+            </button>
           </div>
         </div>
       </div>

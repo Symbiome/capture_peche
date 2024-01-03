@@ -133,9 +133,9 @@ export default class Menu extends Vue {
       onlyUnlogged: false,
     },
     {
-      name: "fishingLicences",
+      name: "licences",
       label: "Cartes de pêche",
-      iconName: "files",
+      iconName: "fishing",
       clickHandler: this.goLicences,
       onlyConnected: true,
       onlyUnlogged: false,

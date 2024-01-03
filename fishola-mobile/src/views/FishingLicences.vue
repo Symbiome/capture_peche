@@ -164,7 +164,7 @@ export default class FishingLicencesView extends Vue {
       message = "La carte sélectionnée a été supprimée.";
     }
 
-    this.selectedLicencesIds.forEach((licenceId) =>
+    this.selectedLicencesIds.forEach(licenceId =>
       FishingLicenceService.deleteLicence(licenceId).then(this.fetchAllLicences)
     );
 
