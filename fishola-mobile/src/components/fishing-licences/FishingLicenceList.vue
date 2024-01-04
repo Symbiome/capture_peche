@@ -22,9 +22,9 @@
 <template>
   <div class="licences-list">
     <div v-for="licence in licences" :key="licence.id">
-      <FishingLicenceItem v-bind:licence="licence"
-                          v-on:selected="licenceSelected(licence.id)"
-                          v-on:unselected="licenceUnselected(licence.id)" />
+      <FishingLicenceItem :licence="licence"
+                          @selected="licenceSelected(licence.id)"
+                          @unselected="licenceUnselected(licence.id)" />
     </div>
   </div>
 </template>

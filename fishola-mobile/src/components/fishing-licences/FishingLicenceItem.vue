@@ -24,24 +24,24 @@
     <div class="item-selection">
       <input
         type="checkbox"
-        v-bind:id="'checkbox-' + licence.id"
+        :id="'checkbox-' + licence.id"
         class="pelorous-checkbox"
         v-model="selected"
       />
       <label v-bind:for="'checkbox-' + licence.id"></label>
     </div>
 
-    <div id="preview" class="hide-on-mobile" v-on:click="openLicence()">
+    <div id="preview" class="hide-on-mobile" @click="openLicence()">
       <img
         v-if="licence.type === 'JPEG'"
         class="preview-img"
         :src="licenceUrl"
-        alt="Miniature"
-      />      
-      <img v-else :src="previewPdf" alt="PDF Preview" />
+        alt="Aperçu de la carte"
+      />
+      <!-- TODO : afficher quelque chose lorsque c'est un fichier pdf (une image par défaut ?)       -->
     </div>
 
-    <div class="item-description" v-on:click="openLicence()">
+    <div class="item-description" @click="openLicence()">
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
         <div class="right-part">Expire le {{ formattedDate() }}</div>
@@ -68,7 +68,6 @@ export default class FishingLicenceItem extends Vue {
   selected: boolean = false;
   date: string = "";
   licenceUrl: string = "";
-  previewPdf: string = "";
 
   async mounted() {
     const fileBlob: Blob = await FishingLicenceService.getLicence(

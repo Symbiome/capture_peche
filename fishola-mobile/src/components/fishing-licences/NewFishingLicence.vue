@@ -137,7 +137,7 @@ export default class NewFishingLicence extends Vue {
         this.url = URL.createObjectURL(this.selectedFile);
       }
     } catch (error) {
-      console.error("Error handling file change:", error);
+      console.error("Erreur pendant la gestion du changement de fichier : ", error);
     }
   }
 

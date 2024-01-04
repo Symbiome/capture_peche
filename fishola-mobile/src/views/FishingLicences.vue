@@ -27,9 +27,9 @@
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">Mes cartes de pêche</h1>
           <FishingLicenceList
-            v-bind:licences="licences"
-            v-on:licence-selected="licenceSelected"
-            v-on:licence-unselected="licenceUnselected"
+            :licences="licences"
+            @licence-selected="licenceSelected"
+            @licence-unselected="licenceUnselected"
           />
 
           <div class="bottom-page-spacer"></div>
@@ -78,7 +78,7 @@ import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.v
 import FishingLicenceService from "@/services/FishingLicenceService";
 import TripsService from "@/services/TripsService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue} from "vue-property-decorator";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
 
 @Component({
@@ -102,10 +102,6 @@ export default class FishingLicencesView extends Vue {
     this.licences = [];
   }
 
-  mounted() {
-    this.fetchAllLicences();
-  }
-
   created() {
     this.fetchAllLicences();
     TripsService.hasRunningTrip().then(
@@ -120,7 +116,7 @@ export default class FishingLicencesView extends Vue {
   loadLicences(licences: LicenceResponseBean[]) {
     this.licences = [];
     const sortedLicences = Vue.lodash.orderBy(licences, "name");
-    sortedLicences.forEach((licence) => this.licences.push(licence));
+    sortedLicences.forEach(licence => this.licences.push(licence));
   }
 
   licenceSelected(licenceId: string) {
