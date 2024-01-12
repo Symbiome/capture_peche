@@ -40,7 +40,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
-public class NewsResourceStandardUserTest extends AbstractFisholaTest {
+class NewsResourceStandardUserTest extends AbstractFisholaTest {
 
     @Inject
     protected NewsFisholaDao newsDao;
@@ -49,7 +49,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void loginAndCreateRandomNews() {
+    void loginAndCreateRandomNews() {
         this.token = login("thimel@codelutin.com", "sispea");
 
         // Insert a non published news
@@ -72,7 +72,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testGetPublishedNews() {
+    void testGetPublishedNews() {
         // Get news : only news with active publication date should be displayed
         int expectedPublishedNewsCount = this.newsDao.getNews(false).stream().filter(
                 news -> news.getName().startsWith("published-")
@@ -88,7 +88,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testGetAllNewsIsForbidden() {
+    void testGetAllNewsIsForbidden() {
         // Shouldn't be authorised for non admin
         given()
                 .when()
@@ -102,7 +102,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testNewsUpdateIsForbidden() {
+    void testNewsUpdateIsForbidden() {
         // Shouldn't be authorised for non admin
         News news = newsDao.getNews(false).get(0);
         given()
@@ -114,7 +114,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
                 .statusCode(401);
     }
     @Test
-    public void testNewsPostIsForbidden() {
+    void testNewsPostIsForbidden() {
         // Shouldn't be authorised for non admin
         News news = new News();
         given()
@@ -129,7 +129,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testNewsDeleteIsForbidden() {
+    void testNewsDeleteIsForbidden() {
         // Shouldn't be authorised for non admin
         News news = newsDao.getNews(false).get(0);
         given()

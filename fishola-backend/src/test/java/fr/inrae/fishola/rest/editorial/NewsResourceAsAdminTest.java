@@ -38,7 +38,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
-public class NewsResourceAsAdminTest extends AbstractFisholaTest {
+class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @Inject
     protected NewsFisholaDao newsDao;
@@ -47,7 +47,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void loginAsAdminAndCreateRandomNews() {
+    void loginAsAdminAndCreateRandomNews() {
         token = loginAsAdmin();
 
         // Insert a non published news
@@ -70,10 +70,10 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testGetAllNews() {
+    void testGetAllNews() {
         // All news should be displayed no matter the publication date
         int expectedNewsCount = this.newsDao.getNews(false).size();
-        Assertions.assertNotEquals(expectedNewsCount, 0);
+        Assertions.assertNotEquals(0, expectedNewsCount);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +86,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testNewsUpdate() {
+    void testNewsUpdate() {
         // Update news's publication date
         News news = newsDao.getNews(false).get(0);
         String modifiedName = "modified";
@@ -112,7 +112,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testNewsPost() {
+    void testNewsPost() {
         int newsCountBefore = this.newsDao.getNews(false).size();
         News news = new News();
         news.setName("published-newnews");
@@ -137,7 +137,7 @@ public class NewsResourceAsAdminTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testNewsDelete() {
+    void testNewsDelete() {
         int newsCountBefore = this.newsDao.getNews(false).size();
 
         News news = newsDao.getNews(false).get(0);

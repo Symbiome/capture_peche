@@ -24,10 +24,10 @@ package fr.inrae.fishola.database;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ReferentialDaoTest {
+class ReferentialDaoTest {
 
     @Test
-    public void testNormalizeSpeciesName() {
+    void testNormalizeSpeciesName() {
         Assertions.assertNull(ReferentialDao.normalizeSpeciesName("    "));
         Assertions.assertEquals("Saint pierre", ReferentialDao.normalizeSpeciesName(" Saint    Pierre   "));
         Assertions.assertEquals("Saint-Pierre", ReferentialDao.normalizeSpeciesName(" Saint - pierre   "));
@@ -41,7 +41,7 @@ public class ReferentialDaoTest {
     }
 
     @Test
-    public void testNormalizeSpeciesExportAs() {
+    void testNormalizeSpeciesExportAs() {
         Assertions.assertEquals("saint-pierre", ReferentialDao.normalizeSpeciesExportAs(" Saint - pièrre   !  "));
 
 

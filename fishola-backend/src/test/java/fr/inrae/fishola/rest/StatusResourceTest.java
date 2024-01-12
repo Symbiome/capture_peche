@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-public class StatusResourceTest {
+class StatusResourceTest {
 
     @Test
-    public void testStatusEndpoint() {
+    void testStatusEndpoint() {
         // {"version":"%(project.version)","gitRevision":"%(git.commit.id.describe)","buildDate":"%(maven.build.timestamp)","encoding":"UTF-8","jvmName":"OpenJDK 64-Bit Server VM","javaVersion":"17.0.1","memoryAllocated":"280,00MB","memoryUsed":"138,56MB (3,48%)","memoryFree":"3,75GB (96,52%)","memoryMax":"3,89GB","loadAverage":1.8,"availableProcessors":16,"runningSince":"04/11/2021 10:12:17","uptime":"3s","duration":6,"currentDate":"Thu Nov 04 10:12:20 CET 2021","currentTimeZone":"sun.util.calendar.ZoneInfo[id=\"Europe/Paris\",offset=3600000,dstSavings=3600000,useDaylight=true,transitions=184,lastRule=java.util.SimpleTimeZone[id=Europe/Paris,offset=3600000,dstSavings=3600000,useDaylight=true,startYear=0,startMode=2,startMonth=2,startDay=-1,startDayOfWeek=1,startTime=3600000,startTimeMode=2,endMode=2,endMonth=9,endDay=-1,endDayOfWeek=1,endTime=3600000,endTimeMode=2]]"}
         given()
                 .when()

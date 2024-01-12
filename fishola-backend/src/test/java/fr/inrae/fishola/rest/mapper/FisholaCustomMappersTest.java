@@ -31,7 +31,7 @@ import java.util.Optional;
 class FisholaCustomMappersTest {
 
     @Test
-    public void readIso8601AtZone() {
+    void readIso8601AtZone() {
         Optional<LocalDateTime> parsed = FisholaCustomMappers.readIso8601AtZone("2020-05-06T15:49:02.640Z", ZoneId.of("Europe/Paris"));
         Assertions.assertNotNull(parsed);
         Assertions.assertTrue(parsed.isPresent());
