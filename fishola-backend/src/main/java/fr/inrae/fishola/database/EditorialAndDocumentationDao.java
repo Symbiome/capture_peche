@@ -78,9 +78,7 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
     }
 
     public void deleteDocumentation(UUID documentId) {
-        withDaoNoResult(DocumentationDao.class, dao -> {
-            dao.deleteById(documentId);
-        });
+        withDaoNoResult(DocumentationDao.class, dao -> dao.deleteById(documentId));
     }
     public List<Editorial> getEditorials() {
         List<Editorial> editorials = withDao(EditorialDao.class, DAOImpl::findAll);

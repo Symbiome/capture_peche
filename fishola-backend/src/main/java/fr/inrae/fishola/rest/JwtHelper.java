@@ -51,6 +51,10 @@ public class JwtHelper {
     @Inject
     protected FisholaConfiguration config;
 
+    private static final String FISHOLA_BACKEND_ISSUER = "fishola-backend";
+    private static final String MISSING_TOKEN_ERR_MESSAGE = "Token manquant";
+    private static final String MISSING_SUBJECT_ERR_MESSAGE = "Subject manquant";
+
     private Algorithm getJwtSecretAlgorithm() {
         String jwtSecret = config.jwtSecret();
         Algorithm result = Algorithm.HMAC512(jwtSecret);
@@ -84,7 +88,7 @@ public class JwtHelper {
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         return JWT.create()
-                .withIssuer("fishola-backend")
+                .withIssuer(FISHOLA_BACKEND_ISSUER)
                 .withSubject(userId.toString())
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
@@ -93,36 +97,36 @@ public class JwtHelper {
     }
 
     public UUID verifyToken(String token) {
-        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), MISSING_TOKEN_ERR_MESSAGE);
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)
-                .withIssuer("fishola-backend")
+                .withIssuer(FISHOLA_BACKEND_ISSUER)
                 .build()
                 .verify(token);
         String subject = verify.getSubject();
 
-        Preconditions.checkState(StringUtils.isNotEmpty(subject), "Subject manquant");
+        Preconditions.checkState(StringUtils.isNotEmpty(subject), MISSING_SUBJECT_ERR_MESSAGE);
 
         UUID result = UUID.fromString(subject);
         return result;
     }
 
     public UUID verifyExpiredToken(String token) {
-        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), MISSING_TOKEN_ERR_MESSAGE);
 
         // On convertit en secondes
         long seconds = (long) config.jwtRenewalHours() * 60 * 60;
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)
-                .withIssuer("fishola-backend")
+                .withIssuer(FISHOLA_BACKEND_ISSUER)
                 .acceptExpiresAt(seconds)
                 .build()
                 .verify(token);
         String subject = verify.getSubject();
 
-        Preconditions.checkState(StringUtils.isNotEmpty(subject), "Subject manquant");
+        Preconditions.checkState(StringUtils.isNotEmpty(subject), MISSING_SUBJECT_ERR_MESSAGE);
 
         UUID result = UUID.fromString(subject);
         return result;
@@ -138,7 +142,7 @@ public class JwtHelper {
         Algorithm algorithmHS = getJwtSecretAlgorithm();
 
         JWTCreator.Builder tokenBuilder = JWT.create()
-                .withIssuer("fishola-backend")
+                .withIssuer(FISHOLA_BACKEND_ISSUER)
                 .withSubject(subject)
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
@@ -153,7 +157,7 @@ public class JwtHelper {
         try {
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
+                    .withIssuer(FISHOLA_BACKEND_ISSUER)
                     .withSubject(subject)
                     .build()
                     .verify(token);
@@ -166,12 +170,12 @@ public class JwtHelper {
     }
 
     public boolean isValidToken(String token) {
-        Preconditions.checkArgument(StringUtils.isNotEmpty(token), "Token manquant");
+        Preconditions.checkArgument(StringUtils.isNotEmpty(token), MISSING_TOKEN_ERR_MESSAGE);
 
         try {
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             JWT.require(algorithmHS)
-                    .withIssuer("fishola-backend")
+                    .withIssuer(FISHOLA_BACKEND_ISSUER)
                     .build()
                     .verify(token);
             return true;

@@ -223,23 +223,21 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         // On compile le tout
         Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
-        lakeIds.forEach(lakeId -> {
-            builtInSpecies.forEach(rawSpecies -> {
-                Pair<UUID, UUID> lakePlusSpeciesIds = Pair.of(lakeId, rawSpecies.getId());
-                Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
-                boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
-                Integer minSize = 0;
-                Integer maxSize = 1000;
-                if (authorizedSamplesMinSizes.get(lakePlusSpeciesIds) != null) {
-                    minSize = authorizedSamplesMinSizes.get(lakePlusSpeciesIds);
-                }
-                if (authorizedSamplesMaxSizes.get(lakePlusSpeciesIds) != null) {
-                    maxSize = authorizedSamplesMaxSizes.get(lakePlusSpeciesIds);
-                }
-                SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
-                result.put(lakeId, speciesWithAlias);
-            });
-        });
+        lakeIds.forEach(lakeId -> builtInSpecies.forEach(rawSpecies -> {
+            Pair<UUID, UUID> lakePlusSpeciesIds = Pair.of(lakeId, rawSpecies.getId());
+            Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
+            boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
+            Integer minSize = 0;
+            Integer maxSize = 1000;
+            if (authorizedSamplesMinSizes.get(lakePlusSpeciesIds) != null) {
+                minSize = authorizedSamplesMinSizes.get(lakePlusSpeciesIds);
+            }
+            if (authorizedSamplesMaxSizes.get(lakePlusSpeciesIds) != null) {
+                maxSize = authorizedSamplesMaxSizes.get(lakePlusSpeciesIds);
+            }
+            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
+            result.put(lakeId, speciesWithAlias);
+        }));
         
         return result.asMap();
     }

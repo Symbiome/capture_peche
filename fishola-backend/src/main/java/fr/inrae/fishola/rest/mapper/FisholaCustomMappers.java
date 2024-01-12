@@ -70,6 +70,8 @@ import java.util.UUID;
 @Singleton
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
+    public static final String UNEXPECTED_TYPE_MESSAGE = "Unexpected type:";
+
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
     }
@@ -83,7 +85,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             String resultString = textNode.textValue();
             result = Boolean.parseBoolean(resultString);
         } else {
-            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
@@ -97,7 +99,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             String resultString = textNode.textValue();
             result = Integer.parseInt(resultString);
         } else {
-            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
@@ -117,7 +119,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             }
             result = Integer.parseInt(resultString);
         } else {
-            throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
+            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
