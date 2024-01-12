@@ -77,10 +77,10 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static boolean readBoolean(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         boolean result;
-        if (subNode instanceof BooleanNode) {
-            result = ((BooleanNode) subNode).booleanValue();
-        } else if (subNode instanceof TextNode) {
-            String resultString = ((TextNode) subNode).textValue();
+        if (subNode instanceof BooleanNode booleanNode) {
+            result = booleanNode.booleanValue();
+        } else if (subNode instanceof TextNode textNode) {
+            String resultString = textNode.textValue();
             result = Boolean.parseBoolean(resultString);
         } else {
             throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
@@ -91,10 +91,10 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static int readInt(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         int result;
-        if (subNode instanceof IntNode) {
-            result = ((IntNode) subNode).intValue();
-        } else if (subNode instanceof TextNode) {
-            String resultString = ((TextNode) subNode).textValue();
+        if (subNode instanceof IntNode intNode) {
+            result = intNode.intValue();
+        } else if (subNode instanceof TextNode textNode) {
+            String resultString = textNode.textValue();
             result = Integer.parseInt(resultString);
         } else {
             throw new IllegalArgumentException("Unexpected type:" + subNode.getClass().getName());
@@ -108,10 +108,10 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             return null;
         }
         int result;
-        if (subNode instanceof IntNode) {
-            result = ((IntNode) subNode).intValue();
-        } else if (subNode instanceof TextNode) {
-            String resultString = ((TextNode) subNode).textValue();
+        if (subNode instanceof IntNode intNode) {
+            result = intNode.intValue();
+        } else if (subNode instanceof TextNode textNode) {
+            String resultString = textNode.textValue();
             if (StringUtils.isEmpty(resultString)) {
                 return null;
             }
