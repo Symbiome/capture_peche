@@ -63,7 +63,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @GET
     @Path("/documentations")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
+        Map<UUID, Pair<String, String>> docs = dao.listDocumentations();
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
