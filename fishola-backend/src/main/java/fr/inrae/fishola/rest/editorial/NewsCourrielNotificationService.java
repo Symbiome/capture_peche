@@ -24,7 +24,6 @@ package fr.inrae.fishola.rest.editorial;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
@@ -36,9 +35,9 @@ import io.quarkus.scheduler.Scheduled;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -103,7 +102,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
         MustacheFactory mf = new DefaultMustacheFactory();
         Mustache mustache = mf.compile("emails/unsubscribe.html");
         StringWriter stringWriter = new StringWriter();
-        mustache.execute(stringWriter, ImmutableMap.of("userId", userId));
+        mustache.execute(stringWriter, Map.of("userId", userId));
         String body = stringWriter.toString();
         body = body.replace("{userId}", userId.toString());
         return Response.ok(body).build();
@@ -121,7 +120,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
         MustacheFactory mf = new DefaultMustacheFactory();
         Mustache mustache = mf.compile("emails/unsubscribed.html");
         StringWriter stringWriter = new StringWriter();
-        mustache.execute(stringWriter, ImmutableMap.of("userId", userId));
+        mustache.execute(stringWriter, Map.of("userId", userId));
         String body = stringWriter.toString();
         body = body.replace("{userId}", userId.toString());
         return Response.ok(body).build();
@@ -136,7 +135,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
             dao.scheduleNestNotificationCheck(config.newsMailSendingDelayHours());
             // Notify user by mail about all public news that have not been notified yet
             List<News> publicNewsThatHaveNotBeenNotifiedByMail = dao.getNews(true).stream().filter(news -> news.getDateNotificationSent() == null).toList();
-            if (publicNewsThatHaveNotBeenNotifiedByMail.size() > 0) {
+            if (!publicNewsThatHaveNotBeenNotifiedByMail.isEmpty()) {
                 log.info(publicNewsThatHaveNotBeenNotifiedByMail.size() + " News became public since last check, notify users by courriel");
             } else {
                 log.info("No News became public since last check.");
@@ -148,7 +147,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
 
 
     protected void notifyUsersByCourrielAboutNews(List<News> newsToNotifyByMail) {
-        if( newsToNotifyByMail.size() > 0) {
+        if (!newsToNotifyByMail.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
             String htmlContent = "";
             String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();

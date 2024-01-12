@@ -23,7 +23,6 @@ package fr.inrae.fishola.database;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -172,7 +171,7 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public List<Integer> getPictureIndexes(UUID catchId) {
-        ListMultimap<UUID, Integer> multimap = getPictureIndexes(ImmutableSet.of(catchId));
+        ListMultimap<UUID, Integer> multimap = getPictureIndexes(Set.of(catchId));
         List<Integer> pictureIndexes = multimap.get(catchId);
         return pictureIndexes;
     }
