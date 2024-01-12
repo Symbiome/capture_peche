@@ -368,7 +368,7 @@ public class SecurityResource extends AbstractFisholaResource {
     private Boolean doResetPassword(HttpServletRequest request, String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("reset-password", token);
-            Function<String, String> getClaimOrFail = claimName -> {
+            UnaryOperator<String> getClaimOrFail = claimName -> {
                 String result = claims.get(claimName);
                 Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: " + claimName);
                 return result;
