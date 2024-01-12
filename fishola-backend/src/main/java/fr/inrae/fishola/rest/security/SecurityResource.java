@@ -62,6 +62,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
@@ -215,13 +216,13 @@ public class SecurityResource extends AbstractFisholaResource {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
-            Function<String, String> getClaimOrFail = claimName -> {
+            UnaryOperator<String> getClaimOrFail = claimName -> {
                 String result = claims.get(claimName);
                 Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: %s".formatted(claimName));
                 return result;
             };
 
-            Function<String, String> getClaimOrNull = claimName -> {
+            UnaryOperator<String> getClaimOrNull = claimName -> {
                 String value = claims.get(claimName);
                 String result = StringUtils.trimToNull(value);
                 return result;
