@@ -473,7 +473,7 @@ public class SecurityResource extends AbstractFisholaResource {
         return result;
     }
 
-    public static final char[] ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    protected static final char[] ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
     public static String encodeSampleBaseId(final int rawNumber) {
         int low = rawNumber % ALPHABET.length;
@@ -623,7 +623,7 @@ public class SecurityResource extends AbstractFisholaResource {
         List<FisholaUser> users = usersDao.findAll();
         List<UserProfileForAdmin> result = users.stream()
                 .map(this::toUserProfileForAdmin)
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 

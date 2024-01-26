@@ -25,7 +25,7 @@
         <label>
           {{label}}
         </label>
-        <img v-on:click="toggle()"
+        <img v-on:click="toggle()" alt="interrupteur"
              v-bind:src="value ? '/img/toggle_on.svg' : '/img/toggle_off.svg'"/>
       </div>
       <div v-bind:class="error?'error-row field-error':'error-row'" >

@@ -67,7 +67,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 

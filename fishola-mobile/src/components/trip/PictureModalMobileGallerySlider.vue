@@ -29,12 +29,14 @@
         v-touch:swipe="swiped"
       >
         <img
+          alt="Photo de la prise"
           v-if="!slide.isAddPicButton"
           :src="getFullPicURL(slide.src)"
           v-touch:swipe="swiped"
         />
         <div v-else @click="$emit('take-picture')">
           <img
+            alt="Ajouter une photo"
             src="/img/add-pic-to-gallery.svg"
             v-touch:swipe="swiped"
             class="add-picture"

@@ -39,7 +39,7 @@
             >
           </span>
           <div class="miniature-pic">
-            <img :src="getMiniatureURl(news)" />
+            <img :src="getMiniatureURl(news)" alt="image de l'actualité"/>
           </div>
 
           <div class="news-details-content" v-html="news.content" />

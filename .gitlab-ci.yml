@@ -187,6 +187,7 @@ deploy:demo:
 sonarqube:
   image: maven:3.8-openjdk-17
   stage: sonar
+  when: manual
   services:
     # DinD service is required for Testcontainers
     - docker:dind
@@ -195,8 +196,6 @@ sonarqube:
     DOCKER_HOST: "tcp://docker:2375"
   script:
     - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
   tags:
     - docker
 #build:ios:

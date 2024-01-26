@@ -71,7 +71,7 @@ public interface UserProfile {
                 .splitToList(input.trim());
         List<Character> result = parts.stream()
                 .map(part -> part.charAt(0))
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 

@@ -139,12 +139,10 @@
         <div class="left-panel">
           <h3><span>FISHOLA</span></h3>
           <p>{{ titleText }}</p>
-          <!-- <a href="#about">MORE DETAILS</a> -->
         </div>
         <div class="right-panel">
           <img src="/img/dashboard.png" alt="Tableau de bord" />
           <img src="/img/trip.png" alt="Sortie" />
-          <!-- <img src="/img/trips.png" alt="Liste des sorties" /> -->
         </div>
       </div>
       <!-- // End Banner Section // -->
@@ -152,6 +150,7 @@
       <!-- \\ Begin Video Section \\ -->
       <div class="Video_sec">
         <iframe
+          title="Vidéo youtube"
           class="youtube"
           width="640"
           height="360"
@@ -191,7 +190,6 @@
                 <div class="kf-label">photos</div>
               </div>
             </div>
-            <!-- <div class="Line"></div> -->
             <div class="map">
               <l-map
                 :zoom="9"

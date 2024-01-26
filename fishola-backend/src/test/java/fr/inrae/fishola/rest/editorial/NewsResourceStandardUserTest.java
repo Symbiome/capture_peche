@@ -76,7 +76,7 @@ public class NewsResourceStandardUserTest extends AbstractFisholaTest {
         // Get news : only news with active publication date should be displayed
         int expectedPublishedNewsCount = this.newsDao.getNews(false).stream().filter(
                 news -> news.getName().startsWith("published-")
-        ).collect(Collectors.toList()).size();
+        ).toList().size();
         List<News> publishedNews = this.newsDao.getNews(true);
         Assertions.assertEquals(expectedPublishedNewsCount, publishedNews.size());
         given()
