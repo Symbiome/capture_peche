@@ -35,8 +35,6 @@ public interface FisholaMail {
 
     Optional<LocalDateTime> pendingSince();
 
-    String getFrom();
-
     ImmutableSet<String> getTos();
 
     String getSubject();

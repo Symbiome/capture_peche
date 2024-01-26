@@ -57,9 +57,7 @@ public class MailService {
     protected static final ConcurrentLinkedQueue<FisholaMail> PENDING_EMAILS = new ConcurrentLinkedQueue<>();
 
     public ImmutableFisholaMail.Builder newMail(String body) {
-        ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder()
-                                                                   .from(config.mailFrom())
-                                                                   .body(body);
+        ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder().body(body);
         return builder;
     }
 
@@ -147,7 +145,8 @@ public class MailService {
         }
 
         for (String recipient : fisholaMail.getTos()) {
-            Mail mail = Mail.withText(recipient, fisholaMail.getSubject(), fisholaMail.getBody());
+            Mail mail = Mail
+                    .withHtml(recipient, fisholaMail.getSubject(), fisholaMail.getBody());
             for (FisholaMailAttachment attachment : fisholaMail.getAttachments()) {
                 mail.addAttachment(attachment.getName(), attachment.getBytes(), attachment.getType().toString());
             }
