@@ -26,11 +26,11 @@ import fr.inrae.fishola.entities.tables.daos.DocumentationDao;
 import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Record3;
 import org.jooq.Result;
 
-import javax.inject.Singleton;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +43,8 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
 
     public List<Documentation> listDocumentationsWithoutContent() {
         List<Documentation> result = withContext(context -> context.selectFrom(Tables.DOCUMENTATION)
-                .where(Tables.DOCUMENTATION.CONTENT.isNull())
-                .fetchInto(Documentation.class));
+                                                                   .where(Tables.DOCUMENTATION.CONTENT.isNull())
+                                                                   .fetchInto(Documentation.class));
         return result;
     }
 

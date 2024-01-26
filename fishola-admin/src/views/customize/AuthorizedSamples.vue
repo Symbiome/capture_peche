@@ -35,16 +35,19 @@
         </b-button>
       </div>
     </h1>
-    <table class="table is-striped">
+    <p id="table-desc" style="display:none">
+      Tableau des lacs
+    </p>
+    <table class="table is-striped" aria-describedby="table-desc">
       <thead>
         <tr>
-          <th></th>
-          <th v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
+          <th id="th-lac-vide"></th>
+          <th :id="l.id" v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
-          <th>{{ s.name }}</th>
+          <th :id="s.name">{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field" style="display: flex">
               <b-checkbox

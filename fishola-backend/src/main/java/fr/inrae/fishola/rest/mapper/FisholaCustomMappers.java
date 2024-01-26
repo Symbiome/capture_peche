@@ -54,7 +54,7 @@ import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;

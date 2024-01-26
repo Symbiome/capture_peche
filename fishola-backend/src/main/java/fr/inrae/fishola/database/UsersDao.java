@@ -26,9 +26,8 @@ import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

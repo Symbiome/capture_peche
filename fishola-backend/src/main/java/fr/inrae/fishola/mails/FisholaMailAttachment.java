@@ -22,9 +22,10 @@ package fr.inrae.fishola.mails;
  */
 
 import com.google.common.net.MediaType;
+import fr.inrae.fishola.ImmutableObject;
 import org.immutables.value.Value;
 
-@Value.Immutable
+@ImmutableObject
 public interface FisholaMailAttachment {
 
     @Value.Auxiliary // exclu des equals/hashCode/toString

@@ -24,8 +24,9 @@ package fr.inrae.fishola.database;
 
 import fr.inrae.fishola.rest.metrics.CountPerlakeAndPerYear;
 import fr.inrae.fishola.rest.metrics.MetricBean;
+import jakarta.inject.Singleton;
+
 import java.util.List;
-import javax.inject.Singleton;
 
 @Singleton
 public class MetricsDao extends AbstractFisholaDao {

@@ -294,7 +294,8 @@
               <!-- \\ Begin Left Side \\ -->
               <div class="Leftside">
                 <form action="#">
-                  <fieldset legend="formulaire de contact">
+                  <fieldset>
+                    <legend style="display:none">Formulaire de contact</legend>
                     <p>
                       <input
                         type="email"

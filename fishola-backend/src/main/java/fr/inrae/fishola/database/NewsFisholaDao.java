@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.impl.DAOImpl;

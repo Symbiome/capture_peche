@@ -24,331 +24,364 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.nuiton</groupId>
-    <artifactId>pom</artifactId>
-    <version>11.11</version>
-  </parent>
-
-  <groupId>fr.inrae</groupId>
-  <artifactId>fishola</artifactId>
-  <version>2.0.7-SNAPSHOT</version>
-
-  <name>Fishola</name>
-  <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire OLA</description>
-  <url>${projectUrl}</url>
-  <inceptionYear>2019</inceptionYear>
-
-  <organization>
-    <name>INRAE - UMR CARRTEL</name>
-    <url>https://www6.dijon.inrae.fr/thonon</url>
-  </organization>
-
-  <licenses>
-    <license>
-      <name>AGPL-3.0-only</name>
-      <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
-    </license>
-  </licenses>
-
-  <packaging>pom</packaging>
-
-  <properties>
-    <gitlabGroupName>inrae</gitlabGroupName>
-    <gitlabProjectName>fishola</gitlabProjectName>
-
-    <quarkusVersion>2.6.3.Final</quarkusVersion>
-    <jooqVersion>3.18.7</jooqVersion>
-    <flywayVersion>9.3.1</flywayVersion>
-    <postgresqlDriverVersion>42.5.1</postgresqlDriverVersion>
-    <testcontainersVersion>1.16.3</testcontainersVersion>
-
-    <maven.compiler.parameters>true</maven.compiler.parameters>
-
-    <license.licenseName>agpl_v3</license.licenseName>
-
-    <javaVersion>17</javaVersion>
-    <animal.sniffer.skip>true</animal.sniffer.skip>
-    <gpg.skip>true</gpg.skip>
-
-    <licensePluginVersion>2.0.0</licensePluginVersion>
-
-    <!--
-    This is temporary because of this incorrect failure :
-    [WARNING] Non-test scoped test only dependencies found:
-    [WARNING]    org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
-
-    Check the issue for resolution : https://issues.apache.org/jira/browse/MDEP-753
-    22/12/2021 : The current status is that a vote is currently running about maven-dependency-analyzer release (1.11.4?)
-    Check https://repo1.maven.org/maven2/org/apache/maven/shared/maven-dependency-analyzer/ expecting any version above 1.11.3
-    -->
-    <analyzeDependencies.failOnWarning>false</analyzeDependencies.failOnWarning>
-
-  </properties>
-
-  <scm>
-    <url>https://gitlab.nuiton.org/inrae/fishola</url>
-    <connection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</connection>
-    <developerConnection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</developerConnection>
-  </scm>
-
-  <prerequisites>
-    <maven>3.6.2</maven>
-  </prerequisites>
-
-  <modules>
-    <module>fishola-backend</module>
-    <module>fishola-mobile</module>
-    <module>fishola-admin</module>
-  </modules>
-
-  <dependencyManagement>
-    <dependencies>
-
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-universe-bom</artifactId>
-        <version>${quarkusVersion}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>io.smallrye.config</groupId>
-        <artifactId>smallrye-config-core</artifactId>
-        <version>2.7.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.google.code.findbugs</groupId>
-        <artifactId>jsr305</artifactId>
-        <version>3.0.2</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest</artifactId>
-        <version>2.2</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>5.9.1</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-collections4</artifactId>
-        <version>4.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.immutables</groupId>
-        <artifactId>value</artifactId>
-        <version>2.9.3</version>
-      </dependency>
-
-      <dependency>
+    <parent>
         <groupId>org.nuiton</groupId>
-        <artifactId>nuiton-utils</artifactId>
-        <version>3.1</version>
-      </dependency>
+        <artifactId>pom</artifactId>
+        <version>11.13</version>
+    </parent>
 
-      <dependency>
-        <groupId>org.jooq</groupId>
-        <artifactId>jooq</artifactId>
-        <version>${jooqVersion}</version>
-      </dependency>
+    <groupId>fr.inrae</groupId>
+    <artifactId>fishola</artifactId>
+    <version>2.0.7-SNAPSHOT</version>
 
-      <dependency>
-        <groupId>org.flywaydb</groupId>
-        <artifactId>flyway-core</artifactId>
-        <version>${flywayVersion}</version>
-      </dependency>
+    <name>Fishola</name>
+    <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire
+        OLA
+    </description>
+    <url>${projectUrl}</url>
+    <inceptionYear>2019</inceptionYear>
 
-      <dependency>
-        <groupId>com.auth0</groupId>
-        <artifactId>java-jwt</artifactId>
-        <version>4.2.1</version>
-      </dependency>
+    <organization>
+        <name>INRAE - UMR CARRTEL</name>
+        <url>https://www6.dijon.inrae.fr/thonon</url>
+    </organization>
 
-      <dependency>
-        <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
-        <version>0.9.0</version>
-      </dependency>
+    <licenses>
+        <license>
+            <name>AGPL-3.0-only</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+        </license>
+    </licenses>
 
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>3.12.0</version>
-      </dependency>
+    <packaging>pom</packaging>
 
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>1.2</version>
-      </dependency>
+    <properties>
+        <gitlabGroupName>inrae</gitlabGroupName>
+        <gitlabProjectName>fishola</gitlabProjectName>
 
-      <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>mail</artifactId>
-        <version>1.5.0-b01</version>
-      </dependency>
+        <quarkusVersion>3.6.3</quarkusVersion>
+        <jooqVersion>3.19.0</jooqVersion>
+        <flywayVersion>10.2.0</flywayVersion>
+        <postgresqlDriverVersion>42.5.4</postgresqlDriverVersion>
+        <testcontainersVersion>1.19.3</testcontainersVersion>
 
-      <dependency>
-        <groupId>com.github.spullara.mustache.java</groupId>
-        <artifactId>compiler</artifactId>
-        <version>0.9.10</version>
-      </dependency>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
 
-      <dependency>
-        <groupId>com.mortennobel</groupId>
-        <artifactId>java-image-scaling</artifactId>
-        <version>0.8.6</version>
-      </dependency>
+        <license.licenseName>agpl_v3</license.licenseName>
 
-      <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers</artifactId>
-        <version>${testcontainersVersion}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>${testcontainersVersion}</version>
-        <scope>test</scope>
-      </dependency>
+        <javaVersion>17</javaVersion>
+        <animal.sniffer.skip>true</animal.sniffer.skip>
+        <gpg.skip>true</gpg.skip>
 
-      <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>${postgresqlDriverVersion}</version>
-        <scope>runtime</scope>
-      </dependency>
+        <dependencyPluginVersion>3.6.1</dependencyPluginVersion>
+        <licensePluginVersion>2.0.0</licensePluginVersion>
 
-    </dependencies>
-  </dependencyManagement>
+        <!--
+        This is temporary because of this incorrect failure :
+        [WARNING] Non-test scoped test only dependencies found:
+        [WARNING]    org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
 
-  <build>
-    <pluginManagement>
-      <plugins>
+        Check the issue for resolution : https://issues.apache.org/jira/browse/MDEP-753
+        22/12/2021 : The current status is that a vote is currently running about maven-dependency-analyzer release (1.11.4?)
+        Check https://repo1.maven.org/maven2/org/apache/maven/shared/maven-dependency-analyzer/ expecting any version above 1.11.3
+        -->
+        <analyzeDependencies.failOnWarning>false</analyzeDependencies.failOnWarning>
 
-        <plugin>
-          <groupId>pl.project13.maven</groupId>
-          <artifactId>git-commit-id-plugin</artifactId>
-          <version>4.9.10</version>
-        </plugin>
+    </properties>
 
-        <plugin>
-          <groupId>cz.habarta.typescript-generator</groupId>
-          <artifactId>typescript-generator-maven-plugin</artifactId>
-          <version>2.34.976</version>
-        </plugin>
+    <scm>
+        <url>https://gitlab.nuiton.org/inrae/fishola</url>
+        <connection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</connection>
+        <developerConnection>scm:git:git@gitlab.nuiton.org:inrae/fishola.git</developerConnection>
+    </scm>
 
-        <plugin>
-          <groupId>org.flywaydb</groupId>
-          <artifactId>flyway-maven-plugin</artifactId>
-          <version>${flywayVersion}</version>
-        </plugin>
+    <prerequisites>
+        <maven>3.6.2</maven>
+    </prerequisites>
 
-        <plugin>
-          <groupId>org.jooq</groupId>
-          <artifactId>jooq-codegen-maven</artifactId>
-          <version>${jooqVersion}</version>
-        </plugin>
+    <modules>
+        <module>fishola-backend</module>
+        <module>fishola-mobile</module>
+        <module>fishola-admin</module>
+    </modules>
 
-        <plugin>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-maven-plugin</artifactId>
-          <version>${quarkusVersion}</version>
-        </plugin>
+    <dependencyManagement>
+        <dependencies>
 
-        <plugin>
-          <groupId>com.github.eirslett</groupId>
-          <artifactId>frontend-maven-plugin</artifactId>
-          <version>1.12.0</version>
-        </plugin>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-universe-bom</artifactId>
+                <version>${quarkusVersion}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>license-maven-plugin</artifactId>
-          <version>${licensePluginVersion}</version>
-          <configuration>
-            <extraExtensions>
-              <vue>html</vue>
-            </extraExtensions>
-          </configuration>
-        </plugin>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
 
-      </plugins>
-    </pluginManagement>
-    <plugins/>
-  </build>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
 
-  <repositories>
-    <repository>
-      <id>central-mirror</id>
-      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
-      <snapshots>
-        <enabled>false</enabled>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-    </repository>
-  </repositories>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>5.10.1</version>
+                <scope>test</scope>
+            </dependency>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>central-mirror</id>
-      <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
-      <snapshots>
-        <enabled>false</enabled>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.4</version>
+            </dependency>
 
-  <profiles>
+            <dependency>
+                <groupId>org.immutables</groupId>
+                <artifactId>value</artifactId>
+                <version>2.10.0</version>
+            </dependency>
 
-    <!-- À activer en cas de besoin (release nuiton pas encore dispo sur Central) -->
-    <profile>
+            <dependency>
+                <groupId>org.nuiton</groupId>
+                <artifactId>nuiton-utils</artifactId>
+                <version>3.1</version>
+            </dependency>
 
-      <id>nuiton</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq</artifactId>
+                <version>${jooqVersion}</version>
+            </dependency>
 
-      <repositories>
-        <!-- Mirroir du repo contenant nuiton -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flywayVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>${flywayVersion}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.auth0</groupId>
+                <artifactId>java-jwt</artifactId>
+                <version>4.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>at.favre.lib</groupId>
+                <artifactId>bcrypt</artifactId>
+                <version>0.10.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.14.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.3.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>2.1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>3.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.spullara.mustache.java</groupId>
+                <artifactId>compiler</artifactId>
+                <version>0.9.11</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.mortennobel</groupId>
+                <artifactId>java-image-scaling</artifactId>
+                <version>0.8.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainersVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${testcontainersVersion}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresqlDriverVersion}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>4.9.10</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>cz.habarta.typescript-generator</groupId>
+                    <artifactId>typescript-generator-maven-plugin</artifactId>
+                    <version>2.34.976</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-maven-plugin</artifactId>
+                    <version>${flywayVersion}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jooq</groupId>
+                    <artifactId>jooq-codegen-maven</artifactId>
+                    <version>${jooqVersion}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${quarkusVersion}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.15.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${licensePluginVersion}</version>
+                    <configuration>
+                        <extraExtensions>
+                            <vue>html</vue>
+                        </extraExtensions>
+                    </configuration>
+                </plugin>
+
+                <!-- En attendant de savoir si on peut le remettre dans le POM parent -->
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <verbose>true</verbose>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoreNonCompile>true</ignoreNonCompile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
         <repository>
-          <id>nuiton-releases</id>
-          <url>https://nexus.nuiton.org/nexus/content/repositories/central-releases/</url>
-          <snapshots>
-            <enabled>true</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </releases>
+            <id>central-mirror</id>
+            <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+            <snapshots>
+                <enabled>false</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
         </repository>
-      </repositories>
+    </repositories>
 
-    </profile>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central-mirror</id>
+            <url>https://nexus.nuiton.org/nexus/content/repositories/central/</url>
+            <snapshots>
+                <enabled>false</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
-  </profiles>
+    <profiles>
+
+        <!-- À activer en cas de besoin (release nuiton pas encore dispo sur Central) -->
+        <profile>
+
+            <id>nuiton</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <repositories>
+                <!-- Mirroir du repo contenant nuiton -->
+                <repository>
+                    <id>nuiton-releases</id>
+                    <url>https://nexus.nuiton.org/nexus/content/repositories/central-releases/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </snapshots>
+                    <releases>
+                        <enabled>true</enabled>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </releases>
+                </repository>
+            </repositories>
+
+        </profile>
+
+    </profiles>
 </project>

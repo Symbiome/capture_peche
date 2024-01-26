@@ -38,16 +38,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.jboss.logging.Logger;
 
 import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
@@ -149,20 +151,20 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
     protected void notifyUsersByCourrielAboutNews(List<News> newsToNotifyByMail) {
         if (!newsToNotifyByMail.isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
-            String htmlContent = "";
+            StringBuilder htmlContent = new StringBuilder();
             String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
             if (newsToNotifyByMail.size() > 1) {
                 subject += " et autres actualités";
             }
             for (News news : newsToNotifyByMail) {
                 if (newsToNotifyByMail.size() > 1) {
-                    htmlContent += "<h1>" + news.getName() + "</h1>";
+                    htmlContent.append("<h1>").append(news.getName()).append("</h1>");
                 }
-                htmlContent += news.getContent();
+                htmlContent.append(news.getContent());
                 news.setDateNotificationSent(now);
                 dao.update(news);
             }
-            htmlContent +=" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.";
+            htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
 
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
                 String baseURL = "https://fishola.fr";
