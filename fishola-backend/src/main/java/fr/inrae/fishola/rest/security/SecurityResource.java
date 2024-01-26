@@ -62,12 +62,14 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
 public class SecurityResource extends AbstractFisholaResource {
 
+    public static final String UNKNOWN_USER_ERR_MESSAGE = "Utilisateur inconnu";
     @Inject
     protected Logger log;
 
@@ -214,13 +216,13 @@ public class SecurityResource extends AbstractFisholaResource {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("register", token);
 
-            Function<String, String> getClaimOrFail = claimName -> {
+            UnaryOperator<String> getClaimOrFail = claimName -> {
                 String result = claims.get(claimName);
-                Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: " + claimName);
+                Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: %s".formatted(claimName));
                 return result;
             };
 
-            Function<String, String> getClaimOrNull = claimName -> {
+            UnaryOperator<String> getClaimOrNull = claimName -> {
                 String value = claims.get(claimName);
                 String result = StringUtils.trimToNull(value);
                 return result;
@@ -265,7 +267,7 @@ public class SecurityResource extends AbstractFisholaResource {
         } else if (authenticate.get()) {
 
             Optional<FisholaUser> byEmail = usersDao.findByEmail(bean.email);
-            Preconditions.checkState(byEmail.isPresent(), "Impossible de trouver l'utilisateur : " + bean.email);
+            Preconditions.checkState(byEmail.isPresent(), "Impossible de trouver l'utilisateur : %s".formatted(bean.email));
             UUID userId = byEmail.get().getId();
 
             String token = jwtHelper.createUserToken(userId);
@@ -368,9 +370,9 @@ public class SecurityResource extends AbstractFisholaResource {
     private Boolean doResetPassword(HttpServletRequest request, String token) {
         try {
             final Map<String, String> claims = jwtHelper.verifyCustomToken("reset-password", token);
-            Function<String, String> getClaimOrFail = claimName -> {
+            UnaryOperator<String> getClaimOrFail = claimName -> {
                 String result = claims.get(claimName);
-                Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: " + claimName);
+                Preconditions.checkState(StringUtils.isNotEmpty(result), "Claim absent: %s".formatted(claimName));
                 return result;
             };
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
@@ -492,7 +494,7 @@ public class SecurityResource extends AbstractFisholaResource {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
-        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
         UserProfile result = toUserProfile(user);
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
@@ -504,7 +506,7 @@ public class SecurityResource extends AbstractFisholaResource {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
-        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
 
         user.setFirstName(profile.firstName());
         user.setLastName(profile.lastName().map(StringUtils::trimToNull).orElse(null));
@@ -537,7 +539,7 @@ public class SecurityResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {
-            throw new NotAuthenticatedException("Utilisateur inconnu");
+            throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);
         });
         usersDao.safeDeleteByAnonymiseUser(user);
 
@@ -573,7 +575,7 @@ public class SecurityResource extends AbstractFisholaResource {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
-        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
 
         UserSettings result = ImmutableUserSettings.builder()
                 .promptWeight(user.getPromptWeight())
@@ -589,7 +591,7 @@ public class SecurityResource extends AbstractFisholaResource {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
-        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException("Utilisateur inconnu");});
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
 
         user.setPromptWeight(settings.promptWeight());
         user.setPromptSamples(settings.promptSamples());

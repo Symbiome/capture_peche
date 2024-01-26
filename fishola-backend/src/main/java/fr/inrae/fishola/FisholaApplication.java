@@ -61,7 +61,7 @@ public class FisholaApplication {
             log.infof("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile());
         }
 
-        Map<String, String> flywayPlaceholders = ImmutableMap.of(
+        Map<String, String> flywayPlaceholders = Map.of(
                 "baseUrl", config.backendBaseUrl().orElse("http://localhost:8080"),
                 "exportSafeHours", String.valueOf(config.exportSafeHours())
         );

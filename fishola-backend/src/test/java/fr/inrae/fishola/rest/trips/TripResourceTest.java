@@ -76,7 +76,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
-public class TripResourceTest extends AbstractFisholaTest {
+class TripResourceTest extends AbstractFisholaTest {
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -99,7 +99,7 @@ public class TripResourceTest extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void loadReferentials() {
+    void loadReferentials() {
         this.lakes = referentialDao.listLakes();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
@@ -107,7 +107,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @BeforeEach
-    public void login() {
+    void login() {
         this.token = login("thimel@codelutin.com", "sispea");
     }
 
@@ -119,7 +119,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testListMyTrips() {
+    void testListMyTrips() {
         int count = countTrips();
 
         given()
@@ -149,7 +149,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testCreateEmptyTrip() {
+    void testCreateEmptyTrip() {
         int countBefore = countTrips();
 
         TripBean trip = buildValidTripBean();
@@ -179,7 +179,7 @@ public class TripResourceTest extends AbstractFisholaTest {
      * faite mais comme la création de la capture échoue, le rollback vient annuler la création de la sortie.
      */
     @Test
-    public void testTransaction() {
+    void testTransaction() {
         int countBefore = countTrips();
 
         TripBean trip = buildValidTripBean();
@@ -210,7 +210,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithPicture() throws IOException {
+    void testTripWithPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -382,7 +382,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithPictureGallery() throws IOException {
+    void testTripWithPictureGallery() throws IOException {
 
         int countBefore = countTrips();
 
@@ -602,7 +602,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithMeasurementPicture() throws IOException {
+    void testTripWithMeasurementPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -718,7 +718,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testReplaceMeasurementPicture() throws IOException {
+    void testReplaceMeasurementPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -885,7 +885,7 @@ public class TripResourceTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testEditedInBoFields() {
+    void testEditedInBoFields() {
 
         // Warm up - create a new lake, and on it a trip and catch
         String adminToken = loginAsAdmin();

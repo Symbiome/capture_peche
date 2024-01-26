@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import jakarta.inject.Singleton;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
+import org.jooq.impl.DAOImpl;
 
 @Singleton
 public class NewsFisholaDao extends AbstractFisholaDao {
@@ -45,7 +46,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
     public static final UUID TEMPORARY_NEWS_ID = UUID.randomUUID();
 
     public List<News> getNews(boolean onlyListPublishedNews) {
-        List<News> allNews = withDao(NewsDao.class, dao -> dao.findAll());
+        List<News> allNews = withDao(NewsDao.class, DAOImpl::findAll);
         if (onlyListPublishedNews) {
             LocalDateTime now = LocalDateTime.now();
             allNews = allNews.stream().filter(
@@ -74,9 +75,9 @@ public class NewsFisholaDao extends AbstractFisholaDao {
 
     public News insert(News news) {
         DSLContext context = newContext();
-        NewsRecord record = context.newRecord(Tables.NEWS, news);
+        NewsRecord newRecord = context.newRecord(Tables.NEWS, news);
         News inserted = context.insertInto(Tables.NEWS)
-                .set(record)
+                .set(newRecord)
                 .returningResult(Tables.NEWS.ID)
                 .fetchOne()
                 .into(News.class);
@@ -89,7 +90,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         newsPicture.setIsMiniature(isMiniature);
         // Step 1: convert content to JPEG base 64 string
         String[] contentSplitted = content.split(",");
-        String base64Image = contentSplitted[1].replaceAll("\"", "");
+        String base64Image = contentSplitted[1].replace("\"", "");
         byte[] jpegBytes = ImageHelper.base64ImageToJpegBytes(base64Image, config.rawImageQuality());
         newsPicture.setContent(jpegBytes);
 
@@ -138,7 +139,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         List<Record1<UUID>> miniature = dslContext.select(Tables.NEWS_PICTURE.ID)
                 .from(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId).and(Tables.NEWS_PICTURE.IS_MINIATURE
                 .eq(true))).fetch().collect(Collectors.toList());
-        if (miniature.size() > 0) {
+        if (!miniature.isEmpty()) {
             News news = findById(newsId);
             if (news != null) {
                 news.setMiniatureId(miniature.get(0).component1());
@@ -158,7 +159,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
     }
 
     public NextScheduledCourrielNotificationCheck getNextScheduledNotificationCheck() {
-        List<NextScheduledCourrielNotificationCheck> nextScheduledCourrielNotificationCheckDates = withDao(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.findAll());
+        List<NextScheduledCourrielNotificationCheck> nextScheduledCourrielNotificationCheckDates = withDao(NextScheduledCourrielNotificationCheckDao.class, DAOImpl::findAll);
         if (nextScheduledCourrielNotificationCheckDates.isEmpty()) {
             // If no date defined, schedule for tomorrow at 7h30
             LocalDateTime nextSchedule = LocalDateTime.now();

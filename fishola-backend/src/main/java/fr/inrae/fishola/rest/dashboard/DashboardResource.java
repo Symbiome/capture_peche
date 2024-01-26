@@ -35,11 +35,14 @@ import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import jakarta.inject.Inject;
@@ -167,9 +170,9 @@ public class DashboardResource extends AbstractFisholaResource {
         Optional<FisholaUser> user = usersDao.findById(userId);
         Preconditions.checkState(user.isPresent());
 
-        ImmutableMap<String, Object> args = ImmutableMap.of(
+        Map<String, Object> args = Map.of(
                 "firstName", user.get().getFirstName()
-        );
+                                         );
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/personal-export.html",
@@ -177,7 +180,7 @@ public class DashboardResource extends AbstractFisholaResource {
         builder.subject("Export de données personnelles");
         builder.addTos(user.get().getEmail());
 
-        byte[] bytes = csv.getBytes(Charsets.UTF_8);
+        byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
         FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
                 .bytes(bytes)
                 .name(fileName)

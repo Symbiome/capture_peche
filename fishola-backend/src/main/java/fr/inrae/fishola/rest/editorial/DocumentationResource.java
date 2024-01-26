@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import fr.inrae.fishola.rest.about.AboutResource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -63,7 +62,7 @@ public class DocumentationResource extends AbstractFisholaResource {
     @GET
     @Path("/documentations")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
+        Map<UUID, Pair<String, String>> docs = dao.listDocumentations();
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
@@ -99,7 +98,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
         Documentation documentation = optional.get();
         String filename = documentation.getName()
-                .replaceAll("[ ]", "_");
+                .replaceAll(" ", "_");
         StreamingOutput output = this.wrapAsStreamingOutput(documentation.getContent());
         Response response = Response.ok(output)
                 .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))

@@ -48,7 +48,6 @@ public class ImageHelper {
         byte[] bytes = Base64.getDecoder().decode(base64Image);
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
             BufferedImage image = ImageIO.read(bis);
-            bis.close();
 
             image = ImageHelper.removeAlphaIfPresent(image);
 
@@ -74,7 +73,7 @@ public class ImageHelper {
                 LogFactory.getLog(ImageHelper.class).info(String.format("Taille: %dkb", jpegBytes.length / 1024));
             }
 
-            Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : " + image);
+            Preconditions.checkState(jpegBytes.length > 0, "Contenu vide pour l'image : %s".formatted(image));
 
             return jpegBytes;
         } catch (IOException ioe) {

@@ -36,7 +36,7 @@ public interface Feedback {
     @Value.Derived
     default UUID id() {
         return UUID.randomUUID();
-    };
+    }
 
     String category();
 

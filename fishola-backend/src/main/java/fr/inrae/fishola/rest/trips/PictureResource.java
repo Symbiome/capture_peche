@@ -193,12 +193,12 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
-        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID %s".formatted(catchId));
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
-        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture %s".formatted(catchId));
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
-        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie %s".formatted(existingTrip.getId()));
 
         // tokenize the data
         String[] contentSplitted = content.split(",");
@@ -423,12 +423,12 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
-        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID %s".formatted(catchId));
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
-        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture %s".formatted(catchId));
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
-        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie %s".formatted(existingTrip.getId()));
 
         catchsDao.deletePicture(catchId, order);
 

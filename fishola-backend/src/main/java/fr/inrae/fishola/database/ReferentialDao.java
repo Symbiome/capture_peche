@@ -25,7 +25,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.AuthorizedSampleDao;
@@ -228,7 +227,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Set<UUID> checkSpeciesOrCreateIfNecessary(String speciesIds) {
         if (StringUtils.isEmpty(StringUtils.trimToNull(speciesIds))) {
-            return ImmutableSet.of();
+            return Set.of();
         }
         List<String> speciesToCreate = Splitter.on(",")
                         .omitEmptyStrings()
@@ -307,9 +306,9 @@ public class ReferentialDao extends AbstractFisholaDao {
         species.setName(speciesName);
         species.setExportAs(exportAs);
         UUID result = withContext(context -> {
-            SpeciesRecord record = context.newRecord(Tables.SPECIES, species);
+            SpeciesRecord newRecord = context.newRecord(Tables.SPECIES, species);
             SpeciesRecord recordInserted = context.insertInto(Tables.SPECIES)
-                    .set(record)
+                    .set(newRecord)
                     .returning(Tables.SPECIES.ID)
                     .fetchOne();
             UUID id = recordInserted.getId();
@@ -331,7 +330,7 @@ public class ReferentialDao extends AbstractFisholaDao {
     public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
         List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
         List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).toList();
-        if (minSize.size() > 0) {
+        if (!minSize.isEmpty()) {
             return Optional.of(minSize.get(0));
         }
         return Optional.empty();

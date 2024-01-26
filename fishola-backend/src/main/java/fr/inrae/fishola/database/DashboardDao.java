@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -355,14 +356,14 @@ public class DashboardDao  extends AbstractFisholaDao {
     protected Map<UUID, List<CatchBean>> computeTopCatchs(Collection<Catch> allCatches,
                                                           ListMultimap<UUID, Integer> catchsWithPictures,
                                                           Set<UUID> measurementPictures,
-                                                          Function<Catch, Integer> getter) {
+                                                          ToIntFunction<Catch> getter) {
         Multimap<UUID, Catch> catchsBySpecies = Multimaps.index(allCatches, Catch::getSpeciesId);
         // On commence par retirer les captures dont la valeur est nulle
-        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.apply(aCatch) != null);
+        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.applyAsInt(aCatch) != 0);
 
         Ordering<Catch> ordering = Ordering.natural()
-                .onResultOf(getter::apply)
-                .reverse();
+                                           .onResultOf(getter::applyAsInt)
+                                           .reverse();
 
         Map<UUID, List<CatchBean>> result = new HashMap<>();
         catchsBySpecies.asMap()

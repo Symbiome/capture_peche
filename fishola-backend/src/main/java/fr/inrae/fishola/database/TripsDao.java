@@ -67,9 +67,9 @@ public class TripsDao extends AbstractFisholaDao {
 
     public UUID create(Trip trip) {
         return withContext(context -> {
-            TripRecord record = context.newRecord(Tables.TRIP, trip);
+            TripRecord newRecord = context.newRecord(Tables.TRIP, trip);
             TripRecord recordInserted = context.insertInto(Tables.TRIP)
-                    .set(record)
+                    .set(newRecord)
                     .returning(Tables.TRIP.ID)
                     .fetchOne();
             UUID id = recordInserted.getId();
@@ -108,9 +108,7 @@ public class TripsDao extends AbstractFisholaDao {
                 LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
                 conditions.add(Tables.TRIP.DAY.between(min, max));
             });
-            lakesFilter.ifPresent(lakesIds -> {
-                conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
-            });
+            lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get())));
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
             SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
@@ -187,15 +185,11 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     protected void deleteTripSpecies(UUID tripId) {
-        withContextNoResult(context -> {
-            context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute();
-        });
+        withContextNoResult(context -> context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute());
     }
 
     protected void deleteTripTechniques(UUID tripId) {
-        withContextNoResult(context -> {
-            context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
-        });
+        withContextNoResult(context -> context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute());
     }
 
     public void delete(UUID tripId) {
@@ -252,14 +246,14 @@ public class TripsDao extends AbstractFisholaDao {
             }
 
             // Execute paginated query
-            pcb.elements = context.selectFrom("catchs_openadom_export")
+            pcb.elements = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
                     .where(conditions)
                     .orderBy(orderByField)
                     .limit(catchesPerPage)
                     .offset(offset * catchesPerPage)
                     .fetchInto(ExportBean.class);
             pcb.offset = offset;
-            pcb.total =  context.selectFrom("catchs_openadom_export").where(conditions).stream().count();
+            pcb.total =  context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW).where(conditions).stream().count();
             return pcb;
         });
     }
@@ -310,9 +304,7 @@ public class TripsDao extends AbstractFisholaDao {
             picturesForTrip.tripDate = trip.getDay();
             picturesForTrip.tripId = trip.getId();
             picturesForTrip.tripName = trip.getName();
-            withDaoNoResult(LakeDao.class, lakeDao -> {
-                picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName();
-            });
+            withDaoNoResult(LakeDao.class, lakeDao -> picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName());
             ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
             for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
                 picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/preview/" + catchWithPicture.getValue());

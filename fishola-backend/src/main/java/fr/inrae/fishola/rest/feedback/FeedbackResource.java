@@ -21,7 +21,6 @@ package fr.inrae.fishola.rest.feedback;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.FisholaMailAttachment;
@@ -44,6 +43,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/v1/feedback")
@@ -100,11 +100,11 @@ public class FeedbackResource extends AbstractFisholaResource {
         String screenshot = screenshotBytes.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
                 .orElse("L'utilisation n'a pas fournit de capture d'écran");
 
-        ImmutableMap<String, Object> args = ImmutableMap.of(
+        Map<String, Object> args = Map.of(
                 "feedback", feedback,
                 "descriptionText", description,
                 "screenshotText", screenshot
-        );
+                                         );
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/new-feedback.html",

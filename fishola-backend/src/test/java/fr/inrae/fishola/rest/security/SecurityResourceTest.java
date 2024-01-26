@@ -32,10 +32,10 @@ import jakarta.ws.rs.core.MediaType;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-public class SecurityResourceTest extends AbstractFisholaTest {
+class SecurityResourceTest extends AbstractFisholaTest {
 
     @Test
-    public void testLogin() {
+    void testLogin() {
         CookieHandler cookieHandler = new CookieHandler();
         given()
             .when()
@@ -49,7 +49,7 @@ public class SecurityResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testLoginNotFound() {
+    void testLoginNotFound() {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ public class SecurityResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testLoginFail() {
+    void testLoginFail() {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
