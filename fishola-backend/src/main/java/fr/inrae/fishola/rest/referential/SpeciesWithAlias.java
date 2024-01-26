@@ -22,13 +22,13 @@ package fr.inrae.fishola.rest.referential;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.tables.pojos.Species;
-import org.immutables.value.Value;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableSpeciesWithAlias.class)
 public interface SpeciesWithAlias {
 

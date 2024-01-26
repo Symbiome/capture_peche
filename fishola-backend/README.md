@@ -66,9 +66,11 @@ Pour lancer un serveur mail localement, vous pouvez utiliser un mailcatcher :
 * `docker run -p 41080:80 -p 41025:25 -d --name maildev --rm djfarrelly/maildev`
 * Editez l'addresse smtp du serveur (dans application.properties)
 ```properties
-%dev.fishola.smtp-starttls=false
-%dev.fishola.smtp-host=localhost
-%dev.fishola.smtp-port=41025
+quarkus.mailer.start-tls=DISABLED
+quarkus.mailer.host=localhost
+quarkus.mailer.port=41025
+quarkus.mailer.from=fishola@codelutin.com
+quarkus.mailer.mock=false
 ```
 L'ihm de mail est accessible sur localhost:41080
 

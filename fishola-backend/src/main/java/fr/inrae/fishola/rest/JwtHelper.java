@@ -35,8 +35,8 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;

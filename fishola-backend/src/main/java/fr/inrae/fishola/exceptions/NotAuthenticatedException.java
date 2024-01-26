@@ -21,7 +21,7 @@ package fr.inrae.fishola.exceptions;
  * #L%
  */
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 public class NotAuthenticatedException extends AbstractFisholaRuntimeException {
 

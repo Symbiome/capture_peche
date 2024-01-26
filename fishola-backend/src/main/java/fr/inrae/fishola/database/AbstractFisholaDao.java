@@ -25,15 +25,17 @@ import fr.inrae.fishola.FisholaConfiguration;
 import io.agroal.api.AgroalDataSource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
 
-import static javax.transaction.Transactional.TxType.MANDATORY;
+import static jakarta.transaction.Transactional.TxType.MANDATORY;
+
 
 @Transactional(MANDATORY)
 public abstract class AbstractFisholaDao {

@@ -22,13 +22,14 @@ package fr.inrae.fishola.rest.feedback;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import org.immutables.value.Value;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableFeedback.class)
 public interface Feedback {
 

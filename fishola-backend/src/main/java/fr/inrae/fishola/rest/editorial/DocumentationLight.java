@@ -22,11 +22,11 @@ package fr.inrae.fishola.rest.editorial;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
+import fr.inrae.fishola.ImmutableObject;
 
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableDocumentationLight.class)
 public interface DocumentationLight {
 

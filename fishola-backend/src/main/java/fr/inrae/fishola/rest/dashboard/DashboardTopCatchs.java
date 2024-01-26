@@ -22,13 +22,13 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.rest.trips.CatchBean;
-import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableDashboardTopCatchs.class)
 public interface DashboardTopCatchs {
 

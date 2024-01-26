@@ -22,12 +22,12 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
+import fr.inrae.fishola.ImmutableObject;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableDashboardLastTrip.class)
 public interface DashboardLastTrip {
 
