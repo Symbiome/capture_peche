@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.nuiton</groupId>
         <artifactId>pom</artifactId>
-        <version>11.13</version>
+        <version>11.14</version>
     </parent>
 
     <groupId>fr.inrae</groupId>
@@ -75,7 +75,6 @@
         <animal.sniffer.skip>true</animal.sniffer.skip>
         <gpg.skip>true</gpg.skip>
 
-        <dependencyPluginVersion>3.6.1</dependencyPluginVersion>
         <licensePluginVersion>2.0.0</licensePluginVersion>
 
         <!--
