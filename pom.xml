@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.nuiton</groupId>
         <artifactId>pom</artifactId>
-        <version>11.14</version>
+        <version>11.15</version>
     </parent>
 
     <groupId>fr.inrae</groupId>
@@ -295,13 +295,6 @@
                         </extraExtensions>
                     </configuration>
                 </plugin>
-
-                <!-- En attendant de savoir si on peut le remettre dans le POM parent -->
-                <plugin>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-
             </plugins>
         </pluginManagement>
         <plugins>
