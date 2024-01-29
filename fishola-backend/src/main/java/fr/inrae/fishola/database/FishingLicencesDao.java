@@ -4,7 +4,7 @@ import fr.inrae.fishola.entities.tables.daos.FisholaUserLicencesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
 import fr.inrae.fishola.rest.licences.LicenceResponseBean;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
