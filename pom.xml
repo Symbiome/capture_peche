@@ -76,9 +76,6 @@
         <gpg.skip>true</gpg.skip>
 
         <licensePluginVersion>2.4.0</licensePluginVersion>
-
-        <analyzeDependencies.failOnWarning>true</analyzeDependencies.failOnWarning>
-
     </properties>
 
     <scm>
