@@ -77,16 +77,7 @@
 
         <licensePluginVersion>2.0.0</licensePluginVersion>
 
-        <!--
-        This is temporary because of this incorrect failure :
-        [WARNING] Non-test scoped test only dependencies found:
-        [WARNING]    org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
-
-        Check the issue for resolution : https://issues.apache.org/jira/browse/MDEP-753
-        22/12/2021 : The current status is that a vote is currently running about maven-dependency-analyzer release (1.11.4?)
-        Check https://repo1.maven.org/maven2/org/apache/maven/shared/maven-dependency-analyzer/ expecting any version above 1.11.3
-        -->
-        <analyzeDependencies.failOnWarning>false</analyzeDependencies.failOnWarning>
+        <analyzeDependencies.failOnWarning>true</analyzeDependencies.failOnWarning>
 
     </properties>
 
