@@ -38,7 +38,9 @@
         :src="licenceUrl"
         alt="Aperçu de la carte"
       />
-      <!-- TODO : afficher quelque chose lorsque c'est un fichier pdf (une image par défaut ?)       -->
+      <div v-else src="/img/dashboard.png"  class="preview-img pdf-img">
+        <i class="icon-fishing"/>
+      </div>
     </div>
 
     <div class="item-description" @click="openLicence()">
@@ -143,13 +145,16 @@ export default class FishingLicenceItem extends Vue {
   #preview {
     display: flex;
     padding-left: @margin-medium;
-    width: 200px;
+    width: 140px;
     justify-content: center;
   }
 
   .preview-img {
-    max-width: 100%;
-    max-height: 110px;
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    object-fit: cover;
+    border:2px solid @pelorous;
   }
 
   .item-selection {
@@ -159,6 +164,15 @@ export default class FishingLicenceItem extends Vue {
     input {
       margin: 0px;
     }
+  }
+  .pdf-img {
+      font-size: @pastille-size;
+      line-height: calc(@pastille-size);
+      color: @pelorous;
+      background: @white;
+      margin:auto;
+      text-align: center;
+      padding-top:20px;
   }
 
   .item-description {
