@@ -263,11 +263,11 @@ router.beforeEach((to, from, next) => {
     next();
   } else {
     ProfileService.getProfile().then(
-      (profile) => {
+      (_profile) => {
         next();
       },
-      (status) => {
-        console.error("VOUS NE PASSEREZ PAS !", to.name);
+      (_status) => {
+        console.error("Route non autorisée : ", to.name);
         next("/login");
       }
     );

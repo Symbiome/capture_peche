@@ -637,16 +637,16 @@ export default class FisholaOpenCVService {
     markerCandidate: DetectedShape
   ): number {
     const matchedPoint = templateMatchedPoint[0];
-    const matchedPointEnd = templateMatchedPoint[1];
+    // const matchedPointEnd = templateMatchedPoint[1];
     // If detected marker is close to marker candidate shape, then this is the marker
-    const MAX_ALLOWED_MARKER_POSITION_DIFF = markerCandidate.width / 10;
+    // const MAX_ALLOWED_MARKER_POSITION_DIFF = markerCandidate.width / 10;
     const diffX = Math.abs(matchedPoint.x - markerCandidate.leftX);
     const diffY = Math.abs(matchedPoint.y - markerCandidate.topY);
-    const diffWidth =
+    /*const diffWidth =
       Math.max(
         matchedPointEnd.x - matchedPoint.x,
         matchedPointEnd.y - matchedPoint.y
-      ) - markerCandidate.width;
+      ) - markerCandidate.width;*/
     return diffX + diffY;
   }
 
@@ -686,7 +686,6 @@ export default class FisholaOpenCVService {
       // Check whether OpenCV is loaded or not
       if (!this.cv) {
         // If not, let's create an async script to load it
-        const callbackTarget = this;
         const head = document.getElementsByTagName("head").item(0);
         const script = document.createElement("script");
         script.setAttribute("type", "text/javascript");
@@ -699,7 +698,7 @@ export default class FisholaOpenCVService {
         );
         document.addEventListener(
           "open-cv-loaded",
-          function(e) {
+          function (_e) {
             // @ts-ignore
             FisholaOpenCVService.INSTANCE.cv = window.cv;
             resolve();

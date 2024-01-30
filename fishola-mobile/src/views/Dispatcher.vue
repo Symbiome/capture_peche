@@ -62,7 +62,7 @@ export default class DispatcherView extends Vue {
 
         this.startupFinished();
       },
-      (status) => {
+      (_status) => {
         // Only push route if no route has already been pushed (typically when opening from external url)
         if (router.currentRoute.name == "dispatcher") {
           // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login

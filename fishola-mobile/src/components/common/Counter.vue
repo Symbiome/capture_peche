@@ -36,7 +36,7 @@ export default class Counter extends Vue {
   @Prop() n:number;
 
   @Watch('n')
-  onNChanged(value: number, oldValue: number) {
+  onNChanged(_value: number, _oldValue: number) {
     clearInterval(this.interval);
     if (this.n == this.displayNumber){
       return;

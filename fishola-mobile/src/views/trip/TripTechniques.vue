@@ -78,7 +78,6 @@
 
 <script lang="ts">
 import { Technique, TripBean } from "@/pojos/BackendPojos";
-import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import ReferentialService from "@/services/ReferentialService";

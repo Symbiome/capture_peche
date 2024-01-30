@@ -499,7 +499,7 @@ Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Lake, Feedback, News } from "@/pojos/BackendPojos";
@@ -559,7 +559,7 @@ export default class AboutView extends Vue {
         kf.lakes.forEach((l) => this.lakes.push(l));
         this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
-      (error) => {
+      (_error) => {
         // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
         this.lakes.push({
           id: "leman",
@@ -628,7 +628,7 @@ export default class AboutView extends Vue {
           10000
         );
       },
-      (error) => {
+      (_error) => {
         this.$root.$emit(
           "toaster-error",
           "Une erreur est survenue, merci de réessayer ultérieurement"

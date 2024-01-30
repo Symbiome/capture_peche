@@ -61,7 +61,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import FormInput from '@/components/common/FormInput.vue';
-import Constants from '@/services/Constants';
 import ProfileService from '@/services/ProfileService';
 import Helpers from '@/services/Helpers';
 

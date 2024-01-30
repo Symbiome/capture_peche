@@ -99,7 +99,6 @@
 import TripSummary from '@/pojos/TripSummary';
 import {Lake, Weather, SpeciesWithAlias, Technique} from '@/pojos/BackendPojos';
 
-import Constants from '@/services/Constants';
 import Helpers from '@/services/Helpers';
 import {LakesWeathersTripTypesSpeciesAndTechniques} from '@/services/ReferentialService';
 import ReferentialService from '@/services/ReferentialService';
@@ -109,7 +108,6 @@ import FormSelect from '@/components/common/FormSelect.vue'
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
 import moment from 'moment';
 
 @Component({

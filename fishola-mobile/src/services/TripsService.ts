@@ -430,7 +430,7 @@ export default class TripsService extends AbstractFisholaService {
             trip.id = '' + new Date().getTime();
         }
         this.removeSaveDelayMarker(trip);
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string>((resolve, _reject) => {
             this.getDatabase()
             .dirtyTrips
             .put(trip)
@@ -708,7 +708,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static hasRunningTrip():Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+        return new Promise<boolean>((resolve, _reject) => {
             this.getRunningTrip()
                 .then(
                     () => resolve(true), 
