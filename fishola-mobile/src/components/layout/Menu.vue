@@ -133,6 +133,14 @@ export default class Menu extends Vue {
       onlyUnlogged: false,
     },
     {
+      name: "licences",
+      label: "Cartes de pêche",
+      iconName: "fishing",
+      clickHandler: this.goLicences,
+      onlyConnected: true,
+      onlyUnlogged: false,
+    },
+    {
       name: "settings",
       label: "Paramètres",
       iconName: "settings",
@@ -305,6 +313,11 @@ export default class Menu extends Vue {
   goDashboard() {
     this.closeMenu();
     RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+  }
+
+  goLicences() {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(router, "/licences");
   }
 
   goDocumentation() {

@@ -370,8 +370,7 @@ import {
   CatchBean,
   Technique,
   SpeciesWithAlias,
-  TripMode,
-Species,
+  TripMode
 } from "@/pojos/BackendPojos";
 import CatchSummary from "@/pojos/CatchSummary";
 

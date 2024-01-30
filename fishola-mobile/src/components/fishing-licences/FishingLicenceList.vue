@@ -18,30 +18,42 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #L%
   -->
+
 <template>
-  <div>
-    <div id="root-without-menu">
-      <slot />
+  <div class="licences-list">
+    <div v-for="licence in licences" :key="licence.id">
+      <FishingLicenceItem :licence="licence"
+                          @selected="licenceSelected(licence.id)"
+                          @unselected="licenceUnselected(licence.id)" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
+import { LicenceResponseBean } from "@/pojos/BackendPojos";
+import FishingLicenceItem from "./FishingLicenceItem.vue";
 
-import { Component, Vue } from 'vue-property-decorator';
 
-@Component
-export default class NoMenuLayout extends Vue {
+@Component({
+  components: {
+    FishingLicenceList,
+    FishingLicenceItem
+  },
+})
+export default class FishingLicenceList extends Vue {
+  @Prop() licences!: LicenceResponseBean[];
 
+  licenceSelected(licenceId: string) {
+    this.$emit("licence-selected", licenceId);
+  }
+
+  licenceUnselected(licenceId: string) {
+    this.$emit("licence-unselected", licenceId);
+  }
 }
-
 </script>
 
 <style scoped lang="less">
-
-#root-without-menu {
-  height: 100%;
-  width: 100%;
-}
-
+@import "../../less/main";
 </style>

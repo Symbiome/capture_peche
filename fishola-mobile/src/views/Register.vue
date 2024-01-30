@@ -195,7 +195,7 @@ export default class RegisterView extends Vue {
     this.$root.$emit("toaster-error", "Veuillez corriger les erreurs");
   }
 
-  technicalError(status: number) {
+  technicalError(_status: number) {
     this.$root.$emit(
       "toaster-error",
       "Erreur technique, merci de réessayer plus tard"

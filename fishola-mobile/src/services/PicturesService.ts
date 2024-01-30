@@ -23,7 +23,6 @@ import AbstractFisholaService from "@/services/AbstractFisholaService";
 import StoredPicture from "@/pojos/StoredPicture";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import TripsService from "./TripsService";
-import { pick } from "lodash";
 
 export default class PicturesService extends AbstractFisholaService {
   constructor() {
@@ -46,7 +45,7 @@ export default class PicturesService extends AbstractFisholaService {
       isMeasurementPicture: isMeasurementPicture,
       order: order,
     };
-    const savedId = await this.getDatabase().dirtyPictures.put(newPicture);
+    await this.getDatabase().dirtyPictures.put(newPicture);
     if (isMeasurementPicture) {
       await this.getDatabase().lastMeasurementPic.clear();
       await this.getDatabase().lastMeasurementPic.put(newPicture);

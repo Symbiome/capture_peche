@@ -116,7 +116,6 @@ import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import { LakesAndTripTypes } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
-import { CoordsAndLake } from "@/services/GeolocationService";
 import GeolocationService from "@/services/GeolocationService";
 
 import BackButton from "@/components/common/BackButton.vue";

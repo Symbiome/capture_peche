@@ -69,7 +69,7 @@ import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 import {UserSettings} from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
-import { Component, Prop, Watch, Vue } from 'vue-property-decorator';
+import { Component, Watch, Vue } from 'vue-property-decorator';
 import DocumentationService from '../services/DocumentationService';
 
 @Component({

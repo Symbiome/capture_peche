@@ -63,7 +63,8 @@ export default abstract class AbstractFisholaService {
             reject(this.status);
           }
         };
-        xhr.onerror = function(e) {
+        xhr.onerror = function (e) {
+          console.error(e);
           reject("Impossible de contacter le serveur");
         }
         xhr.send();

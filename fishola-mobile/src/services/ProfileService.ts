@@ -23,7 +23,6 @@ import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
 import { UserSettings, UpdatePasswordBean } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
-import Helpers from "./Helpers";
 
 export class Credentials {
   constructor(public email: string, public password: string) {}
@@ -70,7 +69,7 @@ export default class ProfileService extends AbstractFisholaService {
     });
   }
 
-  static safeDeleteAccount(profile: UserProfile): Promise<void> {
+  static safeDeleteAccount(_profile: UserProfile): Promise<void> {
     return new Promise((resolve, reject) => {
       this.backendDelete("/v1/security/profile").then(() => {
         UserProfile.unsetCurrent();
@@ -88,7 +87,7 @@ export default class ProfileService extends AbstractFisholaService {
    * - 404 if mail does not exist
    */
   static signin(credentials: Credentials): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.backendPost("/v1/security/login", credentials).then(
         () => {
           resolve(200);
@@ -109,7 +108,7 @@ export default class ProfileService extends AbstractFisholaService {
    * - 404 if mail does not exist
    */
   static requestPasswordReset(credentials: Credentials): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.backendPost("/v1/security/request-password-reset", credentials).then(
         () => {
           resolve(200);

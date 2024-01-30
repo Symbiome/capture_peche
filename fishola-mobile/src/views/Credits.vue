@@ -69,7 +69,7 @@ import {Editorial} from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
 import TripsService from '@/services/TripsService';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {

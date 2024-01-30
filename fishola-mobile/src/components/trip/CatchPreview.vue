@@ -66,7 +66,6 @@
 
 <script lang="ts">
 import CatchSummary from "@/pojos/CatchSummary";
-import { SpeciesWithAlias, Technique, TripBean } from "@/pojos/BackendPojos";
 
 import PicturePreview from "@/components/trip/PicturePreview.vue";
 import Top from "@/components/common/Top.vue";
