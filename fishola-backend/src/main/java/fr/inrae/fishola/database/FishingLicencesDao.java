@@ -3,9 +3,7 @@ package fr.inrae.fishola.database;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserLicencesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
 import fr.inrae.fishola.rest.licences.LicenceResponseBean;
-
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,13 +13,7 @@ public class FishingLicencesDao extends AbstractFisholaDao {
 
     public List<LicenceResponseBean> getLicencesByUser(UUID userId) {
         List<FisholaUserLicences> licences = withDao(FisholaUserLicencesDao.class, dao -> dao.fetchByUserId(userId));
-        List<LicenceResponseBean> licenceBeans = new ArrayList<>();
-        if (licences != null) {
-            for (FisholaUserLicences licence : licences) {
-                LicenceResponseBean licenceBean = this.convertToBean(licence);
-                licenceBeans.add(licenceBean);
-            }
-        } // otherwise, return empty list
+        List<LicenceResponseBean> licenceBeans = licences.stream().map(this::convertToBean).toList();
         return licenceBeans;
     }
 
