@@ -38,12 +38,15 @@ public class FishingLicencesDao extends AbstractFisholaDao {
     }
 
     public void createLicence(FisholaUserLicences licence) {
+        List<FisholaUserLicences> licences = withDao(FisholaUserLicencesDao.class, dao -> dao.fetchByUserId(licence.getUserId()));
+        List<String> licencesNames = licences.stream().map(FisholaUserLicences::getName).toList();
+        if (licencesNames.contains(licence.getName())) {
+            throw new IllegalArgumentException("Une carte de pêche porte déjà ce nom.");
+        }
         withDaoNoResult(FisholaUserLicencesDao.class, dao -> dao.insert(licence));
     }
 
     public void deleteLicence(UUID licenceId) {
         withDaoNoResult(FisholaUserLicencesDao.class, dao -> dao.deleteById(licenceId));
     }
-
-
 }

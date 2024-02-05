@@ -190,12 +190,16 @@ export default class NewFishingLicence extends Vue {
       );
 
       RouterUtils.pushRouteNoDuplicate(router, "/licences");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
-      this.$root.$emit(
-        "toaster-error",
-        "Une erreur s'est produite. Veuillez réessayer."
-      );
+      if (error.content !== undefined && error.content.error !== undefined) {
+        this.$root.$emit("toaster-error", error.content.error);      
+      } else {
+        this.$root.$emit(
+            "toaster-error",
+            "Une erreur inattendue s'est produite. Veuillez réessayer."
+        );
+      }
     }
   }
 

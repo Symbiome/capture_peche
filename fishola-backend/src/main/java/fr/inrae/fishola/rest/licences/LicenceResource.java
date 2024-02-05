@@ -14,6 +14,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,20 +84,32 @@ public class LicenceResource extends AbstractFisholaResource {
         licence.setType(licenceFromClientBean.type);
         licence.setExpirationDate(licenceFromClientBean.expirationDate);
 
-        fishingLicencesDao.createLicence(licence);
+        Response response;
+        try {
+            fishingLicencesDao.createLicence(licence);
+            if (log.isDebugEnabled()) {
+                log.debugf("New fishing licence saved : id=%s; owner=%s", licence.getId(), userId);
+            }
 
-        if (log.isDebugEnabled()) {
-            log.debugf("New fishing licence saved : id=%s; owner=%s", licence.getId(), userId);
+            LicenceResponseBean licenceToSend = new LicenceResponseBean();
+            licenceToSend.id = licence.getId();
+            licenceToSend.type = licence.getType();
+            licenceToSend.name = licence.getName();
+            licenceToSend.userId = licence.getUserId();
+            licenceToSend.expirationDate = licence.getExpirationDate();
+
+            response = wrapEntity(licenceToSend, userIdAndRenewal);
+        } catch (Exception e) {
+            Map<String, String> entity = new LinkedHashMap<>();
+            if (StringUtils.isNotEmpty(e.getMessage())) {
+                entity.put("error", e.getMessage());
+            } else {
+                entity.put("error", "Unexpected error");
+            }
+            Response.ResponseBuilder responseBuilder = Response.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity(entity);
+            response = buildResponse(responseBuilder, userIdAndRenewal);
         }
-
-        LicenceResponseBean licenceToSend = new LicenceResponseBean();
-        licenceToSend.id = licence.getId();
-        licenceToSend.type = licence.getType();
-        licenceToSend.name = licence.getName();
-        licenceToSend.userId = licence.getUserId();
-        licenceToSend.expirationDate = licence.getExpirationDate();
-
-        Response response = wrapEntity(licenceToSend, userIdAndRenewal);
         return response;
     }
 
@@ -116,9 +130,13 @@ public class LicenceResource extends AbstractFisholaResource {
             return noContent(userIdAndRenewal);
         } catch (IllegalArgumentException e) {
             Map<String, String> entity = new LinkedHashMap<>();
-            entity.put("error", e.getMessage());
-            Response.ResponseBuilder responseBuilder = Response.noContent()
-                                                               .status(Response.Status.BAD_REQUEST);
+            if (StringUtils.isNotEmpty(e.getMessage())) {
+                entity.put("error", e.getMessage());
+            } else {
+                entity.put("error", "Illegal argument exception.");
+            }
+            Response.ResponseBuilder responseBuilder = Response.status(Response.Status.BAD_REQUEST);
+            responseBuilder.entity(entity);
             Response response = buildResponse(responseBuilder, userIdAndRenewal);
             return response;
         }
