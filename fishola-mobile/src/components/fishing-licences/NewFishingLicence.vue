@@ -46,7 +46,7 @@
                 <input type="date" v-model="newLicenceExpirationDate" />
 
                 <label>Sélectionnez un fichier au format PDF ou JPEG</label>
-                <input type="file" @change="handleFileChange" />
+                <input type="file" @change="handleFileChange" accept="application/pdf, image/jpeg, image/jpg"/>
               </form>
             </div>
             <div class="container-preview">

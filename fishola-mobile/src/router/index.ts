@@ -33,6 +33,7 @@ import Dashboard from "@/views/Dashboard.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
 import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
+import FishingLicenceFullScreen from "@/components/fishing-licences/FishingLicenceFullScreen.vue";
 
 import NewTrip from "@/views/trip/NewTrip.vue";
 import TripMeta from "@/views/trip/TripMeta.vue";
@@ -183,6 +184,12 @@ const routes = [
     name: "licence-new",
     component: NewFishingLicence,
   },
+   {
+    path: "/licences-fullscreen/:type/:url",
+    name: "licence-fullscreen",
+    component: FishingLicenceFullScreen,
+    props:true,
+  },
   {
     path: "/documentation/:tab",
     name: "documentationFaq",
@@ -258,7 +265,7 @@ const router = new VueRouter({
 });
 
 // Protect routes according to authentication status
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (to.meta && to.meta.public) {
     next();
   } else {

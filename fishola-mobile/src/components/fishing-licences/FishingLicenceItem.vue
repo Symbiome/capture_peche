@@ -72,7 +72,7 @@ export default class FishingLicenceItem extends Vue {
   licenceUrl: string = "";
 
   async mounted() {
-    const fileBlob: Blob = await FishingLicenceService.getLicence(
+    const fileBlob = await FishingLicenceService.getLicence(
       this.licence.id
     );
     this.licenceUrl = URL.createObjectURL(fileBlob);
@@ -100,22 +100,14 @@ export default class FishingLicenceItem extends Vue {
   }
 
   async openLicence(): Promise<void> {
-    try {
-      if (this.licence.type === "PDF") {
-        window.open(this.licenceUrl, "_blank");
-      } else {
-        const img = new Image();
-        img.src = this.licenceUrl;
-        const imgWindow = window.open("", "_blank");
-        if (imgWindow) {
-          imgWindow.document.write(img.outerHTML);
-        } else {
-          console.error("La fenêtre n'a pas pu être ouverte.");
+    // @ts-ignore
+    this.$router.push({
+        name: 'licence-fullscreen',
+        params: {
+          'url': this.licenceUrl,
+          'type': this.licence.type
         }
-      }
-    } catch (error) {
-      console.error("Erreur lors du téléchargement du fichier", error);
-    }
+    }); 
   }
 
   deleteLicence(licence: LicenceResponseBean) {
