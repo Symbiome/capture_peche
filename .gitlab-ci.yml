@@ -15,7 +15,7 @@ stages:
   - sonar
 
 build:compile:
-  image: maven:3.8-openjdk-17
+  image: maven:3.8-eclipse-temurin-17
   stage: build
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
@@ -124,7 +124,7 @@ package:android-production:
     - sticky
 
 package:docker-demo:
-  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  image: docker:20
   stage: package
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
@@ -140,7 +140,7 @@ package:docker-demo:
     - docker
 
 package:docker-opencv:
-  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  image: docker:20
   stage: package
   rules:
     - if: '$CI_COMMIT_BRANCH == "feature/opencv.js" && $CI_PIPELINE_SOURCE != "schedule"'
@@ -156,7 +156,7 @@ package:docker-opencv:
     - docker
 
 package:docker-demo-feature:
-  image: registry.nuiton.org/codelutin/dockerfiles:docker
+  image: docker:20
   stage: package
   rules:
     - if: '$CI_COMMIT_BRANCH != "develop"'
@@ -183,7 +183,7 @@ deploy:demo:
     - wget -O- https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
-  image: maven:3.8-openjdk-17
+  image: maven:3.8-eclipse-temurin-17
   stage: sonar
   when: manual
   script:
