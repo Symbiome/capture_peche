@@ -3,8 +3,6 @@ include:
     file: ci.yml
 
 variables:
-  # Improve performance with overlayfs.
-  DOCKER_DRIVER: overlay2
   ANDROID_COMPILE_SDK: "29"
   ANDROID_BUILD_TOOLS: "29.0.3"
   ANDROID_SDK_TOOLS: "6200805"
@@ -34,7 +32,7 @@ build:compile:
       - fishola-mobile/node
       - fishola-mobile/node_modules
   script:
-    - TESTCONTAINERS_RYUK_DISABLED=true mvn clean package
+    - mvn clean package
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(?:master|develop)/
     - if: $CI_COMMIT_BRANCH =~ /^(?:master|develop)/
@@ -188,12 +186,6 @@ sonarqube:
   image: maven:3.8-openjdk-17
   stage: sonar
   when: manual
-  services:
-    # DinD service is required for Testcontainers
-    - docker:dind
-  variables:
-    # Instruct Testcontainers to use the daemon of DinD.
-    DOCKER_HOST: "tcp://docker:2375"
   script:
     - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
   tags:
