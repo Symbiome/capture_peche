@@ -130,12 +130,14 @@ package:docker-demo:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
-    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-demo fishola-mobile
-    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo fishola-admin
-    - docker push registry.nuiton.org/inrae/fishola
-    - docker logout registry.nuiton.org
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo fishola-backend
+    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo fishola-mobile
+    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo fishola-admin
+    - docker push $CI_REGISTRY_IMAGE:backend-demo
+    - docker push $CI_REGISTRY_IMAGE:web-demo
+    - docker push $CI_REGISTRY_IMAGE:admin-demo
+    - docker logout $CI_REGISTRY
   tags:
     - docker
 
@@ -146,12 +148,14 @@ package:docker-opencv:
     - if: '$CI_COMMIT_BRANCH == "feature/opencv.js" && $CI_PIPELINE_SOURCE != "schedule"'
       when: always
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
-    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-opencv fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-opencv fishola-mobile
-    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-opencv fishola-admin
-    - docker push registry.nuiton.org/inrae/fishola
-    - docker logout registry.nuiton.org
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-opencv fishola-backend
+    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-opencv fishola-mobile
+    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-opencv fishola-admin
+    - docker push $CI_REGISTRY_IMAGE:backend-opencv
+    - docker push $CI_REGISTRY_IMAGE:web-opencv
+    - docker push $CI_REGISTRY_IMAGE:admin-opencv
+    - docker logout $CI_REGISTRY
   tags:
     - docker
 
@@ -162,12 +166,14 @@ package:docker-demo-feature:
     - if: '$CI_COMMIT_BRANCH != "develop"'
       when: manual
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.nuiton.org
-    - docker build --no-cache --file fishola-backend/src/main/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:backend-demo-${CI_COMMIT_REF_NAME#feature/} fishola-backend
-    - docker build --no-cache --file fishola-mobile/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:web-demo-${CI_COMMIT_REF_NAME#feature/} fishola-mobile
-    - docker build --no-cache --file fishola-admin/docker/Dockerfile.demo -t registry.nuiton.org/inrae/fishola:admin-demo-${CI_COMMIT_REF_NAME#feature/} fishola-admin
-    - docker push registry.nuiton.org/inrae/fishola
-    - docker logout registry.nuiton.org
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-demo-${CI_COMMIT_REF_NAME#feature/} fishola-backend
+    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-demo-${CI_COMMIT_REF_NAME#feature/} fishola-mobile
+    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-demo-${CI_COMMIT_REF_NAME#feature/} fishola-admin
+    - docker push $CI_REGISTRY_IMAGE:backend-demo-${CI_COMMIT_REF_NAME#feature/}
+    - docker push $CI_REGISTRY_IMAGE:web-demo-${CI_COMMIT_REF_NAME#feature/}
+    - docker push $CI_REGISTRY_IMAGE:admin-demo-${CI_COMMIT_REF_NAME#feature/}
+    - docker logout $CI_REGISTRY
   tags:
     - docker
 
