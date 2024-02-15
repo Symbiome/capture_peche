@@ -25,7 +25,7 @@ CREATE TYPE licence_type
 CREATE TABLE fishola_user_licences (
     id UUID DEFAULT uuid_generate_v4() NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    user_id UUID REFERENCES fishola_user(id) NOT NULL,
+    user_id UUID REFERENCES fishola_user(id) ON DELETE CASCADE,
     expiration_date DATE NOT NULL,
     type licence_type NOT NULL DEFAULT licence_type('PDF'),
     content BYTEA NOT NULL

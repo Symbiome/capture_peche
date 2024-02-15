@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 
 @QuarkusTest
@@ -33,10 +32,9 @@ public class LicenceDaoTest extends AbstractFisholaTest {
     void testRemovingUserDeletesLicences() throws IOException {
 
         // User information
-        Optional<FisholaUser> user = this.usersDao.findByEmail("thimel@codelutin.com");
-        Assertions.assertTrue(user.isPresent());
-        UUID userId = user.get().getId();
-        String token = login("thimel@codelutin.com", "sispea");
+        Optional<FisholaUser> optionalUser = this.usersDao.findByEmail("chloe.goulon@inrae.fr");
+        Assertions.assertTrue(optionalUser.isPresent());
+        FisholaUser user = optionalUser.get();
 
         // Insert a fishing licence
         String fileName = "fishing-licence-document.pdf";
@@ -47,7 +45,7 @@ public class LicenceDaoTest extends AbstractFisholaTest {
         File file = new File(fishingLicenceUrl.getFile());
         byte[] pdfFishingLicenceAsBytes = Files.readAllBytes(Path.of(file.getAbsolutePath()));
         FisholaUserLicences licence = new FisholaUserLicences();
-        licence.setUserId(userId);
+        licence.setUserId(user.getId());
         licence.setName("licence");
         licence.setType(LicenceType.PDF);
         licence.setExpirationDate(LocalDate.now().plusYears(2));
@@ -55,9 +53,12 @@ public class LicenceDaoTest extends AbstractFisholaTest {
         fishingLicencesDao.createLicence(licence);
 
         // Delete user
-        usersDao.deleteUser(user.get());
+        usersDao.deleteUser(user);
 
         // Check that licence is also deleted
         Assertions.assertTrue(fishingLicencesDao.getLicence(licence.getId()).isEmpty());
+
+        // User is needed for other tests, so we add it again.
+        usersDao.create(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications());
     }
 }
