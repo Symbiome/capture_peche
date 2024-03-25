@@ -175,7 +175,7 @@ SELECT
     c.id AS id_capture,
     normalize_for_export(ct.export_as) AS technique_de_peche_par_capture,
     normalize_for_export(s.export_as) AS espece_capturee,
-    CASE WHEN c.edited_size is not null and c.edited_size > 0 THEN c.edited_size * 10 ELSE c.size * 10 END AS longueur_totale_du_poisson,
+    CASE WHEN c.edited_size is not null and c.edited_size > 0 THEN c.edited_size ELSE c.size * 10 END AS longueur_totale_du_poisson,
     c.automatic_measure * 10 AS longueur_totale_du_poisson_calculee,
     CASE WHEN c.edited_weight is not null and c.edited_weight > 0 THEN c.edited_weight ELSE c.weight END AS poids_du_poisson,
     CASE c.kept WHEN true THEN 'non'

@@ -48,6 +48,7 @@
       :default-sort="[sortField, sortOrder]"
       :loading="!catches"
       :total="total"
+      class="clickable"
     >
       <template slot-scope="props">
         <b-table-column
@@ -293,4 +294,8 @@ export default class LakesVue extends Vue {
 
 <style scoped lang="less">
 @import "../less/main";
+
+.clickable {
+  cursor: pointer;
+}
 </style>

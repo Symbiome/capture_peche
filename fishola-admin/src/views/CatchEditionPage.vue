@@ -60,16 +60,16 @@
           </div>
 
           <div class="columns">
-            <b-field label="Taille corrigée (cm)" class="column">
+            <b-field label="Taille corrigée (mm)" class="column">
               <b-numberinput
                 v-model="aCatch.editedSize"
                 type="numeric"
                 class="number-input"
               />
             </b-field>
-            <b-field label="Taille renseignée par le pêcheur" class="column">
+            <b-field label="Taille renseignée par le pêcheur (mm)" class="column">
               <b-numberinput
-                v-model="aCatch.size"
+                v-model="aCatch.sizeInMm"
                 disabled
                 type="numeric"
                 class="number-input"
@@ -84,7 +84,7 @@
                 class="number-input"
               />
             </b-field>
-            <b-field label="Poids renseigné par le pêcheur" class="column">
+            <b-field label="Poids renseigné par le pêcheur (g)" class="column">
               <b-numberinput
                 v-model="aCatch.weight"
                 disabled
@@ -247,6 +247,7 @@ export default class CatchEditionPage extends Vue {
       );
       this.otherPicsUrls.push(otherPicURL);
     });
+    this.aCatch.sizeInMm = this.aCatch.size * 10;
   }
 
   async save() {
