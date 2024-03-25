@@ -31,10 +31,10 @@ import org.apache.commons.io.IOUtils;
 import org.flywaydb.core.Flyway;
 import org.jboss.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -61,7 +61,7 @@ public class FisholaApplication {
             log.infof("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile());
         }
 
-        Map<String, String> flywayPlaceholders = ImmutableMap.of(
+        Map<String, String> flywayPlaceholders = Map.of(
                 "baseUrl", config.backendBaseUrl().orElse("http://localhost:8080"),
                 "exportSafeHours", String.valueOf(config.exportSafeHours())
         );

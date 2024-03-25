@@ -72,8 +72,9 @@ import Avatar from "@/components/common/Avatar.vue";
 import UserProfile from "@/pojos/UserProfile";
 
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 export class MenuItem {
   constructor(
@@ -128,6 +129,14 @@ export default class Menu extends Vue {
       label: "Tableau de bord",
       iconName: "dashboard",
       clickHandler: this.goDashboard,
+      onlyConnected: true,
+      onlyUnlogged: false,
+    },
+    {
+      name: "licences",
+      label: "Cartes de pêche",
+      iconName: "fishing",
+      clickHandler: this.goLicences,
       onlyConnected: true,
       onlyUnlogged: false,
     },
@@ -203,46 +212,50 @@ export default class Menu extends Vue {
   }
 
   async loadProfile() {
-    let profile = await ProfileService.getProfile();
+    try {
+      let profile = await ProfileService.getProfile();
 
-    // Notify user if it is an old user and he does not know it is possible
-    // To receive notification par mail
-    if (
-      !profile.acceptsMailNotifications &&
-      (!profile.lastNewsSeenDate ||
+      // Notify user if it is an old user and he does not know it is possible
+      // To receive notification par mail
+      if (
+        !profile.acceptsMailNotifications &&
+        (!profile.lastNewsSeenDate ||
+          // @ts-ignore
+          !profile.lastNewsSeenDate[0] ||
+          // @ts-ignore
+          profile.lastNewsSeenDate[0] == 2021)
+      ) {
+        let acceptsMailNotifications = false;
+        try {
+          await Helpers.confirm(
+            this.$modal,
+            `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+            "Du nouveau sur FISHOLA",
+            "Non",
+            "Oui"
+          );
+          acceptsMailNotifications = true;
+        } catch (_e) {
+          acceptsMailNotifications = false;
+        }
+        profile.acceptsMailNotifications = acceptsMailNotifications;
         // @ts-ignore
-        !profile.lastNewsSeenDate[0] ||
-        // @ts-ignore
-        profile.lastNewsSeenDate[0] == 2021)
-    ) {
-      let acceptsMailNotifications = false;
-      try {
-        await Helpers.confirm(
-          this.$modal,
-          `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-          "Du nouveau sur FISHOLA",
-          "Non",
-          "Oui"
+        profile.lastNewsSeenDate[0] = 2022;
+        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+          // @ts-ignore
+          profile.lastNewsSeenDate
         );
-        acceptsMailNotifications = true;
-      } catch (_e) {
-        acceptsMailNotifications = false;
+        ProfileService.saveProfile(profile);
       }
-      profile.acceptsMailNotifications = acceptsMailNotifications;
-      // @ts-ignore
-      profile.lastNewsSeenDate[0] = 2022;
-      profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-        // @ts-ignore
-        profile.lastNewsSeenDate
-      );
-      ProfileService.saveProfile(profile);
-    }
 
-    this.profileLoaded(profile);
+      this.profileLoaded(profile);
+    } catch (e) {
+      this.connected = false;
+    }
   }
 
   back() {
-    router.push("/about");
+    RouterUtils.pushRouteNoDuplicate(router, "/about");
   }
 
   profileLoaded(profile: UserProfile) {
@@ -267,7 +280,7 @@ export default class Menu extends Vue {
 
   goDispatcher() {
     this.closeMenu();
-    router.push("/");
+    RouterUtils.pushRouteNoDuplicate(router, "/");
   }
 
   goHome() {
@@ -275,46 +288,51 @@ export default class Menu extends Vue {
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        router.push("/trips");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips");
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          router.push("/trips");
+          RouterUtils.pushRouteNoDuplicate(router, "/trips");
         } else {
-          router.push("/about");
+          RouterUtils.pushRouteNoDuplicate(router, "/about");
         }
       });
     } else {
-      router.push("/offline-home/presentation");
+      RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
     }
   }
 
   goProfile() {
     this.closeMenu();
-    router.push("/profile");
+    RouterUtils.pushRouteNoDuplicate(router, "/profile");
   }
 
   goDashboard() {
     this.closeMenu();
-    router.push("/dashboard");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+  }
+
+  goLicences() {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(router, "/licences");
   }
 
   goDocumentation() {
     this.closeMenu();
-    router.push("/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
   }
 
   goSettings() {
     this.closeMenu();
-    router.push("/settings");
+    RouterUtils.pushRouteNoDuplicate(router, "/settings");
   }
 
   goCredits() {
     this.closeMenu();
-    router.push("/credits");
+    RouterUtils.pushRouteNoDuplicate(router, "/credits");
   }
 
   logout() {
@@ -353,7 +371,7 @@ export default class Menu extends Vue {
   }
 
   logguedOut() {
-    router.push("/login");
+    RouterUtils.pushRouteNoDuplicate(router, "/login");
     this.onLogguedOut();
   }
 

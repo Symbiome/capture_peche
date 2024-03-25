@@ -20,50 +20,55 @@
   -->
 <template>
   <div class="catch-preview-list">
-    <div class="new-catch" 
-         v-if="modifiable">
-      <div class="new-catch-square-button"
-           id="new-catch-square-button"
-           v-on:click="newCatch">
-        <i class="pastille icon-plus"/>
+    <div class="new-catch" v-if="modifiable">
+      <div
+        class="new-catch-square-button"
+        id="new-catch-square-button"
+        v-on:click="newCatch"
+      >
+        <i class="pastille icon-plus" />
       </div>
     </div>
-    <div v-for="(c, index) in reversedCatchs()"
-          v-bind:key="c.id"
-          class="preview-wrapper"
-          v-on:click="openCatch(c)">
-      <CatchPreview v-bind:lakeId="lakeId"
-                    v-bind:aCatch="c"
-                    v-on:openCatch="openCatch(c)"
-                    v-bind:metaMode="metaMode"
-                    v-bind:bottom="(bottomMode == 'species' ? 'species' : ('top-' + (index+1)))"/>
+    <div
+      v-for="(c, index) in reversedCatchs()"
+      v-bind:key="c.id"
+      class="preview-wrapper"
+      v-on:click="openCatch(c)"
+    >
+      <CatchPreview
+        v-bind:lakeId="lakeId"
+        v-bind:aCatch="c"
+        v-on:openCatch="openCatch(c)"
+        v-bind:metaMode="metaMode"
+        v-bind:bottom="
+          bottomMode == 'species' ? 'species' : 'top-' + (index + 1)
+        "
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import CatchSummary from '@/pojos/CatchSummary';
+import CatchSummary from "@/pojos/CatchSummary";
 
-import CatchPreview from '@/components/trip/CatchPreview.vue';
+import CatchPreview from "@/components/trip/CatchPreview.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
-    CatchPreview
-  }
+    CatchPreview,
+  },
 })
 export default class CatchPreviewList extends Vue {
+  @Prop() lakeId: string;
+  @Prop() catchs: CatchSummary[];
+  @Prop() modifiable: boolean;
+  @Prop({ default: true }) reverse: boolean;
+  @Prop({ default: "size" }) metaMode: string;
+  @Prop({ default: "species" }) bottomMode: string;
 
-  @Prop() lakeId:string;
-  @Prop() catchs:CatchSummary[];
-  @Prop() modifiable:boolean;
-  @Prop({default: true}) reverse:boolean;
-  @Prop({default: 'size'}) metaMode:string;
-  @Prop({default: 'species'}) bottomMode:string;
-
-  created() {
-  }
+  created() {}
 
   mounted() {
     if (this.catchs && this.catchs.length > 0) {
@@ -81,8 +86,10 @@ export default class CatchPreviewList extends Vue {
 
   scrollToFirstElement() {
     try {
-      const squareButton = document.getElementById('new-catch-square-button');
-      const scrollableElements = document.getElementsByClassName('catch-preview-list-scrollable');
+      const squareButton = document.getElementById("new-catch-square-button");
+      const scrollableElements = document.getElementsByClassName(
+        "catch-preview-list-scrollable"
+      );
       if (squareButton && scrollableElements) {
         scrollableElements[0].scrollLeft = squareButton.clientWidth + 2; // +2 pour la bordure
       }
@@ -92,23 +99,20 @@ export default class CatchPreviewList extends Vue {
   }
 
   newCatch() {
-    this.$emit('newCatch');
+    this.$emit("newCatch");
   }
 
-  openCatch(aCatch:CatchSummary) {
-    this.$emit('openCatchFromId', aCatch.id);
+  openCatch(aCatch: CatchSummary) {
+    this.$emit("openCatchFromId", aCatch.id);
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .catch-preview-list {
-
   height: 100%;
   display: flex;
 
@@ -116,7 +120,6 @@ export default class CatchPreviewList extends Vue {
   padding-right: calc(@margin-large + 5px);
 
   .new-catch {
-
     height: 100%;
 
     padding-top: @vertical-margin-xx-small;
@@ -128,7 +131,7 @@ export default class CatchPreviewList extends Vue {
       justify-content: center;
       align-items: center;
 
-      background-image: url("/img/illustration_fish_wire.svg");
+      background-image: url("~/public/img/illustration_fish_wire.svg");
       background-repeat: no-repeat;
       background-size: auto 75%;
       background-position: center;
@@ -151,7 +154,6 @@ export default class CatchPreviewList extends Vue {
         color: @white;
         background: @pale-sky;
       }
-
     }
   }
 
@@ -160,7 +162,6 @@ export default class CatchPreviewList extends Vue {
     padding-right: calc(@margin-large-desktop + 5px);
 
     .new-catch {
-
       .new-catch-square-button {
         width: 295px;
 
@@ -170,11 +171,8 @@ export default class CatchPreviewList extends Vue {
           font-size: 15px;
           line-height: calc(15px);
         }
-
       }
     }
-
   }
-
 }
 </style>

@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SecurityResourceUnitTests {
 
     @Test
-    public void testEncodeSampleBaseId() {
+    void testEncodeSampleBaseId() {
         assertEquals("A", encodeSampleBaseId(0));
         assertEquals("B", encodeSampleBaseId(1));
         assertEquals("D", encodeSampleBaseId(3));
@@ -70,7 +70,7 @@ class SecurityResourceUnitTests {
     }
 
     @Test
-    public void testEncodeSampleBaseIdNoConflict() {
+    void testEncodeSampleBaseIdNoConflict() {
         Set<String> done = new HashSet<>();
         for (int i=0; i<1000000; i++) {
             String encoded = encodeSampleBaseId(i);

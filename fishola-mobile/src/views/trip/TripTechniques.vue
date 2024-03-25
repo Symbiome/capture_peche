@@ -19,45 +19,48 @@
   #L%
   -->
 <template>
-  <div class="edit-trip-techniques page-with-header-and-footer shifted-background">
+  <div
+    class="edit-trip-techniques page-with-header-and-footer shifted-background"
+  >
     <FisholaHeader />
     <div class="edit-trip-techniques-page page">
-      <SomeTripHeader v-bind:trip="trip"
-                      class="hide-on-desktop"/>
+      <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">
-            <BackButton class="hide-on-mobile"/>
+            <BackButton class="hide-on-mobile" />
             Technique utilisée
           </h1>
-          <div v-for="s in techniques"
-               v-bind:key="s.id"
-               class="techniques-item"
-               v-bind:class="trip.techniqueIds.indexOf(s.id) == -1 ? '' : 'selected'">
+          <div
+            v-for="s in techniques"
+            v-bind:key="s.id"
+            class="techniques-item"
+            v-bind:class="
+              trip.techniqueIds.indexOf(s.id) == -1 ? '' : 'selected'
+            "
+          >
             <div class="item-selection">
-              <input type="checkbox"
-                     v-bind:id="'checkbox-' + s.id"
-                     v-bind:value="s.id"
-                     v-model="trip.techniqueIds"
-                     class="pelorous-checkbox" />
+              <input
+                type="checkbox"
+                v-bind:id="'checkbox-' + s.id"
+                v-bind:value="s.id"
+                v-model="trip.techniqueIds"
+                class="pelorous-checkbox"
+              />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
             <div class="item-description" v-on:click="toggle(s)">
-              {{s.alias ? s.alias : s.name}}
-              <span v-if="s.alias" class="real-name">({{s.name}})</span>
+              {{ s.alias ? s.alias : s.name }}
+              <span v-if="s.alias" class="real-name">({{ s.name }})</span>
             </div>
           </div>
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="saveTechniques">
-                Enregistrer
-              </button>
+              <button v-on:click="saveTechniques">Enregistrer</button>
             </div>
             <div class="button button-secondary">
-              <button v-on:click="giveup">
-                Abandon
-              </button>
+              <button v-on:click="giveup">Abandon</button>
             </div>
           </div>
 
@@ -65,76 +68,75 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Enregistrer"
-                   v-on:buttonClicked="saveTechniques"
-                   shortcuts="back,step-4-4,giveup"/>
+    <FisholaFooter
+      button-text="Enregistrer"
+      v-on:buttonClicked="saveTechniques"
+      shortcuts="back,step-4-4,giveup"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import {Technique, TripBean} from '@/pojos/BackendPojos';
-import Constants from '@/services/Constants';
-import Helpers from '@/services/Helpers';
-import TripsService from '@/services/TripsService';
-import ReferentialService from '@/services/ReferentialService';
+import { Technique, TripBean } from "@/pojos/BackendPojos";
+import Helpers from "@/services/Helpers";
+import TripsService from "@/services/TripsService";
+import ReferentialService from "@/services/ReferentialService";
 
-import BackButton from '@/components/common/BackButton.vue'
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import BackButton from "@/components/common/BackButton.vue";
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
     FisholaHeader,
     SomeTripHeader,
     BackButton,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class TripTechniquesView extends Vue {
+  @Prop() id!: string;
 
-  @Prop() id!:string;
-
-  trip:TripBean = {
-    id: '',
-    mode: 'Live',
-    source: 'application',
-    type: 'Craft',
-    name: '',
-    lakeId: '',
+  trip: TripBean = {
+    id: "",
+    mode: "Live",
+    source: "application",
+    type: "Craft",
+    name: "",
+    lakeId: "",
     speciesIds: [],
     date: new Date(),
-    startedAt: '',
-    finishedAt: '',
+    startedAt: "",
+    finishedAt: "",
     catchs: [],
-    otherSpecies: '',
-    techniqueIds:[]
+    otherSpecies: "",
+    techniqueIds: [],
   };
 
-  techniques:Technique[] = [];
+  techniques: Technique[] = [];
 
   created() {
-    ReferentialService.getTechniques()
-      .then(this.techniquesLoaded);
+    ReferentialService.getTechniques().then(this.techniquesLoaded);
   }
 
-  mounted() {
-  }
+  mounted() {}
 
-  techniquesLoaded(list:Technique[]) {
+  techniquesLoaded(list: Technique[]) {
     this.techniques = list;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  tripLoaded(someTrip:TripBean) {
+  tripLoaded(someTrip: TripBean) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
   }
 
-  toggle(s:Technique) {
+  toggle(s: Technique) {
     const techniquesId = s.id;
     const index = this.trip.techniqueIds.indexOf(techniquesId);
     if (index == -1) {
@@ -149,7 +151,10 @@ export default class TripTechniquesView extends Vue {
 
     if (this.trip.techniqueIds.length == 0) {
       hasError = true;
-      this.$root.$emit('toaster-error', 'Vous devez sélectionner au moins une technique');
+      this.$root.$emit(
+        "toaster-error",
+        "Vous devez sélectionner au moins une technique"
+      );
     }
 
     if (!hasError) {
@@ -158,33 +163,37 @@ export default class TripTechniquesView extends Vue {
   }
 
   tripSaved() {
-    if (this.id == 'RUNNING') {
-      router.push({name:'trip-summary', params: {id: this.id}});
+    if (this.id == "RUNNING") {
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-summary",
+        params: { id: this.id },
+      });
     } else {
-      router.push({name:'trip', params: {id: this.id}});
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip",
+        params: { id: this.id },
+      });
     }
   }
 
   giveup() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
-      .then(this.giveupConfirmed);
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vraiment abandonner cette sortie ?"
+    ).then(this.giveupConfirmed);
   }
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push('/trips');
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
-
 }
-
 </script>
 
 <style lang="less">
-
 @import "../../less/main";
 
 .edit-trip-techniques-page {
-
   .pane .pane-content {
     padding-left: 0px;
     padding-right: 0px;
@@ -216,7 +225,6 @@ export default class TripTechniquesView extends Vue {
       input {
         margin: 0px;
       }
-
     }
 
     .item-description {
@@ -224,7 +232,9 @@ export default class TripTechniquesView extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large);
+      line-height: calc(
+        @fontsize-small-paragraph + @line-height-padding-x-large
+      );
 
       text-align: left;
 
@@ -250,7 +260,6 @@ export default class TripTechniquesView extends Vue {
           font-size: @fontsize-form-input;
           color: @pale-sky;
         }
-
       }
 
       .real-name {
@@ -258,16 +267,14 @@ export default class TripTechniquesView extends Vue {
         color: @pale-sky;
         margin-left: @margin-x-small;
       }
-
     }
 
-    @media(max-height:600px) {
+    @media (max-height: 600px) {
       height: 46px;
       padding-left: @margin-large;
     }
 
-    @media(max-width:360px) {
-
+    @media (max-width: 360px) {
       padding-left: @margin-medium;
 
       .item-description {
@@ -278,11 +285,9 @@ export default class TripTechniquesView extends Vue {
         }
       }
     }
-
   }
 
   @media screen and (min-width: @desktop-min-width) {
-
     .techniques-item {
       height: 65px;
       padding-left: @margin-large-desktop;
@@ -291,8 +296,6 @@ export default class TripTechniquesView extends Vue {
         line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);
       }
     }
-
   }
 }
-
 </style>

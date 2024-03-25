@@ -66,7 +66,6 @@
 
 <script lang="ts">
 import CatchSummary from "@/pojos/CatchSummary";
-import { SpeciesWithAlias, Technique, TripBean } from "@/pojos/BackendPojos";
 
 import PicturePreview from "@/components/trip/PicturePreview.vue";
 import Top from "@/components/common/Top.vue";
@@ -116,22 +115,26 @@ export default class CatchPreview extends Vue {
   }
 
   async getCatchPreviewPic() {
-    // Get pictures stored locally (not yet synchronized) and get latest as preview
-    const localPics = await PicturesService.getPicturesFromLocalDB(
-      this.aCatch.id
-    );
-    if (localPics.length) {
-      this.pictureSrc = localPics[0].content;
-    } else if (this.aCatch.hasPicture) {
-      // Otherwise, get preview from server gallery picture (if any)
-      this.pictureSrc = Constants.apiUrl(
-        `/v1/pictures/${this.aCatch.id}/preview`
+    try {
+      // Get pictures stored locally (not yet synchronized) and get latest as preview
+      const localPics = await PicturesService.getPicturesFromLocalDB(
+        this.aCatch.id
       );
-    } else if (this.aCatch.hasMeasurementPicture) {
-      // Otherwise, get preview from server measurement picture (if any)
-      this.pictureSrc = Constants.apiUrl(
-        `/v1/pictures/measure/${this.aCatch.id}/preview`
-      );
+      if (localPics.length) {
+        this.pictureSrc = localPics[0].content;
+      } else if (this.aCatch.hasPicture) {
+        // Otherwise, get preview from server gallery picture (if any)
+        this.pictureSrc = Constants.apiUrl(
+          `/v1/pictures/${this.aCatch.id}/preview`
+        );
+      } else if (this.aCatch.hasMeasurementPicture) {
+        // Otherwise, get preview from server measurement picture (if any)
+        this.pictureSrc = Constants.apiUrl(
+          `/v1/pictures/measure/${this.aCatch.id}/preview`
+        );
+      }
+    } catch (e) {
+      // Silent catch, no pictures will be displayed
     }
   }
 

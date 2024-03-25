@@ -69,25 +69,31 @@ export default class GeolocationService extends AbstractFisholaService {
   }
 
   static startWatchingPosition(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this.canUsePosition().then(async () => {
-        if (GeolocationService.watchId) {
-          console.error("Il y a déjà un watcher en cours");
+    return new Promise<boolean>((resolve, _reject) => {
+      this.canUsePosition().then(
+        async () => {
+          if (GeolocationService.watchId) {
+            console.error("Il y a déjà un watcher en cours");
+            resolve(false);
+          } else {
+            const options = {
+              enableHighAccuracy: false,
+              maximumAge: 20,
+              timeout: 3000,
+            };
+            const watchId: CallbackID = await Geolocation.watchPosition(
+              options,
+              this.receivePosition
+            );
+            GeolocationService.watchId = watchId;
+            resolve(true);
+          }
+        },
+        (err) => {
+          console.error("Impossible de commencer à écouter la position", err);
           resolve(false);
-        } else {
-          const options = {
-            enableHighAccuracy: false,
-            maximumAge: 20,
-            timeout: 3000,
-          };
-          const watchId: CallbackID = await Geolocation.watchPosition(
-            options,
-            this.receivePosition
-          );
-          GeolocationService.watchId = watchId;
-          resolve(true);
         }
-      }, reject);
+      );
     });
   }
 

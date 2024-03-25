@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -40,6 +40,10 @@ export interface CatchBean {
     pictureOrders: number[];
     hasMeasurementPicture: boolean;
     tripId?: string;
+    editedSpeciesId?: string;
+    editedSize?: number;
+    editedWeight?: number;
+    excludeFromExport: boolean;
 }
 
 export interface TripBean {
@@ -85,6 +89,7 @@ export interface SpeciesWithAlias {
     alias?: string;
     authorizedSample: boolean;
     minSize: number;
+    maxSize: number;
 }
 
 export interface Lake extends Serializable {
@@ -221,6 +226,21 @@ export interface GlobalDashboard {
     computedOn: Date;
 }
 
+export interface LicenceFromClientBean {
+    name: string;
+    expirationDate: Date;
+    type: LicenceType;
+    content: string;
+}
+
+export interface LicenceResponseBean {
+    id: string;
+    name: string;
+    userId: string;
+    expirationDate: Date;
+    type: LicenceType;
+}
+
 export interface Serializable {
 }
 
@@ -247,3 +267,5 @@ export type DeviceType = "web" | "application";
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
+
+export type LicenceType = "PDF" | "JPEG";

@@ -21,7 +21,7 @@
 <template>
   <div class="authorized-samples">
     <h1>
-      Autorisations de prélèvement et taille des maillages
+      Maillages et tailles maximales
       <div class="align-right">
         <b-upload
           class="button is-primary export-button"
@@ -35,19 +35,23 @@
         </b-button>
       </div>
     </h1>
-    <table class="table is-striped">
+    <p id="table-desc" style="display:none">
+      Tableau des lacs
+    </p>
+    <table class="table is-striped" aria-describedby="table-desc">
       <thead>
         <tr>
-          <th></th>
-          <th v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
+          <th id="th-lac-vide"></th>
+          <th :id="l.id" v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
-          <th>{{ s.name }}</th>
+          <th :id="s.name">{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field" style="display: flex">
-              <b-checkbox
+              <b-checkbox 
+                v-show="!authorizedSamplesMap[l.id][s.id]"
                 v-model="authorizedSamplesMap[l.id][s.id]"
                 @input="$forceUpdate()"
               >
@@ -55,27 +59,64 @@
               <div
                 v-if="authorizedSamplesMap[l.id][s.id]"
                 class="specie-container-with-size"
-              >
+              >               
+                Taille maillage : <br />
                 <div class="input-holder">
-                  <b-input
+                  <b-checkbox grouped
+                   :value="minSizeMap[l.id][s.id] > 0"
+                   @input="value => { minSizeCheckboxInput(l, s, value) }"
+                >
+                </b-checkbox>
+                  <b-input grouped
                     placeholder="Taille minimale"
                     type="number"
                     custom-class="minsize-input"
+                    v-show="minSizeMap[l.id][s.id] > 0"
                     v-model="minSizeMap[l.id][s.id]"
                     @input="$forceUpdate()"
                   >
                   </b-input>
-                  <span style="margin-left:10px;float:right">cm</span>
+                  <span v-show="minSizeMap[l.id][s.id] > 0" style="margin-left:10px;float:right">cm</span>
+                  <span v-show="minSizeMap[l.id][s.id] == 0">Non définie</span>
+                </div>
+                <br />
+                Taille maximale : <br />
+                <div class="input-holder">
+                  <b-checkbox grouped
+                   :value="maxSizeMap[l.id][s.id] != 1000"
+                   @input="value => { maxSizeCheckboxInput(l, s, value) }"
+                >
+                </b-checkbox>
+                  <b-input grouped
+                    placeholder="Taille maximale"
+                    type="number"
+                    custom-class="minsize-input"
+                    v-model="maxSizeMap[l.id][s.id]"
+                    v-show="maxSizeMap[l.id][s.id] != 1000"
+                    @input="$forceUpdate()"
+                  >
+                  </b-input>
+                  <span v-show="maxSizeMap[l.id][s.id] != 1000" style="margin-left:10px;float:right">cm</span>
+                  <span v-show="maxSizeMap[l.id][s.id] == 1000">Non définie</span>
                 </div>
                 <div
-                  v-if="!minSizeMap[l.id][s.id] || minSizeMap[l.id][s.id] <= 0"
+                  v-if="minSizeMap[l.id][s.id] < 0"
                   class="error"
                 >
-                  Taille invalide
+                  Taille de maillage invalide
+                </div>
+                <div
+                  v-if="
+                    !maxSizeMap[l.id][s.id] ||
+                      maxSizeMap[l.id][s.id] < minSizeMap[l.id][s.id] * 1.5
+                  "
+                  class="error"
+                >
+                  Taille maximale invalide
                 </div>
               </div>
               <i v-else class="specie-container-without-size">
-                Prélèvement non autorisé
+                Espèce non présente
               </i>
             </div>
           </td>
@@ -102,6 +143,7 @@ export default class AuthorizedSamplesVue extends Vue {
   speciesPerLake = {};
   authorizedSamplesMap = {};
   minSizeMap = {};
+  maxSizeMap = {};
 
   created() {
     this.lakes = [];
@@ -109,6 +151,7 @@ export default class AuthorizedSamplesVue extends Vue {
     this.speciesPerLake = {};
     this.authorizedSamplesMap = {};
     this.minSizeMap = {};
+    this.maxSizeMap = {};
 
     Promise.all([
       BackendService.backendGet("/v1/referential/lakes"),
@@ -134,6 +177,7 @@ export default class AuthorizedSamplesVue extends Vue {
     this.lakes.forEach(l => {
       this.authorizedSamplesMap[l.id] = {};
       this.minSizeMap[l.id] = {};
+      this.maxSizeMap[l.id] = {};
     });
 
     Object.keys(this.speciesPerLake).forEach(lakeId => {
@@ -141,6 +185,7 @@ export default class AuthorizedSamplesVue extends Vue {
       items.forEach(spl => {
         this.authorizedSamplesMap[lakeId][spl.id] = spl.authorizedSample;
         this.minSizeMap[lakeId][spl.id] = spl.minSize;
+        this.maxSizeMap[lakeId][spl.id] = spl.maxSize;
       });
     });
     this.$forceUpdate();
@@ -149,20 +194,21 @@ export default class AuthorizedSamplesVue extends Vue {
   save() {
     BackendService.backendPut("/v1/referential/authorized-samples", [
       this.authorizedSamplesMap,
-      this.minSizeMap
+      this.minSizeMap,
+      this.maxSizeMap
     ]).then(
       res => {
         this.reloadData();
         console.info(res);
         this.$buefy.toast.open({
-          message: "Autorisations de prélèvement enregistrées",
+          message: "Tailles enregistrées",
           type: "is-success"
         });
       },
       error => {
         this.$buefy.toast.open({
           message:
-            "Erreur lors de l'enregistrement des autorisations de prélèvement : " +
+            "Erreur lors de l'enregistrement des tailles : " +
             error.message,
           type: "is-danger"
         });
@@ -178,12 +224,15 @@ export default class AuthorizedSamplesVue extends Vue {
 
     this.authorizedSamplesMap = {};
     this.minSizeMap = {};
+    this.maxSizeMap = {};
     this.lakes.forEach(l => {
       this.authorizedSamplesMap[l.id] = {};
       this.minSizeMap[l.id] = {};
+      this.maxSizeMap[l.id] = {};
     });
     let authorizedSamplesMap = this.authorizedSamplesMap;
     let minSizeMap = this.minSizeMap;
+    let maxSizeMap = this.maxSizeMap;
     let updateFromCsv = this.updateFromCsv;
 
     reader.readAsText(file, "UTF-8");
@@ -212,23 +261,26 @@ export default class AuthorizedSamplesVue extends Vue {
             return;
           }
 
-          if (csvColumns[j]) {
+          if (csvColumns[j] && csvColumns[j].split("-").length == 2) {
             authorizedSamplesMap[lakeId][specieId] = true;
-            minSizeMap[lakeId][specieId] = csvColumns[j];
+            minSizeMap[lakeId][specieId] = csvColumns[j].split("-")[0];
+            maxSizeMap[lakeId][specieId] = csvColumns[j].split("-")[1];
           } else {
             authorizedSamplesMap[lakeId][specieId] = false;
             minSizeMap[lakeId][specieId] = undefined;
+            maxSizeMap[lakeId][specieId] = undefined;
           }
         }
       }
-      updateFromCsv(authorizedSamplesMap, minSizeMap);
+      updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap);
     };
   }
 
-  updateFromCsv(authorizedSamplesMap, minSizeMap) {
-    console.error(authorizedSamplesMap, minSizeMap);
+  updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap) {
+    console.error(authorizedSamplesMap, minSizeMap, maxSizeMap);
     this.authorizedSamplesMap = authorizedSamplesMap;
     this.minSizeMap = minSizeMap;
+    this.maxSizeMap = maxSizeMap;
 
     this.$forceUpdate();
   }
@@ -244,7 +296,6 @@ export default class AuthorizedSamplesVue extends Vue {
       csvContent += columns[i];
     }
     csvContent += "\n";
-
     this.species.forEach(specie => {
       var csvRow = "";
       csvRow += specie.name + ";";
@@ -254,12 +305,36 @@ export default class AuthorizedSamplesVue extends Vue {
           const maillageSize = this.minSizeMap[lakeId]
             ? this.minSizeMap[lakeId][specie.id]
             : "";
-          csvRow += (maillageSize ? maillageSize : "") + ";";
+          const maximumSize = this.maxSizeMap[lakeId]
+            ? this.maxSizeMap[lakeId][specie.id]
+            : "";
+          if (maillageSize) {
+            csvRow +=
+              (maillageSize ? maillageSize : "") +
+              "-" +
+              (maximumSize ? maximumSize : "1000") +
+              ";";
+          } else {
+            csvRow += ";";
+          }
         });
       csvContent += csvRow + "\n";
     });
     var encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+    var hiddenElement = document.createElement("a");
+    hiddenElement.href = encodedUri;
+    hiddenElement.target = "_blank";
+    var m = new Date();
+    const fileName =
+      "Fishola_Export__" +
+      m.getUTCFullYear() +
+      "-" +
+      (m.getUTCMonth() + 1) +
+      "-" +
+      m.getUTCDate() +
+      ".csv";
+    hiddenElement.download = fileName;
+    hiddenElement.click();
   }
 
   getSpecieWithName(specieName) {
@@ -278,6 +353,30 @@ export default class AuthorizedSamplesVue extends Vue {
     } else {
       return;
     }
+  }
+
+  minSizeCheckboxInput(l, s, value) {
+    if (value) {
+      this.minSizeMap[l.id][s.id] = 45;
+    } else {
+      this.minSizeMap[l.id][s.id] = 0;
+      if (this.minSizeMap[l.id][s.id] == 1000) {
+        this.authorizedSamplesMap[l.id][s.id]  = false;
+      }
+    }
+    this.$forceUpdate();
+  }
+
+  maxSizeCheckboxInput(l, s, value) {
+    if (value) {
+      this.maxSizeMap[l.id][s.id] = 800;
+    } else {
+      this.maxSizeMap[l.id][s.id] = 1000;
+      if (this.minSizeMap[l.id][s.id] == 0) {
+        this.authorizedSamplesMap[l.id][s.id]  = false;
+      }
+    }
+    this.$forceUpdate();
   }
 }
 </script>
@@ -324,7 +423,7 @@ export default class AuthorizedSamplesVue extends Vue {
   }
 
   .specie-container-with-size {
-    max-width: 130px;
+    max-width: 170px;
     .input-holder {
       display: flex;
     }

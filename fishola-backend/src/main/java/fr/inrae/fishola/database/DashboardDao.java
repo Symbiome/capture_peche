@@ -52,15 +52,19 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.util.stream.Stream;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -83,13 +87,13 @@ public class DashboardDao  extends AbstractFisholaDao {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(false, allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
-        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(false, allCatches, aCatch -> !aCatch.getKept());
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
@@ -125,7 +129,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(false, lakesFilter, mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizesPerMaillage(monthlySizes);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
@@ -165,13 +169,13 @@ public class DashboardDao  extends AbstractFisholaDao {
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
 
-        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(allCatches, aCatch -> true);
+        Map<UUID, Integer> caughtSpeciesCount = computeDistribution(true, allCatches, aCatch -> true);
         builder.caughtSpeciesCount(caughtSpeciesCount);
 
         Map<UUID, Double> caughtSpeciesDistribution = Maps.transformValues(caughtSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtSpeciesDistribution(caughtSpeciesDistribution);
 
-        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(allCatches, aCatch -> !aCatch.getKept());
+        Map<UUID, Integer> caughtAndReleasedSpeciesCount = computeDistribution(true, allCatches, aCatch -> !aCatch.getKept());
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
@@ -188,7 +192,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(true, lakesFilter, mostCaughtSpecies, monthlyCatchs);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
         builder.monthlySizes(getLegacyMonthlySizesWithoutMaillage(monthlySizes));
@@ -205,11 +209,17 @@ public class DashboardDao  extends AbstractFisholaDao {
     }
 
 
-    protected Map<UUID, Integer> computeDistribution(Collection<Catch> allCatches, Predicate<Catch> predicate) {
-        ImmutableMultiset<UUID> caughtSpeciesDistributionSet = allCatches.stream()
-                .filter(predicate)
-                .map(Catch::getSpeciesId)
-                .collect(ImmutableMultiset.toImmutableMultiset());
+    protected Map<UUID, Integer> computeDistribution(boolean useEditedInBoInformation, Collection<Catch> allCatches, Predicate<Catch> predicate) {
+        Stream<Catch> catchStream = allCatches.stream()
+                .filter(predicate);
+        Stream<UUID> catchSpeciesStream = null;
+        if (useEditedInBoInformation) {
+            catchSpeciesStream = catchStream.map(Catch::getEditedSpeciesId);
+        } else {
+            catchSpeciesStream = catchStream.map(Catch::getSpeciesId);
+        }
+        ImmutableMultiset<UUID> caughtSpeciesDistributionSet =
+                catchSpeciesStream.collect(ImmutableMultiset.toImmutableMultiset());
         Map<UUID, Integer> result = caughtSpeciesDistributionSet.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount));
@@ -238,28 +248,34 @@ public class DashboardDao  extends AbstractFisholaDao {
     /**
      * Calcule la moyenne mensuelle des tailles de poissons pour les espèces spécifiées
      */
-    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(Optional<List<UUID>> lakesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(boolean useEditedInBoInformation,Optional<List<UUID>> lakesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
         Map<UUID, Month> catchesMonths = monthlyCatches.entries().stream().collect(Collectors.toMap(e -> e.getValue().getId(), Map.Entry::getKey));
-        Map<UUID, Map<Month, Map<Maillage, Double>>> result = computeMonthlySizes(lakesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
+        Map<UUID, Map<Month, Map<Maillage, Double>>> result = computeMonthlySizes(useEditedInBoInformation, lakesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
         return result;
     }
 
-    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
         // On garde uniquement les captures avec une taille
         List<Catch> catchsWithSize = allCatches.stream()
                 .filter(c -> c.getSize() != null)
-                .collect(Collectors.toList());
+                .toList();
         ImmutableMap.Builder<UUID, Map<Month, Map<Maillage, Double>>> builder = ImmutableMap.builder();
         for (UUID speciesId : mostCaughtSpecies) {
             // On prend les captures de la bonne espèce
             List<Catch> catchs = catchsWithSize.stream()
-                    .filter(c -> c.getSpeciesId().equals(speciesId))
-                    .collect(Collectors.toList());
+                    .filter(c -> {
+                        if (useEditedInBoInformation) {
+                           return Objects.equals(c.getEditedSpeciesId(),speciesId);
+                        } else {
+                            return  Objects.equals(c.getSpeciesId(), speciesId);
+                        }
+                     })
+                    .toList();
             Map<Month, Map<Maillage, Double>> speciesMonthlySizes = new HashMap<>();
             for (Month month : Month.values()) {
                 Map<Maillage, Double> averagePerMaillage = new HashMap<>();
                 for(Maillage maillageType: Maillage.values()) {
-                    OptionalDouble average = catchs.stream()
+                    Stream<Catch> filteredCatch = catchs.stream()
                             .filter(c -> {
                                         if (month.equals(catchesMonths.get(c.getId()))) {
                                             // If more than one lake selected, cannot make distrinction
@@ -272,9 +288,13 @@ public class DashboardDao  extends AbstractFisholaDao {
                                         }
                                         return false;
                                     }
-                            )
-                            .mapToInt(Catch::getSize)
-                            .average();
+                            );
+                    OptionalDouble average;
+                    if (useEditedInBoInformation) {
+                        average = filteredCatch.mapToInt((Catch c) -> c.getEditedSize() / 10).average();
+                    } else {
+                        average = filteredCatch.mapToInt(Catch::getSize).average();
+                    }
                     average.ifPresent(val -> averagePerMaillage.put(maillageType, val));
                 }
                 if (!averagePerMaillage.isEmpty()) {
@@ -329,21 +349,21 @@ public class DashboardDao  extends AbstractFisholaDao {
                 .stream()
                 .limit(5)
                 .map(aCatch -> TripResource.toCatchBean(aCatch, catchsWithPictures, measurementPictures))
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 
     protected Map<UUID, List<CatchBean>> computeTopCatchs(Collection<Catch> allCatches,
                                                           ListMultimap<UUID, Integer> catchsWithPictures,
                                                           Set<UUID> measurementPictures,
-                                                          Function<Catch, Integer> getter) {
+                                                          ToIntFunction<Catch> getter) {
         Multimap<UUID, Catch> catchsBySpecies = Multimaps.index(allCatches, Catch::getSpeciesId);
         // On commence par retirer les captures dont la valeur est nulle
-        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.apply(aCatch) != null);
+        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.applyAsInt(aCatch) != 0);
 
         Ordering<Catch> ordering = Ordering.natural()
-                .onResultOf(getter::apply)
-                .reverse();
+                                           .onResultOf(getter::applyAsInt)
+                                           .reverse();
 
         Map<UUID, List<CatchBean>> result = new HashMap<>();
         catchsBySpecies.asMap()

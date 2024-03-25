@@ -21,7 +21,6 @@ package fr.inrae.fishola.rest.feedback;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.FisholaMailAttachment;
@@ -32,17 +31,19 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import org.jboss.logging.Logger;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/v1/feedback")
@@ -85,7 +86,7 @@ public class FeedbackResource extends AbstractFisholaResource {
         }
 
         ImmutableFeedback feedback = ImmutableFeedback.builder()
-                .from(bean)
+                .fromInstance(bean)
                 .backendVersion(config.getFullVersion())
                 .build();
 
@@ -99,11 +100,11 @@ public class FeedbackResource extends AbstractFisholaResource {
         String screenshot = screenshotBytes.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
                 .orElse("L'utilisation n'a pas fournit de capture d'écran");
 
-        ImmutableMap<String, Object> args = ImmutableMap.of(
+        Map<String, Object> args = Map.of(
                 "feedback", feedback,
                 "descriptionText", description,
                 "screenshotText", screenshot
-        );
+                                         );
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/new-feedback.html",

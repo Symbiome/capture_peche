@@ -25,7 +25,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -58,12 +58,13 @@ export default abstract class AbstractFisholaService {
             const parsed = JSON.parse(responseText);
             resolve(parsed);
           } else if (this.status == 204) {
-            resolve();
+            resolve(undefined);
           } else {
             reject(this.status);
           }
         };
-        xhr.onerror = function(e) {
+        xhr.onerror = function (e) {
+          console.error(e);
           reject("Impossible de contacter le serveur");
         }
         xhr.send();
@@ -111,7 +112,7 @@ export default abstract class AbstractFisholaService {
                 resolve(parsed);
               }
             } else if (this.status == 204) {
-              resolve();
+              resolve(undefined);
             } else {
               const result = AbstractFisholaService.wrapResponseReject(this);
               reject(result);
@@ -155,7 +156,7 @@ export default abstract class AbstractFisholaService {
             resolve(responseText);
           }
           } else if (this.status == 204) {
-            resolve();
+            resolve(undefined);
           } else {
             const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
@@ -178,7 +179,7 @@ export default abstract class AbstractFisholaService {
         xhr.withCredentials = true;
         xhr.onload = function() {
           if (this.status == 200 || this.status == 204) {
-            resolve();
+            resolve(undefined);
           } else {
             const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
@@ -210,7 +211,7 @@ export default abstract class AbstractFisholaService {
               resolve(responseText);
             }
           } else if (this.status == 204) {
-            resolve();
+            resolve(undefined);
           } else {
             const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);
@@ -237,7 +238,7 @@ export default abstract class AbstractFisholaService {
             const parsed = JSON.parse(responseText);
             resolve(parsed);
           } else if (this.status == 204) {
-            resolve();
+            resolve(undefined);
           } else {
             const result = AbstractFisholaService.wrapResponseReject(this);
             reject(result);

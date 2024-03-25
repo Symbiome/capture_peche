@@ -22,18 +22,19 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
+
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.immutables.value.Value;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableDashboard.class)
 public interface Dashboard {
 

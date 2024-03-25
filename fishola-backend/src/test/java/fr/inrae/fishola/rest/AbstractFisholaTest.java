@@ -23,10 +23,10 @@ package fr.inrae.fishola.rest;
 
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.security.LoginBean;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.hamcrest.CustomMatcher;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -85,4 +85,5 @@ public abstract class AbstractFisholaTest {
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }
+
 }

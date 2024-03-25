@@ -49,8 +49,8 @@ import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -58,7 +58,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-public class DashboardResourceTest  extends AbstractFisholaTest {
+class DashboardResourceTest  extends AbstractFisholaTest {
     @Inject
     protected ReferentialDao referentialDao;
     @Inject
@@ -83,7 +83,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void loadReferentials() {
+    void loadReferentials() {
         this.lakes = referentialDao.listLakes();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
@@ -92,7 +92,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void login() {
+    void login() {
         this.token = login("thimel@codelutin.com", "sispea");
         FisholaUser fisholaUser = this.usersDao.findByEmail("thimel@codelutin.com").get();
         this.userId = fisholaUser.getId();
@@ -102,7 +102,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @AfterEach
     @Transactional
-    public void teardown() {
+    void teardown() {
         FisholaUser fisholaUser = this.usersDao.findById(this.userId).get();
         fisholaUser.setExcludeFromExports(true);
         this.usersDao.updateUser(fisholaUser);
@@ -110,7 +110,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testDefaultPersonalDashboard() {
+    void testDefaultPersonalDashboard() {
         // Goal : Ensure that personal dashboards defaults to "all lakes" and "current year"
         Dashboard initialDashboard = this.getPersonalDashboard();
 
@@ -129,7 +129,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-   public void testPersonalDashboardForYear() {
+   void testPersonalDashboardForYear() {
         // Goal : make sure that year selections for personnal dashboard works as expected
         Dashboard initialDashboardForCurrentYear = this.getPersonalDashboardForYear(LocalDateTime.now().getYear());
         Dashboard initialDashboardForLastYear = this.getPersonalDashboardForYear(LocalDateTime.now().getYear() - 1);
@@ -154,7 +154,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testPersonalDashboardForLake() {
+    void testPersonalDashboardForLake() {
         // Goal : make sure that lake selections for personnal dashboard works as expected
         UUID lakeId1 = this.lakes.get(1).getId();
         UUID lakeId2 = this.lakes.get(2).getId();
@@ -190,7 +190,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testDefaultGlobalDashboard() {
+    void testDefaultGlobalDashboard() {
         // Goal : Ensure that Global dashboards defaults to "all lakes" and "current year"
         GlobalDashboard initialDashboard = this.getGlobalDashboard();
 
@@ -209,7 +209,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testGlobalDashboardForYear() {
+    void testGlobalDashboardForYear() {
         // Goal : make sure that year selections for global dashboard works as expected
         GlobalDashboard initialDashboardForCurrentYear = this.getGlobalDashboardForYear(LocalDateTime.now().getYear());
         GlobalDashboard initialDashboardForLastYear = this.getGlobalDashboardForYear(LocalDateTime.now().getYear() - 1);
@@ -234,7 +234,7 @@ public class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    public void testGlobalDashboardForLake() {
+    void testGlobalDashboardForLake() {
         // Goal : make sure that lake selections for global dashboard works as expected
         UUID lakeId1 = this.lakes.get(0).getId();
         UUID lakeId2 = this.lakes.get(1).getId();

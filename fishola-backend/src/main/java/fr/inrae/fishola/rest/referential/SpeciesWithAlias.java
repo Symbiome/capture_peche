@@ -22,13 +22,13 @@ package fr.inrae.fishola.rest.referential;
  */
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.tables.pojos.Species;
-import org.immutables.value.Value;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 @JsonSerialize(as = ImmutableSpeciesWithAlias.class)
 public interface SpeciesWithAlias {
 
@@ -42,13 +42,14 @@ public interface SpeciesWithAlias {
     Optional<String> alias();
     boolean authorizedSample();
     Integer minSize();
+    Integer maxSize();
 
     static SpeciesWithAlias of(Species source) {
-        SpeciesWithAlias result = of(source, Optional.empty(), false, 0);
+        SpeciesWithAlias result = of(source, Optional.empty(), false, 0, 1000);
         return result;
     }
 
-    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample, Integer minSize) {
+    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample, Integer minSize, Integer maxSize) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
@@ -56,6 +57,7 @@ public interface SpeciesWithAlias {
                 .mandatorySize(source.getMandatorySize())
                 .alias(alias)
                 .minSize(minSize)
+                .maxSize(maxSize)
                 .authorizedSample(authorizedSample)
                 .build();
         return result;

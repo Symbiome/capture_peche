@@ -121,6 +121,7 @@ import {
 
 import { Component, Vue, Watch } from "vue-property-decorator";
 import router from "../router";
+import { RouterUtils } from "@/router/RouterUtils";
 import { Lake } from "@/pojos/BackendPojos";
 
 import ReferentialService from "../services/ReferentialService";
@@ -206,8 +207,12 @@ export default class DashboardView extends Vue {
       longitude: 0,
     };
     this.lakes.push(defaultLake);
-    const allLakes = await ReferentialService.getLakes();
-    this.lakes = this.lakes.concat(allLakes);
+    try {
+      const allLakes = await ReferentialService.getLakes();
+      this.lakes = this.lakes.concat(allLakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
   }
 
   getDashboardYears(): number[] {
@@ -237,7 +242,7 @@ export default class DashboardView extends Vue {
       this.offline = true;
     } else if (error && error.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      router.push("/login");
+      RouterUtils.pushRouteNoDuplicate(router, "/login");
     }
     this.ready = true;
   }

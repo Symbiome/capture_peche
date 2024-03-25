@@ -21,15 +21,15 @@ package fr.inrae.fishola.exceptions;
  * #L%
  */
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 public abstract class AbstractFisholaRuntimeException extends RuntimeException {
 
-    public AbstractFisholaRuntimeException(String message) {
+    protected AbstractFisholaRuntimeException(String message) {
         super(message);
     }
 
-    public AbstractFisholaRuntimeException(String message, Throwable cause) {
+    protected AbstractFisholaRuntimeException(String message, Throwable cause) {
         super(message, cause);
     }
 

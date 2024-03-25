@@ -22,75 +22,74 @@
   <div class="edit-trip-catchs page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-catchs-page page">
-      <SomeTripHeader v-bind:trip="trip"
-                      class="hide-on-desktop"/>
+      <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
         <h1 class="hide-on-desktop">
-          {{duration}}
-          <Running v-if="liveRunning"/>
+          {{ duration }}
+          <Running v-if="liveRunning" />
         </h1>
         <h1 class="hide-on-mobile no-margin-pane">
-          <BackButton back-event="backButtonClicked"
-                      v-on:backButtonClicked="editSpecies"/>
-          {{trip.name}}
+          <BackButton
+            back-event="backButtonClicked"
+            v-on:backButtonClicked="editSpecies"
+          />
+          {{ trip.name }}
         </h1>
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
-            <CatchPreviewList v-if="ready"
-                              v-bind:modifiable="true"
-                              v-bind:lakeId="trip.lakeId"
-                              v-bind:catchs="trip.catchs"
-                              v-on:newCatch="newCatch()"
-                              v-on:openCatchFromId="openCatch($event)"/>
+            <CatchPreviewList
+              v-if="ready"
+              v-bind:modifiable="true"
+              v-bind:lakeId="trip.lakeId"
+              v-bind:catchs="trip.catchs"
+              v-on:newCatch="newCatch()"
+              v-on:openCatchFromId="openCatch($event)"
+            />
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
-              <i class="icon-fish"/>
+              <i class="icon-fish" />
               Nouvelle capture
             </button>
           </div>
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
-              <button v-on:click="finish">
-                Fin de pêche
-              </button>
+              <button v-on:click="finish">Fin de pêche</button>
             </div>
             <div class="button button-secondary">
-              <button v-on:click="giveup">
-                Abandon
-              </button>
+              <button v-on:click="giveup">Abandon</button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Fin de pêche"
-                   v-on:buttonClicked="finish"
-                   shortcuts="back,step-3-4,giveup"
-                   back-event="onBackButton"
-                   v-on:onBackButton="editSpecies"/>
+    <FisholaFooter
+      button-text="Fin de pêche"
+      v-on:buttonClicked="finish"
+      shortcuts="back,step-3-4,giveup"
+      back-event="onBackButton"
+      v-on:onBackButton="editSpecies"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import TripMain from '@/pojos/TripMain';
-import CatchSummary from '@/pojos/CatchSummary';
-import Constants from '@/services/Constants';
-import TripsService from '@/services/TripsService';
-import ReferentialService from '@/services/ReferentialService';
-import Helpers from '@/services/Helpers';
+import TripMain from "@/pojos/TripMain";
+import Constants from "@/services/Constants";
+import TripsService from "@/services/TripsService";
+import { RouterUtils } from "@/router/RouterUtils";
+import Helpers from "@/services/Helpers";
 
-import BackButton from '@/components/common/BackButton.vue'
-import Running from '@/components/common/Running.vue'
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
-import SomeTripHeader from '@/components/trip/SomeTripHeader.vue'
-import CatchPreviewList from '@/components/trip/CatchPreviewList.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import BackButton from "@/components/common/BackButton.vue";
+import Running from "@/components/common/Running.vue";
+import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
+import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import router from '../../router';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import router from "../../router";
 
 @Component({
   components: {
@@ -99,34 +98,38 @@ import router from '../../router';
     BackButton,
     Running,
     CatchPreviewList,
-    FisholaFooter
-  }
+    FisholaFooter,
+  },
 })
 export default class TripCatchsView extends Vue {
+  @Prop() id!: string;
 
-  @Prop() id!:string;
+  trip?: TripMain = {
+    id: "",
+    name: "",
+    mode: "Live",
+    startedAt: "",
+    catchs: [],
+  };
 
-  trip?:TripMain = { id:'', name:'', mode:'Live', startedAt: '', catchs:[] };
+  duration?: string = "";
+  liveRunning: boolean = false;
 
-  duration?:string = '';
-  liveRunning:boolean = false;
+  ready: boolean = false;
 
-  ready:boolean = false;
-
-  interval?:number;
+  interval?: number;
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  mounted() {
-  }
+  mounted() {}
 
-  tripLoaded(someTrip:TripMain) {
+  tripLoaded(someTrip: TripMain) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
 
-    if (this.trip.mode == 'Live') {
+    if (this.trip.mode == "Live") {
       this.computeDuration();
       if (this.id == Constants.RUNNING_ID) {
         this.liveRunning = true;
@@ -142,22 +145,27 @@ export default class TripCatchsView extends Vue {
   }
 
   editSpecies() {
-    router.push({name:'trip-species', params: {id: this.id}});
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip-species",
+      params: { id: this.id },
+    });
   }
 
   computeDuration() {
     if (this.trip! && this.trip!.startedAt) {
-      let seconds;
       if (this.id == Constants.RUNNING_ID) {
         this.duration = Helpers.renderDurationNoSeconds(this.trip!.startedAt);
       } else {
-        this.duration = Helpers.renderDurationNoSeconds(this.trip!.startedAt, this.trip!.finishedAt);
+        this.duration = Helpers.renderDurationNoSeconds(
+          this.trip!.startedAt,
+          this.trip!.finishedAt
+        );
       }
     }
   }
 
   finish() {
-    if (this.trip!.mode == 'Live') {
+    if (this.trip!.mode == "Live") {
       this.computeDuration();
       this.liveRunning = false;
     }
@@ -165,53 +173,58 @@ export default class TripCatchsView extends Vue {
   }
 
   tripSaved() {
-    router.push({name:'trip-summary', params: {id: this.id}});
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "trip-summary",
+      params: { id: this.id },
+    });
   }
 
   giveup() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
-      .then(this.giveupConfirmed);
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vraiment abandonner cette sortie ?"
+    ).then(this.giveupConfirmed);
   }
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push('/trips');
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   newCatch() {
-    router.push({name:'catch', params: {tripId: this.id, catchId:Constants.NEW_CATCH_ID}});
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "catch",
+      params: { tripId: this.id, catchId: Constants.NEW_CATCH_ID },
+    });
   }
 
-  openCatch(catchId:string) {
-    router.push({name:'catch', params: {tripId: this.id, catchId:catchId}});
+  openCatch(catchId: string) {
+    RouterUtils.pushRouteNoDuplicate(router, {
+      name: "catch",
+      params: { tripId: this.id, catchId: catchId },
+    });
   }
-
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .edit-trip-catchs-page {
-
   .pane {
-
     h1 {
       color: @gunmetal;
 
-      @media(max-height:610px) {
+      @media (max-height: 610px) {
         margin-top: calc(@fontsize-title * 1);
         margin-bottom: calc(@fontsize-title * 1);
         line-height: calc(@fontsize-title + @line-height-padding-medium);
       }
-
     }
 
     .pane-content {
-      text-align:center;
+      text-align: center;
 
       .catchs-list {
         display: flex;
@@ -222,32 +235,30 @@ export default class TripCatchsView extends Vue {
 
         height: calc(100vw - 120px);
 
-        @media(max-height:610px) {
-          height: calc(100vw - 100px);           
+        @media (max-height: 610px) {
+          height: calc(100vw - 100px);
         }
       }
-
     }
 
     .edit-trip-catchs-new-catch-button {
       margin-top: @vertical-margin-large;
       margin-bottom: @vertical-margin-xx-large;
 
-      @media(max-height:610px) {
+      @media (max-height: 610px) {
         margin-top: @vertical-margin-x-small;
       }
 
       height: 44px;
 
-      @media(max-height:610px) {
-        height:80px;
+      @media (max-height: 610px) {
+        height: 80px;
       }
       width: 100%;
 
       button {
-
         height: 44px;
-        @media(max-height:610px) {
+        @media (max-height: 610px) {
           height: 35px;
         }
         font-style: normal;
@@ -269,14 +280,10 @@ export default class TripCatchsView extends Vue {
         }
       }
     }
-
-
   }
-
 
   @media screen and (min-width: @desktop-min-width) {
     .pane {
-
       h1 {
         color: @pelorous;
       }
@@ -288,8 +295,5 @@ export default class TripCatchsView extends Vue {
       }
     }
   }
-
-
 }
-
 </style>

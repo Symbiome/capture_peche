@@ -250,8 +250,9 @@
                 v-if="
                   withSample ||
                   (settings &&
-                    settings.promptSamples &&
-                    authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
+                    settings.promptSamples 
+                    && aCatch.speciesId
+                    && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
                 "
                 label="Prélèvement (optionnel)"
                 v-model="withSample"
@@ -278,8 +279,6 @@
               </div>
 
               <div v-if="!inCreation" class="location">
-                <!-- <div class="separator"></div>
-                <p>Emplacement de la capture</p> -->
                 <div class="empty" v-if="!gpsLocation">
                   <i class="icon icon-warning"></i> Aucune position enregistrée
                   pour cette prise
@@ -353,10 +352,11 @@
     />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
     <!-- Invisible marker & pic (required for silent size computation) -->
-    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" />
+    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
     <img
+      alt="Photo de mesure automatique"
       id="sourcePictureAutomatic"
       :src="measurementPictureCandidateSrc"
       v-show="false"
@@ -370,7 +370,7 @@ import {
   CatchBean,
   Technique,
   SpeciesWithAlias,
-  TripMode,
+  TripMode
 } from "@/pojos/BackendPojos";
 import CatchSummary from "@/pojos/CatchSummary";
 
@@ -400,6 +400,8 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
+
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
@@ -451,6 +453,7 @@ export default class EditCatchView extends Vue {
   ready: boolean = false;
 
   tripDate?: Date;
+  lakeId: string = "";
   tripMode: TripMode = "Live";
   tripSpeciesIds: string[] = [];
   tripOtherSpecies: string = "";
@@ -532,7 +535,7 @@ export default class EditCatchView extends Vue {
   }
 
   async tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
-    const lakeId: string = someTrip.lakeId;
+    this.lakeId = someTrip.lakeId;
     this.tripDate = someTrip.date;
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
@@ -566,7 +569,7 @@ export default class EditCatchView extends Vue {
       this.withSample = true;
     }
 
-    ReferentialService.getSpeciesAndTechniques(lakeId).then(
+    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(
       this.referentialLoaded
     );
 
@@ -600,7 +603,7 @@ export default class EditCatchView extends Vue {
               "Partage de position refusé, la capture ne sera pas geolocalisée";
           }
         }
-      );
+      );      
     }
 
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
@@ -739,6 +742,7 @@ export default class EditCatchView extends Vue {
       mandatorySize: s.mandatorySize,
       authorizedSample: s.authorizedSample,
       minSize: 0,
+      maxSize: 1000
     };
     return result;
   }
@@ -767,6 +771,7 @@ export default class EditCatchView extends Vue {
           mandatorySize: false,
           authorizedSample: false,
           minSize: 0,
+          maxSize: 1000,
         };
         this.allSpeciesWithAliases.push(customSpecies);
       });
@@ -782,6 +787,7 @@ export default class EditCatchView extends Vue {
       mandatorySize: false,
       authorizedSample: false,
       minSize: 0,
+      maxSize: 1000
     });
     data.techniques.forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
@@ -805,8 +811,22 @@ export default class EditCatchView extends Vue {
     return result;
   }
 
+  async getMaxSize(lakeId: string, speciesId?: string): Promise<number> {
+    let result = 1000;
+    const speciesPerLake = await ReferentialService.getSpeciesPerLake();
+    if (speciesPerLake.get(lakeId)) {
+      const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
+      speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {
+          if (s.id == speciesId) {
+            result = s.maxSize;
+          }
+        });
+      }
+    return result;
+  }
+
   @Watch("aCatch.speciesId")
-  speciesChanged(newValue: string, oldValue: string) {
+  speciesChanged(newValue: string, _oldValue: string) {
     this.sizeLabel = this.defaultSizeLabel;
     this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
@@ -916,7 +936,7 @@ export default class EditCatchView extends Vue {
   }
 
   @Watch("withSample")
-  onWithSampleChanged(value: boolean, oldValue: boolean) {
+  onWithSampleChanged(value: boolean, _oldValue: boolean) {
     if (value && !this.aCatch.sampleId) {
       TripsService.newSampleId().then(this.onNewSampleId);
     }
@@ -927,7 +947,7 @@ export default class EditCatchView extends Vue {
     this.sampleIdReady = true;
   }
 
-  validateClicked() {
+  async validateClicked() {
     let hasError: boolean = false;
     // First make sure that the custom species enterred here is not an already available species
     this.checkExistingSpecie(this.allSpeciesWithAliases);
@@ -957,7 +977,7 @@ export default class EditCatchView extends Vue {
       }
     }
 
-    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);   
     if (mandatorySize && !this.aCatch.size) {
       hasError = true;
       this.sizeError = "Taille obligatoire";
@@ -973,6 +993,12 @@ export default class EditCatchView extends Vue {
           // On force pour stocker uniquement la valeur tronquée
           this.aCatch.size = Math.floor(this.aCatch.size);
           this.sizeError = "";
+
+           const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+          if (this.aCatch.size > maxSize) {
+            hasError = true;
+            this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
+          }
         }
       } else {
         this.sizeError = "";
@@ -1112,9 +1138,15 @@ export default class EditCatchView extends Vue {
 
   leavePage() {
     if (this.inTripCreation) {
-      router.push({ name: "trip-catchs", params: { id: this.tripId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip-catchs",
+        params: { id: this.tripId },
+      });
     } else {
-      router.push({ name: "trip", params: { id: this.tripId } });
+      RouterUtils.pushRouteNoDuplicate(router, {
+        name: "trip",
+        params: { id: this.tripId },
+      });
     }
   }
 
@@ -1179,7 +1211,7 @@ export default class EditCatchView extends Vue {
 
       // If we found an existing specie matching custom name, let's use the existing specie
       if (foundMatchingSpecie) {
-        this.aCatch.speciesId = foundMatchingSpecie!.id;
+        this.aCatch.speciesId = (foundMatchingSpecie as SpeciesWithAlias)!.id;
         this.aCatch.otherSpecies = "";
       }
     }

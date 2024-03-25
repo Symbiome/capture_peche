@@ -59,7 +59,7 @@
             'pic-selected': pictureSrc.content == focusedPicSrc,
           }"
         >
-          <img class="picture" :src="pictureSrc.content" />
+          <img class="picture" :src="pictureSrc.content" alt="picture" />
         </div>
         <!-- Then measurement pic (if any) -->
         <div
@@ -72,7 +72,7 @@
             'pic-selected': measurementPictureSrc == focusedPicSrc,
           }"
         >
-          <img class="picture" :src="measurementPictureSrc" />
+          <img class="picture" :src="measurementPictureSrc" alt="picture" />
         </div>
         <!-- Empty miniature picture for adding pictures -->
         <div
@@ -156,7 +156,7 @@ export default class PictureModal extends Vue {
   }
 
   @Watch("src")
-  srcChanged(newValue: string) {
+  srcChanged(_newValue: string) {
     this.focusedPicSrc = this.src;
   }
 

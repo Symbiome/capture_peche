@@ -35,14 +35,13 @@ Menu Product > Archive (ça dure une plombe)
 ## Envoyer la version sur itunesconnect
 Une fois l'archive effectuée, l'organizer apparait (vous pouvez le rouvrir avec Window > Organizer)
 Sélectionnnez "App", votre archive avec le numéro de build est censée être en haut de la liste
-Cliquez sur "Distribute App"
-Sélectionnez App Store Connect (choix par défaut) > Next
-Upload (choix par défaut) > Next
-[Attendre]
-Laissez les 3 checkbox cochées (choix par défaut) > Next
-Automatically manage signing (choix par défaut) > Next
-[Attendre]
-Cliquer sur "Upload"
+Cliquez sur "Distribute App" > next
+Cliquez sur "Custom" > next
+Séléectionnez "App Store Connect" > next
+Sélectionnez "Upload" > next
+Checker les 2 premières checkbox (pas la 3eme)> next
+Sélectionnez le bon distribution certificate et le bon provisionning profile > Next
+Cliquez sur Upload
 
 ## Publier le build en béta
 Se connecter sur applestoreconnect.com avec les identifiants indiqués dans le wiki Fishola

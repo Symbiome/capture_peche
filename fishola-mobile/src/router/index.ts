@@ -31,6 +31,10 @@ import Register from "@/views/Register.vue";
 import TripsAndNews from "@/views/TripsAndNews.vue";
 import Dashboard from "@/views/Dashboard.vue";
 
+import FishingLicences from "@/views/FishingLicences.vue";
+import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
+import FishingLicenceFullScreen from "@/components/fishing-licences/FishingLicenceFullScreen.vue";
+
 import NewTrip from "@/views/trip/NewTrip.vue";
 import TripMeta from "@/views/trip/TripMeta.vue";
 import TripSpecies from "@/views/trip/TripSpecies.vue";
@@ -171,6 +175,22 @@ const routes = [
     props: true,
   },
   {
+    path: "/licences",
+    name: "licences",
+    component: FishingLicences,
+  },
+  {
+    path: "/licences/new",
+    name: "licence-new",
+    component: NewFishingLicence,
+  },
+   {
+    path: "/licences-fullscreen/:type/:url",
+    name: "licence-fullscreen",
+    component: FishingLicenceFullScreen,
+    props:true,
+  },
+  {
     path: "/documentation/:tab",
     name: "documentationFaq",
     meta: { public: true },
@@ -245,16 +265,16 @@ const router = new VueRouter({
 });
 
 // Protect routes according to authentication status
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (to.meta && to.meta.public) {
     next();
   } else {
     ProfileService.getProfile().then(
-      (profile) => {
+      (_profile) => {
         next();
       },
-      (status) => {
-        console.error("VOUS NE PASSEREZ PAS !", to.name);
+      (_status) => {
+        console.error("Route non autorisée : ", to.name);
         next("/login");
       }
     );

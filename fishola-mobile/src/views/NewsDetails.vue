@@ -39,7 +39,7 @@
             >
           </span>
           <div class="miniature-pic">
-            <img :src="getMiniatureURl(news)" />
+            <img :src="getMiniatureURl(news)" alt="image de l'actualité"/>
           </div>
 
           <div class="news-details-content" v-html="news.content" />
@@ -86,7 +86,11 @@ export default class NewsDetailsView extends Vue {
   }
 
   async loadSingleNews(): Promise<void> {
-    this.news = await documentationService.getSingleNews(this.newsId);
+    try {
+      this.news = await documentationService.getSingleNews(this.newsId);
+    } catch (e) {
+      // news will be left empty
+    }
   }
   getMiniatureURl(news: News) {
     if (news.miniatureId) {

@@ -1,4 +1,3 @@
-import { CatchBean, PicturePerTripBean, TripBean } from "@/pojos/BackendPojos";
 /*-
  * #%L
  * Fishola :: Mobile

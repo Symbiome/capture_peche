@@ -10,12 +10,12 @@ package fr.inrae.fishola.mails;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -24,34 +24,21 @@ package fr.inrae.fishola.mails;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.net.MediaType;
 import fr.inrae.fishola.FisholaConfiguration;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.Mailer;
 import io.quarkus.scheduler.Scheduled;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
@@ -64,17 +51,18 @@ public class MailService {
 
     @Inject
     protected FisholaConfiguration config;
+    @Inject
+    protected Mailer mailer;
 
     protected static final ConcurrentLinkedQueue<FisholaMail> PENDING_EMAILS = new ConcurrentLinkedQueue<>();
 
     public ImmutableFisholaMail.Builder newMail(String body) {
-        ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder()
-                .from(config.mailFrom())
-                .body(body);
+        ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder().body(body);
         return builder;
     }
 
-    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath, Map<String, Object> templateParameters) {
+    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath,
+                                                            Map<String, Object> templateParameters) {
         MustacheFactory mf = new DefaultMustacheFactory();
         Mustache mustache = mf.compile(templatePath);
         StringWriter stringWriter = new StringWriter();
@@ -84,64 +72,11 @@ public class MailService {
         return builder;
     }
 
-    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath, String arg1Name, Object arg1, String arg2Name, Object arg2) {
+    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath, String arg1Name, Object arg1,
+                                                            String arg2Name, Object arg2) {
         ImmutableMap<String, Object> args = ImmutableMap.of(arg1Name, arg1, arg2Name, arg2);
         ImmutableFisholaMail.Builder builder = newMailFromTemplate(templatePath, args);
         return builder;
-    }
-
-    private MimeMessage buildMimeMessage(FisholaMail fisholaMail) {
-
-        Properties prop = config.getMailProperties();
-
-        Session session = Session.getInstance(prop /*, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("username", "password");
-            }
-        }*/);
-        MimeMessage message = new MimeMessage(session);
-
-        try {
-            message.setFrom(fisholaMail.getFrom());
-            for (String to : fisholaMail.getTos()) {
-                message.addRecipients(Message.RecipientType.TO, to);
-            }
-            message.setSubject(fisholaMail.getSubject(), Charsets.UTF_8.name());
-
-            MimeBodyPart mimeBodyPart = new MimeBodyPart();
-            mimeBodyPart.setContent(fisholaMail.getBody(), "text/html;charset=utf-8");
-
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(mimeBodyPart);
-
-            for (FisholaMailAttachment attachment : fisholaMail.getAttachments()) {
-                MimeBodyPart attachmentPart = toAttachmentPart(attachment);
-                multipart.addBodyPart(attachmentPart);
-            }
-
-            message.setContent(multipart);
-
-        } catch (MessagingException me) {
-            throw new FisholaTechnicalException("Unable to build MimeMessage", me);
-        }
-        return message;
-    }
-
-    protected MimeBodyPart toAttachmentPart(FisholaMailAttachment attachment) throws MessagingException {
-
-        byte[] attachmentBytes = attachment.getBytes();
-        MediaType attachmentType = attachment.getType();
-        String attachmentName = attachment.getName();
-
-        DataSource attachmentDataSource = new ByteArrayDataSource(attachmentBytes, attachmentType.toString());
-
-        MimeBodyPart attachmentPart = new MimeBodyPart();
-        attachmentPart.setDisposition("attachment");
-        attachmentPart.setFileName(attachmentName);
-        attachmentPart.setDataHandler(new DataHandler(attachmentDataSource));
-
-        return attachmentPart;
     }
 
     public void sendMail(FisholaMail mail) {
@@ -149,12 +84,7 @@ public class MailService {
         if (config.asyncEmails()) {
             sendMailAsync(mail);
         } else {
-            try {
-                sendMail0(mail);
-            } catch (MessagingException me) {
-                log.errorf("Unable to synchronously send email: %s", mail, me);
-                throw new FisholaTechnicalException("Unable to synchronously send email: " + mail, me);
-            }
+            sendMail0(mail);
         }
 
     }
@@ -166,15 +96,15 @@ public class MailService {
         }
 
         FisholaMail safeMail = mail.pendingSince().isPresent() ? mail : ImmutableFisholaMail.builder()
-                .fromInstance(mail)
-                .pendingSince(LocalDateTime.now())
-                .build();
+                                                                                            .fromInstance(mail)
+                                                                                            .pendingSince(LocalDateTime.now())
+                                                                                            .build();
 
         PENDING_EMAILS.add(safeMail);
 
     }
 
-    @Scheduled(every="{fishola.async-emails-every}", concurrentExecution = SKIP)
+    @Scheduled(every = "{fishola.async-emails-every}", concurrentExecution = SKIP)
     protected void sendPendingEmails() {
 
         int pendingEmailsCount = PENDING_EMAILS.size();
@@ -194,34 +124,37 @@ public class MailService {
                 // Envoi de mail OK, on le supprime de la liste
                 iterator.remove();
             } catch (Exception eee) {
-                Preconditions.checkState(fisholaMail.pendingSince().isPresent(), "FisholaMail sans pendingSince: " + fisholaMail);
+                Preconditions.checkState(fisholaMail.pendingSince().isPresent(),
+                        "FisholaMail sans pendingSince: " + fisholaMail);
                 Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
                 log.warnf("Unable to send mail for the last %d seconds", pendingDuration.toSeconds(), eee);
                 int retentionMinutes = config.asyncEmailsRetentionMinutes();
                 if (pendingDuration.toMinutes() > retentionMinutes) {
-                    log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes, fisholaMail);
+                    log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes,
+                            fisholaMail);
                     iterator.remove();
                 }
             }
         }
     }
 
-    protected void sendMail0(FisholaMail mail) throws MessagingException {
+    protected void sendMail0(FisholaMail fisholaMail) {
 
         if (log.isInfoEnabled()) {
-            log.infof("Trying to send an email to '%s': « %s »", mail.getTos(), mail.getSubject());
+            log.infof("Trying to send an email to '%s': « %s »", fisholaMail.getTos(), fisholaMail.getSubject());
         }
 
-        MimeMessage message = buildMimeMessage(mail);
-
-        if (config.smtpUsername().isPresent() && config.smtpPassword().isPresent()) {
-            Transport.send(message, config.smtpUsername().get(), config.smtpPassword().get());
-        } else {
-            Transport.send(message);
+        for (String recipient : fisholaMail.getTos()) {
+            Mail mail = Mail
+                    .withHtml(recipient, fisholaMail.getSubject(), fisholaMail.getBody());
+            for (FisholaMailAttachment attachment : fisholaMail.getAttachments()) {
+                mail.addAttachment(attachment.getName(), attachment.getBytes(), attachment.getType().toString());
+            }
+            mailer.send(mail);
         }
 
         if (log.isInfoEnabled()) {
-            log.infof("Email sent to '%s': « %s »", mail.getTos(), mail.getSubject());
+            log.infof("Email sent to '%s': « %s »", fisholaMail.getTos(), fisholaMail.getSubject());
         }
     }
 

@@ -30,25 +30,24 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
 import java.util.Base64;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import fr.inrae.fishola.rest.about.AboutResource;
 import org.apache.commons.lang3.tuple.Pair;
@@ -63,11 +62,11 @@ public class DocumentationResource extends AbstractFisholaResource {
     @GET
     @Path("/documentations")
     public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
-        LinkedHashMap<UUID, Pair<String,String>> docs = dao.listDocumentations();
+        Map<UUID, Pair<String, String>> docs = dao.listDocumentations();
         List<DocumentationWithBase64ContentBean> result = docs.entrySet()
                 .stream()
                 .map(entry -> toDocumentationWithBase64Content(entry, request))
-                .collect(Collectors.toList());
+                .toList();
         return result;
     }
 
@@ -99,7 +98,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
         Documentation documentation = optional.get();
         String filename = documentation.getName()
-                .replaceAll("[ ]", "_");
+                .replaceAll(" ", "_");
         StreamingOutput output = this.wrapAsStreamingOutput(documentation.getContent());
         Response response = Response.ok(output)
                 .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))

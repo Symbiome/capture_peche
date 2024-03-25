@@ -26,13 +26,14 @@ import fr.inrae.fishola.entities.tables.daos.DocumentationDao;
 import fr.inrae.fishola.entities.tables.daos.EditorialDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.Record3;
 import org.jooq.Result;
 
-import javax.inject.Singleton;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.impl.DAOImpl;
@@ -42,19 +43,19 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
 
     public List<Documentation> listDocumentationsWithoutContent() {
         List<Documentation> result = withContext(context -> context.selectFrom(Tables.DOCUMENTATION)
-                .where(Tables.DOCUMENTATION.CONTENT.isNull())
-                .fetchInto(Documentation.class));
+                                                                   .where(Tables.DOCUMENTATION.CONTENT.isNull())
+                                                                   .fetchInto(Documentation.class));
         return result;
     }
 
-    public LinkedHashMap<UUID, Pair<String,String>> listDocumentations() {
+    public Map<UUID, Pair<String, String>> listDocumentations() {
         return withContext(context -> {
             Result<Record3<UUID, String, String>> tuples = context.select(Tables.DOCUMENTATION.ID, Tables.DOCUMENTATION.NATURAL_ID, Tables.DOCUMENTATION.NAME)
                     .from(Tables.DOCUMENTATION)
                     .fetch();
 
-            LinkedHashMap<UUID, Pair<String, String>> result = new LinkedHashMap<>();
-            tuples.forEach(record -> result.put(record.value1(), Pair.of(record.value2(), record.value3())));
+            Map<UUID, Pair<String, String>> result = new LinkedHashMap<>();
+            tuples.forEach(rec -> result.put(rec.value1(), Pair.of(rec.value2(), rec.value3())));
             return result;
         });
     }
@@ -77,9 +78,7 @@ public class EditorialAndDocumentationDao extends AbstractFisholaDao {
     }
 
     public void deleteDocumentation(UUID documentId) {
-        withDaoNoResult(DocumentationDao.class, dao -> {
-            dao.deleteById(documentId);
-        });
+        withDaoNoResult(DocumentationDao.class, dao -> dao.deleteById(documentId));
     }
     public List<Editorial> getEditorials() {
         List<Editorial> editorials = withDao(EditorialDao.class, DAOImpl::findAll);

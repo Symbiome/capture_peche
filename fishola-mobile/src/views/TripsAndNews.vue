@@ -81,30 +81,38 @@ export default class TripsAndNews extends Vue {
   }
 
   async updateUnreadNewsCount() {
-    this.news = await DocumentationService.getNews();
-    let profile = await ProfileService.getProfile();
-    if (profile.lastNewsSeenDate) {
-      const lastSeenDate = Helpers.parseLocalDateTime(
-        // @ts-ignore
-        profile.lastNewsSeenDate
-      );
-
-      this.unreadNewsCount = this.news.filter((n) => {
-        return (
+    try {
+      this.news = await DocumentationService.getNews();
+      let profile = await ProfileService.getProfile();
+      if (profile.lastNewsSeenDate) {
+        const lastSeenDate = Helpers.parseLocalDateTime(
           // @ts-ignore
-          Helpers.parseLocalDateTime(n.datePublicationDebut) > lastSeenDate
+          profile.lastNewsSeenDate
         );
-      }).length;
+
+        this.unreadNewsCount = this.news.filter((n) => {
+          return (
+            // @ts-ignore
+            Helpers.parseLocalDateTime(n.datePublicationDebut) > lastSeenDate
+          );
+        }).length;
+      }
+    } catch (e) {
+      // News section will be left empty
     }
   }
 
   async showNewsTab() {
     this.showNews = true;
     if (this.unreadNewsCount > 0) {
-      let profile = await ProfileService.getProfile();
-      profile.lastNewsSeenDate = new Date();
-      ProfileService.saveProfile(profile);
-      this.updateUnreadNewsCount();
+      try {
+        let profile = await ProfileService.getProfile();
+        profile.lastNewsSeenDate = new Date();
+        ProfileService.saveProfile(profile);
+        this.updateUnreadNewsCount();
+      } catch (e) {
+        // Unread news count won't be updated
+      }
     }
   }
 }

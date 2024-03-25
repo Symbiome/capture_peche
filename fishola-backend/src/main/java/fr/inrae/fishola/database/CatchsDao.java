@@ -23,7 +23,6 @@ package fr.inrae.fishola.database;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -46,7 +45,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
-import javax.inject.Singleton;
+
+import jakarta.inject.Singleton;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -64,6 +64,22 @@ import static org.jooq.impl.DSL.trueCondition;
 public class CatchsDao extends AbstractFisholaDao {
 
     public UUID create(Catch c) {
+        if (c.getEditedSpeciesId() == null) {
+            c.setEditedSpeciesId(c.getSpeciesId());
+        }
+        if (c.getEditedSize() == null || c.getEditedSize() == 0) {
+            if (c.getSize() != null) {
+                c.setEditedSize(c.getSize() * 10);
+            } else {
+                c.setEditedSize(0);
+            }
+        }
+        if (c.getEditedWeight() == null || c.getEditedWeight() == 0) {
+            c.setEditedWeight(c.getWeight());
+        }
+        if (c.getExcludeFromExports() == null) {
+            c.setExcludeFromExports(false);
+        }
         return withContext(context -> {
             CatchRecord record = context.newRecord(Tables.CATCH, c);
             CatchRecord recordInserted = context.insertInto(Tables.CATCH)
@@ -160,7 +176,7 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public List<Integer> getPictureIndexes(UUID catchId) {
-        ListMultimap<UUID, Integer> multimap = getPictureIndexes(ImmutableSet.of(catchId));
+        ListMultimap<UUID, Integer> multimap = getPictureIndexes(Set.of(catchId));
         List<Integer> pictureIndexes = multimap.get(catchId);
         return pictureIndexes;
     }
@@ -219,6 +235,7 @@ public class CatchsDao extends AbstractFisholaDao {
             } else {
                 // Sinon on inclut seulement les sorties dont les utilisateurs ne sont pas à exclure
                 Condition nonExcludedUserCondition = Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false);
+                nonExcludedUserCondition = nonExcludedUserCondition.and(Tables.CATCH.EXCLUDE_FROM_EXPORTS.eq((false)));
                 // ... ou les sorties où il n'y a pas d'utilisateur
                 Condition noUserCondition = Tables.TRIP.OWNER_ID.isNull();
                 selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));

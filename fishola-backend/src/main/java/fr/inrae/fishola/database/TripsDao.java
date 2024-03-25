@@ -31,6 +31,8 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
+import fr.inrae.fishola.rest.trips.ExportBean;
+import fr.inrae.fishola.rest.trips.PaginatedExportBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,12 +45,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.MultivaluedMap;
 import org.jooq.Condition;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectSeekStep2;
+import org.jooq.SortField;
+import org.jooq.impl.DSL;
 import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -56,14 +61,15 @@ import org.nuiton.util.pagination.PaginationResult;
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
 
+    public static final String CATCHS_OPENADOM_EXPORT_VIEW = "catchs_openadom_export";
     @Inject
     protected CatchsDao catchsDao;
 
     public UUID create(Trip trip) {
         return withContext(context -> {
-            TripRecord record = context.newRecord(Tables.TRIP, trip);
+            TripRecord newRecord = context.newRecord(Tables.TRIP, trip);
             TripRecord recordInserted = context.insertInto(Tables.TRIP)
-                    .set(record)
+                    .set(newRecord)
                     .returning(Tables.TRIP.ID)
                     .fetchOne();
             UUID id = recordInserted.getId();
@@ -102,9 +108,7 @@ public class TripsDao extends AbstractFisholaDao {
                 LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
                 conditions.add(Tables.TRIP.DAY.between(min, max));
             });
-            lakesFilter.ifPresent(lakesIds -> {
-                conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
-            });
+            lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get())));
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
             SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
@@ -181,15 +185,11 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     protected void deleteTripSpecies(UUID tripId) {
-        withContextNoResult(context -> {
-            context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute();
-        });
+        withContextNoResult(context -> context.deleteFrom(Tables.TRIP_EXPECTED_SPECIES).where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId)).execute());
     }
 
     protected void deleteTripTechniques(UUID tripId) {
-        withContextNoResult(context -> {
-            context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute();
-        });
+        withContextNoResult(context -> context.deleteFrom(Tables.TRIP_TECHNIQUES).where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId)).execute());
     }
 
     public void delete(UUID tripId) {
@@ -215,12 +215,49 @@ public class TripsDao extends AbstractFisholaDao {
 
     public String getTripsCSV() {
         return withContext(context -> {
-            String result = context.selectFrom("catchs_export")
+            String result = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
+                    .where("a_exclure='non'")
                     .fetch()
                     .formatCSV(';');
             return result;
         });
     }
+
+    /**
+     * Paginated view of catchs_openadom_export.
+     */
+    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction, MultivaluedMap<String, String> filters) {
+        int catchesPerPage = 15;
+        return withContext(context -> {
+            PaginatedExportBean pcb = new PaginatedExportBean();
+            // Compute sorting
+            SortField<Object> orderByField;
+            if ("asc".equals(direction)) {
+                orderByField = DSL.field(orderBy).asc();
+            } else {
+                orderByField =  DSL.field(orderBy).desc();
+            }
+
+            // Compute filters
+            List<Condition> conditions = new ArrayList<>();
+            for (Map.Entry<String, List<String>> filter: filters.entrySet()) {
+                String condition =filter.getKey() + "::varchar(255) LIKE '%" + filter.getValue().get(0) + "%'";
+                conditions.add(DSL.condition(condition));
+            }
+
+            // Execute paginated query
+            pcb.elements = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
+                    .where(conditions)
+                    .orderBy(orderByField)
+                    .limit(catchesPerPage)
+                    .offset(offset * catchesPerPage)
+                    .fetchInto(ExportBean.class);
+            pcb.offset = offset;
+            pcb.total =  context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW).where(conditions).stream().count();
+            return pcb;
+        });
+    }
+
 
     public String getPersonalTripsCSV(UUID userId) {
         return withContext(context -> {
@@ -267,9 +304,7 @@ public class TripsDao extends AbstractFisholaDao {
             picturesForTrip.tripDate = trip.getDay();
             picturesForTrip.tripId = trip.getId();
             picturesForTrip.tripName = trip.getName();
-            withDaoNoResult(LakeDao.class, lakeDao -> {
-                picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName();
-            });
+            withDaoNoResult(LakeDao.class, lakeDao -> picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName());
             ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
             for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
                 picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/preview/" + catchWithPicture.getValue());

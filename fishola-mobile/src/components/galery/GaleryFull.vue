@@ -75,6 +75,7 @@
                     </span>
                     <div class="galery-pics-container">
                       <img
+                        alt="galery"
                         class="galery-pic"
                         :class="{
                           selected: getPreviewPicURL(picURL) == selectedPic,
@@ -98,6 +99,7 @@
                   class="no-pic-in-galery"
                 >
                   <img
+                    alt="camera"
                     src="/img/camera.svg"
                     class="galery-pic selected"
                     :enableModal="false"
@@ -110,6 +112,7 @@
             <div class="right-part">
               <img
                 v-if="selectedPic"
+                alt="image sélectionnée"
                 class="main-pic"
                 :src="getFullPicURL(selectedPic)"
                 :enableModal="false"
@@ -117,6 +120,7 @@
               />
               <img
                 v-else
+                alt="camera"
                 src="/img/camera.svg"
                 class="main-pic no-pic"
                 :enableModal="false"
@@ -163,6 +167,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
+import { RouterUtils } from "../../router/RouterUtils";
 import PictureModal from "../trip/PictureModal.vue";
 
 @Component({
@@ -258,24 +263,28 @@ export default class GaleryFull extends Vue {
 
   @Watch("picturesPerTrip")
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
-    this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
-      this.selectedLakeUUID
-    );
-    this.years = Object.keys(this.allPicsPerYear).reverse();
-    if (
-      !this.selectedPic &&
-      this.years.length &&
-      this.allPicsPerYear &&
-      // @ts-ignore
-      this.allPicsPerYear[this.years[0]]
-    ) {
-      // @ts-ignore
-      const ppT = [...this.allPicsPerYear[this.years[0]]][0];
-      this.selectedPic = this.getPreviewPicURL(ppT.pictureURLs[0]);
-      this.picturePerTripChanged(ppT);
-      this.$nextTick(() => {
-        this.modalOpened = false;
-      });
+    try {
+      this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
+        this.selectedLakeUUID
+      );
+      this.years = Object.keys(this.allPicsPerYear).reverse();
+      if (
+        !this.selectedPic &&
+        this.years.length &&
+        this.allPicsPerYear &&
+        // @ts-ignore
+        this.allPicsPerYear[this.years[0]]
+      ) {
+        // @ts-ignore
+        const ppT = [...this.allPicsPerYear[this.years[0]]][0];
+        this.selectedPic = this.getPreviewPicURL(ppT.pictureURLs[0]);
+        this.picturePerTripChanged(ppT);
+        this.$nextTick(() => {
+          this.modalOpened = false;
+        });
+      }
+    } catch (e) {
+      // Silent catch, gallery will be empty
     }
   }
 
@@ -297,8 +306,12 @@ export default class GaleryFull extends Vue {
       longitude: 0,
     };
     this.lakes.push(defaultLake);
-    const allLakes = await ReferentialService.getLakes();
-    this.lakes = this.lakes.concat(allLakes);
+    try {
+      const allLakes = await ReferentialService.getLakes();
+      this.lakes = this.lakes.concat(allLakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
   }
 
   formatTripDate(input: any): string {
@@ -306,7 +319,7 @@ export default class GaleryFull extends Vue {
   }
 
   async seeTrip(tripId: string) {
-    router.push({
+    RouterUtils.pushRouteNoDuplicate(router, {
       name: "trip-summary",
       params: {
         id: tripId,
@@ -317,7 +330,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    router.push("/dashboard");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
   }
 
   async downloadSelectedPic() {

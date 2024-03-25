@@ -67,7 +67,7 @@ export default class TripsService extends AbstractFisholaService {
         }
 
         if (mode == 'Live') {
-            const options = {weekday: "long", month: "long", day: "numeric"};
+            const options: Intl.DateTimeFormatOptions = {weekday: "long", month: "long", day: "numeric"};
             const now = new Date();
 
             newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
@@ -430,7 +430,7 @@ export default class TripsService extends AbstractFisholaService {
             trip.id = '' + new Date().getTime();
         }
         this.removeSaveDelayMarker(trip);
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string>((resolve, _reject) => {
             this.getDatabase()
             .dirtyTrips
             .put(trip)
@@ -708,7 +708,7 @@ export default class TripsService extends AbstractFisholaService {
     }
 
     static hasRunningTrip():Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+        return new Promise<boolean>((resolve, _reject) => {
             this.getRunningTrip()
                 .then(
                     () => resolve(true), 

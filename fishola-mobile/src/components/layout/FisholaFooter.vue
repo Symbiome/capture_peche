@@ -20,129 +20,160 @@
   -->
 <template>
   <div class="footer keyboardSensitive hide-on-desktop">
-    <FooterButton class="keyboardSensitive" v-if="!hideButton && (buttonIcon || buttonText)"
-                  v-bind:icon="buttonIcon"
-                  v-bind:text="buttonText"
-                  v-bind:deleteMode="buttonIcon == 'icon-delete'"
-                  :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage"
-                  v-on:clicked="$emit('buttonClicked')"/>
+    <FooterButton
+      class="keyboardSensitive"
+      v-if="!hideButton && (buttonIcon || buttonText)"
+      v-bind:icon="buttonIcon"
+      v-bind:text="buttonText"
+      v-bind:deleteMode="buttonIcon == 'icon-delete'"
+      :isWaitingForPositionBeforeGoingToNextPage="
+        isWaitingForPositionBeforeGoingToNextPage
+      "
+      v-on:clicked="$emit('buttonClicked')"
+    />
 
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['logout']"
-         v-on:click="logout">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['logout']"
+      v-on:click="logout"
+    >
       <i class="icon-logout"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['back']"
-         v-on:click="goBack">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['back']"
+      v-on:click="goBack"
+    >
       <i class="icon-arrow icon-back"></i>
     </div>
-    <div class="footer-element steps hiddenWhenKeyboardShows"
-         v-if="steps.length > 0">
-      <div v-for="s in steps" 
-           v-bind:key="s.id"
-           v-bind:class="s.active?'step step-active':'step'">
+    <div
+      class="footer-element steps hiddenWhenKeyboardShows"
+      v-if="steps.length > 0"
+    >
+      <div
+        v-for="s in steps"
+        v-bind:key="s.id"
+        v-bind:class="s.active ? 'step step-active' : 'step'"
+      >
         <!-- {{s.active}} -->
       </div>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['spacer']">
-         <!-- spacer -->
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['spacer']"
+    >
+      <!-- spacer -->
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='dashboard'?'filled':'unfilled'"
-         v-if="activeButtons['dashboard']"
-         v-on:click="goDashboard">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'dashboard' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['dashboard']"
+      v-on:click="goDashboard"
+    >
       <i class="icon-dashboard"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='settings'?'filled':'unfilled'"
-         v-if="activeButtons['settings']"
-         v-on:click="goSettings">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'settings' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['settings']"
+      v-on:click="goSettings"
+    >
       <i class="icon-settings"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='credits'?'filled':'unfilled'"
-         v-if="activeButtons['credits']"
-         v-on:click="goCredits">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'credits' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['credits']"
+      v-on:click="goCredits"
+    >
       <i class="icon-info"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='home'?'filled':'unfilled'"
-         v-if="activeButtons['home']"
-         v-on:click="goHome">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'home' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['home']"
+      v-on:click="goHome"
+    >
       <i class="icon-home"></i>
     </div>
-    <div class="footer-element timer hiddenWhenKeyboardShows"
-         v-if="timer">
-      {{timer}}
+    <div class="footer-element timer hiddenWhenKeyboardShows" v-if="timer">
+      {{ timer }}
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['giveup']"
-         v-on:click="giveup">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['giveup']"
+      v-on:click="giveup"
+    >
       Abandon
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['delete']"
-         v-on:click="doDelete">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['delete']"
+      v-on:click="doDelete"
+    >
       <i class="icon-delete"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='profile'?'filled':'unfilled'"
-         v-if="activeButtons['profile']"
-         v-on:click="goProfile">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'profile' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['profile']"
+      v-on:click="goProfile"
+    >
       <i class="icon-profile"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='documentation'?'filled':'unfilled'"
-         v-if="activeButtons['documentation']"
-         v-on:click="goDocumentation">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'documentation' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['documentation']"
+      v-on:click="goDocumentation"
+    >
       <i class="icon-files"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-bind:class="selected=='feedback'?'filled':'unfilled'"
-         v-if="activeButtons['feedback']"
-         v-on:click="openFeedback">
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-bind:class="selected == 'feedback' ? 'filled' : 'unfilled'"
+      v-if="activeButtons['feedback']"
+      v-on:click="openFeedback"
+    >
       <i class="icon-faq"></i>
     </div>
-    <div class="footer-element pastille hiddenWhenKeyboardShows"
-         v-if="activeButtons['blank']">
-         <!-- spacer -->
+    <div
+      class="footer-element pastille hiddenWhenKeyboardShows"
+      v-if="activeButtons['blank']"
+    >
+      <!-- spacer -->
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import TripsService from "@/services/TripsService";
+import ProfileService from "@/services/ProfileService";
 
-import TripsService from '@/services/TripsService';
-import ProfileService from '@/services/ProfileService';
+import Helpers from "@/services/Helpers";
 
-import Helpers from '@/services/Helpers';
+import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
+import FooterButton from "@/components/layout/FooterButton.vue";
 
-import router from '@/router';
-
-import UserProfile from '@/pojos/UserProfile';
-import FooterButton from '@/components/layout/FooterButton.vue';
-
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
-    FooterButton
-  }
+    FooterButton,
+  },
 })
 export default class FisholaFooter extends Vue {
-
-  @Prop({default:'logout,dashboard,home'}) shortcuts!: string;
+  @Prop({ default: "logout,dashboard,home" }) shortcuts!: string;
   @Prop() selected?: string;
   @Prop() buttonIcon?: string;
   @Prop() buttonText?: string;
   @Prop() backEvent?: string;
-  @Prop({default: false}) hideButton: boolean;
-  @Prop({default: false}) isWaitingForPositionBeforeGoingToNextPage: boolean;
+  @Prop({ default: false }) hideButton: boolean;
+  @Prop({ default: false }) isWaitingForPositionBeforeGoingToNextPage: boolean;
 
-  steps:any[] = [];
-  timer:string = '';
+  steps: any[] = [];
+  timer: string = "";
 
   activeButtons: any = {
     back: false,
@@ -157,68 +188,70 @@ export default class FisholaFooter extends Vue {
     documentation: false,
     settings: false,
     profile: false,
-    feedback: false
+    feedback: false,
   };
 
   mounted() {
-    const array = this.shortcuts.split(',');
+    const array = this.shortcuts.split(",");
     array.forEach(this.activeButton);
   }
 
-  activeButton(key:string) {
-    if (key && key.indexOf('step-') == 0) {
+  activeButton(key: string) {
+    if (key && key.indexOf("step-") == 0) {
       const stepIndex = parseInt(key[5]);
       const stepCount = parseInt(key[7]);
 
-      for (let i=1; i<=stepCount; i++) {
+      for (let i = 1; i <= stepCount; i++) {
         this.steps.push({
           id: i,
-          active: (i<=stepIndex)
+          active: i <= stepIndex,
         });
       }
-
     }
-    if (key && key.indexOf('timer-') == 0) {
-      const seconds:number = parseInt(key.substring(6));
+    if (key && key.indexOf("timer-") == 0) {
+      const seconds: number = parseInt(key.substring(6));
       this.timer = Helpers.formatSecondsDurationTruncate(seconds);
     }
     this.activeButtons[key] = true;
   }
 
   logout() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vous déconnecter ?', 'Déconnexion')
-      .then(() => {
-        this.logoutConfirmed(false);
-      });
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vous déconnecter ?",
+      "Déconnexion"
+    ).then(() => {
+      this.logoutConfirmed(false);
+    });
   }
 
   promptLogoutWithRunningTrip() {
-    Helpers.confirm(this.$modal, 'Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?', 'Déconnexion')
-      .then(() => {
-        this.logoutConfirmed(true);
-      });
+    Helpers.confirm(
+      this.$modal,
+      "Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?",
+      "Déconnexion"
+    ).then(() => {
+      this.logoutConfirmed(true);
+    });
   }
 
-  logoutConfirmed(ignoreRunningTrip:boolean) {
+  logoutConfirmed(ignoreRunningTrip: boolean) {
     if (ignoreRunningTrip) {
-      ProfileService.logout()
-        .then(this.logguedOut);
+      ProfileService.logout().then(this.logguedOut);
     } else {
-      TripsService.hasRunningTrip()
-        .then((hasRunningTrip:boolean) => {
-          if (hasRunningTrip) {
-            this.promptLogoutWithRunningTrip();
-          } else {
-            ProfileService.logout()
-              .then(this.logguedOut);
-          }
-        });
+      TripsService.hasRunningTrip().then((hasRunningTrip: boolean) => {
+        if (hasRunningTrip) {
+          this.promptLogoutWithRunningTrip();
+        } else {
+          ProfileService.logout().then(this.logguedOut);
+        }
+      });
     }
   }
 
   logguedOut() {
-    router.push('/login');
-    this.$root.$emit('loggued-out');
+    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    this.$root.$emit("loggued-out");
   }
 
   goBack() {
@@ -230,58 +263,57 @@ export default class FisholaFooter extends Vue {
   }
 
   goDashboard() {
-    router.push('/dashboard');
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
   }
 
   goCredits() {
-    router.push('/credits');
-    this.$root.$emit('close-feedback');
+    RouterUtils.pushRouteNoDuplicate(router, "/credits");
+    this.$root.$emit("close-feedback");
   }
 
   goDocumentation() {
-    router.push('/documentation');
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation");
   }
 
   goHome() {
-    router.push('/trips');
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   goProfile() {
-    router.push('/profile');
+    RouterUtils.pushRouteNoDuplicate(router, "/profile");
   }
 
   goSettings() {
-    router.push('/settings');
+    RouterUtils.pushRouteNoDuplicate(router, "/settings");
   }
 
   openFeedback() {
-    this.$root.$emit('open-feedback');
+    this.$root.$emit("open-feedback");
   }
 
   giveup() {
-    Helpers.confirm(this.$modal, 'Voulez-vous vraiment abandonner cette sortie ?')
-      .then(this.giveupConfirmed);
+    Helpers.confirm(
+      this.$modal,
+      "Voulez-vous vraiment abandonner cette sortie ?"
+    ).then(this.giveupConfirmed);
   }
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    router.push('/trips');
+    RouterUtils.pushRouteNoDuplicate(router, "/trips");
   }
 
   doDelete() {
-    this.$emit('deleteClicked');
+    this.$emit("deleteClicked");
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../../less/main";
 
 .footer {
-
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -308,11 +340,9 @@ export default class FisholaFooter extends Vue {
     &.timer {
       white-space: nowrap;
     }
-
   }
 
   .footer-element.steps {
-
     width: 80px;
     display: flex;
     flex-direction: row;
@@ -327,13 +357,11 @@ export default class FisholaFooter extends Vue {
 
       margin-left: @margin-x-small;
       margin-right: @margin-x-small;
-
     }
 
     .step.step-active {
       background-color: @pelorous;
     }
   }
-
 }
 </style>

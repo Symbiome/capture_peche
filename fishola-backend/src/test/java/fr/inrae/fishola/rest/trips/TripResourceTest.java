@@ -22,12 +22,17 @@ package fr.inrae.fishola.rest.trips;
  */
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
+import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
@@ -35,17 +40,20 @@ import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.JwtHelper;
+import fr.inrae.fishola.rest.dashboard.Dashboard;
+import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ResponseBodyExtractionOptions;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.ws.rs.core.MediaType;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,6 +61,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -67,12 +76,18 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
-public class TripResourceTest extends AbstractFisholaTest {
+class TripResourceTest extends AbstractFisholaTest {
 
     @Inject
     protected ReferentialDao referentialDao;
     @Inject
     protected TripsDao tripsDao;
+    @Inject
+    protected DashboardDao dashboardDao;
+    @Inject
+    protected UsersDao usersDao;
+    @Inject
+    protected Logger log;
     @Inject
     protected JwtHelper jwtHelper;
 
@@ -84,7 +99,7 @@ public class TripResourceTest extends AbstractFisholaTest {
 
     @BeforeEach
     @Transactional
-    public void loadReferentials() {
+    void loadReferentials() {
         this.lakes = referentialDao.listLakes();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
@@ -92,7 +107,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @BeforeEach
-    public void login() {
+    void login() {
         this.token = login("thimel@codelutin.com", "sispea");
     }
 
@@ -104,7 +119,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testListMyTrips() {
+    void testListMyTrips() {
         int count = countTrips();
 
         given()
@@ -134,7 +149,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testCreateEmptyTrip() {
+    void testCreateEmptyTrip() {
         int countBefore = countTrips();
 
         TripBean trip = buildValidTripBean();
@@ -164,7 +179,7 @@ public class TripResourceTest extends AbstractFisholaTest {
      * faite mais comme la création de la capture échoue, le rollback vient annuler la création de la sortie.
      */
     @Test
-    public void testTransaction() {
+    void testTransaction() {
         int countBefore = countTrips();
 
         TripBean trip = buildValidTripBean();
@@ -195,7 +210,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithPicture() throws IOException {
+    void testTripWithPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -367,7 +382,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithPictureGallery() throws IOException {
+    void testTripWithPictureGallery() throws IOException {
 
         int countBefore = countTrips();
 
@@ -587,7 +602,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testTripWithMeasurementPicture() throws IOException {
+    void testTripWithMeasurementPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -703,7 +718,7 @@ public class TripResourceTest extends AbstractFisholaTest {
     }
 
     @Test
-    public void testReplaceMeasurementPicture() throws IOException {
+    void testReplaceMeasurementPicture() throws IOException {
 
         int countBefore = countTrips();
 
@@ -866,6 +881,155 @@ public class TripResourceTest extends AbstractFisholaTest {
 
         Assertions.assertEquals(computeRatio(replacementImage), computeRatio(previewReplacementImage), 0.005f);
 
+    }
+
+    @Test
+    @Transactional
+    void testEditedInBoFields() {
+
+        // Warm up - create a new lake, and on it a trip and catch
+        String adminToken = loginAsAdmin();
+        Lake newLake = new Lake();
+        UUID newLakeId = UUID.randomUUID();
+        newLake.setId(newLakeId);
+        newLake.setName("New lake");
+        newLake.setExportAs("New lake");
+        newLake.setLatitude(42d);
+        newLake.setLongitude(1d);
+        given()
+                .when()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(newLake)
+                .post("/api/v1/referential/lakes")
+                .then()
+                .statusCode(204);
+        Optional<List<UUID>> newLakeFilter = Optional.of(Lists.newArrayList(newLakeId));
+        List<UUID> twoRandomSpecies = this.species.stream().limit(2).map(Species::getId).collect(ImmutableList.toImmutableList());
+        int year = Year.now().getValue();
+        Optional<Integer> yearFilter = Optional.of(year);
+        UUID userId = jwtHelper.verifyToken(token);
+        TripBean trip = buildValidTripBean();
+        trip.lakeId = newLakeId;
+        Optional<Integer> initialSize = Optional.of(10);
+        Optional<Integer> initialWeight = Optional.of(10);
+        Optional<String> initialSpeciesId = Optional.of(twoRandomSpecies.get(0).toString());
+        Optional<Integer> editedSizeInBo = Optional.of(142);
+        Optional<Integer> editedWeightInBo = Optional.of(100);
+        UUID editedSpeciesId = twoRandomSpecies.get(1);
+        CatchBean catchBean = new CatchBean();
+        catchBean.id = "abc";
+        catchBean.speciesId = initialSpeciesId;
+        catchBean.size = initialSize;
+        catchBean.weight = initialWeight;
+        catchBean.techniqueId = trip.techniqueIds.iterator().next();
+        trip.catchs = Collections.singletonList(catchBean);
+        ResponseBodyExtractionOptions body = given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips");
+        String catchId = body.path(catchBean.id);
+        // Make sur current user is not excluded from exports
+        FisholaUser fisholaUser = this.usersDao.findById(userId).get();
+        fisholaUser.setExcludeFromExports(false);
+        this.usersDao.updateUser(fisholaUser);
+
+
+        // Both personnal and global Dashboard should include this catch
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
+        checkGlobalDashboardInformation(true, initialSize, initialWeight, initialSpeciesId.get(), yearFilter, newLakeFilter);
+
+
+        // List all catches as a regular user : should be a 401
+        given().when().get("/api/v1/trips/export/0/longueur_totale_du_poisson/desc")
+            .then().statusCode(401);
+
+        // Try to update an export catch as a regular user : should be a 401
+        given().when()
+            .body(catchBean)
+            .contentType(MediaType.APPLICATION_JSON)
+            .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+            .put("/api/v1/trips/catches/" + catchId)
+            .then().statusCode(401);
+
+        // List all catches as admin : should be a 200
+        given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .when().get("/api/v1/trips/export/0/longueur_totale_du_poisson/desc")
+                .then().statusCode(200);
+
+        // Try to update an export catch as admin : should be 200
+        catchBean.editedSpeciesId =  Optional.of(editedSpeciesId);
+        catchBean.editedWeight = editedWeightInBo;
+        catchBean.editedSize = editedSizeInBo;
+        given().when()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(catchBean)
+                .put("/api/v1/trips/catches/" + catchId)
+                .then().statusCode(200);
+
+        // Global Dashboard should include the edited specie, size and weight (not original)
+        checkGlobalDashboardInformation(true, Optional.of(Math.round(editedSizeInBo.get() / 10)), editedWeightInBo, editedSpeciesId.toString(), yearFilter, newLakeFilter);
+
+        // Personal dashboard should include the original specie, size and weight (not edited)
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
+
+        // Exclude catch from export
+        catchBean.excludeFromExport = true;
+        given().when()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(catchBean)
+                .put("/api/v1/trips/catches/" + catchId)
+                .then().statusCode(200);
+
+        // Dashboard should not include this catch anymore
+        checkGlobalDashboardInformation(false, initialSize, initialWeight, initialSpeciesId.toString(), yearFilter, newLakeFilter);
+
+        // Personal dashboard should still include this catch
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
+
+
+    }
+
+    private void checkGlobalDashboardInformation(boolean expectedIsPresent, Optional<Integer> expectedSize, Optional<Integer> expectedWeight, String expectedSpeciesId, Optional<Integer> yearFilter, Optional<List<UUID>> newLakeFilter) {
+        GlobalDashboard globalDashboardForYear = this.dashboardDao.computeGlobalDashboard(yearFilter, newLakeFilter, this.log);
+        if (expectedIsPresent) {
+            Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesCount().size());
+            Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesDistribution().size());
+            Assertions.assertEquals(expectedSpeciesId, globalDashboardForYear.caughtSpeciesDistribution().keySet().iterator().next().toString());
+            Assertions.assertEquals(expectedSpeciesId, globalDashboardForYear.caughtAndReleasedSpeciesDistribution().keySet().iterator().next().toString());
+            Assertions.assertEquals(expectedSize.get().doubleValue(), globalDashboardForYear.monthlySizes().entrySet().iterator().next().getValue().values().iterator().next());
+            Assertions.assertEquals(expectedSpeciesId,globalDashboardForYear.monthlySizesPerMaillage().keySet().iterator().next().toString());
+            Assertions.assertEquals(expectedSize.get().doubleValue(), globalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next());
+        } else {
+            Assertions.assertEquals(0, globalDashboardForYear.caughtSpeciesCount().size());
+            Assertions.assertEquals(0, globalDashboardForYear.caughtSpeciesDistribution().size());
+            Assertions.assertEquals(0, globalDashboardForYear.caughtSpeciesDistribution().keySet().size());
+            Assertions.assertEquals(0, globalDashboardForYear.caughtAndReleasedSpeciesDistribution().keySet().size());
+            Assertions.assertEquals(0, globalDashboardForYear.monthlySizes().entrySet().size());
+            Assertions.assertEquals(0,globalDashboardForYear.monthlySizesPerMaillage().keySet().size());
+            Assertions.assertEquals(0, globalDashboardForYear.monthlySizesPerMaillage().size());
+        }
+
+
+     }
+
+    private void checkPersonnalDashboardInformation(Optional<Integer> expectedSize, Optional<Integer> expectedWeight, Optional<String> expectedSpeciesId, UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
+        Dashboard personalDashboardForYear = this.dashboardDao.getPersonalDashboard(userId,yearFilter, lakesFilter);
+        Assertions.assertEquals(1, personalDashboardForYear.caughtSpeciesCount().size());
+        Assertions.assertEquals(1, personalDashboardForYear.caughtSpeciesDistribution().size());
+        Assertions.assertEquals(1, personalDashboardForYear.latestTripsCatchs().iterator().next().catchsCount());
+        Assertions.assertEquals(expectedSpeciesId.get(), personalDashboardForYear.caughtSpeciesDistribution().keySet().iterator().next().toString());
+        Assertions.assertEquals(expectedSpeciesId.get(), personalDashboardForYear.caughtAndReleasedSpeciesDistribution().keySet().iterator().next().toString());
+        Assertions.assertEquals(expectedSize.get().doubleValue(), personalDashboardForYear.monthlySizes().entrySet().iterator().next().getValue().values().iterator().next());
+        Assertions.assertEquals(expectedSpeciesId.get(),personalDashboardForYear.monthlySizesPerMaillage().keySet().iterator().next().toString());
+        Assertions.assertEquals(expectedSize.get().doubleValue(),personalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next());
+        Assertions.assertEquals(expectedSize, personalDashboardForYear.topBySize().values().iterator().next().iterator().next().size);
+        Assertions.assertEquals(expectedWeight,personalDashboardForYear.topByWeight().values().iterator().next().iterator().next().weight);
     }
 
     protected float computeRatio(BufferedImage image) {

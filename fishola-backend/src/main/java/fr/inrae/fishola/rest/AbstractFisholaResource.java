@@ -28,18 +28,18 @@ import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.jboss.logging.Logger;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.CookieParam;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.util.Optional;
 import java.util.UUID;
 
-import static javax.transaction.Transactional.TxType.REQUIRED;
-import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
+import static jakarta.transaction.Transactional.TxType.REQUIRED;
+import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
@@ -50,6 +50,8 @@ public abstract class AbstractFisholaResource {
     public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
     public static final String ADMIN_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Admin-Token";
+
+    public static final Integer COOKIE_MAX_AGE = 7200;
 
     @Inject
     protected JwtHelper jwtHelper;
@@ -67,22 +69,22 @@ public abstract class AbstractFisholaResource {
     protected String adminToken;
 
     protected NewCookie createUserTokenCookie(String token) {
-        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, token, COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie dropUserTokenCookie() {
-        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(USER_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie createAdminTokenCookie(String token) {
-        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, token, DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, token, COOKIE_MAX_AGE);
         return result;
     }
 
     protected NewCookie dropAdminTokenCookie() {
-        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", DEFAULT_MAX_AGE);
+        NewCookie result = newTokenCookie(ADMIN_AUTHENTICATION_COOKIE_NAME, "invalid-to-make-sure-logout", COOKIE_MAX_AGE);
         return result;
     }
 

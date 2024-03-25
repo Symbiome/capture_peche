@@ -27,11 +27,11 @@ import java.util.UUID;
 
 @JsonSerialize(as = DocumentationWithBase64ContentBean.class)
 public class DocumentationWithBase64ContentBean implements DocumentationLight {
-    public UUID id;
-    public String naturalId;
-    public String name;
-    public String url;
-    public String base64Content;
+    private UUID id;
+    private String naturalId;
+    private String name;
+    private String url;
+    private String base64Content;
 
     public UUID id() {
         return id;

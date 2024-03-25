@@ -33,6 +33,7 @@
         <div class="conformity">CONFORME</div>
         <div class="frame">
           <img
+            alt="Schéma explicatif"
             class="warning-picture"
             :src="slide.doPicPath"
             v-touch:swipe="swiped"
@@ -43,6 +44,7 @@
         <div class="conformity">NON CONFORME</div>
         <div class="frame">
           <img
+            alt="Schéma explicatif"
             class="warning-picture"
             :class="{ firstKo: slide.order == 1 }"
             :src="slide.donotPicPath"

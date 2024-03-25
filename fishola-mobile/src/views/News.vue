@@ -33,7 +33,7 @@
     >
       <div class="news-row">
         <div class="left-pic">
-          <img :src="getMiniatureURl(doc)" class="news-pic" />
+          <img :src="getMiniatureURl(doc)" class="news-pic" alt="image de l'actualité"/>
         </div>
         <div class="right-content">
           <strong>{{ doc.name }}</strong> <br />
@@ -82,6 +82,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
 import router from "../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
@@ -124,7 +125,7 @@ export default class NewsView extends Vue {
   }
 
   showNewsDetails(newsId: string) {
-    router.push("/news/" + newsId);
+    RouterUtils.pushRouteNoDuplicate(router, "/news/" + newsId);
   }
 }
 </script>

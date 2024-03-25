@@ -71,12 +71,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import {
-  GlobalDashboard,
-  SpeciesWithAlias,
-  Month,
-  Maillage,
-} from "@/pojos/BackendPojos";
+import { SpeciesWithAlias, Month, Maillage } from "@/pojos/BackendPojos";
 import { GlobalDashboardAndSpecies } from "@/services/DashboardService";
 import Helpers from "@/services/Helpers";
 import DistributionEntry from "@/pojos/DistributionEntry";

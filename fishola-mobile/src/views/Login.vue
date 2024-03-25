@@ -91,14 +91,14 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -146,7 +146,7 @@ export default class LoginView extends Vue {
         }
 
         this.$root.$emit("profile-updated");
-        router.push("trips");
+        RouterUtils.pushRouteNoDuplicate(router, "trips");
 
         // Après login, on tente de télécharger les settings
         ProfileService.prepareCaches().then(
@@ -175,7 +175,7 @@ export default class LoginView extends Vue {
   }
 
   signUp() {
-    router.push("register");
+    RouterUtils.pushRouteNoDuplicate(router, "register");
   }
 
   autoLogin() {
@@ -185,7 +185,7 @@ export default class LoginView extends Vue {
   }
 
   goHome() {
-    router.push("/");
+    RouterUtils.pushRouteNoDuplicate(router, "/");
   }
 }
 </script>

@@ -25,9 +25,8 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
-
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import ProfileService from "@/services/ProfileService";
 import Helpers from "@/services/Helpers";
@@ -59,19 +58,19 @@ export default class DispatcherView extends Vue {
             "Vous êtes toujours connecté\u00B7e"
           );
         }
-        router.push("trips");
+        RouterUtils.pushRouteNoDuplicate(router, "trips");
 
         this.startupFinished();
       },
-      (status) => {
+      (_status) => {
         // Only push route if no route has already been pushed (typically when opening from external url)
         if (router.currentRoute.name == "dispatcher") {
           // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
           Helpers.getDeviceType().then((type) => {
             if (type == "web") {
-              router.push("/about");
+              RouterUtils.pushRouteNoDuplicate(router, "/about");
             } else {
-              router.push("/login");
+              RouterUtils.pushRouteNoDuplicate(router, "/login");
             }
           });
         }

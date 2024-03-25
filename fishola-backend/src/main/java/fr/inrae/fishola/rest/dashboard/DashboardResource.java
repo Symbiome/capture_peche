@@ -35,21 +35,24 @@ import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ComputedDataHolder;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 
 @Path("/api/v1")
@@ -167,9 +170,9 @@ public class DashboardResource extends AbstractFisholaResource {
         Optional<FisholaUser> user = usersDao.findById(userId);
         Preconditions.checkState(user.isPresent());
 
-        ImmutableMap<String, Object> args = ImmutableMap.of(
+        Map<String, Object> args = Map.of(
                 "firstName", user.get().getFirstName()
-        );
+                                         );
 
         ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/personal-export.html",
@@ -177,7 +180,7 @@ public class DashboardResource extends AbstractFisholaResource {
         builder.subject("Export de données personnelles");
         builder.addTos(user.get().getEmail());
 
-        byte[] bytes = csv.getBytes(Charsets.UTF_8);
+        byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
         FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
                 .bytes(bytes)
                 .name(fileName)

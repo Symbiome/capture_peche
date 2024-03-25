@@ -39,19 +39,13 @@
         <b-navbar-item tag="router-link" :to="{ name: 'techniques' }">
           Techniques de pêche
         </b-navbar-item>
-        <!-- <b-navbar-item href="#">
-                  État relâché
-              </b-navbar-item> -->
-        <!-- <b-navbar-item href="#">
-                  Types de prélèvement
-              </b-navbar-item> -->
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Paramétrage">
         <b-navbar-item tag="router-link" :to="{ name: 'species-per-lake' }">
           Espèces par lac
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
-          Autorisations de prélèvement et maillage
+         Maillages et tailles maximales
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Documentations">

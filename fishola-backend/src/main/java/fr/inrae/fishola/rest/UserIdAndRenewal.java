@@ -21,12 +21,12 @@ package fr.inrae.fishola.rest;
  * #L%
  */
 
-import org.immutables.value.Value;
+import fr.inrae.fishola.ImmutableObject;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Value.Immutable
+@ImmutableObject
 public interface UserIdAndRenewal {
 
     UUID userId();

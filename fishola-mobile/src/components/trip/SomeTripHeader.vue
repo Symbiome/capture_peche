@@ -36,7 +36,6 @@
 
 <script lang="ts">
 import TripMeta from '@/pojos/TripMeta';
-import {TripBean} from '@/pojos/BackendPojos';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component

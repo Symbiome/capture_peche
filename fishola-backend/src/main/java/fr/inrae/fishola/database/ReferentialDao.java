@@ -25,7 +25,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.AuthorizedSampleDao;
@@ -47,12 +46,13 @@ import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
@@ -227,7 +227,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Set<UUID> checkSpeciesOrCreateIfNecessary(String speciesIds) {
         if (StringUtils.isEmpty(StringUtils.trimToNull(speciesIds))) {
-            return ImmutableSet.of();
+            return Set.of();
         }
         List<String> speciesToCreate = Splitter.on(",")
                         .omitEmptyStrings()
@@ -255,7 +255,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         if (dashParts.size() > 1) {
             List<String> list = dashParts.stream()
                     .map(ReferentialDao::normalizeSpeciesName)
-                    .collect(Collectors.toList());
+                    .toList();
             String result = Joiner.on("-")
                     .skipNulls()
                     .join(list);
@@ -306,9 +306,9 @@ public class ReferentialDao extends AbstractFisholaDao {
         species.setName(speciesName);
         species.setExportAs(exportAs);
         UUID result = withContext(context -> {
-            SpeciesRecord record = context.newRecord(Tables.SPECIES, species);
+            SpeciesRecord newRecord = context.newRecord(Tables.SPECIES, species);
             SpeciesRecord recordInserted = context.insertInto(Tables.SPECIES)
-                    .set(record)
+                    .set(newRecord)
                     .returning(Tables.SPECIES.ID)
                     .fetchOne();
             UUID id = recordInserted.getId();
@@ -329,8 +329,8 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
         List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
-        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample -> authorizedSample.getSpeciesId().equals(specieId)).map(AuthorizedSample::getMinSize).collect(Collectors.toList());
-        if (minSize.size() > 0) {
+        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).filter((Integer mS) -> mS >0 ).toList();
+        if (!minSize.isEmpty()) {
             return Optional.of(minSize.get(0));
         }
         return Optional.empty();

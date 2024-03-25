@@ -48,16 +48,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 
 @Path("/api/v1/pictures")
@@ -193,12 +193,12 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
-        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID %s".formatted(catchId));
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
-        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture %s".formatted(catchId));
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
-        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie %s".formatted(existingTrip.getId()));
 
         // tokenize the data
         String[] contentSplitted = content.split(",");
@@ -423,12 +423,12 @@ public class PictureResource extends AbstractFisholaResource {
         UUID userId = userIdAndRenewal.userId();
 
         Catch existingCatch = catchsDao.getCatch(catchId);
-        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID " + catchId);
+        NotFoundException.check(existingCatch != null, "Pas de capture trouvée avec l'ID %s".formatted(catchId));
         Trip existingTrip = tripsDao.getTrip(existingCatch.getTripId());
-        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture " + catchId);
+        Preconditions.checkState(existingTrip != null, "Pas de sortie trouvée pour la capture %s".formatted(catchId));
         AccessDeniedException.check(existingTrip.getOwnerId().equals(userId));
 
-        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie " + existingTrip.getId());
+        AccessDeniedException.check(tripResource.isStillModifiable(existingTrip), "Il n'est plus possible de modifier la sortie %s".formatted(existingTrip.getId()));
 
         catchsDao.deletePicture(catchId, order);
 

@@ -139,12 +139,10 @@
         <div class="left-panel">
           <h3><span>FISHOLA</span></h3>
           <p>{{ titleText }}</p>
-          <!-- <a href="#about">MORE DETAILS</a> -->
         </div>
         <div class="right-panel">
           <img src="/img/dashboard.png" alt="Tableau de bord" />
           <img src="/img/trip.png" alt="Sortie" />
-          <!-- <img src="/img/trips.png" alt="Liste des sorties" /> -->
         </div>
       </div>
       <!-- // End Banner Section // -->
@@ -152,6 +150,7 @@
       <!-- \\ Begin Video Section \\ -->
       <div class="Video_sec">
         <iframe
+          title="Vidéo youtube"
           class="youtube"
           width="640"
           height="360"
@@ -191,7 +190,6 @@
                 <div class="kf-label">photos</div>
               </div>
             </div>
-            <!-- <div class="Line"></div> -->
             <div class="map">
               <l-map
                 :zoom="9"
@@ -297,6 +295,7 @@
               <div class="Leftside">
                 <form action="#">
                   <fieldset>
+                    <legend style="display:none">Formulaire de contact</legend>
                     <p>
                       <input
                         type="email"
@@ -479,12 +478,12 @@
 </template>
 
 <script lang="ts">
-import Constants from "@/services/Constants";
 import Counter from "@/components/common/Counter.vue";
 import ProfileService from "@/services/ProfileService";
 import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import router from "@/router";
+import { RouterUtils } from "@/router/RouterUtils";
 
 import { latLng, LatLng, Icon } from "leaflet";
 
@@ -500,7 +499,7 @@ Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Lake, Feedback, News } from "@/pojos/BackendPojos";
@@ -560,7 +559,7 @@ export default class AboutView extends Vue {
         kf.lakes.forEach((l) => this.lakes.push(l));
         this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
       },
-      (error) => {
+      (_error) => {
         // On a pas pu récupérer les informations du back, on ajoute quand même les marqueurs sur la carte
         this.lakes.push({
           id: "leman",
@@ -629,7 +628,7 @@ export default class AboutView extends Vue {
           10000
         );
       },
-      (error) => {
+      (_error) => {
         this.$root.$emit(
           "toaster-error",
           "Une erreur est survenue, merci de réessayer ultérieurement"
@@ -684,17 +683,17 @@ export default class AboutView extends Vue {
   goToLogin() {
     this.closed = true;
     ProfileService.fetchProfile().then(
-      (profile) => {
-        router.push("/trips");
+      (_profile) => {
+        RouterUtils.pushRouteNoDuplicate(router, "/trips");
       },
-      (status) => {
-        router.push("/login");
+      (_status) => {
+        RouterUtils.pushRouteNoDuplicate(router, "/login");
       }
     );
   }
 
   goFaq() {
-    router.push("/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
   }
 }
 </script>
@@ -877,7 +876,7 @@ export default class AboutView extends Vue {
 
 .Title_sec {
   width: 100%;
-  background: url(/img/about-coregones5.jpg) top center no-repeat;
+  background: url(~/public/img/about-coregones5.jpg) top center no-repeat;
   height: 680px;
   position: relative;
   background-size: cover;
@@ -1045,11 +1044,11 @@ export default class AboutView extends Vue {
   }
 }
 .Contribute_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 .Get_sec {
-  background: url(/img/about-background.jpg) top center no-repeat;
+  background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 

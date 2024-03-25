@@ -21,72 +21,71 @@
 <template>
   <div class="header hiddenWhenKeyboardShows hide-on-desktop">
     <div>
-      <Title v-if="title"/>
+      <Title v-if="title" />
     </div>
     <div class="header-buttons">
-      <Avatar v-if="avatar && initials"
-              v-bind:initials="initials"
-              v-on:goProfile="goProfile"/>
-      <FeedbackAnchor/>
-      <MenuAnchor v-if="menu"/>
+      <Avatar
+        v-if="avatar && initials"
+        v-bind:initials="initials"
+        v-on:goProfile="goProfile"
+      />
+      <FeedbackAnchor />
+      <MenuAnchor v-if="menu" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import Title from '@/components/layout/Title.vue';
-import Avatar from '@/components/common/Avatar.vue';
-import FeedbackAnchor from '@/components/common/FeedbackAnchor.vue';
-import MenuAnchor from '@/components/common/MenuAnchor.vue';
+import Title from "@/components/layout/Title.vue";
+import Avatar from "@/components/common/Avatar.vue";
+import FeedbackAnchor from "@/components/common/FeedbackAnchor.vue";
+import MenuAnchor from "@/components/common/MenuAnchor.vue";
 
-import UserProfile from '@/pojos/UserProfile';
-import ProfileService from '@/services/ProfileService';
+import UserProfile from "@/pojos/UserProfile";
+import ProfileService from "@/services/ProfileService";
 
-import router from '../../router';
+import router from "../../router";
+import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
     Title,
     Avatar,
     FeedbackAnchor,
-    MenuAnchor
-  }
+    MenuAnchor,
+  },
 })
 export default class FisholaHeader extends Vue {
   @Prop({ default: true }) title: boolean;
   @Prop({ default: true }) avatar: boolean;
   @Prop({ default: true }) menu: boolean;
 
-  initials = '';
+  initials = "";
 
   created() {
     if (this.avatar) {
-      ProfileService.getProfile()
-        .then(this.profileLoaded);
+      ProfileService.getProfile().then(this.profileLoaded);
     }
   }
 
-  profileLoaded(profile:UserProfile) {
+  profileLoaded(profile: UserProfile) {
     this.initials = profile.initials;
   }
 
   goProfile() {
-    this.$root.$emit('close-feedback');
-    router.push('/profile');
+    this.$root.$emit("close-feedback");
+    RouterUtils.pushRouteNoDuplicate(router, "/profile");
   }
-
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .header {
-
   display: flex;
   justify-content: space-between;
 

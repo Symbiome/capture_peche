@@ -153,6 +153,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
 
 import ReferentialItem from "@/components/ReferentialItem.vue";
+import UtilityServices from "@/services/UtilityServices";
 
 @Component({
   components: {
@@ -191,38 +192,8 @@ export default class Refenretial extends Vue {
     this.loadData();
   }
 
-  parseLocalDateTime(someLocalDateTime: number[]): Date {
-    if (someLocalDateTime[5]) {
-      return new Date(
-        someLocalDateTime[0],
-        someLocalDateTime[1] - 1,
-        someLocalDateTime[2],
-        someLocalDateTime[3],
-        someLocalDateTime[4],
-        someLocalDateTime[5]
-      );
-    } else {
-      return new Date(
-        someLocalDateTime[0],
-        someLocalDateTime[1] - 1,
-        someLocalDateTime[2],
-        someLocalDateTime[3],
-        someLocalDateTime[4]
-      );
-    }
-  }
-
   formatDate(puet: number[]): string {
-    let theDate: Date = this.parseLocalDateTime(puet);
-    var hourOptions: Intl.DateTimeFormatOptions = {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric"
-    };
-    let result: string = theDate.toLocaleTimeString("fr-FR", hourOptions);
-    return result;
+    return UtilityServices.formatDate(puet);
   }
 
   loadData() {

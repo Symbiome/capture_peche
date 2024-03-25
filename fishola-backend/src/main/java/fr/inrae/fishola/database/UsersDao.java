@@ -26,18 +26,21 @@ import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
 
 @Singleton
 public class UsersDao extends AbstractFisholaDao {
 
+    @Inject
+    protected Logger log;
     public String hashPassword(String password) {
         int cost = config.passwordHashCost();
         String result = BCrypt.withDefaults().hashToString(cost, password.toCharArray());
@@ -50,7 +53,7 @@ public class UsersDao extends AbstractFisholaDao {
             boolean verified = result.verified;
             return verified;
         } catch (Exception eee) {
-            eee.printStackTrace();
+            log.error(eee);
             return false;
         }
     }
