@@ -914,7 +914,7 @@ class TripResourceTest extends AbstractFisholaTest {
         Optional<Integer> initialSize = Optional.of(10);
         Optional<Integer> initialWeight = Optional.of(10);
         Optional<String> initialSpeciesId = Optional.of(twoRandomSpecies.get(0).toString());
-        Optional<Integer> editedSizeInBo = Optional.of(100);
+        Optional<Integer> editedSizeInBo = Optional.of(142);
         Optional<Integer> editedWeightInBo = Optional.of(100);
         UUID editedSpeciesId = twoRandomSpecies.get(1);
         CatchBean catchBean = new CatchBean();
@@ -972,7 +972,7 @@ class TripResourceTest extends AbstractFisholaTest {
                 .then().statusCode(200);
 
         // Global Dashboard should include the edited specie, size and weight (not original)
-        checkGlobalDashboardInformation(true, editedSizeInBo, editedWeightInBo, editedSpeciesId.toString(), yearFilter, newLakeFilter);
+        checkGlobalDashboardInformation(true, Optional.of(Math.round(editedSizeInBo.get() / 10)), editedWeightInBo, editedSpeciesId.toString(), yearFilter, newLakeFilter);
 
         // Personal dashboard should include the original specie, size and weight (not edited)
         checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);

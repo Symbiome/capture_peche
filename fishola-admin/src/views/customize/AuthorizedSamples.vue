@@ -21,7 +21,7 @@
 <template>
   <div class="authorized-samples">
     <h1>
-      Autorisations de prélèvement, maillages et tailles maximum
+      Maillages et tailles maximales
       <div class="align-right">
         <b-upload
           class="button is-primary export-button"
@@ -100,7 +100,7 @@
                 </div>
               </div>
               <i v-else class="specie-container-without-size">
-                Prélèvement non autorisé
+                Espèce non présente
               </i>
             </div>
           </td>
@@ -185,14 +185,14 @@ export default class AuthorizedSamplesVue extends Vue {
         this.reloadData();
         console.info(res);
         this.$buefy.toast.open({
-          message: "Autorisations de prélèvement enregistrées",
+          message: "Tailles enregistrées",
           type: "is-success"
         });
       },
       error => {
         this.$buefy.toast.open({
           message:
-            "Erreur lors de l'enregistrement des autorisations de prélèvement : " +
+            "Erreur lors de l'enregistrement des tailles : " +
             error.message,
           type: "is-danger"
         });

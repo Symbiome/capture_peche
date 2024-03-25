@@ -68,7 +68,11 @@ public class CatchsDao extends AbstractFisholaDao {
             c.setEditedSpeciesId(c.getSpeciesId());
         }
         if (c.getEditedSize() == null || c.getEditedSize() == 0) {
-            c.setEditedSize(c.getSize() * 10);
+            if (c.getSize() != null) {
+                c.setEditedSize(c.getSize() * 10);
+            } else {
+                c.setEditedSize(0);
+            }
         }
         if (c.getEditedWeight() == null || c.getEditedWeight() == 0) {
             c.setEditedWeight(c.getWeight());

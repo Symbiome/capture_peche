@@ -291,7 +291,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                             );
                     OptionalDouble average;
                     if (useEditedInBoInformation) {
-                        average = filteredCatch.mapToInt(Catch::getEditedSize).average();
+                        average = filteredCatch.mapToInt((Catch c) -> c.getEditedSize() / 10).average();
                     } else {
                         average = filteredCatch.mapToInt(Catch::getSize).average();
                     }
