@@ -96,6 +96,7 @@
               <arguments>run build:production</arguments>
               <environmentVariables>
                 <MAVEN_PROJECT_VERSION>${project.version}</MAVEN_PROJECT_VERSION>
+                <PUBLIC_PATH_FOLDER>/admin/</PUBLIC_PATH_FOLDER>
               </environmentVariables>
             </configuration>
           </execution>

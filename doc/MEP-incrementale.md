@@ -15,6 +15,7 @@ export VERSION=1.2.2
 mkdir fishola-${VERSION}
 mv fishola-backend/target/quarkus-app fishola-${VERSION}/fishola-backend-${VERSION}
 mv fishola-mobile/target/dist-web fishola-${VERSION}/fishola-web-${VERSION}
+mv fishola-admin/target/dist-production fishola-${VERSION}/fishola-web-${VERSION}/admin
 zip -rq fishola-${VERSION}.zip fishola-${VERSION}
 ```
 
