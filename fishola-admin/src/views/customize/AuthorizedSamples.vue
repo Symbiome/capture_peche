@@ -50,7 +50,8 @@
           <th :id="s.name">{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field" style="display: flex">
-              <b-checkbox
+              <b-checkbox 
+                v-show="!authorizedSamplesMap[l.id][s.id]"
                 v-model="authorizedSamplesMap[l.id][s.id]"
                 @input="$forceUpdate()"
               >
@@ -58,33 +59,48 @@
               <div
                 v-if="authorizedSamplesMap[l.id][s.id]"
                 class="specie-container-with-size"
-              >
+              >               
                 Taille maillage : <br />
                 <div class="input-holder">
-                  <b-input
+                  <b-checkbox grouped
+                   :value="minSizeMap[l.id][s.id] > 0"
+                   @input="value => { minSizeCheckboxInput(l, s, value) }"
+                >
+                </b-checkbox>
+                  <b-input grouped
                     placeholder="Taille minimale"
                     type="number"
                     custom-class="minsize-input"
+                    v-show="minSizeMap[l.id][s.id] > 0"
                     v-model="minSizeMap[l.id][s.id]"
                     @input="$forceUpdate()"
                   >
                   </b-input>
-                  <span style="margin-left:10px;float:right">cm</span>
+                  <span v-show="minSizeMap[l.id][s.id] > 0" style="margin-left:10px;float:right">cm</span>
+                  <span v-show="minSizeMap[l.id][s.id] == 0">Non définie</span>
                 </div>
+                <br />
                 Taille maximale : <br />
                 <div class="input-holder">
-                  <b-input
+                  <b-checkbox grouped
+                   :value="maxSizeMap[l.id][s.id] != 1000"
+                   @input="value => { maxSizeCheckboxInput(l, s, value) }"
+                >
+                </b-checkbox>
+                  <b-input grouped
                     placeholder="Taille maximale"
                     type="number"
                     custom-class="minsize-input"
                     v-model="maxSizeMap[l.id][s.id]"
+                    v-show="maxSizeMap[l.id][s.id] != 1000"
                     @input="$forceUpdate()"
                   >
                   </b-input>
-                  <span style="margin-left:10px;float:right">cm</span>
+                  <span v-show="maxSizeMap[l.id][s.id] != 1000" style="margin-left:10px;float:right">cm</span>
+                  <span v-show="maxSizeMap[l.id][s.id] == 1000">Non définie</span>
                 </div>
                 <div
-                  v-if="!minSizeMap[l.id][s.id] || minSizeMap[l.id][s.id] <= 0"
+                  v-if="minSizeMap[l.id][s.id] < 0"
                   class="error"
                 >
                   Taille de maillage invalide
@@ -337,6 +353,30 @@ export default class AuthorizedSamplesVue extends Vue {
     } else {
       return;
     }
+  }
+
+  minSizeCheckboxInput(l, s, value) {
+    if (value) {
+      this.minSizeMap[l.id][s.id] = 45;
+    } else {
+      this.minSizeMap[l.id][s.id] = 0;
+      if (this.minSizeMap[l.id][s.id] == 1000) {
+        this.authorizedSamplesMap[l.id][s.id]  = false;
+      }
+    }
+    this.$forceUpdate();
+  }
+
+  maxSizeCheckboxInput(l, s, value) {
+    if (value) {
+      this.maxSizeMap[l.id][s.id] = 800;
+    } else {
+      this.maxSizeMap[l.id][s.id] = 1000;
+      if (this.minSizeMap[l.id][s.id] == 0) {
+        this.authorizedSamplesMap[l.id][s.id]  = false;
+      }
+    }
+    this.$forceUpdate();
   }
 }
 </script>

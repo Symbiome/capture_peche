@@ -329,7 +329,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
         List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
-        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).toList();
+        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).filter((Integer mS) -> mS >0 ).toList();
         if (!minSize.isEmpty()) {
             return Optional.of(minSize.get(0));
         }
