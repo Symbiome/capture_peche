@@ -142,9 +142,10 @@ export default class NewFishingLicence extends Vue {
   }
 
   getDefaultDate(): Date {
-    const twoYearsLater = new Date();
-    twoYearsLater.setFullYear(twoYearsLater.getFullYear() + 2);
-    return twoYearsLater;
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const date = new Date(currentYear, 11, 31);
+    return date;
   }
 
   async saveFile(): Promise<void> {
