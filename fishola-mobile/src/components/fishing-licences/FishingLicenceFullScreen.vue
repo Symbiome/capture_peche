@@ -39,6 +39,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import VuePdfApp from "vue-pdf-app";
 import PinchZoom from 'vue-pinch-zoom';
+import "vue-pdf-app/dist/icons/main.css";
 
 @Component({
     components: { VuePdfApp, PinchZoom }
