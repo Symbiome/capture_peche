@@ -144,7 +144,7 @@ export default class NewFishingLicence extends Vue {
   getDefaultDate(): Date {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const date = new Date(currentYear, 11, 31);
+    const date = new Date("December 31, "+ currentYear + " 17:00:00 GMT+1:00");
     return date;
   }
 
