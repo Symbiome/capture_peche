@@ -19,22 +19,29 @@
   #L%
   -->
 <template>
-    <div class="bg">
+    <pinch-zoom class="bg" v-if="type=='JPEG'">
         <span @click="goBack" class="back-arrow">
                   <i class="icon-news-back icon-arrow" />
                   <span class="back-text"> Retour </span>
         </span>
-        <img class="fullscreen-img" v-if="type=='JPEG'" :src="url"/>
-        <vue-pdf-app v-else class="fullscreen-pdf" :pdf="url"/>
+        <img   class="fullscreen-img" :src="url"/>        
+    </pinch-zoom>
+    <div class="bg" v-else>
+        <span @click="goBack" class="back-arrow">
+                  <i class="icon-news-back icon-arrow" />
+                  <span class="back-text"> Retour </span>
+        </span>
+        <vue-pdf-app class="fullscreen-pdf" :pdf="url"/>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import VuePdfApp from "vue-pdf-app";
+import PinchZoom from 'vue-pinch-zoom';
 
 @Component({
-    components: { VuePdfApp }
+    components: { VuePdfApp, PinchZoom }
 })
 export default class FishingLicenceFullScreen extends Vue {
     @Prop() url: string;
