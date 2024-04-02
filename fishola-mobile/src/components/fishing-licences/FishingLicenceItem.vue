@@ -57,6 +57,7 @@ import FishingLicenceService from "@/services/FishingLicenceService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
+import Helpers from '@/services/Helpers';
 
 @Component({
   components: {
@@ -83,9 +84,9 @@ export default class FishingLicenceItem extends Vue {
       month: "numeric",
       day: "numeric",
       year: "numeric",
-    };
-
-    const date = new Date(this.licence.expirationDate);
+    };    
+    // @ts-ignore
+    const date = Helpers.parseLocalDate(this.licence.expirationDate);
     const dateString = date.toLocaleDateString("fr-FR", dayOptions);
     return dateString;
   }
