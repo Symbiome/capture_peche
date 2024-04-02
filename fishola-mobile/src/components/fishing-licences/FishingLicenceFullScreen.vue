@@ -59,24 +59,26 @@ export default class FishingLicenceFullScreen extends Vue {
 @import "../../less/main";
 
 .bg {
+    padding-top: calc(5px + env(safe-area-inset-top));
     width: 100%;
     height: 100%;
     background-color: @cyprus;
 }
 .fullscreen-img {
-    padding-top:40px;
+    padding-top: calc(40px + env(safe-area-inset-top));
     height: 100vh;
     width: auto;
 }
 .fullscreen-pdf {
-    padding-top:40px;
+    padding-top: calc(40px);
     height: 100vh;
     width: auto;
 }
 .back-arrow {
     height:40px;
     position: absolute;
-    top: 5px;
+    top: calc(5px + env(safe-area-inset-top));
+    z-index:99;
     right: 5px;
 }
 

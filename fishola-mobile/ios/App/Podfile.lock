@@ -1,13 +1,13 @@
 PODS:
   - ByteowlsCapacitorFilesharer (5.0.0):
     - Capacitor
-  - Capacitor (5.3.0):
+  - Capacitor (5.5.1):
     - CapacitorCordova
   - CapacitorApp (5.0.6):
     - Capacitor
   - CapacitorCamera (5.0.7):
     - Capacitor
-  - CapacitorCordova (5.3.0)
+  - CapacitorCordova (5.5.1)
   - CapacitorDevice (5.0.6):
     - Capacitor
   - CapacitorGeolocation (5.0.6):
@@ -55,10 +55,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   ByteowlsCapacitorFilesharer: f6a773825632d65d5404a34764c4a3fd857bb176
-  Capacitor: 1ac9165943bc4f2137642d218c5ba05df811de69
+  Capacitor: 9da0a2415e3b6098511f8b5ffdb578d91ee79f8f
   CapacitorApp: 024e1b1bea5f883d79f6330d309bc441c88ad04a
   CapacitorCamera: 084b0b228bba7d00587910337b1c89e93b1d32ab
-  CapacitorCordova: b9374d68e63ce29e96ab5db994cf14fbefd722c9
+  CapacitorCordova: e128cc7688c070ca0bfa439898a5f609da8dbcfe
   CapacitorDevice: 2c968f98a1ec4d22357418c1521e7ddc46c675e6
   CapacitorGeolocation: 7be5f77abc205c0efe319fff8587a7183e7b0240
   CapacitorKeyboard: b978154b024a5f65e044908e37d15b7de58b9d12
