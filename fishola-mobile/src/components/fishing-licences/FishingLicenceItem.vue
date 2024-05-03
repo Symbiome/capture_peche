@@ -36,8 +36,13 @@
     <div class="item-description" @click="openLicence()">
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
-        <div class="right-part">Expire le {{ formattedDate() }}</div>
+        <div class="right-part" @click="editLicence()">Expire le {{ formattedDate() }}</div>
+        <i class="icon-edit edit hide-on-mobile" @click="editLicence()" />
       </div>
+    </div>
+
+    <div class="item-edit hide-on-desktop" @click="editLicence()">
+      <i class="icon-edit edit" />
     </div>
   </div>
 </template>
@@ -97,6 +102,16 @@ export default class FishingLicenceItem extends Vue {
     });
   }
 
+  editLicence() {
+    // @ts-ignore
+    this.$router.push({
+      name: 'licence-edit',
+      params: {
+        'id': this.licence.id
+      }
+    });
+  }
+
   deleteLicence(licence: LicenceResponseBean) {
     FishingLicenceService.deleteLicence(licence.id);
   }
@@ -143,6 +158,10 @@ export default class FishingLicenceItem extends Vue {
     input {
       margin: 0px;
     }
+  }
+
+  .edit {
+    color: @pelorous;
   }
 
   .pdf-img {

@@ -220,6 +220,22 @@ export default class Helpers {
     }
   }
 
+  /**
+   * Formats the given date at a format compatible with v-model of date input.
+   */
+  static toDateInputString(someLocaleDate: number[]): String {
+    let result = someLocaleDate[0] + "-";
+    if (someLocaleDate[1] < 10) {
+      result += "0";
+    }
+    result += someLocaleDate[1] + "-"
+    if (someLocaleDate[2] < 10) {
+      result += "0";
+    }
+    result += someLocaleDate[2]
+    return result;
+  }
+
   static truncateTimeToMinutes(input: string): string {
     if (!input) {
       return input;

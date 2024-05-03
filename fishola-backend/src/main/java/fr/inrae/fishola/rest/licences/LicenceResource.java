@@ -65,8 +65,8 @@ public class LicenceResource extends AbstractFisholaResource {
     }
 
     @GET
-    @Path("/{licenceId}")
-    public Response getLicence(@PathParam("licenceId") UUID licenceId) {
+    @Path("/{licenceId}/file")
+    public Response getLicenceFile(@PathParam("licenceId") UUID licenceId) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
 
         Optional<FisholaUserLicences> optionalLicence = fishingLicencesDao.getLicence(licenceId);
@@ -112,6 +112,15 @@ public class LicenceResource extends AbstractFisholaResource {
         fishingLicencesDao.update(modifiedLicence);
 
         Response response = Response.noContent().build();
+        return response;
+    }
+
+    @GET
+    @Path("/{licenceId}")
+    public Response getLicenceObject(@PathParam("licenceId") UUID licenceId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        Optional<FisholaUserLicences> licence = fishingLicencesDao.getLicence(licenceId);
+        Response response =  wrapEntity(licence, userIdAndRenewal);
         return response;
     }
 

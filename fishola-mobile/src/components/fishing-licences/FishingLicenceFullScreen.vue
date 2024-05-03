@@ -59,7 +59,7 @@ export default class FishingLicenceFullScreen extends Vue {
 
     mounted() {
         setTimeout(async () => {
-            const fileBlob = await FishingLicenceService.getLicence(
+            const fileBlob = await FishingLicenceService.getLicenceFile(
                 this.id
             );
             this.url = URL.createObjectURL(fileBlob);
