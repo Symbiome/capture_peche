@@ -19,19 +19,19 @@
   #L%
   -->
 <template>
-    <pinch-zoom class="bg" v-if="type=='JPEG'">
+    <pinch-zoom class="bg" v-if="type == 'JPEG'">
         <span @click="goBack" class="back-arrow">
-                  <i class="icon-news-back icon-arrow" />
-                  <span class="back-text"> Retour </span>
+            <i class="icon-news-back icon-arrow" />
+            <span class="back-text"> Retour </span>
         </span>
-        <img   class="fullscreen-img" :src="url"/>        
+        <img class="fullscreen-img" :src="url" />
     </pinch-zoom>
     <div class="bg" v-else>
-        <span @click="goBack" class="back-arrow">
-                  <i class="icon-news-back icon-arrow" />
-                  <span class="back-text"> Retour </span>
+        <span @click="goBack" class="back-arrow" id="back-arrow">
+            <i class="icon-news-back icon-arrow" />
+            <span class="back-text"> Retour </span>
         </span>
-        <vue-pdf-app class="fullscreen-pdf" :pdf="url"/>
+        <vue-pdf-app class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
     </div>
 </template>
 
@@ -40,6 +40,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import VuePdfApp from "vue-pdf-app";
 import PinchZoom from 'vue-pinch-zoom';
 import "vue-pdf-app/dist/icons/main.css";
+import Hammer from 'hammerjs';
 
 @Component({
     components: { VuePdfApp, PinchZoom }
@@ -47,10 +48,129 @@ import "vue-pdf-app/dist/icons/main.css";
 export default class FishingLicenceFullScreen extends Vue {
     @Prop() url: string;
     @Prop() type: string;
+    pdfViewer?: any;
+    loaded = false;
+    pageScale = 2;
 
     goBack() {
         this.$router.go(-1);
     }
+
+    pagesRenderedHandler(pdfApp: any) {
+        this.pdfViewer = pdfApp.pdfViewer;
+        this.loaded = true;
+        const maxScale = 5;
+        const targetPDFElement = document.getElementById("vuePdfApp");
+        if (targetPDFElement && targetPDFElement.parentElement) {
+            const element = document.getElementById("vuePdfApp")!;
+            const hammertime = new Hammer(element, {});
+
+            // pinch is usually disabled as it makes the element 
+            // blocking, and pan is limited to x-axis, so enable these
+            hammertime.get('pinch').set({ enable: true });
+            hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+
+            const container = element.parentElement!,
+                containerHeight = container.offsetHeight,
+                containerWidth = container.offsetWidth,
+                screenWidth = document.body.clientWidth,
+                screenHeight = document.body.clientHeight,
+                elementHeight = element.offsetHeight,
+                elementWidth = element.offsetWidth;
+
+            let currentScale = 1,
+                offsetX = 0,
+                offsetY = 0,
+                panOffsetX = 0,
+                panOffsetY = 0,
+                pinchCentreX = 0,
+                pinchCentreY = 0;
+
+            hammertime.on('pinchstart', function (e) {
+                document.getElementById('back-arrow')!.style.zIndex = "-1";
+                // record starting offset at beginning of pinch operation
+                panOffsetX = offsetX;
+                panOffsetY = offsetY;
+
+                // record the original centre point of the pinch, relative to the element
+                // e.center seems to return values relative to screen, so use screen dimensions.                
+                pinchCentreX = Math.round((e.center.x - panOffsetX - (screenWidth / 2)) / currentScale);
+                pinchCentreY = Math.round((e.center.y - panOffsetY - (screenHeight / 2)) / currentScale);
+
+            });
+
+
+            hammertime.on('pinch', function (e) {
+                // don't allow scales less than 1, or greater than maxScale
+                // e.scale is relative to the start of the current pinch operation, not the last event
+                let scale = Math.min(maxScale, Math.max(1, currentScale * e.scale));
+
+                offsetX = panOffsetX + Math.round((pinchCentreX * (1 - e.scale)));
+                offsetY = panOffsetY + Math.round((pinchCentreY * (1 - e.scale)));
+
+                // allow for dragging (i.e. panning) while pinching
+                offsetX += e.deltaX;
+                offsetY += e.deltaY;
+
+                // constrain edges
+                let overlapX = Math.max(0, Math.round(((elementWidth * scale) - containerWidth) / 2));
+                let overlapY = Math.max(0, Math.round(((elementHeight * scale) - containerHeight) / 2));
+                offsetX = Math.max(-overlapX, Math.min(overlapX, offsetX));
+                offsetY = Math.max(-overlapY, Math.min(overlapY, offsetY));
+
+                // order of transforms is important
+                let transforms = [
+                    'translate(' + offsetX + 'px,' + offsetY + 'px)',
+                    'scale(' + scale + ')'
+                ];
+                element.style.transform = transforms.join(' ');
+
+            });
+
+
+            hammertime.on('pinchend', function (e) {
+                // update current scale ready for next pinch or pan operation
+                currentScale = Math.min(maxScale, Math.max(1, currentScale * e.scale));
+                if (currentScale <= 1) {
+                    document.getElementById('back-arrow')!.style.zIndex = "99";
+                }
+            });
+
+
+            hammertime.on('panstart', function () {
+                panOffsetX = offsetX;
+                panOffsetY = offsetY;
+            });
+
+
+            hammertime.on('panmove', function (e) {
+                let overlapX = Math.max(0, Math.round(((elementWidth * currentScale) - containerWidth) / 2)),
+                    overlapY = Math.max(0, Math.round(((elementHeight * currentScale) - containerHeight) / 2));
+
+                panOffsetX = Math.max(-overlapX, Math.min(overlapX, offsetX + e.deltaX));
+                panOffsetY = Math.max(-overlapY, Math.min(overlapY, offsetY + e.deltaY));
+
+                // order of transforms is important    
+                let transforms = [
+                    'translate(' + panOffsetX + 'px,' + panOffsetY + 'px)',
+                    'scale(' + currentScale + ')'
+                ];
+                element.style.transform = transforms.join(' ');
+
+            });
+
+
+            hammertime.on('panend', function (e) {
+                // Record final position here to take account of constraint calculations in 
+                // panmove handler; magnitude of e.deltaX may have been limited.
+                offsetX = panOffsetX;
+                offsetY = panOffsetY;
+            });
+        } else {
+            console.error("Cannot find PDF Viewer")
+        }
+    }
+
 }
 </script>
 
@@ -62,33 +182,33 @@ export default class FishingLicenceFullScreen extends Vue {
     padding-top: calc(5px + env(safe-area-inset-top));
     width: 100%;
     height: 100%;
-    background-color: @cyprus;
 }
+
 .fullscreen-img {
     padding-top: calc(40px + env(safe-area-inset-top));
     height: 100vh;
     width: auto;
 }
+
 .fullscreen-pdf {
     padding-top: calc(40px);
     height: 100vh;
-    width: auto;
+    width: 100%;
 }
+
 .back-arrow {
-    height:40px;
+    height: 40px;
     position: absolute;
     top: calc(5px + env(safe-area-inset-top));
-    z-index:99;
+    z-index: 99;
     right: 5px;
 }
 
- .icon-news-back {
-      color: @pelorous;
-      cursor: pointer;
-      display: inline-block;
-      font-size: 22px;
-      transform: rotate(180deg);
-    }
-
-
+.icon-news-back {
+    color: @pelorous;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 22px;
+    transform: rotate(180deg);
+}
 </style>
