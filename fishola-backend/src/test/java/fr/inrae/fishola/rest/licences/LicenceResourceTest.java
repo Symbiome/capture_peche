@@ -123,11 +123,11 @@ class LicenceResourceTest extends AbstractFisholaTest {
     @Test
     @Transactional
     void testGetLicence() throws IOException {
-        checkGetLicence(pdfLicence);
-        checkGetLicence(jpegLicence);
+        checkGetLicenceContent(pdfLicence);
+        checkGetLicenceContent(jpegLicence);
     }
 
-    private void checkGetLicence(FisholaUserLicences licence) throws IOException {
+    private void checkGetLicenceContent(FisholaUserLicences licence) throws IOException {
         // We first check that returned status code is ´OK´
         given()
                 .when()
@@ -281,6 +281,58 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .post("api/v1/licences")
                 .then()
                 .statusCode(401);
+    }
+
+    @Test
+    @Transactional
+    void testModifyLicence() throws IOException {
+        LicenceFromClientBean modifiedPdfLicence = new LicenceFromClientBean();
+        modifiedPdfLicence.name = "modified";
+        modifiedPdfLicence.type = pdfLicence.getType();
+        modifiedPdfLicence.expirationDate = LocalDate.of(2200, 1, 1);
+        modifiedPdfLicence.content = "";
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(modifiedPdfLicence)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .put("api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .then()
+                .statusCode(200);
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences")
+                .then()
+                .statusCode(200)
+                .body("[0].name", equalTo(modifiedPdfLicence.name))
+                .body("[0].expirationDate", equalTo(List.of(
+                        modifiedPdfLicence.expirationDate.getYear(),
+                        modifiedPdfLicence.expirationDate.getMonthValue(),
+                        modifiedPdfLicence.expirationDate.getDayOfMonth())
+                        )
+                );
+
+        // Then we check that the content has not changed
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .then()
+                .statusCode(200)
+        ;
+
+        InputStream responseStream = given()
+                .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .asInputStream();
+        byte[] responseBytes = IOUtils.toByteArray(responseStream);
+        Assertions.assertArrayEquals(pdfLicence.getContent(), responseBytes);
     }
 
     @Test

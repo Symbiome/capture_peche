@@ -29,7 +29,9 @@ import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -88,6 +90,28 @@ public class LicenceResource extends AbstractFisholaResource {
         }
 
         Response response = buildResponse(responseBuilder, userIdAndRenewal);
+        return response;
+    }
+
+    @PUT
+    @Path("/{licenceId}")
+    public Response modifyLicence(@PathParam("licenceId") UUID licenceId, LicenceFromClientBean licenceFromClientBean) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+
+        FisholaUserLicences existingLicence = fishingLicencesDao.getLicence(licenceId).orElseThrow(NotFoundException::new);
+
+        FisholaUserLicences modifiedLicence = new FisholaUserLicences();
+        modifiedLicence.setId(licenceId);
+        modifiedLicence.setUserId(userId);
+        modifiedLicence.setName(licenceFromClientBean.name);
+        modifiedLicence.setContent(existingLicence.getContent());
+        modifiedLicence.setType(existingLicence.getType());
+        modifiedLicence.setExpirationDate(licenceFromClientBean.expirationDate);
+
+        fishingLicencesDao.update(modifiedLicence);
+
+        Response response = Response.noContent().build();
         return response;
     }
 
