@@ -24,14 +24,16 @@
             <i class="icon-news-back icon-arrow" />
             <span class="back-text"> Retour </span>
         </span>
-        <img class="fullscreen-img" :src="url" />
+        <img v-if="url" class="fullscreen-img" :src="url" />
+        <v-else>Chargement en cours...</v-else>
     </pinch-zoom>
     <div class="bg" v-else>
         <span @click="goBack" class="back-arrow" id="back-arrow">
             <i class="icon-news-back icon-arrow" />
             <span class="back-text"> Retour </span>
         </span>
-        <vue-pdf-app class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
+        <vue-pdf-app v-if="url" class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
+        <v-else>Chargement en cours...</v-else>
     </div>
 </template>
 
@@ -42,15 +44,27 @@ import PinchZoom from 'vue-pinch-zoom';
 import "vue-pdf-app/dist/icons/main.css";
 import Hammer from 'hammerjs';
 
+import FishingLicenceService from "@/services/FishingLicenceService";
+
 @Component({
     components: { VuePdfApp, PinchZoom }
 })
 export default class FishingLicenceFullScreen extends Vue {
-    @Prop() url: string;
+    @Prop() id: string;
     @Prop() type: string;
+    url = ""
     pdfViewer?: any;
     loaded = false;
     pageScale = 2;
+
+    mounted() {
+        setTimeout(async () => {
+            const fileBlob = await FishingLicenceService.getLicence(
+                this.id
+            );
+            this.url = URL.createObjectURL(fileBlob);
+        });
+    }
 
     goBack() {
         this.$router.go(-1);

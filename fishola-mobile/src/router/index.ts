@@ -184,11 +184,11 @@ const routes = [
     name: "licence-new",
     component: NewFishingLicence,
   },
-   {
-    path: "/licences-fullscreen/:type/:url",
+  {
+    path: "/licences-fullscreen/:type/:id",
     name: "licence-fullscreen",
     component: FishingLicenceFullScreen,
-    props:true,
+    props: true,
   },
   {
     path: "/documentation/:tab",
