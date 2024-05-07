@@ -36,7 +36,7 @@
     <div class="item-description" @click="openLicence()">
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
-        <div class="right-part" @click="editLicence()">Expire le {{ formattedDate() }}</div>
+        <div class="right-part">Expire le {{ formattedDate() }}</div>
         <i class="icon-edit edit hide-on-mobile" @click="editLicence()" />
       </div>
     </div>
