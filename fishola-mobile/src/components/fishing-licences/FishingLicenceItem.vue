@@ -20,20 +20,20 @@
   -->
 
 <template>
-  <div class="licence-item">
+  <div class="licence-item" @click="openLicence()">
     <div class="item-selection">
       <input type="checkbox" :id="'checkbox-' + licence.id" class="pelorous-checkbox" v-model="selected" />
       <label v-bind:for="'checkbox-' + licence.id"></label>
     </div>
 
-    <div id="preview" class="hide-on-mobile" @click="openLicence()">
+    <div id="preview" class="hide-on-mobile">
       <img v-if="licence.type === 'JPEG'" class="preview-img" :src="licenceUrl" alt="Aperçu de la carte" />
       <div v-else src="/img/dashboard.png" class="preview-img pdf-img">
         <i class="icon-fishing" />
       </div>
     </div>
 
-    <div class="item-description" @click="openLicence()">
+    <div class="item-description">
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
         <div class="right-part">Expire le {{ formattedDate() }}</div>
