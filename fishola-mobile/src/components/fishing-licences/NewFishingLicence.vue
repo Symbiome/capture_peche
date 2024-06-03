@@ -33,20 +33,15 @@
             <div class="container-form keyboardSensitive">
               <form @submit.prevent="saveFile">
                 <label>Nom de la carte de pêche </label>
-                <input
-                  v-model="newLicenceName"
-                  :class="{ 'field-error': nameError }"
-                  placeholder="Nommez la carte de pêche"
-                />
+                <input v-model="newLicenceName" :class="{ 'field-error': nameError }"
+                  placeholder="Nommez la carte de pêche" />
 
-                <label
-                  >Date d'expiration (Défaut :
-                  {{ formattedDate(getDefaultDate()) }})</label
-                >
+                <label>Date d'expiration (Défaut :
+                  {{ formattedDate(getDefaultDate()) }})</label>
                 <input type="date" v-model="newLicenceExpirationDate" />
 
                 <label>Sélectionnez un fichier au format PDF ou JPEG</label>
-                <input type="file" @change="handleFileChange" accept="application/pdf, image/jpeg, image/jpg"/>
+                <input type="file" @change="handleFileChange" accept="application/pdf, image/jpeg, image/jpg" />
               </form>
             </div>
             <div class="container-preview">
@@ -54,11 +49,7 @@
             </div>
           </div>
           <div class="save">
-            <button
-              class="button hide-on-mobile"
-              type="submit"
-              @click="saveFile"
-            >
+            <button class="button hide-on-mobile" type="submit" @click="saveFile">
               Enregistrer
             </button>
           </div>
@@ -66,11 +57,7 @@
       </div>
     </div>
 
-    <FisholaFooter
-      shortcuts="back,home,dashboard"
-      v-bind:button-text="getButtonText()"
-      v-on:buttonClicked="saveFile"
-    />
+    <FisholaFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()" v-on:buttonClicked="saveFile" />
   </div>
 </template>
 
@@ -110,9 +97,9 @@ export default class NewFishingLicence extends Vue {
     "application/pdf": string;
     "image/jpeg": string;
   } = {
-    "application/pdf": "PDF",
-    "image/jpeg": "JPEG",
-  };
+      "application/pdf": "PDF",
+      "image/jpeg": "JPEG",
+    };
 
   formattedDate(date: Date): string {
     var dayOptions: Intl.DateTimeFormatOptions = {
@@ -127,6 +114,7 @@ export default class NewFishingLicence extends Vue {
 
   created() {
     this.newLicenceExpirationDate = this.getDefaultDate();
+    this.newLicenceName = "Carte " + this.newLicenceExpirationDate.getFullYear();
   }
 
   handleFileChange(event: Event): void {
@@ -144,7 +132,7 @@ export default class NewFishingLicence extends Vue {
   getDefaultDate(): Date {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const date = new Date("December 31, "+ currentYear + " 17:00:00 GMT+1:00");
+    const date = new Date("December 31, " + currentYear + " 17:00:00 GMT+1:00");
     return date;
   }
 
@@ -194,11 +182,11 @@ export default class NewFishingLicence extends Vue {
     } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
       if (error.content !== undefined && error.content.error !== undefined) {
-        this.$root.$emit("toaster-error", error.content.error);      
+        this.$root.$emit("toaster-error", error.content.error);
       } else {
         this.$root.$emit(
-            "toaster-error",
-            "Une erreur inattendue s'est produite. Veuillez réessayer."
+          "toaster-error",
+          "Une erreur inattendue s'est produite. Veuillez réessayer."
         );
       }
     }
@@ -299,9 +287,7 @@ export default class NewFishingLicence extends Vue {
 
     @media screen and (min-width: @desktop-min-width) {
       font-size: @fontsize-form-input-desktop;
-      line-height: calc(
-        @fontsize-form-input-desktop + @line-height-padding-medium
-      );
+      line-height: calc(@fontsize-form-input-desktop + @line-height-padding-medium );
 
       input {
         font-size: @fontsize-form-input-desktop;
