@@ -20,34 +20,29 @@
   -->
 
 <template>
-  <div class="licence-item">
+  <div class="licence-item" @click="openLicence()">
     <div class="item-selection">
-      <input
-        type="checkbox"
-        :id="'checkbox-' + licence.id"
-        class="pelorous-checkbox"
-        v-model="selected"
-      />
+      <input type="checkbox" :id="'checkbox-' + licence.id" class="pelorous-checkbox" v-model="selected" />
       <label v-bind:for="'checkbox-' + licence.id"></label>
     </div>
 
-    <div id="preview" class="hide-on-mobile" @click="openLicence()">
-      <img
-        v-if="licence.type === 'JPEG'"
-        class="preview-img"
-        :src="licenceUrl"
-        alt="Aperçu de la carte"
-      />
-      <div v-else src="/img/dashboard.png"  class="preview-img pdf-img">
-        <i class="icon-fishing"/>
+    <div id="preview" class="hide-on-mobile">
+      <img v-if="licence.type === 'JPEG'" class="preview-img" :src="licenceUrl" alt="Aperçu de la carte" />
+      <div v-else src="/img/dashboard.png" class="preview-img pdf-img">
+        <i class="icon-fishing" />
       </div>
     </div>
 
-    <div class="item-description" @click="openLicence()">
+    <div class="item-description">
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
         <div class="right-part">Expire le {{ formattedDate() }}</div>
+        <i class="icon-edit edit hide-on-mobile" @click="editLicence()" />
       </div>
+    </div>
+
+    <div class="item-edit hide-on-desktop" @click="editLicence()">
+      <i class="icon-edit edit" />
     </div>
   </div>
 </template>
@@ -57,11 +52,11 @@ import FishingLicenceService from "@/services/FishingLicenceService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
+import Helpers from '@/services/Helpers';
 
 @Component({
   components: {
-    FishingLicenceItem,
-    FishingLicenceService,
+    FishingLicenceItem
   },
 })
 export default class FishingLicenceItem extends Vue {
@@ -72,10 +67,7 @@ export default class FishingLicenceItem extends Vue {
   licenceUrl: string = "";
 
   async mounted() {
-    const fileBlob = await FishingLicenceService.getLicence(
-      this.licence.id
-    );
-    this.licenceUrl = URL.createObjectURL(fileBlob);
+
   }
 
   formattedDate(): string {
@@ -84,8 +76,8 @@ export default class FishingLicenceItem extends Vue {
       day: "numeric",
       year: "numeric",
     };
-
-    const date = new Date(this.licence.expirationDate);
+    // @ts-ignore
+    const date = Helpers.parseLocalDate(this.licence.expirationDate);
     const dateString = date.toLocaleDateString("fr-FR", dayOptions);
     return dateString;
   }
@@ -102,12 +94,22 @@ export default class FishingLicenceItem extends Vue {
   async openLicence(): Promise<void> {
     // @ts-ignore
     this.$router.push({
-        name: 'licence-fullscreen',
-        params: {
-          'url': this.licenceUrl,
-          'type': this.licence.type
-        }
-    }); 
+      name: 'licence-fullscreen',
+      params: {
+        'id': this.licence.id,
+        'type': this.licence.type
+      }
+    });
+  }
+
+  editLicence() {
+    // @ts-ignore
+    this.$router.push({
+      name: 'licence-edit',
+      params: {
+        'id': this.licence.id
+      }
+    });
   }
 
   deleteLicence(licence: LicenceResponseBean) {
@@ -146,7 +148,7 @@ export default class FishingLicenceItem extends Vue {
     height: 80px;
     border-radius: 5px;
     object-fit: cover;
-    border:2px solid @pelorous;
+    border: 2px solid @pelorous;
   }
 
   .item-selection {
@@ -157,14 +159,19 @@ export default class FishingLicenceItem extends Vue {
       margin: 0px;
     }
   }
+
+  .edit {
+    color: @pelorous;
+  }
+
   .pdf-img {
-      font-size: @pastille-size;
-      line-height: calc(@pastille-size);
-      color: @pelorous;
-      background: @white;
-      margin:auto;
-      text-align: center;
-      padding-top:20px;
+    font-size: @pastille-size;
+    line-height: calc(@pastille-size);
+    color: @pelorous;
+    background: @white;
+    margin: auto;
+    text-align: center;
+    padding-top: 20px;
   }
 
   .item-description {
@@ -238,6 +245,7 @@ export default class FishingLicenceItem extends Vue {
   @media screen and (min-width: @desktop-min-width) {
     height: 110px;
     padding-right: @margin-large-desktop;
+
     &:hover {
       background-color: @gainsboro;
     }

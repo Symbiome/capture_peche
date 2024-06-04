@@ -25,6 +25,7 @@ import fr.inrae.fishola.entities.tables.daos.FisholaUserLicencesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
 import fr.inrae.fishola.rest.licences.LicenceResponseBean;
 import jakarta.inject.Singleton;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +35,10 @@ public class FishingLicencesDao extends AbstractFisholaDao {
 
     public List<LicenceResponseBean> getLicencesByUser(UUID userId) {
         List<FisholaUserLicences> licences = withDao(FisholaUserLicencesDao.class, dao -> dao.fetchByUserId(userId));
-        List<LicenceResponseBean> licenceBeans = licences.stream().map(this::convertToBean).toList();
+        List<LicenceResponseBean> licenceBeans = licences.stream()
+                .map(this::convertToBean)
+                .sorted((a,b) -> b.expirationDate.compareTo(a.expirationDate))
+                .toList();
         return licenceBeans;
     }
 
@@ -49,12 +53,7 @@ public class FishingLicencesDao extends AbstractFisholaDao {
     }
 
     public Optional<FisholaUserLicences> getLicence(UUID licenceId) {
-        Optional<FisholaUserLicences> result;
-        try {
-            result = Optional.ofNullable(withDao(FisholaUserLicencesDao.class, dao -> dao.fetchOneById(licenceId)));
-        } catch (NullPointerException e) {
-            result = Optional.empty();
-        }
+        Optional<FisholaUserLicences> result = withDao(FisholaUserLicencesDao.class, dao -> dao.fetchOptionalById(licenceId));
         return result;
     }
 
@@ -65,6 +64,10 @@ public class FishingLicencesDao extends AbstractFisholaDao {
             throw new IllegalArgumentException("Une carte de pêche porte déjà ce nom.");
         }
         withDaoNoResult(FisholaUserLicencesDao.class, dao -> dao.insert(licence));
+    }
+
+    public void update(FisholaUserLicences modifiedLicence) {
+        withDaoNoResult(FisholaUserLicencesDao.class, dao -> dao.update(modifiedLicence));
     }
 
     public void deleteLicence(UUID licenceId) {

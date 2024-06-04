@@ -122,18 +122,18 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    void testGetLicence() throws IOException {
-        checkGetLicence(pdfLicence);
-        checkGetLicence(jpegLicence);
+    void testGetLicenceContent() throws IOException {
+        checkGetLicenceContent(pdfLicence);
+        checkGetLicenceContent(jpegLicence);
     }
 
-    private void checkGetLicence(FisholaUserLicences licence) throws IOException {
+    private void checkGetLicenceContent(FisholaUserLicences licence) throws IOException {
         // We first check that returned status code is ´OK´
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s".formatted(licence.getId()))
+                .get("/api/v1/licences/%s/file".formatted(licence.getId()))
                 .then()
                 .statusCode(200);
 
@@ -141,7 +141,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         InputStream responseStream = given()
                 .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s".formatted(licence.getId()))
+                .get("/api/v1/licences/%s/file".formatted(licence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
         Assertions.assertArrayEquals(licence.getContent(), responseBytes);
@@ -154,7 +154,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
-                .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .get("/api/v1/licences/%s/file".formatted(pdfLicence.getId()))
                 .then()
                 // badToken is not a valid token for userId
                 .statusCode(401);
@@ -176,7 +176,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
-                .get("/api/v1/licences/%s".formatted(notOwnedLicence.getId()))
+                .get("/api/v1/licences/%s/file".formatted(notOwnedLicence.getId()))
                 .then()
                 .log().all()
                 // user cannot access a licence that it does not own
@@ -227,7 +227,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/licences/%s".formatted(badUserId))
+                .get("/api/v1/licences/%s/file".formatted(badUserId))
                 .then()
                 .statusCode(404);
     }
@@ -281,6 +281,58 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .post("api/v1/licences")
                 .then()
                 .statusCode(401);
+    }
+
+    @Test
+    @Transactional
+    void testModifyLicence() throws IOException {
+        LicenceFromClientBean modifiedPdfLicence = new LicenceFromClientBean();
+        modifiedPdfLicence.name = "modified";
+        modifiedPdfLicence.type = pdfLicence.getType();
+        modifiedPdfLicence.expirationDate = LocalDate.of(2200, 1, 1);
+        modifiedPdfLicence.content = "";
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(modifiedPdfLicence)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .put("api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .then()
+                .statusCode(204);
+
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences")
+                .then()
+                .statusCode(200)
+                .body("[0].name", equalTo(modifiedPdfLicence.name))
+                .body("[0].expirationDate", equalTo(List.of(
+                        modifiedPdfLicence.expirationDate.getYear(),
+                        modifiedPdfLicence.expirationDate.getMonthValue(),
+                        modifiedPdfLicence.expirationDate.getDayOfMonth())
+                        )
+                );
+
+        // Then we check that the content has not changed
+        given()
+                .when()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
+                .then()
+                .statusCode(200)
+        ;
+
+        InputStream responseStream = given()
+                .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/licences/%s/file".formatted(pdfLicence.getId()))
+                .asInputStream();
+        byte[] responseBytes = IOUtils.toByteArray(responseStream);
+        Assertions.assertArrayEquals(pdfLicence.getContent(), responseBytes);
     }
 
     @Test

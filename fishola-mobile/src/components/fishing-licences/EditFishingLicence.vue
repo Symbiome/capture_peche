@@ -26,38 +26,32 @@
       <div class="pane pane-only">
         <h1 class="no-margin-pane">
           <BackButton class="hide-on-mobile" />
-          Nouvelle carte de pêche
+          Modifier ma carte de pêche
         </h1>
         <div class="pane-content rounded">
-          <div class="container">
+          <div class="container" v-if="!loading">
             <div class="container-form keyboardSensitive">
-              <form @submit.prevent="saveFile">
+              <form @submit.prevent="saveLicence">
                 <label>Nom de la carte de pêche </label>
-                <input v-model="newLicenceName" :class="{ 'field-error': nameError }"
+                <input v-model="licenceName" :class="{ 'field-error': nameError }"
                   placeholder="Nommez la carte de pêche" />
 
-                <label>Date d'expiration (Défaut :
-                  {{ formattedDate(getDefaultDate()) }})</label>
-                <input type="date" v-model="newLicenceExpirationDate" />
-
-                <label>Sélectionnez un fichier au format PDF ou JPEG</label>
-                <input type="file" @change="handleFileChange" accept="application/pdf, image/jpeg, image/jpg" />
+                <label>Date d'expiration </label>
+                <input v-if="licenceExpirationDate" type="date" v-model="licenceExpirationDate" />
               </form>
-            </div>
-            <div class="container-preview">
-              <embed class="preview-item" v-if="url" :src="url" />
             </div>
           </div>
           <div class="save">
-            <button class="button hide-on-mobile" type="submit" @click="saveFile">
-              Enregistrer
+            <button class="button hide-on-mobile" type="submit" @click="saveLicence">
+              Modifier
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <FisholaFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()" v-on:buttonClicked="saveFile" />
+    <FisholaFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()"
+      v-on:buttonClicked="saveLicence" />
   </div>
 </template>
 
@@ -71,8 +65,9 @@ import BackButton from "@/components/common/BackButton.vue";
 
 import FishingLicenceService from "@/services/FishingLicenceService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
+import Helpers from "@/services/Helpers";
 
 @Component({
   components: {
@@ -85,60 +80,25 @@ import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
   },
 })
 export default class NewFishingLicence extends Vue {
-  private selectedFile: File | null = null;
-  private newLicenceName: string = "";
-  private newLicenceExpirationDate: Date = new Date();
-  private newLicenceType: LicenceType = "PDF";
-  private url: string = "";
+  @Prop() id: string;
   private nameError: boolean = false;
+  licenceName = ""
+  licenceType: LicenceType = "PDF";
+  licenceExpirationDate = "";
+  loading = true;
 
-  fileTypeMap: {
-    [key: string]: string;
-    "application/pdf": string;
-    "image/jpeg": string;
-  } = {
-      "application/pdf": "PDF",
-      "image/jpeg": "JPEG",
-    };
-
-  formattedDate(date: Date): string {
-    var dayOptions: Intl.DateTimeFormatOptions = {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-    };
-
-    const dateString = date.toLocaleDateString("fr-FR", dayOptions);
-    return dateString;
+  async created() {
+    const licence = await FishingLicenceService.getLicence(this.id);
+    this.licenceName = licence.name;
+    // @ts-ignore
+    this.licenceExpirationDate = Helpers.toDateInputString(licence.expirationDate);
+    this.licenceType = licence.type;
+    this.loading = false;
   }
 
-  created() {
-    this.newLicenceExpirationDate = this.getDefaultDate();
-    this.newLicenceName = "Carte " + this.newLicenceExpirationDate.getFullYear();
-  }
-
-  handleFileChange(event: Event): void {
+  async saveLicence(): Promise<void> {
     try {
-      const input = event.target as HTMLInputElement;
-      if (input.files && input.files.length > 0) {
-        this.selectedFile = input.files[0];
-        this.url = URL.createObjectURL(this.selectedFile);
-      }
-    } catch (error) {
-      console.error("Erreur pendant la gestion du changement de fichier : ", error);
-    }
-  }
-
-  getDefaultDate(): Date {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const date = new Date("December 31, " + currentYear + " 17:00:00 GMT+1:00");
-    return date;
-  }
-
-  async saveFile(): Promise<void> {
-    try {
-      if (this.newLicenceName.trim() === "") {
+      if (this.licenceName.trim() === "") {
         this.nameError = true;
         this.$root.$emit(
           "toaster-error",
@@ -147,32 +107,15 @@ export default class NewFishingLicence extends Vue {
         return;
       }
 
-      if (!this.selectedFile) {
-        this.$root.$emit("toaster-error", "Vous devez sélectionner un fichier");
-        return;
-      }
-
-      // Set newLicenceType according to selectedFile type
-      const selectedFileType = this.selectedFile.type;
-      if (this.fileTypeMap[selectedFileType]) {
-        this.newLicenceType = this.fileTypeMap[selectedFileType] as LicenceType;
-      } else {
-        this.$root.$emit("toaster-error", "Format de fichier invalide");
-        return;
-      }
-
-      // Encode the selectedFile content into a Base 64 string
-      const contentBase64 = await this.getBase64Content(this.selectedFile);
-
-      // Build a DTO for the licence to save, then send it to the back-end
       const licenceDto: LicenceFromClientBean = {
-        name: this.newLicenceName,
-        expirationDate: this.newLicenceExpirationDate,
-        type: this.newLicenceType,
-        content: contentBase64,
+        name: this.licenceName,
+        // @ts-ignore
+        expirationDate: this.licenceExpirationDate,
+        content: "",
+        type: this.licenceType
       };
 
-      await FishingLicenceService.postLicence(licenceDto);
+      await FishingLicenceService.putLicence(licenceDto, this.id);
       this.$root.$emit(
         "toaster-success",
         "Une nouvelle carte de pêche a été ajoutée."
@@ -192,29 +135,12 @@ export default class NewFishingLicence extends Vue {
     }
   }
 
-  getBase64Content(file: any): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onload = function () {
-        const base64String = reader.result as string;
-        const contentBase64 = base64String.split(",")[1];
-        resolve(contentBase64);
-      };
-
-      reader.onerror = function (error) {
-        reject(error);
-      };
-    });
-  }
-
   getButtonText() {
-    return "Enregistrer";
+    return "Modifier";
   }
 
   buttonClicked() {
-    this.saveFile();
+    this.saveLicence();
   }
 }
 </script>

@@ -33,6 +33,7 @@ import Dashboard from "@/views/Dashboard.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
 import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
+import EditFishingLicence from "@/components/fishing-licences/EditFishingLicence.vue";
 import FishingLicenceFullScreen from "@/components/fishing-licences/FishingLicenceFullScreen.vue";
 
 import NewTrip from "@/views/trip/NewTrip.vue";
@@ -184,11 +185,17 @@ const routes = [
     name: "licence-new",
     component: NewFishingLicence,
   },
-   {
-    path: "/licences-fullscreen/:type/:url",
+  {
+    path: "/licences-edit/:id",
+    name: "licence-edit",
+    component: EditFishingLicence,
+    props: true,
+  },
+  {
+    path: "/licences-fullscreen/:type/:id",
     name: "licence-fullscreen",
     component: FishingLicenceFullScreen,
-    props:true,
+    props: true,
   },
   {
     path: "/documentation/:tab",

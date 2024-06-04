@@ -34,10 +34,10 @@ export default class FishingLicenceService extends AbstractFisholaService {
     return this.backendGet("/v1/licences/");
   }
 
-  static async getLicence(licenceId: string): Promise<Blob> {
+  static async getLicenceFile(licenceId: string): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const apiUrl = Constants.apiUrl(`/v1/licences/${licenceId}`);
+      const apiUrl = Constants.apiUrl(`/v1/licences/${licenceId}/file`);
       xhr.open("GET", apiUrl, true);
       xhr.withCredentials = true;
       xhr.responseType = "blob";
@@ -58,8 +58,17 @@ export default class FishingLicenceService extends AbstractFisholaService {
     });
   }
 
+  static async getLicence(licenceId: string): Promise<LicenceResponseBean> {
+    return this.backendGet(`/v1/licences/${licenceId}`);
+  }
+
+
   static postLicence(licence: LicenceFromClientBean): Promise<void> {
     return this.backendPost("/v1/licences/", licence);
+  }
+
+  static putLicence(licence: LicenceFromClientBean, id: String): Promise<void> {
+    return this.backendPut("/v1/licences/" + id, licence);
   }
 
   static deleteLicence(licenceId: string): Promise<void> {
