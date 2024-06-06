@@ -4,6 +4,12 @@
 
 S'assurer que Docker est bien lancé (commande espace "Docker")
 Se rendre à la racine du projet (e.g. /Users/username/Documents/Git/fishola)
+récupérer les derniers changements, se placer sur master
+
+ATTENTION : il est désormais interdit de mentionner Google play dans les sources de l'app.
+Il faut donc éditer About.vue pour supprimer le lien vers GooglePlay (ce que fait le commit c4a90501)
+
+git cherry-pick c4a90501
 mvn clean package (ou mvn clean package -pl fishola-mobile -DjavaVersion=1.8 pour builder uniquement le mobile)
 cd fishola-mobile
 mv target/dist-mobile target/dist (ou mv target/dist-demo target/dist pour demo)
@@ -17,6 +23,10 @@ Selon à quel serveur vous souhaitez pouvoir vous connecter, il faut vous assure
         "hostname": "api-fishola.inrae.fr" // prod
 	},
 "plugins": {
+
+
+
+
 
 ## Vérifier la version
 Lancez xcode et ouvrir le workspace Fishola
