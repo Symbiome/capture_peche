@@ -84,11 +84,10 @@ GROUP BY cpu.catch_id;
 COMMENT ON VIEW catch_picture_joined_urls IS 'Permet d''avoir, pour chaque capture, la concaténation des URLs pour télécharger les images';
 
 -- VUE : catchs_export
-CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE OR REPLACE FUNCTION normalize_for_export(target VARCHAR) returns VARCHAR language plpgsql as
 $$
 begin
-    return REPLACE(REPLACE(REPLACE(REPLACE(lower(unaccent(target)),' _', '_'),' ', '_'), '-', '_'), ':', '_');
+    return REPLACE(REPLACE(REPLACE(REPLACE(lower(target),' _', '_'),' ', '_'), '-', '_'), ':', '_');
 end;
 $$;
 
