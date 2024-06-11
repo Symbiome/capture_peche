@@ -128,6 +128,7 @@ public class MailService {
                         "FisholaMail sans pendingSince: " + fisholaMail);
                 Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
                 log.warnf("Unable to send mail for the last %d seconds", pendingDuration.toSeconds(), eee);
+                log.warnf("Mail exception was " + eee.getClass().getName() +" : "  + eee.getMessage());
                 int retentionMinutes = config.asyncEmailsRetentionMinutes();
                 if (pendingDuration.toMinutes() > retentionMinutes) {
                     log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes,
