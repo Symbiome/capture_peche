@@ -6,8 +6,8 @@
 	"webDir": "target/dist",
 	"cordova": {},
 	"linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
-	"server" : {
-		"hostname": "api-fishola.inrae.fr",
+	"server": {
+		"hostname": "fishola.fr",
 		"androidScheme": "http"
 	},
 	"plugins": {
