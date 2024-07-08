@@ -20,30 +20,28 @@
   -->
 <template>
   <div>
-    <FormMultiValues v-if="readonly"
-                     v-bind:name="name"
-                     v-bind:label="label"
-                     v-bind:values="readonlyValues"
-                     v-bind:readonly="true"/>
+    <FormMultiValues v-if="readonly" v-bind:name="name" v-bind:label="label" v-bind:values="readonlyValues"
+      v-bind:readonly="true" />
     <div v-if="!readonly" class="form-input">
       <label v-bind:for="'field-' + name">
-        {{label}}
+        {{ label }}
       </label>
-      <input v-bind:name="name"
-             v-bind:id="'field-' + name"
-             v-bind:type="type"
-             v-bind:placeholder="placeholder"
-             v-bind:value="value"
-             v-bind:min="min"
-             v-on:input="$emit('input', $event.target.value)"
-             v-bind:class="error?'field-error':''"
-             @keyup.enter="$emit('keyupEnter')" />
-      <div v-bind:class="error?'field-error':''" >
+      <input v-bind:name="name" v-bind:id="'field-' + name" v-bind:type="dynamicType" v-bind:placeholder="placeholder"
+        v-bind:value="value" v-bind:min="min" v-on:input="$emit('input', $event.target.value)"
+        v-bind:class="error ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
+      <i v-if="type == 'password'" @click="togglePasswordVisibility()" class="show-password-icon"
+        alt="Afficher le mot de passe" :class="{
+      'white-background': hasWhiteBackground,
+      'icon-eye': dynamicType == 'password',
+      'icon-eye-slash': dynamicType != 'password'
+    }" />
+      <div v-bind:class="error ? 'field-error' : ''">
         <span v-if="error">
-          {{error}}
+          {{ error }}
         </span>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -80,20 +78,31 @@ export default class FormInput extends Vue {
   @Prop() error?: string;
   @Prop() readonly!: boolean;
   @Prop() min?: string;
+  @Prop({ default: true }) hasWhiteBackground: boolean;
+  dynamicType: string;
 
-  readonlyValues:string[] = [];
+  readonlyValues: string[] = [];
 
   created() {
     if (this.value) {
       this.readonlyValues.push(this.value);
     }
+    this.dynamicType = this.type;
+  }
+
+  togglePasswordVisibility() {
+    if (this.dynamicType == 'password') {
+      this.dynamicType = 'text';
+    } else {
+      this.dynamicType = 'password';
+    }
+    this.$forceUpdate();
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../../less/main";
 
 .form-input {
@@ -144,6 +153,7 @@ export default class FormInput extends Vue {
   div {
     height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
+
   div.field-error {
     background-color: transparent;
     color: @cardinal;
@@ -167,4 +177,32 @@ export default class FormInput extends Vue {
   }
 }
 
+.show-password-icon {
+  display: inline-block;
+  position: absolute;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+  z-index: 2;
+  right: 38px;
+  margin-top: 30px;
+
+  &.white-background {
+    color: @pelorous;
+  }
+
+  @media screen and (min-width: @desktop-min-width) {
+    right: @margin-small * 8;
+    margin-top: @vertical-margin-xx-small * 6;
+  }
+
+  &:hover {
+    font-weight: bolder;
+    color: @pelorous;
+
+    &.white-background {
+      color: white;
+    }
+  }
+}
 </style>
