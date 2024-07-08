@@ -40,8 +40,9 @@
                   {{ formattedDate(getDefaultDate()) }})</label>
                 <input type="date" v-model="newLicenceExpirationDate" />
 
-                <label>Sélectionnez un fichier au format PDF ou JPEG</label>
-                <input type="file" @change="handleFileChange" accept="application/pdf, image/jpeg, image/jpg" />
+                <label>Sélectionnez un fichier au format PDF, PNG ou JPEG</label>
+                <input type="file" @change="handleFileChange"
+                  accept="application/pdf, image/jpeg, image/jpg, image/png" />
               </form>
             </div>
             <div class="container-preview">
@@ -96,9 +97,11 @@ export default class NewFishingLicence extends Vue {
     [key: string]: string;
     "application/pdf": string;
     "image/jpeg": string;
+    "image/png": string;
   } = {
       "application/pdf": "PDF",
       "image/jpeg": "JPEG",
+      "image/png": "PNG",
     };
 
   formattedDate(date: Date): string {

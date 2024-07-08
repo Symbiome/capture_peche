@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-    <pinch-zoom class="bg" v-if="type == 'JPEG'">
+    <pinch-zoom class="bg" v-if="type != 'PDF'">
         <span @click="goBack" class="back-arrow">
             <i class="icon-news-back icon-arrow" />
             <span class="back-text"> Retour </span>
