@@ -359,7 +359,13 @@ public class DashboardDao  extends AbstractFisholaDao {
                                                           ToIntFunction<Catch> getter) {
         Multimap<UUID, Catch> catchsBySpecies = Multimaps.index(allCatches, Catch::getSpeciesId);
         // On commence par retirer les captures dont la valeur est nulle
-        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> getter.applyAsInt(aCatch) != 0);
+        catchsBySpecies = Multimaps.filterValues(catchsBySpecies, aCatch -> {
+            try {
+                return getter.applyAsInt(aCatch) != 0;
+            } catch (NullPointerException e) {
+                return false;
+            }
+        });
 
         Ordering<Catch> ordering = Ordering.natural()
                                            .onResultOf(getter::applyAsInt)
