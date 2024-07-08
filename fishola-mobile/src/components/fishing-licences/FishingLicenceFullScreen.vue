@@ -25,7 +25,7 @@
             <span class="back-text"> Retour </span>
         </span>
         <img v-if="url" class="fullscreen-img" :src="url" />
-        <v-else>Chargement en cours...</v-else>
+        <span v-else>Chargement en cours...</span>
     </pinch-zoom>
     <div class="bg" v-else>
         <span @click="goBack" class="back-arrow" id="back-arrow">
@@ -33,7 +33,7 @@
             <span class="back-text"> Retour </span>
         </span>
         <vue-pdf-app v-if="url" class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
-        <v-else>Chargement en cours...</v-else>
+        <span v-else>Chargement en cours...</span>
     </div>
 </template>
 

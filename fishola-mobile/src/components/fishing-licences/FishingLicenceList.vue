@@ -22,9 +22,7 @@
 <template>
   <div class="licences-list">
     <div v-for="licence in licences" :key="licence.id">
-      <FishingLicenceItem :licence="licence"
-                          @selected="licenceSelected(licence.id)"
-                          @unselected="licenceUnselected(licence.id)" />
+      <FishingLicenceItem :licence="licence" @reload="$emit('reload')" />
     </div>
   </div>
 </template>
@@ -44,13 +42,6 @@ import FishingLicenceItem from "./FishingLicenceItem.vue";
 export default class FishingLicenceList extends Vue {
   @Prop() licences!: LicenceResponseBean[];
 
-  licenceSelected(licenceId: string) {
-    this.$emit("licence-selected", licenceId);
-  }
-
-  licenceUnselected(licenceId: string) {
-    this.$emit("licence-unselected", licenceId);
-  }
 }
 </script>
 
