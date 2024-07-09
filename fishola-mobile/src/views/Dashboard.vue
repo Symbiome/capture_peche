@@ -33,41 +33,23 @@
                 </option>
               </select>
               <select placeholder="Année" v-model="year">
-                <option
-                  v-for="dashboardYear in getDashboardYears()"
-                  :value="dashboardYear"
-                  :key="dashboardYear"
-                >
+                <option v-for="dashboardYear in getDashboardYears()" :value="dashboardYear" :key="dashboardYear">
                   {{ dashboardYear }}
                 </option>
               </select>
             </div>
-            <a
-              v-bind:href="exportUrl"
-              v-if="!globalMode && !asyncExport"
-              id="export-button"
-              class="export"
-              title="Exporter"
-              target="_blank"
-            >
+            <a v-bind:href="exportUrl" v-if="!globalMode && !asyncExport" id="export-button" class="export"
+              title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
             </a>
           </h1>
 
           <div class="dashboard-modes">
-            <div
-              class="dashboard-mode"
-              v-bind:class="globalMode ? '' : 'selected'"
-              v-on:click="showPersonalDashboard"
-            >
+            <div class="dashboard-mode" v-bind:class="globalMode ? '' : 'selected'" v-on:click="showPersonalDashboard">
               Personnel
             </div>
-            <div
-              class="dashboard-mode"
-              v-bind:class="globalMode ? 'selected' : ''"
-              v-on:click="showGlobalDashboard"
-            >
+            <div class="dashboard-mode" v-bind:class="globalMode ? 'selected' : ''" v-on:click="showGlobalDashboard">
               Global
             </div>
           </div>
@@ -77,24 +59,15 @@
           </div>
 
           <div class="offline" v-if="ready && offline">
-            <span
-              >Le tableau de bord n'est pas disponible sans connexion
-              internet</span
-            >
+            <span>Le tableau de bord n'est pas disponible sans connexion
+              internet</span>
           </div>
-          <PersonalDashboard
-            v-if="!globalMode && personalDashboard"
-            :year="year"
-            :dashboardData="personalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"
-          ></PersonalDashboard>
+          <PersonalDashboard v-if="!globalMode && personalDashboard" :year="year" :dashboardData="personalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
 
-          <GlobalDashboardComponent
-            v-if="globalMode && globalDashboard"
-            :showUpdateHour="year == new Date().getFullYear()"
-            :dashboardData="globalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"
-          ></GlobalDashboardComponent>
+          <GlobalDashboardComponent v-if="globalMode && globalDashboard"
+            :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -155,6 +128,9 @@ export default class DashboardView extends Vue {
   isFirstLoad = true;
 
   created() {
+    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
+      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
+    }
     this.loadLakes();
   }
 
@@ -184,6 +160,11 @@ export default class DashboardView extends Vue {
   @Watch("year")
   @Watch("selectedLakeUUID")
   yearOrSelectedLakesChanged(): void {
+    if (this.selectedLakeUUID) {
+      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID
+    } else {
+      localStorage.latestSelectedLakeUUID = "all"
+    }
     if (!this.globalMode) {
       DashboardService.loadDashboardOrTimeout(
         this.year,
@@ -335,6 +316,7 @@ export default class DashboardView extends Vue {
     display: flex;
     flex-direction: column;
     justify-content: center;
+
     span {
       color: @carrot-orange;
       font-size: @fontsize-span-big;
@@ -344,6 +326,7 @@ export default class DashboardView extends Vue {
 
   .not-enough-data {
     height: 50px;
+
     span {
       font-style: italic;
       font-size: @fontsize-button;
@@ -473,6 +456,7 @@ export default class DashboardView extends Vue {
           margin-left: auto;
         }
       }
+
       .selects-holder {
         margin-left: 40px;
         margin-top: -10px;
@@ -485,6 +469,7 @@ export default class DashboardView extends Vue {
       }
     }
   }
+
   @media screen and (max-width: 1180px) {
     .pane-content {
       h1 {
@@ -493,6 +478,7 @@ export default class DashboardView extends Vue {
         justify-content: center;
         align-items: flex-start;
       }
+
       .selects-holder {
         margin-left: 0px;
         margin-top: 0px;
@@ -500,6 +486,7 @@ export default class DashboardView extends Vue {
       }
     }
   }
+
   @media screen and (max-width: 899px) {
     .pane-content {
       h1 {
@@ -507,11 +494,13 @@ export default class DashboardView extends Vue {
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
+
         a.export {
           position: absolute;
           float: right;
           top: 20px;
           right: 18px;
+
           span {
             display: none;
           }
@@ -525,6 +514,7 @@ export default class DashboardView extends Vue {
       h1 {
         height: 60px;
         margin-top: 0px;
+
         a.export {
           position: absolute;
           float: right;
@@ -554,6 +544,7 @@ export default class DashboardView extends Vue {
           color: @white;
           background-color: @carrot-orange;
           font-size: 16px;
+
           span {
             margin-right: 10px;
           }
@@ -561,6 +552,7 @@ export default class DashboardView extends Vue {
       }
     }
   }
+
   @media screen and (min-width: 1178px) {
     .pane-content {
       h1 {
@@ -570,12 +562,14 @@ export default class DashboardView extends Vue {
       }
     }
   }
+
   @media screen and (min-width: 431px) {
     .show-if-small {
       display: none;
     }
   }
 }
+
 .selects-holder {
   select {
     background-color: white;
