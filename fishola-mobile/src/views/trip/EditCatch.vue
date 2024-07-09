@@ -23,36 +23,19 @@
     <FisholaHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
-      <PicturePreview
-        v-if="allNonMeasurePictures.length"
-        :key="allNonMeasurePictures[0].order"
-        v-bind:src="allNonMeasurePictures[0].content"
-        v-bind:deletable="modifiable"
-        v-on:take-picture="takePicture"
-        :otherPics="allNonMeasurePictures"
-        :measurementPictureSrc="measurementPictureSrc"
-        v-on:take-picure="takePicture"
-        v-on:delete-picture="deletePicture"
-      />
+      <PicturePreview v-if="allNonMeasurePictures.length" :key="allNonMeasurePictures[0].order"
+        v-bind:src="allNonMeasurePictures[0].content" v-bind:deletable="modifiable" v-on:take-picture="takePicture"
+        :otherPics="allNonMeasurePictures" :measurementPictureSrc="measurementPictureSrc" v-on:take-picure="takePicture"
+        v-on:delete-picture="deletePicture" />
       <!-- Then measurement pic (if any) -->
-      <PicturePreview
-        v-if="measurementPictureSrc && !allNonMeasurePictures.length"
-        v-bind:src="measurementPictureSrc"
-        v-bind:deletable="modifiable"
-        v-on:take-picture="takePicture"
-        :otherPics="allNonMeasurePictures"
-        :measurementPictureSrc="measurementPictureSrc"
-        v-on:take-picure="takePicture"
-        v-on:delete-picture="deletePicture"
-      />
+      <PicturePreview v-if="measurementPictureSrc && !allNonMeasurePictures.length" v-bind:src="measurementPictureSrc"
+        v-bind:deletable="modifiable" v-on:take-picture="takePicture" :otherPics="allNonMeasurePictures"
+        :measurementPictureSrc="measurementPictureSrc" v-on:take-picure="takePicture"
+        v-on:delete-picture="deletePicture" />
       <!-- Empty miniature picture for adding pictures -->
       <!-- Empty picture if no picture yet -->
-      <PicturePreview
-        v-else-if="!allNonMeasurePictures.length"
-        noPictureText="Appuyer pour ajouter une photo"
-        v-bind:deletable="false"
-        v-on:take-picture="takePicture"
-      />
+      <PicturePreview v-else-if="!allNonMeasurePictures.length" noPictureText="Appuyer pour ajouter une photo"
+        v-bind:deletable="false" v-on:take-picture="takePicture" />
     </div>
     <div class="edit-catch-page page">
       <div class="pane keyboardSensitive">
@@ -70,116 +53,61 @@
           <div class="catch-picture-desktop-and-form">
             <div class="catch-picture-desktop hide-on-mobile">
               <!-- Show focused pic -->
-              <PicturePreview
-                class="pic-focused"
-                v-bind:src="focusedPicSrc"
-                noPictureText="Appuyer pour ajouter une photo"
-                v-bind:deletable="focusedPicSrc != measurementPictureSrc"
-                v-on:take-picture="takePicture"
-                v-on:delete-picture="deletePicture"
-                :otherPics="allNonMeasurePictures"
-                :measurementPictureSrc="measurementPictureSrc"
-              />
+              <PicturePreview class="pic-focused" v-bind:src="focusedPicSrc"
+                noPictureText="Appuyer pour ajouter une photo" v-bind:deletable="focusedPicSrc != measurementPictureSrc"
+                v-on:take-picture="takePicture" v-on:delete-picture="deletePicture" :otherPics="allNonMeasurePictures"
+                :measurementPictureSrc="measurementPictureSrc" />
               <div class="pic-miniatures-container">
                 <!-- Show all gallery pics -->
-                <PicturePreview
-                  :enableModal="false"
-                  v-for="pictureSrc in allNonMeasurePictures"
-                  :key="pictureSrc.order"
-                  v-bind:src="pictureSrc.content"
-                  v-bind:deletable="false"
-                  @picture-clicked="focusedPicSrc = pictureSrc.content"
-                  v-on:take-picture="takePicture"
-                  :class="{
-                    'pic-miniature': true,
-                    'pic-selected': pictureSrc.content == focusedPicSrc,
-                  }"
-                />
+                <PicturePreview :enableModal="false" v-for="pictureSrc in allNonMeasurePictures" :key="pictureSrc.order"
+                  v-bind:src="pictureSrc.content" v-bind:deletable="false"
+                  @picture-clicked="focusedPicSrc = pictureSrc.content" v-on:take-picture="takePicture" :class="{
+        'pic-miniature': true,
+        'pic-selected': pictureSrc.content == focusedPicSrc,
+      }" />
                 <!-- Then measurement pic (if any) -->
-                <PicturePreview
-                  :enableModal="false"
-                  v-if="measurementPictureSrc"
-                  :key="measurementPictureSrc"
-                  v-bind:src="measurementPictureSrc"
-                  v-bind:deletable="false"
-                  v-on:take-picture="takePicture"
-                  @picture-clicked="focusedPicSrc = measurementPictureSrc"
-                  :class="{
-                    'pic-miniature': true,
-                    'pic-selected': measurementPictureSrc == focusedPicSrc,
-                  }"
-                />
+                <PicturePreview :enableModal="false" v-if="measurementPictureSrc" :key="measurementPictureSrc"
+                  v-bind:src="measurementPictureSrc" v-bind:deletable="false" v-on:take-picture="takePicture"
+                  @picture-clicked="focusedPicSrc = measurementPictureSrc" :class="{
+        'pic-miniature': true,
+        'pic-selected': measurementPictureSrc == focusedPicSrc,
+      }" />
                 <!-- Empty miniature picture for adding pictures -->
-                <div
-                  class="pic-miniature picture-preview"
-                  v-if="
-                    focusedPicSrc &&
-                    (allNonMeasurePictures.length < 4 ||
-                      (!measurementPictureSrc &&
-                        allNonMeasurePictures.length < 5))
-                  "
-                >
+                <div class="pic-miniature picture-preview" v-if="focusedPicSrc &&
+        (allNonMeasurePictures.length < 4 ||
+          (!measurementPictureSrc &&
+            allNonMeasurePictures.length < 5))
+        ">
                   <div class="picture add-pic-button">
-                    <img
-                      src="/img/add-pic-to-gallery.svg"
-                      alt="Ajouter une photo"
-                      class="picture"
-                      v-on:click="takePicture"
-                    />
+                    <img src="/img/add-pic-to-gallery.svg" alt="Ajouter une photo" class="picture"
+                      v-on:click="takePicture" />
                   </div>
                 </div>
               </div>
             </div>
             <div class="edit-catch-form">
-              <div
-                :class="{
-                  'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
-                }"
-              >
-                <FormSelect
-                  name="species"
-                  label="Espèce"
-                  v-bind:options="allSpeciesWithAliases"
-                  v-model="aCatch.speciesId"
-                  v-bind:error="speciesIdError"
-                  v-bind:readonly="!modifiable"
-                />
-                <FormInput
-                  name="otherSpecies"
-                  label="Si autre"
-                  type="text"
-                  placeholder="Renseigner l’espèce"
-                  v-model="aCatch.otherSpecies"
-                  v-bind:error="otherSpeciesError"
-                  v-bind:readonly="!modifiable"
-                  v-if="aCatch.speciesId == '__other__'"
-                />
+              <div :class="{
+        'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
+      }">
+                <FormSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
+                  v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
+                <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
+                  v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
+                  v-if="aCatch.speciesId == '__other__'" />
               </div>
               <div class="measure-row">
-                <div
-                  class="button button-secondary-no-outline automatic-measure"
-                  v-if="modifiable"
-                >
-                  <button
-                    @click="
-                      displayMeasurementPicturePopup =
-                        !displayMeasurementPicturePopup
-                    "
-                  >
+                <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
+                  <button @click="
+        displayMeasurementPicturePopup =
+        !displayMeasurementPicturePopup
+        ">
                     <i class="icon-size measure-button-icon" />
                     <span id="measure-button-text"></span>
                   </button>
                 </div>
-                <FormInput
-                  name="size"
-                  :label="sizeLabel"
-                  type="number"
-                  :min="1"
-                  placeholder="Entrez une taille en centimètres"
-                  v-model="aCatch.size"
-                  v-bind:error="sizeError"
-                  v-bind:readonly="!modifiable"
-                />
+                <FormInput name="size" :label="sizeLabel" type="number" :min="1"
+                  placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
+                  v-bind:readonly="!modifiable" />
               </div>
 
               <div class="two-columns-row-on-desktop">
@@ -190,28 +118,13 @@
                     plusieurs pour cette espèce
                   </span>
                 </div>
-                <FormInput
-                  v-if="aCatch.weight || (settings && settings.promptWeight)"
-                  name="weight"
-                  label="Poids en g (optionnel)"
-                  type="number"
-                  :min="1"
-                  placeholder="Entrez un poids en grammes"
-                  v-model="aCatch.weight"
-                  v-bind:error="weightError"
-                  v-bind:readonly="!modifiable"
-                />
-                <FormYesNo
-                  name="keep"
-                  v-bind:label="
-                    tripMode == 'Live'
-                      ? 'Conservez-vous ce poisson ?'
-                      : 'Avez-vous conservé ce poisson ?'
-                  "
-                  v-model="aCatch.keep"
-                  v-bind:error="keepError"
-                  v-bind:readonly="!modifiable"
-                />
+                <FormInput v-if="aCatch.weight || (settings && settings.promptWeight)" name="weight"
+                  label="Poids en g (optionnel)" type="number" :min="1" placeholder="Entrez un poids en grammes"
+                  v-model="aCatch.weight" v-bind:error="weightError" v-bind:readonly="!modifiable" />
+                <FormYesNo name="keep" v-bind:label="tripMode == 'Live'
+          ? 'Conservez-vous ce poisson ?'
+          : 'Avez-vous conservé ce poisson ?'
+        " v-model="aCatch.keep" v-bind:error="keepError" v-bind:readonly="!modifiable" />
               </div>
               <div class="two-columns-row-on-desktop">
                 <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
@@ -221,50 +134,27 @@
                             v-model="aCatch.releasedStateId"
                             v-bind:error="releasedStateIdError"
                             v-bind:readonly="!modifiable"/-->
-                <FormSelect
-                  name="technique"
-                  label="Technique de pêche"
-                  v-bind:options="allTechniques"
-                  v-model="aCatch.techniqueId"
-                  v-bind:error="techniqueIdError"
-                  v-bind:readonly="!modifiable"
-                />
-                <FormInput
-                  name="caughtAt"
-                  label="Heure de la capture (optionnelle)"
-                  type="time"
-                  v-model="caughtAt"
-                  v-bind:readonly="!modifiable"
-                />
+                <FormSelect name="technique" label="Technique de pêche" v-bind:options="allTechniques"
+                  v-model="aCatch.techniqueId" v-bind:error="techniqueIdError" v-bind:readonly="!modifiable" />
+                <FormInput name="caughtAt" label="Heure de la capture (optionnelle)" type="time" v-model="caughtAt"
+                  v-bind:readonly="!modifiable" />
               </div>
               <div>
-                <FormTextarea
-                  name="description"
-                  label="Observation (optionnelle)"
+                <FormTextarea name="description" label="Observation (optionnelle)"
                   placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
-                  v-model="aCatch.description"
-                  v-bind:readonly="!modifiable"
-                />
+                  v-model="aCatch.description" v-bind:readonly="!modifiable" />
               </div>
-              <FormToggle
-                v-if="
-                  withSample ||
-                  (settings &&
-                    settings.promptSamples 
-                    && aCatch.speciesId
-                    && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-                "
-                label="Prélèvement (optionnel)"
-                v-model="withSample"
-                v-bind:readonly="!modifiable"
-              />
+              <FormToggle v-if="withSample ||
+        (settings &&
+          settings.promptSamples
+          && aCatch.speciesId
+          && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
+        " label="Prélèvement (optionnel)" v-model="withSample" v-bind:readonly="!modifiable" />
               <div class="sample two-columns-row-on-desktop" v-if="withSample">
                 <div class="info" v-if="samplesDocumentationUrl">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
                   d'un kit dans un des points de collecte :
-                  <a :href="samplesDocumentationUrl" target="_blank"
-                    >consulter la liste</a
-                  >
+                  <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
                 </div>
 
                 <div class="sample-id-container">
@@ -284,18 +174,11 @@
                   pour cette prise
                 </div>
                 <div class="map" v-if="gpsLocation">
-                  <l-map
-                    :zoom="16"
-                    :center="gpsLocation"
-                    :options="{
-                      zoomSnap: 0.5,
-                    }"
-                    style="height: 100%; width: 100%"
-                  >
-                    <l-tile-layer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
+                  <l-map :zoom="16" :center="gpsLocation" :options="{
+        zoomSnap: 0.5,
+      }" style="height: 100%; width: 100%">
+                    <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
                     <l-marker :lat-lng="gpsLocation"></l-marker>
                   </l-map>
@@ -312,10 +195,7 @@
                 <div class="button button-secondary" v-if="inCreation">
                   <button v-on:click="cancel">Annuler</button>
                 </div>
-                <div
-                  class="button button-danger"
-                  v-if="!inCreation && modifiable"
-                >
+                <div class="button button-danger" v-if="!inCreation && modifiable">
                   <button v-on:click="deleteCatch">
                     <i class="icon-delete" /> Supprimer
                   </button>
@@ -330,37 +210,20 @@
         </div>
       </div>
     </div>
-    <MeasurementPicturePopup
-      v-if="displayMeasurementPicturePopup"
-      :measurementPicture="measurementPictureToDispatch"
-      @close="displayMeasurementPicturePopup = false"
-      @measurementPictureTaken="measurementPictureTaken"
-    />
-    <PictureSourceChoice
-      :visible="requestNewPicture"
-      @close="requestNewPicture = false"
-      @pictureTaken="pictureTaken"
-      :directlyOpenGaleryInWebMode="true"
-    />
-    <FisholaFooter
-      v-if="ready && modifiable"
-      v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
-      button-icon="icon-fish"
-      v-on:buttonClicked="validateClicked"
-      v-on:deleteClicked="deleteCatch"
-      v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut"
-    />
+    <MeasurementPicturePopup v-if="displayMeasurementPicturePopup" :measurementPicture="measurementPictureToDispatch"
+      @close="displayMeasurementPicturePopup = false" @measurementPictureTaken="measurementPictureTaken" />
+    <PictureSourceChoice :visible="requestNewPicture" @close="requestNewPicture = false" @pictureTaken="pictureTaken"
+      :directlyOpenGaleryInWebMode="true" />
+    <FisholaFooter v-if="ready && modifiable" v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
+      button-icon="icon-fish" v-on:buttonClicked="validateClicked" v-on:deleteClicked="deleteCatch"
+      v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut" />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
     <!-- Invisible marker & pic (required for silent size computation) -->
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
-    <img
-      alt="Photo de mesure automatique"
-      id="sourcePictureAutomatic"
-      :src="measurementPictureCandidateSrc"
-      v-show="false"
-    />
+    <img alt="Photo de mesure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
+      v-show="false" />
   </div>
 </template>
 
@@ -603,7 +466,7 @@ export default class EditCatchView extends Vue {
               "Partage de position refusé, la capture ne sera pas geolocalisée";
           }
         }
-      );      
+      );
     }
 
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
@@ -709,10 +572,10 @@ export default class EditCatchView extends Vue {
               }
               console.info(
                 "[Silent automatic measure] Success : " +
-                  markers +
-                  " markers and fish of " +
-                  fishSizeAutomatedInMm +
-                  "mm"
+                markers +
+                " markers and fish of " +
+                fishSizeAutomatedInMm +
+                "mm"
               );
               if (markerFound && fishSizeAutomatedInMm) {
                 const measureAndPic = new MeasureAndPic(
@@ -795,7 +658,8 @@ export default class EditCatchView extends Vue {
 
     // On déclenche l'ouverture de l'APN dès le début de la capture
     if (this.inCreation) {
-      this.takePicture();
+      // Comportement supprimé suite aux retours des pêcheurs
+      // Décommenter ceci pour réactiver : this.takePicture();
     }
   }
 
@@ -817,11 +681,11 @@ export default class EditCatchView extends Vue {
     if (speciesPerLake.get(lakeId)) {
       const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
       speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {
-          if (s.id == speciesId) {
-            result = s.maxSize;
-          }
-        });
-      }
+        if (s.id == speciesId) {
+          result = s.maxSize;
+        }
+      });
+    }
     return result;
   }
 
@@ -977,7 +841,7 @@ export default class EditCatchView extends Vue {
       }
     }
 
-    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);   
+    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
     if (mandatorySize && !this.aCatch.size) {
       hasError = true;
       this.sizeError = "Taille obligatoire";
@@ -994,7 +858,7 @@ export default class EditCatchView extends Vue {
           this.aCatch.size = Math.floor(this.aCatch.size);
           this.sizeError = "";
 
-           const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+          const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
           if (this.aCatch.size > maxSize) {
             hasError = true;
             this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
@@ -1220,11 +1084,11 @@ export default class EditCatchView extends Vue {
   lowerCaseAndRemovePlural(specieName: string | undefined): string {
     let lowerCaseAndPluralRemoved = specieName
       ? specieName
-          .toLowerCase()
-          .replace("s", "")
-          .replace(" ", "")
-          .replace("(", "")
-          .replace(")", "")
+        .toLowerCase()
+        .replace("s", "")
+        .replace(" ", "")
+        .replace("(", "")
+        .replace(")", "")
       : "";
     lowerCaseAndPluralRemoved = lowerCaseAndPluralRemoved.replace(
       "chevaine",
@@ -1247,12 +1111,14 @@ export default class EditCatchView extends Vue {
     white-space: nowrap;
     display: block;
     overflow: hidden;
+
     @media screen and (max-width: @desktop-min-width) {
       margin-top: 0px;
       padding-right: 0px;
       width: 100%;
     }
   }
+
   .catch-picture {
     height: calc(165px + env(safe-area-inset-top));
     width: 100%;
@@ -1272,6 +1138,7 @@ export default class EditCatchView extends Vue {
 
     .pic-miniature {
       cursor: pointer;
+
       :hover {
         img {
           -webkit-transform: scale(1.05);
@@ -1280,6 +1147,7 @@ export default class EditCatchView extends Vue {
           transform: scale(1.05);
         }
       }
+
       max-width: 137px;
       height: 90px;
       flex: 1 1 auto;
@@ -1290,6 +1158,7 @@ export default class EditCatchView extends Vue {
         -moz-transform: scale(1.05);
         -o-transform: scale(1.05);
         transform: scale(1.05);
+
         :hover {
           img {
             -webkit-transform: scale(1);
@@ -1305,9 +1174,11 @@ export default class EditCatchView extends Vue {
       cursor: pointer;
       border: 2px solid @gainsboro;
       border-radius: 2px;
+
       img {
         object-fit: contain;
       }
+
       padding: 10px;
     }
   }
@@ -1332,9 +1203,11 @@ export default class EditCatchView extends Vue {
     display: flex;
     align-items: center;
     color: @carrot-orange;
+
     i {
       margin-right: @margin-small;
     }
+
     span {
       font-style: italic;
       font-weight: normal;
@@ -1352,9 +1225,7 @@ export default class EditCatchView extends Vue {
 
     .description {
       font-size: @fontsize-header-paragraph;
-      line-height: calc(
-        @fontsize-header-paragraph + @line-height-padding-small
-      );
+      line-height: calc(@fontsize-header-paragraph + @line-height-padding-small );
       color: @black;
       margin: @vertical-margin-small;
     }
@@ -1395,16 +1266,19 @@ export default class EditCatchView extends Vue {
     display: flex;
     flex-direction: column;
     align-items: center;
+
     .separator {
       height: 1px;
       border-top: 1px solid @very-light-grey;
       border-radius: 1px;
       width: 80%;
     }
+
     .empty {
       color: @carrot-orange;
       font-style: italic;
     }
+
     .map {
       width: 100%;
       height: 200px;
@@ -1416,35 +1290,43 @@ export default class EditCatchView extends Vue {
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
+
     > :nth-child(1) {
       width: calc(100% - 200px);
       margin-top: 20px;
       min-width: 150px;
     }
+
     > :nth-child(2) {
       width: 200px;
     }
+
     @media screen and (min-width: 515px) {
       > :nth-child(1) {
         width: 300px;
       }
+
       > :nth-child(2) {
         width: calc(100% - 300px);
       }
     }
+
     @media screen and (min-width: @desktop-min-width) {
       > :nth-child(1) {
         width: calc(100% - 200px);
         margin-top: 20px;
       }
+
       > :nth-child(2) {
         width: 200px;
       }
     }
+
     @media screen and (min-width: 880px) {
       > :nth-child(1) {
         width: 300px;
       }
+
       > :nth-child(2) {
         width: calc(100% - 300px);
       }
@@ -1454,27 +1336,35 @@ export default class EditCatchView extends Vue {
   .measure-button-icon {
     margin-left: -4px;
   }
+
   #measure-button-text {
     padding-left: 8px;
   }
+
   #measure-button-text:after {
     content: "Mesure";
+
     @media screen and (min-width: 515px) {
       content: "Mesure automatique";
     }
+
     @media screen and (min-width: @desktop-min-width) {
       content: "Mesure";
     }
+
     @media screen and (min-width: 880px) {
       content: "Mesure automatique";
     }
   }
+
   @media screen and (min-width: @desktop-min-width) {
     &.picture-background .edit-catch-page {
       .pane {
         margin-top: unset;
+
         .pane-content {
           height: 100%;
+
           .catch-picture-desktop-and-form {
             display: flex;
             flex-direction: column;
@@ -1482,6 +1372,7 @@ export default class EditCatchView extends Vue {
         }
       }
     }
+
     .catch-picture-desktop {
       width: 100%;
       height: 320px;
@@ -1501,6 +1392,7 @@ export default class EditCatchView extends Vue {
       &.two-columns-row-on-desktop {
         align-items: center;
       }
+
       .info {
         font-size: @fontsize-info-desktop;
         line-height: calc(@fontsize-info-desktop + @line-height-padding-medium);
@@ -1514,11 +1406,7 @@ export default class EditCatchView extends Vue {
   }
 
   @media screen and (min-width: 1264px) {
-    &.picture-background
-      .edit-catch-page
-      .pane
-      .pane-content
-      .catch-picture-desktop-and-form {
+    &.picture-background .edit-catch-page .pane .pane-content .catch-picture-desktop-and-form {
       flex-direction: row;
       justify-content: space-between;
     }
@@ -1529,6 +1417,7 @@ export default class EditCatchView extends Vue {
         border-radius: 8px;
         height: 100%;
       }
+
       .pic-focused {
         height: 100%;
       }
@@ -1540,6 +1429,7 @@ export default class EditCatchView extends Vue {
       width: 339px;
       height: 437px;
     }
+
     .edit-catch-form {
       width: calc(100% - 339px - @margin-large);
     }
@@ -1550,6 +1440,7 @@ export default class EditCatchView extends Vue {
       width: 424px;
       height: 547px;
     }
+
     .edit-catch-form {
       width: calc(100% - 424px - @margin-large);
     }
@@ -1560,6 +1451,7 @@ export default class EditCatchView extends Vue {
       width: 530px;
       height: 684px;
     }
+
     .edit-catch-form {
       width: calc(100% - 530px - @margin-large);
     }
