@@ -20,5 +20,16 @@
 			"spinnerColor": "#1e9bc4",
 			"showSpinner": true
 		}
-	}
+	},
+	"packageClassList": [
+		"FileSharerPlugin",
+		"AppPlugin",
+		"CAPCameraPlugin",
+		"DevicePlugin",
+		"GeolocationPlugin",
+		"KeyboardPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"AppUpdatePlugin"
+	]
 }

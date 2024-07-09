@@ -192,6 +192,7 @@ export default class FormInput extends Vue {
   }
 
   @media screen and (min-width: @desktop-min-width) {
+    visibility: hidden;
     right: @margin-small * 8;
     margin-top: @vertical-margin-xx-small * 6;
   }
