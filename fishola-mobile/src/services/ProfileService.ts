@@ -25,7 +25,7 @@ import { UserSettings, UpdatePasswordBean } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
 
 export class Credentials {
-  constructor(public email: string, public password: string) {}
+  constructor(public email: string, public password: string) { }
 }
 
 export default class ProfileService extends AbstractFisholaService {
@@ -170,6 +170,7 @@ export default class ProfileService extends AbstractFisholaService {
   }
 
   static logout(): Promise<void> {
+    localStorage.latestPassword = "";
     this.deleteFromOfflineStorage("/v1/security/profile");
     return new Promise<void>((resolve, reject) => {
       this.backendPost("/v1/security/logout").then(() => {

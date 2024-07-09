@@ -92,6 +92,9 @@ export default class LoginView extends Vue {
     if (localStorage && localStorage.latestEmail) {
       this.email = localStorage.latestEmail;
     }
+    if (localStorage && localStorage.latestPassword) {
+      this.password = localStorage.latestPassword;
+    }
   }
 
   signIn() {
@@ -110,6 +113,7 @@ export default class LoginView extends Vue {
       case 200:
         if (localStorage) {
           localStorage.latestEmail = this.email;
+          localStorage.latestPassword = this.password
         }
 
         this.$root.$emit("profile-updated");
