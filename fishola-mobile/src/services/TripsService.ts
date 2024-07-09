@@ -21,7 +21,7 @@
 import TripMeta from '@/pojos/TripMeta';
 import TripSpecies from '@/pojos/TripSpecies';
 import TripMain from '@/pojos/TripMain';
-import {TripLight, TripMode, TripBean, CatchBean, DeviceType} from '@/pojos/BackendPojos';
+import { TripLight, TripMode, TripBean, CatchBean, DeviceType } from '@/pojos/BackendPojos';
 import CatchSummary from '@/pojos/CatchSummary';
 
 import Helpers from '@/services/Helpers';
@@ -36,22 +36,22 @@ import GeolocationService from '@/services/GeolocationService';
 import moment from 'moment';
 
 export class TripsAndCount {
-    offlineMarker:boolean = false;
-    constructor (
-        public trips:TripLight[],
-        public count:number) {
+    offlineMarker: boolean = false;
+    constructor(
+        public trips: TripLight[],
+        public count: number) {
     }
 }
 
 export default class TripsService extends AbstractFisholaService {
 
-    static instance?:TripsService;
+    static instance?: TripsService;
 
-    constructor () {
+    constructor() {
         super();
     }
 
-    static getInstance():TripsService {
+    static getInstance(): TripsService {
         if (!this.instance) {
             console.debug("Pas encore d'instance partagée, on la créé");
             this.instance = new TripsService();
@@ -59,15 +59,15 @@ export default class TripsService extends AbstractFisholaService {
         return this.instance;
     }
 
-    static newTrip(mode:TripMode):Promise<string> {
+    static newTrip(mode: TripMode): Promise<string> {
 
-        const newTrip:TripMeta = {
+        const newTrip: TripMeta = {
             id: Constants.NEW_TRIP_ID,
             mode: mode
         }
 
         if (mode == 'Live') {
-            const options: Intl.DateTimeFormatOptions = {weekday: "long", month: "long", day: "numeric"};
+            const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric" };
             const now = new Date();
 
             newTrip.name = "Sortie du " + now.toLocaleDateString('fr-FR', options);
@@ -83,15 +83,15 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static newLiveTrip():Promise<string> {
+    static newLiveTrip(): Promise<string> {
         return TripsService.newTrip('Live');
     }
 
-    static newAfterwardsTrip():Promise<string> {
+    static newAfterwardsTrip(): Promise<string> {
         return TripsService.newTrip('Afterwards');
     }
 
-    static getTrip(id:any, callback:(trip:any)=>any) {
+    static getTrip(id: any, callback: (trip: any) => any) {
         if (id == Constants.NEW_TRIP_ID || id == Constants.RUNNING_ID) {
             this.getDatabase()
                 .onCreationTrip
@@ -112,9 +112,9 @@ export default class TripsService extends AbstractFisholaService {
                         callback(aaa);
                     } else {
                         // Il faut charger le trip depuis le back
-                        const url:string = `/v1/trips/${id}`;
+                        const url: string = `/v1/trips/${id}`;
                         this.backendGet(url)
-                            .then((bbb:any) => {
+                            .then((bbb: any) => {
                                 console.debug("Sortie récupérée depuis le back :", bbb);
                                 callback(TripsService.backendTripToTrip(bbb));
                             });
@@ -123,44 +123,44 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static backendCatchToCatchBean(realDate:moment.Moment, input:any):CatchBean {
+    static backendCatchToCatchBean(realDate: moment.Moment, input: any): CatchBean {
 
         const result: any = {
-          tripId: input.tripId,
-          id: input.id,
-          speciesId: input.speciesId,
-          size: input.size,
-          weight: input.weight,
-          keep: input.keep,
-          releasedStateId: input.releasedStateId,
-          techniqueId: input.techniqueId,
-          description: input.description,
-          sampleId: input.sampleId,
-          hasPicture: input.hasPicture,
-          latitude: input.latitude,
-          longitude: input.longitude,
-          caughtAt: input.caughtAt,
-          automaticMeasure: input.automaticMeasure,
-          pictureOrders: input.pictureOrders,
-          hasMeasurementPicture: input.hasMeasurementPicture,
+            tripId: input.tripId,
+            id: input.id,
+            speciesId: input.speciesId,
+            size: input.size,
+            weight: input.weight,
+            keep: input.keep,
+            releasedStateId: input.releasedStateId,
+            techniqueId: input.techniqueId,
+            description: input.description,
+            sampleId: input.sampleId,
+            hasPicture: input.hasPicture,
+            latitude: input.latitude,
+            longitude: input.longitude,
+            caughtAt: input.caughtAt,
+            automaticMeasure: input.automaticMeasure,
+            pictureOrders: input.pictureOrders,
+            hasMeasurementPicture: input.hasMeasurementPicture,
         };
 
         return result;
     }
 
-    static backendTripToTrip(input:any):TripBean {
+    static backendTripToTrip(input: any): TripBean {
         const realDate = Helpers.parseLocalDate(input.date);
         const realCreatedOn = Helpers.parseLocalDateTime(input.createdOn);
 
-        const catchs:CatchBean[] = [];
+        const catchs: CatchBean[] = [];
         if (input.catchs) {
-            input.catchs.forEach((aCatch:any) => {
-                const aCatchBean:CatchBean = TripsService.backendCatchToCatchBean(moment(realDate), aCatch);
+            input.catchs.forEach((aCatch: any) => {
+                const aCatchBean: CatchBean = TripsService.backendCatchToCatchBean(moment(realDate), aCatch);
                 catchs.push(aCatchBean);
             });
         }
 
-        const result:any = {
+        const result: any = {
             id: input.id,
             createdOn: realCreatedOn,
             mode: input.mode,
@@ -182,11 +182,11 @@ export default class TripsService extends AbstractFisholaService {
         return result;
     }
 
-    static storedTripToLight(input:TripBean):TripLight {
-        const seconds:number = Helpers.computeDurationInSeconds(input.startedAt, input.finishedAt);
-        const catchsCount:number = input.catchs ? input.catchs.length : 0;
+    static storedTripToLight(input: TripBean): TripLight {
+        const seconds: number = Helpers.computeDurationInSeconds(input.startedAt, input.finishedAt);
+        const catchsCount: number = input.catchs ? input.catchs.length : 0;
 
-        const result:TripLight = <any> input;
+        const result: TripLight = <any>input;
         result.modifiable = true;
         result.durationInSeconds = seconds;
         result.catchsCount = catchsCount;
@@ -194,27 +194,27 @@ export default class TripsService extends AbstractFisholaService {
         return result;
     }
 
-    static backendTripToLight(input:any):TripLight {
+    static backendTripToLight(input: any): TripLight {
         const realDate = Helpers.parseLocalDate(input.date);
         input.date = realDate;
         return input;
     }
 
-    static listTrips(sortDown:boolean, searchTerm:string, rawPageIndex?:number):Promise<TripsAndCount> {
+    static listTrips(sortDown: boolean, searchTerm: string, rawPageIndex?: number): Promise<TripsAndCount> {
 
-        const pageIndex =  rawPageIndex || 0;
+        const pageIndex = rawPageIndex || 0;
 
         return new Promise<TripsAndCount>((resolve, reject) => {
 
-            const result:TripLight[] = [];
+            const result: TripLight[] = [];
 
-            const dirtyTripsIds:string[] = [];
+            const dirtyTripsIds: string[] = [];
 
             this.getDatabase()
                 .dirtyTrips
                 .toArray((trips) => {
                     trips.forEach(trip => {
-                        const tripLight:TripLight = TripsService.storedTripToLight(trip);
+                        const tripLight: TripLight = TripsService.storedTripToLight(trip);
                         dirtyTripsIds.push(tripLight.id);
                         if (pageIndex === 0) {
                             result.push(tripLight);
@@ -231,39 +231,39 @@ export default class TripsService extends AbstractFisholaService {
 
             const promise = this.backendGetWithArgs('/v1/trips', page);
             this.timeout(5000, promise).then(
-                    (trips:any) => {
-                        console.debug("Sorties récupérées depuis le back :", trips);
-                        trips.elements.forEach((trip:TripLight) => {
-                            if (dirtyTripsIds.indexOf(trip.id) == -1) {
-                                const tl:TripLight = TripsService.backendTripToLight(trip);
-                                result.push(tl);
-                            }
-                        })
-                        const count:number = dirtyTripsIds.length + trips.count;
-                        const tripsAndCount = new TripsAndCount(result, count);
-                        resolve(tripsAndCount);
-                    },
-                    (error) => {
-                        if (error && error.timeoutReached) {
-                            console.error("Erreur pendant le chargement des sorties", error);
-                            const tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
-                            tripsAndCount.offlineMarker = true;
-                            resolve(tripsAndCount);
-                        } else {
-                            reject(error);
+                (trips: any) => {
+                    console.debug("Sorties récupérées depuis le back :", trips);
+                    trips.elements.forEach((trip: TripLight) => {
+                        if (dirtyTripsIds.indexOf(trip.id) == -1) {
+                            const tl: TripLight = TripsService.backendTripToLight(trip);
+                            result.push(tl);
                         }
+                    })
+                    const count: number = dirtyTripsIds.length + trips.count;
+                    const tripsAndCount = new TripsAndCount(result, count);
+                    resolve(tripsAndCount);
+                },
+                (error) => {
+                    if (error && error.timeoutReached) {
+                        console.error("Erreur pendant le chargement des sorties", error);
+                        const tripsAndCount = new TripsAndCount(result, dirtyTripsIds.length);
+                        tripsAndCount.offlineMarker = true;
+                        resolve(tripsAndCount);
+                    } else {
+                        reject(error);
                     }
-                );
+                }
+            );
         });
     }
 
     /**
      * Termine la phase d'ajout de captures sur une sortie (trip.id == Constants.RUNNING_ID)
      */
-    static async finishTripCatchs(trip:TripMain):Promise<void> {
+    static async finishTripCatchs(trip: TripMain): Promise<void> {
 
         if (trip.id == Constants.RUNNING_ID) {
-            const source:DeviceType = await Helpers.getDeviceType();
+            const source: DeviceType = await Helpers.getDeviceType();
             const frontendVersion = process.env.VUE_APP_PROJECT_VERSION;
 
             return new Promise<void>((resolve, reject) => {
@@ -271,7 +271,7 @@ export default class TripsService extends AbstractFisholaService {
                     trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
                 }
 
-                const tripBean:TripBean = <TripBean>trip;
+                const tripBean: TripBean = <TripBean>trip;
                 tripBean.source = source;
                 tripBean.frontendVersion = frontendVersion;
                 if (!tripBean.techniqueIds) {
@@ -297,7 +297,7 @@ export default class TripsService extends AbstractFisholaService {
         }
     }
 
-    static saveTrip0(trip:any):Promise<string> {
+    static saveTrip0(trip: any): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             if (trip.id == Constants.NEW_TRIP_ID || trip.id == Constants.RUNNING_ID) {
                 this.getDatabase()
@@ -307,9 +307,9 @@ export default class TripsService extends AbstractFisholaService {
                         console.debug("Sauvegardé dans onCreationTrip", savedId);
                         resolve(savedId);
                     },
-                    reject);
+                        reject);
             } else {
-                const tripBean:TripBean = <TripBean>trip;
+                const tripBean: TripBean = <TripBean>trip;
                 this.setSaveDelayMarker(tripBean);
                 this.getDatabase()
                     .dirtyTrips
@@ -318,12 +318,12 @@ export default class TripsService extends AbstractFisholaService {
                         console.debug("Sauvegardé dans dirtyTrips", savedId);
                         resolve(savedId);
                     },
-                    reject);
+                        reject);
             }
         });
     }
 
-    static saveTripMeta(trip:TripMeta, callback: () => void) {
+    static saveTripMeta(trip: TripMeta, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
                 console.debug(aaa);
@@ -331,7 +331,7 @@ export default class TripsService extends AbstractFisholaService {
             });
     }
 
-    static saveTripSpecies(trip:TripSpecies, callback: () => void) {
+    static saveTripSpecies(trip: TripSpecies, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
                 console.debug(aaa);
@@ -339,7 +339,7 @@ export default class TripsService extends AbstractFisholaService {
             });
     }
 
-    static saveTrip(trip:TripBean, callback: () => void) {
+    static saveTrip(trip: TripBean, callback: () => void) {
         this.saveTrip0(trip)
             .then((aaa) => {
                 console.debug(aaa);
@@ -363,7 +363,7 @@ export default class TripsService extends AbstractFisholaService {
     /**
      * Appelé quand on a terminé l'initialisation de la sortie (meta + espèces)
      */
-    static finishTripBootstrap(trip:TripSpecies, callback: (id:string) => void) {
+    static finishTripBootstrap(trip: TripSpecies, callback: (id: string) => void) {
         if (trip.id == Constants.NEW_TRIP_ID) {
 
             trip.id = Constants.RUNNING_ID;
@@ -394,22 +394,22 @@ export default class TripsService extends AbstractFisholaService {
                 finish();
             }
         } else {
-            TripsService.saveTripSpecies(trip, () => {callback(trip.id!);});
+            TripsService.saveTripSpecies(trip, () => { callback(trip.id!); });
         }
     }
 
-    static removeSaveDelayMarker(someObject:TripBean) {
+    static removeSaveDelayMarker(someObject: TripBean) {
         delete someObject.saveDelayMarker;
     }
 
-    static setSaveDelayMarker(someObject:TripBean) {
+    static setSaveDelayMarker(someObject: TripBean) {
         someObject.saveDelayMarker = new Date();
     }
 
     /**
      * Indique si la sauvegarde de la sortie doit être différée ou non
      */
-    static shouldDelaySave(someObject:TripBean):boolean {
+    static shouldDelaySave(someObject: TripBean): boolean {
         if (!someObject.saveDelayMarker) {
             return false;
         }
@@ -425,23 +425,23 @@ export default class TripsService extends AbstractFisholaService {
     /**
      * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur
      */
-    static sendTrip(trip:TripBean):Promise<string> {
+    static sendTrip(trip: TripBean): Promise<string> {
         if (trip.id == Constants.RUNNING_ID) {
             trip.id = '' + new Date().getTime();
         }
         this.removeSaveDelayMarker(trip);
         return new Promise<string>((resolve, _reject) => {
             this.getDatabase()
-            .dirtyTrips
-            .put(trip)
-            .then((savedTripId) => {
-                console.info("Nouvelle sortie dans les dirtyTrips", savedTripId);
-                resolve(savedTripId);
-            });
+                .dirtyTrips
+                .put(trip)
+                .then((savedTripId) => {
+                    console.info("Nouvelle sortie dans les dirtyTrips", savedTripId);
+                    resolve(savedTripId);
+                });
         });
     }
 
-    static doSendTripAndCancelCreations(trip:TripBean):Promise<string> {
+    static doSendTripAndCancelCreations(trip: TripBean): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             this.sendTrip(trip)
                 .then(
@@ -457,24 +457,24 @@ export default class TripsService extends AbstractFisholaService {
     /**
      * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
      */
-    static sendTripAndCancelCreations(trip:TripBean):Promise<string> {
+    static sendTripAndCancelCreations(trip: TripBean): Promise<string> {
 
         if (trip.mode == 'Live') {
             // On tente de récupérer les coordonnées GPS pour enregistrer les coordonnées de fin de sortie
             return new Promise<string>((resolve, reject) => {
                 GeolocationService.checkWatchAndGetPositionUntilTimeout()
-                .then(
-                  (position) => {
-                      trip.endLatitude = position.coords.latitude;
-                      trip.endLongitude = position.coords.longitude;
-                      console.info(`Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`);
-                      this.doSendTripAndCancelCreations(trip).then(resolve, reject);
-                  },
-                  (e) => {
-                    console.error("Pas de coordonnées, on sauvegarde quand même", e);
-                    this.doSendTripAndCancelCreations(trip).then(resolve, reject);
-                  }
-                );
+                    .then(
+                        (position) => {
+                            trip.endLatitude = position.coords.latitude;
+                            trip.endLongitude = position.coords.longitude;
+                            console.info(`Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`);
+                            this.doSendTripAndCancelCreations(trip).then(resolve, reject);
+                        },
+                        (e) => {
+                            console.error("Pas de coordonnées, on sauvegarde quand même", e);
+                            this.doSendTripAndCancelCreations(trip).then(resolve, reject);
+                        }
+                    );
             });
         } else {
             return this.doSendTripAndCancelCreations(trip);
@@ -482,11 +482,11 @@ export default class TripsService extends AbstractFisholaService {
 
     }
 
-    static syncTrips():Promise<boolean> {
+    static syncTrips(): Promise<boolean> {
 
-        const result:Promise<boolean> = new Promise<boolean>((resolve, reject) => {
-            let someTripsSaved:boolean = false;
-            const allPromises:Promise<void>[] = [];
+        const result: Promise<boolean> = new Promise<boolean>((resolve, reject) => {
+            let someTripsSaved: boolean = false;
+            const allPromises: Promise<void>[] = [];
 
             this.getDatabase()
                 .dirtyTrips
@@ -494,7 +494,7 @@ export default class TripsService extends AbstractFisholaService {
                     if (dirtyTrips && dirtyTrips.length > 0) {
                         console.info(`${dirtyTrips.length} sorties à synchroniser`);
                         dirtyTrips
-                            .forEach((dirtyTrip:TripBean) => {
+                            .forEach((dirtyTrip: TripBean) => {
                                 if (this.shouldDelaySave(dirtyTrip)) {
                                     console.debug(`On ignore la sortie qui est peut-être encore en cours de modif`, dirtyTrip.id);
                                 } else {
@@ -504,9 +504,9 @@ export default class TripsService extends AbstractFisholaService {
                                         someTripsSaved = true;
                                         console.debug("Trip saved !");
                                     },
-                                    (error) => {
-                                        console.error("Unable to sync trip ", error);
-                                    });
+                                        (error) => {
+                                            console.error("Unable to sync trip ", error);
+                                        });
                                     allPromises.push(promise);
                                 }
                             });
@@ -520,18 +520,18 @@ export default class TripsService extends AbstractFisholaService {
                         resolve(false);
                     }
                 });
-            });
+        });
 
         return result;
     }
 
-    static hasOtherSpecies(trip:TripBean):boolean {
+    static hasOtherSpecies(trip: TripBean): boolean {
         if (trip.otherSpecies) {
             return true;
         }
         if (trip.catchs && trip.catchs.length > 0) {
 
-            for (let i:number = 0; i<trip.catchs.length; i++) {
+            for (let i: number = 0; i < trip.catchs.length; i++) {
                 const someCatch = trip.catchs[i];
                 if (someCatch.otherSpecies) {
                     return true;
@@ -542,8 +542,8 @@ export default class TripsService extends AbstractFisholaService {
         return false;
     }
 
-    static syncTrip(trip:TripBean):Promise<void> {
-        return new Promise((resolve, reject) =>  {
+    static syncTrip(trip: TripBean): Promise<void> {
+        return new Promise((resolve, reject) => {
             console.debug("On essaye de sauvegarder la sortie", trip);
             if (trip.createdOn) {
                 this.backendPut(`/v1/trips/${trip.id}`, trip)
@@ -556,7 +556,7 @@ export default class TripsService extends AbstractFisholaService {
                             resolve();
                         },
                         reject
-                        );
+                    );
             } else {
                 this.backendPost('/v1/trips', trip)
                     .then(
@@ -568,12 +568,12 @@ export default class TripsService extends AbstractFisholaService {
                             resolve();
                         },
                         reject
-                        );
+                    );
             }
         });
     }
 
-    static getLatestCatchSpecies(someTrip:TripBean):string|undefined {
+    static getLatestCatchSpecies(someTrip: TripBean): string | undefined {
         if (someTrip.catchs && someTrip.catchs.length > 0) {
             const latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
             return latestCatch.speciesId;
@@ -581,7 +581,7 @@ export default class TripsService extends AbstractFisholaService {
         return;
     }
 
-    static getLatestCatchTechniques(someTrip:TripBean):string|undefined {
+    static getLatestCatchTechniques(someTrip: TripBean): string | undefined {
         if (someTrip.catchs && someTrip.catchs.length > 0) {
             const latestCatch = someTrip.catchs[someTrip.catchs.length - 1];
             return latestCatch.techniqueId;
@@ -589,11 +589,11 @@ export default class TripsService extends AbstractFisholaService {
         return;
     }
 
-    static getTripAndCatch(tripId:any, catchId:any, callback:(t:TripBean,c:CatchSummary) => void) {
-        TripsService.getTrip(tripId, (trip:TripBean) => {
-            let result:CatchSummary = {id:catchId};
+    static getTripAndCatch(tripId: any, catchId: any, callback: (t: TripBean, c: CatchSummary) => void) {
+        TripsService.getTrip(tripId, (trip: TripBean) => {
+            let result: CatchSummary = { id: catchId };
             if (trip.catchs) {
-                trip.catchs.forEach((someCatch:CatchBean) => {
+                trip.catchs.forEach((someCatch: CatchBean) => {
                     if (catchId == someCatch.id) {
                         result = someCatch;
                     }
@@ -621,13 +621,13 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static saveCatch(tripId:any, aCatch:CatchBean, callback:(catchId:string) => void) {
-        TripsService.getTrip(tripId, (trip:TripBean) => {
+    static saveCatch(tripId: any, aCatch: CatchBean, callback: (catchId: string) => void) {
+        TripsService.getTrip(tripId, (trip: TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];
             }
             let found = false;
-            for (let i:number = 0; i<trip.catchs.length; i++) {
+            for (let i: number = 0; i < trip.catchs.length; i++) {
                 const someCatch = trip.catchs[i];
                 if (aCatch.id == someCatch.id) {
                     found = true;
@@ -646,14 +646,14 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static deleteCatch(tripId:any, catchId:any, callback:() => void) {
+    static deleteCatch(tripId: any, catchId: any, callback: () => void) {
         PicturesService.deleteAllPicturesForCatch(catchId);
-        TripsService.getTrip(tripId, (trip:TripBean) => {
+        TripsService.getTrip(tripId, (trip: TripBean) => {
             if (!trip.catchs) {
                 trip.catchs = [];
             }
-            let foundAtIndex:number = -1;
-            for (let i:number = 0; i<trip.catchs.length; i++) {
+            let foundAtIndex: number = -1;
+            for (let i: number = 0; i < trip.catchs.length; i++) {
                 const someCatch = trip.catchs[i];
                 if (catchId == someCatch.id) {
                     foundAtIndex = i;
@@ -668,17 +668,17 @@ export default class TripsService extends AbstractFisholaService {
         });
     }
 
-    static deleteTrip(tripId:any, callback:() => void) {
+    static deleteTrip(tripId: any, callback: () => void) {
         this.getDatabase().dirtyTrips.delete(tripId);
         this.backendDelete(`/v1/trips/${tripId}`).then(callback);
     }
 
-    static deleteTrips(tripIds:string[]):Promise<void> {
+    static deleteTrips(tripIds: string[]): Promise<void> {
         console.info("Supprime les sorties", tripIds);
         return this.backendDelete(`/v1/trips`, tripIds);
     }
 
-    static getRunningTrip():Promise<TripMain> {
+    static getRunningTrip(): Promise<TripMain> {
         return new Promise<TripMain>((resolve, reject) => {
             this.getDatabase()
                 .onCreationTrip
@@ -704,20 +704,20 @@ export default class TripsService extends AbstractFisholaService {
                         reject("Pas de running trip");
                     }
                 });
-        }); 
+        });
     }
 
-    static hasRunningTrip():Promise<boolean> {
+    static hasRunningTrip(): Promise<boolean> {
         return new Promise<boolean>((resolve, _reject) => {
             this.getRunningTrip()
                 .then(
-                    () => resolve(true), 
+                    () => resolve(true),
                     () => resolve(false)
                 );
-        }); 
+        });
     }
 
-    static newSampleId():Promise<string> {
+    static newSampleId(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             ProfileService.getProfile()
                 .then((profile) => {
@@ -725,11 +725,17 @@ export default class TripsService extends AbstractFisholaService {
                     // TODO AThimel 01/04/2020 Pour l'instant on garanti l'unicité sur la base de :
                     // TODO AThimel 01/04/2020   [jour-du-mois] * 1440 + [heure] * 60 + [minute]
                     // TODO AThimel 01/04/2020 Quand on saura en assurer l'unicité, utiliser une séquence propre au [sampleBaseId]
-                    const number = now.date()*(24*60) + now.hours()*60 + now.minutes();
+                    let number = now.date() * (24 * 60) + now.hours() * 60 + now.minutes();
+                    if (localStorage) {
+                        if (localStorage.highestSampleId >= number) {
+                            number = parseInt(localStorage.highestSampleId) + 1;
+                        }
+                        localStorage.highestSampleId = number
+                    }
                     const result = profile.sampleBaseId + "-" + number;
                     resolve(result);
                 },
-                reject);
+                    reject);
         });
     }
 
