@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="settings page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
+    <FisholaHeader />
     <div class="page settings-page">
       <div class="pane pane-only">
 
@@ -42,21 +42,32 @@
 
           <div class="settings-row" v-if="settings">
             <span>Effectuer des prélèvements</span>
-            <FormToggle v-model="settings.promptSamples" />
+            <FormToggle v-model="settings.promptSamples" /><br />
+
           </div>
-          <div class="info"
-               v-if="samplesDocumentationUrl">
+          <div class="info" v-if="samplesDocumentationUrl">
             Pour pouvoir effectuer des prélèvements, vous devez vous munir
             d'un kit dans un des points de collecte :
             <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
+          </div>
+
+          <div class="settings-row" v-if="currentAppVersion">
+            <span>
+              Version de l'application : <strong>{{ currentAppVersion }}</strong>
+              <span v-if="currentAppVersion == availableAppVersion"> (à jour)</span>
+              <span v-else-if="availableAppVersion">
+                <br />Une mise à jour est disponible sur le Store</span>
+            </span>
+            <div class="info">
+
+            </div>
           </div>
 
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,settings,profile"
-                   selected="settings" />
+    <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>
 </template>
 
@@ -66,11 +77,13 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
-import {UserSettings} from '@/pojos/BackendPojos';
+import { UserSettings } from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
 import { Component, Watch, Vue } from 'vue-property-decorator';
 import DocumentationService from '../services/DocumentationService';
+import { Capacitor } from '@capacitor/core';
+import { AppUpdate } from '@capawesome/capacitor-app-update';
 
 @Component({
   components: {
@@ -81,17 +94,20 @@ import DocumentationService from '../services/DocumentationService';
 })
 export default class SettingsView extends Vue {
 
-  settings:UserSettings | null = null;
-  loading:boolean = true;
-  offline:boolean = false;
+  settings: UserSettings | null = null;
+  loading: boolean = true;
+  offline: boolean = false;
+  platform = "";
+  currentAppVersion = "";
+  availableAppVersion = "";
 
-  samplesDocumentationUrl:string = '';
+  samplesDocumentationUrl: string = '';
 
   constructor() {
     super();
   }
 
-  @Watch('settings', {deep: true})
+  @Watch('settings', { deep: true })
   onTermChanged(value: UserSettings, oldValue: UserSettings) {
     if (value && value != null && oldValue && oldValue != null) {
       this.saveSettings();
@@ -101,6 +117,7 @@ export default class SettingsView extends Vue {
   mounted() {
     this.loadSettings();
     this.samplesDocumentationUrl = DocumentationService.getSamplesDocumentationUrl();
+    this.computeAvailableAppVersion();
   }
 
   loadSettings() {
@@ -113,11 +130,11 @@ export default class SettingsView extends Vue {
     this.offline = true;
   }
 
-  hasOfflineMarker(input:any):boolean {
+  hasOfflineMarker(input: any): boolean {
     return input.offlineMarker;
   }
 
-  settingsLoaded(settings:UserSettings) {
+  settingsLoaded(settings: UserSettings) {
     if (this.hasOfflineMarker(settings)) {
       this.cannotLoadSettings();
     } else {
@@ -132,7 +149,21 @@ export default class SettingsView extends Vue {
   }
 
   settingsSaved() {
-    this.$root.$emit('toaster-success', 'Paramètre enregistré');
+    this.$root.$emit('toaster-success', 'Paramètre enregistré')
+  }
+
+  async computeAvailableAppVersion() {
+    this.platform = Capacitor.getPlatform()
+    if (this.platform == 'android' || this.platform == 'ios') {
+      const appUpdateInfo = await AppUpdate.getAppUpdateInfo({ "country": "FR" })
+      if (this.platform == 'android') {
+        this.currentAppVersion = appUpdateInfo.currentVersionCode
+        this.availableAppVersion = appUpdateInfo.availableVersionCode ? appUpdateInfo.availableVersionCode : ""
+      } else if (this.platform == 'ios') {
+        this.currentAppVersion = appUpdateInfo.currentVersionName
+        this.availableAppVersion = appUpdateInfo.availableVersionName ? appUpdateInfo.availableVersionName : ""
+      }
+    }
   }
 
 }
@@ -141,7 +172,6 @@ export default class SettingsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .settings-page {
@@ -161,7 +191,7 @@ export default class SettingsView extends Vue {
       border-radius: 50%;
       border-top: 3px solid @pelorous;
       border-left: 3px solid @pelorous;
-      animation:spin 2s linear infinite;
+      animation: spin 2s linear infinite;
     }
   }
 
@@ -176,6 +206,7 @@ export default class SettingsView extends Vue {
       display: flex;
       flex-direction: column;
       justify-content: center;
+
       span {
         text-align: center;
         color: @carrot-orange;
@@ -218,6 +249,7 @@ export default class SettingsView extends Vue {
     .pane .pane-content {
       align-items: center;
     }
+
     .settings-row {
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;
@@ -241,5 +273,4 @@ export default class SettingsView extends Vue {
   }
 
 }
-
 </style>

@@ -2,11 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- FIXME Deeplink declaration must be updated https://capacitorjs.com/docs/guides/deep-links 
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:fishola.demo.codelutin.com</string>
 		<string>applinks:fishola-beta.demo.codelutin.com</string>
 		<string>applinks:api-fishola.inrae.fr</string>
 	</array>
+	-->
 </dict>
 </plist>

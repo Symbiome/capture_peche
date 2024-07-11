@@ -35,8 +35,6 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Fishola a besoin de votre appareil photo pour vous permettre de partager les photos de vos prises</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Fishola utilise votre position pour vous aider à saisir vos points de pêche</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Fishola utilise votre position pour vous aider à saisir vos points de pêche</string>
 	<key>NSMicrophoneUsageDescription</key>

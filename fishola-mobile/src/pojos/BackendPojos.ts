@@ -268,4 +268,4 @@ export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" 
 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
-export type LicenceType = "PDF" | "JPEG";
+export type LicenceType = "PDF" | "JPEG" | "PNG";

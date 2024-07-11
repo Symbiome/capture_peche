@@ -26,24 +26,16 @@
       <div class="pane pane-only">
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">Mes cartes de pêche</h1>
-          <FishingLicenceList
-            :licences="licences"
-            @licence-selected="licenceSelected"
-            @licence-unselected="licenceUnselected"
-          />
+          <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
 
           <div class="bottom-page-spacer"></div>
 
           <div class="create-and-delete hide-on-mobile">
-            <div
-              v-if="!hasRunningTrip"
-              class="button button-primary"
-              :class="{ delete: selectedLicencesIds.length > 0 }"
-            >
-              <div class="button button-primary">
+            <div v-if="!hasRunningTrip" class="button button-primary">
+              <div class=" button button-primary">
                 <button @click="buttonClicked" class="new-button">
-                  <i :class="getButtonIcon()" />
-                  {{ getButtonText() }}
+                  <i class="icon-plus" />
+                  Nouvelle carte
                 </button>
               </div>
             </div>
@@ -52,13 +44,8 @@
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter
-      shortcuts="back,home,dashboard"
-      v-bind:hideButton="hasRunningTrip"
-      v-bind:button-icon="getButtonIcon()"
-      v-bind:button-text="getButtonText()"
-      v-on:buttonClicked="buttonClicked"
-    />
+    <FisholaFooter shortcuts="back,home,dashboard" v-bind:hideButton="hasRunningTrip" button-icon="icon-plus"
+      button-text="Nouvelle carte" v-on:buttonClicked="buttonClicked" />
   </div>
 </template>
 
@@ -78,7 +65,7 @@ import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.v
 import FishingLicenceService from "@/services/FishingLicenceService";
 import TripsService from "@/services/TripsService";
 
-import { Component, Vue} from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
 
 @Component({
@@ -94,8 +81,6 @@ import { LicenceResponseBean } from "@/pojos/BackendPojos";
 export default class FishingLicencesView extends Vue {
   hasRunningTrip: boolean = false;
   licences: LicenceResponseBean[] = [];
-
-  selectedLicencesIds: string[] = [];
 
   constructor() {
     super();
@@ -119,53 +104,9 @@ export default class FishingLicencesView extends Vue {
     sortedLicences.forEach(licence => this.licences.push(licence));
   }
 
-  licenceSelected(licenceId: string) {
-    this.selectedLicencesIds.push(licenceId);
-  }
-
-  licenceUnselected(licenceId: string) {
-    const index = this.selectedLicencesIds.indexOf(licenceId);
-    if (index != -1) {
-      this.selectedLicencesIds.splice(index, 1);
-    }
-  }
-
-  getButtonIcon() {
-    return this.selectedLicencesIds.length == 0 ? "icon-plus" : "icon-delete";
-  }
-
-  getButtonText() {
-    return this.selectedLicencesIds.length == 0
-      ? "Nouvelle carte"
-      : "Supprimer";
-  }
 
   buttonClicked() {
-    if (this.selectedLicencesIds.length == 0) {
-      RouterUtils.pushRouteNoDuplicate(router, "/licences/new");
-    } else {
-      let message = "Voulez-vous supprimer cette carte ?";
-      if (this.selectedLicencesIds.length > 1) {
-        message = "Voulez-vous supprimer ces cartes ?";
-      }
-      Helpers.confirm(this.$modal, message).then(this.deleteSelectedLicences);
-    }
-  }
-
-  deleteSelectedLicences() {
-    let message;
-    if (this.selectedLicencesIds.length > 1) {
-      message = "Les cartes sélectionnées ont été supprimées.";
-    } else {
-      message = "La carte sélectionnée a été supprimée.";
-    }
-
-    this.selectedLicencesIds.forEach(licenceId =>
-      FishingLicenceService.deleteLicence(licenceId).then(this.fetchAllLicences)
-    );
-
-    this.$root.$emit("toaster-success", message);
-    this.selectedLicencesIds = [];
+    RouterUtils.pushRouteNoDuplicate(router, "/licences/new");
   }
 }
 </script>
@@ -209,9 +150,7 @@ export default class FishingLicencesView extends Vue {
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-      line-height: calc(
-        @fontsize-title-desktop + @line-height-padding-xx-large
-      );
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large );
       text-align: left;
 
       margin-left: @margin-large-desktop;
@@ -222,6 +161,7 @@ export default class FishingLicencesView extends Vue {
       display: flex;
       flex-direction: row;
       align-items: center;
+
       .button {
         margin-left: 0px;
         margin-right: 0px;

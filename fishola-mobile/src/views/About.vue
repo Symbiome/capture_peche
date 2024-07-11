@@ -27,11 +27,8 @@
       <header class="smaller" v-if="!wrappedInTab">
         <div class="site-logo site-logo-smartphone">
           <h1>
-            <a
-              href="#/about"
-              v-scroll-to="{ el: '#top', container: '#about-scroll-container' }"
-              ><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"
-            /></a>
+            <a href="#/about" v-scroll-to="{ el: '#top', container: '#about-scroll-container' }"><img
+                src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
           </h1>
         </div>
 
@@ -42,69 +39,40 @@
         <div class="whatever" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
-              <a
-                href="#/about"
-                v-scroll-to="{
-                  el: '#top',
-                  container: '#about-scroll-container',
-                }"
-                @click="closed = true"
-                ><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA"
-              /></a>
+              <a href="#/about" v-scroll-to="{
+    el: '#top',
+    container: '#about-scroll-container',
+  }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
           <nav class="Navigation">
             <ul>
-              <li
-                v-bind:class="activeSection == 'presentation' ? 'active' : ''"
-              >
-                <a
-                  href="#/about"
-                  v-scroll-to="{
-                    el: '#presentation',
-                    container: '#about-scroll-container',
-                  }"
-                  @click="closed = !closed"
-                  >Présentation</a
-                >
+              <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
+                <a href="#/about" v-scroll-to="{
+    el: '#presentation',
+    container: '#about-scroll-container',
+  }" @click="closed = !closed">Présentation</a>
                 <span class="menu-item-bg"></span>
               </li>
-              <li
-                v-bind:class="activeSection == 'communications' ? 'active' : ''"
-              >
-                <a
-                  href="#/about"
-                  v-scroll-to="{
-                    el: '#communications',
-                    container: '#about-scroll-container',
-                  }"
-                  @click="closed = !closed"
-                  >Communications</a
-                >
+              <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
+                <a href="#/about" v-scroll-to="{
+    el: '#communications',
+    container: '#about-scroll-container',
+  }" @click="closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
-                <a
-                  href="#/about"
-                  v-scroll-to="{
-                    el: '#contribute',
-                    container: '#about-scroll-container',
-                  }"
-                  @click="closed = !closed"
-                  >Comment participer ?</a
-                >
+                <a href="#/about" v-scroll-to="{
+    el: '#contribute',
+    container: '#about-scroll-container',
+  }" @click="closed = !closed">Comment participer ?</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
-                <a
-                  href="#/about"
-                  v-scroll-to="{
-                    el: '#contact',
-                    container: '#about-scroll-container',
-                  }"
-                  @click="closed = !closed"
-                  >Contact</a
-                >
+                <a href="#/about" v-scroll-to="{
+    el: '#contact',
+    container: '#about-scroll-container',
+  }" @click="closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
               </li>
             </ul>
@@ -149,16 +117,9 @@
 
       <!-- \\ Begin Video Section \\ -->
       <div class="Video_sec">
-        <iframe
-          title="Vidéo youtube"
-          class="youtube"
-          width="640"
-          height="360"
-          src="https://www.youtube-nocookie.com/embed/lXZwwBofql4"
-          frameborder="10"
-          allow="encrypted-media"
-          allowfullscreen
-        ></iframe>
+        <iframe title="Vidéo youtube" class="youtube" width="640" height="360"
+          src="https://www.youtube-nocookie.com/embed/lXZwwBofql4" frameborder="10" allow="encrypted-media"
+          allowfullscreen></iframe>
       </div>
       <!-- // End Video Section // -->
 
@@ -167,10 +128,7 @@
         <!-- \\ Begin About Section \\ -->
         <div class="About_sec" id="about">
           <div class="Center">
-            <div
-              class="key-figures"
-              v-observe-visibility="keyFiguresItemsVisibilityChanged"
-            >
+            <div class="key-figures" v-observe-visibility="keyFiguresItemsVisibilityChanged">
               <div class="kf-item">
                 <div class="kf-number">
                   <Counter :n="tripsCount"></Counter>
@@ -191,24 +149,13 @@
               </div>
             </div>
             <div class="map">
-              <l-map
-                :zoom="9"
-                :center="center"
-                :options="{
-                  zoomSnap: 0.5,
-                }"
-                style="height: 100%; width: 100%"
-              >
-                <l-tile-layer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                />
+              <l-map :zoom="9" :center="center" :options="{
+    zoomSnap: 0.5,
+  }" style="height: 100%; width: 100%">
+                <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
-                <l-marker
-                  v-for="l in lakes"
-                  v-bind:key="l.id"
-                  :lat-lng="asLatLng(l)"
-                >
+                <l-marker v-for="l in lakes" v-bind:key="l.id" :lat-lng="asLatLng(l)">
                   <l-popup>
                     <div>
                       {{ l.name }}
@@ -225,11 +172,7 @@
         </div>
         <!-- // End About Section // -->
         <!-- \\ Begin Communications Section \\ -->
-        <div
-          class="Communications_sec"
-          id="communications"
-          v-if="!wrappedInTab"
-        >
+        <div class="Communications_sec" id="communications" v-if="!wrappedInTab">
           <div class="Center">
             <h3>Communications</h3>
           </div>
@@ -259,18 +202,10 @@
             <!-- // End Pricing Side // -->
             <h3>Applications</h3>
             <div class="welcome-apps">
-              <a
-                href="https://play.google.com/store/apps/details?id=fr.inrae.fishola"
-                target="_blank"
-                rel="noopener"
-                ><img class="app" src="/img/GooglePlay.png" alt="GooglePlay"
-              /></a>
-              <a
-                href="https://apps.apple.com/fr/app/fishola/id1521226635"
-                target="_blank"
-                rel="noopener"
-                ><img class="app" src="/img/AppStore.png" alt="AppStore"
-              /></a>
+              <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"
+                rel="noopener"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
+              <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank" rel="noopener"><img
+                  class="app" src="/img/AppStore.png" alt="AppStore" /></a>
             </div>
           </div>
         </div>
@@ -297,29 +232,15 @@
                   <fieldset>
                     <legend style="display:none">Formulaire de contact</legend>
                     <p>
-                      <input
-                        type="email"
-                        v-model="contactEmail"
-                        placeholder="Votre e-mail"
-                        class="field noshadow"
-                      />
+                      <input type="email" v-model="contactEmail" placeholder="Votre e-mail" class="field noshadow" />
                     </p>
                     <p>
-                      <textarea
-                        cols="2"
-                        rows="4"
-                        v-model="contactMessage"
-                        placeholder="Votre message"
-                        class="noshadow"
-                      ></textarea>
+                      <textarea cols="2" rows="4" v-model="contactMessage" placeholder="Votre message"
+                        class="noshadow"></textarea>
                     </p>
                     <p>
-                      <input
-                        type="button"
-                        value="Envoyer"
-                        class="button noshadow send-button"
-                        v-on:click="sendContact"
-                      />
+                      <input type="button" value="Envoyer" class="button noshadow send-button"
+                        v-on:click="sendContact" />
                     </p>
                   </fieldset>
                 </form>
@@ -342,28 +263,16 @@
                 <p>Retrouvez-nous sur :</p>
                 <ul>
                   <li>
-                    <a
-                      rel="noopener, nofollow"
-                      href="https://www.facebook.com/FisholaFR"
-                      target="_blank"
-                      ><img src="/img/facebook-icn.png" alt="Facebook"
-                    /></a>
+                    <a rel="noopener, nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img
+                        src="/img/facebook-icn.png" alt="Facebook" /></a>
                   </li>
                   <li>
-                    <a
-                      rel="noopener, nofollow"
-                      href="https://twitter.com/FisholaFr"
-                      target="_blank"
-                      ><img src="/img/twitter-icn.png" alt="Twitter"
-                    /></a>
+                    <a rel="noopener, nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img
+                        src="/img/twitter-icn.png" alt="Twitter" /></a>
                   </li>
                   <li>
-                    <a
-                      rel="noopener, nofollow"
-                      href="https://www.youtube.com/UmrCarrtel"
-                      target="_blank"
-                      ><img src="/img/youtube-icn.png" alt="Youtube"
-                    /></a>
+                    <a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img
+                        src="/img/youtube-icn.png" alt="Youtube" /></a>
                   </li>
                 </ul>
               </div>
@@ -379,85 +288,40 @@
           <div class="partners">
             <h3>Nos partenaires</h3>
             <div class="credits-logos">
-              <a
-                href="https://www.annecylacpeche.com"
-                target="_blank"
-                rel="noopener"
-                ><img
-                  src="/img/credits/88b994/ALP.png"
-                  alt="AAPPMA - Annecy Lac Pêche"
-              /></a>
-              <a
-                href="https://www.peche-leman-apallf.com"
-                target="_blank"
-                rel="noopener"
-                ><img src="/img/credits/88b994/APALLF.png" alt="APALLF"
-              /></a>
-              <a href="https://fipal.ch" target="_blank" rel="noopener"
-                ><img
-                  src="/img/credits/88b994/FIPAL.jpg"
-                  alt="Fédération Internationale des Pêcheurs Amateurs du Léman"
-              /></a>
-              <a
-                href="http://www.pecheurs-chamberiens.fr"
-                target="_blank"
-                rel="noopener"
-                ><img
-                  src="/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png"
-                  alt="AAPPMA - Pêcheurs chambériens"
-              /></a>
-              <a
-                href="https://aappma-aix-les-bains.fr"
-                target="_blank"
-                rel="noopener"
-                ><img
-                  src="/img/credits/88b994/AAPPMA-Bourget.png"
-                  alt="AAPPMA - Aix-les-Bains"
-              /></a>
-              <a
-                href="http://www.aappma-aiguebelette.org"
-                target="_blank"
-                rel="noopener"
-                ><img
-                  src="/img/credits/88b994/AAPPMA-Aiguebelette.jpg"
-                  alt="AAPPMA - Aiguebelette"
-              /></a>
+              <a href="https://www.annecylacpeche.com" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/ALP.png" alt="AAPPMA - Annecy Lac Pêche" /></a>
+              <a href="https://www.peche-leman-apallf.com" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/APALLF.png" alt="APALLF" /></a>
+              <a href="https://fipal.ch" target="_blank" rel="noopener"><img src="/img/credits/88b994/FIPAL.jpg"
+                  alt="Fédération Internationale des Pêcheurs Amateurs du Léman" /></a>
+              <a href="http://www.pecheurs-chamberiens.fr" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png" alt="AAPPMA - Pêcheurs chambériens" /></a>
+              <a href="https://aappma-aix-les-bains.fr" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/AAPPMA-Bourget.png" alt="AAPPMA - Aix-les-Bains" /></a>
+              <a href="http://www.aappma-aiguebelette.org" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/AAPPMA-Aiguebelette.jpg" alt="AAPPMA - Aiguebelette" /></a>
             </div>
           </div>
           <div class="Line"></div>
           <div class="producers">
             <h3>FISHOLA est produit par</h3>
             <div class="credits-logos">
-              <a
-                href="https://www6.lyon-grenoble.inrae.fr/carrtel"
-                target="_blank"
-                rel="noopener"
-                ><img src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL"
-              /></a>
-              <a href="https://www.inrae.fr" target="_blank" rel="noopener"
-                ><img src="/img/credits/inrae.svg" alt="INRAE"
-              /></a>
-              <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"
-                ><img src="/img/credits/88b994/USMB.png" alt="USMB"
-              /></a>
-              <a
-                href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres"
-                target="_blank"
-                rel="noopener"
-                ><img src="/img/credits/88b994/ECLA.png" alt="ECLA"
-              /></a>
-              <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"
-                ><img src="/img/credits/ofb.png" alt="OFB"
-              /></a>
-              <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"
-                ><img src="/img/credits/88b994/OLA.png" alt="OLA"
-              /></a>
-              <a href="https://www.codelutin.com" target="_blank" rel="noopener"
-                ><img src="/img/credits/code-lutin.svg" alt="Code Lutin"
-              /></a>
-              <a href="https://www.cisalb.fr" target="_blank" rel="noopener"
-                ><img src="/img/credits/88b994/CISALB.png" alt="CISALB"
-              /></a>
+              <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img
+                  src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL" /></a>
+              <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src="/img/credits/inrae.svg"
+                  alt="INRAE" /></a>
+              <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/USMB.png"
+                  alt="USMB" /></a>
+              <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank"
+                rel="noopener"><img src="/img/credits/88b994/ECLA.png" alt="ECLA" /></a>
+              <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"><img src="/img/credits/ofb.png"
+                  alt="OFB" /></a>
+              <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/OLA.png"
+                  alt="OLA" /></a>
+              <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src="/img/credits/code-lutin.svg"
+                  alt="Code Lutin" /></a>
+              <a href="https://www.cisalb.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/CISALB.png"
+                  alt="CISALB" /></a>
             </div>
           </div>
         </div>
@@ -711,6 +575,7 @@ export default class AboutView extends Vue {
   height: 100%;
   overflow-x: hidden;
 }
+
 .DesignHolder {
   background-color: @white-smoke !important;
 }
@@ -778,9 +643,11 @@ export default class AboutView extends Vue {
 
         li a {
           padding: 22px 30px;
+
           @media only screen and (min-width: 1124px) and (max-width: 1200px) {
             padding: 22px 20px;
           }
+
           @media only screen and (min-width: 800px) and (max-width: 1323px) {
             padding: 22px 10px;
             font-size: 14px;
@@ -835,6 +702,7 @@ export default class AboutView extends Vue {
         &.closed {
           display: none;
         }
+
         .Navigation {
           li {
             width: 100%;
@@ -855,13 +723,16 @@ export default class AboutView extends Vue {
 .Navigation li a {
   color: @gunmetal;
 }
+
 .Navigation li span {
   background: @pelorous;
 }
+
 .Navigation li:hover span,
 .Navigation li.active span {
   opacity: 1;
 }
+
 .Navigation li:hover a,
 .Navigation li.active a {
   color: @white;
@@ -890,12 +761,14 @@ export default class AboutView extends Vue {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
     .main-title {
       font-weight: bold;
       font-size: 64px;
       line-height: 87px;
       margin: 20px;
     }
+
     .sub-title {
       font-size: 26px;
       line-height: 30px;
@@ -915,6 +788,7 @@ export default class AboutView extends Vue {
 
   .left-panel {
     width: 25%;
+
     h3 {
       font-size: 42px;
       color: @white;
@@ -929,6 +803,7 @@ export default class AboutView extends Vue {
         display: block;
       }
     }
+
     p {
       padding: 16px 0px 26px 0px;
       font-size: 22px;
@@ -940,6 +815,7 @@ export default class AboutView extends Vue {
       line-height: 22px;
     }
   }
+
   .right-panel {
     width: 50%;
 
@@ -962,6 +838,7 @@ export default class AboutView extends Vue {
     .left-panel {
       width: 80%;
     }
+
     .right-panel {
       width: 100%;
 
@@ -997,6 +874,7 @@ export default class AboutView extends Vue {
 
 .About_sec {
   padding-top: 40px;
+
   .key-figures {
     width: 100%;
     display: flex;
@@ -1009,6 +887,7 @@ export default class AboutView extends Vue {
     @media only screen and (max-width: 530px) {
       flex-direction: column;
     }
+
     .kf-item {
       width: 33%;
       display: flex;
@@ -1017,12 +896,14 @@ export default class AboutView extends Vue {
       align-items: center;
       margin-left: 50px;
       margin-right: 50px;
+
       .kf-number {
         color: @terra-cotta;
         font-size: 50px;
         font-weight: 530;
         height: 59px;
       }
+
       .kf-label {
         color: @gunmetal;
         font-size: 22px;
@@ -1030,6 +911,7 @@ export default class AboutView extends Vue {
       }
     }
   }
+
   .map {
     margin-top: 30px;
     height: 600px;
@@ -1043,10 +925,12 @@ export default class AboutView extends Vue {
     }
   }
 }
+
 .Contribute_sec {
   background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
+
 .Get_sec {
   background: url(~/public/img/about-background.jpg) top center no-repeat;
   background-size: cover;
@@ -1056,6 +940,7 @@ export default class AboutView extends Vue {
 .Contact_sec p {
   font-size: 18px;
 }
+
 .Pricing_sec h3,
 .About_sec h3 {
   color: @gunmetal;
@@ -1080,6 +965,7 @@ export default class AboutView extends Vue {
       text-transform: uppercase;
       line-height: 60px;
       padding-bottom: 50px;
+
       @media only screen and (max-width: 1023px) {
         padding-bottom: 20px;
         font-size: 42px;
@@ -1099,13 +985,16 @@ export default class AboutView extends Vue {
 
 .Get_sec .Rightside {
   padding-top: 2px;
+
   h3 {
     padding-bottom: 5px;
   }
+
   p {
     padding: 10px 0px 10px 0px;
     font-size: 16px;
   }
+
   ul {
     padding-top: 0px;
   }
@@ -1121,6 +1010,7 @@ export default class AboutView extends Vue {
   justify-content: center;
   align-items: center;
   margin-top: 50px;
+
   img {
     width: 200px;
     margin: 20px;
@@ -1167,6 +1057,7 @@ export default class AboutView extends Vue {
     h3 {
       font-size: 42px;
     }
+
     img {
       max-height: 140px;
       max-width: 240px;
@@ -1177,6 +1068,7 @@ export default class AboutView extends Vue {
     h3 {
       font-size: 24px;
     }
+
     img {
       min-height: 50px;
       min-width: 90px;
@@ -1205,12 +1097,14 @@ export default class AboutView extends Vue {
 
     .card {
       height: fit-content;
-      width: 350px;
+      max-width: 350px;
+      width: 80%;
       margin: 15px;
       padding: 30px;
       min-height: 300px;
       background-color: @white-smoke-alpha-20;
       border: 1px solid #1e9bc4;
+
       h4 {
         margin: 5px;
       }
@@ -1226,7 +1120,7 @@ export default class AboutView extends Vue {
       }
     }
 
-    @media only screen and (max-width: 700px) {
+    @media only screen and (max-width: 1300px) {
       flex-direction: column;
       align-items: center;
 
@@ -1254,6 +1148,7 @@ footer {
   gap: 10px;
   flex-direction: column;
   align-items: center;
+
   .consult-faq-button {
     background-color: white;
     color: #e17055;
@@ -1270,9 +1165,11 @@ footer {
     }
   }
 }
+
 .noshadow {
   box-shadow: none !important;
 }
+
 .send-button {
   margin-left: 0px;
 }

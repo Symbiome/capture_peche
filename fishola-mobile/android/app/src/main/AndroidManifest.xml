@@ -32,6 +32,7 @@
                 <data android:scheme="@string/custom_url_scheme" />
             </intent-filter>
 
+<!-- FIXME Deeplink declaration must be updated https://capacitorjs.com/docs/guides/deep-links 
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -40,6 +41,7 @@
                     android:host="@string/DEEP_LINK_URL"
                     android:pathPrefix="/api" />
             </intent-filter>
+-->
 
         </activity>
 

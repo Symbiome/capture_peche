@@ -21,14 +21,8 @@
 
 <template>
   <div class="licence-item" @click="openLicence()">
-    <div class="item-selection">
-      <input type="checkbox" :id="'checkbox-' + licence.id" class="pelorous-checkbox" v-model="selected" />
-      <label v-bind:for="'checkbox-' + licence.id"></label>
-    </div>
-
     <div id="preview" class="hide-on-mobile">
-      <img v-if="licence.type === 'JPEG'" class="preview-img" :src="licenceUrl" alt="Aperçu de la carte" />
-      <div v-else src="/img/dashboard.png" class="preview-img pdf-img">
+      <div class="preview-img pdf-img">
         <i class="icon-fishing" />
       </div>
     </div>
@@ -37,12 +31,18 @@
       <div class="item-row">
         <div class="left-part name">{{ licence.name }}</div>
         <div class="right-part">Expire le {{ formattedDate() }}</div>
-        <i class="icon-edit edit hide-on-mobile" @click="editLicence()" />
+        <div class="action-buttons">
+          <i class="icon-edit edit hide-on-mobile" @click="editLicence()" />
+          <i class="icon-delete edit hide-on-mobile" @click="deleteLicence" />
+        </div>
       </div>
     </div>
 
     <div class="item-edit hide-on-desktop" @click="editLicence()">
-      <i class="icon-edit edit" />
+      <div class="action-buttons">
+        <i class="icon-edit edit" />
+        <i class="icon-delete edit" @click="deleteLicence" />
+      </div>
     </div>
   </div>
 </template>
@@ -64,11 +64,10 @@ export default class FishingLicenceItem extends Vue {
 
   selected: boolean = false;
   date: string = "";
-  licenceUrl: string = "";
 
   async mounted() {
-
   }
+
 
   formattedDate(): string {
     var dayOptions: Intl.DateTimeFormatOptions = {
@@ -112,9 +111,24 @@ export default class FishingLicenceItem extends Vue {
     });
   }
 
-  deleteLicence(licence: LicenceResponseBean) {
-    FishingLicenceService.deleteLicence(licence.id);
+  deleteLicence(event: Event) {
+    event.stopPropagation();
+    Helpers.confirm(
+      this.$modal,
+      "Êtes-vous certain de vouloir supprimer cette carte de pêche ?",
+      "Supprimer"
+    ).then(async () => {
+      try {
+        await FishingLicenceService.deleteLicence(this.licence.id);
+        this.$root.$emit('toaster-success', 'Carte de pêche supprimée');
+        this.$emit("reload");
+      } catch (error) {
+        console.error(error);
+        this.$root.$emit('toaster-error', 'Erreur lors de la suppression de la carte de pêche');
+      }
+    }, () => { });
   }
+
 }
 </script>
 
@@ -267,6 +281,24 @@ export default class FishingLicenceItem extends Vue {
           font-size: @fontsize-paragraph-desktop;
         }
       }
+    }
+  }
+
+
+  .action-buttons {
+    display: flex;
+    gap: 20px;
+
+    i {
+      font-size: 20px;
+
+      &:hover {
+        color: @terra-cotta;
+      }
+    }
+
+    @media screen and (min-width: @desktop-min-width) and (max-width: 1200px) {
+      justify-content: space-between;
     }
   }
 }
