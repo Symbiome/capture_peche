@@ -53,13 +53,13 @@ package:android-demo:
     - export LANG=en_US.UTF-8
     - export LANGUAGE=en_US:en
     - export LC_ALL=en_US.UTF-8
-    - apk add --no-cache ruby ruby-dev build-base musl-locales bash
+    - apk add --no-cache ruby ruby-dev build-base musl-locales bash nodejs npm
     - gem install bundler
     - bundle install
   script:
     - cd fishola-mobile
     - mv target/dist-demo target/dist
-    - ./node/node node/node_modules/npm/bin/npx-cli.js cap sync
+    - npx cap sync
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
     - cat ${SIGNING_CONFIG} > app/signin.properties
