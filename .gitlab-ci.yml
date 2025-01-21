@@ -42,7 +42,7 @@ build:compile:
 
 # must be run after the build stage
 package:android-demo:
-  image: eclipse-temurin:11-alpine
+  image: eclipse-temurin:21-alpine
   stage: package
   when: manual
   cache:
