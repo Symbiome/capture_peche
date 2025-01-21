@@ -42,7 +42,7 @@ build:compile:
 
 # must be run after the build stage
 package:android-demo:
-  image: node:22-alpine3.21
+  image: eclipse-temurin:11-alpine
   stage: package
   when: manual
   cache:
@@ -57,11 +57,9 @@ package:android-demo:
     - gem install bundler
     - bundle install
   script:
-   
     - cd fishola-mobile
     - mv target/dist-demo target/dist
-    - npm install --global @capacitor/cli
-    - npx cap sync
+    - ./node/node node/node_modules/npm/bin/npx-cli.js cap sync
     - cd android
     - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
     - cat ${SIGNING_CONFIG} > app/signin.properties
