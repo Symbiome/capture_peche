@@ -53,7 +53,7 @@ package:android-demo:
     - export LANG=en_US.UTF-8
     - export LANGUAGE=en_US:en
     - export LC_ALL=en_US.UTF-8
-    - apk add --no-cache ruby ruby-dev build-base musl-locales
+    - apk add --no-cache ruby ruby-dev build-base musl-locales bash
     - gem install bundler
     - bundle install
   script:
