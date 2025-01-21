@@ -20,7 +20,10 @@ platform :android do
   desc "Build an apk"
   lane :build_prod_apk do
     gradle(
-      task: "clean assembleRelease"
+      task: "clean assembleRelease",
+      properties: {
+        "org.gradle.java.home" => "/opt/java/openjdk",
+      }
     )
   end
 end
