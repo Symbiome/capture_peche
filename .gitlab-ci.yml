@@ -53,7 +53,7 @@ package:android-demo:
     - export LANG=en_US.UTF-8
     - export LANGUAGE=en_US:en
     - export LC_ALL=en_US.UTF-8
-    - apk add --no-cache ruby ruby-dev build-base musl-locales bash nodejs npm
+    - apk add --no-cache ruby ruby-dev build-base musl-locales bash nodejs npm git
     - gem install bundler
     - bundle install
   script:
@@ -65,7 +65,7 @@ package:android-demo:
     - cat ${SIGNING_CONFIG} > app/signin.properties
     - cat ${FASTLANE_GOOGLE} | base64 -d > fishola-fastlane-playstore.json
     - cat ${SIGNING_CONFIG} > app/signin.properties
-    - bundle exec fastlane android build_prod_apk                                                                                                                                                                                                      ─╯
+    - bundle exec fastlane android build_prod_apk
     - cp app/build/outputs/apk/production/release/*.apk ../../
   artifacts:
     name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
