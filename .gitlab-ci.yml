@@ -42,7 +42,7 @@ build:compile:
 
 # must be run after the build stage
 package:android-demo:
-  image: eclipse-temurin:21-alpine
+  image: eclipse-temurin:21-noble
   stage: package
   when: manual
   cache:
@@ -50,10 +50,13 @@ package:android-demo:
       - fishola-mobile/node
       - fishola-mobile/node_modules
   before_script:
+    - echo "en_US UTF-8" > /etc/locale.gen
+    - locale-gen en_US.UTF-8
     - export LANG=en_US.UTF-8
     - export LANGUAGE=en_US:en
     - export LC_ALL=en_US.UTF-8
-    - apk add --no-cache ruby ruby-dev build-base musl-locales bash nodejs npm git
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1 ruby ruby-dev build-base nodejs npm git
     - gem install bundler
     - bundle install
     - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
