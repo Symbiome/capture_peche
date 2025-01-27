@@ -35,7 +35,7 @@ platform :android do
     previous_build_number = google_play_track_version_codes(
       package_name: "fr.inrae.fishola",
       json_key: File.expand_path("../fishola-fastlane-playstore.json"),
-      track: "beta"
+      track: "internal"
     )[0]
     versionCode = previous_build_number + 1
     gradle(
@@ -43,11 +43,11 @@ platform :android do
           print_command: true,
           properties: {
             "org.gradle.java.home" => "/opt/java/openjdk",
-            "versCode" => versionCode,
+            "versCode" => 43,
             "versName" => versionName
           }
     )
-    upload_to_play_store(track: 'beta')
+    upload_to_play_store(track: 'internal')
     puts "Aab created with version : "
     puts versionName
     puts " code "
