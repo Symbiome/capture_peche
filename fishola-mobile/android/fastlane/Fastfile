@@ -43,7 +43,7 @@ platform :android do
           print_command: true,
           properties: {
             "org.gradle.java.home" => "/opt/java/openjdk",
-            "versCode" => 43,
+            "versCode" => versionCode,
             "versName" => versionName
           }
     )

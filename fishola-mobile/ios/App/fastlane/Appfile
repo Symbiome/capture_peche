@@ -1,0 +1,6 @@
+app_identifier("fr.inrae.carrtel.fishola") # The bundle identifier of your app
+apple_id("fishola-gestion@list.forge.codelutin.com") # Your Apple Developer Portal username
+team_id("9JVWTHXDQ4") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
