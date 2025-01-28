@@ -270,6 +270,7 @@ deploy:ios-deploy-testflight:
     - npm ci
     - cp -r target/dist-mobile target/dist
     - npx cap sync
+    - git checkout ios/App/App/capacitor.config.json
     - cd ios/App
     - pod install
     - fastlane ios beta
