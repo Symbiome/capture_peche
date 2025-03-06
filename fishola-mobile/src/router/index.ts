@@ -55,7 +55,7 @@ import GaleryFull from "@/components/galery/GaleryFull.vue";
 import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
 
 import Settings from "@/views/Settings.vue";
-import Profile from "@/views/Profile.vue";
+import ProfileAndSettingsView from "@/views/ProfileAndSettings.vue";
 import ProfilePassword from "@/views/ProfilePassword.vue";
 
 import ResetPassword from "@/views/ResetPassword.vue";
@@ -218,7 +218,7 @@ const routes = [
   {
     path: "/profile",
     name: "profile",
-    component: Profile,
+    component: ProfileAndSettingsView,
   },
   {
     path: "/profile-password",

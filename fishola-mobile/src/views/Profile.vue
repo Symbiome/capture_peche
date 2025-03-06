@@ -19,91 +19,51 @@
   #L%
   -->
 <template>
-  <div class="profile page-with-header-and-footer shifted-background">
-    <FisholaHeader v-bind:avatar="false" />
-    <div class="page profile-page">
-      <div class="profile-header keyboardSensitive">
-        <Avatar v-bind:initials="profile.initials" />
-        <div class="profile-header-name">
-          {{ fullName }}
-        </div>
-      </div>
-      <div class="pane">
-        <div class="pane-content rounded">
-          <h1>Profil</h1>
-          <FormInput
-            name="firstName"
-            label="Prénom"
-            placeholder="Renseignez votre prénom"
-            v-model="profile.firstName"
-            v-bind:error="validationErrors['firstName']"
-          />
-          <FormInput
-            name="lastName"
-            label="Nom (optionnel)"
-            placeholder="Renseignez votre nom"
-            v-model="profile.lastName"
-            v-bind:error="validationErrors['lastName']"
-          />
-          <FormInput
-            name="email"
-            label="E-mail"
-            placeholder="Renseignez votre E-mail"
-            v-model="profile.email"
-            v-bind:error="validationErrors['email']"
-          />
-          <FormSelect
-            name="birthYear"
-            label="Année de naissance (optionnelle)"
-            v-bind:options="years"
-            v-model="birthYear"
-          />
-          <FormSelect
-            name="gender"
-            label="Sexe (optionnel)"
-            v-bind:options="genders"
-            v-model="gender"
-          />
-          <FormMultiValues
-            name="password"
-            label="Mot de passe"
-            v-bind:values="['********']"
-            v-on:clicked="editPassword"
-          />
-          <div class="form-checkbox">
-            <input
-              type="checkbox"
-              id="receive-mail"
-              class="pelorous-checkbox"
-              v-model="profile.acceptsMailNotifications"
-            />
-            <label for="receive-mail"></label>
-            <label for="receive-mail" class="real-label">
-              Je souhaite être informé des communications Fishola par mail
-            </label>
-          </div>
-          <br />
-          <a @click="safeDeleteAccount" class="safe-delete-button"
-            >Supprimer mon compte</a
-          >
-          <br />
-          <br />
-          <div class="buttons-bar hide-on-mobile">
-            <div class="button button-primary modify-button">
-              <button v-on:click="saveProfile">Modifier</button>
-            </div>
-          </div>
 
-          <div class="bottom-page-spacer"></div>
-        </div>
+  <div class="page profile-page">
+    <div class="profile-header keyboardSensitive">
+      <Avatar v-bind:initials="profile.initials" />
+      <div class="profile-header-name">
+        {{ fullName }}
       </div>
     </div>
-    <FisholaFooter
-      button-text="Modifier"
-      v-on:buttonClicked="saveProfile"
-      shortcuts="back,settings,profile"
-      selected="profile"
-    />
+    <div class="pane">
+      <div class="pane-content rounded">
+        <h1>Profil</h1>
+        <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="profile.firstName"
+          v-bind:error="validationErrors['firstName']" />
+        <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="profile.lastName"
+          v-bind:error="validationErrors['lastName']" />
+        <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="profile.email"
+          v-bind:error="validationErrors['email']" />
+        <FormSelect name="birthYear" label="Année de naissance (optionnelle)" v-bind:options="years"
+          v-model="birthYear" />
+        <FormSelect name="gender" label="Sexe (optionnel)" v-bind:options="genders" v-model="gender" />
+        <FormMultiValues name="password" label="Mot de passe" v-bind:values="['********']"
+          v-on:clicked="editPassword" />
+        <div class="form-checkbox">
+          <input type="checkbox" id="receive-mail" class="pelorous-checkbox"
+            v-model="profile.acceptsMailNotifications" />
+          <label for="receive-mail"></label>
+          <label for="receive-mail" class="real-label">
+            Je souhaite être informé des communications Fishola par mail
+          </label>
+        </div>
+        <br />
+        <a @click="safeDeleteAccount" class="safe-delete-button">Supprimer mon compte</a>
+        <br />
+        <br />
+        <div class="buttons-bar hide-on-mobile">
+          <div class="button button-primary modify-button">
+            <button v-on:click="saveProfile">Modifier</button>
+          </div>
+        </div>
+
+        <div class="bottom-page-spacer"></div>
+      </div>
+      <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
+        selected="profile" />
+    </div>
   </div>
 </template>
 
@@ -284,6 +244,7 @@ export default class ProfileView extends Vue {
       line-height: calc(@pastille-size + @line-height-padding-large);
       color: @gunmetal;
     }
+
     .profile-header-name {
       margin-top: @vertical-margin-small;
       font-size: @fontsize-title;
@@ -311,6 +272,7 @@ export default class ProfileView extends Vue {
     font-weight: bold;
     color: @pelorous;
     cursor: pointer;
+
     &:hover {
       color: @terra-cotta;
     }
