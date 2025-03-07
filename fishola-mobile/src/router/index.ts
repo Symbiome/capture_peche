@@ -30,7 +30,8 @@ import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
 import TripsListAndMapView from "@/views/TripsListAndMap.vue";
 import SocialAndNewsView from "@/views/SocialAndNews.vue";
-import Dashboard from "@/views/Dashboard.vue";
+import DashboardPersonalView from "@/views/DashboardPersonal.vue";
+import DashboardGlobalView from "@/views/DashboardGlobal.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
 import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
@@ -159,9 +160,14 @@ const routes = [
     props: true,
   },
   {
-    path: "/dashboard",
-    name: "dashboard",
-    component: Dashboard,
+    path: "/dashboard-personal",
+    name: "dashboard-personal",
+    component: DashboardPersonalView,
+  },
+  {
+    path: "/dashboard-global",
+    name: "dashboard-global",
+    component: DashboardGlobalView,
   },
   {
     path: "/documentation",

@@ -220,9 +220,14 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(router, "/profile");
   }
 
-  goDashboard() {
+  goDashboardPersonal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-personal");
+  }
+
+  goDashboardGlobal() {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-global");
   }
 
   goDocumentation() {
@@ -320,10 +325,10 @@ export default class Menu extends Vue {
         onlyUnlogged: true,
       },
       {
-        name: "dashboard",
+        name: "dashboard-personal",
         label: "Mes données",
         iconName: "dashboard",
-        clickHandler: this.goDashboard,
+        clickHandler: this.goDashboardPersonal,
         onlyConnected: true,
         onlyUnlogged: false,
       },
@@ -332,6 +337,14 @@ export default class Menu extends Vue {
         label: "Communauté",
         iconName: "fishing",
         clickHandler: this.goSocialAndNews,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "dashboard-global",
+        label: "Statistiques",
+        iconName: "dashboard",
+        clickHandler: this.goDashboardGlobal,
         onlyConnected: true,
         onlyUnlogged: false,
       },

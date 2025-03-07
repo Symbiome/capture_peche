@@ -25,7 +25,7 @@
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
           <h1 class="no-margin-pane">
-            <span> Tableau de bord </span>
+            <span>Statistiques </span>
             <div class="selects-holder">
               <select placeholder="lake" v-model="selectedLakeUUID">
                 <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
@@ -38,7 +38,7 @@
                 </option>
               </select>
             </div>
-            <a v-bind:href="exportUrl" v-if="!globalMode && !asyncExport" id="export-button" class="export"
+            <a v-bind:href="exportUrl" v-if="!evolutionMode && !asyncExport" id="export-button" class="export"
               title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
@@ -46,11 +46,11 @@
           </h1>
 
           <div class="dashboard-modes">
-            <div class="dashboard-mode" v-bind:class="globalMode ? '' : 'selected'" v-on:click="showPersonalDashboard">
-              Personnel
+            <div class="dashboard-mode" v-bind:class="evolutionMode ? '' : 'selected'" v-on:click="showGlobalDashboard">
+              Tableau de bord
             </div>
-            <div class="dashboard-mode" v-bind:class="globalMode ? 'selected' : ''" v-on:click="showGlobalDashboard">
-              Global
+            <div class="dashboard-mode" v-bind:class="evolutionMode ? 'selected' : ''" v-on:click="showEvolution">
+              Évolution
             </div>
           </div>
 
@@ -62,12 +62,13 @@
             <span>Le tableau de bord n'est pas disponible sans connexion
               internet</span>
           </div>
-          <PersonalDashboard v-if="!globalMode && personalDashboard" :year="year" :dashboardData="personalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
 
-          <GlobalDashboardComponent v-if="globalMode && globalDashboard"
+          <GlobalDashboardComponent v-if="!evolutionMode && globalDashboard"
             :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
+
+          <p v-if="evolutionMode">Evolution </p>
+
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -81,14 +82,12 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import PersonalDashboard from "@/components/charts/PersonalDashboard.vue";
 import GlobalDashboardComponent from "@/components/charts/GlobalDashboardComponent.vue";
 
 import DashboardService from "@/services/DashboardService";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import {
-  DashboardAndSpecies,
   GlobalDashboardAndSpecies,
 } from "@/services/DashboardService";
 
@@ -104,12 +103,11 @@ import ReferentialService from "../services/ReferentialService";
     FisholaHeader,
     RunningOverlay,
     FisholaFooter,
-    PersonalDashboard,
     GlobalDashboardComponent,
   },
 })
-export default class DashboardView extends Vue {
-  globalMode: boolean = false;
+export default class DashboardGlobalView extends Vue {
+  evolutionMode: boolean = false;
 
   exportUrl: string = "";
 
@@ -118,7 +116,6 @@ export default class DashboardView extends Vue {
 
   asyncExport: boolean = false;
 
-  personalDashboard: DashboardAndSpecies | null = null;
   globalDashboard: GlobalDashboardAndSpecies | null = null;
 
   hasRunningTrip: boolean = false;
@@ -138,10 +135,10 @@ export default class DashboardView extends Vue {
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-    DashboardService.loadDashboardOrTimeout(this.year, "").then(
-      this.personalDashboardLoaded,
-      this.cannotLoad
-    );
+    DashboardService.loadGlobalDashboardOrTimeout(
+      this.year,
+      this.selectedLakeUUID
+    ).then(this.globalDashboardLoaded, this.cannotLoad);
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));
     const scrolllistener = document.getElementById("scrollable");
@@ -165,16 +162,13 @@ export default class DashboardView extends Vue {
     } else {
       localStorage.latestSelectedLakeUUID = "all"
     }
-    if (!this.globalMode) {
-      DashboardService.loadDashboardOrTimeout(
-        this.year,
-        this.selectedLakeUUID
-      ).then(this.personalDashboardLoaded, this.cannotLoad);
-    } else {
+    if (!this.evolutionMode) {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
         this.selectedLakeUUID
       ).then(this.globalDashboardLoaded, this.cannotLoad);
+    } else {
+      // TODO load evolution
     }
   }
 
@@ -202,21 +196,7 @@ export default class DashboardView extends Vue {
     return rangeDesc(new Date().getFullYear(), 2020);
   }
 
-  personalDashboardLoaded(data: DashboardAndSpecies) {
-    // If no data for current year and this is first load, select year - 1 by default
-    if (
-      this.isFirstLoad &&
-      data.dashboard &&
-      data.dashboard.latestTripsCatchs.length == 0
-    ) {
-      this.year = this.year - 1;
-      this.yearOrSelectedLakesChanged();
-    } else {
-      this.personalDashboard = data;
-      this.ready = true;
-    }
-    this.isFirstLoad = false;
-  }
+
 
   cannotLoad(error: any) {
     if (error && error.timeoutReached) {
@@ -228,15 +208,9 @@ export default class DashboardView extends Vue {
     this.ready = true;
   }
 
-  showPersonalDashboard() {
-    this.globalMode = false;
-    if (this.personalDashboard) {
-      this.ready = true;
-    }
-  }
 
   showGlobalDashboard() {
-    this.globalMode = true;
+    this.evolutionMode = false;
     if (!this.globalDashboard) {
       this.ready = false;
       DashboardService.loadGlobalDashboardOrTimeout(
@@ -249,6 +223,11 @@ export default class DashboardView extends Vue {
   globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
     this.globalDashboard = data;
     this.ready = true;
+  }
+
+  showEvolution() {
+    this.evolutionMode = true
+
   }
 
   askForAsyncExport() {

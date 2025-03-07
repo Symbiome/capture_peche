@@ -25,6 +25,7 @@
         <div class="page my-trips-page">
             <div class="pane pane-only">
                 <div class="pane-content rounded">
+                    <h1 class="hide-on-mobile">Profil et Paramètres</h1>
                     <div class="tabs">
                         <div class="tab" :class="showProfile ? 'selected' : ''" @click="showProfile = true">
                             Mon profil
@@ -106,7 +107,6 @@ export default class ProfileAndSettingsView extends Vue {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
-    padding-top: 20px;
     padding-bottom: 20px;
     background-color: @white-smoke;
 

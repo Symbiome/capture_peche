@@ -20,8 +20,6 @@
   -->
 <template>
   <div class="settings-page">
-
-    <h1>Paramètres</h1>
     <div class="spinner-wrapper" v-if="loading">
       <div class="spinner"></div>
     </div>
