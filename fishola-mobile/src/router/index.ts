@@ -28,7 +28,8 @@ import OfflineHome from "@/views/OfflineHome.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
-import TripsAndNews from "@/views/TripsAndNews.vue";
+import TripsListAndMapView from "@/views/TripsListAndMap.vue";
+import SocialAndNewsView from "@/views/SocialAndNews.vue";
 import Dashboard from "@/views/Dashboard.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
@@ -108,7 +109,7 @@ const routes = [
   {
     path: "/trips",
     name: "trips",
-    component: TripsAndNews,
+    component: TripsListAndMapView,
   },
   {
     path: "/trips/new",
@@ -208,6 +209,11 @@ const routes = [
     path: "/settings",
     name: "settings",
     component: Settings,
+  },
+  {
+    path: "/community",
+    name: "community",
+    component: SocialAndNewsView,
   },
   {
     path: "/credits",

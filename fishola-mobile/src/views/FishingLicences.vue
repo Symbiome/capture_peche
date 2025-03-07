@@ -19,33 +19,22 @@
   #L%
   -->
 <template>
-  <div class="licences page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+  <div class="pane-content rounded">
+    <h1 class="no-margin-pane">Mes cartes de pêche</h1>
+    <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
 
-    <div class="page licences-page">
-      <div class="pane pane-only">
-        <div class="pane-content rounded">
-          <h1 class="no-margin-pane">Mes cartes de pêche</h1>
-          <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
+    <div class="bottom-page-spacer"></div>
 
-          <div class="bottom-page-spacer"></div>
-
-          <div class="create-and-delete hide-on-mobile">
-            <div v-if="!hasRunningTrip" class="button button-primary">
-              <div class=" button button-primary">
-                <button @click="buttonClicked" class="new-button">
-                  <i class="icon-plus" />
-                  Nouvelle carte
-                </button>
-              </div>
-            </div>
-          </div>
+    <div class="create-and-delete hide-on-mobile">
+      <div v-if="!hasRunningTrip" class="button button-primary">
+        <div class=" button button-primary">
+          <button @click="buttonClicked" class="new-button">
+            <i class="icon-plus" />
+            Nouvelle carte
+          </button>
         </div>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,home,dashboard" v-bind:hideButton="hasRunningTrip" button-icon="icon-plus"
-      button-text="Nouvelle carte" v-on:buttonClicked="buttonClicked" />
   </div>
 </template>
 

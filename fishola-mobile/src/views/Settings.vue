@@ -19,16 +19,18 @@
   #L%
   -->
 <template>
-  <div class="ettings-page">
+  <div class="settings-page">
+
+    <h1>Paramètres</h1>
     <div class="spinner-wrapper" v-if="loading">
       <div class="spinner"></div>
     </div>
 
-    <div class="pane-content offline" v-if="!loading && offline">
+    <div class="offline" v-if="!loading && offline">
       <span>Les paramètres ne sont pas disponible sans connexion internet</span>
     </div>
 
-    <div class="pane-content rounded" v-if="!loading && !offline">
+    <div class="rounded" v-if="!loading && !offline">
       <div class="settings-row" v-if="settings">
         <span>Renseigner le poids des captures</span>
         <FormToggle v-model="settings.promptWeight" />
@@ -167,6 +169,7 @@ export default class SettingsView extends Vue {
 @import "../less/main";
 
 .settings-page {
+  height: 100%;
 
   .spinner-wrapper {
     width: 100%;

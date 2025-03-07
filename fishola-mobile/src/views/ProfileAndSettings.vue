@@ -21,12 +21,7 @@
 <template>
     <div class="my-trips page-with-header shifted-background">
         <FisholaHeader />
-        <div class="profile-header keyboardSensitive">
-            <Avatar v-bind:initials="profile.initials" />
-            <div class="profile-header-name">
-                {{ fullName }}
-            </div>
-        </div>
+
         <div class="page my-trips-page">
             <div class="pane pane-only">
                 <div class="pane-content rounded">
@@ -36,6 +31,12 @@
                         </div>
                         <div class="tab" :class="showProfile ? '' : 'selected'" @click="showProfile = false">
                             Paramètres
+                        </div>
+                    </div>
+                    <div class="profile-header keyboardSensitive" v-if="showProfile && profile">
+                        <Avatar v-bind:initials="profile.initials" class="profile-avatar" />
+                        <div class="profile-header-name">
+                            {{ fullName }}
                         </div>
                     </div>
                     <ProfileView v-if="showProfile && profile" :profile="profile" @profile-updated="loadProfile" />
@@ -107,6 +108,7 @@ export default class ProfileAndSettingsView extends Vue {
     justify-content: space-evenly;
     padding-top: 20px;
     padding-bottom: 20px;
+    background-color: @white-smoke;
 
     .tab {
         width: 100%;
@@ -134,8 +136,23 @@ export default class ProfileAndSettingsView extends Vue {
 }
 
 .profile-header {
+    background-image: url("~/public/img/background_transparent.png");
+    background-repeat: no-repeat;
+    background-color: @pelorous;
+    background-size: cover;
+    background-position: center;
+
     height: 150px;
-    width: 100%;
+    margin-left: -1 * @margin-large;
+    margin-bottom: 10px;
+    margin-top: -5px;
+    width: calc(100% + (2 * @margin-large));
+
+    @media screen and (min-width: @desktop-min-width) {
+        width: calc(100% + (2 * @margin-large-desktop));
+        margin-left: -1 * @margin-large-desktop;
+    }
+
     display: flex;
     flex-direction: column;
     justify-content: center;

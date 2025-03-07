@@ -65,6 +65,7 @@ import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
+import { Device } from "@capacitor/device";
 
 export class MenuItem {
   constructor(
@@ -89,81 +90,7 @@ export default class Menu extends Vue {
 
   connected: boolean = false;
 
-  menuItems: MenuItem[] = [
-    {
-      name: "back",
-      label: "Retour",
-      iconName: "arrow icon-back",
-      clickHandler: this.back,
-      onlyConnected: false,
-      onlyUnlogged: true,
-    },
-    {
-      name: "trips",
-      label: "Accueil",
-      iconName: "home",
-      clickHandler: this.goHome,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "offline-home",
-      label: "Accueil",
-      iconName: "home",
-      clickHandler: this.goHome,
-      onlyConnected: false,
-      onlyUnlogged: true,
-    },
-    {
-      name: "dashboard",
-      label: "Tableau de bord",
-      iconName: "dashboard",
-      clickHandler: this.goDashboard,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "licences",
-      label: "Cartes de pêche",
-      iconName: "fishing",
-      clickHandler: this.goLicences,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "documentationFaq",
-      label: "Documentation",
-      iconName: "files",
-      clickHandler: this.goDocumentation,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "credits",
-      label: "Infos / Crédits",
-      iconName: "info",
-      clickHandler: this.goCredits,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "feedback",
-      label: "Des retours ?",
-      iconName: "faq",
-      clickHandler: this.openFeedback,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "logout",
-      label: "Déconnexion",
-      iconName: "logout",
-      clickHandler: this.logout,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-  ];
-
+  menuItems: MenuItem[] = [];
   fullName: string = "";
   initials: string = "";
 
@@ -233,16 +160,18 @@ export default class Menu extends Vue {
     } catch (e) {
       this.connected = false;
     }
+    this.refreshMenuItems()
   }
 
   back() {
     RouterUtils.pushRouteNoDuplicate(router, "/about");
   }
 
-  profileLoaded(profile: UserProfile) {
+  async profileLoaded(profile: UserProfile) {
     this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
     this.connected = true;
+    this.refreshMenuItems()
   }
 
   openMenu() {
@@ -264,7 +193,7 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(router, "/");
   }
 
-  goHome() {
+  goTrips() {
     this.closeMenu();
     if (this.connected) {
       // Si on est sur application -> toujours trips
@@ -296,14 +225,14 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
   }
 
-  goLicences() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/licences");
-  }
-
   goDocumentation() {
     this.closeMenu();
     RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
+  }
+
+  goSocialAndNews() {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(router, "/community");
   }
 
 
@@ -356,10 +285,89 @@ export default class Menu extends Vue {
     this.connected = false;
     this.fullName = "";
     this.initials = "";
+    this.refreshMenuItems()
   }
 
   isActive(name: string): boolean {
     return this.$route.name == name;
+  }
+
+  async refreshMenuItems() {
+    const homeShouldBeNameMyTrips = this.connected || (await Device.getInfo()).platform != "web"
+    this.menuItems = [
+      {
+        name: "back",
+        label: "Retour",
+        iconName: "arrow icon-back",
+        clickHandler: this.back,
+        onlyConnected: false,
+        onlyUnlogged: true,
+      },
+      {
+        name: "trips",
+        label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
+        iconName: "fish",
+        clickHandler: this.goTrips,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "offline-home",
+        label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
+        iconName: "home",
+        clickHandler: this.goTrips,
+        onlyConnected: false,
+        onlyUnlogged: true,
+      },
+      {
+        name: "dashboard",
+        label: "Mes données",
+        iconName: "dashboard",
+        clickHandler: this.goDashboard,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "community",
+        label: "Communauté",
+        iconName: "fishing",
+        clickHandler: this.goSocialAndNews,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "documentationFaq",
+        label: "Documentation",
+        iconName: "files",
+        clickHandler: this.goDocumentation,
+        onlyConnected: false,
+        onlyUnlogged: false,
+      },
+      {
+        name: "credits",
+        label: "Infos / Crédits",
+        iconName: "info",
+        clickHandler: this.goCredits,
+        onlyConnected: false,
+        onlyUnlogged: false,
+      },
+      {
+        name: "feedback",
+        label: "Des retours ?",
+        iconName: "faq",
+        clickHandler: this.openFeedback,
+        onlyConnected: false,
+        onlyUnlogged: false,
+      },
+      {
+        name: "logout",
+        label: "Déconnexion",
+        iconName: "logout",
+        clickHandler: this.logout,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+    ];
   }
 }
 </script>

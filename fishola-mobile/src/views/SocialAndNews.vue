@@ -24,27 +24,21 @@
     <div class="page my-trips-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1 class="hide-on-mobile">Accueil</h1>
+          <h1 class="hide-on-mobile">Communauté</h1>
           <div class="trips-and-news-tab">
-            <div
-              class="trips-or-news"
-              :class="showNews ? '' : 'selected'"
-              @click="showNews = false"
-            >
-              Mes Sorties
+            <div class="trips-or-news" :class="showNews ? '' : 'selected'" @click="showNews = false">
+              Autour de moi
             </div>
-            <div
-              class="trips-or-news"
-              :class="showNews ? 'selected' : ''"
-              @click="showNewsTab"
-            >
+            <div class="trips-or-news" :class="showNews ? 'selected' : ''" @click="showNewsTab">
               <span> Communications </span>
               <div class="news-badge" v-if="unreadNewsCount > 0">
                 {{ unreadNewsCount }}
               </div>
             </div>
           </div>
-          <MyTrips v-if="!showNews" />
+          <div v-if="!showNews">
+            Réseau social
+          </div>
           <NewsView :news="news" v-else />
         </div>
       </div>
@@ -71,7 +65,7 @@ import { News } from "@/pojos/BackendPojos";
     NewsView,
   },
 })
-export default class TripsAndNews extends Vue {
+export default class SocialAndNewsView extends Vue {
   unreadNewsCount = 0;
   showNews = false;
   news: News[] = [];

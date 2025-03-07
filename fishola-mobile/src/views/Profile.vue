@@ -47,16 +47,16 @@
           <button v-on:click="saveProfile">Modifier</button>
         </div>
       </div>
-
       <div class="bottom-page-spacer"></div>
     </div>
+    <FishingLicencesView />
+
     <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
       selected="profile" />
   </div>
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -72,12 +72,14 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
+import FishingLicencesView from "./FishingLicences.vue";
 
 @Component({
   components: {
     FormInput,
     FormSelect,
     FormMultiValues,
+    FishingLicencesView,
     FisholaFooter,
   },
 })
