@@ -19,20 +19,17 @@
   #L%
   -->
 <template>
-  <div class="pane-content rounded">
-    <h1 class="no-margin-pane">Mes cartes de pêche</h1>
+  <div>
+    <label>Mes cartes de pêche</label>
     <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
 
     <div class="bottom-page-spacer"></div>
-
-    <div class="create-and-delete hide-on-mobile">
-      <div v-if="!hasRunningTrip" class="button button-primary">
-        <div class=" button button-primary">
-          <button @click="buttonClicked" class="new-button">
-            <i class="icon-plus" />
-            Nouvelle carte
-          </button>
-        </div>
+    <div class="create-and-delete">
+      <div class="button">
+        <button @click="buttonClicked" class="new-button">
+          <i class="icon-plus" />
+          Nouvelle carte
+        </button>
       </div>
     </div>
   </div>
@@ -104,6 +101,29 @@ export default class FishingLicencesView extends Vue {
 <style lang="less">
 @import "../less/main";
 
+.create-and-delete {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  @media screen and (min-width: 770px) {
+    justify-content: end;
+  }
+}
+
+.new-button {
+  border: 1px solid @pelorous !important;
+  color: @pelorous;
+  background-color: white;
+
+  &:hover {
+    border: 1px solid white;
+    color: white;
+    background-color: @pelorous;
+  }
+}
+
+
 .licences-page {
   display: flex;
   flex-direction: column;
@@ -121,7 +141,10 @@ export default class FishingLicencesView extends Vue {
     margin-left: -30px;
   }
 
+
+
   @media screen and (max-width: 1150px) and (min-width: 770px) {
+
     .new-button {
       font-size: 14px;
     }

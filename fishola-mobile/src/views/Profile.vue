@@ -19,8 +19,11 @@
   #L%
   -->
 <template>
-  <div class=" profile-page ">
+  <div class="profile-page ">
     <div class="pane-content rounded">
+
+      <FishingLicencesView />
+
       <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="profile.firstName"
         v-bind:error="validationErrors['firstName']" />
       <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="profile.lastName"
@@ -49,7 +52,6 @@
       </div>
       <div class="bottom-page-spacer"></div>
     </div>
-    <FishingLicencesView />
 
     <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
       selected="profile" />
