@@ -61,11 +61,11 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @GET
     @Path("/documentations")
-    public List<DocumentationWithBase64ContentBean> getDocumentations(@Context HttpServletRequest request) {
+    public List<DocumentationLight> getDocumentations(@Context HttpServletRequest request) {
         Map<UUID, Pair<String, String>> docs = dao.listDocumentations();
-        List<DocumentationWithBase64ContentBean> result = docs.entrySet()
+        List<DocumentationLight> result = docs.entrySet()
                 .stream()
-                .map(entry -> toDocumentationWithBase64Content(entry, request))
+                .map(entry -> toDocumentationWithSafeURL(entry, request))
                 .toList();
         return result;
     }
@@ -78,14 +78,14 @@ public class DocumentationResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
-    protected DocumentationWithBase64ContentBean toDocumentationWithBase64Content(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
+    protected DocumentationLight toDocumentationWithSafeURL(Map.Entry<UUID, Pair<String,String>> entry, HttpServletRequest request) {
         String url = config.getDeeplinkSafeApiUrl("/api/v1/documentation/" + entry.getKey(), request);
-        DocumentationWithBase64ContentBean result = new DocumentationWithBase64ContentBean();
-        result.setId(entry.getKey());
-        result.setNaturalId(entry.getValue().getLeft());
-        result.setName(entry.getValue().getRight());
-        result.setUrl(url);
-        result.setBase64Content("");
+        DocumentationLight result = ImmutableDocumentationLight.builder()
+                .id(entry.getKey())
+                .naturalId(entry.getValue().getLeft())
+                .name(entry.getValue().getRight())
+                .url(url)
+                .build();
         return result;
     }
 
