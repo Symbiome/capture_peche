@@ -21,6 +21,12 @@
 <template>
     <div class="my-trips page-with-header shifted-background">
         <FisholaHeader />
+        <div class="profile-header keyboardSensitive">
+            <Avatar v-bind:initials="profile.initials" />
+            <div class="profile-header-name">
+                {{ fullName }}
+            </div>
+        </div>
         <div class="page my-trips-page">
             <div class="pane pane-only">
                 <div class="pane-content rounded">
@@ -32,8 +38,8 @@
                             Paramètres
                         </div>
                     </div>
-                    <ProfileView v-if="showProfile" />
-                    <SettingsView v-else />
+                    <ProfileView v-if="showProfile && profile" :profile="profile" @profile-updated="loadProfile" />
+                    <SettingsView v-else-if="profile" />
                 </div>
             </div>
         </div>
@@ -43,9 +49,14 @@
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import ProfileView from "./Profile.vue";
 import SettingsView from "./Settings.vue";
+import { RouterUtils } from "@/router/RouterUtils";
+import ProfileService from "@/services/ProfileService";
+import UserProfile from "@/pojos/UserProfile";
+import router from "@/router";
+import Avatar from "@/components/common/Avatar.vue";
 
 @Component({
     components: {
@@ -53,10 +64,35 @@ import SettingsView from "./Settings.vue";
         ProfileView,
         FisholaFooter,
         SettingsView,
+        Avatar
     },
 })
 export default class ProfileAndSettingsView extends Vue {
     showProfile = true;
+    profile: UserProfile = {
+        firstName: "",
+        email: "",
+        initials: "",
+        sampleBaseId: "",
+        offlineMarker: false,
+        acceptsMailNotifications: false,
+        lastNewsSeenDate: new Date(),
+    };
+    fullName: string = "";
+
+    mounted() {
+        this.loadProfile()
+    }
+
+    loadProfile() {
+        ProfileService.getProfile().then((profile) => {
+            this.profile = profile
+            this.fullName = UserProfile.fullName(profile);
+        }), () => {
+            this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+            RouterUtils.pushRouteNoDuplicate(router, "/login");
+        };
+    }
 
 }
 </script>
@@ -70,6 +106,7 @@ export default class ProfileAndSettingsView extends Vue {
     flex-direction: row;
     justify-content: space-evenly;
     padding-top: 20px;
+    padding-bottom: 20px;
 
     .tab {
         width: 100%;
@@ -92,8 +129,50 @@ export default class ProfileAndSettingsView extends Vue {
 
 @media screen and (max-width: 760px) {
     .tab {
-        padding-top: 20px;
         margin-top: 0px;
+    }
+}
+
+.profile-header {
+    height: 150px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &.keyboardShowing {
+        display: none;
+    }
+
+    .pastille {
+        width: 70px;
+        height: 70px;
+        font-size: @pastille-size;
+        line-height: calc(@pastille-size + @line-height-padding-large);
+        color: @gunmetal;
+    }
+
+    .profile-header-name {
+        margin-top: @vertical-margin-small;
+        font-size: @fontsize-title;
+        line-height: calc(@fontsize-title + @line-height-padding-xx-large);
+        color: @white;
+    }
+
+    @media (max-height: 600px) {
+        height: 100px;
+
+        .pastille {
+            width: 60px;
+            height: 60px;
+        }
+    }
+}
+
+@media screen and (min-width: @desktop-min-width) {
+    .profile-header {
+        height: 200px;
     }
 }
 </style>

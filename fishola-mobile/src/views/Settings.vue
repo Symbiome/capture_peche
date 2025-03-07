@@ -19,53 +19,45 @@
   #L%
   -->
 <template>
-  <div class="settings page-with-header-and-footer shifted-background">
-    <FisholaHeader />
-    <div class="page settings-page">
-      <div class="pane pane-only">
+  <div class="ettings-page">
+    <div class="spinner-wrapper" v-if="loading">
+      <div class="spinner"></div>
+    </div>
 
-        <div class="spinner-wrapper" v-if="loading">
-          <div class="spinner"></div>
-        </div>
+    <div class="pane-content offline" v-if="!loading && offline">
+      <span>Les paramètres ne sont pas disponible sans connexion internet</span>
+    </div>
 
-        <div class="pane-content offline" v-if="!loading && offline">
-          <span>Les paramètres ne sont pas disponible sans connexion internet</span>
-        </div>
+    <div class="pane-content rounded" v-if="!loading && !offline">
+      <div class="settings-row" v-if="settings">
+        <span>Renseigner le poids des captures</span>
+        <FormToggle v-model="settings.promptWeight" />
+      </div>
 
-        <div class="pane-content rounded" v-if="!loading && !offline">
-          <h1 class="no-margin-pane">Paramètres</h1>
+      <div class="settings-row" v-if="settings">
+        <span>Effectuer des prélèvements</span>
+        <FormToggle v-model="settings.promptSamples" /><br />
 
-          <div class="settings-row" v-if="settings">
-            <span>Renseigner le poids des captures</span>
-            <FormToggle v-model="settings.promptWeight" />
-          </div>
+      </div>
+      <div class="info" v-if="samplesDocumentationUrl">
+        Pour pouvoir effectuer des prélèvements, vous devez vous munir
+        d'un kit dans un des points de collecte :
+        <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
+      </div>
 
-          <div class="settings-row" v-if="settings">
-            <span>Effectuer des prélèvements</span>
-            <FormToggle v-model="settings.promptSamples" /><br />
+      <div class="settings-row" v-if="currentAppVersion">
+        <span>
+          Version de l'application : <strong>{{ currentAppVersion }}</strong>
+          <span v-if="currentAppVersion == availableAppVersion"> (à jour)</span>
+          <span v-else-if="availableAppVersion">
+            <br />Une mise à jour est disponible sur le Store</span>
+        </span>
+        <div class="info">
 
-          </div>
-          <div class="info" v-if="samplesDocumentationUrl">
-            Pour pouvoir effectuer des prélèvements, vous devez vous munir
-            d'un kit dans un des points de collecte :
-            <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
-          </div>
-
-          <div class="settings-row" v-if="currentAppVersion">
-            <span>
-              Version de l'application : <strong>{{ currentAppVersion }}</strong>
-              <span v-if="currentAppVersion == availableAppVersion"> (à jour)</span>
-              <span v-else-if="availableAppVersion">
-                <br />Une mise à jour est disponible sur le Store</span>
-            </span>
-            <div class="info">
-
-            </div>
-          </div>
-
-          <div class="bottom-page-spacer"></div>
         </div>
       </div>
+
+      <div class="bottom-page-spacer"></div>
     </div>
     <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>

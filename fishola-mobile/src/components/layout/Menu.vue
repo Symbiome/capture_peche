@@ -30,12 +30,7 @@
       <div class="plus">+</div>
     </div>
     <div class="items">
-      <div
-        class="item"
-        v-if="connected"
-        v-on:click="goProfile"
-        :class="isActive('profile') ? 'active' : ''"
-      >
+      <div class="item" v-if="connected" v-on:click="goProfile" :class="isActive('profile') ? 'active' : ''">
         <span>
           {{ fullName }}
         </span>
@@ -43,13 +38,8 @@
         <div class="active-marker"></div>
       </div>
 
-      <div
-        class="item"
-        v-for="i in availableMenuItems()"
-        :key="'menu-item-' + i.name"
-        v-on:click="i.clickHandler"
-        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }"
-      >
+      <div class="item" v-for="i in availableMenuItems()" :key="'menu-item-' + i.name" v-on:click="i.clickHandler"
+        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }">
         <span>
           {{ i.label }}
         </span>
@@ -84,7 +74,7 @@ export class MenuItem {
     public clickHandler: any,
     public onlyConnected: boolean,
     public onlyUnlogged: boolean
-  ) {}
+  ) { }
 }
 
 @Component({
@@ -140,15 +130,6 @@ export default class Menu extends Vue {
       onlyConnected: true,
       onlyUnlogged: false,
     },
-    {
-      name: "settings",
-      label: "Paramètres",
-      iconName: "settings",
-      clickHandler: this.goSettings,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-
     {
       name: "documentationFaq",
       label: "Documentation",
@@ -325,10 +306,6 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
   }
 
-  goSettings() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/settings");
-  }
 
   goCredits() {
     this.closeMenu();
@@ -406,6 +383,7 @@ export default class Menu extends Vue {
       from {
         left: 0px;
       }
+
       to {
         left: calc(100vw);
       }
@@ -422,6 +400,7 @@ export default class Menu extends Vue {
       from {
         left: calc(100vw);
       }
+
       to {
         left: 0px;
       }
@@ -459,6 +438,7 @@ export default class Menu extends Vue {
       img {
         height: calc(@fontsize-header-title + 20px);
       }
+
       span.env {
         color: @terra-cotta;
         font-size: @fontsize-paragraph;
@@ -546,29 +526,35 @@ export default class Menu extends Vue {
           width: 40px;
           height: 40px;
         }
+
         &.active {
           .active-marker {
             background-color: @white;
           }
+
           .pastille {
             color: @pelorous;
             background: @white;
           }
         }
+
         &.is-back {
           background-color: #0f3845;
           width: @desktop-menu-width;
           justify-items: flex-start;
+
           span {
             width: 100%;
           }
         }
+
         &:hover {
           span {
             font-weight: bold;
           }
         }
       }
+
       span {
         margin-right: @margin-medium;
 
