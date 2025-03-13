@@ -27,27 +27,15 @@
         <div class="pane-content rounded">
           <h1 class="no-margin-pane">Documentation</h1>
           <div class="docs-and-faq-tab">
-            <div
-              class="docs-or-faq"
-              :class="{ selected: activeTab == 'doc' }"
-              @click="goDoc"
-            >
+            <div class="docs-or-faq" :class="{ selected: activeTab == 'doc' }" @click="goDoc">
               Documents à télécharger
             </div>
-            <div
-              class="docs-or-faq"
-              :class="{ selected: activeTab == 'faq' }"
-              @click="goFaq"
-            >
+            <div class="docs-or-faq" :class="{ selected: activeTab == 'faq' }" @click="goFaq">
               <span> FAQ </span>
             </div>
           </div>
           <div v-if="activeTab === 'doc'">
-            <div
-              class="documentation-row"
-              v-for="doc in elements"
-              v-bind:key="doc.id"
-            >
+            <div class="documentation-row" v-for="doc in elements" v-bind:key="doc.id">
               <span>{{ doc.name }}</span>
               <a v-bind:href="doc.url" title="Télécharger" target="_blank">
                 <i class="icon-download" />
@@ -57,6 +45,30 @@
 
           <div v-else>
             <div class="faq-rows" v-html="faqRows"></div>
+            <div class="credits-row">
+              <h1>Information et crédit</h1>
+              <p v-for="p in creditsParagraphs" v-bind:key="p" class="credits-p">
+                {{ p }}
+              </p>
+              <div v-if="creditsLink" class="credits-link">
+                <a v-bind:href="creditsLink" target="_blank">
+                  Plus d'informations
+                  <button>
+                    <i class="icon-arrow" />
+                  </button>
+                </a>
+              </div>
+
+              <div class="credits-logos">
+                <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg'
+                    alt="INRAE" /></a>
+                <a href="https://ofb.gouv.fr/" target="_blank" rel="noopener"><img src='/img/credits/ofb.png'
+                    alt="OFB" /></a>
+                <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img
+                    src='/img/credits/code-lutin.svg' alt="Code Lutin" /></a>
+              </div>
+            </div>
+
 
             <div class="bottom-page-spacer"></div>
           </div>
@@ -66,10 +78,7 @@
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter
-      shortcuts="back,credits,documentation"
-      selected="documentation"
-    />
+    <FisholaFooter shortcuts="back,credits,documentation" selected="documentation" />
   </div>
 </template>
 
@@ -98,6 +107,8 @@ export default class DocumentationView extends Vue {
   activeTab = "doc";
   elements: DocumentationLight[] = [];
   faqRows: string = "";
+  creditsParagraphs: string[] = [];
+  creditsLink = '';
 
   hasRunningTrip: boolean = false;
 
@@ -107,6 +118,7 @@ export default class DocumentationView extends Vue {
     }
     DocumentationService.getDocumentations().then(this.documentationsLoaded);
     DocumentationService.getFaq().then(this.faqLoaded);
+    DocumentationService.getCredits().then(this.creditsLoaded);
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
@@ -124,6 +136,15 @@ export default class DocumentationView extends Vue {
 
   faqLoaded(editorial: Editorial) {
     this.faqRows = editorial.content;
+  }
+
+  creditsLoaded(editorial: Editorial) {
+    editorial.content
+      .split("<br/>")
+      .forEach((p: string) => {
+        this.creditsParagraphs.push(p);
+      });
+    this.creditsLink = editorial.link;
   }
 
   goDoc() {
@@ -168,9 +189,7 @@ export default class DocumentationView extends Vue {
 
     span {
       font-size: @fontsize-small-paragraph;
-      line-height: calc(
-        @fontsize-small-paragraph + @line-height-padding-medium
-      );
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium );
       color: @gunmetal;
     }
 
@@ -184,6 +203,7 @@ export default class DocumentationView extends Vue {
         font-size: @fontsize-paragraph;
         line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
       }
+
       a {
         font-size: @fontsize-paragraph-desktop;
       }
@@ -206,6 +226,7 @@ export default class DocumentationView extends Vue {
 
     display: flex;
     flex-direction: column;
+
     /deep/ .faq {
       margin-top: 10px;
       margin-bottom: 10px;
@@ -222,6 +243,83 @@ export default class DocumentationView extends Vue {
         margin-bottom: 5px;
         font-size: 16px;
         color: @pale-sky;
+      }
+    }
+  }
+
+  .credits-row {
+    padding-left: @margin-x-large;
+    padding-right: @margin-x-large;
+
+    p.credits-p {
+      font-size: @fontsize-small-paragraph;
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
+      color: @pale-sky;
+      text-align: left;
+    }
+
+    .credits-link {
+      width: 100%;
+      text-align: right;
+      font-weight: bold;
+      font-size: @fontsize-header-paragraph;
+      line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
+
+      a,
+      a:visited {
+        text-decoration: none;
+        color: @summer-sky;
+      }
+
+      button {
+        width: 32px;
+        height: 20px;
+        background-color: @summer-sky;
+        color: @white;
+        border: 0px;
+        border-radius: 50px;
+        margin-left: @margin-small;
+      }
+    }
+
+    .credits-logos {
+      margin-top: @vertical-margin-large;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+
+      img {
+        width: 200px;
+        margin-bottom: @vertical-margin-small;
+      }
+    }
+
+    @media screen and (min-width: @desktop-min-width) {
+
+      p.credits-p {
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-medium);
+      }
+
+      .credits-link {
+
+        font-size: @fontsize-paragraph;
+        line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+
+        button {
+          width: 38px;
+          height: 24px;
+          font-size: @fontsize-paragraph;
+          line-height: calc(@fontsize-paragraph + @line-height-padding-large);
+        }
+      }
+
+      .credits-logos {
+        margin-top: @vertical-margin-xx-large;
+
+        img {
+          width: 240px;
+        }
       }
     }
   }

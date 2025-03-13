@@ -240,12 +240,6 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(router, "/community");
   }
 
-
-  goCredits() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/credits");
-  }
-
   logout() {
     Helpers.confirm(
       this.$modal,
@@ -353,14 +347,6 @@ export default class Menu extends Vue {
         label: "Documentation",
         iconName: "files",
         clickHandler: this.goDocumentation,
-        onlyConnected: false,
-        onlyUnlogged: false,
-      },
-      {
-        name: "credits",
-        label: "Infos / Crédits",
-        iconName: "info",
-        clickHandler: this.goCredits,
         onlyConnected: false,
         onlyUnlogged: false,
       },

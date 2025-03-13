@@ -20,17 +20,15 @@
   -->
 <template>
   <div class="credits page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
+    <FisholaHeader />
     <div class="page credits-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
-          <h1>Infos</h1>
+          <h1>Information et crédits</h1>
 
           <div class="credits-row">
-            <p v-for="p in paragraphs"
-               v-bind:key="p"
-               class="credits-p">
-              {{p}}
+            <p v-for="p in paragraphs" v-bind:key="p" class="credits-p">
+              {{ p }}
             </p>
           </div>
 
@@ -38,24 +36,26 @@
             <a v-bind:href="link" target="_blank">
               Plus d'informations
               <button>
-                <i class="icon-arrow"/>
+                <i class="icon-arrow" />
               </button>
             </a>
           </div>
 
           <div class="credits-logos">
-            <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg' alt="INRAE"/></a>
-            <a href="https://ofb.gouv.fr/" target="_blank" rel="noopener"><img src='/img/credits/ofb.png' alt="OFB"/></a>
-            <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src='/img/credits/code-lutin.svg' alt="Code Lutin"/></a>
+            <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src='/img/credits/inrae.svg'
+                alt="INRAE" /></a>
+            <a href="https://ofb.gouv.fr/" target="_blank" rel="noopener"><img src='/img/credits/ofb.png'
+                alt="OFB" /></a>
+            <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src='/img/credits/code-lutin.svg'
+                alt="Code Lutin" /></a>
           </div>
 
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation"
-                   selected="credits" />
+    <FisholaFooter shortcuts="back,credits,documentation" selected="credits" />
   </div>
 </template>
 
@@ -65,7 +65,7 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue';
 import RunningOverlay from '@/components/layout/RunningOverlay.vue';
 import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
-import {Editorial} from '@/pojos/BackendPojos';
+import { Editorial } from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
 import TripsService from '@/services/TripsService';
 
@@ -80,10 +80,10 @@ import { Component, Vue } from 'vue-property-decorator';
 })
 export default class CreditsView extends Vue {
 
-  paragraphs:string[] = [];
+  paragraphs: string[] = [];
   link = '';
 
-  hasRunningTrip:boolean = false;
+  hasRunningTrip: boolean = false;
 
   constructor() {
     super();
@@ -93,13 +93,13 @@ export default class CreditsView extends Vue {
     DocumentationService.getCredits()
       .then(this.creditsLoaded);
     TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+      .then((result: boolean) => this.hasRunningTrip = result);
   }
 
-  creditsLoaded(editorial:Editorial) {
+  creditsLoaded(editorial: Editorial) {
     editorial.content
       .split("<br/>")
-      .forEach((p:string) => {
+      .forEach((p: string) => {
         this.paragraphs.push(p);
       });
     this.link = editorial.link;
@@ -111,7 +111,6 @@ export default class CreditsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-
 @import "../less/main";
 
 .credits-page {
@@ -130,7 +129,8 @@ export default class CreditsView extends Vue {
     font-size: @fontsize-header-paragraph;
     line-height: calc(@fontsize-header-paragraph + @line-height-padding-large);
 
-    a, a:visited {
+    a,
+    a:visited {
       text-decoration: none;
       color: @summer-sky;
     }
@@ -151,6 +151,7 @@ export default class CreditsView extends Vue {
     text-align: center;
     display: flex;
     flex-direction: column;
+
     img {
       width: 200px;
       margin-bottom: @vertical-margin-small;
@@ -179,6 +180,7 @@ export default class CreditsView extends Vue {
 
     .credits-logos {
       margin-top: @vertical-margin-xx-large;
+
       img {
         width: 240px;
       }
@@ -186,5 +188,4 @@ export default class CreditsView extends Vue {
   }
 
 }
-
 </style>
