@@ -343,7 +343,7 @@ export default class Menu extends Vue {
       {
         name: "dashboard-global",
         label: "Statistiques",
-        iconName: "dashboard",
+        iconName: "stats",
         clickHandler: this.goDashboardGlobal,
         onlyConnected: true,
         onlyUnlogged: false,

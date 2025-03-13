@@ -57,8 +57,10 @@
         </div>
       </div>
 
-      <div class="bottom-page-spacer"></div>
     </div>
+    <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles"
+      text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
+      @click="becomeScaleCollector" />
     <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>
 </template>
@@ -76,12 +78,14 @@ import { Component, Watch, Vue } from 'vue-property-decorator';
 import DocumentationService from '../services/DocumentationService';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
+import BottomInducementView from '@/components/common/BottomInducement.vue';
 
 @Component({
   components: {
     FisholaHeader,
     FormToggle,
-    FisholaFooter
+    FisholaFooter,
+    BottomInducementView
   }
 })
 export default class SettingsView extends Vue {
@@ -156,6 +160,10 @@ export default class SettingsView extends Vue {
         this.availableAppVersion = appUpdateInfo.availableVersionName ? appUpdateInfo.availableVersionName : ""
       }
     }
+  }
+
+  becomeScaleCollector() {
+    // TODO
   }
 
 }

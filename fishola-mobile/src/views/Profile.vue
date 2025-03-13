@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="profile-page ">
-    <div class="pane-content rounded">
+    <div class="rounded">
 
       <FishingLicencesView />
 
@@ -50,7 +50,12 @@
           <button v-on:click="saveProfile">Modifier</button>
         </div>
       </div>
-      <div class="bottom-page-spacer"></div>
+      <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
+        text="Vous pouvez vous inscrire à notre nouveau programme d'ambassadeur." actionText="Je m'inscris"
+        @click="becomeAmbassador" />
+
+      <div class="bottom-page-spacer">
+      </div>
     </div>
 
     <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
@@ -75,6 +80,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
+import BottomInducementView from "@/components/common/BottomInducement.vue";
 
 @Component({
   components: {
@@ -83,6 +89,7 @@ import FishingLicencesView from "./FishingLicences.vue";
     FormMultiValues,
     FishingLicencesView,
     FisholaFooter,
+    BottomInducementView
   },
 })
 export default class ProfileView extends Vue {
@@ -185,6 +192,10 @@ export default class ProfileView extends Vue {
       const keys = Object.keys(this.validationErrors);
       keys.forEach((key) => (this.validationErrors[key] = ""));
     }
+  }
+
+  becomeAmbassador() {
+    // TODO
   }
 
   editPassword() {
