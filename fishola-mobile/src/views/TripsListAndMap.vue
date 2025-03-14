@@ -34,7 +34,7 @@
             </div>
           </div>
           <MyTrips v-if="!showMap" />
-          <div v-else>Carte</div>
+          <MyTripsMapView />
         </div>
       </div>
     </div>
@@ -47,16 +47,14 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Vue } from "vue-property-decorator";
-import Helpers from "../services/Helpers";
-import DocumentationService from "../services/DocumentationService";
-import ProfileService from "../services/ProfileService";
-import { News } from "@/pojos/BackendPojos";
+import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
 
 @Component({
   components: {
     FisholaHeader,
     MyTrips,
     FisholaFooter,
+    MyTripsMapView,
     NewsView,
   },
 })

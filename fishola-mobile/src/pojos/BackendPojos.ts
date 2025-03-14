@@ -241,6 +241,20 @@ export interface LicenceResponseBean {
     type: LicenceType;
 }
 
+export interface CatchMarker {
+    id: string;
+    date: Date;
+    tripName: string;
+    specieName: string;
+    lakeName: string;
+    latitude: number;
+    longitude: number;
+    size: number;
+    weight: number;
+    maillage: Maillage;
+    hasValidCoordinates: boolean;
+}
+
 export interface Serializable {
 }
 

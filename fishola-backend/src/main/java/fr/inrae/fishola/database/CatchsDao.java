@@ -25,9 +25,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.Lake;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.CatchMeasurementPictureDao;
@@ -37,7 +39,9 @@ import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +50,9 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 
+import fr.inrae.fishola.rest.trips.CatchBean;
+import fr.inrae.fishola.rest.trips.CatchMarker;
+import fr.inrae.fishola.rest.trips.ImmutableCatchMarker;
 import jakarta.inject.Singleton;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
@@ -56,6 +63,7 @@ import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 
+import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.or;
 import static org.jooq.impl.DSL.trueCondition;
@@ -98,6 +106,47 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public List<Catch> listCatchs(UUID tripId) {
         List<Catch> result = withDao(CatchDao.class, dao -> dao.fetchByTripId(tripId));
+        return result;
+    }
+
+    public List<CatchMarker> catchMarkersForUser(UUID userId) {
+        List<CatchMarker> result = withContext(context -> context
+             .select(Tables.CATCH.ID,
+                     Tables.SPECIES.NAME.as("specieName"),
+                     Tables.TRIP.NAME.as("tripName"),
+                     Tables.TRIP.CREATED_ON.as("date"),
+                     Tables.LAKE.NAME.as("lakeName"),
+                     coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as("longitude"),
+                     coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as("latitude"),
+                     Tables.LAKE.LATITUDE.as("default_lake_latitude"),
+                     Tables.LAKE.LONGITUDE.as("default_lake_longitude"),
+                     coalesce(Tables.CATCH.SIZE, 0).as("size"),
+                     coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
+                     Tables.CATCH.MAILLEE.as("maillage")
+             )
+             .from(Tables.CATCH)
+             .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+             .innerJoin(Tables.LAKE).on(Tables.TRIP.LAKE_ID.eq(Tables.LAKE.ID))
+             .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
+             .where(Tables.TRIP.OWNER_ID.eq(userId))
+             .fetch()
+             .map(record -> ImmutableCatchMarker.builder()
+                .id(record.get(Tables.CATCH.ID))
+                .tripName(record.get("tripName", String.class))
+                .specieName(record.get("specieName", String.class))
+                .date(record.get("date", LocalDateTime.class).toLocalDate())
+                .lakeName(record.get("lakeName", String.class))
+                .longitude(record.get("longitude", Double.class))
+                .latitude(record.get("latitude", Double.class))
+                .size(record.get("size", Double.class))
+                .weight(record.get("weight", Double.class))
+                .maillage(record.get("maillage", Maillage.class))
+                .hasValidCoordinates(
+                        record.get("default_lake_longitude") != record.get("longitude") ||
+                        record.get("default_lake_latitude") != record.get("latitude")
+                )
+                .build())
+            );
         return result;
     }
 

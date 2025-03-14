@@ -513,6 +513,15 @@ public class TripResource extends AbstractFisholaResource {
         return response;
     }
 
+    @GET
+    @Path("/markers")
+    public  Response catchMap() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        List<CatchMarker> markers = catchsDao.catchMarkersForUser(userId);
+        Response response = wrapEntity(markers, userIdAndRenewal);
+        return response;
+    }
 
 
     @GET

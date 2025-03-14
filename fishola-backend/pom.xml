@@ -429,6 +429,7 @@
                         <class>fr.inrae.fishola.rest.dashboard.GlobalDashboard</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceFromClientBean</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceResponseBean</class>
+                        <class>fr.inrae.fishola.rest.trips.CatchMarker</class>
                     </classes>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>
