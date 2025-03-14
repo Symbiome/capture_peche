@@ -142,8 +142,8 @@ public class CatchsDao extends AbstractFisholaDao {
                 .weight(record.get("weight", Double.class))
                 .maillage(record.get("maillage", Maillage.class))
                 .hasValidCoordinates(
-                        record.get("default_lake_longitude") != record.get("longitude") ||
-                        record.get("default_lake_latitude") != record.get("latitude")
+                        record.get("default_lake_longitude") != null && !record.get("default_lake_longitude").equals(record.get("longitude")) ||
+                        record.get("default_lake_latitude") != null && !record.get("default_lake_latitude").equals(record.get("latitude"))
                 )
                 .build())
             );

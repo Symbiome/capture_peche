@@ -20,27 +20,35 @@
   -->
 <template>
     <div class="pane ">
-        <div class="info">
+        <div class="info" v-if="validMarkers.length > 0">
             Cette carte n'est visible que par vous. Les coordonées de vos prises ne sont pas divulgées aux autres
             pêcheurs.
         </div>
-        <div class="map">
-            <l-map :zoom="9" :center="center" :options="{
-                zoomSnap: 0.5,
-            }" style="height: 100%; width: 100%" v-if="markers.length > 0">
+        <div class="map" v-if="validMarkers.length > 0">
+            <l-map ref="map" @ready="madReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
                 <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
-                <l-marker v-for="c in markers" v-bind:key="c.id" :lat-lng="toLatLng(c)">
+                <l-marker v-for="c in validMarkers" v-bind:key="c.id" :lat-lng="toLatLng(c)"
+                    :icon="c.maillage == 'MAILLEE' ? icon1 : icon2">
+                    <!--<l-icon :icon-anchor="[16, 16]" :icon-size="[32, 37]">
+                        <div class="custom-icon">
+                            <div class="headline">
+                                {{ c.specieName }}
+                            </div>
+                            <i class="icon-fish" />
+                        </div>
+                    </l-icon>-->
                     <l-popup class="catch-marker">
                         <p class="title">{{ c.tripName }}</p>
 
                         <p>
                             <i class="fish icon-fish" />
-                            {{ c.specieName }} ({{
-                                c.maillage === 'NON_DEFINI' ? ''
-                                    : (c.maillage == 'MAILLEE' ?
-                                        'maillé' : 'non maillé') }})
+                            {{ c.specieName }}
+                            {{ c.maillage === 'NON_DEFINI' ? ''
+                                : (c.maillage == 'MAILLEE' ?
+                                    '(maillé)' : '(non maillé)')
+                            }}
                         </p>
 
                         <p class="infos">
@@ -49,6 +57,15 @@
                     </l-popup>
                 </l-marker>
             </l-map>
+        </div>
+        <div class="error-markers" v-if="invalidMarkers.length > 0">
+            <b>{{ invalidMarkers.length }}</b> prises sans position renseignée
+            <!-- <ul>
+                <li v-for="c in invalidMarkers" :key="c.id">
+                    {{ formattedDate(c.date) }} - {{ c.specieName }} ({{ c.lakeName }} {{ c.tripName }})
+                </li>
+            </ul>-->
+
         </div>
     </div>
 </template>
@@ -60,7 +77,7 @@ import TripsService from '@/services/TripsService';
 
 import { Component, Vue } from 'vue-property-decorator';
 
-import { latLng, Icon } from "leaflet";
+import L, { latLng, Icon, icon } from "leaflet";
 
 type D = Icon.Default & {
     _getIconUrl?: string;
@@ -74,7 +91,7 @@ Icon.Default.mergeOptions({
     shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker, LPopup, LIcon } from "vue2-leaflet";
 import Helpers from '@/services/Helpers';
 
 @Component({
@@ -83,17 +100,32 @@ import Helpers from '@/services/Helpers';
         LTileLayer,
         LMarker,
         LPopup,
+        LIcon
     }
 })
 export default class MyTripsMapView extends Vue {
-    markers: CatchMarker[] = [];
+    validMarkers: CatchMarker[] = [];
+    invalidMarkers: CatchMarker[] = [];
     center = latLng(46.071623, 5.890511);
+    icon1 = icon({
+        iconUrl: "/img/fish-blue.svg",
+        iconSize: [32, 37],
+        iconAnchor: [16, 37]
+    })
+    icon2 = icon({
+        iconUrl: "/img/fish-yellow.svg",
+        iconSize: [32, 37],
+        iconAnchor: [16, 37]
+    })
+    map: any;
 
     mounted() {
         TripsService.catchMarkers().then(
             (markers) => {
-                console.error(markers);
-                this.markers = markers
+                this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates)
+                this.invalidMarkers = markers.filter((m: CatchMarker) => !m.hasValidCoordinates)
+                console.error(JSON.stringify(this.invalidMarkers));
+                this.zoomToVisibleMarkers();
             },
             (error: Error) => { console.error(error) }
         );
@@ -114,12 +146,40 @@ export default class MyTripsMapView extends Vue {
         const dateString = date.toLocaleDateString("fr-FR", dayOptions);
         return dateString;
     }
+
+    zoomToVisibleMarkers() {
+        if (this.map && this.validMarkers.length > 0) {
+            var visibleLayerGroup = new L.FeatureGroup();
+
+            this.map.eachLayer(function (layer: L.Layer) {
+                if (layer instanceof L.Marker)
+                    visibleLayerGroup.addLayer(layer);
+            });
+
+            const bounds = visibleLayerGroup.getBounds();
+            this.map.fitBounds(bounds);
+        }
+    }
+
+    madReady() {
+        // @ts-ignore
+        this.map = this.$refs.map.mapObject;
+        this.zoomToVisibleMarkers();
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
+
+.info {
+    padding: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 2px solid @very-light-grey;
+    border-radius: 10px;
+}
 
 .map {
     height: 80vh;
@@ -141,6 +201,24 @@ export default class MyTripsMapView extends Vue {
         .infos {
             padding-bottom: 10px;
         }
+    }
+}
+
+.error-markers {
+    width: 100%;
+    color: @cardinal;
+    text-align: right;
+}
+
+.custom-icon {
+    background-color: @cyprus;
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 20px 20px 20px 20px;
+    text-align: center;
+
+    .icon-fish {
+        color: @pelorous;
     }
 }
 </style>
