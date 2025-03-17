@@ -198,14 +198,14 @@ export default class Menu extends Vue {
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          RouterUtils.pushRouteNoDuplicate(router, "/trips");
+          RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
         } else {
           RouterUtils.pushRouteNoDuplicate(router, "/about");
         }
@@ -217,17 +217,17 @@ export default class Menu extends Vue {
 
   goProfile() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/profile");
+    RouterUtils.pushRouteNoDuplicate(router, "/profile/profile");
   }
 
   goDashboardPersonal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-personal");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-personal/dashboard");
   }
 
   goDashboardGlobal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-global");
+    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-global/dashboard");
   }
 
   goDocumentation() {
@@ -237,7 +237,7 @@ export default class Menu extends Vue {
 
   goSocialAndNews() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/community");
+    RouterUtils.pushRouteNoDuplicate(router, "/community/social");
   }
 
   logout() {

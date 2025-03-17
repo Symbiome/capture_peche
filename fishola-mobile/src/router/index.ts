@@ -161,13 +161,15 @@ const routes = [
     props: true,
   },
   {
-    path: "/dashboard-personal",
+    path: "/dashboard-personal/:visualizationMode",
     name: "dashboard-personal",
+    props: true,
     component: DashboardPersonalView,
   },
   {
-    path: "/dashboard-global",
+    path: "/dashboard-global/:visualizationMode",
     name: "dashboard-global",
+    props: true,
     component: DashboardGlobalView,
   },
   {
@@ -218,8 +220,9 @@ const routes = [
     component: Settings,
   },
   {
-    path: "/community",
+    path: "/community/:visualizationMode",
     name: "community",
+    props: true,
     component: SocialAndNewsView,
   },
   {
@@ -229,8 +232,9 @@ const routes = [
     component: Credits,
   },
   {
-    path: "/profile",
+    path: "/profile/:visualizationMode",
     name: "profile",
+    props: true,
     component: ProfileAndSettingsView,
   },
   {

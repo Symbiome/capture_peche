@@ -27,20 +27,23 @@
                 <div class="pane-content rounded">
                     <h1 class="hide-on-mobile">Profil et Paramètres</h1>
                     <div class="tabs">
-                        <div class="tab" :class="showProfile ? 'selected' : ''" @click="showProfile = true">
+                        <div class="tab" :class="visualizationMode == 'profile' ? 'selected' : ''"
+                            @click="changeVisualizationMode('profile')">
                             Mon profil
                         </div>
-                        <div class="tab" :class="showProfile ? '' : 'selected'" @click="showProfile = false">
+                        <div class="tab" :class="visualizationMode == 'profile' ? '' : 'selected'"
+                            @click="changeVisualizationMode('settings')">
                             Paramètres
                         </div>
                     </div>
-                    <div class="profile-header keyboardSensitive" v-if="showProfile && profile">
+                    <div class="profile-header keyboardSensitive" v-if="visualizationMode == 'profile' && profile">
                         <Avatar v-bind:initials="profile.initials" class="profile-avatar" />
                         <div class="profile-header-name">
                             {{ fullName }}
                         </div>
                     </div>
-                    <ProfileView v-if="showProfile && profile" :profile="profile" @profile-updated="loadProfile" />
+                    <ProfileView v-if="visualizationMode == 'profile' && profile" :profile="profile"
+                        @profile-updated="loadProfile" />
                     <SettingsView v-else-if="profile" />
                 </div>
             </div>
@@ -70,7 +73,9 @@ import Avatar from "@/components/common/Avatar.vue";
     },
 })
 export default class ProfileAndSettingsView extends Vue {
-    showProfile = true;
+    @Prop()
+    visualizationMode: string;
+
     profile: UserProfile = {
         firstName: "",
         email: "",
@@ -94,6 +99,11 @@ export default class ProfileAndSettingsView extends Vue {
             this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
             RouterUtils.pushRouteNoDuplicate(router, "/login");
         };
+    }
+
+
+    changeVisualizationMode(newMode: string) {
+        this.$router.push({ params: { visualizationMode: newMode } });
     }
 
 }

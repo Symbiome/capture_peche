@@ -38,18 +38,20 @@
                 </option>
               </select>
             </div>
-            <a v-bind:href="exportUrl" v-if="!evolutionMode && !asyncExport" id="export-button" class="export"
-              title="Exporter" target="_blank">
+            <a v-bind:href="exportUrl" v-if="visualizationMode === 'dashboard' && !asyncExport" id="export-button"
+              class="export" title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
             </a>
           </h1>
 
           <div class="dashboard-modes">
-            <div class="dashboard-mode" v-bind:class="evolutionMode ? '' : 'selected'" v-on:click="showGlobalDashboard">
+            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
+              v-on:click="showGlobalDashboard">
               Tableau de bord
             </div>
-            <div class="dashboard-mode" v-bind:class="evolutionMode ? 'selected' : ''" v-on:click="showEvolution">
+            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
+              v-on:click="changeVisualizationMode('evolution')">
               Évolution
             </div>
           </div>
@@ -63,11 +65,11 @@
               internet</span>
           </div>
 
-          <GlobalDashboardComponent v-if="!evolutionMode && globalDashboard"
+          <GlobalDashboardComponent v-if="visualizationMode !== 'evolution' && globalDashboard"
             :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
 
-          <p v-if="evolutionMode">Evolution </p>
+          <p v-if="visualizationMode === 'evolution'">Evolution </p>
 
         </div>
       </div>
@@ -91,7 +93,7 @@ import {
   GlobalDashboardAndSpecies,
 } from "@/services/DashboardService";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import { Lake } from "@/pojos/BackendPojos";
@@ -107,7 +109,8 @@ import ReferentialService from "../services/ReferentialService";
   },
 })
 export default class DashboardGlobalView extends Vue {
-  evolutionMode: boolean = false;
+  @Prop()
+  visualizationMode: string;
 
   exportUrl: string = "";
 
@@ -123,6 +126,10 @@ export default class DashboardGlobalView extends Vue {
   selectedLakeUUID = "";
   lakes: Lake[] = [];
   isFirstLoad = true;
+
+  changeVisualizationMode(newMode: string) {
+    this.$router.push({ params: { visualizationMode: newMode } });
+  }
 
   created() {
     if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
@@ -162,7 +169,7 @@ export default class DashboardGlobalView extends Vue {
     } else {
       localStorage.latestSelectedLakeUUID = "all"
     }
-    if (!this.evolutionMode) {
+    if (this.visualizationMode === 'dashboard') {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
         this.selectedLakeUUID
@@ -210,7 +217,7 @@ export default class DashboardGlobalView extends Vue {
 
 
   showGlobalDashboard() {
-    this.evolutionMode = false;
+    this.changeVisualizationMode('dashboard')
     if (!this.globalDashboard) {
       this.ready = false;
       DashboardService.loadGlobalDashboardOrTimeout(
@@ -223,11 +230,6 @@ export default class DashboardGlobalView extends Vue {
   globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
     this.globalDashboard = data;
     this.ready = true;
-  }
-
-  showEvolution() {
-    this.evolutionMode = true
-
   }
 
   askForAsyncExport() {

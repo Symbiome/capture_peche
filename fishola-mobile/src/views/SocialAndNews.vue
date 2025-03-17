@@ -26,17 +26,18 @@
         <div class="pane-content rounded">
           <h1 class="hide-on-mobile">Communauté</h1>
           <div class="trips-and-news-tab">
-            <div class="trips-or-news" :class="showNews ? '' : 'selected'" @click="showNews = false">
+            <div class="trips-or-news" :class="visualizationMode === 'news' ? '' : 'selected'"
+              @click="changeVisualizationMode('social')">
               Autour de moi
             </div>
-            <div class="trips-or-news" :class="showNews ? 'selected' : ''" @click="showNewsTab">
+            <div class="trips-or-news" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
               <span> Communications </span>
               <div class="news-badge" v-if="unreadNewsCount > 0">
                 {{ unreadNewsCount }}
               </div>
             </div>
           </div>
-          <div v-if="!showNews">
+          <div v-if="visualizationMode === 'social'">
             Réseau social
           </div>
           <NewsView :news="news" v-else />
@@ -51,7 +52,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
@@ -66,8 +67,10 @@ import { News } from "@/pojos/BackendPojos";
   },
 })
 export default class SocialAndNewsView extends Vue {
+  @Prop()
+  visualizationMode: string;
+
   unreadNewsCount = 0;
-  showNews = false;
   news: News[] = [];
 
   mounted() {
@@ -96,8 +99,12 @@ export default class SocialAndNewsView extends Vue {
     }
   }
 
+  changeVisualizationMode(newMode: string) {
+    this.$router.push({ params: { visualizationMode: newMode } });
+  }
+
   async showNewsTab() {
-    this.showNews = true;
+    this.changeVisualizationMode('news');
     if (this.unreadNewsCount > 0) {
       try {
         let profile = await ProfileService.getProfile();

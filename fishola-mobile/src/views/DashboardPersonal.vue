@@ -38,19 +38,20 @@
                 </option>
               </select>
             </div>
-            <a v-bind:href="exportUrl" v-if="!evolutionMode && !asyncExport" id="export-button" class="export"
-              title="Exporter" target="_blank">
+            <a v-bind:href="exportUrl" v-if="visualizationMode !== 'evolution' && !asyncExport" id="export-button"
+              class="export" title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
             </a>
           </h1>
 
           <div class="dashboard-modes">
-            <div class="dashboard-mode" v-bind:class="evolutionMode ? '' : 'selected'"
+            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
               v-on:click="showPersonalDashboard">
               Tableau de bord
             </div>
-            <div class="dashboard-mode" v-bind:class="evolutionMode ? 'selected' : ''" v-on:click="showEvolution">
+            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
+              v-on:click="changeVisualizationMode('evolution')">
               Évolution
             </div>
           </div>
@@ -63,9 +64,9 @@
             <span>Le tableau de bord n'est pas disponible sans connexion
               internet</span>
           </div>
-          <PersonalDashboard v-if="!evolutionMode && personalDashboard" :year="year" :dashboardData="personalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
-          <p v-if="evolutionMode">Evolution </p>
+          <PersonalDashboard v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
+            :dashboardData="personalDashboard" :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
+          <p v-if="visualizationMode === 'evolution'">Evolution </p>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -88,7 +89,7 @@ import {
   DashboardAndSpecies
 } from "@/services/DashboardService";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import { Lake } from "@/pojos/BackendPojos";
@@ -104,7 +105,8 @@ import ReferentialService from "../services/ReferentialService";
   },
 })
 export default class DashboardPersonalView extends Vue {
-  evolutionMode: boolean = false;
+  @Prop()
+  visualizationMode: string;
 
   exportUrl: string = "";
 
@@ -120,6 +122,10 @@ export default class DashboardPersonalView extends Vue {
   selectedLakeUUID = "";
   lakes: Lake[] = [];
   isFirstLoad = true;
+
+  changeVisualizationMode(newMode: string) {
+    this.$router.push({ params: { visualizationMode: newMode } });
+  }
 
   created() {
     if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
@@ -159,7 +165,7 @@ export default class DashboardPersonalView extends Vue {
     } else {
       localStorage.latestSelectedLakeUUID = "all"
     }
-    if (!this.evolutionMode) {
+    if (this.visualizationMode == 'dashboard') {
       DashboardService.loadDashboardOrTimeout(
         this.year,
         this.selectedLakeUUID
@@ -220,14 +226,10 @@ export default class DashboardPersonalView extends Vue {
   }
 
   showPersonalDashboard() {
-    this.evolutionMode = false;
+    this.changeVisualizationMode('dashboard')
     if (this.personalDashboard) {
       this.ready = true;
     }
-  }
-
-  showEvolution() {
-    this.evolutionMode = true;
   }
 
   askForAsyncExport() {
