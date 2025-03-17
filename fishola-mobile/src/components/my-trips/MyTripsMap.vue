@@ -54,6 +54,7 @@
                         <p class="infos">
                             <span class="trip-date">{{ formattedDate(c.date) }}</span> - {{ c.lakeName }}
                         </p>
+                        <button class="button" @click="showCatch(c)">Voir la sortie</button>
                     </l-popup>
                 </l-marker>
             </l-map>
@@ -75,7 +76,7 @@
 import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
 
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import L, { latLng, Icon, icon } from "leaflet";
 
@@ -104,6 +105,8 @@ import Helpers from '@/services/Helpers';
     }
 })
 export default class MyTripsMapView extends Vue {
+    @Prop()
+    visible: boolean;
     validMarkers: CatchMarker[] = [];
     invalidMarkers: CatchMarker[] = [];
     center = latLng(46.071623, 5.890511);
@@ -120,15 +123,21 @@ export default class MyTripsMapView extends Vue {
     map: any;
 
     mounted() {
-        TripsService.catchMarkers().then(
-            (markers) => {
-                this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates)
-                this.invalidMarkers = markers.filter((m: CatchMarker) => !m.hasValidCoordinates)
-                console.error(JSON.stringify(this.invalidMarkers));
-                this.zoomToVisibleMarkers();
-            },
-            (error: Error) => { console.error(error) }
-        );
+        this.computeMapIfVisible();
+    }
+
+    @Watch("visible")
+    computeMapIfVisible() {
+        if (this.visible && this.validMarkers.length == 0) {
+            TripsService.catchMarkers().then(
+                (markers) => {
+                    this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates)
+                    this.invalidMarkers = markers.filter((m: CatchMarker) => !m.hasValidCoordinates)
+                    this.zoomToVisibleMarkers();
+                },
+                (error: Error) => { console.error(error) }
+            );
+        }
     }
 
     toLatLng(marker: CatchMarker) {
@@ -166,6 +175,16 @@ export default class MyTripsMapView extends Vue {
         this.map = this.$refs.map.mapObject;
         this.zoomToVisibleMarkers();
     }
+
+    showCatch(c: CatchMarker) {
+        this.$router.push({
+            name: 'catch',
+            params: {
+                'tripId': c.tripId,
+                'catchId': c.id
+            }
+        });
+    }
 }
 </script>
 
@@ -200,6 +219,29 @@ export default class MyTripsMapView extends Vue {
 
         .infos {
             padding-bottom: 10px;
+        }
+
+        .button {
+            height: 50px;
+            border-radius: 50px;
+
+            font-style: normal;
+            font-weight: bold;
+            font-size: @fontsize-button;
+            line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+            border: 0px;
+            padding-left: @margin-medium;
+            padding-right: @margin-medium;
+
+            background-color: @terra-cotta;
+            color: @white;
+
+            &:hover {
+                background-color: @white;
+                color: @terra-cotta;
+                border: 2px solid @terra-cotta;
+            }
         }
     }
 }

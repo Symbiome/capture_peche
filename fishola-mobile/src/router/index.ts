@@ -108,8 +108,9 @@ const routes = [
     component: Register,
   },
   {
-    path: "/trips",
+    path: "/trips/:visualizationMode",
     name: "trips",
+    props: true,
     component: TripsListAndMapView,
   },
   {

@@ -244,6 +244,7 @@ export interface LicenceResponseBean {
 export interface CatchMarker {
     id: string;
     date: Date;
+    tripId: string;
     tripName: string;
     specieName: string;
     lakeName: string;

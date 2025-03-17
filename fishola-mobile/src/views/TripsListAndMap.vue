@@ -26,15 +26,17 @@
         <div class="pane-content rounded">
           <h1 class="hide-on-mobile">Mes Sorties</h1>
           <div class="trips-and-news-tab">
-            <div class="trips-or-news" :class="showMap ? '' : 'selected'" @click="showMap = false">
+            <div class="trips-or-news" :class="visualizationMode === 'list' ? 'selected' : ''"
+              @click="changeVisualizationMode('list')">
               Liste
             </div>
-            <div class="trips-or-news" :class="showMap ? 'selected' : ''" @click="showMap = true">
+            <div class="trips-or-news" :class="visualizationMode !== 'list' ? 'selected' : ''"
+              @click="changeVisualizationMode('map')">
               Carte
             </div>
           </div>
-          <MyTrips v-if="!showMap" />
-          <MyTripsMapView />
+          <MyTrips v-if="visualizationMode === 'list'" />
+          <MyTripsMapView :visible="visualizationMode == 'map'" />
         </div>
       </div>
     </div>
@@ -46,7 +48,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
 
 @Component({
@@ -59,9 +61,12 @@ import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
   },
 })
 export default class TripsListAndMapView extends Vue {
-  unreadNewsCount = 0;
-  showMap = false;
+  @Prop({ default: "list" })
+  visualizationMode: string;
 
+  changeVisualizationMode(newMode: string) {
+    this.$router.push({ params: { visualizationMode: newMode } });
+  }
 }
 </script>
 

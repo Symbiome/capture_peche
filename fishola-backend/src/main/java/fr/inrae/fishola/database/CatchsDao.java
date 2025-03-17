@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.CatchMarker;
@@ -113,6 +114,7 @@ public class CatchsDao extends AbstractFisholaDao {
         List<CatchMarker> result = withContext(context -> context
              .select(Tables.CATCH.ID,
                      Tables.SPECIES.NAME.as("specieName"),
+                     Tables.TRIP.ID.as("tripId"),
                      Tables.TRIP.NAME.as("tripName"),
                      Tables.TRIP.CREATED_ON.as("date"),
                      Tables.LAKE.NAME.as("lakeName"),
@@ -132,6 +134,7 @@ public class CatchsDao extends AbstractFisholaDao {
              .fetch()
              .map(record -> ImmutableCatchMarker.builder()
                 .id(record.get(Tables.CATCH.ID))
+                .tripId(record.get("tripId", UUID.class))
                 .tripName(record.get("tripName", String.class))
                 .specieName(record.get("specieName", String.class))
                 .date(record.get("date", LocalDateTime.class).toLocalDate())

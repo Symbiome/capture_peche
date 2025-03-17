@@ -13,6 +13,7 @@ public interface CatchMarker {
 
     UUID id();
     LocalDate date();
+    UUID tripId();
     String tripName();
     String specieName();
     String lakeName();
