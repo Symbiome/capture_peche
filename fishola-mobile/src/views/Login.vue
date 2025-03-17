@@ -117,7 +117,7 @@ export default class LoginView extends Vue {
         }
 
         this.$root.$emit("profile-updated");
-        RouterUtils.pushRouteNoDuplicate(router, "trips");
+        RouterUtils.pushRouteNoDuplicate(router, "trips/list");
 
         // Après login, on tente de télécharger les settings
         ProfileService.prepareCaches().then(

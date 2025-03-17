@@ -45,12 +45,12 @@
             </a>
           </h1>
 
-          <div class="dashboard-modes">
-            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
+          <div class="main-tabs">
+            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
               v-on:click="showPersonalDashboard">
               Tableau de bord
             </div>
-            <div class="dashboard-mode" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
+            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
               v-on:click="changeVisualizationMode('evolution')">
               Évolution
             </div>
@@ -124,7 +124,9 @@ export default class DashboardPersonalView extends Vue {
   isFirstLoad = true;
 
   changeVisualizationMode(newMode: string) {
-    this.$router.push({ params: { visualizationMode: newMode } });
+    if (this.visualizationMode !== newMode) {
+      this.$router.push({ params: { visualizationMode: newMode } });
+    }
   }
 
   created() {
@@ -341,25 +343,7 @@ export default class DashboardPersonalView extends Vue {
       color: @pale-sky;
     }
 
-    .dashboard-modes {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-evenly;
 
-      .dashboard-mode {
-        color: @pale-sky;
-        padding-bottom: 5px;
-        padding-left: 20px;
-        padding-right: 20px;
-        cursor: pointer;
-
-        &.selected {
-          color: @gunmetal;
-          border-bottom: 2px solid @pelorous;
-        }
-      }
-    }
 
     .two-sections {
       display: flex;
@@ -442,12 +426,6 @@ export default class DashboardPersonalView extends Vue {
         margin-left: 40px;
         margin-top: -10px;
       }
-
-      .dashboard-modes {
-        .dashboard-mode {
-          width: 40%;
-        }
-      }
     }
   }
 
@@ -511,7 +489,7 @@ export default class DashboardPersonalView extends Vue {
       h1 {
         a.export {
           position: relative;
-          top: -115px;
+          top: -100px;
           right: 18px;
           font-weight: bold;
           line-height: 22px;

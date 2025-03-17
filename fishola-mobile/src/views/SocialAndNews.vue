@@ -23,24 +23,24 @@
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">
-        <div class="pane-content rounded">
+        <div class="pane-content large rounded">
           <h1 class="hide-on-mobile">Communauté</h1>
-          <div class="trips-and-news-tab">
-            <div class="trips-or-news" :class="visualizationMode === 'news' ? '' : 'selected'"
+          <div class="main-tabs">
+            <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
               @click="changeVisualizationMode('social')">
               Autour de moi
             </div>
-            <div class="trips-or-news" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
+            <div class="tab" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
               <span> Communications </span>
               <div class="news-badge" v-if="unreadNewsCount > 0">
                 {{ unreadNewsCount }}
               </div>
             </div>
           </div>
-          <div v-if="visualizationMode === 'social'">
+          <div class="pane-content" v-if="visualizationMode === 'social'">
             Réseau social
           </div>
-          <NewsView :news="news" v-else />
+          <NewsView class="pane-content" :news="news" v-else />
         </div>
       </div>
     </div>
@@ -57,6 +57,7 @@ import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
 import { News } from "@/pojos/BackendPojos";
+import VueRouter from "vue-router";
 
 @Component({
   components: {
@@ -100,7 +101,9 @@ export default class SocialAndNewsView extends Vue {
   }
 
   changeVisualizationMode(newMode: string) {
-    this.$router.push({ params: { visualizationMode: newMode } });
+    if (this.visualizationMode !== newMode) {
+      this.$router.push({ params: { visualizationMode: newMode } });
+    }
   }
 
   async showNewsTab() {

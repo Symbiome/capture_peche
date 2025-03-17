@@ -29,20 +29,11 @@
             <BackButton class="hide-on-mobile" />
             Espèce recherchée
           </h1>
-          <div
-            v-for="s in sortedSpecies()"
-            v-bind:key="s.id"
-            class="species-item"
-            v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'"
-          >
+          <div v-for="s in sortedSpecies()" v-bind:key="s.id" class="species-item"
+            v-bind:class="trip.speciesIds.indexOf(s.id) == -1 ? '' : 'selected'">
             <div class="item-selection">
-              <input
-                type="checkbox"
-                v-bind:id="'checkbox-' + s.id"
-                v-bind:value="s.id"
-                v-model="trip.speciesIds"
-                class="pelorous-checkbox"
-              />
+              <input type="checkbox" v-bind:id="'checkbox-' + s.id" v-bind:value="s.id" v-model="trip.speciesIds"
+                class="pelorous-checkbox" />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
             <div class="item-description" v-on:click="toggle(s)">
@@ -52,23 +43,13 @@
           </div>
           <div class="species-item">
             <div class="item-selection">
-              <input
-                type="checkbox"
-                id="checkbox-other"
-                class="pelorous-checkbox"
-                v-model="hasOtherSpecies"
-              />
+              <input type="checkbox" id="checkbox-other" class="pelorous-checkbox" v-model="hasOtherSpecies" />
               <label for="checkbox-other"></label>
             </div>
             <div class="item-description">
               <label for="checkbox-other">Autre</label>
-              <input
-                type="text"
-                name="other"
-                placeholder="Renseignez l'espèce"
-                v-model="trip.otherSpecies"
-                v-bind:disabled="!hasOtherSpecies"
-              />
+              <input type="text" name="other" placeholder="Renseignez l'espèce" v-model="trip.otherSpecies"
+                v-bind:disabled="!hasOtherSpecies" />
             </div>
           </div>
           <div class="info">
@@ -89,14 +70,9 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
-      v-bind:button-text="buttonLabel"
-      v-on:buttonClicked="next"
-      :isWaitingForPositionBeforeGoingToNextPage="
-        isWaitingForPositionBeforeGoingToNextPage
-      "
-      shortcuts="back,step-2-4,giveup"
-    />
+    <FisholaFooter v-bind:button-text="buttonLabel" v-on:buttonClicked="next"
+      :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage
+        " shortcuts="back,step-2-4,giveup" />
   </div>
 </template>
 
@@ -152,7 +128,7 @@ export default class TripSpeciesView extends Vue {
     ReferentialService.getSpeciesPerLakePlusCustom().then(this.speciesLoaded);
   }
 
-  mounted() {}
+  mounted() { }
 
   sortedSpecies(): SpeciesWithAlias[] {
     return Vue.lodash.orderBy(this.species, "name");
@@ -201,9 +177,9 @@ export default class TripSpeciesView extends Vue {
           const existingSpecieWithAlias = existingSpecie as SpeciesWithAlias;
           if (
             this.lowerCaseAndRemovePlural(existingSpecieWithAlias.name) ==
-              customSpecie ||
+            customSpecie ||
             this.lowerCaseAndRemovePlural(existingSpecieWithAlias.alias) ==
-              customSpecie
+            customSpecie
           ) {
             foundMatchingSpecie = true;
             if (
@@ -229,11 +205,11 @@ export default class TripSpeciesView extends Vue {
   lowerCaseAndRemovePlural(specieName: string | undefined): string {
     let lowerCaseAndPluralRemoved = specieName
       ? specieName
-          .toLowerCase()
-          .replace("s", "")
-          .replace(" ", "")
-          .replace("(", "")
-          .replace(")", "")
+        .toLowerCase()
+        .replace("s", "")
+        .replace(" ", "")
+        .replace("(", "")
+        .replace(")", "")
       : "";
     lowerCaseAndPluralRemoved = lowerCaseAndPluralRemoved.replace(
       "chevaine",
@@ -293,7 +269,7 @@ export default class TripSpeciesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
   }
 
   summaryNotYetSaved(tripAsAny: any) {
@@ -371,9 +347,7 @@ export default class TripSpeciesView extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(
-        @fontsize-small-paragraph + @line-height-padding-x-large
-      );
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large );
 
       text-align: left;
 
@@ -441,6 +415,7 @@ export default class TripSpeciesView extends Vue {
     .species-item {
       height: 65px;
       padding-left: @margin-large-desktop;
+
       .item-description {
         font-size: @fontsize-paragraph;
         line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);

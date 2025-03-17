@@ -268,7 +268,7 @@ export default class TripMetaView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
   }
 }
 </script>

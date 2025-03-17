@@ -249,6 +249,7 @@ html {
     justify-content: space-between;
 
     height: calc(100% - @header-height - @footer-height);
+
     &.keyboardShowing {
       margin-top: env(safe-area-inset-top);
       // Take reduced footer height into account
@@ -275,9 +276,11 @@ html {
   background-position: top;
   // Very small resolution: scale down kacground to make it fit widht
   background-position-y: -1vw;
+
   @media (min-width: 200px) {
     background-position-y: -3vw;
   }
+
   // Resolutions larger than background: strech background width
   @media (min-width: 350px) {
     background-size: cover;
@@ -307,15 +310,13 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
-  height: calc(
-    100% - @header-height - @secondary-header-height - @footer-height - 10px
-  );
+  height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
+
   &.keyboardShowing {
     // Take reduced footer height into account
-    height: calc(
-      100% - env(safe-area-inset-top) - @reduced-footer-height - 10px
-    );
+    height: calc(100% - env(safe-area-inset-top) - @reduced-footer-height - 10px);
   }
+
   color: @gunmetal;
 
   z-index: 10;
@@ -357,6 +358,36 @@ html {
       border-top-left-radius: 30px;
       border-top-right-radius: 30px;
     }
+
+    .main-tabs {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-bottom: 20px;
+
+      .tab {
+        @media screen and (max-width: 760px) {
+          margin-top: 0px;
+        }
+
+        color: @pale-sky;
+        padding-bottom: 5px;
+        cursor: pointer;
+        width: 50%;
+        border-bottom: 1px solid @very-light-grey;
+        text-align: center;
+
+        &.selected {
+          color: @gunmetal;
+          border-bottom: 2px solid @pelorous;
+        }
+      }
+
+
+    }
   }
 
   &.pane-only {
@@ -371,12 +402,10 @@ html {
 
     h1 {
       margin-top: @margin-medium;
-      margin-bottom: @margin-xx-large;
+      margin-bottom: @margin-medium;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
-      line-height: calc(
-        @fontsize-title-desktop + @line-height-padding-xx-large
-      );
+      line-height: calc(@fontsize-title-desktop + @line-height-padding-xx-large );
       text-align: left;
 
       &.no-margin-pane {
@@ -436,9 +465,7 @@ html {
 
         @media screen and (min-width: @desktop-min-width) {
           font-size: calc(@fontsize-dialog-title-desktop);
-          line-height: calc(
-            @fontsize-dialog-title-desktop + @line-height-padding-large
-          );
+          line-height: calc(@fontsize-dialog-title-desktop + @line-height-padding-large );
         }
       }
 
@@ -449,9 +476,7 @@ html {
 
         @media screen and (min-width: @desktop-min-width) {
           font-size: calc(@fontsize-dialog-text-desktop);
-          line-height: calc(
-            @fontsize-dialog-text-desktop + @line-height-padding-large
-          );
+          line-height: calc(@fontsize-dialog-text-desktop + @line-height-padding-large );
         }
       }
 

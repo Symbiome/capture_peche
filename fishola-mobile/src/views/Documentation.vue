@@ -24,13 +24,13 @@
 
     <div class="page documentation-page">
       <div class="pane pane-only">
-        <div class="pane-content rounded">
+        <div class="pane-content large rounded">
           <h1 class="no-margin-pane">Documentation</h1>
-          <div class="docs-and-faq-tab">
-            <div class="docs-or-faq" :class="{ selected: activeTab == 'doc' }" @click="goDoc">
+          <div class="main-tabs">
+            <div class="tab" :class="{ selected: activeTab == 'doc' }" @click="goDoc">
               Documents à télécharger
             </div>
-            <div class="docs-or-faq" :class="{ selected: activeTab == 'faq' }" @click="goFaq">
+            <div class="tab" :class="{ selected: activeTab == 'faq' }" @click="goFaq">
               <span> FAQ </span>
             </div>
           </div>
@@ -322,40 +322,6 @@ export default class DocumentationView extends Vue {
         }
       }
     }
-  }
-}
-
-.docs-and-faq-tab {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  margin-top: -30px;
-  padding-bottom: 20px;
-
-  .docs-or-faq {
-    width: 40%;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    gap: 5px;
-    color: @pale-sky;
-    padding-bottom: 5px;
-    padding-left: 20px;
-    padding-right: 20px;
-    cursor: pointer;
-
-    &.selected {
-      color: @gunmetal;
-      border-bottom: 2px solid @pelorous;
-    }
-  }
-}
-
-@media screen and (max-width: 760px) {
-  .docs-and-faq-tab {
-    padding-top: 20px;
-    margin-top: 0px;
   }
 }
 </style>

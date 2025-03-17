@@ -20,10 +20,10 @@
   -->
 <template>
   <div class="faq page-with-header-and-footer shifted-background">
-    <FisholaHeader/>
+    <FisholaHeader />
     <div class="page faq-page">
       <div class="pane pane-only">
-        <div class="pane-content rounded">
+        <div class="pane-content large rounded">
           <h1>FAQ</h1>
 
           <div class="faq-rows" v-html="faqRows"></div>
@@ -31,9 +31,9 @@
           <div class="bottom-page-spacer"></div>
         </div>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip"/>
+      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation"/>
+    <FisholaFooter shortcuts="back,credits,documentation" />
   </div>
 </template>
 
@@ -43,7 +43,7 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue';
 import RunningOverlay from '@/components/layout/RunningOverlay.vue';
 import FisholaFooter from '@/components/layout/FisholaFooter.vue';
 
-import {Editorial} from '@/pojos/BackendPojos';
+import { Editorial } from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
 import TripsService from '@/services/TripsService';
 
@@ -58,9 +58,9 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 })
 export default class CreditsView extends Vue {
 
-  faqRows:string = '';
+  faqRows: string = '';
 
-  hasRunningTrip:boolean = false;
+  hasRunningTrip: boolean = false;
 
   constructor() {
     super();
@@ -70,10 +70,10 @@ export default class CreditsView extends Vue {
     DocumentationService.getFaq()
       .then(this.faqLoaded);
     TripsService.hasRunningTrip()
-      .then((result:boolean) => this.hasRunningTrip = result);
+      .then((result: boolean) => this.hasRunningTrip = result);
   }
 
-  faqLoaded(editorial:Editorial) {
+  faqLoaded(editorial: Editorial) {
     this.faqRows = editorial.content;
   }
 
@@ -83,7 +83,6 @@ export default class CreditsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 @import "../less/main";
 
 .faq-page {
@@ -98,6 +97,7 @@ export default class CreditsView extends Vue {
   .faq-rows {
     display: flex;
     flex-direction: column;
+
     /deep/ .faq {
       margin-top: 10px;
       margin-bottom: 10px;
@@ -119,5 +119,4 @@ export default class CreditsView extends Vue {
   }
 
 }
-
 </style>

@@ -21,13 +21,11 @@
 <template>
   <div id="app">
     <router-link v-if="!$router.currentRoute.name" to="/">Perdu ?</router-link>
-    <Menu
-      v-if="
-        $router.currentRoute.name &&
-          $router.currentRoute.name != 'login' &&
-          $router.currentRoute.name != 'dispatcher'
-      "
-    />
+    <Menu v-if="
+      $router.currentRoute.name &&
+      $router.currentRoute.name != 'login' &&
+      $router.currentRoute.name != 'dispatcher'
+    " />
     <router-view class="page-content" />
   </div>
 </template>

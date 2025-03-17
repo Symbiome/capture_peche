@@ -19,9 +19,7 @@
   #L%
   -->
 <template>
-  <div
-    class="edit-trip-techniques page-with-header-and-footer shifted-background"
-  >
+  <div class="edit-trip-techniques page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="edit-trip-techniques-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
@@ -31,22 +29,11 @@
             <BackButton class="hide-on-mobile" />
             Technique utilisée
           </h1>
-          <div
-            v-for="s in techniques"
-            v-bind:key="s.id"
-            class="techniques-item"
-            v-bind:class="
-              trip.techniqueIds.indexOf(s.id) == -1 ? '' : 'selected'
-            "
-          >
+          <div v-for="s in techniques" v-bind:key="s.id" class="techniques-item" v-bind:class="trip.techniqueIds.indexOf(s.id) == -1 ? '' : 'selected'
+            ">
             <div class="item-selection">
-              <input
-                type="checkbox"
-                v-bind:id="'checkbox-' + s.id"
-                v-bind:value="s.id"
-                v-model="trip.techniqueIds"
-                class="pelorous-checkbox"
-              />
+              <input type="checkbox" v-bind:id="'checkbox-' + s.id" v-bind:value="s.id" v-model="trip.techniqueIds"
+                class="pelorous-checkbox" />
               <label v-bind:for="'checkbox-' + s.id"></label>
             </div>
             <div class="item-description" v-on:click="toggle(s)">
@@ -68,11 +55,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
-      button-text="Enregistrer"
-      v-on:buttonClicked="saveTechniques"
-      shortcuts="back,step-4-4,giveup"
-    />
+    <FisholaFooter button-text="Enregistrer" v-on:buttonClicked="saveTechniques" shortcuts="back,step-4-4,giveup" />
   </div>
 </template>
 
@@ -124,7 +107,7 @@ export default class TripTechniquesView extends Vue {
     ReferentialService.getTechniques().then(this.techniquesLoaded);
   }
 
-  mounted() {}
+  mounted() { }
 
   techniquesLoaded(list: Technique[]) {
     this.techniques = list;
@@ -185,7 +168,7 @@ export default class TripTechniquesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
   }
 }
 </script>
@@ -232,9 +215,7 @@ export default class TripTechniquesView extends Vue {
       width: 100%;
 
       font-size: @fontsize-small-paragraph;
-      line-height: calc(
-        @fontsize-small-paragraph + @line-height-padding-x-large
-      );
+      line-height: calc(@fontsize-small-paragraph + @line-height-padding-x-large );
 
       text-align: left;
 
@@ -291,6 +272,7 @@ export default class TripTechniquesView extends Vue {
     .techniques-item {
       height: 65px;
       padding-left: @margin-large-desktop;
+
       .item-description {
         font-size: @fontsize-paragraph;
         line-height: calc(@fontsize-paragraph + @line-height-padding-x-large);

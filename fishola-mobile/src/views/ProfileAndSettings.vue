@@ -19,14 +19,14 @@
   #L%
   -->
 <template>
-    <div class="my-trips page-with-header shifted-background">
+    <div class="my-trips  shifted-background">
         <FisholaHeader />
 
-        <div class="page my-trips-page">
+        <div class="page-with-header my-trips-page">
             <div class="pane pane-only">
-                <div class="pane-content rounded">
-                    <h1 class="hide-on-mobile">Profil et Paramètres</h1>
-                    <div class="tabs">
+                <div class="pane-content large rounded">
+                    <h1 class="no-margin-pane hide-on-mobile">Profil et Paramètres</h1>
+                    <div class="main-tabs">
                         <div class="tab" :class="visualizationMode == 'profile' ? 'selected' : ''"
                             @click="changeVisualizationMode('profile')">
                             Mon profil
@@ -42,9 +42,9 @@
                             {{ fullName }}
                         </div>
                     </div>
-                    <ProfileView v-if="visualizationMode == 'profile' && profile" :profile="profile"
-                        @profile-updated="loadProfile" />
-                    <SettingsView v-else-if="profile" />
+                    <ProfileView class="pane-content" v-if="visualizationMode == 'profile' && profile"
+                        :profile="profile" @profile-updated="loadProfile" />
+                    <SettingsView class="pane-content" v-else-if="profile" />
                 </div>
             </div>
         </div>
@@ -103,7 +103,9 @@ export default class ProfileAndSettingsView extends Vue {
 
 
     changeVisualizationMode(newMode: string) {
-        this.$router.push({ params: { visualizationMode: newMode } });
+        if (this.visualizationMode !== newMode) {
+            this.$router.push({ params: { visualizationMode: newMode } });
+        }
     }
 
 }
@@ -111,39 +113,6 @@ export default class ProfileAndSettingsView extends Vue {
 
 <style lang="less">
 @import "../less/main";
-
-.tabs {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    padding-bottom: 20px;
-    background-color: @white-smoke;
-
-    .tab {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        text-align: center;
-        gap: 5px;
-        color: @pale-sky;
-        padding-bottom: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
-        cursor: pointer;
-
-        &.selected {
-            color: @gunmetal;
-            border-bottom: 2px solid @pelorous;
-        }
-    }
-}
-
-@media screen and (max-width: 760px) {
-    .tab {
-        margin-top: 0px;
-    }
-}
 
 .profile-header {
     background-image: url("~/public/img/background_transparent.png");

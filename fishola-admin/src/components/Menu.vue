@@ -45,7 +45,7 @@
           Espèces par lac
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
-         Maillages et tailles maximales
+          Maillages et tailles maximales
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Documentations">
@@ -130,6 +130,7 @@ a.navbar-item.is-active,
 .navbar-link.is-active {
   color: @pelorous !important;
 }
+
 .navbar-link:not(.is-arrowless)::after {
   border-color: @pelorous !important;
 }

@@ -40,39 +40,39 @@
           <div class="site-logo site-logo-desktop">
             <h1>
               <a href="#/about" v-scroll-to="{
-    el: '#top',
-    container: '#about-scroll-container',
-  }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+                el: '#top',
+                container: '#about-scroll-container',
+              }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
           <nav class="Navigation">
             <ul>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#presentation',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Présentation</a>
+                  el: '#presentation',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Présentation</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#communications',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Communications</a>
+                  el: '#communications',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#contribute',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Comment participer ?</a>
+                  el: '#contribute',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Comment participer ?</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#contact',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Contact</a>
+                  el: '#contact',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
               </li>
             </ul>
@@ -150,8 +150,8 @@
             </div>
             <div class="map">
               <l-map :zoom="9" :center="center" :options="{
-    zoomSnap: 0.5,
-  }" style="height: 100%; width: 100%">
+                zoomSnap: 0.5,
+              }" style="height: 100%; width: 100%">
                 <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
@@ -548,7 +548,7 @@ export default class AboutView extends Vue {
     this.closed = true;
     ProfileService.fetchProfile().then(
       (_profile) => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips");
+        RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
       },
       (_status) => {
         RouterUtils.pushRouteNoDuplicate(router, "/login");

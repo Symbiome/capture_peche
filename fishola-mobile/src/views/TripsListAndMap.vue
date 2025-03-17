@@ -23,20 +23,20 @@
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">
-        <div class="pane-content rounded">
+        <div class="pane-content large rounded">
           <h1 class="hide-on-mobile">Mes Sorties</h1>
-          <div class="trips-and-news-tab">
-            <div class="trips-or-news" :class="visualizationMode === 'list' ? 'selected' : ''"
+          <div class="main-tabs">
+            <div class="tab" :class="visualizationMode === 'list' ? 'selected' : ''"
               @click="changeVisualizationMode('list')">
               Liste
             </div>
-            <div class="trips-or-news" :class="visualizationMode !== 'list' ? 'selected' : ''"
+            <div class="tab" :class="visualizationMode !== 'list' ? 'selected' : ''"
               @click="changeVisualizationMode('map')">
               Carte
             </div>
           </div>
-          <MyTrips v-if="visualizationMode === 'list'" />
-          <MyTripsMapView :visible="visualizationMode == 'map'" />
+          <MyTrips class="pane-content" v-if="visualizationMode === 'list'" />
+          <MyTripsMapView class="pane-content" :visible="visualizationMode == 'map'" />
         </div>
       </div>
     </div>
@@ -50,6 +50,7 @@ import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
+import VueRouter from "vue-router";
 
 @Component({
   components: {
@@ -65,46 +66,16 @@ export default class TripsListAndMapView extends Vue {
   visualizationMode: string;
 
   changeVisualizationMode(newMode: string) {
-    this.$router.push({ params: { visualizationMode: newMode } });
+    if (this.visualizationMode !== newMode) {
+      this.$router.push({ params: { visualizationMode: newMode } });
+    }
   }
+
 }
 </script>
 
 <style scope lang="less">
 @import "../less/main";
-
-.trips-and-news-tab {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  margin-top: -30px;
-
-  .trips-or-news {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    gap: 5px;
-    color: @pale-sky;
-    padding-bottom: 5px;
-    padding-left: 5px;
-    padding-right: 5px;
-    cursor: pointer;
-
-    &.selected {
-      color: @gunmetal;
-      border-bottom: 2px solid @pelorous;
-    }
-  }
-}
-
-@media screen and (max-width: 760px) {
-  .trips-and-news-tab {
-    padding-top: 20px;
-    margin-top: 0px;
-  }
-}
 
 .news-badge {
   width: 30px;

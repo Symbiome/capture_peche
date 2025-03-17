@@ -30,10 +30,7 @@
               {{ duration }}
             </h1>
             <h1 class="no-margin-pane hide-on-mobile">
-              <BackButton
-                back-event="onBackButton"
-                v-on:onBackButton="backToGaleryOrTrips"
-              />
+              <BackButton back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips" />
               {{ trip.name }}
             </h1>
             <div v-if="modifiable" class="edit-trip-modifiable-until">
@@ -44,36 +41,17 @@
               </div>
             </div>
           </div>
-          <div
-            class="edit-trip-catchs catch-preview-list-scrollable"
-            v-if="modifiable || trip.catchs.length > 0"
-          >
-            <CatchPreviewList
-              v-if="ready"
-              v-bind:modifiable="modifiable"
-              v-bind:lakeId="trip.lakeId"
-              v-bind:catchs="trip.catchs"
-              v-on:newCatch="newCatch()"
-              v-on:openCatchFromId="openCatch($event)"
-            />
+          <div class="edit-trip-catchs catch-preview-list-scrollable" v-if="modifiable || trip.catchs.length > 0">
+            <CatchPreviewList v-if="ready" v-bind:modifiable="modifiable" v-bind:lakeId="trip.lakeId"
+              v-bind:catchs="trip.catchs" v-on:newCatch="newCatch()" v-on:openCatchFromId="openCatch($event)" />
           </div>
-          <div
-            class="edit-trip-no-catch"
-            v-if="!modifiable && trip.catchs.length == 0"
-          >
+          <div class="edit-trip-no-catch" v-if="!modifiable && trip.catchs.length == 0">
             <i class="icon-fish" />
             <span>Aucune capture</span>
           </div>
-          <SomeTripSummary
-            ref="summary"
-            v-if="ready"
-            v-bind:trip="trip"
-            v-bind:readonly="!modifiable"
-            v-on:trip-modified="onUpdatedTrip"
-            v-on:goEditSpecies="goEditSpecies"
-            v-on:goEditTechniques="goEditTechniques"
-            class="summary-pane"
-          />
+          <SomeTripSummary ref="summary" v-if="ready" v-bind:trip="trip" v-bind:readonly="!modifiable"
+            v-on:trip-modified="onUpdatedTrip" v-on:goEditSpecies="goEditSpecies"
+            v-on:goEditTechniques="goEditTechniques" class="summary-pane" />
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary" v-if="modifiable">
@@ -88,22 +66,11 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
-      v-if="ready && modifiable"
-      button-text="Enregistrer"
-      v-on:buttonClicked="startSave"
-      v-on:deleteClicked="deleteTrip"
-      back-event="onBackButton"
-      v-on:onBackButton="backToGaleryOrTrips"
-      shortcuts="back,spacer,delete"
-    />
-    <FisholaFooter
-      v-if="ready && !modifiable"
-      v-on:deleteClicked="deleteTrip"
-      back-event="onBackButton"
-      v-on:onBackButton="backToGaleryOrTrips"
-      shortcuts="back,spacer,delete"
-    />
+    <FisholaFooter v-if="ready && modifiable" button-text="Enregistrer" v-on:buttonClicked="startSave"
+      v-on:deleteClicked="deleteTrip" back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips"
+      shortcuts="back,spacer,delete" />
+    <FisholaFooter v-if="ready && !modifiable" v-on:deleteClicked="deleteTrip" back-event="onBackButton"
+      v-on:onBackButton="backToGaleryOrTrips" shortcuts="back,spacer,delete" />
   </div>
 </template>
 
@@ -170,7 +137,7 @@ export default class EditTripView extends Vue {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  mounted() {}
+  mounted() { }
 
   tripLoaded(someTrip: TripBean) {
     this.trip = someTrip;
@@ -215,7 +182,7 @@ export default class EditTripView extends Vue {
 
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(router, {
@@ -255,7 +222,7 @@ export default class EditTripView extends Vue {
   }
 
   tripDeleted() {
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
   }
 
   backToGaleryOrTrips() {
@@ -268,7 +235,7 @@ export default class EditTripView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips");
+      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
     }
   }
 }
@@ -327,6 +294,7 @@ export default class EditTripView extends Vue {
     i {
       font-size: @fontsize-button-big;
     }
+
     div {
       margin-left: @margin-small;
       text-align: left;
@@ -342,6 +310,7 @@ export default class EditTripView extends Vue {
     .edit-trip-header {
       display: flex;
       flex-direction: row;
+
       br {
         display: none;
       }
