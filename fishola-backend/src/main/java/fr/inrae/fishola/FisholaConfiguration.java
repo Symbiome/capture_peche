@@ -22,14 +22,15 @@ package fr.inrae.fishola;
  */
 
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import io.quarkus.runtime.configuration.ProfileManager;
 import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.SmallRyeConfig;
 import io.smallrye.config.WithDefault;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ConfigMapping(prefix = "fishola")
 public interface FisholaConfiguration {
@@ -46,7 +47,7 @@ public interface FisholaConfiguration {
     String buildDate();
 
     default String getActiveProfile() {
-        return ProfileManager.getActiveProfile();
+        return ConfigProvider.getConfig().unwrap(SmallRyeConfig.class).getProfiles().getFirst();
     }
 
     default boolean isDevMode() {
