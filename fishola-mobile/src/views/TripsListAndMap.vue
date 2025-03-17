@@ -23,8 +23,8 @@
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">
-        <div class="pane-content large rounded">
-          <h1 class="hide-on-mobile">Mes Sorties</h1>
+        <div class="pane-content large rounded no-scroll">
+          <h1>Mes Sorties</h1>
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'list' ? 'selected' : ''"
               @click="changeVisualizationMode('list')">
@@ -35,8 +35,10 @@
               Carte
             </div>
           </div>
-          <MyTrips class="pane-content" v-if="visualizationMode === 'list'" />
-          <MyTripsMapView class="pane-content" :visible="visualizationMode == 'map'" />
+          <div class="padding-content">
+            <MyTrips v-if="visualizationMode === 'list'" />
+            <MyTripsMapView :visible="visualizationMode == 'map'" />
+          </div>
         </div>
       </div>
     </div>

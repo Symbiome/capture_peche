@@ -20,9 +20,10 @@
   -->
 <template>
     <div class="pane ">
-        <div class="info" v-if="validMarkers.length > 0">
+        <div id="info" class="info" v-if="validMarkers.length > 0" v-show="showPersonnalMapWarning">
             Cette carte n'est visible que par vous. Les coordonées de vos prises ne sont pas divulgées aux autres
             pêcheurs.
+            <i class="icon icon-plus close" @click="showPersonnalMapWarning = false"></i>
         </div>
         <div class="map" v-if="validMarkers.length > 0">
             <l-map ref="map" @ready="madReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
@@ -110,6 +111,7 @@ export default class MyTripsMapView extends Vue {
     validMarkers: CatchMarker[] = [];
     invalidMarkers: CatchMarker[] = [];
     center = latLng(46.071623, 5.890511);
+    showPersonnalMapWarning = true;
     icon1 = icon({
         iconUrl: "/img/fish-blue.svg",
         iconSize: [32, 37],
@@ -193,11 +195,24 @@ export default class MyTripsMapView extends Vue {
 @import "../../less/main";
 
 .info {
+    position: absolute;
+    right: 50px;
+    width: 70vw;
+    z-index: 100000;
     padding: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
     border: 2px solid @very-light-grey;
+    background-color: @white-smoke;
     border-radius: 10px;
+
+    .close {
+        transform: rotate(45deg);
+        cursor: pointer;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
 }
 
 .map {

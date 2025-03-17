@@ -25,7 +25,7 @@
         <div class="page-with-header my-trips-page">
             <div class="pane pane-only">
                 <div class="pane-content large rounded">
-                    <h1 class="no-margin-pane hide-on-mobile">Profil et Paramètres</h1>
+                    <h1 class="no-margin-pane">Profil et Paramètres</h1>
                     <div class="main-tabs">
                         <div class="tab" :class="visualizationMode == 'profile' ? 'selected' : ''"
                             @click="changeVisualizationMode('profile')">
@@ -42,9 +42,11 @@
                             {{ fullName }}
                         </div>
                     </div>
-                    <ProfileView class="pane-content" v-if="visualizationMode == 'profile' && profile"
-                        :profile="profile" @profile-updated="loadProfile" />
-                    <SettingsView class="pane-content" v-else-if="profile" />
+                    <div class="padding-content">
+                        <ProfileView v-if="visualizationMode == 'profile' && profile" :profile="profile"
+                            @profile-updated="loadProfile" />
+                        <SettingsView v-else-if="profile" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -24,7 +24,7 @@
     <div class="page my-trips-page">
       <div class="pane pane-only">
         <div class="pane-content large rounded">
-          <h1 class="hide-on-mobile">Communauté</h1>
+          <h1>Communauté</h1>
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
               @click="changeVisualizationMode('social')">
@@ -37,10 +37,12 @@
               </div>
             </div>
           </div>
-          <div class="pane-content" v-if="visualizationMode === 'social'">
-            Réseau social
+          <div class="padding-content">
+            <div v-if="visualizationMode === 'social'">
+              Réseau social
+            </div>
+            <NewsView :news="news" v-else />
           </div>
-          <NewsView class="pane-content" :news="news" v-else />
         </div>
       </div>
     </div>

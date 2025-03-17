@@ -322,8 +322,8 @@ html {
   z-index: 10;
 
   h1 {
-    margin-top: @margin-large;
-    margin-bottom: @margin-large;
+    margin-top: @margin-x-small;
+    margin-bottom: @margin-x-small;
     height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
     font-weight: normal;
@@ -332,7 +332,7 @@ html {
     color: @pelorous;
     text-align: center;
 
-    @media (max-height: 579px) {
+    @media screen and (min-width: @desktop-min-width) {
       margin-top: @margin-medium;
       margin-bottom: @margin-medium;
     }
@@ -343,8 +343,44 @@ html {
     }
   }
 
+  .main-tabs {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: @margin-small;
+
+    @media screen and (min-width: @desktop-min-width) {
+      padding-bottom: @margin-medium;
+    }
+
+
+    .tab {
+      @media screen and (max-width: 760px) {
+        margin-top: 0px;
+      }
+
+      color: @pale-sky;
+      padding-bottom: 5px;
+      cursor: pointer;
+      width: 50%;
+      border-bottom: 1px solid @very-light-grey;
+      text-align: center;
+
+      &.selected {
+        color: @gunmetal;
+        border-bottom: 2px solid @pelorous;
+      }
+    }
+
+
+  }
+
   .pane-content {
     overflow: auto;
+    height: 100vh;
 
     padding-left: @margin-large;
     padding-right: @margin-large;
@@ -359,34 +395,18 @@ html {
       border-top-right-radius: 30px;
     }
 
-    .main-tabs {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      padding-left: 20px;
-      padding-right: 20px;
-      padding-bottom: 20px;
+    &.no-scroll {
+      overflow: hidden;
+    }
+  }
 
-      .tab {
-        @media screen and (max-width: 760px) {
-          margin-top: 0px;
-        }
+  .padding-content {
+    padding-left: @margin-large;
+    padding-right: @margin-large;
 
-        color: @pale-sky;
-        padding-bottom: 5px;
-        cursor: pointer;
-        width: 50%;
-        border-bottom: 1px solid @very-light-grey;
-        text-align: center;
-
-        &.selected {
-          color: @gunmetal;
-          border-bottom: 2px solid @pelorous;
-        }
-      }
-
-
+    &.large {
+      padding-left: unset;
+      padding-right: unset;
     }
   }
 
