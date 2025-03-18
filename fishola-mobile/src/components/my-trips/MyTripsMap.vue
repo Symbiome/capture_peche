@@ -21,7 +21,7 @@
 <template>
     <div class="pane ">
         <div id="info" class="info" v-if="validMarkers.length > 0" v-show="showPersonnalMapWarning">
-            Cette carte n'est visible que par vous. Les coordonées de vos prises ne sont pas divulgées aux autres
+            Cette carte n'est visible que par vous. Les coordonnées de vos prises ne sont pas divulgées aux autres
             pêcheurs.
             <i class="icon icon-plus close" @click="showPersonnalMapWarning = false"></i>
         </div>
@@ -29,35 +29,36 @@
             <l-map ref="map" @ready="madReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
                 <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-
-                <l-marker v-for="c in validMarkers" v-bind:key="c.id" :lat-lng="toLatLng(c)"
-                    :icon="c.maillage == 'MAILLEE' ? icon1 : icon2">
-                    <!--<l-icon :icon-anchor="[16, 16]" :icon-size="[32, 37]">
-                        <div class="custom-icon">
-                            <div class="headline">
-                                {{ c.specieName }}
+                <v-marker-cluster>
+                    <l-marker v-for="c in validMarkers" v-bind:key="c.id" :lat-lng="toLatLng(c)"
+                        :icon="c.maillage == 'MAILLEE' ? icon1 : icon2">
+                        <!--<l-icon :icon-anchor="[16, 16]" :icon-size="[32, 37]">
+                            <div class="custom-icon">
+                                <div class="headline">
+                                    {{ c.specieName }}
+                                </div>
+                                <i class="icon-fish" />
                             </div>
-                            <i class="icon-fish" />
-                        </div>
-                    </l-icon>-->
-                    <l-popup class="catch-marker">
-                        <p class="title">{{ c.tripName }}</p>
+                        </l-icon>-->
+                        <l-popup class="catch-marker">
+                            <p class="title">{{ c.tripName }}</p>
 
-                        <p>
-                            <i class="fish icon-fish" />
-                            {{ c.specieName }}
-                            {{ c.maillage === 'NON_DEFINI' ? ''
-                                : (c.maillage == 'MAILLEE' ?
-                                    '(maillé)' : '(non maillé)')
-                            }}
-                        </p>
+                            <p>
+                                <i class="fish icon-fish" />
+                                {{ c.specieName }}
+                                {{ c.maillage === 'NON_DEFINI' ? ''
+                                    : (c.maillage == 'MAILLEE' ?
+                                        '(maillé)' : '(non maillé)')
+                                }}
+                            </p>
 
-                        <p class="infos">
-                            <span class="trip-date">{{ formattedDate(c.date) }}</span> - {{ c.lakeName }}
-                        </p>
-                        <button class="button" @click="showCatch(c)">Voir la sortie</button>
-                    </l-popup>
-                </l-marker>
+                            <p class="infos">
+                                <span class="trip-date">{{ formattedDate(c.date) }}</span> - {{ c.lakeName }}
+                            </p>
+                            <button class="button" @click="showCatch(c)">Voir la sortie</button>
+                        </l-popup>
+                    </l-marker>
+                </v-marker-cluster>
             </l-map>
         </div>
         <div class="error-markers" v-if="invalidMarkers.length > 0">
@@ -80,6 +81,7 @@ import TripsService from '@/services/TripsService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import L, { latLng, Icon, icon } from "leaflet";
+import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
 
 type D = Icon.Default & {
     _getIconUrl?: string;
@@ -102,7 +104,8 @@ import Helpers from '@/services/Helpers';
         LTileLayer,
         LMarker,
         LPopup,
-        LIcon
+        LIcon,
+        "v-marker-cluster": Vue2LeafletMarkerCluster
     }
 })
 export default class MyTripsMapView extends Vue {
@@ -193,6 +196,8 @@ export default class MyTripsMapView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
+@import url("~leaflet.markercluster/dist/MarkerCluster.css");
+@import url("~leaflet.markercluster/dist/MarkerCluster.Default.css");
 
 .info {
     position: absolute;
