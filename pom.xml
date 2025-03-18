@@ -71,7 +71,7 @@
 
         <license.licenseName>agpl_v3</license.licenseName>
 
-        <javaVersion>17</javaVersion>
+        <javaVersion>21</javaVersion>
         <animal.sniffer.skip>true</animal.sniffer.skip>
         <gpg.skip>true</gpg.skip>
 

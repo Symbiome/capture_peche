@@ -16,7 +16,7 @@ stages:
   - sonar
 
 build:compile:
-  image: maven:3.8-eclipse-temurin-17
+  image: maven:3.8-eclipse-temurin-21
   stage: build
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
