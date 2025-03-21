@@ -174,7 +174,7 @@ export default class FishingLicenceFullScreen extends Vue {
             });
 
 
-            hammertime.on('panend', function (e) {
+            hammertime.on('panend', function (_e) {
                 // Record final position here to take account of constraint calculations in 
                 // panmove handler; magnitude of e.deltaX may have been limited.
                 offsetX = panOffsetX;

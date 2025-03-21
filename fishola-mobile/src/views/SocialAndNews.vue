@@ -25,6 +25,14 @@
       <div class="pane pane-only">
         <div class="pane-content large rounded">
           <h1>Communauté</h1>
+          <div class="selects-holder">
+            <select placeholder="lake" v-model="selectedLakeUUID">
+              <option v-for="lake in allLakes" :value="lake.id" :key="lake.id">
+                {{ lake.name }}
+              </option>
+            </select>
+          </div>
+
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
               @click="changeVisualizationMode('social')">
@@ -38,9 +46,7 @@
             </div>
           </div>
           <div class="padding-content">
-            <div v-if="visualizationMode === 'social'">
-              Réseau social
-            </div>
+            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeUUID"/>
             <NewsView :news="news" v-else />
           </div>
         </div>
@@ -51,22 +57,22 @@
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { News } from "@/pojos/BackendPojos";
-import VueRouter from "vue-router";
+import { Lake, News } from "@/pojos/BackendPojos";
+import SocialView from "./Social.vue";
+import ReferentialService from "@/services/ReferentialService";
 
 @Component({
   components: {
-    FisholaHeader,
     MyTrips,
-    FisholaFooter,
-    NewsView,
+    FisholaHeader,
+    SocialView,
+    NewsView
   },
 })
 export default class SocialAndNewsView extends Vue {
@@ -75,9 +81,17 @@ export default class SocialAndNewsView extends Vue {
 
   unreadNewsCount = 0;
   news: News[] = [];
-
+  selectedLakeUUID = "";
+  allLakes: Lake[] = [];
+  
   mounted() {
     this.updateUnreadNewsCount();
+    this.loadLakes();
+  }
+
+  async loadLakes() {
+    this.allLakes = await ReferentialService.getLakes();
+    this.selectedLakeUUID = this.allLakes[0].id;
   }
 
   async updateUnreadNewsCount() {

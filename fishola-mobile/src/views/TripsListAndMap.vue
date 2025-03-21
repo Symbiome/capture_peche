@@ -52,7 +52,6 @@ import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
-import VueRouter from "vue-router";
 
 @Component({
   components: {

@@ -39,8 +39,6 @@
 import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import Helpers from "@/services/Helpers";
-
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";

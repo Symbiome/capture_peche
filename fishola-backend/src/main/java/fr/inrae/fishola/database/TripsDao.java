@@ -23,21 +23,35 @@ package fr.inrae.fishola.database;
 
 import com.google.common.collect.ListMultimap;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.enums.Maillage;
+import fr.inrae.fishola.entities.tables.daos.CatchDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.daos.LakeDao;
+import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
+import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TripDao;
 import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
+import fr.inrae.fishola.entities.tables.daos.TripSocialReactionDao;
 import fr.inrae.fishola.entities.tables.daos.TripTechniquesDao;
+import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripExpectedSpecies;
+import fr.inrae.fishola.entities.tables.pojos.TripSocialReaction;
 import fr.inrae.fishola.entities.tables.pojos.TripTechniques;
 import fr.inrae.fishola.entities.tables.records.TripRecord;
+import fr.inrae.fishola.rest.social.ImmutableTripSocial;
+import fr.inrae.fishola.rest.social.TripSocial;
 import fr.inrae.fishola.rest.trips.ExportBean;
 import fr.inrae.fishola.rest.trips.PaginatedExportBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
+
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -321,4 +335,69 @@ public class TripsDao extends AbstractFisholaDao {
         return picturesPerTripForYear;
     }
 
+    public PaginationResult<TripSocial> socialTrips(UUID userId, Optional<List<UUID>> lakesFilter, PaginationParameter page) {
+        return withContext(context -> {
+                List<Condition> conditions = new LinkedList<>();
+                conditions.add(Tables.TRIP.HIDDEN.eq(false));
+                lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesIds)));
+                SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
+                        .where(conditions);
+                SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
+                        builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc());
+                List<Trip> tripsWithoutSocial = tripRecords
+                        .limit(page.getPageSize()).offset(page.getPageNumber())
+                        .fetch()
+                        .into(Trip.class);
+                int totalCount = context.fetchCount(context.selectFrom(Tables.TRIP).where(conditions));
+
+                List<TripSocial> tripsWithSocial = tripsWithoutSocial.stream().map( t -> {
+                    String userName = "";
+                    FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
+                    if ( user != null ) {
+                        userName = user.getFirstName() + " " + user.getLastName();
+                    }
+                    String lakeName = withDao(LakeDao.class, lakeDao -> lakeDao.fetchById(t.getLakeId()).getFirst().getName());
+                    long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();
+                    List<TripSocialReaction> socialReactions = withDao(TripSocialReactionDao.class, dao -> dao.fetchByTripId(t.getId()));
+                    Map<String, ? extends Map<Maillage, Integer>> catchesCountPerMaillage = withDao(CatchDao.class, dao ->
+                        dao.fetchByTripId(t.getId()).stream()
+                        .collect(Collectors.groupingBy(
+                            // Map key : specie Name
+                            c -> withDao(SpeciesDao.class, speciesDao -> speciesDao.fetchOneById(c.getSpeciesId()).getName()),
+                            LinkedHashMap::new,
+                            Collectors.groupingBy(
+                                    // Inner map key : Maillage
+                                    Catch::getMaillee,
+                                    LinkedHashMap::new,
+                                    // Map value : count
+                                    Collectors.summingInt(c -> 1)
+                            )
+                        ))
+                    );
+
+                    TripSocial socialTrip = ImmutableTripSocial.builder()
+                           .id(t.getId())
+                           .userName(userName)
+                           .tripName(t.getName())
+                           .lakeName(lakeName)
+                           .durationInSeconds(durationInSeconds)
+                           .date(t.getDay())
+                           .socialReactions(socialReactions)
+                           .catchesCountPerMaillage(catchesCountPerMaillage)
+                           .build();
+                    return socialTrip;
+                }).toList();
+            return PaginationResult.of(tripsWithSocial, totalCount, page);
+        });
+    }
+
+    public void insertSocialReaction(TripSocialReaction reaction) {
+        withDaoNoResult(TripSocialReactionDao.class, dao -> {
+            if (dao.exists(reaction)) {
+                dao.update(reaction);
+            } else {
+                dao.insert(reaction);
+            }
+        });
+    }
 }

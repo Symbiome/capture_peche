@@ -256,6 +256,17 @@ export interface CatchMarker {
     hasValidCoordinates: boolean;
 }
 
+export interface TripSocial {
+    id: string;
+    tripName: string;
+    userName: string;
+    lakeName: string;
+    date: Date;
+    durationInSeconds: number;
+    socialReactions: TripSocialReaction[];
+    catchesCountPerMaillage: { [index: string]: { [P in Maillage]?: number } };
+}
+
 export interface Serializable {
 }
 
@@ -273,6 +284,13 @@ export interface PicturePerTripBean {
     pictureURLs: string[];
 }
 
+export interface TripSocialReaction extends Serializable {
+    tripId: string;
+    userId: string;
+    message: string;
+    reaction: SocialReaction;
+}
+
 export type TripMode = "Live" | "Afterwards";
 
 export type TripType = "Border" | "Craft";
@@ -284,3 +302,5 @@ export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";
+
+export type SocialReaction = "LIKE" | "LOVE" | "LETS_MEET";
