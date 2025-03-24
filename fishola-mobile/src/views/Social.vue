@@ -40,13 +40,13 @@
         <div class="social-trip-reaction">
           Super sortie
           <div class="button">
-            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">LIKE <i class="icon-star" /></button>
+            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">0 <i class="icon-like" /></button>
           </div>
         </div>
         <div class="social-trip-reaction">
           Bravo pour cette sortie
           <div class="button">
-            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">LOVE <i class="icon-star" /></button>
+            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">0 <i class="icon-heart" /></button>
           </div>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default class SocialView extends Vue {
 
   .button {
     width: auto;
-    button {
+    button:not(:hover) {
       background-color: transparent;
     }
   }
