@@ -19,27 +19,47 @@
   #L%
   -->
 <template>
-  <div class="social">
-    <b>Réseau social</b>
-    <p>Lac {{ lakeId }}</p>
-    <ul>
-      <li v-for="socialTrip in socialTrips" :key="socialTrip.id">
-        {{ formattedDate(socialTrip.date) }}
-        {{ socialTrip.userName}} - {{ socialTrip.tripName }} <br />
-        {{ socialTrip.catchesCountPerMaillage }} <br />
-        {{ socialTrip.socialReactions }} <br />
-        <button @click="postSocialReaction(socialTrip.id, 'LIKE')">LIKE</button>
-        <button @click="postSocialReaction(socialTrip.id, 'LOVE')">LOVE</button>
-      </li>
-    </ul>
+  <div id="social-trips">
+    <div id="social-trips-top">
+      <select placeholder="lake" v-model="selectedLakeUUID">
+        <option v-for="lake in allLakes" :value="lake.id" :key="lake.id">
+          {{ lake.name }}
+        </option>
+      </select>
+    </div>
+    <div id="social-trips-list">
+      <div v-for="socialTrip in socialTrips"
+           :key="socialTrip.id"
+           class="social-trip-item">
+        <div class="social-trip-infos">
+          <div class="social-trip-title">{{ socialTrip.tripName }}</div>
+          <div><i class="icon-profile" /> {{ socialTrip.userName}} &emsp; <i class="icon-calendar" /> {{ formattedDate(socialTrip.date) }} &emsp; <i class="icon-lake" /> {{ socialTrip.lakeName }} &emsp; <i class="icon-clock" /> {{ formattedDuration(socialTrip.durationInSeconds) }}</div>
+          <div><i class="icon-fish" /> {{ socialTrip.catchesCountPerMaillage }}</div>
+        </div>
+        {{ socialTrip.socialReactions.length }}
+        <div class="social-trip-reaction">
+          Super sortie
+          <div class="button">
+            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">LIKE <i class="icon-star" /></button>
+          </div>
+        </div>
+        <div class="social-trip-reaction">
+          Bravo pour cette sortie
+          <div class="button">
+            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">LOVE <i class="icon-star" /></button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 
 
-import { SocialReaction, TripSocial } from "@/pojos/BackendPojos";
+import { Lake, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
+import ReferentialService from "@/services/ReferentialService";
 import TripsService from "@/services/TripsService";
 import { Component,  Prop,  Vue, Watch } from "vue-property-decorator";
 
@@ -50,15 +70,23 @@ import { Component,  Prop,  Vue, Watch } from "vue-property-decorator";
 export default class SocialView extends Vue {
   @Prop() lakeId: string;
   socialTrips: TripSocial[] = [];
+  selectedLakeUUID = "";
+  allLakes: Lake[] = [];
 
  
   mounted() {
-    this.loadSocialTrips();   
+    this.loadLakes();
+    this.loadSocialTrips();
   }
 
-  @Watch("lakeId")
+  async loadLakes() {
+    this.allLakes = await ReferentialService.getLakes();
+    this.selectedLakeUUID = this.allLakes[0].id;
+  }
+
+  @Watch("selectedLakeUUID")
   async loadSocialTrips() {
-    this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
+    this.socialTrips = await TripsService.listSocialTrips(this.selectedLakeUUID);
   }
 
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
@@ -78,81 +106,64 @@ export default class SocialView extends Vue {
     return dateString;
   }
 
+  formattedDuration(seconds: number): string {
+    return Helpers.formatSecondsDuration(seconds);
+  }
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../less/main";
-.empty {
-  padding-top: 20px;
+
+#social-trips-list {
+  overflow-y: scroll;
+  height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px );
+  padding-bottom: 200px;
 }
-.news {
-  cursor: pointer;
-  padding-top: 20px;
-  .news-holder {
-    border-bottom: 1px solid @gainsboro;
-    margin-bottom: 40px;
-    .news-row {
-      display: flex;
-      padding-left: @margin-x-large;
-      padding-right: @margin-x-large;
-      .news-pic {
-        width: 20vw;
-        height: 20vw;
-        max-width: 20vh;
-        max-height: 20vh;
-        object-fit: cover;
-      }
-      .right-content {
-        width: 100%;
-        padding-left: 30px;
-        .publication-date {
-          padding-top: 10px;
-          display: flex;
-          gap: 10px;
-          color: @pale-sky;
-          text-transform: uppercase;
-        }
-      }
-    }
-  }
-  .news-content {
-    padding-top: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 
-  .read-more {
-    display: flex;
-    justify-content: end;
-    gap: 10px;
-    width: 100%;
-    color: @pelorous;
-    font-weight: bold;
-    padding: 10px;
-    i {
-      background-color: @pelorous;
-      color: white;
-      padding-left: 15px;
-      padding-right: 15px;
-      border-radius: 10px;
-    }
+.social-trip-item {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: @margin-small;
+  padding-top: @vertical-margin-medium;
+  padding-bottom: @vertical-margin-medium;
+  border-bottom: 1px solid @gainsboro;
+  @media (min-width: 768px) {
+    align-items: center;
+    gap: @margin-x-large;
+    padding-right: @margin-large;
   }
+}
+.social-trip-infos {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  color: @pale-sky;
+  font-size: 14px;
+  gap: 7px;
+  flex-basis: 100%;
+  @media (min-width: 768px) {
+    flex-basis: 0;
+  }
+}
+.social-trip-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: initial;
+}
+.social-trip-reaction {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
 
-  .only-on-small-screen {
-    display: none;
-  }
-  @media (max-width: 1200px) {
-    .only-on-small-screen {
-      max-height: 80px;
-      display: block;
-    }
-    .only-on-big-screen {
-      display: none;
+  .button {
+    width: auto;
+    button {
+      background-color: transparent;
     }
   }
 }

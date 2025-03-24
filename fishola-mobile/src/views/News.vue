@@ -139,6 +139,11 @@ export default class NewsView extends Vue {
 .news {
   cursor: pointer;
   padding-top: 20px;
+
+  overflow-y: scroll;
+  height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px - 76px - env(safe-area-inset-bottom) );
+  padding-bottom: @margin-large;
+
   .news-holder {
     border-bottom: 1px solid @gainsboro;
     margin-bottom: 40px;
@@ -146,9 +151,18 @@ export default class NewsView extends Vue {
       display: flex;
       padding-left: @margin-x-large;
       padding-right: @margin-x-large;
+      @media (max-width: 768px) {
+        padding-left: @margin-x-small;
+        padding-right: @margin-x-small;
+        flex-direction: column;
+        align-items: center;
+      }
+
       .news-pic {
-        width: 20vw;
-        height: 20vw;
+        @media (min-width: 768px) {
+          width: 20vw;
+          height: 20vw;
+        }
         max-width: 20vh;
         max-height: 20vh;
         object-fit: cover;
@@ -156,6 +170,9 @@ export default class NewsView extends Vue {
       .right-content {
         width: 100%;
         padding-left: 30px;
+        @media (max-width: 768px) {
+          padding-left: 0;
+        }
         .publication-date {
           padding-top: 10px;
           display: flex;
@@ -173,6 +190,10 @@ export default class NewsView extends Vue {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    @media (max-width: 768px) {
+        padding-left: @margin-x-small;
+        padding-right: @margin-x-small;
+    }
   }
 
   .read-more {

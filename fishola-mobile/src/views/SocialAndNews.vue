@@ -22,16 +22,9 @@
   <div class="my-trips page-with-header shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
-      <div class="pane pane-only">
-        <div class="pane-content large rounded">
+      <div class="pane pane-only" >
+        <div class="pane-content large rounded no-scroll">
           <h1>Communauté</h1>
-          <div class="selects-holder">
-            <select placeholder="lake" v-model="selectedLakeUUID">
-              <option v-for="lake in allLakes" :value="lake.id" :key="lake.id">
-                {{ lake.name }}
-              </option>
-            </select>
-          </div>
 
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
@@ -40,13 +33,13 @@
             </div>
             <div class="tab" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
               <span> Communications </span>
-              <div class="news-badge" v-if="unreadNewsCount > 0">
+              <div class="news-badge">
                 {{ unreadNewsCount }}
               </div>
             </div>
           </div>
           <div class="padding-content">
-            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeUUID"/>
+            <SocialView v-if="visualizationMode === 'social'"/>
             <NewsView :news="news" v-else />
           </div>
         </div>
@@ -63,9 +56,8 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { Lake, News } from "@/pojos/BackendPojos";
+import { News } from "@/pojos/BackendPojos";
 import SocialView from "./Social.vue";
-import ReferentialService from "@/services/ReferentialService";
 
 @Component({
   components: {
@@ -81,17 +73,9 @@ export default class SocialAndNewsView extends Vue {
 
   unreadNewsCount = 0;
   news: News[] = [];
-  selectedLakeUUID = "";
-  allLakes: Lake[] = [];
   
   mounted() {
     this.updateUnreadNewsCount();
-    this.loadLakes();
-  }
-
-  async loadLakes() {
-    this.allLakes = await ReferentialService.getLakes();
-    this.selectedLakeUUID = this.allLakes[0].id;
   }
 
   async updateUnreadNewsCount() {
@@ -140,6 +124,17 @@ export default class SocialAndNewsView extends Vue {
 
 <style scope lang="less">
 @import "../less/main";
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: @margin-small;
+
+  &.selected {
+    font-weight: bold;
+  }
+}
 
 .trips-and-news-tab {
   width: 100%;
