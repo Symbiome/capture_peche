@@ -400,4 +400,13 @@ public class TripsDao extends AbstractFisholaDao {
             }
         });
     }
+
+    public void deleteSocialReaction(UUID userId, UUID tripId) {
+        withContextNoResult(context -> {
+                context.deleteFrom(Tables.TRIP_SOCIAL_REACTION).where(
+                    Tables.TRIP_SOCIAL_REACTION.USER_ID.eq(userId)
+                    .and(Tables.TRIP_SOCIAL_REACTION.TRIP_ID.eq(tripId))
+                );
+        });
+    }
 }

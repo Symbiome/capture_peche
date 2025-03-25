@@ -130,4 +130,13 @@ public class SocialResource extends AbstractFisholaResource {
         tripsDao.insertSocialReaction(reaction);
         return Response.ok().build();
     }
+
+    @DELETE
+    @Path("/{tripId}")
+    public Response deleteTripReaction(@PathParam("tripId") UUID tripId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        tripsDao.deleteSocialReaction(userId, tripId);
+        return Response.ok().build();
+    }
 }
