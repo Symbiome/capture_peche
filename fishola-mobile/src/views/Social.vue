@@ -20,7 +20,7 @@
   -->
 <template>
   <div id="social-trips">
-    <div id="social-trips-top">
+    <div id="social-trips-top" class="selects-holder">
       <select placeholder="lake" v-model="selectedLakeUUID">
         <option v-for="lake in allLakes" :value="lake.id" :key="lake.id">
           {{ lake.name }}
@@ -33,20 +33,40 @@
            class="social-trip-item">
         <div class="social-trip-infos">
           <div class="social-trip-title">{{ socialTrip.tripName }}</div>
-          <div><i class="icon-profile" /> {{ socialTrip.userName}} &emsp; <i class="icon-calendar" /> {{ formattedDate(socialTrip.date) }} &emsp; <i class="icon-lake" /> {{ socialTrip.lakeName }} &emsp; <i class="icon-clock" /> {{ formattedDuration(socialTrip.durationInSeconds) }}</div>
-          <div><i class="icon-fish" /> {{ socialTrip.catchesCountPerMaillage }}</div>
+          <div class="social-trip-metadata">
+            <span><i class="icon-profile" /> {{ socialTrip.userName}} &emsp;</span>
+            <span><i class="icon-calendar" /> {{ formattedDate(socialTrip.date) }} &emsp;</span>
+            <span><i class="icon-lake" /> {{ socialTrip.lakeName }} &emsp;</span>
+            <span><i class="icon-clock" /> {{ formattedDuration(socialTrip.durationInSeconds) }}</span>
+          </div>
+          <div class="social-trip-catches">
+            <i class="icon-fish" />
+            {{ countCatches(socialTrip.catchesCountPerMaillage) }} prises :
+            <span v-for="specie in Object.keys(socialTrip.catchesCountPerMaillage)" :key="specie" class="catch-specie">
+              <span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">
+                {{ socialTrip.catchesCountPerMaillage[specie].MAILLEE }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">s</span>
+                maillé<span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">s</span>
+              </span>
+              <span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">
+                {{ socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">s</span>
+                non maillé<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">s</span>
+              </span>
+              <span v-if="socialTrip.catchesCountPerMaillage[specie].NON_DEFINI">
+                {{ socialTrip.catchesCountPerMaillage[specie].NON_DEFINI }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_DEFINI">s</span>
+              </span>
+            </span>
+          </div>
         </div>
-        {{ socialTrip.socialReactions.length }}
         <div class="social-trip-reaction">
           Super sortie
-          <div class="button">
-            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">0 <i class="icon-like" /></button>
+          <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LIKE')}">
+            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">{{ countSocialReaction(socialTrip.id, 'LIKE') }} <i class="icon-like" /></button>
           </div>
         </div>
         <div class="social-trip-reaction">
           Bravo pour cette sortie
-          <div class="button">
-            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">0 <i class="icon-heart" /></button>
+          <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LOVE')}">
+            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">{{ countSocialReaction(socialTrip.id, 'LOVE') }} <i class="icon-heart" /></button>
           </div>
         </div>
       </div>
@@ -57,10 +77,11 @@
 <script lang="ts">
 
 
-import { Lake, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
+import { Lake, Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
 import ReferentialService from "@/services/ReferentialService";
 import TripsService from "@/services/TripsService";
+import ProfileService from "@/services/ProfileService";
 import { Component,  Prop,  Vue, Watch } from "vue-property-decorator";
 
 @Component({
@@ -68,19 +89,41 @@ import { Component,  Prop,  Vue, Watch } from "vue-property-decorator";
   },
 })
 export default class SocialView extends Vue {
-  @Prop() lakeId: string;
   socialTrips: TripSocial[] = [];
   selectedLakeUUID = "";
   allLakes: Lake[] = [];
+  userId = "";
 
  
   mounted() {
+    this.loadUserId();
     this.loadLakes();
     this.loadSocialTrips();
   }
 
+  async loadUserId() {
+    ProfileService.getProfile().then(
+      (profile) => {
+        this.userId = profile.id;
+      }
+    );
+  }
+
   async loadLakes() {
-    this.allLakes = await ReferentialService.getLakes();
+    const defaultLake = {
+      id: "",
+      name: "Tous les lacs",
+      exportAs: "",
+      latitude: 0,
+      longitude: 0,
+    };
+    this.allLakes.push(defaultLake);
+    try {const lakes = await ReferentialService.getLakes();
+
+      this.allLakes = this.allLakes.concat(lakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
     this.selectedLakeUUID = this.allLakes[0].id;
   }
 
@@ -92,6 +135,27 @@ export default class SocialView extends Vue {
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
     await TripsService.postSocialReaction(tripId, socialReaction);
     this.loadSocialTrips();
+  }
+
+  countSocialReaction(tripId: string, socialReaction: SocialReaction) {
+    let relatedSocialTrips = this.socialTrips.find(({ id }) => id === tripId);
+    if (relatedSocialTrips) {
+      return relatedSocialTrips.socialReactions.reduce(
+        (sum, trip) => {
+          return sum + (trip['reaction'] === socialReaction ? 1 : 0);
+        }
+        ,
+        0,
+      );
+    }
+  }
+  hasReaction(tripId: string, socialReaction: SocialReaction) {
+    let relatedSocialTrips = this.socialTrips.find(({ id }) => id === tripId);
+    if (relatedSocialTrips) {
+      return undefined != relatedSocialTrips.socialReactions.find(item =>
+        item.userId == this.userId && item.reaction == socialReaction
+      );
+    }
   }
 
   formattedDate(rawDate: Date): string {
@@ -110,12 +174,32 @@ export default class SocialView extends Vue {
     return Helpers.formatSecondsDuration(seconds);
   }
 
+  countCatches(catches: Map<String, Map<Maillage, number>>) {
+    let sum : number = 0;
+    Object.values(catches).map((item) => {
+      if (item.MAILLEE) {
+        sum += item.MAILLEE;
+      }
+      if (item.NON_MAILLEE) {
+        sum += item.NON_MAILLEE;
+      }
+      if (item.NON_DEFINI) {
+        sum += item.NON_DEFINI;
+      }
+    });
+
+    return sum;
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../less/main";
+
+#social-trips-top {
+  text-align: center;
+}
 
 #social-trips-list {
   overflow-y: scroll;
@@ -155,15 +239,63 @@ export default class SocialView extends Vue {
   font-size: 18px;
   color: initial;
 }
+.social-trip-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  & > span {
+    white-space: nowrap;
+  }
+}
+
 .social-trip-reaction {
   display: flex;
   align-items: center;
   font-size: 14px;
 
-  .button {
+  .reaction-button {
     width: auto;
-    button:not(:hover) {
+
+    button {
       background-color: transparent;
+      &:hover {
+        background-color: @cyprus;
+      }
+    }
+
+    &.is-active {
+      button:not(:hover) {
+        background-color: @pelorous !important;
+        color: white;
+      }
+
+    }
+  }
+}
+.catch-specie {
+  text-transform: lowercase;
+  & > span {
+    position: relative;
+    padding-left: @margin-x-small;
+    margin-left: @margin-x-small;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      height: 70%;
+      width: 1px;
+      background: #636E72;
+      top: 20%;
+      opacity: 0.6;
+    }
+
+  }
+  &:first-of-type > span:first-child {
+    padding-left: 0;
+    margin-left: 0;
+
+    &::before {
+      content: none;
     }
   }
 }

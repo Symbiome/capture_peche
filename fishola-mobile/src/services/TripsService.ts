@@ -216,7 +216,7 @@ export default class TripsService extends AbstractFisholaService {
 
   static async listSocialTrips(lakeId: string) {
     const params = {
-      lake: lakeId,
+      lakeId: lakeId,
       pageNumber: 1,
       pageSize: 40
     };

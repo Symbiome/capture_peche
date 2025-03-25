@@ -73,7 +73,7 @@ export default class SocialAndNewsView extends Vue {
 
   unreadNewsCount = 0;
   news: News[] = [];
-  
+
   mounted() {
     this.updateUnreadNewsCount();
   }
