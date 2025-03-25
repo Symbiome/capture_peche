@@ -463,6 +463,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
     protected UserProfile toUserProfile(FisholaUser input) {
         ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder()
+                .id(input.getId())
                 .email(input.getEmail())
                 .firstName(input.getFirstName())
                 .lastName(Optional.ofNullable(input.getLastName()))

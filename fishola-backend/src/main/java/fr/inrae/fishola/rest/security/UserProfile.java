@@ -32,12 +32,15 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @ImmutableObject
 @JsonSerialize(as = ImmutableUserProfile.class)
 public interface UserProfile {
+
+    UUID id();
 
     String firstName();
 

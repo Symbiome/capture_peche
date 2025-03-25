@@ -22,6 +22,7 @@
 export default class UserProfile {
   static currentUser?: UserProfile;
 
+  id: string;
   lastName?: string;
   gender?: string;
   birthYear?: number;

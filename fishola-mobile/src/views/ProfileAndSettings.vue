@@ -79,6 +79,7 @@ export default class ProfileAndSettingsView extends Vue {
     visualizationMode: string;
 
     profile: UserProfile = {
+        id: "",
         firstName: "",
         email: "",
         initials: "",
