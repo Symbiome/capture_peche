@@ -406,7 +406,7 @@ public class TripsDao extends AbstractFisholaDao {
                 context.deleteFrom(Tables.TRIP_SOCIAL_REACTION).where(
                     Tables.TRIP_SOCIAL_REACTION.USER_ID.eq(userId)
                     .and(Tables.TRIP_SOCIAL_REACTION.TRIP_ID.eq(tripId))
-                );
+                ).execute();
         });
     }
 }

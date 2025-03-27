@@ -234,6 +234,16 @@ export default class TripsService extends AbstractFisholaService {
     await this.backendPost("/v1/social/" + tripId, tripSocialReaction);
   }
 
+  static async deleteSocialReaction(tripId: string, socialReaction: SocialReaction) {
+    const tripSocialReaction: TripSocialReaction = {
+      tripId: tripId,
+      userId: "",
+      message: "",
+      reaction: socialReaction,
+    };
+    await this.backendDelete("/v1/social/" + tripId, tripSocialReaction);
+  }
+
   static listTrips(
     sortDown: boolean,
     searchTerm: string,

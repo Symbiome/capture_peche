@@ -60,13 +60,19 @@
         <div class="social-trip-reaction">
           Super sortie
           <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LIKE')}">
-            <button @click="postSocialReaction(socialTrip.id, 'LIKE')" class="new-button">{{ countSocialReaction(socialTrip.id, 'LIKE') }} <i class="icon-like" /></button>
+            <button @click="hasReaction(socialTrip.id, 'LIKE') ? deleteSocialReaction(socialTrip.id, 'LIKE') : postSocialReaction(socialTrip.id, 'LIKE')"
+              class="new-button">
+              {{ countSocialReaction(socialTrip.id, 'LIKE') }} <i class="icon-like" />
+            </button>
           </div>
         </div>
         <div class="social-trip-reaction">
           Bravo pour cette sortie
           <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LOVE')}">
-            <button @click="postSocialReaction(socialTrip.id, 'LOVE')" class="new-button">{{ countSocialReaction(socialTrip.id, 'LOVE') }} <i class="icon-heart" /></button>
+            <button @click="hasReaction(socialTrip.id, 'LOVE') ? deleteSocialReaction(socialTrip.id, 'LOVE') : postSocialReaction(socialTrip.id, 'LOVE')"
+                    class="new-button">
+              {{ countSocialReaction(socialTrip.id, 'LOVE') }} <i class="icon-heart" />
+            </button>
           </div>
         </div>
       </div>
@@ -82,7 +88,7 @@ import Helpers from "@/services/Helpers";
 import ReferentialService from "@/services/ReferentialService";
 import TripsService from "@/services/TripsService";
 import ProfileService from "@/services/ProfileService";
-import { Component,  Prop,  Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -134,6 +140,11 @@ export default class SocialView extends Vue {
 
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
     await TripsService.postSocialReaction(tripId, socialReaction);
+    this.loadSocialTrips();
+  }
+
+  async deleteSocialReaction(tripId: string, socialReaction: SocialReaction) {
+    await TripsService.deleteSocialReaction(tripId, socialReaction);
     this.loadSocialTrips();
   }
 
