@@ -20,21 +20,12 @@
   -->
 <template>
   <div id="social-trips">
-    <div id="social-trips-top" class="selects-holder">
-      <select placeholder="lake" v-model="selectedLakeUUID">
-        <option v-for="lake in allLakes" :value="lake.id" :key="lake.id">
-          {{ lake.name }}
-        </option>
-      </select>
-    </div>
     <div id="social-trips-list">
-      <div v-for="socialTrip in socialTrips"
-           :key="socialTrip.id"
-           class="social-trip-item">
+      <div v-for="socialTrip in socialTrips" :key="socialTrip.id" class="social-trip-item">
         <div class="social-trip-infos">
           <div class="social-trip-title">{{ socialTrip.tripName }}</div>
           <div class="social-trip-metadata">
-            <span><i class="icon-profile" /> {{ socialTrip.userName}} &emsp;</span>
+            <span><i class="icon-profile" /> {{ socialTrip.userName }} &emsp;</span>
             <span><i class="icon-calendar" /> {{ formattedDate(socialTrip.date) }} &emsp;</span>
             <span><i class="icon-lake" /> {{ socialTrip.lakeName }} &emsp;</span>
             <span><i class="icon-clock" /> {{ formattedDuration(socialTrip.durationInSeconds) }}</span>
@@ -44,35 +35,42 @@
             {{ countCatches(socialTrip.catchesCountPerMaillage) }} prises :
             <span v-for="specie in Object.keys(socialTrip.catchesCountPerMaillage)" :key="specie" class="catch-specie">
               <span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">
-                {{ socialTrip.catchesCountPerMaillage[specie].MAILLEE }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">s</span>
+                {{ socialTrip.catchesCountPerMaillage[specie].MAILLEE }} {{ specie }}<span
+                  v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">s</span>
                 maillé<span v-if="socialTrip.catchesCountPerMaillage[specie].MAILLEE">s</span>
               </span>
               <span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">
-                {{ socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">s</span>
+                {{ socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE }} {{ specie }}<span
+                  v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">s</span>
                 non maillé<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_MAILLEE">s</span>
               </span>
               <span v-if="socialTrip.catchesCountPerMaillage[specie].NON_DEFINI">
-                {{ socialTrip.catchesCountPerMaillage[specie].NON_DEFINI }} {{ specie }}<span v-if="socialTrip.catchesCountPerMaillage[specie].NON_DEFINI">s</span>
+                {{ socialTrip.catchesCountPerMaillage[specie].NON_DEFINI }} {{ specie }}<span
+                  v-if="socialTrip.catchesCountPerMaillage[specie].NON_DEFINI">s</span>
               </span>
             </span>
           </div>
         </div>
-        <div class="social-trip-reaction">
-          Super sortie
-          <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LIKE')}">
-            <button @click="hasReaction(socialTrip.id, 'LIKE') ? deleteSocialReaction(socialTrip.id, 'LIKE') : postSocialReaction(socialTrip.id, 'LIKE')"
-              class="new-button">
-              {{ countSocialReaction(socialTrip.id, 'LIKE') }} <i class="icon-like" />
-            </button>
+        <div class="social-trip-reactions">
+          <div class="social-trip-reaction">
+            <span class="social-trip-reaction-text">Super sortie</span>
+            <div class="button reaction-button" :class="{ 'is-active': hasReaction(socialTrip.id, 'LIKE') }">
+              <button
+                @click="hasReaction(socialTrip.id, 'LIKE') ? deleteSocialReaction(socialTrip.id, 'LIKE') : postSocialReaction(socialTrip.id, 'LIKE')"
+                class="new-button">
+                {{ countSocialReaction(socialTrip.id, 'LIKE') }} <i class="icon-like" />
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="social-trip-reaction">
-          Bravo pour cette sortie
-          <div class="button reaction-button" :class="{ 'is-active' : hasReaction(socialTrip.id, 'LOVE')}">
-            <button @click="hasReaction(socialTrip.id, 'LOVE') ? deleteSocialReaction(socialTrip.id, 'LOVE') : postSocialReaction(socialTrip.id, 'LOVE')"
-                    class="new-button">
-              {{ countSocialReaction(socialTrip.id, 'LOVE') }} <i class="icon-heart" />
-            </button>
+          <div class="social-trip-reaction">
+            <span class="social-trip-reaction-text">Bravo pour cette sortie</span>
+            <div class="button reaction-button" :class="{ 'is-active': hasReaction(socialTrip.id, 'LOVE') }">
+              <button
+                @click="hasReaction(socialTrip.id, 'LOVE') ? deleteSocialReaction(socialTrip.id, 'LOVE') : postSocialReaction(socialTrip.id, 'LOVE')"
+                class="new-button">
+                {{ countSocialReaction(socialTrip.id, 'LOVE') }} <i class="icon-heart" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -88,7 +86,7 @@ import Helpers from "@/services/Helpers";
 import ReferentialService from "@/services/ReferentialService";
 import TripsService from "@/services/TripsService";
 import ProfileService from "@/services/ProfileService";
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -96,14 +94,14 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 })
 export default class SocialView extends Vue {
   socialTrips: TripSocial[] = [];
-  selectedLakeUUID = "";
+  @Prop()
+  lakeId = "";
   allLakes: Lake[] = [];
   userId = "";
 
- 
+
   mounted() {
     this.loadUserId();
-    this.loadLakes();
     this.loadSocialTrips();
   }
 
@@ -115,27 +113,9 @@ export default class SocialView extends Vue {
     );
   }
 
-  async loadLakes() {
-    const defaultLake = {
-      id: "",
-      name: "Tous les lacs",
-      exportAs: "",
-      latitude: 0,
-      longitude: 0,
-    };
-    this.allLakes.push(defaultLake);
-    try {const lakes = await ReferentialService.getLakes();
-
-      this.allLakes = this.allLakes.concat(lakes);
-    } catch (e) {
-      // Silent catch, no more lakes will be added
-    }
-    this.selectedLakeUUID = this.allLakes[0].id;
-  }
-
-  @Watch("selectedLakeUUID")
+  @Watch("lakeId")
   async loadSocialTrips() {
-    this.socialTrips = await TripsService.listSocialTrips(this.selectedLakeUUID);
+    this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
   }
 
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
@@ -186,7 +166,7 @@ export default class SocialView extends Vue {
   }
 
   countCatches(catches: Map<String, Map<Maillage, number>>) {
-    let sum : number = 0;
+    let sum: number = 0;
     Object.values(catches).map((item) => {
       if (item.MAILLEE) {
         sum += item.MAILLEE;
@@ -214,7 +194,7 @@ export default class SocialView extends Vue {
 
 #social-trips-list {
   overflow-y: scroll;
-  height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px );
+  height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px);
   padding-bottom: 200px;
 }
 
@@ -227,42 +207,67 @@ export default class SocialView extends Vue {
   padding-top: @vertical-margin-medium;
   padding-bottom: @vertical-margin-medium;
   border-bottom: 1px solid @gainsboro;
+
   @media (min-width: 768px) {
-    align-items: center;
     gap: @margin-x-large;
     padding-right: @margin-large;
   }
-}
-.social-trip-infos {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  color: @pale-sky;
-  font-size: 14px;
-  gap: 7px;
-  flex-basis: 100%;
-  @media (min-width: 768px) {
-    flex-basis: 0;
-  }
-}
-.social-trip-title {
-  font-weight: bold;
-  font-size: 18px;
-  color: initial;
-}
-.social-trip-metadata {
-  display: flex;
-  flex-wrap: wrap;
-  & > span {
-    white-space: nowrap;
-  }
-}
-
-.social-trip-reaction {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-
+                                                                                                                                @media (max-width: 1270px) {
+                                                                                                                                  flex-direction: column;
+                                                                                                                                }
+                                                                                                                                }
+                                                                
+                                                                                                                                .social-trip-infos {
+                                                                                                                                  display: flex;
+                                                                                                                                  flex-direction: column;
+                                                                                                                                  flex-grow: 1;
+                                                                                                                                  color: @pale-sky;
+                                                                                                                                  font-size: 14px;
+                                                                                                                                  gap: 7px;
+                                                                                                                                  flex-basis: 100%;
+                                                                
+                                                                                                                                  @media (min-width: 768px) {
+                                                                                                                                    flex-basis: 0;
+                                                                                                                                  }
+                                                                                                                                }
+                                                                
+                                                                                                                                .social-trip-title {
+                                                                                                                                  font-weight: bold;
+                                                                                                                                  font-size: 18px;
+                                                                                                                                  color: initial;
+                                                                                                                                }
+                                                                
+                                                                                                                                .social-trip-metadata {
+                                                                                                                                  display: flex;
+                                                                                                                                  flex-wrap: wrap;
+                                                                
+                                                                                                                                  &>span {
+                                                                                                                                    white-space: nowrap;
+                                                                                                                                  }
+                                                                
+                                                                                                                                }
+                                                                
+                                                                                                                                .social-trip-reactions {
+                                                                                                                                  display: flex;
+                                                                                                                                  gap: 7px;
+                                                                
+                                                                                                                                  @media (max-width: 520px) {
+                                                                                                                                    justify-content: center;
+                                                                                                                                  }
+                                                                                                                                }
+                                                                
+                                                                                                                                .social-trip-reaction {
+                                                                                                                                  display: flex;
+                                                                                                                                  align-items: center;
+                                                                                                                                  font-size: 14px;
+                                                                
+                                                                                                                                  .social-trip-reaction-text {
+                                                                                                                                    color: @pale-sky;
+                                                                                                                                  }
+                                                                
+                                                                                                                                  @media (max-width: 768px) {
+                                                                                                                                    flex-direction: column;
+                                                                                                                                  }
   .reaction-button {
     width: auto;
 

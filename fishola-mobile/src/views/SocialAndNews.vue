@@ -22,9 +22,17 @@
   <div class="my-trips page-with-header shifted-background">
     <FisholaHeader />
     <div class="page my-trips-page">
-      <div class="pane pane-only" >
+      <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
-          <h1>Communauté</h1>
+          <h1>Communauté
+            <div class="selects-holder">
+              <select placeholder="lake" v-model="selectedLakeUUID">
+                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+                </option>
+              </select>
+            </div>
+          </h1>
 
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
@@ -39,7 +47,7 @@
             </div>
           </div>
           <div class="padding-content">
-            <SocialView v-if="visualizationMode === 'social'"/>
+            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeUUID" />
             <NewsView :news="news" v-else />
           </div>
         </div>
@@ -56,8 +64,9 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { News } from "@/pojos/BackendPojos";
+import { Lake, News } from "@/pojos/BackendPojos";
 import SocialView from "./Social.vue";
+import ReferentialService from "@/services/ReferentialService";
 
 @Component({
   components: {
@@ -72,7 +81,26 @@ export default class SocialAndNewsView extends Vue {
   visualizationMode: string;
 
   unreadNewsCount = 0;
+  selectedLakeUUID = "";
   news: News[] = [];
+  lakes: Lake[] = [];
+
+  created() {
+    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
+      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
+    }
+    this.loadLakes();
+  }
+
+  async loadLakes(): Promise<void> {
+    this.lakes = [];
+    try {
+      const allLakes = await ReferentialService.getLakes();
+      this.lakes = this.lakes.concat(allLakes);
+    } catch (e) {
+      // Silent catch, no more lakes will be added
+    }
+  }
 
   mounted() {
     this.updateUnreadNewsCount();
@@ -162,20 +190,42 @@ export default class SocialAndNewsView extends Vue {
   }
 }
 
-@media screen and (max-width: 760px) {
+@media screen and (max-width: @desktop-min-width) {
   .trips-and-news-tab {
     padding-top: 20px;
     margin-top: 0px;
   }
-}
-
-.news-badge {
-  width: 30px;
-  height: 25px;
-  font-size: 16px;
-  border-radius: 15px;
-  background-color: @terra-cotta;
-  color: @white;
-  margin-right: @margin-small;
+        .my-trips-page {
+          .pane {
+            h1 {
+              height: 80px;
+              margin-top: 0px;
+            }
+          }
+        }
+        }
+    
+        .news-badge {
+          width: 30px;
+          height: 25px;
+          font-size: 16px;
+          border-radius: 15px;
+          background-color: @terra-cotta;
+          color: @white;
+          margin-right: @margin-small;
+        }
+    
+        @media screen and (min-width: @desktop-min-width) {
+          .my-trips-page {
+            .pane {
+              h1 {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+              }
+            }
+          }
+  
 }
 </style>

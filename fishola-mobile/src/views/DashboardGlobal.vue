@@ -184,14 +184,6 @@ export default class DashboardGlobalView extends Vue {
 
   async loadLakes(): Promise<void> {
     this.lakes = [];
-    const defaultLake = {
-      id: "",
-      name: "Tous les lacs",
-      exportAs: "",
-      latitude: 0,
-      longitude: 0,
-    };
-    this.lakes.push(defaultLake);
     try {const allLakes = await ReferentialService.getLakes();
       
       this.lakes = this.lakes.concat(allLakes);
