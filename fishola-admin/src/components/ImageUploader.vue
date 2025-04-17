@@ -34,7 +34,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
-import Constants from "../../../fishola-mobile/src/services/Constants";
+import Constants from "@/services/Constants";
 
 @Component
 export default class ImageUploader extends Vue {
