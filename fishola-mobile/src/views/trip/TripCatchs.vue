@@ -131,7 +131,7 @@ export default class TripCatchsView extends Vue {
   }
 
   editSpecies() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-species",
       params: { id: this.id },
     });
@@ -159,7 +159,7 @@ export default class TripCatchsView extends Vue {
   }
 
   tripSaved() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
       params: { id: this.id },
     });
@@ -174,18 +174,18 @@ export default class TripCatchsView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   newCatch() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.id, catchId: Constants.NEW_CATCH_ID },
     });
   }
 
   openCatch(catchId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.id, catchId: catchId },
     });

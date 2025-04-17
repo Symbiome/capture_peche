@@ -25,7 +25,6 @@
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import ProfileService from "@/services/ProfileService";
@@ -58,19 +57,19 @@ export default class DispatcherView extends Vue {
             "Vous êtes toujours connecté\u00B7e"
           );
         }
-        RouterUtils.pushRouteNoDuplicate(router, "trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "trips/list");
 
         this.startupFinished();
       },
       (_status) => {
         // Only push route if no route has already been pushed (typically when opening from external url)
-        if (router.currentRoute.name == "dispatcher") {
+        if (this.$router.currentRoute.name == "dispatcher") {
           // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
           Helpers.getDeviceType().then((type) => {
             if (type == "web") {
-              RouterUtils.pushRouteNoDuplicate(router, "/about");
+              RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
             } else {
-              RouterUtils.pushRouteNoDuplicate(router, "/login");
+              RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
             }
           });
         }

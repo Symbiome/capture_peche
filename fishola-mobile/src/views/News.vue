@@ -125,7 +125,7 @@ export default class NewsView extends Vue {
   }
 
   showNewsDetails(newsId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, "/news/" + newsId);
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/news/" + newsId);
   }
 }
 </script>

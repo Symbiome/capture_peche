@@ -94,7 +94,6 @@ import ProfileService from "@/services/ProfileService";
 
 import Helpers from "@/services/Helpers";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 import FooterButton from "@/components/layout/FooterButton.vue";
 
@@ -192,7 +191,7 @@ export default class FisholaFooter extends Vue {
   }
 
   logguedOut() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     this.$root.$emit("loggued-out");
   }
 
@@ -205,28 +204,28 @@ export default class FisholaFooter extends Vue {
   }
 
   goDashboard() {
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard");
   }
 
   goCredits() {
-    RouterUtils.pushRouteNoDuplicate(router, "/credits");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/credits");
     this.$root.$emit("close-feedback");
   }
 
   goDocumentation() {
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation");
   }
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   goProfile() {
-    RouterUtils.pushRouteNoDuplicate(router, "/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile");
   }
 
   goSettings() {
-    RouterUtils.pushRouteNoDuplicate(router, "/settings");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/settings");
   }
 
   openFeedback() {
@@ -242,7 +241,7 @@ export default class FisholaFooter extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   doDelete() {

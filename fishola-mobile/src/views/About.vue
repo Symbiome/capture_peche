@@ -346,7 +346,6 @@ import Counter from "@/components/common/Counter.vue";
 import ProfileService from "@/services/ProfileService";
 import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { latLng, LatLng, Icon } from "leaflet";
@@ -354,13 +353,16 @@ import { latLng, LatLng, Icon } from "leaflet";
 type D = Icon.Default & {
   _getIconUrl?: string;
 };
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 delete (Icon.Default.prototype as D)._getIconUrl;
 
 Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
 });
 
 import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
@@ -548,16 +550,16 @@ export default class AboutView extends Vue {
     this.closed = true;
     ProfileService.fetchProfile().then(
       (_profile) => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
       },
       (_status) => {
-        RouterUtils.pushRouteNoDuplicate(router, "/login");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
       }
     );
   }
 
   goFaq() {
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
 }
 </script>

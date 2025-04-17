@@ -115,7 +115,6 @@ import Helpers from "@/services/Helpers";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FormInput from "@/components/common/FormInput.vue";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import DocumentationService from "@/services/DocumentationService";
@@ -147,7 +146,7 @@ export default class RegisterView extends Vue {
   }
 
   cancel() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
   }
 
   register() {
@@ -186,7 +185,7 @@ export default class RegisterView extends Vue {
         "Compte enregistré. Vous devez valider votre e-mail",
         10000
       );
-      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     });
   }
 

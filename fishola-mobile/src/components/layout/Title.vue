@@ -28,7 +28,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
@@ -36,7 +35,7 @@ export default class Title extends Vue {
   envName?: string = process.env.VITE__ENV;
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 }
 </script>

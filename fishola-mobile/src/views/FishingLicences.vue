@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -90,7 +89,7 @@ export default class FishingLicencesView extends Vue {
 
 
   buttonClicked() {
-    RouterUtils.pushRouteNoDuplicate(router, "/licences/new");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/licences/new");
   }
 }
 </script>

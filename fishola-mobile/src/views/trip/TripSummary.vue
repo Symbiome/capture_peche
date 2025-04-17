@@ -135,7 +135,7 @@ export default class TripSummaryView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   onUpdatedTrip(trip: any) {
@@ -197,15 +197,15 @@ export default class TripSummaryView extends Vue {
   tripSaved() {
     this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
         params: { id: this.trip!.id },
       });
     } else if (this.actionRequested == "EditTechniques") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-techniques",
         params: { id: this.trip!.id },
       });
@@ -214,7 +214,7 @@ export default class TripSummaryView extends Vue {
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
         params: {
           selectedDefaultPic: "",
@@ -222,7 +222,7 @@ export default class TripSummaryView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
     }
   }
 }

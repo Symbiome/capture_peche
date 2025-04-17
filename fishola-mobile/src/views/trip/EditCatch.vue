@@ -277,10 +277,13 @@ type D = Icon.Default & {
 
 delete (Icon.Default.prototype as D)._getIconUrl;
 
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
 });
 
 import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
@@ -1008,12 +1011,12 @@ export default class EditCatchView extends Vue {
 
   leavePage() {
     if (this.inTripCreation) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-catchs",
         params: { id: this.tripId },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip",
         params: { id: this.tripId },
       });

@@ -269,7 +269,7 @@ export default class TripSpeciesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   summaryNotYetSaved(tripAsAny: any) {
@@ -284,17 +284,17 @@ export default class TripSpeciesView extends Vue {
       this.id == Constants.NEW_TRIP_ID ||
       this.summaryNotYetSaved(this.trip)
     ) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-catchs",
         params: { id: savedId },
       });
     } else if (this.id == "RUNNING") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-summary",
         params: { id: savedId },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip",
         params: { id: savedId },
       });

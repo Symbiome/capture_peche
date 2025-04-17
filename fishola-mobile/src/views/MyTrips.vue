@@ -72,7 +72,6 @@
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { TripLight } from "@/pojos/BackendPojos";
@@ -195,7 +194,7 @@ export default class MyTripsView extends Vue {
     console.error("Erreur au chargement des sorties", data);
     if (data && data.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
   }
 
@@ -236,13 +235,13 @@ export default class MyTripsView extends Vue {
     Helpers.getDeviceType().then((source) => {
       if (source == "web") {
         TripsService.newAfterwardsTrip().then((id: string) => {
-          RouterUtils.pushRouteNoDuplicate(router, {
+          RouterUtils.pushRouteNoDuplicate(this.$router, {
             name: "trip-meta",
             params: { id: id },
           });
         });
       } else {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips/new");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/new");
       }
     });
   }

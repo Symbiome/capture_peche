@@ -63,7 +63,6 @@
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -82,7 +81,6 @@ import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
     BackButton,
     NewFishingLicence,
     RouterUtils,
-    router,
   },
 })
 export default class NewFishingLicence extends Vue {
@@ -181,7 +179,7 @@ export default class NewFishingLicence extends Vue {
         "Une nouvelle carte de pêche a été ajoutée."
       );
 
-      RouterUtils.pushRouteNoDuplicate(router, "/licences");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/licences");
     } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
       if (error.content !== undefined && error.content.error !== undefined) {

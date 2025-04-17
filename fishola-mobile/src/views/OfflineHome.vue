@@ -60,7 +60,6 @@ import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import DocumentationService from "../services/DocumentationService";
 import { News } from "@/pojos/BackendPojos";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
@@ -96,11 +95,11 @@ export default class OfflineHome extends Vue {
   }
 
   goNews() {
-    RouterUtils.pushRouteNoDuplicate(router, "/offline-home/news");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/news");
   }
 
   goPresentation() {
-    RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/presentation");
   }
 }
 </script>

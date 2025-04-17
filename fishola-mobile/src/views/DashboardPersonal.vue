@@ -222,7 +222,7 @@ export default class DashboardPersonalView extends Vue {
       this.offline = true;
     } else if (error && error.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
     this.ready = true;
   }

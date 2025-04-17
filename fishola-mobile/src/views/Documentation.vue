@@ -92,7 +92,6 @@ import TripsService from "@/services/TripsService";
 import { DocumentationLight, Editorial } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
@@ -148,11 +147,11 @@ export default class DocumentationView extends Vue {
   }
 
   goDoc() {
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
   goFaq() {
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
 }
 </script>

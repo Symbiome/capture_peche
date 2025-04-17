@@ -253,7 +253,7 @@ export default class TripMetaView extends Vue {
   }
 
   tripSaved() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-species",
       params: { id: this.id },
     });
@@ -268,7 +268,7 @@ export default class TripMetaView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 }
 </script>

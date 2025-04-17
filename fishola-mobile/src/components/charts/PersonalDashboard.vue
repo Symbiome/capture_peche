@@ -218,7 +218,6 @@ import OptionItem from "@/pojos/OptionItem";
 import { DashboardAndSpecies } from "@/services/DashboardService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "../../router";
 
 import moment from "moment";
 import MaillageLegend from "./MaillageLegend.vue";
@@ -442,21 +441,21 @@ export default class PersonalDashboard extends Vue {
   }
 
   openCatch(catchId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.catchToTripId[catchId], catchId: catchId },
     });
   }
 
   openTrip(tripId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip",
       params: { id: tripId },
     });
   }
 
   openGalery() {
-    RouterUtils.pushRouteNoDuplicate(router, "/galery");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/galery");
   }
 
   getDay(date: number) {

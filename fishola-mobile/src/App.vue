@@ -44,7 +44,6 @@ import ReferentialService from "./services/ReferentialService";
 import DocumentationService from "./services/DocumentationService";
 import ProfileService from "./services/ProfileService";
 import GeolocationService from "./services/GeolocationService";
-import router from "@/router";
 import { StatusBar } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
@@ -90,13 +89,13 @@ export default class AppView extends Vue {
         const token = actionAndToken.substring(actionAndToken.indexOf("=") + 1);
         if ("reset-password" === action) {
           console.info("Detected reset password request");
-          RouterUtils.pushRouteNoDuplicate(router, {
+          RouterUtils.pushRouteNoDuplicate(this.$router, {
             name: "reset-password",
             params: { token: token },
           });
         } else if ("verify" === action) {
           console.info("Detected verify request");
-          RouterUtils.pushRouteNoDuplicate(router, {
+          RouterUtils.pushRouteNoDuplicate(this.$router, {
             name: "verify",
             params: { token: token },
           });

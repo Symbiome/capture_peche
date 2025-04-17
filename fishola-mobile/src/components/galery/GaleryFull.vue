@@ -319,7 +319,7 @@ export default class GaleryFull extends Vue {
   }
 
   async seeTrip(tripId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
       params: {
         id: tripId,
@@ -330,7 +330,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard");
   }
 
   async downloadSelectedPic() {

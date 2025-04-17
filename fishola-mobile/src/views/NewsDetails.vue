@@ -61,7 +61,6 @@ import { News } from "@/pojos/BackendPojos";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
-import router from "@/router";
 
 @Component({
   components: {
@@ -115,7 +114,7 @@ export default class NewsDetailsView extends Vue {
   }
 
   goBack() {
-    router.go(-1);
+    this.$router.go(-1);
   }
 }
 </script>

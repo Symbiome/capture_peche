@@ -92,7 +92,7 @@ export default class MyTripItem extends Vue {
   }
 
   openTrip() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip",
       params: { id: this.trip.id },
     });

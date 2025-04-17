@@ -74,7 +74,6 @@ import ProfileService from "@/services/ProfileService";
 
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -181,7 +180,7 @@ export default class ProfileView extends Vue {
           "Votre compte a été supprimé",
           5000
         );
-        RouterUtils.pushRouteNoDuplicate(router, "/login");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
         this.$root.$emit("loggued-out");
       });
     });
@@ -199,7 +198,7 @@ export default class ProfileView extends Vue {
   }
 
   editPassword() {
-    RouterUtils.pushRouteNoDuplicate(router, "/profile-password");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile-password");
   }
 }
 </script>

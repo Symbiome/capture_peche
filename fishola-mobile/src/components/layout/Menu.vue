@@ -61,7 +61,6 @@ import Helpers from "@/services/Helpers";
 import Avatar from "@/components/common/Avatar.vue";
 import UserProfile from "@/pojos/UserProfile";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
@@ -164,7 +163,7 @@ export default class Menu extends Vue {
   }
 
   back() {
-    RouterUtils.pushRouteNoDuplicate(router, "/about");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
   }
 
   async profileLoaded(profile: UserProfile) {
@@ -190,7 +189,7 @@ export default class Menu extends Vue {
 
   goDispatcher() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/");
   }
 
   goTrips() {
@@ -198,46 +197,46 @@ export default class Menu extends Vue {
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+          RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
         } else {
-          RouterUtils.pushRouteNoDuplicate(router, "/about");
+          RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
         }
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/presentation");
     }
   }
 
   goProfile() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/profile/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 
   goDashboardPersonal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 
   goDashboardGlobal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard-global/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-global/dashboard");
   }
 
   goDocumentation() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
   goSocialAndNews() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/community/social");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/community/social");
   }
 
   logout() {
@@ -276,7 +275,7 @@ export default class Menu extends Vue {
   }
 
   logguedOut() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     this.onLogguedOut();
   }
 

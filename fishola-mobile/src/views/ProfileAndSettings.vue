@@ -62,7 +62,6 @@ import SettingsView from "./Settings.vue";
 import { RouterUtils } from "@/router/RouterUtils";
 import ProfileService from "@/services/ProfileService";
 import UserProfile from "@/pojos/UserProfile";
-import router from "@/router";
 import Avatar from "@/components/common/Avatar.vue";
 
 @Component({
@@ -100,7 +99,7 @@ export default class ProfileAndSettingsView extends Vue {
             this.fullName = UserProfile.fullName(profile);
         }), () => {
             this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-            RouterUtils.pushRouteNoDuplicate(router, "/login");
+            RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
         };
     }
 

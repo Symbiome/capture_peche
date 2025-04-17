@@ -121,12 +121,10 @@
 <script lang="ts">
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import PicturePreview from "@/components/trip/PicturePreview.vue";
 import PictureModalMobileGallerySlider from "@/components/trip/PictureModalMobileGallerySlider.vue";
 
 @Component({
   components: {
-    PicturePreview,
     PictureModalMobileGallerySlider,
   },
 })

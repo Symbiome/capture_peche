@@ -147,12 +147,12 @@ export default class TripTechniquesView extends Vue {
 
   tripSaved() {
     if (this.id == "RUNNING") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-summary",
         params: { id: this.id },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip",
         params: { id: this.id },
       });
@@ -168,7 +168,7 @@ export default class TripTechniquesView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 }
 </script>

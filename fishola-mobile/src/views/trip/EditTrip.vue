@@ -182,15 +182,15 @@ export default class EditTripView extends Vue {
 
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
         params: { id: this.id },
       });
     } else if (this.actionRequested == "EditTechniques") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-techniques",
         params: { id: this.id },
       });
@@ -199,7 +199,7 @@ export default class EditTripView extends Vue {
 
   newCatch() {
     if (this.modifiable) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "catch",
         params: { tripId: this.id, catchId: Constants.NEW_CATCH_ID },
       });
@@ -207,7 +207,7 @@ export default class EditTripView extends Vue {
   }
 
   openCatch(catchId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.id, catchId: catchId },
     });
@@ -222,12 +222,12 @@ export default class EditTripView extends Vue {
   }
 
   tripDeleted() {
-    RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
   }
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
         params: {
           selectedDefaultPic: "",
@@ -235,7 +235,7 @@ export default class EditTripView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips/list");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
     }
   }
 }
