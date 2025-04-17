@@ -129,7 +129,7 @@ export default class GaleryPreviewList extends Vue {
       justify-content: center;
       align-items: center;
 
-      background-image: url("~/public/img/illustration_fish_wire.svg");
+      background-image: url("img/illustration_fish_wire.svg");
       background-repeat: no-repeat;
       background-size: auto 75%;
       background-position: center;

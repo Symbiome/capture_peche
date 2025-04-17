@@ -263,14 +263,14 @@ html {
 }
 
 .full-background {
-  background-image: url("~/public/img/background_transparent.png");
+  background-image: url("img/background_transparent.png");
   background-repeat: no-repeat;
   background-size: 100%;
   background-position: center;
 }
 
 .shifted-background {
-  background-image: url("~/public/img/background.png");
+  background-image: url("img/background.png");
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-position: top;

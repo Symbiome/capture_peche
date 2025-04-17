@@ -401,9 +401,9 @@ export default class AboutView extends Vue {
   contactEmail: string = "";
   contactMessage: string = "";
 
-  // version:string = process.env.VUE_APP_VERSION;
-  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
+  // version:string = process.env.VITE__VERSION;
+  projectVersion: string = process.env.VITE__PROJECT_VERSION;
+  gitRevision: string = process.env.VITE__GIT_REVISION;
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;
@@ -568,7 +568,7 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
 @import "../less/_responsive";
-@import url("~leaflet/dist/leaflet.css");
+@import (less) "leaflet/dist/leaflet.css";
 
 #about-scroll-container {
   overflow: auto;
@@ -747,7 +747,7 @@ export default class AboutView extends Vue {
 
 .Title_sec {
   width: 100%;
-  background: url(~/public/img/about-coregones5.jpg) top center no-repeat;
+  background: url(img/about-coregones5.jpg) top center no-repeat;
   height: 680px;
   position: relative;
   background-size: cover;
@@ -927,12 +927,12 @@ export default class AboutView extends Vue {
 }
 
 .Contribute_sec {
-  background: url(~/public/img/about-background.jpg) top center no-repeat;
+  background: url(img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 
 .Get_sec {
-  background: url(~/public/img/about-background.jpg) top center no-repeat;
+  background: url(img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 

@@ -62,22 +62,22 @@
                 <PicturePreview :enableModal="false" v-for="pictureSrc in allNonMeasurePictures" :key="pictureSrc.order"
                   v-bind:src="pictureSrc.content" v-bind:deletable="false"
                   @picture-clicked="focusedPicSrc = pictureSrc.content" v-on:take-picture="takePicture" :class="{
-        'pic-miniature': true,
-        'pic-selected': pictureSrc.content == focusedPicSrc,
-      }" />
+  'pic-miniature': true,
+  'pic-selected': pictureSrc.content == focusedPicSrc,
+}" />
                 <!-- Then measurement pic (if any) -->
                 <PicturePreview :enableModal="false" v-if="measurementPictureSrc" :key="measurementPictureSrc"
                   v-bind:src="measurementPictureSrc" v-bind:deletable="false" v-on:take-picture="takePicture"
                   @picture-clicked="focusedPicSrc = measurementPictureSrc" :class="{
-        'pic-miniature': true,
-        'pic-selected': measurementPictureSrc == focusedPicSrc,
-      }" />
+  'pic-miniature': true,
+  'pic-selected': measurementPictureSrc == focusedPicSrc,
+}" />
                 <!-- Empty miniature picture for adding pictures -->
                 <div class="pic-miniature picture-preview" v-if="focusedPicSrc &&
-        (allNonMeasurePictures.length < 4 ||
-          (!measurementPictureSrc &&
-            allNonMeasurePictures.length < 5))
-        ">
+                  (allNonMeasurePictures.length < 4 ||
+                    (!measurementPictureSrc &&
+                      allNonMeasurePictures.length < 5))
+                ">
                   <div class="picture add-pic-button">
                     <img src="/img/add-pic-to-gallery.svg" alt="Ajouter une photo" class="picture"
                       v-on:click="takePicture" />
@@ -87,8 +87,8 @@
             </div>
             <div class="edit-catch-form">
               <div :class="{
-        'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
-      }">
+                'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
+              }">
                 <FormSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
                   v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
                 <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
@@ -98,9 +98,9 @@
               <div class="measure-row">
                 <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
                   <button @click="
-        displayMeasurementPicturePopup =
-        !displayMeasurementPicturePopup
-        ">
+                    displayMeasurementPicturePopup =
+                    !displayMeasurementPicturePopup
+                    ">
                     <i class="icon-size measure-button-icon" />
                     <span id="measure-button-text"></span>
                   </button>
@@ -122,9 +122,9 @@
                   label="Poids en g (optionnel)" type="number" :min="1" placeholder="Entrez un poids en grammes"
                   v-model="aCatch.weight" v-bind:error="weightError" v-bind:readonly="!modifiable" />
                 <FormYesNo name="keep" v-bind:label="tripMode == 'Live'
-          ? 'Conservez-vous ce poisson ?'
-          : 'Avez-vous conservé ce poisson ?'
-        " v-model="aCatch.keep" v-bind:error="keepError" v-bind:readonly="!modifiable" />
+                  ? 'Conservez-vous ce poisson ?'
+                  : 'Avez-vous conservé ce poisson ?'
+                  " v-model="aCatch.keep" v-bind:error="keepError" v-bind:readonly="!modifiable" />
               </div>
               <div class="two-columns-row-on-desktop">
                 <!-- AThimel 27/02/2020 On désactive la saisie de l'état du poisson relâché. Cf cocoo n°9 -->
@@ -145,11 +145,11 @@
                   v-model="aCatch.description" v-bind:readonly="!modifiable" />
               </div>
               <FormToggle v-if="withSample ||
-        (settings &&
-          settings.promptSamples
-          && aCatch.speciesId
-          && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-        " label="Prélèvement (optionnel)" v-model="withSample" v-bind:readonly="!modifiable" />
+                (settings &&
+                  settings.promptSamples
+                  && aCatch.speciesId
+                  && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
+              " label="Prélèvement (optionnel)" v-model="withSample" v-bind:readonly="!modifiable" />
               <div class="sample two-columns-row-on-desktop" v-if="withSample">
                 <div class="info" v-if="samplesDocumentationUrl">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
@@ -168,19 +168,20 @@
                 </div>
               </div>
 
-              <div v-if="!inCreation" class="location">
+              <div class="location">
                 <div class="empty" v-if="!gpsLocation">
                   <i class="icon icon-warning"></i> Aucune position enregistrée
                   pour cette prise
+                  <button v-if="modifiable" class="button" @click="initMarkerPosition">Renseigner une position</button>
                 </div>
                 <div class="map" v-if="gpsLocation">
-                  <l-map :zoom="16" :center="gpsLocation" :options="{
-        zoomSnap: 0.5,
-      }" style="height: 100%; width: 100%">
+                  <l-map :zoom="11" :center="gpsLocation" :options="{
+                    zoomSnap: 0.5,
+                  }" style="height: 100%; width: 100%">
                     <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
-                    <l-marker :lat-lng="gpsLocation"></l-marker>
+                    <l-marker :lat-lng="gpsLocation" :draggable="modifiable" @dragend="markerDrag"></l-marker>
                   </l-map>
                 </div>
               </div>
@@ -268,7 +269,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
-import { latLng, LatLng, Icon } from "leaflet";
+import { latLng, LatLng, Icon, DragEndEvent } from "leaflet";
 
 type D = Icon.Default & {
   _getIconUrl?: string;
@@ -441,6 +442,7 @@ export default class EditCatchView extends Vue {
         (position) => {
           this.aCatch.latitude = position.coords.latitude;
           this.aCatch.longitude = position.coords.longitude;
+          this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
           console.info(
             `Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`
           );
@@ -958,6 +960,10 @@ export default class EditCatchView extends Vue {
       if (!this.withSample) {
         aCatchBean.sampleId = "";
       }
+      if (this.gpsLocation) {
+        aCatchBean.latitude = this.gpsLocation.lat;
+        aCatchBean.longitude = this.gpsLocation.lng;
+      }
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
   }
@@ -1095,6 +1101,18 @@ export default class EditCatchView extends Vue {
       "chevesne"
     );
     return lowerCaseAndPluralRemoved;
+  }
+
+  async initMarkerPosition() {
+    const lake = (await ReferentialService.getLakes()).filter(l => l.id = this.lakeId)
+    if (lake.length > 0) {
+      this.gpsLocation = latLng(lake[0].latitude, lake[0].longitude)
+    }
+  }
+
+  markerDrag(e: DragEndEvent) {
+    // @ts-ignore
+    this.gpsLocation = e.target.getLatLng();
   }
 }
 </script>

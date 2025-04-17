@@ -128,9 +128,9 @@ import { Device } from "@capacitor/device";
 export default class FeedbackModal extends Vue {
   display = false;
 
-  // version:string = process.env.VUE_APP_VERSION;
-  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
+  // version:string = process.env.VITE__VERSION;
+  projectVersion: string = process.env.VITE__PROJECT_VERSION;
+  gitRevision: string = process.env.VITE__GIT_REVISION;
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   device: string = "";

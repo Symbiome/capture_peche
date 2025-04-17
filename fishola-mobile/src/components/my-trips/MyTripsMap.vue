@@ -196,8 +196,8 @@ export default class MyTripsMapView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
-@import url("~leaflet.markercluster/dist/MarkerCluster.css");
-@import url("~leaflet.markercluster/dist/MarkerCluster.Default.css");
+@import (less) "leaflet.markercluster/dist/MarkerCluster.css";
+@import (less) "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 .info {
     position: absolute;

@@ -297,12 +297,12 @@ export default class Helpers {
   }
 
   static getDeviceType(): Promise<DeviceType> {
-    if (process.env.VUE_APP_FORCE_DEVICE_TYPE) {
+    if (process.env.VITE__FORCE_DEVICE_TYPE) {
       console.warn(
         "Device type is forced to",
-        process.env.VUE_APP_FORCE_DEVICE_TYPE
+        process.env.VITE__FORCE_DEVICE_TYPE
       );
-      return Promise.resolve(process.env.VUE_APP_FORCE_DEVICE_TYPE);
+      return Promise.resolve(process.env.VITE__FORCE_DEVICE_TYPE);
     }
 
     return new Promise<DeviceType>((resolve, reject) => {

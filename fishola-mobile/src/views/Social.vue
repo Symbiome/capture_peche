@@ -83,7 +83,6 @@
 
 import { Lake, Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
-import ReferentialService from "@/services/ReferentialService";
 import TripsService from "@/services/TripsService";
 import ProfileService from "@/services/ProfileService";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -212,62 +211,62 @@ export default class SocialView extends Vue {
     gap: @margin-x-large;
     padding-right: @margin-large;
   }
-                                                                                                                                @media (max-width: 1270px) {
-                                                                                                                                  flex-direction: column;
-                                                                                                                                }
-                                                                                                                                }
-                                                                
-                                                                                                                                .social-trip-infos {
-                                                                                                                                  display: flex;
-                                                                                                                                  flex-direction: column;
-                                                                                                                                  flex-grow: 1;
-                                                                                                                                  color: @pale-sky;
-                                                                                                                                  font-size: 14px;
-                                                                                                                                  gap: 7px;
-                                                                                                                                  flex-basis: 100%;
-                                                                
-                                                                                                                                  @media (min-width: 768px) {
-                                                                                                                                    flex-basis: 0;
-                                                                                                                                  }
-                                                                                                                                }
-                                                                
-                                                                                                                                .social-trip-title {
-                                                                                                                                  font-weight: bold;
-                                                                                                                                  font-size: 18px;
-                                                                                                                                  color: initial;
-                                                                                                                                }
-                                                                
-                                                                                                                                .social-trip-metadata {
-                                                                                                                                  display: flex;
-                                                                                                                                  flex-wrap: wrap;
-                                                                
-                                                                                                                                  &>span {
-                                                                                                                                    white-space: nowrap;
-                                                                                                                                  }
-                                                                
-                                                                                                                                }
-                                                                
-                                                                                                                                .social-trip-reactions {
-                                                                                                                                  display: flex;
-                                                                                                                                  gap: 7px;
-                                                                
-                                                                                                                                  @media (max-width: 520px) {
-                                                                                                                                    justify-content: center;
-                                                                                                                                  }
-                                                                                                                                }
-                                                                
-                                                                                                                                .social-trip-reaction {
-                                                                                                                                  display: flex;
-                                                                                                                                  align-items: center;
-                                                                                                                                  font-size: 14px;
-                                                                
-                                                                                                                                  .social-trip-reaction-text {
-                                                                                                                                    color: @pale-sky;
-                                                                                                                                  }
-                                                                
-                                                                                                                                  @media (max-width: 768px) {
-                                                                                                                                    flex-direction: column;
-                                                                                                                                  }
+  @media (max-width: 1270px) {
+    flex-direction: column;
+  }
+}
+
+.social-trip-infos {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  color: @pale-sky;
+  font-size: 14px;
+  gap: 7px;
+  flex-basis: 100%;
+
+  @media (min-width: 768px) {
+    flex-basis: 0;
+  }
+}
+
+.social-trip-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: initial;
+}
+
+.social-trip-metadata {
+  display: flex;
+  flex-wrap: wrap;
+
+  &>span {
+    white-space: nowrap;
+  }
+
+}
+
+.social-trip-reactions {
+  display: flex;
+  gap: 7px;
+
+  @media (max-width: 520px) {
+    justify-content: center;
+  }
+}
+
+.social-trip-reaction {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+
+  .social-trip-reaction-text {
+    color: @pale-sky;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
   .reaction-button {
     width: auto;
 

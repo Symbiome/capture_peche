@@ -315,7 +315,7 @@ export default class TripsService extends AbstractFisholaService {
   static async finishTripCatchs(trip: TripMain): Promise<void> {
     if (trip.id == Constants.RUNNING_ID) {
       const source: DeviceType = await Helpers.getDeviceType();
-      const frontendVersion = process.env.VUE_APP_PROJECT_VERSION;
+      const frontendVersion = process.env.VITE__PROJECT_VERSION;
 
       return new Promise<void>((resolve, reject) => {
         if (trip.mode == "Live") {
