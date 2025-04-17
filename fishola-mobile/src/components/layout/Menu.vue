@@ -83,7 +83,7 @@ export class MenuItem {
   },
 })
 export default class Menu extends Vue {
-  envName?: string = process.env.VITE__ENV;
+  envName?: string = import.meta.env.VITE__ENV_NAME;
 
   visibility: string = "menu-hidden";
 

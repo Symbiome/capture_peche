@@ -403,9 +403,8 @@ export default class AboutView extends Vue {
   contactEmail: string = "";
   contactMessage: string = "";
 
-  // version:string = process.env.VITE__VERSION;
-  projectVersion: string = process.env.VITE__PROJECT_VERSION;
-  gitRevision: string = process.env.VITE__GIT_REVISION;
+  projectVersion: string = import.meta.env.VITE__APP_VERSION;
+  gitRevision: string = import.meta.env.VITE__GIT_REVISION;
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;

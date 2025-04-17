@@ -32,7 +32,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
 export default class Title extends Vue {
-  envName?: string = process.env.VITE__ENV;
+  envName?: string = import.meta.env.VITE__ENV_NAME;
 
   goHome() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");

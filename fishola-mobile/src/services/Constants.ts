@@ -28,11 +28,11 @@ export default class Constants {
     static MONTHS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
     static baseApiUrl():string {
-        let result = process.env.VITE__API_URL;
+        let result = import.meta.env.VITE__API_URL;
         if (!result) {
             result = location.protocol + "//" + location.hostname;
-            if (process.env.VITE__API_DEFAULT_PORT) {
-                result += ":" + process.env.VITE__API_DEFAULT_PORT
+            if (import.meta.env.VITE__API_DEFAULT_PORT) {
+              result += ":" + import.meta.env.VITE__API_DEFAULT_PORT;
             }
             result += "/api";
         }
@@ -40,7 +40,7 @@ export default class Constants {
     }
 
     static baseDeeplinkSafeApiUrl():string {
-        let result = process.env.VITE__DEEPLINK_SAFE_API_URL;
+        let result = import.meta.env.VITE__DEEPLINK_SAFE_API_URL;
         if (!result) {
             result = Constants.baseApiUrl();
         }
