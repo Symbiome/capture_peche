@@ -330,7 +330,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 
   async downloadSelectedPic() {

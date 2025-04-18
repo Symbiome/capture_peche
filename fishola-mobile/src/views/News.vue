@@ -60,10 +60,8 @@
       </div>
     </div>
     <div class="bottom">
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
-
       <FisholaFooter
-        shortcuts="back,credits,documentation"
+        shortcuts="logout,dashboard,home"
         selected="documentation"
       />
     </div>
@@ -74,32 +72,24 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-
-import TripsService from "@/services/TripsService";
 import { News } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
-import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
     FisholaHeader,
-    RunningOverlay,
     FisholaFooter,
   },
 })
 export default class NewsView extends Vue {
   @Prop() news: News[];
 
-  hasRunningTrip: boolean = false;
-
   mounted() {
-    TripsService.hasRunningTrip().then(
-      (result: boolean) => (this.hasRunningTrip = result)
-    );
+   
   }
 
   getMiniatureURl(news: News) {

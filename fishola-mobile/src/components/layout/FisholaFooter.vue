@@ -204,7 +204,7 @@ export default class FisholaFooter extends Vue {
   }
 
   goDashboard() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 
   goCredits() {
@@ -213,7 +213,7 @@ export default class FisholaFooter extends Vue {
   }
 
   goDocumentation() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
   goHome() {
@@ -221,11 +221,11 @@ export default class FisholaFooter extends Vue {
   }
 
   goProfile() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 
   goSettings() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/settings");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/settings");
   }
 
   openFeedback() {

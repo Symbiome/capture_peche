@@ -36,8 +36,12 @@
             </div>
           </div>
           <div class="padding-content">
-            <MyTrips v-if="visualizationMode === 'list'" />
+            <MyTrips v-if="visualizationMode === 'list'" :hasRunningTrip="hasRunningTrip" />
             <MyTripsMapView :visible="visualizationMode == 'map'" />
+          </div>
+          <div class="bottom">
+            <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip && visualizationMode === 'list'" />
+            <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" v-if="visualizationMode === 'list'" />
           </div>
         </div>
       </div>
@@ -52,6 +56,8 @@ import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
+import TripsService from "@/services/TripsService";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 
 @Component({
   components: {
@@ -60,11 +66,19 @@ import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
     FisholaFooter,
     MyTripsMapView,
     NewsView,
+    RunningOverlay
   },
 })
 export default class TripsListAndMapView extends Vue {
   @Prop({ default: "list" })
   visualizationMode: string;
+  hasRunningTrip = false;
+
+  mounted() {
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
+  }
 
   changeVisualizationMode(newMode: string) {
     if (this.visualizationMode !== newMode) {

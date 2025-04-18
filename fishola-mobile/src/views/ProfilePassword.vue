@@ -133,7 +133,7 @@ export default class ProfilePasswordView extends Vue {
   }
 
   backToProfile() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 
   onError(response: any) {

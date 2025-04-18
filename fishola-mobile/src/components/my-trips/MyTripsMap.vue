@@ -20,6 +20,7 @@
   -->
 <template>
     <div class="pane ">
+        <span v-if="mapIsLoading">Chargement de la carte...</span>
         <div id="info" class="info" v-if="validMarkers.length > 0" v-show="showPersonnalMapWarning">
             Cette carte n'est visible que par vous. Les coordonnées de vos prises ne sont pas divulgées aux autres
             pêcheurs.
@@ -47,8 +48,8 @@
                                 <i class="fish icon-fish" />
                                 {{ c.specieName }}
                                 {{ c.maillage === 'NON_DEFINI' ? ''
-                                    : (c.maillage == 'MAILLEE' ?
-                                        '(maillé)' : '(non maillé)')
+                                : (c.maillage == 'MAILLEE' ?
+                                '(maillé)' : '(non maillé)')
                                 }}
                             </p>
 
@@ -131,6 +132,7 @@ export default class MyTripsMapView extends Vue {
         iconAnchor: [16, 37]
     })
     map: any;
+    mapIsLoading = false;
 
     mounted() {
         this.computeMapIfVisible();
@@ -139,6 +141,7 @@ export default class MyTripsMapView extends Vue {
     @Watch("visible")
     computeMapIfVisible() {
         if (this.visible && this.validMarkers.length == 0) {
+            this.mapIsLoading = true;
             TripsService.catchMarkers().then(
                 (markers) => {
                     this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates)
@@ -177,6 +180,7 @@ export default class MyTripsMapView extends Vue {
 
             const bounds = visibleLayerGroup.getBounds();
             this.map.fitBounds(bounds);
+            this.mapIsLoading = false;
         }
     }
 

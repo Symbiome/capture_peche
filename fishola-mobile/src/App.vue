@@ -428,8 +428,8 @@ html {
       text-align: left;
 
       &.no-margin-pane {
-        margin-left: @margin-large-desktop;
-        margin-right: @margin-large-desktop;
+        margin-left: @margin-medium;
+        margin-right: @margin-medium;
       }
     }
 

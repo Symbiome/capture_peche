@@ -19,12 +19,12 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header shifted-background">
+  <div class="my-trips page-with-header-and-footer shifted-background">
     <FisholaHeader />
     <div class="page social-and-news-page">
       <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
-          <h1>Communauté
+          <h1 class="no-margin-pane">Communauté
             <div class="selects-holder">
               <select placeholder="lake" v-model="selectedLakeUUID">
                 <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
@@ -52,6 +52,10 @@
           </div>
         </div>
       </div>
+      <div class="bottom">
+        <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
+        <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" />
+      </div>
     </div>
   </div>
 </template>
@@ -67,13 +71,18 @@ import ProfileService from "../services/ProfileService";
 import { Lake, News } from "@/pojos/BackendPojos";
 import SocialView from "./Social.vue";
 import ReferentialService from "@/services/ReferentialService";
+import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import TripsService from "@/services/TripsService";
 
 @Component({
   components: {
     MyTrips,
     FisholaHeader,
     SocialView,
-    NewsView
+    NewsView,
+    FisholaFooter,
+    RunningOverlay
   },
 })
 export default class SocialAndNewsView extends Vue {
@@ -81,6 +90,7 @@ export default class SocialAndNewsView extends Vue {
   visualizationMode: string;
 
   unreadNewsCount = 0;
+  hasRunningTrip = false;
   selectedLakeUUID = "";
   news: News[] = [];
   lakes: Lake[] = [];
@@ -90,6 +100,9 @@ export default class SocialAndNewsView extends Vue {
       this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
     }
     this.loadLakes();
+    TripsService.hasRunningTrip().then(
+      (result: boolean) => (this.hasRunningTrip = result)
+    );
   }
 
   async loadLakes(): Promise<void> {
@@ -153,6 +166,12 @@ export default class SocialAndNewsView extends Vue {
 <style scope lang="less">
 @import "../less/main";
 
+.h1-with-selects {
+  @media screen and (max-width: @desktop-min-width) {
+    margin-top: -20px !important;
+    margin-bottom: 20px !important;
+  }
+}
 .tab {
   display: flex;
   align-items: center;
@@ -227,5 +246,4 @@ export default class SocialAndNewsView extends Vue {
             }
           }
   
-}
-</style>
+}</style>

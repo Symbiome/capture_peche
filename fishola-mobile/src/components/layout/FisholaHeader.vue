@@ -76,7 +76,7 @@ export default class FisholaHeader extends Vue {
 
   goProfile() {
     this.$root.$emit("close-feedback");
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 }
 </script>

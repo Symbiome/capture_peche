@@ -250,7 +250,7 @@ export default class SocialView extends Vue {
   display: flex;
   gap: 7px;
 
-  @media (max-width: 520px) {
+  @media (max-width: @desktop-min-width) {
     justify-content: center;
   }
 }

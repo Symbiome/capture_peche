@@ -24,7 +24,7 @@
     <div class="page dashboard-page">
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
-          <h1 class="no-margin-pane">
+          <h1 class="no-margin-pane h1-with-selects">
             <span> Mes données </span>
             <div class="selects-holder">
               <select placeholder="lake" v-model="selectedLakeUUID">
