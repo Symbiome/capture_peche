@@ -35,7 +35,7 @@ export default class Title extends Vue {
   envName?: string = import.meta.env.VITE__ENV_NAME;
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 }
 </script>

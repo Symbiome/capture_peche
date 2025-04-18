@@ -31,4 +31,8 @@ export class RouterUtils {
       return err;
     }
   }
+
+  static homeRoute() : string {
+    return "/my-trips/list";
+  }
 }

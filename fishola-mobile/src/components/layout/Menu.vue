@@ -197,14 +197,14 @@ export default class Menu extends Vue {
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+          RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
         } else {
           RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
         }

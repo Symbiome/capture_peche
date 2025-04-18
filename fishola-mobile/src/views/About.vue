@@ -549,7 +549,7 @@ export default class AboutView extends Vue {
     this.closed = true;
     ProfileService.fetchProfile().then(
       (_profile) => {
-        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
       },
       (_status) => {
         RouterUtils.pushRouteNoDuplicate(this.$router, "/login");

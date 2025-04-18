@@ -297,17 +297,20 @@ export default class Helpers {
   }
 
   static getDeviceType(): Promise<DeviceType> {
-    return new Promise<DeviceType>((resolve, reject) => {
-      Device.getInfo().then((info) => {
-        let source: DeviceType;
-        if (info.platform == "web") {
-          source = "web";
-        } else {
-          source = "application";
-        }
-        resolve(source);
-      }, reject);
-    });
+    if (import.meta.env.VITE__FORCED_DEVICE_TYPE) {
+      return Promise.resolve(import.meta.env.VITE__FORCED_DEVICE_TYPE);
+    }
+      return new Promise<DeviceType>((resolve, reject) => {
+        Device.getInfo().then((info) => {
+          let source: DeviceType;
+          if (info.platform == "web") {
+            source = "web";
+          } else {
+            source = "application";
+          }
+          resolve(source);
+        }, reject);
+      });
   }
 
   static ifApplication(callback: () => any) {

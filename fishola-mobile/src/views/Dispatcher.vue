@@ -57,7 +57,7 @@ export default class DispatcherView extends Vue {
             "Vous êtes toujours connecté\u00B7e"
           );
         }
-        RouterUtils.pushRouteNoDuplicate(this.$router, "trips/list");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "my-trips/list");
 
         this.startupFinished();
       },

@@ -217,7 +217,7 @@ export default class FisholaFooter extends Vue {
   }
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
   }
 
   goProfile() {
@@ -241,7 +241,7 @@ export default class FisholaFooter extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 
   doDelete() {
