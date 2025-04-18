@@ -168,7 +168,7 @@
                 </div>
               </div>
 
-              <div class="location">
+              <div class="location" v-show="!watchingGPS">
                 <div class="empty" v-if="!gpsLocation">
                   <i class="icon icon-warning"></i> Aucune position enregistrée
                   pour cette prise
@@ -263,7 +263,6 @@ import PicturePreview from "@/components/trip/PicturePreview.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import Constants from "../../services/Constants";
@@ -276,7 +275,7 @@ type D = Icon.Default & {
 };
 
 delete (Icon.Default.prototype as D)._getIconUrl;
-
+import "leaflet/dist/leaflet.css";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -373,6 +372,7 @@ export default class EditCatchView extends Vue {
   shouldLaunchAutomaticMeasure = false;
 
   lastUsedPicOrder = 0;
+  watchingGPS = false;
   lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
   measurementPictureToDispatch = "";
 
@@ -443,9 +443,8 @@ export default class EditCatchView extends Vue {
     if (this.inCreation && this.inTripCreation && this.tripMode == "Live") {
       GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
         (position) => {
-          this.aCatch.latitude = position.coords.latitude;
-          this.aCatch.longitude = position.coords.longitude;
-          this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
+          this.watchingGPS = true;
+          this.gpsLocation = latLng(position.coords.latitude, position.coords.longitude);
           console.info(
             `Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`
           );

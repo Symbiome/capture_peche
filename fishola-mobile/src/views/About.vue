@@ -366,6 +366,7 @@ Icon.Default.mergeOptions({
 });
 
 import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
+import "leaflet/dist/leaflet.css";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Lake, Feedback, News } from "@/pojos/BackendPojos";
@@ -569,7 +570,6 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
 @import "../less/_responsive";
-@import (less) "leaflet/dist/leaflet.css";
 
 #about-scroll-container {
   overflow: auto;

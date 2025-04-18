@@ -88,7 +88,9 @@ type D = Icon.Default & {
 };
 
 delete (Icon.Default.prototype as D)._getIconUrl;
-
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -199,8 +201,6 @@ export default class MyTripsMapView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 @import "../../less/main";
-@import (less) "leaflet.markercluster/dist/MarkerCluster.css";
-@import (less) "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 .info {
     position: absolute;
