@@ -22,7 +22,7 @@
     <div class="my-trips  shifted-background">
         <FisholaHeader />
 
-        <div class="page-with-header my-trips-page">
+        <div class="page-with-header">
             <div class="pane pane-only">
                 <div class="pane-content large rounded">
                     <h1 class="no-margin-pane">Profil et Paramètres</h1>

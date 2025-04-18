@@ -36,8 +36,7 @@
 
       <div class="settings-row" v-if="settings">
         <span>Effectuer des prélèvements</span>
-        <FormToggle v-model="settings.promptSamples" /><br />
-
+        <FormToggle v-model="settings.promptSamples" />
       </div>
       <div class="info" v-if="samplesDocumentationUrl">
         Pour pouvoir effectuer des prélèvements, vous devez vous munir

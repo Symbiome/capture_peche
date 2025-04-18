@@ -305,7 +305,6 @@ export default class MyTripsView extends Vue {
 
       color: @pelorous;
       margin-top: @margin-medium;
-      margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
       line-height: calc(

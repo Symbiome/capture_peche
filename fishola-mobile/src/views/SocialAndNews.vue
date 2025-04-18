@@ -21,7 +21,7 @@
 <template>
   <div class="my-trips page-with-header shifted-background">
     <FisholaHeader />
-    <div class="page my-trips-page">
+    <div class="page social-and-news-page">
       <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
           <h1>Communauté
@@ -195,7 +195,7 @@ export default class SocialAndNewsView extends Vue {
     padding-top: 20px;
     margin-top: 0px;
   }
-        .my-trips-page {
+        .social-and-news-page {
           .pane {
             h1 {
               height: 80px;
@@ -216,7 +216,7 @@ export default class SocialAndNewsView extends Vue {
         }
     
         @media screen and (min-width: @desktop-min-width) {
-          .my-trips-page {
+          .social-and-news-page {
             .pane {
               h1 {
                 display: flex;

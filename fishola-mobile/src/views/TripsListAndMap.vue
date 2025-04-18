@@ -24,7 +24,7 @@
     <div class="page my-trips-page">
       <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
-          <h1>Mes Sorties</h1>
+          <h1 class="no-margin-pane">Mes Sorties</h1>
           <div class="main-tabs">
             <div class="tab" :class="visualizationMode === 'list' ? 'selected' : ''"
               @click="changeVisualizationMode('list')">

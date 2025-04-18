@@ -186,11 +186,6 @@ const routes = [
     props: true,
   },
   {
-    path: "/licences",
-    name: "licences",
-    component: FishingLicences,
-  },
-  {
     path: "/licences/new",
     name: "licence-new",
     component: NewFishingLicence,

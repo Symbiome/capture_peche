@@ -179,7 +179,7 @@ export default class NewFishingLicence extends Vue {
         "Une nouvelle carte de pêche a été ajoutée."
       );
 
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/licences");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
     } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
       if (error.content !== undefined && error.content.error !== undefined) {
