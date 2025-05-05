@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -63,6 +64,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.MultivaluedMap;
 import org.jooq.Condition;
+import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectSeekStep2;
@@ -339,22 +341,33 @@ public class TripsDao extends AbstractFisholaDao {
         return withContext(context -> {
                 List<Condition> conditions = new LinkedList<>();
                 conditions.add(Tables.TRIP.HIDDEN.eq(false));
+                conditions.add(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
+                conditions.add(Tables.FISHOLA_USER.ACCEPTS_SHARE_TRIPS.eq(true));
                 lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesIds)));
-                SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
+                SelectConditionStep<Record> builder = context.select(Tables.TRIP.asterisk(),
+                                Tables.FISHOLA_USER.ID,
+                                Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS,
+                                Tables.FISHOLA_USER.ACCEPTS_SHARE_TRIPS
+                        )
+                        .from(Tables.TRIP)
+                        .join(Tables.FISHOLA_USER)
+                        .on(Tables.TRIP.OWNER_ID.eq(Tables.FISHOLA_USER.ID))
                         .where(conditions);
-                SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
+                SelectSeekStep2<Record, LocalDate, LocalDateTime> tripRecords =
                         builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc());
                 List<Trip> tripsWithoutSocial = tripRecords
                         .limit(page.getPageSize()).offset(page.getPageNumber())
                         .fetch()
                         .into(Trip.class);
-                int totalCount = context.fetchCount(context.selectFrom(Tables.TRIP).where(conditions));
+                int totalCount = context.fetchCount(context.select(Tables.TRIP.ID).from(Tables.TRIP)
+                        .join(Tables.FISHOLA_USER)
+                        .on(Tables.TRIP.OWNER_ID.eq(Tables.FISHOLA_USER.ID)).where(conditions));
 
                 List<TripSocial> tripsWithSocial = tripsWithoutSocial.stream().map( t -> {
                     String userName = "";
                     FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
                     if ( user != null ) {
-                        userName = user.getFirstName() + " " + user.getLastName();
+                        userName = Objects.toString(user.getFirstName(), "") + " " + Objects.toString(user.getLastName(), "").trim();
                     }
                     String lakeName = withDao(LakeDao.class, lakeDao -> lakeDao.fetchById(t.getLakeId()).getFirst().getName());
                     long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();

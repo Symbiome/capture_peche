@@ -94,7 +94,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 export default class SocialView extends Vue {
   socialTrips: TripSocial[] = [];
   @Prop()
-  lakeId = "";
+  lakeId: string;
   allLakes: Lake[] = [];
   userId = "";
 

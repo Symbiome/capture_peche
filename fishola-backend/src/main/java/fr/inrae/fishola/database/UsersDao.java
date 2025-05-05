@@ -90,11 +90,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String firstName, String lastName, String rawEmail, String passwordHashed, boolean acceptsMailNotifications) {
+    public void create(String firstName, String lastName, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, boolean acceptsShareTrips) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
-                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS)
-                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications)
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.ACCEPTS_SHARE_TRIPS)
+                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, acceptsShareTrips)
                 .execute());
     }
 
@@ -109,6 +109,7 @@ public class UsersDao extends AbstractFisholaDao {
     public void safeDeleteByAnonymiseUser(FisholaUser existingUser ) {
         // Anonymise user but keep his fishing data so that we can still make stat
         existingUser.setAcceptsMailNotifications(false);
+        existingUser.setAcceptsShareTrips(false);
         existingUser.setBirthYear(1920);
         existingUser.setEmail(existingUser.getId().toString().replace("-", "") + "@anonymised.fr");
         existingUser.setGender(Gender.NonBinary);

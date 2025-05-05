@@ -4,8 +4,7 @@
   "version": "1.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "serve": "vite preview",
+    "serve": "vite",
     "build:demo": "vite build --mode demo",
     "build:mobile": "vite build --mode mobile",
     "build:web": "vite build --mode web",

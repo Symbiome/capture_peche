@@ -20,17 +20,19 @@
  */
 
 export default class UserRegister {
+  lastName: string;
+  firstName: string;
+  email: string;
+  password: string;
+  acceptsMailNotifications: boolean;
+  acceptsShareTrips: boolean;
 
-    lastName:string;
-    firstName:string;
-    email:string;
-    password:string;
-
-    constructor() {
-        this.lastName = '';
-        this.firstName = '';
-        this.email = '';
-        this.password = '';
-    }
-
+  constructor() {
+    this.lastName = "";
+    this.firstName = "";
+    this.email = "";
+    this.password = "";
+    this.acceptsMailNotifications = false;
+    this.acceptsShareTrips = false;
+  }
 }

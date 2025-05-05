@@ -265,6 +265,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");
             Boolean acceptsMailNotifications = readBoolean(node, "acceptsMailNotifications");
+            Boolean acceptsShareTrips = readBoolean(node, "acceptsShareTrips");
 
             ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder();
 
@@ -274,6 +275,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
             builder.acceptsMailNotifications(acceptsMailNotifications);
+            builder.acceptsShareTrips(acceptsShareTrips);
 
             // Old version may not convert the "lastNewsSeenDate" field, ignore them
             if (node.get("lastNewsSeenDate") instanceof ArrayNode) {

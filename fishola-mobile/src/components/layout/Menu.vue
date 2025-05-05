@@ -152,6 +152,48 @@ export default class Menu extends Vue {
           // @ts-ignore
           profile.lastNewsSeenDate
         );
+        if (!profile.lastNewsSeenDate) {
+          profile.lastNewsSeenDate = new Date(2025, 6, 1);
+        }
+        ProfileService.saveProfile(profile);
+      }
+      // Notify user if it is an old user and he does not know it is possible
+      // To receive notification par mail
+      else if (
+        !profile.acceptsShareTrips &&
+        (!profile.lastNewsSeenDate ||
+          // @ts-ignore
+          !profile.lastNewsSeenDate[0] ||
+          // @ts-ignore
+          profile.lastNewsSeenDate[0] <= 2025 &&
+        // @ts-ignore
+          profile.lastNewsSeenDate[1] < 6)
+      ) {
+        let acceptsShareTrips = false;
+        try {
+          await Helpers.confirm(
+            this.$modal,
+            `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre lac. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+            "Du nouveau sur FISHOLA",
+            "Non",
+            "Oui"
+          );
+          acceptsShareTrips = true;
+        } catch (_e) {
+          acceptsShareTrips = false;
+        }
+        profile.acceptsShareTrips = acceptsShareTrips;
+        // @ts-ignore
+        profile.lastNewsSeenDate[0] = 2025;
+        // @ts-ignore
+        profile.lastNewsSeenDate[1] = 6;
+        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+          // @ts-ignore
+          profile.lastNewsSeenDate
+        );
+        if (!profile.lastNewsSeenDate) {
+          profile.lastNewsSeenDate = new Date(2025, 6, 1);
+        }
         ProfileService.saveProfile(profile);
       }
 

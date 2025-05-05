@@ -20,78 +20,43 @@
   -->
 <template>
   <div class="register page-with-header shifted-background">
-    <FisholaHeader
-      v-bind:title="true"
-      v-bind:avatar="false"
-      v-bind:menu="false"
-    />
+    <FisholaHeader v-bind:title="true" v-bind:avatar="false" v-bind:menu="false" />
     <div class="page register-page keyboardSensitive">
       <div class="register-form keyboardSensitive">
         <h1 class="keyboardSensitive">Inscription</h1>
 
-        <FormInput
-          name="firstName"
-          label="Prénom"
-          placeholder="Renseignez votre prénom"
-          v-model="bean.firstName"
-          v-bind:error="validationErrors['firstName']"
-        />
-        <FormInput
-          name="lastName"
-          label="Nom (optionnel)"
-          placeholder="Renseignez votre nom"
-          v-model="bean.lastName"
-          v-bind:error="validationErrors['lastName']"
-        />
-        <FormInput
-          name="email"
-          label="E-mail"
-          placeholder="Renseignez votre E-mail"
-          v-model="bean.email"
-          v-bind:error="validationErrors['email']"
-        />
-        <FormInput
-          name="password"
-          type="password"
-          label="Mot de passe"
-          placeholder="Choisissez un mot de passe"
-          v-model="bean.password"
-          v-bind:error="validationErrors['password']"
-        />
-        <FormInput
-          name="passwordConfirm"
-          type="password"
-          label="Confirmation du mot de passe"
-          placeholder="Confirmez votre mot de passe"
-          v-model="passwordConfirm"
-          v-bind:error="validationErrors['passwordConfirm']"
-        />
+        <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="bean.firstName"
+          v-bind:error="validationErrors['firstName']" />
+        <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="bean.lastName"
+          v-bind:error="validationErrors['lastName']" />
+        <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="bean.email"
+          v-bind:error="validationErrors['email']" />
+        <FormInput name="password" type="password" label="Mot de passe" placeholder="Choisissez un mot de passe"
+          v-model="bean.password" v-bind:error="validationErrors['password']" />
+        <FormInput name="passwordConfirm" type="password" label="Confirmation du mot de passe"
+          placeholder="Confirmez votre mot de passe" v-model="passwordConfirm"
+          v-bind:error="validationErrors['passwordConfirm']" />
 
         <div class="form-checkbox">
-          <input
-            type="checkbox"
-            id="register-cgu"
-            class="pelorous-checkbox"
-            v-model="cgu"
-          />
+          <input type="checkbox" id="register-cgu" class="pelorous-checkbox" v-model="cgu" />
           <label for="register-cgu"></label>
           <label for="register-cgu" class="register-cgu-label">
             J'ai lu et j'accepte les
-            <a :href="cguUrl" target="_blank"
-              >Conditions Générales d'Utilisation</a
-            >
+            <a :href="cguUrl" target="_blank">Conditions Générales d'Utilisation</a>
           </label>
         </div>
         <div class="form-checkbox" style="padding-top: 12px">
-          <input
-            type="checkbox"
-            id="receive-mail"
-            class="pelorous-checkbox"
-            v-model="bean.acceptsMailNotifications"
-          />
+          <input type="checkbox" id="receive-mail" class="pelorous-checkbox" v-model="bean.acceptsMailNotifications" />
           <label for="receive-mail"></label>
           <label for="receive-mail" class="register-cgu-label">
             Je souhaite être informé des communications Fishola par mail
+          </label>
+        </div>
+        <div class="form-checkbox">
+          <input type="checkbox" id="show-trips" class="pelorous-checkbox" v-model="bean.acceptsShareTrips" />
+          <label for="show-trips"></label>
+          <label for="show-trips" class="register-cgu-label">
+            Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes lacs que moi.
           </label>
         </div>
         <div class="bottom-page-spacer"></div>
