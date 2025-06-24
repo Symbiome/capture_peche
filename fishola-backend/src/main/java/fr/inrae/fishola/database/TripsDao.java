@@ -345,7 +345,7 @@ public class TripsDao extends AbstractFisholaDao {
                 conditions.add(Tables.FISHOLA_USER.ACCEPTS_SHARE_TRIPS.eq(true));
                 lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesIds)));
                 SelectConditionStep<Record> builder = context.select(Tables.TRIP.asterisk(),
-                                Tables.FISHOLA_USER.ID,
+                                Tables.FISHOLA_USER.ID.as("ownerId"),
                                 Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS,
                                 Tables.FISHOLA_USER.ACCEPTS_SHARE_TRIPS
                         )
