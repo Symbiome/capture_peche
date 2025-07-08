@@ -75,7 +75,3 @@ export default class TechniquesVue extends Vue {
   }
 }
 </script>
-
-<style scoped lang="less">
-@import "../../less/main";
-</style>

@@ -23,7 +23,9 @@ package fr.inrae.fishola.rest;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.database.UsersDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.jboss.logging.Logger;
@@ -39,7 +41,6 @@ import java.util.UUID;
 
 import static jakarta.transaction.Transactional.TxType.REQUIRED;
 import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
@@ -58,6 +59,9 @@ public abstract class AbstractFisholaResource {
 
     @Inject
     protected UsersDao usersDao;
+
+    @Inject
+    protected AdminDao adminDao;
 
     @Inject
     protected FisholaConfiguration config;
@@ -154,12 +158,18 @@ public abstract class AbstractFisholaResource {
         }
     }
 
-    protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+    protected FisholaAdmin checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
         if (adminToken == null) {
             throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
         }
         boolean validToken = jwtHelper.isValidToken(adminToken);
         AccessDeniedException.check(validToken, "Accès refusé");
+        UUID adminId = jwtHelper.verifyToken(adminToken);
+        Optional<FisholaAdmin> byId = adminDao.findById(adminId);
+        if (byId.isEmpty()) {
+            AccessDeniedException.throwNew("Admin invalide");
+        }
+        return byId.get();
     }
 
     protected StreamingOutput wrapAsStreamingOutput(byte[] array) {

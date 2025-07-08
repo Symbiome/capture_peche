@@ -281,7 +281,6 @@ export default class CatchEditionPage extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .referential-aCatch {
   padding: 10px;

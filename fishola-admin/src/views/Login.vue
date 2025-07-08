@@ -19,24 +19,46 @@
   #L%
   -->
 <template>
-  <div class="login">
-    <p>Interface d'administration de FISHOLA.</p>
-    <div class="field is-grouped">
-      <p class="control is-expanded">
-        <b-field
-          :type="errorMessage ? 'is-danger' : ''"
-          :message="errorMessage"
-        >
-          <b-input type="password" v-model="password"> </b-input>
-        </b-field>
-      </p>
-      <p class="control">
-        <button class="button is-primary" @click="doLogin()">
-          Connexion
-        </button>
-      </p>
+   <section class="section is-fullheight has-background-light login">
+    <div class="container ">
+      <div class="columns is-centered ">
+        <div class="column is-5-tablet is-4-desktop is-3-widescreen login-box">
+          <div class="box has-text-centered">
+            <h1 class="title is-4 has-text-primary">Interface d'administration de FISHOLA</h1>
+
+            <b-field label="Email"
+              :type="errorMessage ? 'is-danger' : ''"
+              :message="errorMessage">
+              <b-input
+                icon="email"
+                type="email"
+                placeholder="Entrez votre email"
+                v-model="email"
+              />
+            </b-field>
+
+            <b-field
+              label="Mot de passe"
+              :type="passwordErrorMessage ? 'is-danger' : ''"
+              :message="passwordErrorMessage">
+            >
+              <b-input
+                icon="lock"
+                type="password"
+                placeholder="Entrez votre mot de passe"
+                password-reveal
+                v-model="password"
+              />
+            </b-field>
+
+            <b-button type="is-primary" expanded @click="doLogin">
+              Connexion {{ errorMessage}}
+            </b-button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
@@ -50,8 +72,10 @@ import { Component, Prop, Vue } from "vue-property-decorator";
   components: {}
 })
 export default class LoginView extends Vue {
+  email = localStorage.getItem("last-fishola-admin-email") ?? "";
   password = "";
   errorMessage = "";
+  passwordErrorMessage = "";
 
   constructor() {
     super();
@@ -59,20 +83,27 @@ export default class LoginView extends Vue {
 
   doLogin() {
     this.errorMessage = "";
-    BackendService.backendPost("/v1/security/admin-login", {
-      password: this.password
-    }).then(
-      () => {
-        router.push("home");
-      },
-      err => {
-        if (err.status == 401) {
-          this.errorMessage = "Mot de passe incorrect";
-        } else {
-          this.errorMessage = err;
+    this.passwordErrorMessage = "";
+    if (!this.email || this.email.length <5 || this.email.indexOf('@') == -1) {
+      this.errorMessage = "Email incorrect"
+    } else {
+      BackendService.backendPost("/v1/admin/login", {
+        email: this.email,
+        password: this.password
+      }).then(
+        () => {
+          localStorage.setItem("last-fishola-admin-email", this.email);
+          router.push("home");
+        },
+        err => {
+          if (err.status == 401) {
+            this.passwordErrorMessage = "Mot de passe incorrect";
+          } else {
+            this.errorMessage = err.message ?? "Veuillez vérifier votre email et mot de passe";
+          }
         }
-      }
-    );
+      );
+    }
   }
 }
 </script>
@@ -83,14 +114,16 @@ export default class LoginView extends Vue {
 
 .login {
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  p {
-    font-size: 22px;
-    margin: 5px;
+  .login-box {
+    min-width: 50vw;
+    padding-top: 20vh;
+    margin:auto;
   }
+}
+
+.box {
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 </style>

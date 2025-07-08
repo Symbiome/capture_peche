@@ -300,7 +300,6 @@ export default class Refenretial extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .referential {
   .buttons {

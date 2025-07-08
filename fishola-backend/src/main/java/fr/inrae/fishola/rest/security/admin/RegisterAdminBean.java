@@ -1,8 +1,13 @@
+package fr.inrae.fishola.rest.security.admin;
+
+import java.util.Set;
+import java.util.UUID;
+
 /*-
  * #%L
- * Fishola :: Mobile
+ * Fishola :: Backend
  * %%
- * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -18,24 +23,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+public class RegisterAdminBean {
 
-export default class Constants {
-
-    static baseApiUrl():string {
-      let result = import.meta.env.VITE__API_URL;
-      if (!result) {
-        result = location.protocol + "//" + location.hostname;
-        if (import.meta.env.VITE__API_DEFAULT_PORT) {
-          result += ":" + import.meta.env.VITE__API_DEFAULT_PORT;
-        }
-        result += "/api";
-      }
-      return result;
-    }
-
-    static apiUrl(path:string):string {
-        const result = Constants.baseApiUrl() + path;
-        return result;
-    }
-
+    public String email;
+    public String password;
+    public Set<UUID> lakeIds;
+    public Boolean canCreateAdmin;
 }

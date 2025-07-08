@@ -52,7 +52,7 @@
   </div>
 </template>
 
-<script lans="ts">
+<script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
@@ -118,7 +118,6 @@ export default class SpeciesPerLakeVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
 
 .species-per-lake {
   .table {

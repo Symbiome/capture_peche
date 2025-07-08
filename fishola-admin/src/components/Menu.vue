@@ -26,7 +26,7 @@
       </b-navbar-item>
     </template>
     <template slot="start">
-      <b-navbar-dropdown label="Référentiels">
+      <b-navbar-dropdown label="Référentiels" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'lakes' }">
           Lacs
         </b-navbar-item>
@@ -48,7 +48,7 @@
           Maillages et tailles maximales
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-dropdown label="Documentations">
+      <b-navbar-dropdown label="Documentations" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'editorial-pages' }">
           Pages éditoriales
         </b-navbar-item>
@@ -59,6 +59,9 @@
           Communications
         </b-navbar-item>
       </b-navbar-dropdown>
+       <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
+          Communications
+        </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
         Chiffres Clés
       </b-navbar-item>
@@ -68,16 +71,55 @@
       <b-navbar-item tag="router-link" :to="{ name: 'users' }">
         Utilisateurs
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
+        Administrateurs
+      </b-navbar-item>
     </template>
 
     <template slot="end">
-      <b-navbar-item tag="div">
-        <div class="buttons">
-          <b-button type="is-danger" outlined @click="doLogout()">
-            Déconnexion
-          </b-button>
-        </div>
+      <b-navbar-item class="user-dropdown-wrapper">
+        <b-dropdown
+          class="is-right"
+        >
+          <template #trigger>
+            <div class="logged-admin">
+              <b-icon icon="account-circle" size="is-medium"></b-icon>
+              <span class="username">{{ loggedAdmin.email.split('@')[0] }}</span>
+              <b-icon icon="menu-down" size="is-small"></b-icon>
+            </div>
+          </template>
+
+          <!-- Items -->
+          <b-dropdown-item>
+            <div class="logout-item">
+              <b-button
+                class="logout-button"
+                type="is-danger"
+                size="is-small"
+                outlined
+                @click="doLogout()"
+              >
+
+              <b-icon icon="logout" size="is-small"></b-icon>
+                Déconnexion
+              </b-button>
+            </div>
+          </b-dropdown-item>
+        </b-dropdown>
       </b-navbar-item>
+      <div class="user-dropdown-wrapper-responsive">
+        <b-button
+                class="logout-button"
+                type="is-danger"
+                size="is-small"
+                outlined
+                @click="doLogout()"
+              >
+
+              <b-icon icon="logout" size="is-small"></b-icon>
+                Se déconnecter du compte {{ loggedAdmin.email}}
+              </b-button>
+      </div>
     </template>
   </b-navbar>
 </template>
@@ -91,10 +133,12 @@ import BackendService from "@/services/BackendService";
 
 @Component
 export default class Menu extends Vue {
+  loggedAdmin = { email: ''};
+
   mounted() {
-    BackendService.backendGet("/v1/security/admin-check").then(
-      () => {
-        // Rien à faire
+    BackendService.backendGet("/v1/admin/check").then(
+      (admin) => {
+        this.loggedAdmin = admin
       },
       error => {
         this.$buefy.toast.open({
@@ -106,7 +150,7 @@ export default class Menu extends Vue {
     );
   }
   doLogout() {
-    BackendService.backendPost("/v1/security/admin-logout").then(() => {
+    BackendService.backendPost("/v1/admin/logout").then(() => {
       router.push("/login");
     });
   }
@@ -114,7 +158,6 @@ export default class Menu extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .logo {
   height: 52px;
@@ -137,5 +180,29 @@ a.navbar-item.is-active,
 
 .buttons {
   margin-right: 10px;
+}
+
+.logged-admin {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  &:hover {
+    color: @pelorous;
+  }
+}
+
+.user-dropdown-wrapper-responsive {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .user-dropdown-wrapper {
+    display: none;
+  }
+  .user-dropdown-wrapper-responsive {
+    display: block;
+  }
 }
 </style>

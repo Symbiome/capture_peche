@@ -50,7 +50,7 @@
           <th :id="s.name">{{ s.name }}</th>
           <td v-for="l in lakes" v-bind:key="l.id">
             <div class="field" style="display: flex">
-              <b-checkbox 
+              <b-checkbox
                 v-show="!authorizedSamplesMap[l.id][s.id]"
                 v-model="authorizedSamplesMap[l.id][s.id]"
                 @input="$forceUpdate()"
@@ -59,7 +59,7 @@
               <div
                 v-if="authorizedSamplesMap[l.id][s.id]"
                 class="specie-container-with-size"
-              >               
+              >
                 Taille maillage : <br />
                 <div class="input-holder">
                   <b-checkbox grouped
@@ -131,7 +131,7 @@
   </div>
 </template>
 
-<script lans="ts">
+<script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
@@ -382,7 +382,6 @@ export default class AuthorizedSamplesVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
 
 .authorized-samples {
   h1 {

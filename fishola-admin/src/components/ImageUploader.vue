@@ -73,7 +73,3 @@ export default class ImageUploader extends Vue {
   }
 }
 </script>
-
-<style lang="less">
-@import "../less/main";
-</style>

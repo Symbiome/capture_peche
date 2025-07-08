@@ -293,7 +293,6 @@ export default class LakesVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../less/main";
 
 .clickable {
   cursor: pointer;

@@ -113,7 +113,6 @@ export default class UsersVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../less/main";
 
 .contact-button {
   position: absolute;

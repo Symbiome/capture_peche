@@ -565,7 +565,6 @@ export default class RefenretialItem extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .referential-item {
   padding: 10px;

@@ -31,7 +31,6 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,8 +43,6 @@ import org.jboss.logging.Logger;
 import org.jooq.exception.DataAccessException;
 
 import jakarta.inject.Inject;
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -61,39 +58,21 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
-public class SecurityResource extends AbstractFisholaResource {
+public class SecurityResource extends AbstractSecurityFisholaResource {
 
     public static final String UNKNOWN_USER_ERR_MESSAGE = "Utilisateur inconnu";
-    @Inject
-    protected Logger log;
 
-    private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
-    private static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
     private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
     private static final String CLAIM_SHARE_TRIPS = "share_trips";
 
     @Inject
-    protected MailService mailService;
-
-    @Inject
     protected TripsDao tripsDao;
-
-    protected Optional<String> validatePassword(String password) {
-        if (StringUtils.isEmpty(password)) {
-            return Optional.of("Le mot de passe est obligatoire");
-        } else if (password.length() < 6) {
-            return Optional.of("Le mot de passe doit comporter au moins 6 caractères");
-        }
-        return Optional.empty();
-    }
 
     @PUT
     @Path("/register")
@@ -168,19 +147,6 @@ public class SecurityResource extends AbstractFisholaResource {
         }
 
         return Response.ok().build();
-    }
-
-    protected boolean isEmailInValidFormat(String email) {
-        try {
-            InternetAddress internetAddress = new InternetAddress(email);
-            internetAddress.validate();
-            return true;
-        } catch (AddressException ex) {
-            if (log.isInfoEnabled()) {
-                log.infof("'%s' does not seem to be a valid email address", email);
-            }
-            return false;
-        }
     }
 
     /**
@@ -662,47 +628,4 @@ public class SecurityResource extends AbstractFisholaResource {
         usersDao.deleteUser(existingUser);
         return Response.noContent().build();
     }
-
-    @POST
-    @Path("/admin-login")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminLogin(LoginBean loginBean) {
-
-        if (config.adminPassword().equals(loginBean.password)) {
-
-            String token = jwtHelper.createAdminToken();
-
-            NewCookie loginCookie = createAdminTokenCookie(token);
-            Response result = Response.noContent()
-                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
-                .header("Set-Cookie", loginCookie+";SameSite=None")
-            .build();
-            return result;
-        } else {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-    }
-
-    @GET
-    @Path("/admin-check")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminCheck() {
-        checkIsAdmin();
-        Response result = Response.noContent().build();
-        return result;
-    }
-
-    @POST
-    @Path("/admin-logout")
-    public Response adminLogout() {
-        // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
-        NewCookie logoutCookie = dropAdminTokenCookie();
-        Response result = Response.noContent()
-                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
-                .header("Set-Cookie", logoutCookie+";SameSite=None")
-        .build();
-        return result;
-    }
-
 }
