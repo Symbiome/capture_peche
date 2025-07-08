@@ -22,6 +22,7 @@ package fr.inrae.fishola.rest;
  */
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.database.UsersDao;
@@ -37,6 +38,7 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.transaction.Transactional.TxType.REQUIRED;
@@ -170,6 +172,17 @@ public abstract class AbstractFisholaResource {
             AccessDeniedException.throwNew("Admin invalide");
         }
         return byId.get();
+    }
+
+    protected Set<UUID> getAllowedAdminLakes() {
+        try {
+            FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+            return adminDao.getAllowedLakes(fisholaAdmin);
+        } catch (NotAuthenticatedException e) {
+            return Sets.newLinkedHashSet();
+        } catch (AccessDeniedException e) {
+            return Sets.newLinkedHashSet();
+        }
     }
 
     protected StreamingOutput wrapAsStreamingOutput(byte[] array) {

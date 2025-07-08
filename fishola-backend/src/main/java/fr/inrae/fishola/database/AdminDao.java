@@ -2,7 +2,9 @@ package fr.inrae.fishola.database;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jboss.logging.Logger;
@@ -10,7 +12,9 @@ import org.jboss.logging.Logger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN;
 
@@ -87,5 +91,9 @@ public class AdminDao extends AbstractFisholaDao {
 
     public void deleteUser(FisholaAdmin existingUser) {
         withDaoNoResult(FisholaAdminDao.class, dao -> dao.delete(existingUser));
+    }
+
+    public Set<UUID> getAllowedLakes(FisholaAdmin fisholaAdmin) {
+        return withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(fisholaAdmin.getId()).stream().map(FisholaAdminLakes::getLakeId).collect(Collectors.toSet()));
     }
 }

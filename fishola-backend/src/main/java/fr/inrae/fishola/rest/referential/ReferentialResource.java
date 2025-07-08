@@ -28,12 +28,14 @@ import com.google.common.collect.Multimap;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
+import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import java.util.Collection;
 import java.util.HashMap;
@@ -72,6 +74,12 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/lakes")
     public List<Lake> getLakes() {
         List<Lake> result = referentialDao.listLakes();
+        // If logged as local admin
+        // We filter the species ton only show relevant ones
+        Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
+        if (!allowedAdminLakes.isEmpty()) {
+            return result.stream().filter(l -> allowedAdminLakes.contains(l.getId())).collect(Collectors.toList());
+        }
         return result;
     }
 
@@ -238,7 +246,13 @@ public class ReferentialResource extends AbstractFisholaResource {
             SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
             result.put(lakeId, speciesWithAlias);
         }));
-        
+
+        // If logged as local admin
+        // We filter the species ton only show relevant ones
+        Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
+        if (!allowedAdminLakes.isEmpty()) {
+            result.keySet().removeIf(key -> !allowedAdminLakes.contains(key));
+        }
         return result.asMap();
     }
 
