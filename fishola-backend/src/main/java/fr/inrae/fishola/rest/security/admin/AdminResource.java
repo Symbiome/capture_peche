@@ -30,6 +30,8 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.rest.security.AbstractSecurityFisholaResource;
+import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
+import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.LoginBean;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +53,7 @@ import org.nuiton.util.ResourceNotFoundException;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -198,6 +201,27 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             Response error = Response.temporaryRedirect(URI.create(verifiedUrl)).build();
             return error;
         }
+    }
+
+    protected AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {
+        ImmutableAdminProfileForAdmin result = ImmutableAdminProfileForAdmin.builder()
+                .id(input.getId())
+                .email(input.getEmail())
+                .canCreateAdmin(input.getCancreateadmin())
+                .isNationalAdmin(input.getIsnationaladmin())
+                .build();
+        return result;
+    }
+
+    @GET
+    @Path("/admins")
+    public List<AdminProfileForAdmin> listAdmins() {
+        checkIsAdmin();
+        List<FisholaAdmin> admins = adminDao.findAll();
+        List<AdminProfileForAdmin> result = admins.stream()
+                .map(this::toUserProfileForAdmin)
+                .toList();
+        return result;
     }
 
     private boolean doVerifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {

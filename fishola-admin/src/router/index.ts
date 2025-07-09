@@ -39,6 +39,7 @@ import Metrics from "@/views/Metrics.vue";
 
 import SpeciesPerLake from "@/views/customize/SpeciesPerLake.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
+import Admins from "@/views/Admins.vue";
 import Users from "@/views/Users.vue";
 
 Vue.use(VueRouter);
@@ -104,6 +105,11 @@ const routes: Array<RouteConfig> = [
     path: "/users",
     name: "users",
     component: Users
+  },
+  {
+    path: "/admins",
+    name: "admins",
+    component: Admins
   },
   {
     path: "/editorial-pages",
