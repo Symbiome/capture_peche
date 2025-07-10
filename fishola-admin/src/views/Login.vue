@@ -40,7 +40,7 @@
             <b-field
               label="Mot de passe"
               :type="passwordErrorMessage ? 'is-danger' : ''"
-              :message="passwordErrorMessage">
+              :message="passwordErrorMessage"
             >
               <b-input
                 icon="lock"

@@ -163,6 +163,12 @@ export default class Menu extends Vue {
   height: 52px;
 }
 
+.navbar {
+  position: sticky;
+  top: 0;
+  box-shadow: 0 1px 20px 3px #1e9bc411;
+}
+
 a.navbar-item:focus,
 a.navbar-item:focus-within,
 a.navbar-item:hover,

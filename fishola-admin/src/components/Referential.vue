@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="referential">
-    <h1>{{ name }}</h1>
+    <h1>{{ name }} <span class="count">({{ data.length }})</span></h1>
     <b-table
       :data="data"
       :striped="true"
@@ -308,9 +308,15 @@ export default class Refenretial extends Vue {
     flex-direction: row-reverse;
     padding-right: 30px;
     padding-top: 10px;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to bottom, #fff0, #fff);
   }
   table {
     tr {
+      th {
+        border-bottom-color: @pelorous;
+      }
       td {
         overflow: hidden;
         max-width: 200px;
@@ -318,6 +324,14 @@ export default class Refenretial extends Vue {
         text-overflow: ellipsis;
       }
     }
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  .count {
+    color: @pelorous;
+    font-weight: 100;
+    padding-left: 10px;
   }
 }
 </style>
