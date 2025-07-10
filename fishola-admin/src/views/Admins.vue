@@ -21,8 +21,9 @@
 <template>
   <Referential
     name="Administrateurs"
-    url="/v1/admin/admins"
+    url="/v1/admin/"
     :columns="userColumns"
+    :createElement="createAdmin"
     :canDelete="true"
   ></Referential>
 </template>
@@ -42,18 +43,46 @@ export default class UsersVue extends Vue {
     {
       field: "id",
       label: "Identifiant",
-      visible: false,
-      readOnly: true
+      visibility: false,
+      readOnly: true,
+      hiddenInPopup: true
     },
     {
       field: "email",
       label: "E-mail",
-      readOnly: true
+    },
+    {
+      field: "password",
+      label: "Mot de passe",
+      visible: false
+    },
+    {
+      field: "lakeIds",
+      label: "Lacs",
+      isArray: true,
+      /* FIXME TODO LK : Tmp for tests */
+      arrayOptions: [
+        {
+          id: "8672a54a-7c9e-47da-8b0c-889575cba2ba",
+          label: "Léman"
+        },
+        {
+          id: "244e8912-a447-4770-8e5c-e48ebd135a65",
+          label: "Lac du Bourget"
+        },
+        {
+          id: "09e57c19-b129-4d59-ae63-759d032dda06",
+          label: "Lac d'Aiguebelette"
+        }
+      ],
+      visible: false
     },
     {
       field: "isNationalAdmin",
       label: "Administrateur national",
-      isABoolean: true
+      isABoolean: true,
+      readonly: true,
+      helpMessage: "Non modifiable depuis les écrans d'administration, par mesure de sécurité."
     },
     {
       field: "canCreateAdmin",
@@ -64,9 +93,20 @@ export default class UsersVue extends Vue {
       field: "createdOn",
       label: "Date de création",
       isADate: true,
-      readOnly: true
+      readOnly: true,
+      visible: false,
+      hiddenInPopup: true
     }
   ];
+
+  createAdmin(): any {
+    return {
+      name: "Nouvel administrateur",
+      builtIn: true,
+      exportAs: "NouvelAdministrateur",
+      mandatorySize: true
+    };
+  }
 }
 </script>
 

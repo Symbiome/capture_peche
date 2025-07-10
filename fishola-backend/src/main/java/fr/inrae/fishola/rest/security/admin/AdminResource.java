@@ -93,8 +93,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
     }
 
-    @PUT
-    @Path("/create")
+    @POST
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response register(RegisterAdminBean bean, @Context HttpServletRequest request) {
         if (bean == null) {
@@ -214,7 +214,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     }
 
     @GET
-    @Path("/admins")
+    @Path("/")
     public List<AdminProfileForAdmin> listAdmins() {
         checkIsAdmin();
         List<FisholaAdmin> admins = adminDao.findAll();

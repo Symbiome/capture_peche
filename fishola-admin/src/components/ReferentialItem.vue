@@ -28,6 +28,7 @@
             ? 'Période de publication'
             : col.label
         "
+        :message="col.helpMessage ? col.helpMessage : null"
         v-if="!col.hiddenInPopup"
       >
         <!-- HTML text -->
@@ -232,6 +233,7 @@
               !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
+              !col.isArray &&
               ('' + item[col.field]).length < 200
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
@@ -246,6 +248,7 @@
               !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
+              !col.isArray &&
               ('' + item[col.field]).length >= 200
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
@@ -287,12 +290,28 @@
           />
         </div>
 
+        <!-- Array -->
+        <b-dropdown v-else-if="col.isArray" v-model="item[col.field]" multiple aria-role="list">
+            <template #trigger>
+                <b-button type="is-primary" icon-right="menu-down">
+                    Sélection ({{ item[col.field] ? item[col.field].length : 0 }})
+                </b-button>
+            </template>
+
+            <b-dropdown-item
+              v-for="option in col.arrayOptions"
+              :value="option.id" aria-role="listitem">
+                <span>{{ option.label }}</span>
+            </b-dropdown-item>
+        </b-dropdown>
+
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
           <b-radio
             v-model="item[col.field]"
             :name="col.field"
             :native-value="true"
+            :disabled="col.readonly"
           >
             Oui
           </b-radio>
@@ -300,6 +319,7 @@
             v-model="item[col.field]"
             :name="col.field"
             :native-value="false"
+            :disabled="col.readonly"
           >
             Non
           </b-radio>
@@ -567,7 +587,7 @@ export default class RefenretialItem extends Vue {
 <style lang="less">
 
 .referential-item {
-  padding: 10px;
+  padding: 30px;
 
   h2 {
     font-size: 24px;
