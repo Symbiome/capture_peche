@@ -90,6 +90,21 @@
           </template>
 
           <!-- Items -->
+           <b-dropdown-item>
+            <div class="logout-item">
+
+                <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
+                <b v-else-if="lakes.length == 1">
+                  Admnistateur du {{ lakes[0].name}}
+                </b>
+                <span v-else>
+                  <b>Administrateur  des lacs : </b><br/>
+                  <p v-for="l in lakes" :id="l.id">
+                    - {{ l.name }}
+                  </p>
+                </span>
+            </div>
+          </b-dropdown-item>
           <b-dropdown-item>
             <div class="logout-item">
               <b-button
@@ -134,8 +149,10 @@ import BackendService from "@/services/BackendService";
 @Component
 export default class Menu extends Vue {
   loggedAdmin = { email: ''};
+  lakes = []
 
   mounted() {
+    BackendService.backendGet("/v1/referential/lakes").then(lakes => this.lakes = lakes);
     BackendService.backendGet("/v1/admin/check").then(
       (admin) => {
         this.loggedAdmin = admin
