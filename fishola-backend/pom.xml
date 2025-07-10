@@ -420,7 +420,7 @@
                         <class>fr.inrae.fishola.entities.tables.pojos.Editorial</class>
                         <class>fr.inrae.fishola.entities.tables.pojos.SampleType</class>
                         <class>fr.inrae.fishola.rest.editorial.DocumentationLight</class>
-                        <class>fr.inrae.fishola.entities.tables.pojos.News</class>
+                        <class>fr.inrae.fishola.rest.editorial.NewsBean</class>
                         <class>fr.inrae.fishola.rest.security.UserSettings</class>
                         <class>fr.inrae.fishola.rest.security.UpdatePasswordBean</class>
                         <class>fr.inrae.fishola.rest.about.KeyFigures</class>

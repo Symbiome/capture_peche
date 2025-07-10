@@ -369,7 +369,7 @@ import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { Lake, Feedback, News } from "@/pojos/BackendPojos";
+import { Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 
@@ -398,7 +398,7 @@ export default class AboutView extends Vue {
   picturesCount: number = 0;
   realPicturesCount: number = 212;
   lakes: Lake[] = [];
-  news: News[] = [];
+  news: NewsBean[] = [];
   catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail: string = "";

@@ -59,7 +59,7 @@ import About from "@/views/About.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import DocumentationService from "../services/DocumentationService";
-import { News } from "@/pojos/BackendPojos";
+import { NewsBean } from "@/pojos/BackendPojos";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
@@ -74,7 +74,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 export default class OfflineHome extends Vue {
   @Prop({ default: "presentation" }) defaultTab: string;
   showNews = false;
-  news: News[] = [];
+  news: NewsBean[] = [];
   mounted(): void {
     Prop;
     this.loadNews();

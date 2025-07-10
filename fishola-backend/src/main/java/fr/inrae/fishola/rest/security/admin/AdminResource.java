@@ -52,10 +52,12 @@ import org.jooq.exception.DataAccessException;
 import org.nuiton.util.ResourceNotFoundException;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -216,11 +218,20 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @GET
     @Path("/")
     public List<AdminProfileForAdmin> listAdmins() {
-        checkIsAdmin();
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
         List<FisholaAdmin> admins = adminDao.findAll();
+        Set<UUID> allowedLakes = getAllowedAdminLakes();
         List<AdminProfileForAdmin> result = admins.stream()
-                .map(this::toUserProfileForAdmin)
-                .toList();
+            .filter(admin -> {
+                if (fisholaAdmin.getIsnationaladmin()) {
+                    return true;
+                }
+                // Local admins can only see admin of their lakes
+                Set<UUID> adminLakes = adminDao.getAllowedLakes(admin.getId());
+                return !Collections.disjoint(allowedLakes, adminLakes);
+            })
+            .map(this::toUserProfileForAdmin)
+            .toList();
         return result;
     }
 

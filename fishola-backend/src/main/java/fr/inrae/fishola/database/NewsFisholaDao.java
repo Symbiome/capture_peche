@@ -22,10 +22,15 @@ package fr.inrae.fishola.database;
  */
 
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
+import fr.inrae.fishola.entities.tables.daos.NewsLakeDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
 import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
 import fr.inrae.fishola.entities.tables.pojos.News;
+import fr.inrae.fishola.entities.tables.pojos.NewsLake;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.entities.tables.pojos.NextScheduledCourrielNotificationCheck;
 import fr.inrae.fishola.entities.tables.records.NewsRecord;
@@ -33,6 +38,7 @@ import fr.inrae.fishola.rest.ImageHelper;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.inject.Singleton;
@@ -45,7 +51,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
 
     public static final UUID TEMPORARY_NEWS_ID = UUID.randomUUID();
 
-    public List<News> getNews(boolean onlyListPublishedNews) {
+    public List<News> getNews(boolean onlyListPublishedNews, Optional<FisholaAdmin> admin) {
         List<News> allNews = withDao(NewsDao.class, DAOImpl::findAll);
         if (onlyListPublishedNews) {
             LocalDateTime now = LocalDateTime.now();
@@ -54,6 +60,14 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                             news.getDatePublicationDebut() != null && now.isAfter(news.getDatePublicationDebut()) &&
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
             ).toList();
+        }
+        if (admin.isPresent() && !admin.get().getIsnationaladmin()) {
+            // For local admin, only keep national and lake-related actus
+            UUID[] adminLakeIds = withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminLakes::getLakeId)).toArray(UUID[]::new);
+            Set<UUID> newsOfReleventLakes =  withDao(NewsLakeDao.class, dao -> dao.fetchByLakeId(adminLakeIds).stream().map(NewsLake::getNewsId).collect(Collectors.toSet()));
+            allNews = allNews.stream().filter(news ->
+                    newsOfReleventLakes.contains(news.getId())
+            ).collect(Collectors.toList());
         }
         allNews = allNews.stream().sorted(
                 (n1, n2) -> -1 * n1.getDatePublicationDebut().compareTo(n2.getDatePublicationDebut())
@@ -177,6 +191,10 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         NextScheduledCourrielNotificationCheck nextScheduledNotificationCheck = getNextScheduledNotificationCheck();
         nextScheduledNotificationCheck.setNextCheckDate(nextScheduledNotificationCheck.getNextCheckDate().plusHours(newsMailSendingDelayHours));
         withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.update(nextScheduledNotificationCheck));
+    }
+
+    public Set<UUID> getLakeIds(UUID newsId) {
+        return withDao(NewsLakeDao.class, dao -> dao.fetchByNewsId(newsId).stream().map(NewsLake::getLakeId).collect(Collectors.toSet()));
     }
 
 }

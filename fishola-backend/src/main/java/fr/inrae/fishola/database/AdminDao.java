@@ -93,7 +93,7 @@ public class AdminDao extends AbstractFisholaDao {
         withDaoNoResult(FisholaAdminDao.class, dao -> dao.delete(existingUser));
     }
 
-    public Set<UUID> getAllowedLakes(FisholaAdmin fisholaAdmin) {
-        return withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(fisholaAdmin.getId()).stream().map(FisholaAdminLakes::getLakeId).collect(Collectors.toSet()));
+    public Set<UUID> getAllowedLakes(UUID adminID) {
+        return withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream().map(FisholaAdminLakes::getLakeId).collect(Collectors.toSet()));
     }
 }

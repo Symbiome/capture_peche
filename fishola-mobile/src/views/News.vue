@@ -72,7 +72,7 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-import { News } from "@/pojos/BackendPojos";
+import { NewsBean } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
@@ -86,13 +86,13 @@ import { RouterUtils } from "@/router/RouterUtils";
   },
 })
 export default class NewsView extends Vue {
-  @Prop() news: News[];
+  @Prop() news: NewsBean[];
 
   mounted() {
    
   }
 
-  getMiniatureURl(news: News) {
+  getMiniatureURl(news: NewsBean) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {

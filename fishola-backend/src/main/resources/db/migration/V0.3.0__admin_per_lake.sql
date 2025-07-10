@@ -34,6 +34,16 @@ CREATE TABLE fishola_admin_lakes(
     PRIMARY KEY (fishola_admin_id, lake_id)
 );
 
+ALTER TABLE news ADD COLUMN is_national BOOLEAN DEFAULT false;
+
+CREATE TABLE news_lake (
+    news_id UUID REFERENCES news(id) NOT NULL,
+    lake_id UUID REFERENCES lake(id) NOT NULL,
+    PRIMARY KEY (news_id, lake_id)
+);
+
+update news set is_national = true;
+
 insert into fishola_admin (email, password, canCreateAdmin, isNationalAdmin) values
     ('chloe.goulon@inrae.fr', '', true, true);
 

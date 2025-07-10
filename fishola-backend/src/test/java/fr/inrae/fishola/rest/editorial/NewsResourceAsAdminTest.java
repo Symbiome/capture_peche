@@ -27,6 +27,8 @@ import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
 import java.time.LocalDateTime;
+import java.util.Optional;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
@@ -72,7 +74,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
     @Transactional
     void testGetAllNews() {
         // All news should be displayed no matter the publication date
-        int expectedNewsCount = this.newsDao.getNews(false).size();
+        int expectedNewsCount = this.newsDao.getNews(false, Optional.empty()).size();
         Assertions.assertNotEquals(0, expectedNewsCount);
         given()
                 .when()
@@ -88,7 +90,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
     @Transactional
     void testNewsUpdate() {
         // Update news's publication date
-        News news = newsDao.getNews(false).get(0);
+        News news = newsDao.getNews(false, Optional.empty()).get(0);
         String modifiedName = "modified";
         news.setName(modifiedName);
         LocalDateTime now = LocalDateTime.now();
@@ -113,7 +115,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
     @Test
     @Transactional
     void testNewsPost() {
-        int newsCountBefore = this.newsDao.getNews(false).size();
+        int newsCountBefore = this.newsDao.getNews(false, Optional.empty()).size();
         News news = new News();
         news.setName("published-newnews");
         LocalDateTime now = LocalDateTime.now();
@@ -129,7 +131,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
                 .then()
                 .statusCode(204);
 
-        int newsCountAfter = this.newsDao.getNews(false).size();
+        int newsCountAfter = this.newsDao.getNews(false, Optional.empty()).size();
 
         // TODO #11679 notifications should be sent due to modified date
         Assertions.assertEquals(newsCountAfter, newsCountBefore + 1);
@@ -138,9 +140,9 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
     @Test
     @Transactional
     void testNewsDelete() {
-        int newsCountBefore = this.newsDao.getNews(false).size();
+        int newsCountBefore = this.newsDao.getNews(false, Optional.empty()).size();
 
-        News news = newsDao.getNews(false).get(0);
+        News news = newsDao.getNews(false, Optional.empty()).get(0);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -149,7 +151,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
                 .then()
                 .statusCode(204);
 
-        int newsCountAfter = this.newsDao.getNews(false).size();
+        int newsCountAfter = this.newsDao.getNews(false, Optional.empty()).size();
 
         Assertions.assertEquals(newsCountAfter, newsCountBefore - 1);
 

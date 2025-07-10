@@ -47,12 +47,18 @@ import Constants from "@/services/Constants";
   }
 })
 export default class DocumentationVue extends Vue {
+  lakesIdToNameMap = new Map<string, string>();
+
   docColumns: any[] = [
     {
       field: "id",
       label: "Identifiant technique",
       visible: false,
       readOnly: true
+    },
+    {
+      field: "lakeNames",
+      label: "Lacs"
     },
     {
       field: "name",
@@ -136,7 +142,13 @@ export default class DocumentationVue extends Vue {
       actualite.miniatureURL = actualite.miniatureId
         ? Constants.apiUrl("/v1/news-picture/" + actualite.miniatureId)
         : "";
-      console.error(actualite.miniatureId + " => " + actualite.miniatureURL);
+
+      actualite.lakeNames = actualite.isNational ?
+        "National" :
+        actualite.lakeIds.map((lakeId: string) => this.lakesIdToNameMap.get(lakeId)).join(", ");
+      if (!actualite.isNational)  {
+         console.error(actualite);
+      }
     });
   }
 
@@ -189,19 +201,21 @@ export default class DocumentationVue extends Vue {
     }
   }
 
-  refreshNextPlannifiedDate(): void {
-    BackendService.backendGet("/v1/news-notifications/next-check").then(
-      nextCheckDate => {
-        this.nextPlannifiedDate = nextCheckDate;
-      },
-      error => {
-        this.$buefy.toast.open({
-          message: "Vous n'êtes plus connecté\u00B7e",
-          type: "is-danger"
-        });
-        this.$router.push("/login");
-      }
-    );
+  async refreshNextPlannifiedDate(): Promise<void> {
+    try {
+      let lakes = await BackendService.backendGet("/v1/referential/lakes");
+        lakes.forEach((lake: { id: string; name: string }) => {
+          this.lakesIdToNameMap.set(lake.id, lake.name);
+      });
+      const nextCheckDate= await BackendService.backendGet("/v1/news-notifications/next-check")
+      this.nextPlannifiedDate = nextCheckDate;
+    } catch (error) {
+      this.$buefy.toast.open({
+        message: "Vous n'êtes plus connecté\u00B7e",
+        type: "is-danger"
+      });
+      this.$router.push("/login");
+    }
   }
 }
 </script>

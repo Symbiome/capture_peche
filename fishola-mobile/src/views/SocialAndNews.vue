@@ -68,7 +68,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { Lake, News } from "@/pojos/BackendPojos";
+import { Lake, NewsBean } from "@/pojos/BackendPojos";
 import SocialView from "./Social.vue";
 import ReferentialService from "@/services/ReferentialService";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
@@ -92,7 +92,7 @@ export default class SocialAndNewsView extends Vue {
   unreadNewsCount = 0;
   hasRunningTrip = false;
   selectedLakeUUID = "";
-  news: News[] = [];
+  news: NewsBean[] = [];
   lakes: Lake[] = [];
 
   created() {

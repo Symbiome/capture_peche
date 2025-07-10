@@ -28,6 +28,7 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -74,10 +75,10 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
     @Transactional
     void testGetPublishedNews() {
         // Get news : only news with active publication date should be displayed
-        int expectedPublishedNewsCount = this.newsDao.getNews(false).stream().filter(
+        int expectedPublishedNewsCount = this.newsDao.getNews(false, Optional.empty()).stream().filter(
                 news -> news.getName().startsWith("published-")
         ).toList().size();
-        List<News> publishedNews = this.newsDao.getNews(true);
+        List<News> publishedNews = this.newsDao.getNews(true, Optional.empty());
         Assertions.assertEquals(expectedPublishedNewsCount, publishedNews.size());
         given()
                 .when()
@@ -104,7 +105,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
     @Transactional
     void testNewsUpdateIsForbidden() {
         // Shouldn't be authorised for non admin
-        News news = newsDao.getNews(false).get(0);
+        News news = newsDao.getNews(false, Optional.empty()).get(0);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +132,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
     @Transactional
     void testNewsDeleteIsForbidden() {
         // Shouldn't be authorised for non admin
-        News news = newsDao.getNews(false).get(0);
+        News news = newsDao.getNews(false,Optional.empty()).get(0);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)

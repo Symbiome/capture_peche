@@ -177,7 +177,7 @@ public abstract class AbstractFisholaResource {
     protected Set<UUID> getAllowedAdminLakes() {
         try {
             FisholaAdmin fisholaAdmin = this.checkIsAdmin();
-            return adminDao.getAllowedLakes(fisholaAdmin);
+            return fisholaAdmin.getIsnationaladmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedLakes(fisholaAdmin.getId());
         } catch (NotAuthenticatedException e) {
             return Sets.newLinkedHashSet();
         } catch (AccessDeniedException e) {

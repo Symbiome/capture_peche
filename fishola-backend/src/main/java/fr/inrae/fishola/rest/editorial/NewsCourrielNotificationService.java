@@ -136,7 +136,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
             // Set next check according to configuration
             dao.scheduleNestNotificationCheck(config.newsMailSendingDelayHours());
             // Notify user by mail about all public news that have not been notified yet
-            List<News> publicNewsThatHaveNotBeenNotifiedByMail = dao.getNews(true).stream().filter(news -> news.getDateNotificationSent() == null).toList();
+            List<News> publicNewsThatHaveNotBeenNotifiedByMail = dao.getNews(true, Optional.empty()).stream().filter(news -> news.getDateNotificationSent() == null).toList();
             if (!publicNewsThatHaveNotBeenNotifiedByMail.isEmpty()) {
                 log.info(publicNewsThatHaveNotBeenNotifiedByMail.size() + " News became public since last check, notify users by courriel");
             } else {

@@ -127,7 +127,7 @@ export interface DocumentationLight {
     url: string;
 }
 
-export interface News extends Serializable {
+export interface NewsBean {
     id: string;
     name: string;
     content: string;
@@ -135,6 +135,8 @@ export interface News extends Serializable {
     datePublicationFin: Date;
     dateNotificationSent: Date;
     miniatureId: string;
+    isNational: boolean;
+    lakeIds: string[];
 }
 
 export interface UserSettings {
