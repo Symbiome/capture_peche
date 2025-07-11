@@ -41,6 +41,7 @@
           :field="col.field"
           :label="col.label"
           :key="col.name"
+          :searchable="col.searchable"
           sortable
         >
           <span v-if="col.isABoolean && props.row[col.field]">

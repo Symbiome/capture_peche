@@ -78,6 +78,7 @@ export interface Lake extends Serializable {
     exportAs: string;
     latitude: number;
     longitude: number;
+    lakeCode: string;
 }
 
 export interface ReleasedFishState extends Serializable {

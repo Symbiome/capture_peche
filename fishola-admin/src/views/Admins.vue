@@ -63,13 +63,14 @@ export default class UsersVue extends Vue {
       {
         field: "id",
         label: "Identifiant",
-        visibility: false,
+        visible: false,
         readOnly: true,
         hiddenInPopup: true
       },
       {
         field: "email",
         label: "E-mail",
+        searchable: true,
       },
       {
         field: "password",

@@ -49,12 +49,19 @@ export default class LakesVue extends Vue {
       readOnly: true
     },
     {
+      field: 'lakeCode',
+      label: 'Code Lac',
+      searchable: true,
+    },
+    {
       field: 'name',
-      label: 'Nom'
+      label: 'Nom',
+      searchable: true,
     },
     {
       field: 'exportAs',
-      label: 'Nom d\'export'
+      label: 'Nom d\'export',
+      visible: false,
     },
     {
       field: 'latitude',

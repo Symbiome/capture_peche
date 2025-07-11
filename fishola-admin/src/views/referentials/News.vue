@@ -58,11 +58,13 @@ export default class DocumentationVue extends Vue {
     },
     {
       field: "lakeNames",
-      label: "Lacs"
+      label: "Lacs",
+      searchable: true,
     },
     {
       field: "name",
-      label: "Nom"
+      label: "Nom",
+      searchable: true,
     },
     {
       field: "miniatureUrl",
