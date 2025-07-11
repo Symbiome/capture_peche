@@ -65,10 +65,10 @@
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
         Chiffres Clés
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
         Sorties
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'users' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
         Utilisateurs
       </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">

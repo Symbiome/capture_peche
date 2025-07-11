@@ -22,6 +22,7 @@ package fr.inrae.fishola.rest.metrics;
  */
 
 import fr.inrae.fishola.database.MetricsDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -39,7 +40,7 @@ public class MetricsResource extends AbstractFisholaResource {
     @GET
     @Path("")
     public MetricBean getMetrics() {
-        checkIsAdmin();
-        return metricsDao.getMetrics();
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        return metricsDao.getMetrics(fisholaAdmin, getAllowedAdminLakes());
     }
 }
