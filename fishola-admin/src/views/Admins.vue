@@ -25,7 +25,8 @@
     url="/v1/admin/"
     :columns="userColumns"
     :createElement="createAdmin"
-    :canDelete="true"
+    :editable="canCreateAdmins"
+    :canDelete="canCreateAdmins"
   ></Referential>
 </template>
 
@@ -42,6 +43,7 @@ import { Component, Vue } from "vue-property-decorator";
 })
 export default class UsersVue extends Vue {
   loaded = false;
+  canCreateAdmins = false
   userColumns: any[] = [
   ];
 
@@ -50,6 +52,8 @@ export default class UsersVue extends Vue {
   }
 
   async loadLakes() {
+     const admin = await BackendService.backendGet("/v1/admin/check");
+     this.canCreateAdmins = admin.isNationalAdmin || admin.canCreateAdmins;
      const lakes = await BackendService.backendGet("/v1/referential/lakes");
      const lakesOptions: any[] = [];
      lakes.forEach( (l: any) => {
