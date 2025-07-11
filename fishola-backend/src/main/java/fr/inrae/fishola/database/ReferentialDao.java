@@ -347,4 +347,8 @@ public class ReferentialDao extends AbstractFisholaDao {
     public void updateAuthorizeSample(AuthorizedSample entity) {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
     }
+
+    public List<Lake> fetchLakesById(Set<UUID> allowedAdminLakes) {
+        return withDao(LakeDao.class, dao -> dao.fetchById(allowedAdminLakes.toArray(UUID[]::new)));
+    }
 }

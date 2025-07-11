@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
@@ -73,14 +74,12 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/lakes")
     public List<Lake> getLakes() {
-        List<Lake> result = referentialDao.listLakes();
-        // If logged as local admin
-        // We filter the species ton only show relevant ones
         Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
         if (!allowedAdminLakes.isEmpty()) {
-            return result.stream().filter(l -> allowedAdminLakes.contains(l.getId())).collect(Collectors.toList());
+            return referentialDao.fetchLakesById(allowedAdminLakes);
+        } else {
+            return referentialDao.listLakes();
         }
-        return result;
     }
 
     @PUT
@@ -207,9 +206,17 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         // On récupère la liste des toutes les espèces builtIn et des lacs
         List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
-        Set<UUID> lakeIds = referentialDao.listLakes()
-                .stream()
-                .map(Lake::getId).collect(Collectors.toSet());
+        Set<UUID> lakeIds = Sets.newLinkedHashSet();
+        // If logged as local admin
+        // We filter the species ton only show relevant ones
+        Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
+        if (!allowedAdminLakes.isEmpty()) {
+            lakeIds = allowedAdminLakes;
+        } else {
+            lakeIds = referentialDao.listLakes()
+                    .stream()
+                    .map(Lake::getId).collect(Collectors.toSet());
+        }
 
         // On charge les alias par lac+espèce et on en fait un index
         List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
@@ -246,13 +253,6 @@ public class ReferentialResource extends AbstractFisholaResource {
             SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
             result.put(lakeId, speciesWithAlias);
         }));
-
-        // If logged as local admin
-        // We filter the species ton only show relevant ones
-        Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
-        if (!allowedAdminLakes.isEmpty()) {
-            result.keySet().removeIf(key -> !allowedAdminLakes.contains(key));
-        }
         return result.asMap();
     }
 
