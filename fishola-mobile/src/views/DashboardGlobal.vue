@@ -184,7 +184,7 @@ export default class DashboardGlobalView extends Vue {
 
   async loadLakes(): Promise<void> {
     this.lakes = [];
-    try {const allLakes = await ReferentialService.getLakes();
+    try {const allLakes = await ReferentialService.getFavoriteLakes();
       
       this.lakes = this.lakes.concat(allLakes);
     } catch (e) {

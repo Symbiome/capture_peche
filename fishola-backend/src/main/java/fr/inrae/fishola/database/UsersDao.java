@@ -22,19 +22,30 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteLakesDao;
+import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteLakes;
+import fr.inrae.fishola.entities.tables.pojos.Lake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.jboss.logging.Logger;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_LAKES;
+import static fr.inrae.fishola.entities.Tables.LAKE;
 
 @Singleton
 public class UsersDao extends AbstractFisholaDao {
@@ -130,5 +141,14 @@ public class UsersDao extends AbstractFisholaDao {
 
     public List<FisholaUser> findAllUsersAllowingCourriel() {
        return withDao(FisholaUserDao.class, dao -> dao.fetchByAcceptsMailNotifications(true));
+    }
+
+    public List<Lake> getFavoriteLakes(UUID userUUID) {
+        return withContext(context-> context.select(LAKE.asterisk())
+        .from(LAKE)
+        .join(FISHOLA_USER_FAVORITE_LAKES)
+        .on(FISHOLA_USER_FAVORITE_LAKES.FISHOLA_USER_ID.eq(userUUID)
+                .and(LAKE.ID.eq(FISHOLA_USER_FAVORITE_LAKES.LAKE_ID)))
+        .fetchInto(Lake.class));
     }
 }

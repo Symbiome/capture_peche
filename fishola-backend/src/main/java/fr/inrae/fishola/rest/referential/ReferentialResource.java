@@ -29,7 +29,6 @@ import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
@@ -37,6 +36,7 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
+import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,6 +48,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -73,13 +75,20 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @GET
     @Path("/lakes")
-    public List<Lake> getLakes() {
+    public List<Lake> getAllLakes() {
         Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
         if (!allowedAdminLakes.isEmpty()) {
             return referentialDao.fetchLakesById(allowedAdminLakes);
         } else {
             return referentialDao.listLakes();
         }
+    }
+
+    @GET
+    @Path("/lakes/favorites")
+    public List<Lake> getFavoriteLakes() {
+        UserIdAndRenewal userIdOrRenew = this.getUserIdOrRenew();
+        return usersDao.getFavoriteLakes(userIdOrRenew.userId());
     }
 
     @PUT
