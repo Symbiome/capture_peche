@@ -291,19 +291,11 @@
         </div>
 
         <!-- Array -->
-        <b-dropdown v-else-if="col.isArray" v-model="item[col.field]" multiple aria-role="list">
-            <template #trigger>
-                <b-button type="is-primary" icon-right="menu-down">
-                    Sélection ({{ item[col.field] ? item[col.field].length : 0 }})
-                </b-button>
-            </template>
-
-            <b-dropdown-item
-              v-for="option in col.arrayOptions"
-              :value="option.id" aria-role="listitem">
-                <span>{{ option.label }}</span>
-            </b-dropdown-item>
-        </b-dropdown>
+        <MultipleAutoComplete
+          v-else-if="col.isArray"
+          :data="col.arrayOptions"
+          @updated="(value) => item[col.field] = value"
+        />
 
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
@@ -360,9 +352,10 @@ import StarterKit from "@tiptap/starter-kit";
 
 import { LocalDateTime, nativeJs } from "@js-joda/core";
 import ImageUploader from "./ImageUploader.vue";
+import MultipleAutoComplete from "./MultipleAutoComplete.vue";
 
 @Component({
-  components: { EditorContent, ImageUploader }
+  components: { EditorContent, ImageUploader, MultipleAutoComplete }
 })
 export default class RefenretialItem extends Vue {
   @Prop() item!: any;
