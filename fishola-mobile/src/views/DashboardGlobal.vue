@@ -26,18 +26,12 @@
         <div id="scrollable" class="pane-content large rounded">
           <h1 class="no-margin-pane h1-with-selects">
             <span>Statistiques </span>
-            <div class="selects-holder">
-              <select placeholder="lake" v-model="selectedLakeUUID">
-                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                  {{ lake.name }}
-                </option>
-              </select>
-              <select placeholder="Année" v-model="year">
-                <option v-for="dashboardYear in getDashboardYears()" :value="dashboardYear" :key="dashboardYear">
-                  {{ dashboardYear }}
-                </option>
-              </select>
-            </div>
+            <LakeAndYearSelection 
+              :years="getDashboardYears()"
+              :showYears="visualizationMode !== 'evolution'"
+              @lake="selectedLakeUUID = $event"
+              @year="year = $event"
+            />
             <a v-bind:href="exportUrl" v-if="visualizationMode === 'dashboard' && !asyncExport" id="export-button"
               class="export" title="Exporter" target="_blank">
               <span>Exporter</span>
@@ -94,11 +88,8 @@ import {
 } from "@/services/DashboardService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
-import { Lake } from "@/pojos/BackendPojos";
-
-import ReferentialService from "../services/ReferentialService";
+import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 
 
 @Component({
@@ -107,6 +98,7 @@ import ReferentialService from "../services/ReferentialService";
     RunningOverlay,
     FisholaFooter,
     GlobalDashboardComponent,
+    LakeAndYearSelection,
   },
 })
 export default class DashboardGlobalView extends Vue {
@@ -125,20 +117,12 @@ export default class DashboardGlobalView extends Vue {
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
   selectedLakeUUID = "";
-  lakes: Lake[] = [];
   isFirstLoad = true;
 
   changeVisualizationMode(newMode: string) {
     if (this.visualizationMode !== newMode) {
       this.$router.push({ params: { visualizationMode: newMode } });
     }
-  }
-
-  created() {
-    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
-    }
-    this.loadLakes();
   }
 
   mounted() {
@@ -167,11 +151,6 @@ export default class DashboardGlobalView extends Vue {
   @Watch("year")
   @Watch("selectedLakeUUID")
   yearOrSelectedLakesChanged(): void {
-    if (this.selectedLakeUUID) {
-      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID
-    } else {
-      localStorage.latestSelectedLakeUUID = "all"
-    }
     if (this.visualizationMode === 'dashboard') {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
@@ -182,15 +161,6 @@ export default class DashboardGlobalView extends Vue {
     }
   }
 
-  async loadLakes(): Promise<void> {
-    this.lakes = [];
-    try {const allLakes = await ReferentialService.getFavoriteLakes();
-      
-      this.lakes = this.lakes.concat(allLakes);
-    } catch (e) {
-      // Silent catch, no more lakes will be added
-    }
-  }
 
   getDashboardYears(): number[] {
     const rangeDesc = (from: number, to: number) =>
@@ -413,12 +383,6 @@ export default class DashboardGlobalView extends Vue {
           margin-left: auto;
         }
       }
-
-      .selects-holder {
-        margin-left: 40px;
-        margin-top: -10px;
-      }
-
     }
   }
 
@@ -429,12 +393,6 @@ export default class DashboardGlobalView extends Vue {
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
-      }
-
-      .selects-holder {
-        margin-left: 0px;
-        margin-top: 0px;
-        margin-bottom: 20px;
       }
     }
   }
@@ -519,17 +477,6 @@ export default class DashboardGlobalView extends Vue {
     .show-if-small {
       display: none;
     }
-  }
-}
-
-.selects-holder {
-  select {
-    background-color: white;
-    padding: 10px;
-    height: 40px;
-    border: 1px solid @pale-sky;
-    border-radius: 3px;
-    margin-left: 10px;
   }
 }
 </style>

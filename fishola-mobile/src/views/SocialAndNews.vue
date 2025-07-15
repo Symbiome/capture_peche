@@ -25,13 +25,10 @@
       <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
           <h1 class="no-margin-pane">Communauté
-            <div class="selects-holder">
-              <select placeholder="lake" v-model="selectedLakeUUID">
-                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                  {{ lake.name }}
-                </option>
-              </select>
-            </div>
+            <LakeAndYearSelection 
+                :showYears="false"
+                @lake="selectedLakeUUID = $event"
+              />
           </h1>
 
           <div class="main-tabs">
@@ -68,12 +65,12 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
-import { Lake, NewsBean } from "@/pojos/BackendPojos";
+import { NewsBean } from "@/pojos/BackendPojos";
 import SocialView from "./Social.vue";
-import ReferentialService from "@/services/ReferentialService";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import TripsService from "@/services/TripsService";
+import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 
 @Component({
   components: {
@@ -82,7 +79,8 @@ import TripsService from "@/services/TripsService";
     SocialView,
     NewsView,
     FisholaFooter,
-    RunningOverlay
+    RunningOverlay,
+    LakeAndYearSelection
   },
 })
 export default class SocialAndNewsView extends Vue {
@@ -93,26 +91,11 @@ export default class SocialAndNewsView extends Vue {
   hasRunningTrip = false;
   selectedLakeUUID = "";
   news: NewsBean[] = [];
-  lakes: Lake[] = [];
 
   created() {
-    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
-    }
-    this.loadLakes();
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-  }
-
-  async loadLakes(): Promise<void> {
-    this.lakes = [];
-    try {
-      const allLakes = await ReferentialService.getLakes();
-      this.lakes = this.lakes.concat(allLakes);
-    } catch (e) {
-      // Silent catch, no more lakes will be added
-    }
   }
 
   mounted() {
