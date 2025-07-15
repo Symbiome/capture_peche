@@ -60,7 +60,6 @@ export default class BottomInducementView extends Vue {
 
     @media screen and (min-width: @desktop-min-width) {
         width: calc(100vw - @desktop-menu-width);
-        margin-left: calc(-1 * @margin-large-desktop);
     }
 
     img {

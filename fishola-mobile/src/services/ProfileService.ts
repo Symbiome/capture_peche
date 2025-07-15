@@ -21,11 +21,11 @@
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
-import { UserSettings, UpdatePasswordBean } from "@/pojos/BackendPojos";
+import { UserSettings, UpdatePasswordBean, Lake } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
 
 export class Credentials {
-  constructor(public email: string, public password: string) { }
+  constructor(public email: string, public password: string) {}
 }
 
 export default class ProfileService extends AbstractFisholaService {
@@ -67,6 +67,13 @@ export default class ProfileService extends AbstractFisholaService {
         resolve();
       }, reject);
     });
+  }
+
+  static async updateFavoriteLakes(favoriteLakes: Lake[]) {
+    return await this.backendPut(
+      "/v1/security/favorite-lakes",
+      favoriteLakes.map((lake) => lake.id)
+    );
   }
 
   static safeDeleteAccount(_profile: UserProfile): Promise<void> {

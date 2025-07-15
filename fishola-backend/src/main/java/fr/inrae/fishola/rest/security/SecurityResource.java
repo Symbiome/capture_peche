@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
@@ -570,6 +571,18 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
 
         usersDao.updateUser(user);
 
+        Response response = noContent(userIdAndRenewal);
+        return response;
+    }
+
+    @PUT
+    @Path("/favorite-lakes")
+    public Response modifyFavoriteLakes(Set<UUID> newFavoriteLakeUUIDs) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
+        usersDao.updateFavoriteLakes(user.getId(), newFavoriteLakeUUIDs);
         Response response = noContent(userIdAndRenewal);
         return response;
     }

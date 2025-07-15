@@ -20,7 +20,6 @@
   -->
 <template>
   <div>
-    <label>Mes cartes de pêche</label>
     <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
 
     <div class="bottom-page-spacer"></div>

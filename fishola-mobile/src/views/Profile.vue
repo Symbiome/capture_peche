@@ -21,9 +21,13 @@
 <template>
   <div class="profile-page ">
     <div class="rounded">
-
+      <h1> Mes cartes de pêches </h1>
       <FishingLicencesView />
 
+      <h1>Mes lac favoris</h1>
+      <FavoriteLakes @favoriteLakesChanged="favoriteLakesChanged"/>
+
+      <h1>Mon profil</h1>
       <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="profile.firstName"
         v-bind:error="validationErrors['firstName']" />
       <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="profile.lastName"
@@ -87,6 +91,8 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
 import BottomInducementView from "@/components/common/BottomInducement.vue";
+import FavoriteLakes from "@/components/my-trips/FavoriteLakes.vue";
+import { Lake } from "@/pojos/BackendPojos";
 
 @Component({
   components: {
@@ -95,11 +101,14 @@ import BottomInducementView from "@/components/common/BottomInducement.vue";
     FormMultiValues,
     FishingLicencesView,
     FisholaFooter,
-    BottomInducementView
+    BottomInducementView,
+    FavoriteLakes
   },
 })
 export default class ProfileView extends Vue {
   @Prop() profile: UserProfile
+  favoriteChanged = false;
+  favoriteLakes: Lake[] = [];
 
   birthYear: string = "0";
   gender: string = "EMPTY";
@@ -137,6 +146,11 @@ export default class ProfileView extends Vue {
     this.gender = profile.gender || "EMPTY";
   }
 
+  favoriteLakesChanged(newFavoriteLakes: Lake[]) {
+    this.favoriteChanged = true;
+    this.favoriteLakes = newFavoriteLakes;
+  }
+
   saveProfile() {
     this.cleanValidationErros();
 
@@ -159,10 +173,19 @@ export default class ProfileView extends Vue {
       this.profile.lastNewsSeenDate = new Date(2025,6,1);
     }
     ProfileService.saveProfile(this.profile).then(
-      () => {
-        this.$emit("profile-updated")
-        this.$root.$emit("profile-updated");
-        this.$root.$emit("toaster-success", "Profil enregistré");
+      async () => {
+        try {
+          await ProfileService.updateFavoriteLakes(this.favoriteLakes);
+          this.$emit("profile-updated")
+          this.$root.$emit("profile-updated");
+          this.$root.$emit("toaster-success", "Profil enregistré");
+        } catch (e) {
+          console.error(e);
+          this.$root.$emit(
+            "toaster-error",
+            "Erreur technique, merci de réessayer plus tard"
+          );
+        }
       },
       (response) => {
         if (response.status == 400) {
@@ -177,6 +200,7 @@ export default class ProfileView extends Vue {
       }
     );
   }
+  
 
   safeDeleteAccount() {
     Helpers.confirm(

@@ -149,6 +149,27 @@ public class UsersDao extends AbstractFisholaDao {
         .join(FISHOLA_USER_FAVORITE_LAKES)
         .on(FISHOLA_USER_FAVORITE_LAKES.FISHOLA_USER_ID.eq(userUUID)
                 .and(LAKE.ID.eq(FISHOLA_USER_FAVORITE_LAKES.LAKE_ID)))
+                .orderBy(LAKE.NAME)
         .fetchInto(Lake.class));
+    }
+
+    public void updateFavoriteLakes(UUID userUUID, Set<UUID> newFavoriteLakeIds) {
+        withDaoNoResult(FisholaUserFavoriteLakesDao.class, dao -> {
+            List<FisholaUserFavoriteLakes> oldFavoriteLakes =  dao.fetchByFisholaUserId(userUUID);
+            Set<UUID> oldFavoriteLakeIds = oldFavoriteLakes.stream()
+                    .map(FisholaUserFavoriteLakes::getLakeId)
+                    .collect(Collectors.toSet());
+
+            // Delete removed favorites
+            oldFavoriteLakes.stream()
+                    .filter(fav -> !newFavoriteLakeIds.contains(fav.getLakeId()))
+                    .forEach(dao::delete);
+
+            // Add new favorites
+            newFavoriteLakeIds.stream()
+                    .filter(id -> !oldFavoriteLakeIds.contains(id))
+                    .map(id -> new FisholaUserFavoriteLakes(userUUID, id))
+                    .forEach(dao::insert);
+        });
     }
 }
