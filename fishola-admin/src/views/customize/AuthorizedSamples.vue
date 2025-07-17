@@ -220,11 +220,12 @@ export default class AuthorizedSamplesVue extends Vue {
   }
 
   save() {
-    BackendService.backendPut("/v1/referential/authorized-samples", [
-      this.authorizedSamplesMap,
-      this.minSizeMap,
-      this.maxSizeMap
-    ]).then(
+    BackendService.backendPut("/v1/referential/authorized-samples", {
+      targetLakes: this.selectedLakes.map(l => l.id),
+      authorizations: this.authorizedSamplesMap,
+      minSizes: this.minSizeMap,
+      maxSizes: this.maxSizeMap
+    }).then(
       res => {
         this.reloadData();
         console.info(res);

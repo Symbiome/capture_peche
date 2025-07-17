@@ -119,8 +119,10 @@ export default class SpeciesPerLakeVue extends Vue {
   save() {
     BackendService.backendPut(
       "/v1/referential/species-aliases-per-lake",
-      this.speciesPerLakeAliases
-    ).then(
+      {
+        targetLakes: this.selectedLakes.map(l => l.id),
+        speciesPerLakeAliases: this.speciesPerLakeAliases
+      }).then(
       res => {
         this.$buefy.toast.open({
           message: "Espèces par lac enregistrées",
