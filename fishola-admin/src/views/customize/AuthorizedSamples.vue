@@ -24,31 +24,41 @@
       Maillages et tailles maximales
       <div class="align-right">
         <b-upload
+          v-if="loggedAdmin.isNationalAdmin"
           class="button is-primary export-button"
           accept=".csv"
           @input="importCsv"
         >
           Importer un csv
         </b-upload>
-        <b-button type="is-primary export-button" @click="exportCsv">
+        <b-button type="is-primary export-button" @click="exportCsv"
+          v-if="loggedAdmin.isNationalAdmin">
           Exporter en csv
         </b-button>
       </div>
     </h1>
+    <div v-if="lakes.length > maxLakeBeforeShowingAutoComplete">
+        Veuillez indiquer les lacs à afficher
+        <MultipleAutoComplete
+          :defaultSelection="lastLakeSelection"
+          :data="lakeSelectionOptions"
+          @updated="(value) => changeLakeSelection(value)"
+        />
+      </div>
     <p id="table-desc" style="display:none">
       Tableau des lacs
     </p>
-    <table class="table is-striped" aria-describedby="table-desc">
+    <table class="table is-striped" aria-describedby="table-desc" v-if="selectedLakes.length > 0">
       <thead>
         <tr>
           <th id="th-lac-vide"></th>
-          <th :id="l.id" v-for="l in lakes" v-bind:key="l.id">{{ l.name }}</th>
+          <th :id="l.id" v-for="l in selectedLakes" v-bind:key="l.id">{{ l.name }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
           <th :id="s.name">{{ s.name }}</th>
-          <td v-for="l in lakes" v-bind:key="l.id">
+          <td v-for="l in selectedLakes" v-bind:key="l.id">
             <div class="field" style="display: flex">
               <b-checkbox
                 v-show="!authorizedSamplesMap[l.id][s.id]"
@@ -135,8 +145,11 @@
 import { Component, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
+import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";
 
-@Component
+@Component({
+  components: {MultipleAutoComplete}
+})
 export default class AuthorizedSamplesVue extends Vue {
   lakes = [];
   species = [];
@@ -144,6 +157,11 @@ export default class AuthorizedSamplesVue extends Vue {
   authorizedSamplesMap = {};
   minSizeMap = {};
   maxSizeMap = {};
+  loggedAdmin = { isNationalAdmin: false}
+  lakeSelectionOptions = [];
+  lastLakeSelection = [];
+  selectedLakes = [];
+  maxLakeBeforeShowingAutoComplete = 5;
 
   created() {
     this.lakes = [];
@@ -152,15 +170,18 @@ export default class AuthorizedSamplesVue extends Vue {
     this.authorizedSamplesMap = {};
     this.minSizeMap = {};
     this.maxSizeMap = {};
+    this.lastLakeSelection = JSON.parse(localStorage.getItem('lastLakeSelection') ?? "[]");
 
     Promise.all([
       BackendService.backendGet("/v1/referential/lakes"),
       BackendService.backendGet("/v1/referential/species"),
-      BackendService.backendGet("/v1/referential/species-per-lake")
+      BackendService.backendGet("/v1/referential/species-per-lake"),
+      BackendService.backendGet("/v1/admin/check")
     ]).then(data => {
       this.lakes = data[0];
       this.species = data[1];
       this.speciesPerLake = data[2];
+      this.loggedAdmin = data[3];
 
       this.referentialLoaded();
     });
@@ -179,6 +200,13 @@ export default class AuthorizedSamplesVue extends Vue {
       this.minSizeMap[l.id] = {};
       this.maxSizeMap[l.id] = {};
     });
+    this.lakeSelectionOptions = [];
+    this.lakes.forEach(l => {
+      this.lakeSelectionOptions.push({id: l.id, label: l.name});
+    })
+    if (this.lakes.length < this.maxLakeBeforeShowingAutoComplete) {
+      this.selectedLakes = this.lakes;
+    }
 
     Object.keys(this.speciesPerLake).forEach(lakeId => {
       let items = this.speciesPerLake[lakeId];
@@ -377,6 +405,11 @@ export default class AuthorizedSamplesVue extends Vue {
       }
     }
     this.$forceUpdate();
+  }
+
+  changeLakeSelection(newSelectedLakeIds: string[]) {
+    this.selectedLakes = this.lakes.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
+    localStorage.setItem('lastLakeSelection', JSON.stringify(newSelectedLakeIds));
   }
 }
 </script>

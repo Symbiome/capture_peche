@@ -19,31 +19,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #L%
 -->
 <template>
-  <b-autocomplete
-    v-model="search"
-    :data="getOptions()"
-    field="label"
-    :placeholder="placeholder"
-    rounded
-    clearable
-    clear-on-select
-    icon="magnify"
-    @select="(option) => (selectOption(option))"
-  >
-    <template #empty>Aucun résultat</template>
-  </b-autocomplete>
+  <div>
+    <b-autocomplete
+      v-model="search"
+      :data="getOptions()"
+      field="label"
+      :placeholder="placeholder"
+      rounded
+      clearable
+      clear-on-select
+      icon="magnify"
+      @select="(option) => (selectOption(option))"
+    >
+      <template #empty>Aucun résultat</template>
+    </b-autocomplete>
 
-  <div class="selection">
-    Sélection : 
-    <span v-for="selected in selectedIds" class="selected">
-        {{getItemLabel(selected)}}
-        <b-icon
-          icon="close"
-          size="is-small"
-          @click.native="unselectedOption(selected)"
-          title="Retirer de la sélection">
-        </b-icon>
-    </span>
+    <div class="selection">
+      Sélection :
+      <span v-for="selected in selectedIds" class="selected">
+          {{getItemLabel(selected)}}
+          <b-icon
+            icon="close"
+            size="is-small"
+            @click.native="unselectedOption(selected)"
+            title="Retirer de la sélection">
+          </b-icon>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -52,10 +54,16 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class MultipleAutoComplete extends Vue {
-  @Prop() data: any[] = [];
-  @Prop() placeholder: string = "";
+  @Prop({default : []}) data: any[];
+  @Prop({default : []}) defaultSelection: string[];
+  @Prop() placeholder: string;
   search: string = "";
   selectedIds: string[] = [];
+
+  created() {
+    this.selectedIds = this.defaultSelection;
+    this.$emit("updated", this.selectedIds);
+  }
 
   selectOption(option: any) {
     this.selectedIds.push(option.id);
