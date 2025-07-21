@@ -39,7 +39,7 @@ public class MetricsDao extends AbstractFisholaDao {
         MetricBean result = new MetricBean();
 
         String onlyAllowedLakesJoinCondition = "";
-        if (!fisholaAdmin.getIsnationaladmin()) {
+        if (!fisholaAdmin.getIsNationalAdmin()) {
             String lakeStringList = "(" + allowedAdminLakes.stream()
                     .map(uuid -> "'" + uuid.toString() + "'")
                     .collect(Collectors.joining(",")) +")";

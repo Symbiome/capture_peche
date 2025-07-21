@@ -179,8 +179,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         LoggedAdminBean loggedAdmin = new LoggedAdminBean(
                 fisholaAdmin.getEmail(),
-                fisholaAdmin.getIsnationaladmin(),
-                fisholaAdmin.getCancreateadmin()
+                fisholaAdmin.getIsNationalAdmin(),
+                fisholaAdmin.getCanCreateAdmin()
         );
         return Response.ok(loggedAdmin).build();
     }
@@ -207,8 +207,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         ImmutableAdminProfileForAdmin result = ImmutableAdminProfileForAdmin.builder()
                 .id(input.getId())
                 .email(input.getEmail())
-                .canCreateAdmin(input.getCancreateadmin())
-                .isNationalAdmin(input.getIsnationaladmin())
+                .canCreateAdmin(input.getCanCreateAdmin())
+                .isNationalAdmin(input.getIsNationalAdmin())
                 .build();
         return result;
     }
@@ -221,7 +221,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         Set<UUID> allowedLakes = getAllowedAdminLakes();
         List<AdminProfileForAdmin> result = admins.stream()
             .filter(admin -> {
-                if (fisholaAdmin.getIsnationaladmin()) {
+                if (fisholaAdmin.getIsNationalAdmin()) {
                     return true;
                 }
                 // Local admins can only see admin of their lakes

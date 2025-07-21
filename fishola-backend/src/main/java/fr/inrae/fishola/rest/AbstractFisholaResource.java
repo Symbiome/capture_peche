@@ -181,7 +181,7 @@ public abstract class AbstractFisholaResource {
         // For admins : only list alllowed lakes
         try {
             FisholaAdmin fisholaAdmin = this.checkIsAdmin();
-            return fisholaAdmin.getIsnationaladmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedLakes(fisholaAdmin.getId());
+            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedLakes(fisholaAdmin.getId());
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();
         }

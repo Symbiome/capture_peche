@@ -22,6 +22,9 @@ package fr.inrae.fishola.rest.editorial;
  */
 
 import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.entities.tables.daos.LakeDao;
+import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
@@ -46,6 +49,9 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
     @Inject
     protected NewsFisholaDao newsDao;
 
+    @Inject
+    protected ReferentialDao referentialDao;
+
     private String token;
 
     @BeforeEach
@@ -60,7 +66,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         unpublishedNews.setName(this.token);
         unpublishedNews.setDatePublicationDebut(now.plusDays(10));
         unpublishedNews.setDatePublicationFin(now.plusDays(20));
-        this.newsDao.insert(unpublishedNews);
+        this.newsDao.insert(unpublishedNews, referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet()));
 
         // Insert a published news
         News publishedNews = new News();
@@ -68,7 +74,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         publishedNews.setName("published-" + token);
         publishedNews.setDatePublicationDebut(now.minusDays(10));
         publishedNews.setDatePublicationFin(now.plusDays(10));
-        this.newsDao.insert(publishedNews);
+        this.newsDao.insert(publishedNews, referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet()));
     }
 
     @Test

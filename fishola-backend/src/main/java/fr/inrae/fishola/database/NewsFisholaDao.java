@@ -21,6 +21,7 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -61,7 +62,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
             ).toList();
         }
-        if (admin.isPresent() && !admin.get().getIsnationaladmin()) {
+        if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
             // For local admin, only keep national and lake-related actus
             UUID[] adminLakeIds = withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminLakes::getLakeId)).toArray(UUID[]::new);
             Set<UUID> newsOfReleventLakes =  withDao(NewsLakeDao.class, dao -> dao.fetchByLakeId(adminLakeIds).stream().map(NewsLake::getNewsId).collect(Collectors.toSet()));
@@ -79,15 +80,33 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         // Delete pics associated to this news
         DSLContext context = newContext();
         context.deleteFrom(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId)).execute();
+        context.deleteFrom(Tables.NEWS_LAKE).where(Tables.NEWS_LAKE.NEWS_ID.eq(newsId)).execute();
         // Delete news itself
         withDaoNoResult(NewsDao.class, dao -> dao.deleteById(newsId));
     }
 
-    public void update(News news) {
+    public void update(News news, Set<UUID> newsLakeIds) {
+        withDaoNoResult(NewsLakeDao.class, dao -> {
+            List<NewsLake> oldNewsLake = dao.fetchByNewsId(news.getId());
+            Set<UUID> oldNewsLakeIds = oldNewsLake.stream()
+                    .map(NewsLake::getLakeId)
+                    .collect(Collectors.toSet());
+
+            // Delete removed lakes
+            oldNewsLake.stream()
+                    .filter(fav -> !newsLakeIds.contains(fav.getLakeId()))
+                    .forEach(dao::delete);
+
+            // Add new lakes
+            newsLakeIds.stream()
+                    .filter(id -> !oldNewsLakeIds.contains(id))
+                    .map(id -> new NewsLake(news.getId(), id))
+                    .forEach(dao::insert);
+        });
         withDaoNoResult(NewsDao.class, dao -> dao.update(news));
     }
 
-    public News insert(News news) {
+    public News insert(News news, Set<UUID> newLakeIds) {
         DSLContext context = newContext();
         NewsRecord newRecord = context.newRecord(Tables.NEWS, news);
         News inserted = context.insertInto(Tables.NEWS)
@@ -95,6 +114,11 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                 .returningResult(Tables.NEWS.ID)
                 .fetchOne()
                 .into(News.class);
+        withDaoNoResult(NewsLakeDao.class, dao -> {
+            newLakeIds.stream()
+                    .map(id -> new NewsLake(inserted.getId(), id))
+                    .forEach(dao::insert);
+        });
         return inserted;
     }
 
@@ -133,13 +157,17 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             // If miniature, update news to indicate url
             News news = findById(picture.getNewsId());
             if (news != null) {
-                news.setMiniatureId(picture.getId());
-                this.update(news);
+                this.updateMiniatureId(news, picture.getId());
             }
         }
 
         return picture;
 
+    }
+
+    private void updateMiniatureId(News news, UUID miniatureId) {
+        news.setMiniatureId(miniatureId);
+        withDaoNoResult(NewsDao.class, dao -> dao.update(news));
     }
 
     public void updateTempNewsPictureIds(UUID newsId) {
@@ -156,8 +184,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         if (!miniature.isEmpty()) {
             News news = findById(newsId);
             if (news != null) {
-                news.setMiniatureId(miniature.get(0).component1());
-                this.update(news);
+                this.updateMiniatureId(news, miniature.get(0).component1());
             }
         }
     }
@@ -197,4 +224,8 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         return withDao(NewsLakeDao.class, dao -> dao.fetchByNewsId(newsId).stream().map(NewsLake::getLakeId).collect(Collectors.toSet()));
     }
 
+    public void notifySent(News news) {
+        news.setDateNotificationSent(LocalDateTime.now());
+        withDaoNoResult(NewsDao.class, dao -> dao.update(news));
+    }
 }

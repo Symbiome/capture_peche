@@ -21,6 +21,7 @@
 <template>
   <div class="pages">
     <Referential
+      v-if="docColumns.length > 4"
       name="Communications"
       url="/v1/news-all"
       :default-sort="['isPublic', 'desc']"

@@ -24,8 +24,8 @@ CREATE TABLE fishola_admin (
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     created_on TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
-    canCreateAdmin BOOLEAN NOT NULL DEFAULT FALSE,
-    isNationalAdmin BOOLEAN NOT NULL DEFAULT FALSE
+    can_create_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    is_national_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE fishola_admin_lakes(
@@ -44,8 +44,8 @@ CREATE TABLE news_lake (
 
 update news set is_national = true;
 
-insert into fishola_admin (email, password, canCreateAdmin, isNationalAdmin) values
+insert into fishola_admin (email, password, can_create_admin, is_national_admin) values
     ('chloe.goulon@inrae.fr', '', true, true);
 
-insert into fishola_admin (email, password, canCreateAdmin, isNationalAdmin) values
+insert into fishola_admin (email, password, can_create_admin, is_national_admin) values
     ('amorel@codelutin.com', '', true, true);

@@ -27,10 +27,12 @@ import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.Lists;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
+import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
@@ -38,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -59,6 +60,7 @@ import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
  */
 @Path("/api/v1/news-notifications/")
 @Produces(MediaType.APPLICATION_JSON)
+@Startup
 public class NewsCourrielNotificationService extends AbstractFisholaResource {
 
    @Inject
@@ -129,7 +131,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
     }
 
     @Scheduled(every="20m", concurrentExecution = SKIP, delayed = "5m")
-    protected void checkForMailNotifications() {
+    public void checkForMailNotifications() {
         LocalDateTime nextScheduledNotificationCheck = dao.getNextScheduledNotificationCheck().getNextCheckDate();
         log.info("Checking for mail notifications, next sending date scheduled to " + nextScheduledNotificationCheck.toString());
         if (LocalDateTime.now().isAfter(nextScheduledNotificationCheck)) {
@@ -148,36 +150,43 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
     }
 
 
-    protected void notifyUsersByCourrielAboutNews(List<News> newsToNotifyByMail) {
-        if (!newsToNotifyByMail.isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            StringBuilder htmlContent = new StringBuilder();
-            String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
-            if (newsToNotifyByMail.size() > 1) {
-                subject += " et autres actualités";
-            }
-            for (News news : newsToNotifyByMail) {
-                if (newsToNotifyByMail.size() > 1) {
-                    htmlContent.append("<h1>").append(news.getName()).append("</h1>");
-                }
-                htmlContent.append(news.getContent());
-                news.setDateNotificationSent(now);
-                dao.update(news);
-            }
-            htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
-
+    protected void notifyUsersByCourrielAboutNews(List<News> allNewsToNotify) {
+        if (!allNewsToNotify.isEmpty()) {
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
-                String baseURL = "https://fishola.fr";
-                if (config.backendBaseUrl().isPresent()) {
-                    baseURL = config.backendBaseUrl().get();
+                StringBuilder htmlContent = new StringBuilder();
+                List<UUID> favoriteLakes = usersDao.getFavoriteLakes(user.getId()).stream().map(Lake::getId).toList();
+                // Only keep national news and news related to user lake
+                List<News> newsToNotifyByMail = allNewsToNotify.stream().filter(n ->
+                                n.getIsNational()
+                                || dao.getLakeIds(n.getId()).stream().anyMatch(favoriteLakes::contains))
+                        .toList();
+                if (!newsToNotifyByMail.isEmpty()) {
+                    String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
+                    if (newsToNotifyByMail.size() > 1) {
+                        subject += " et autres actualités";
+                    }
+                    for (News news : newsToNotifyByMail) {
+                        if (newsToNotifyByMail.size() > 1) {
+                            htmlContent.append("<h1>").append(news.getName()).append("</h1>");
+                        }
+                        htmlContent.append(news.getContent());
+                        dao.notifySent(news);
+                    }
+                    htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
+
+
+                    String baseURL = "https://fishola.fr";
+                    if (config.backendBaseUrl().isPresent()) {
+                        baseURL = config.backendBaseUrl().get();
+                    }
+                    String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
+                    String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
+                    ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
+                            .subject(subject)
+                            .addTos(user.getEmail())
+                            .build();
+                    mailService.sendMail(mail);
                 }
-                String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
-                String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
-                ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
-                .subject(subject)
-                .addTos(user.getEmail())
-                .build();
-                mailService.sendMail(mail);
             }
         }
     }

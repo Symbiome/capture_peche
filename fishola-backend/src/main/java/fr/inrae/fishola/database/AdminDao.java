@@ -50,7 +50,7 @@ public class AdminDao extends AbstractFisholaDao {
         Optional<FisholaAdmin> user = findByEmail(email);
         Optional<Boolean> result = user
                 .map(FisholaAdmin::getPassword)
-                .map(userPassword -> verifyPassword(user.get().getIsnationaladmin(), password, userPassword));
+                .map(userPassword -> verifyPassword(user.get().getIsNationalAdmin(), password, userPassword));
         return result;
     }
 
@@ -80,7 +80,7 @@ public class AdminDao extends AbstractFisholaDao {
     public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_ADMIN,
-                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CANCREATEADMIN, FISHOLA_ADMIN.ISNATIONALADMIN)
+                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN)
                 .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin)
                 .execute());
     }

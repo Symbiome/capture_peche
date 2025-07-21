@@ -77,11 +77,15 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/lakes")
     public List<Lake> getAllLakes() {
-        Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
-        if (!allowedAdminLakes.isEmpty()) {
-            return referentialDao.fetchLakesById(allowedAdminLakes);
-        } else {
+        if (adminToken == null) {
             return referentialDao.listLakes();
+        }
+        FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+        if (fisholaAdmin.getIsNationalAdmin()) {
+            return referentialDao.listLakes();
+        } else {
+            Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
+            return referentialDao.fetchLakesById(allowedAdminLakes);
         }
     }
 
@@ -327,7 +331,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
         Set<UUID> lakeScope =  authorizedSamples.targetLakes.stream()
-            .filter(l -> fisholaAdmin.getIsnationaladmin() || allowedAdminLakes.contains(l))
+            .filter(l -> fisholaAdmin.getIsNationalAdmin() || allowedAdminLakes.contains(l))
             .collect(Collectors.toSet());
         
         // On transforme la map pour avoir un Set des clé lakeId+speciesId autorisées

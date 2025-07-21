@@ -42,7 +42,7 @@ class AdminResourceTest extends AbstractFisholaTest {
                 .body(new LoginBean("amorel@codelutin.com", "whatever"))
                 .post("/api/v1/admin/login")
             .then()
-                .statusCode(200)
+                .statusCode(204)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         Assertions.assertTrue(cookieHandler.getValue().isPresent());
     }
