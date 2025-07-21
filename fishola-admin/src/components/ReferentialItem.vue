@@ -29,7 +29,7 @@
             : col.label
         "
         :message="col.helpMessage ? col.helpMessage : null"
-        v-if="!col.hiddenInPopup"
+        v-if="!col.hiddenInPopup && (col.showItemIfFunction === undefined || col.showItemIfFunction(item))"
       >
         <!-- HTML text -->
         <div v-if="col.isHTML" class="editor-holder">
@@ -293,6 +293,7 @@
         <!-- Array -->
         <MultipleAutoComplete
           v-else-if="col.isArray"
+          :defaultSelection="col.possibleValuesForItemFunction ? col.possibleValuesForItemFunction(item) :  []"
           :data="col.arrayOptions"
           @updated="(value) => item[col.field] = value"
         />
@@ -405,7 +406,6 @@ export default class RefenretialItem extends Vue {
   }
 
   uploadedPic(url: string): void {
-    console.error(url);
     this.editor
       .chain()
       .focus()

@@ -306,7 +306,6 @@ export default class AuthorizedSamplesVue extends Vue {
   }
 
   updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap) {
-    console.error(authorizedSamplesMap, minSizeMap, maxSizeMap);
     this.authorizedSamplesMap = authorizedSamplesMap;
     this.minSizeMap = minSizeMap;
     this.maxSizeMap = maxSizeMap;
