@@ -92,6 +92,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
+import ProfileService from "@/services/ProfileService";
 
 @Component({
   components: {
@@ -257,6 +258,9 @@ export default class TripMetaView extends Vue {
       name: "trip-species",
       params: { id: this.id },
     });
+    if (this.trip.lakeId) {
+      ProfileService.addFavoriteLakeIfNotAlreadyFavorite(this.trip.lakeId);
+    }
   }
 
   giveup() {

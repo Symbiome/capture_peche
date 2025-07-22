@@ -23,6 +23,7 @@ import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
 import { UserSettings, UpdatePasswordBean, Lake } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
+import ReferentialService from "./ReferentialService";
 
 export class Credentials {
   constructor(public email: string, public password: string) {}
@@ -74,6 +75,16 @@ export default class ProfileService extends AbstractFisholaService {
       "/v1/security/favorite-lakes",
       favoriteLakes.map((lake) => lake.id)
     );
+  }
+
+  static async addFavoriteLakeIfNotAlreadyFavorite(lakeId: string) {
+    const favoriteLakeIds: string[] = (
+      await ReferentialService.getFavoriteLakes()
+    ).map((l) => l.id);
+    if (!favoriteLakeIds.includes(lakeId)) {
+      favoriteLakeIds.push(lakeId);
+      await this.backendPut("/v1/security/favorite-lakes", favoriteLakeIds);
+    }
   }
 
   static safeDeleteAccount(_profile: UserProfile): Promise<void> {
