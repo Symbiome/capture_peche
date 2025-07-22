@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -65,6 +67,7 @@ import java.util.stream.Stream;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
@@ -129,7 +132,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(false, lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(false, lakesFilter, mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizesPerMaillage(monthlySizes);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
@@ -147,13 +150,16 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    private Map<UUID, Map<Month, Double>> getLegacyMonthlySizesWithoutMaillage(Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes) {
+    private Map<UUID, Map<Month, Double>> getLegacyMonthlySizesWithoutMaillage(Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes) {
         Map<UUID, Map<Month, Double>> monthlySizesWithoutMaillage = new LinkedHashMap<>();
         for (UUID uuid : monthlySizes.keySet()) {
             Map<Month, Double> sizesForSpecie = new LinkedHashMap<>();
             for (Month month: monthlySizes.get(uuid).keySet()) {
-                Double size = monthlySizes.get(uuid).get(month).get(Maillage.NON_DEFINI);
-                sizesForSpecie.put(month, size);
+                Pair<Long, Double> countAndSize = monthlySizes.get(uuid).get(month).get(Maillage.NON_DEFINI);
+                if (countAndSize != null) {
+                    Double size = countAndSize.getRight();
+                    sizesForSpecie.put(month, size);
+                }
             }
             monthlySizesWithoutMaillage.put(uuid, sizesForSpecie);
         }
@@ -192,7 +198,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizes = computeMonthlySizes(true, lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(true, lakesFilter, mostCaughtSpecies, monthlyCatchs);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
         builder.monthlySizes(getLegacyMonthlySizesWithoutMaillage(monthlySizes));
@@ -248,18 +254,18 @@ public class DashboardDao  extends AbstractFisholaDao {
     /**
      * Calcule la moyenne mensuelle des tailles de poissons pour les espèces spécifiées
      */
-    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(boolean useEditedInBoInformation,Optional<List<UUID>> lakesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation,Optional<List<UUID>> lakesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
         Map<UUID, Month> catchesMonths = monthlyCatches.entries().stream().collect(Collectors.toMap(e -> e.getValue().getId(), Map.Entry::getKey));
-        Map<UUID, Map<Month, Map<Maillage, Double>>> result = computeMonthlySizes(useEditedInBoInformation, lakesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> result = computeMonthlySizes(useEditedInBoInformation, lakesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
         return result;
     }
 
-    protected  Map<UUID, Map<Month, Map<Maillage, Double>>> computeMonthlySizes(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
         // On garde uniquement les captures avec une taille
         List<Catch> catchsWithSize = allCatches.stream()
                 .filter(c -> c.getSize() != null)
                 .toList();
-        ImmutableMap.Builder<UUID, Map<Month, Map<Maillage, Double>>> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>> > builder = ImmutableMap.builder();
         for (UUID speciesId : mostCaughtSpecies) {
             // On prend les captures de la bonne espèce
             List<Catch> catchs = catchsWithSize.stream()
@@ -271,11 +277,11 @@ public class DashboardDao  extends AbstractFisholaDao {
                         }
                      })
                     .toList();
-            Map<Month, Map<Maillage, Double>> speciesMonthlySizes = new HashMap<>();
+            Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes = new HashMap<>();
             for (Month month : Month.values()) {
-                Map<Maillage, Double> averagePerMaillage = new HashMap<>();
+                Map<Maillage, Pair<Long, Double>> averagePerMaillage = new HashMap<>();
                 for(Maillage maillageType: Maillage.values()) {
-                    Stream<Catch> filteredCatch = catchs.stream()
+                    List<Catch> filteredCatch = catchs.stream()
                             .filter(c -> {
                                         if (month.equals(catchesMonths.get(c.getId()))) {
                                             // If more than one lake selected, cannot make distrinction
@@ -288,14 +294,17 @@ public class DashboardDao  extends AbstractFisholaDao {
                                         }
                                         return false;
                                     }
-                            );
+                        ).collect(Collectors.toList());
                     OptionalDouble average;
+                    OptionalLong count;
                     if (useEditedInBoInformation) {
-                        average = filteredCatch.mapToInt((Catch c) -> c.getEditedSize() / 10).average();
+                        count = OptionalLong.of(filteredCatch.size());
+                        average = filteredCatch.stream().mapToInt((Catch c) -> c.getEditedSize() / 10).average();
                     } else {
-                        average = filteredCatch.mapToInt(Catch::getSize).average();
+                        count = OptionalLong.of(filteredCatch.size());
+                        average = filteredCatch.stream().mapToInt(Catch::getSize).average();
                     }
-                    average.ifPresent(val -> averagePerMaillage.put(maillageType, val));
+                    average.ifPresent(val -> averagePerMaillage.put(maillageType, Pair.of(count.getAsLong(), val)));
                 }
                 if (!averagePerMaillage.isEmpty()) {
                     speciesMonthlySizes.put(month, averagePerMaillage);
@@ -305,7 +314,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                 builder.put(speciesId, speciesMonthlySizes);
             }
         }
-        Map<UUID, Map<Month, Map<Maillage, Double>>> result = builder.build();
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> result = builder.build();
         return result;
     }
 

@@ -39,6 +39,7 @@
                 'non-maillee': sizeType == 'NON_MAILLEE',
                 even: index % 2 == 0,
                 odd: index % 2 != 0,
+                'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)
               }"
               :style="
                 ('background-color:red',
@@ -70,6 +71,7 @@
                 'non-maillee': sizeType == 'NON_MAILLEE',
                 even: index % 2 == 0,
                 odd: index % 2 != 0,
+               'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)
               }"
               v-if="values[m][sizeType]"
               v-bind:style="
@@ -80,16 +82,18 @@
         </div>
       </div>
     </div>
-    <div class="labels">
+    <div class="labels" >
       <div
         class="label-short"
+        :class="{'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)}"
         v-for="m in orderedMonths"
         v-bind:key="'label-short-' + m"
       >
-        {{ m.substring(0, 1) }}
+        {{ m.substring(0, 1) }}       
       </div>
       <div
         class="label-mid"
+        :class="{'is-active-month': isActiveMonthCondition && isActiveMonthCondition(m)}"
         v-for="m in orderedMonths"
         v-bind:key="'label-mid-' + m"
       >
@@ -109,7 +113,8 @@ import { Month, Maillage } from "@/pojos/BackendPojos";
 @Component
 export default class HistogramChart extends Vue {
   @Prop() orderedMonths: Month[];
-  @Prop() values: { [P in Month]?: { [S in Maillage]: number } };
+  @Prop() values: { [P in Month]?: { [S in Maillage]: any } };
+  @Prop() isActiveMonthCondition: (m: Month) => {};
 
   maxValue: number = 50;
 
@@ -180,6 +185,9 @@ export default class HistogramChart extends Vue {
       font-size: @fontsize-smallest-paragraph;
       text-align: center;
 
+      &.is-active-month {
+        color: @orange-odd !important;
+      }
       &.maillee {
         color: @pelorous;
       }
@@ -204,6 +212,10 @@ export default class HistogramChart extends Vue {
         bottom: 0px;
         width: 100%;
         border-radius: 2px;
+
+        &.is-active-month {
+          background: @orange-odd !important;
+        }
 
         &.maillee {
           &.even {
@@ -241,7 +253,13 @@ export default class HistogramChart extends Vue {
       width: 8%;
       color: @gunmetal;
       text-align: center;
+
+      &.is-active-month {
+        font-weight: bolder;
+        color: @orange-odd;
+      }
     }
+ 
 
     @media screen and (max-width: 900px) {
       .label-mid {

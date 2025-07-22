@@ -181,17 +181,25 @@ export default class GlobalDashboardComponent extends Vue {
   }
 
   onMonthlySizeSelected(item: OptionItem) {
-    this.monthlySizes = item.whatever;
+     // Convert Pairs of Avg size / count into average per maillage
+    const monthlySizes = {};
     this.maillages = [];
     // @ts-ignore
-    Object.keys(this.monthlySizes).forEach((month) => {
+    Object.keys(item.whatever).forEach((month) => {
       // @ts-ignore
-      Object.keys(this.monthlySizes[month]).forEach((maillage) => {
+      monthlySizes[month] = {};
+      // @ts-ignore
+      Object.keys(item.whatever[month]).forEach((maillage) => {
         if (this.maillages.indexOf(maillage as Maillage) == -1) {
           this.maillages.push(maillage as Maillage);
         }
+        // @ts-ignore
+        const countAndAverage = item.whatever[month][maillage];
+         // @ts-ignore
+        monthlySizes[month][maillage] = Object.values(countAndAverage)[0];
       });
     });
+    this.monthlySizes = monthlySizes;
     this.maillages = this.maillages.sort();
   }
 

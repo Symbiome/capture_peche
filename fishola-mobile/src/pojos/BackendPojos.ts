@@ -194,7 +194,7 @@ export interface Dashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
-    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } };
     picturesPerTrip: PicturePerTripBean[];
 }
 
@@ -205,7 +205,7 @@ export interface GlobalDashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
-    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } };
     computedOn: Date;
 }
 

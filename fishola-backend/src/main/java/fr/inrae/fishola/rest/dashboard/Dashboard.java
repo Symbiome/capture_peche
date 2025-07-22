@@ -26,6 +26,7 @@ import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Month;
 import java.util.List;
@@ -58,7 +59,7 @@ public interface Dashboard {
 
     Map<UUID, Map<Month, Double>> monthlySizes();
 
-    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizesPerMaillage();
+    Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizesPerMaillage();
 
     List<PicturePerTripBean> picturesPerTrip();
 
