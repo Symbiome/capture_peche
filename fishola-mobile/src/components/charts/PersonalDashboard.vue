@@ -43,70 +43,10 @@
         ></DistributionChart>
       </div>
 
-      <div class="section shrinked">
-        <h2><i class="icon-fishing" />Mes captures</h2>
-        <div class="not-enough-data" v-if="latestTrips.length == 0">
-          <span>Pas assez de données</span>
-        </div>
-        <div class="average-header" v-if="latestTrips.length > 0">
-          <div class="count">{{ averageCatchsPerTripRounded }}</div>
-          captures en moyenne / sortie
-        </div>
-        <div class="average">
-          <div
-            v-for="(f, index) in latestTrips"
-            v-bind:key="f.tripId"
-            class="average-column"
-            v-on:click="openTrip(f.tripId)"
-          >
-            <div class="count">
-              {{ f.catchsCount }}
-            </div>
-            <div class="average-row-bar">
-              <div
-                class="average-row-bar-filled"
-                v-if="f.catchsCount > 0"
-                v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                v-bind:style="
-                  'height: ' + (f.catchsCount * 100) / maxCatchsCount + '%;'
-                "
-              ></div>
-            </div>
-            <div class="date">
-              <div class="day">
-                {{ getDay(f.day) }}
-              </div>
-              <div class="month">
-                {{ getMonth(f.day) }}
-              </div>
-              <div class="year">
-                {{ getYear(f.day) }}
-              </div>
-            </div>
-          </div>
-          <div
-            v-for="(f, index) in emptylatestTrips"
-            v-bind:key="'empty-' + index"
-            class="average-column"
-          >
-            <div class="count">-</div>
-            <div class="average-row-bar"></div>
-            <div class="date">
-              <div class="day">-</div>
-            </div>
-          </div>
-          <div
-            class="average-threshold"
-            v-if="latestTrips.length > 0"
-            v-bind:style="
-              'bottom: ' +
-              (54 + (averageCatchsPerTrip * 150) / maxCatchsCount) +
-              'px;'
-            "
-          ></div>
-        </div>
-      </div>
-    </div>
+     <AverageCatchChart
+        :dashboard-data="dashboardData"
+      />
+  </div>
 
     <div class="section">
       <div class="shrinked avg-size">
@@ -221,6 +161,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 import moment from "moment";
 import MaillageLegend from "./MaillageLegend.vue";
+import AverageCatchChart from "./AverageCatchPerTrip.vue";
 
 export class TopEntry {
   constructor(public species: SpeciesWithAlias, public catchs: CatchBean[]) {}
@@ -234,6 +175,7 @@ export class TopEntry {
     CatchPreviewList,
     GaleryPreviewList,
     MaillageLegend,
+    AverageCatchChart
   },
 })
 export default class PersonalDashboard extends Vue {
@@ -244,11 +186,6 @@ export default class PersonalDashboard extends Vue {
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
   caughtSpeciesDistribution: DistributionEntry[] = [];
-  averageCatchsPerTripRounded: number = 0;
-  averageCatchsPerTrip: number = 0;
-  latestTrips: DashboardLastTrip[] = [];
-  emptylatestTrips: any[] = [];
-  maxCatchsCount: number = 100;
   topBySizeOptions: OptionItem[] = [];
   topBySizeCatchs: CatchBean[] | null = null;
   topByWeightOptions: OptionItem[] = [];
@@ -274,11 +211,6 @@ export default class PersonalDashboard extends Vue {
   dashboardDataChanged(): void {
     this.speciesIndex = {};
     this.caughtSpeciesDistribution = [];
-    this.averageCatchsPerTripRounded = 0;
-    this.averageCatchsPerTrip = 0;
-    this.latestTrips = [];
-    this.emptylatestTrips = [];
-    this.maxCatchsCount = 0;
     this.topBySizeOptions = [];
     this.topBySizeCatchs = [];
     this.topByWeightOptions = [];
@@ -325,26 +257,6 @@ export default class PersonalDashboard extends Vue {
       );
       this.caughtSpeciesDistribution.push(entry);
     });
-
-    this.averageCatchsPerTrip =
-      this.dashboardData.dashboard.averageCatchsPerTrip || 0;
-    this.averageCatchsPerTripRounded =
-      Math.round(10 * this.averageCatchsPerTrip) / 10;
-
-    this.maxCatchsCount = 1;
-    this.dashboardData.dashboard.latestTripsCatchs.forEach((trip) => {
-      this.latestTrips.push(trip);
-      if (trip.catchsCount > this.maxCatchsCount) {
-        this.maxCatchsCount = trip.catchsCount;
-      }
-    });
-    this.maxCatchsCount = Math.max(
-      this.maxCatchsCount,
-      this.averageCatchsPerTripRounded
-    );
-    while (this.latestTrips.length + this.emptylatestTrips.length < 9) {
-      this.emptylatestTrips.push({});
-    }
 
     const topBySize: TopEntry[] = this.parseTop(
       this.dashboardData.dashboard.topBySize
@@ -444,13 +356,6 @@ export default class PersonalDashboard extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.catchToTripId[catchId], catchId: catchId },
-    });
-  }
-
-  openTrip(tripId: string) {
-    RouterUtils.pushRouteNoDuplicate(this.$router, {
-      name: "trip",
-      params: { id: tripId },
     });
   }
 

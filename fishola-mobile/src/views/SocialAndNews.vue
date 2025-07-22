@@ -27,6 +27,7 @@
           <h1 class="no-margin-pane">Communauté
             <LakeAndYearSelection 
                 :showYears="false"
+                @lake-and-year="selectedLakeUUID = $event.lake"
                 @lake="selectedLakeUUID = $event"
               />
           </h1>

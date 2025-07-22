@@ -49,21 +49,31 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
   }
 })
 export default class LakeAndYearSelection extends Vue {
-    @Prop() years: number[];
-    @Prop() showYears: boolean;
+  @Prop() years: number[];
+  @Prop() showYears: boolean;
 
-    selectedYear = 0;
-    selectedLakeUUID = "";
-    lakes: Lake[] = [];
-    showAllLakes = false;
+  selectedYear = 0;
+  selectedLakeUUID = "";
+  lakes: Lake[] = [];
+  showAllLakes = false;
+  doneLoading = false;
 
   mounted() {
+    const query = this.$route.query;
     if (this.years && this.years.length > 0) {
+      const yearFromURL = parseInt(query.currentYear as string);
+       if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
+        this.selectedYear = yearFromURL;
+       } else {
         this.selectedYear = this.years[0];
+       }
     }
-     if (localStorage && localStorage.showAllLakes) {
-        this.showAllLakes = localStorage.showAllLakes === "true";
-    } 
+    if (localStorage && localStorage.showAllLakes) {
+      this.showAllLakes = localStorage.showAllLakes === "true";
+    }
+    if (query.lakeId) {
+      this.selectedLakeUUID = query.lakeId as string;
+    }
     this.loadLakes();
   }
 
@@ -80,16 +90,22 @@ export default class LakeAndYearSelection extends Vue {
         // Silent catch
         console.error(e);
     }
-    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-      if (this.lakes.some(l => l.id === localStorage.latestSelectedLakeUUID)) {
-        this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
-      } else {
-        this.selectedLakeUUID = this.lakes[0].id;
+    const query = this.$route.query;
+    if (query.lakeId) {
+      this.selectedLakeUUID = query.lakeId as string;
+    } else {
+      if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
+        if (this.lakes.some(l => l.id === localStorage.latestSelectedLakeUUID)) {
+          this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
+        } else {
+          this.selectedLakeUUID = this.lakes[0].id;
+        }
+      } else if (this.lakes && this.lakes.length > 0) {
+          this.selectedLakeUUID = this.lakes[0].id;
       }
-    } else if (this.lakes && this.lakes.length > 0) {
-        this.selectedLakeUUID = this.lakes[0].id;
     }
-    
+    this.$emit("lake-and-year", {lake: this.selectedLakeUUID, year: this.selectedYear});
+    this.doneLoading = true; 
   }
 
   @Watch("selectedLakeUUID")
@@ -99,12 +115,32 @@ export default class LakeAndYearSelection extends Vue {
     } else {
       localStorage.latestSelectedLakeUUID = "all"
     }
-    this.$emit("lake", this.selectedLakeUUID);
+    if (this.selectedLakeUUID !== this.$route.query.lakeId) {
+      this.$router.replace({
+        query: {
+          ...this.$route.query,
+          lakeId: this.selectedLakeUUID,
+        }
+      });
+    }
+    if (this.doneLoading) {
+      this.$emit("lake", this.selectedLakeUUID);
+    }
   }
 
   @Watch("selectedYear")
   yearChanged() {
-    this.$emit("year", this.selectedYear);
+    if (""+ this.selectedYear !== this.$route.query.currentYear) {
+      this.$router.replace({
+        query: {
+          ...this.$route.query,
+          currentYear: ""+this.selectedYear,
+        }
+      });
+    }
+    if (this.doneLoading) {
+      this.$emit("year", this.selectedYear);
+    }
   }
 
   @Watch("showAllLakes")

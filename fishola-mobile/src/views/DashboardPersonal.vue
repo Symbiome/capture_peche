@@ -29,8 +29,9 @@
             <LakeAndYearSelection 
                 :years="getDashboardYears()"
                 :showYears="visualizationMode !== 'evolution'"
-                @lake="selectedLakeUUID = $event"
-                @year="year = $event"
+                @lake-and-year="yearAndLakeChangedChanged"
+                @lake="lakeChanged"
+                @year="yearChanged"
             />
             <a v-bind:href="exportUrl" v-if="visualizationMode !== 'evolution' && !asyncExport" id="export-button"
               class="export" title="Exporter" target="_blank">
@@ -148,9 +149,23 @@ export default class DashboardPersonalView extends Vue {
     });
   }
 
-  @Watch("year")
-  @Watch("selectedLakeUUID")
-  yearOrSelectedLakesChanged(): void {
+  yearChanged(newYear: number) {
+    this.year = newYear;
+    this.reloadDashboard();
+  }
+
+  lakeChanged(selectedLake: string) {
+    this.selectedLakeUUID = selectedLake;
+    this.reloadDashboard();
+  }
+
+  yearAndLakeChangedChanged(event: any) {
+    this.year = event.year;
+    this.selectedLakeUUID = event.lake;
+    this.reloadDashboard();
+  }
+
+  reloadDashboard(): void {
     if (this.visualizationMode == 'dashboard') {
       DashboardService.loadDashboardOrTimeout(
         this.year,
@@ -193,7 +208,7 @@ export default class DashboardPersonalView extends Vue {
       data.dashboard.latestTripsCatchs.length == 0
     ) {
       this.year = this.year - 1;
-      this.yearOrSelectedLakesChanged();
+      this.reloadDashboard();
     } else {
       this.personalDashboard = data;
       this.ready = true;

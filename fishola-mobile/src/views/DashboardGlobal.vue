@@ -29,8 +29,9 @@
             <LakeAndYearSelection 
               :years="getDashboardYears()"
               :showYears="visualizationMode !== 'evolution'"
-              @lake="selectedLakeUUID = $event"
-              @year="year = $event"
+              @lake-and-year="yearAndLakeChangedChanged"
+              @lake="lakeChanged"
+              @year="yearChanged"
             />
             <a v-bind:href="exportUrl" v-if="visualizationMode === 'dashboard' && !asyncExport" id="export-button"
               class="export" title="Exporter" target="_blank">
@@ -148,9 +149,23 @@ export default class DashboardGlobalView extends Vue {
     });
   }
 
-  @Watch("year")
-  @Watch("selectedLakeUUID")
-  yearOrSelectedLakesChanged(): void {
+  yearChanged(newYear: number) {
+    this.year = newYear;
+    this.reloadDashobard();
+  }
+
+  lakeChanged(selectedLake: string) {
+    this.selectedLakeUUID = selectedLake;
+    this.reloadDashobard();
+  }
+
+  yearAndLakeChangedChanged(event: any) {
+    this.year = event.year;
+    this.selectedLakeUUID = event.lake;
+    this.reloadDashobard();
+  }
+
+  reloadDashobard(): void {
     if (this.visualizationMode === 'dashboard') {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
