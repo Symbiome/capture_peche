@@ -67,6 +67,13 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     @GET
+    @Path("/news/lake/{lakeId}")
+    public List<News> getPublishedNews(@PathParam("lakeId") UUID lakeId, @Context HttpServletRequest request) {
+        // Return all news for which publication date is active
+        return dao.getPublishedNewsForLake(lakeId);
+    }
+
+    @GET
     @Path("/news-all")
     public List<NewsBean> getAllNews(@Context HttpServletRequest request) {
         // Return all news

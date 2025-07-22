@@ -38,8 +38,8 @@
             </div>
             <div class="tab" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
               <span> Communications </span>
-              <div class="news-badge">
-                {{ unreadNewsCount }}
+              <div class="news-badge" v-if="unreadNewsCountForCurrentLake > 0">
+                {{ unreadNewsCountForCurrentLake }}
               </div>
             </div>
           </div>
@@ -61,7 +61,7 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
@@ -71,7 +71,6 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import TripsService from "@/services/TripsService";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
-
 @Component({
   components: {
     MyTrips,
@@ -87,7 +86,8 @@ export default class SocialAndNewsView extends Vue {
   @Prop()
   visualizationMode: string;
 
-  unreadNewsCount = 0;
+  unreadNewsCountForCurrentLake = 0;
+  unreadNewsCountPerLake: Map<string, number> = new Map();
   hasRunningTrip = false;
   selectedLakeUUID = "";
   news: NewsBean[] = [];
@@ -98,27 +98,45 @@ export default class SocialAndNewsView extends Vue {
     );
   }
 
-  mounted() {
-    this.updateUnreadNewsCount();
-  }
 
+  @Watch("selectedLakeUUID")
   async updateUnreadNewsCount() {
     try {
-      this.news = await DocumentationService.getNews();
+      this.unreadNewsCountForCurrentLake = 0;
+      this.news = await DocumentationService.getNews(this.selectedLakeUUID);
+
+      // Get last news seen date from local storage and profile
+      let lastNewsSeenDateForLake = undefined;
+      const lastLocalStorageDateString = localStorage.getItem("last_news_seen_" + this.selectedLakeUUID);
+      if (lastLocalStorageDateString) {
+        lastNewsSeenDateForLake = new Date(lastLocalStorageDateString);
+      }
+      let lastProfileSeenDate = undefined;
       let profile = await ProfileService.getProfile();
       if (profile.lastNewsSeenDate) {
-        const lastSeenDate = Helpers.parseLocalDateTime(
+        lastProfileSeenDate = Helpers.parseLocalDateTime(
           // @ts-ignore
           profile.lastNewsSeenDate
         );
-
-        this.unreadNewsCount = this.news.filter((n) => {
-          return (
-            // @ts-ignore
-            Helpers.parseLocalDateTime(n.datePublicationDebut) > lastSeenDate
-          );
-        }).length;
+        if (!lastNewsSeenDateForLake) {
+          lastNewsSeenDateForLake = lastProfileSeenDate;
+        }
       }
+
+      // Compute unreadNewsCount
+      this.unreadNewsCountForCurrentLake = this.news.filter((n) => {
+        // @ts-ignore
+        const newsDate =  Helpers.parseLocalDateTime(n.datePublicationDebut);
+
+        // Make sure a national news is not marked unread once read (not mattering the lake)
+        if (n.isNational) {
+          return (lastNewsSeenDateForLake ? newsDate > lastNewsSeenDateForLake : true) 
+          && (lastProfileSeenDate ? newsDate > lastProfileSeenDate : true)
+        }
+        return (lastNewsSeenDateForLake ? newsDate > lastNewsSeenDateForLake : true);
+      }).length;
+      this.unreadNewsCountPerLake.set(this.selectedLakeUUID, this.unreadNewsCountForCurrentLake);
+      
     } catch (e) {
       // News section will be left empty
     }
@@ -132,7 +150,8 @@ export default class SocialAndNewsView extends Vue {
 
   async showNewsTab() {
     this.changeVisualizationMode('news');
-    if (this.unreadNewsCount > 0) {
+    localStorage.setItem("last_news_seen_" + this.selectedLakeUUID, new Date().toISOString());
+    if (this.unreadNewsCountPerLake.get(this.selectedLakeUUID) ?? 0 > 0) {
       try {
         let profile = await ProfileService.getProfile();
         profile.lastNewsSeenDate = new Date();

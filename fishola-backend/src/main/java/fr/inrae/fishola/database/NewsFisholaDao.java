@@ -76,6 +76,26 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         return allNews;
     }
 
+    public List<News> getPublishedNewsForLake(UUID lakeId) {
+        DSLContext context = newContext();
+        LocalDateTime now = LocalDateTime.now();
+        List<News> allNews = context
+                .select(Tables.NEWS.asterisk())
+                .from(Tables.NEWS)
+                .leftJoin(Tables.NEWS_LAKE).on(Tables.NEWS_LAKE.NEWS_ID.eq(Tables.NEWS.ID))
+                .where(
+                    Tables.NEWS.IS_NATIONAL.eq(true).or(
+                    Tables.NEWS_LAKE.LAKE_ID.eq(lakeId))
+                )
+                .and(Tables.NEWS.DATE_PUBLICATION_DEBUT.isNotNull())
+                .and(Tables.NEWS.DATE_PUBLICATION_FIN.isNotNull())
+                .and(Tables.NEWS.DATE_PUBLICATION_DEBUT.le(now))
+                .and(Tables.NEWS.DATE_PUBLICATION_FIN.ge(now))
+                .orderBy(Tables.NEWS.DATE_PUBLICATION_DEBUT.desc())
+                .fetchInto(News.class);
+        return allNews;
+    }
+
     public void deleteById(UUID newsId) {
         // Delete pics associated to this news
         DSLContext context = newContext();
