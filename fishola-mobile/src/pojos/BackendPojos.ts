@@ -209,6 +209,10 @@ export interface GlobalDashboard {
     computedOn: Date;
 }
 
+export interface EvolutionMetricsForLake {
+    monthlySizesPerMaillageAndYear: { [index: string]: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } } };
+}
+
 export interface LicenceFromClientBean {
     name: string;
     expirationDate: Date;

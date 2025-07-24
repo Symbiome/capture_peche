@@ -26,13 +26,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import fr.inrae.fishola.entities.enums.Maillage;
+import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
@@ -44,6 +47,8 @@ import fr.inrae.fishola.rest.dashboard.ImmutableGlobalDashboard;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import fr.inrae.fishola.rest.trips.TripResource;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collection;
@@ -387,5 +392,17 @@ public class DashboardDao  extends AbstractFisholaDao {
                     result.put(key, topCatchs);
                 });
         return result;
+    }
+
+    public Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> getCatchStatsForLake(UUID lakeId, Optional<UUID> userId) {
+        Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> catchStats = Maps.newLinkedHashMap();
+        Optional<List<UUID>> lakeFilter = Optional.of(Lists.newArrayList(lakeId));
+        for (int year = 2018; year < LocalDate.now().getYear(); year++) {
+            Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
+            List<UUID> species = withDao(SpeciesDao.class, SpeciesDao::findAll).stream().map(Species::getId).toList();
+            Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = this.computeMonthlySizes(true, lakeFilter, species, monthlyCatches);
+            catchStats.put(year, monthlySizes);
+        }
+        return catchStats;
     }
 }

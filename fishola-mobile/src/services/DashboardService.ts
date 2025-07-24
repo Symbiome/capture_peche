@@ -113,6 +113,10 @@ export default class DashboardService extends AbstractFisholaService {
     });
   }
 
+  static async loadGlobalEvolutionOrTimeout(lakeId: string) {
+    return await this.backendGet("/v1/evolution/catches/" + lakeId);
+  }
+
   static asyncExport(): Promise<void> {
     return this.backendPost("/v1/dashboard/async-export");
   }

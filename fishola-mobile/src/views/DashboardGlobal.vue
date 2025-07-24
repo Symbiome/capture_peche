@@ -45,8 +45,10 @@
               v-on:click="showGlobalDashboard">
               Tableau de bord
             </div>
-            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
-              v-on:click="changeVisualizationMode('evolution')">
+            <div 
+              class="tab"
+              :class="visualizationMode === 'evolution' ? 'selected' : ''"
+              @click="changeVisualizationMode('evolution')">
               Évolution
             </div>
           </div>
@@ -64,7 +66,10 @@
             :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
 
-          <p v-if="visualizationMode === 'evolution'">Evolution </p>
+          <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
+            :evolutionMetricsForLake="evolutionMetrics"
+            :lakeId="selectedLakeUUID">
+          </EvolutionMetrics>
 
         </div>
       </div>
@@ -91,6 +96,8 @@ import {
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
+import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
+import { EvolutionMetricsForLake } from "@/pojos/BackendPojos";
 
 
 @Component({
@@ -100,6 +107,7 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
     FisholaFooter,
     GlobalDashboardComponent,
     LakeAndYearSelection,
+    EvolutionMetrics
   },
 })
 export default class DashboardGlobalView extends Vue {
@@ -114,6 +122,9 @@ export default class DashboardGlobalView extends Vue {
   asyncExport: boolean = false;
 
   globalDashboard: GlobalDashboardAndSpecies | null = null;
+  evolutionMetrics: EvolutionMetricsForLake = {
+    monthlySizesPerMaillageAndYear: {}
+  };
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
@@ -172,7 +183,9 @@ export default class DashboardGlobalView extends Vue {
         this.selectedLakeUUID
       ).then(this.globalDashboardLoaded, this.cannotLoad);
     } else {
-      // TODO load evolution
+      DashboardService.loadGlobalEvolutionOrTimeout(
+        this.selectedLakeUUID
+      ).then(this.globalEvolutionLoaded, this.cannotLoad); 
     }
   }
 
@@ -209,6 +222,11 @@ export default class DashboardGlobalView extends Vue {
 
   globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
     this.globalDashboard = data;
+    this.ready = true;
+  }
+
+  globalEvolutionLoaded(data: EvolutionMetricsForLake) {
+    this.evolutionMetrics = data;
     this.ready = true;
   }
 
