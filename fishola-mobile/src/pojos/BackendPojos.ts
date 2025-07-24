@@ -210,7 +210,8 @@ export interface GlobalDashboard {
 }
 
 export interface EvolutionMetricsForLake {
-    monthlySizesPerMaillageAndYear: { [index: string]: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } } };
+    catchCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: { [index: string]: number } } } };
+    tripCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: number } } };
 }
 
 export interface LicenceFromClientBean {

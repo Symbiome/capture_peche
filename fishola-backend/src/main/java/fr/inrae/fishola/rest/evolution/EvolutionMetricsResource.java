@@ -1,5 +1,6 @@
 package fr.inrae.fishola.rest.evolution;
 import fr.inrae.fishola.database.DashboardDao;
+import fr.inrae.fishola.database.EvolutionDao;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public class EvolutionMetricsResource extends AbstractFisholaResource {
 
     @Inject
-    private DashboardDao dashboardDao;
+    private EvolutionDao evolutionDao;
 
     /**
      * Returns for the given lake a map having :
@@ -33,8 +34,8 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
      * - For each month a pair representing count and avg size of the given specie
      */
     @GET
-    @Path("/evolution/catches/{lakeId}")
-    public EvolutionMetricsForLake getCatchStats(
+    @Path("/evolution/{lakeId}")
+    public EvolutionMetricsForLake getEvolutionStats(
             @PathParam("lakeId") UUID lakeId
     ) {
         // TODO
@@ -44,8 +45,7 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
                 Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
                 false
         );*/
-        Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> catchStatsForLake = dashboardDao.getCatchStatsForLake(lakeId, Optional.empty());
-        ImmutableEvolutionMetricsForLake statsForLake = ImmutableEvolutionMetricsForLake.builder().monthlySizesPerMaillageAndYear(catchStatsForLake).build();
-        return statsForLake;
+        EvolutionMetricsForLake evolutionStatsForLake = evolutionDao.getEvolutionStatsForLake(lakeId, Optional.empty());
+       return evolutionStatsForLake;
     }
 }

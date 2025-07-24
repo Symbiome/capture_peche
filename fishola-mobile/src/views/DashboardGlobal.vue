@@ -67,8 +67,8 @@
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
 
           <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
-            :evolutionMetricsForLake="evolutionMetrics"
-            :lakeId="selectedLakeUUID">
+            :lakeId="selectedLakeUUID"
+            :global="true">
           </EvolutionMetrics>
 
         </div>
@@ -97,7 +97,6 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
-import { EvolutionMetricsForLake } from "@/pojos/BackendPojos";
 
 
 @Component({
@@ -122,9 +121,6 @@ export default class DashboardGlobalView extends Vue {
   asyncExport: boolean = false;
 
   globalDashboard: GlobalDashboardAndSpecies | null = null;
-  evolutionMetrics: EvolutionMetricsForLake = {
-    monthlySizesPerMaillageAndYear: {}
-  };
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
@@ -182,10 +178,6 @@ export default class DashboardGlobalView extends Vue {
         this.year,
         this.selectedLakeUUID
       ).then(this.globalDashboardLoaded, this.cannotLoad);
-    } else {
-      DashboardService.loadGlobalEvolutionOrTimeout(
-        this.selectedLakeUUID
-      ).then(this.globalEvolutionLoaded, this.cannotLoad); 
     }
   }
 
@@ -222,11 +214,6 @@ export default class DashboardGlobalView extends Vue {
 
   globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
     this.globalDashboard = data;
-    this.ready = true;
-  }
-
-  globalEvolutionLoaded(data: EvolutionMetricsForLake) {
-    this.evolutionMetrics = data;
     this.ready = true;
   }
 

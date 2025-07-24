@@ -114,7 +114,7 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static async loadGlobalEvolutionOrTimeout(lakeId: string) {
-    return await this.backendGet("/v1/evolution/catches/" + lakeId);
+    return await this.backendGet("/v1/evolution/" + lakeId);
   }
 
   static asyncExport(): Promise<void> {

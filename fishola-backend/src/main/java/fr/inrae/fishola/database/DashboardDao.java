@@ -394,15 +394,4 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    public Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> getCatchStatsForLake(UUID lakeId, Optional<UUID> userId) {
-        Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> catchStats = Maps.newLinkedHashMap();
-        Optional<List<UUID>> lakeFilter = Optional.of(Lists.newArrayList(lakeId));
-        for (int year = 2018; year < LocalDate.now().getYear(); year++) {
-            Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
-            List<UUID> species = withDao(SpeciesDao.class, SpeciesDao::findAll).stream().map(Species::getId).toList();
-            Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = this.computeMonthlySizes(true, lakeFilter, species, monthlyCatches);
-            catchStats.put(year, monthlySizes);
-        }
-        return catchStats;
-    }
 }

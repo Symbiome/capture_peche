@@ -61,7 +61,10 @@
           </div>
           <PersonalDashboard v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
             :dashboardData="personalDashboard" :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
-          <p v-if="visualizationMode === 'evolution'">Evolution </p>
+          <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
+            :lakeId="selectedLakeUUID"
+            >
+          </EvolutionMetrics>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -85,12 +88,13 @@ import {
 } from "@/services/DashboardService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import { Lake } from "@/pojos/BackendPojos";
 
 import ReferentialService from "../services/ReferentialService";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
+import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
+
 
 @Component({
   components: {
@@ -98,7 +102,8 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
     RunningOverlay,
     FisholaFooter,
     PersonalDashboard,
-    LakeAndYearSelection
+    LakeAndYearSelection,
+    EvolutionMetrics
   },
 })
 export default class DashboardPersonalView extends Vue {

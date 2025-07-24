@@ -12,6 +12,7 @@ import java.util.UUID;
 @ImmutableObject
 @JsonSerialize(as= ImmutableEvolutionMetricsForLake.class)
 public interface EvolutionMetricsForLake {
-    Map<Integer, Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>>> monthlySizesPerMaillageAndYear();
+    Map<Integer, Map<Month, Map<UUID, Map<Boolean, Long>>>> catchCountPerMonthAndSpecies();
+    Map<Integer, Map<Month, Map<UUID, Long>>> tripCountPerMonthAndSpecies();
 
 }
