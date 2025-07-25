@@ -125,14 +125,12 @@ export default class ProfileAndSettingsView extends Vue {
     background-position: center;
 
     height: 150px;
-    margin-left: -1 * @margin-large;
     margin-bottom: 10px;
     margin-top: -5px;
     width: calc(100% + (2 * @margin-large));
 
     @media screen and (min-width: @desktop-min-width) {
-        width: calc(100% + (2 * @margin-large-desktop));
-        margin-left: -1 * @margin-large-desktop;
+        width: calc(100vw - @desktop-menu-width);
     }
 
     display: flex;

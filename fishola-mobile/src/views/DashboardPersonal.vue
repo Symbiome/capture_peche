@@ -177,8 +177,6 @@ export default class DashboardPersonalView extends Vue {
         this.year,
         this.selectedLakeUUID
       ).then(this.personalDashboardLoaded, this.cannotLoad);
-    } else {
-      // TODO load evolution
     }
   }
 

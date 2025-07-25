@@ -228,7 +228,7 @@ export default class ProfileView extends Vue {
   }
 
   becomeAmbassador() {
-    // TODO
+    this.$root.$emit("open-feedback", "ambassador");
   }
 
   editPassword() {

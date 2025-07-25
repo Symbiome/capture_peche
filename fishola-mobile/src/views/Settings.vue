@@ -162,7 +162,7 @@ export default class SettingsView extends Vue {
   }
 
   becomeScaleCollector() {
-    // TODO
+    this.$root.$emit("open-feedback", "scale");
   }
 
 }
