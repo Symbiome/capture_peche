@@ -105,6 +105,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
         NewsBean news = new NewsBean(newsFromDB.getId(), newsFromDB.getName(), newsFromDB.getContent(), newsFromDB.getDatePublicationDebut(), newsFromDB.getDatePublicationFin(), newsFromDB.getDateNotificationSent(), newsFromDB.getMiniatureId(), newsFromDB.getIsNational(), Sets.newLinkedHashSet());
         news.name = modifiedName;
         LocalDateTime now = LocalDateTime.now();
+        news.isNational = true;
         news.datePublicationDebut = now.minusDays(1);
         news.datePublicationFin = now.plusDays(20);
         news.lakeIds = referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet());

@@ -1004,7 +1004,7 @@ class TripResourceTest extends AbstractFisholaTest {
             Assertions.assertEquals(expectedSpeciesId, globalDashboardForYear.caughtAndReleasedSpeciesDistribution().keySet().iterator().next().toString());
             Assertions.assertEquals(expectedSize.get().doubleValue(), globalDashboardForYear.monthlySizes().entrySet().iterator().next().getValue().values().iterator().next());
             Assertions.assertEquals(expectedSpeciesId,globalDashboardForYear.monthlySizesPerMaillage().keySet().iterator().next().toString());
-            Assertions.assertEquals(expectedSize.get().doubleValue(), globalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next());
+            Assertions.assertEquals(expectedSize.get().doubleValue(), globalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next().getRight());
         } else {
             Assertions.assertEquals(0, globalDashboardForYear.caughtSpeciesCount().size());
             Assertions.assertEquals(0, globalDashboardForYear.caughtSpeciesDistribution().size());
@@ -1027,7 +1027,7 @@ class TripResourceTest extends AbstractFisholaTest {
         Assertions.assertEquals(expectedSpeciesId.get(), personalDashboardForYear.caughtAndReleasedSpeciesDistribution().keySet().iterator().next().toString());
         Assertions.assertEquals(expectedSize.get().doubleValue(), personalDashboardForYear.monthlySizes().entrySet().iterator().next().getValue().values().iterator().next());
         Assertions.assertEquals(expectedSpeciesId.get(),personalDashboardForYear.monthlySizesPerMaillage().keySet().iterator().next().toString());
-        Assertions.assertEquals(expectedSize.get().doubleValue(),personalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next());
+        Assertions.assertEquals(expectedSize.get().doubleValue(),personalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next().getRight());
         Assertions.assertEquals(expectedSize, personalDashboardForYear.topBySize().values().iterator().next().iterator().next().size);
         Assertions.assertEquals(expectedWeight,personalDashboardForYear.topByWeight().values().iterator().next().iterator().next().weight);
     }
