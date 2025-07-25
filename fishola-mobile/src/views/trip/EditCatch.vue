@@ -752,12 +752,12 @@ export default class EditCatchView extends Vue {
       this.requestNewPicture = false;
 
       // First check that we do not already have the picture in the gallery
-      var alreadyInGalery = false;
+      let alreadyInGalery = false;
       this.allNonMeasurePictures.forEach((pic) => {
         alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
       });
       if (!alreadyInGalery) {
-        var maxOrder = Math.max(
+        let  maxOrder = Math.max(
           this.lastUsedPicOrder,
           Math.max.apply(
             Math,
@@ -975,7 +975,7 @@ export default class EditCatchView extends Vue {
   }
 
   async catchSaved(catchId: string) {
-    for (var i = 0; i < this.newTakenPictures.length; i++) {
+    for (let i = 0; i < this.newTakenPictures.length; i++) {
       const picToSaveInLocalDb = this.newTakenPictures[i];
       await PicturesService.savePictureInLocalDB(
         catchId + picToSaveInLocalDb.order,
@@ -985,7 +985,7 @@ export default class EditCatchView extends Vue {
         picToSaveInLocalDb.order
       );
     }
-    for (var j = 0; j < this.picturesToDelete.length; j++) {
+    for (let j = 0; j < this.picturesToDelete.length; j++) {
       const pictureToDelete = this.picturesToDelete[j];
       await PicturesService.deletePicture(
         catchId + pictureToDelete.order,

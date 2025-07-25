@@ -103,7 +103,7 @@ export default class NewFishingLicence extends Vue {
     };
 
   formattedDate(date: Date): string {
-    var dayOptions: Intl.DateTimeFormatOptions = {
+    const dayOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "numeric",

@@ -46,7 +46,7 @@ export default class Counter extends Vue {
 
     increaseNumber() {
         if (this.displayNumber != this.n){
-            var change = (this.n - this.displayNumber) / 10;
+            let change = (this.n - this.displayNumber) / 10;
             change = change >= 0 ? Math.ceil(change) : Math.floor(change);
             this.displayNumber = this.displayNumber + change;
         }

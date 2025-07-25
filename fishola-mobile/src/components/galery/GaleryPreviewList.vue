@@ -68,7 +68,7 @@ export default class GaleryPreviewList extends Vue {
 
   @Watch("picturesPerTrip")
   picturesPerTripChanged() {
-    var i = 0;
+    let i = 0;
     this.firstPictures = [];
     while (this.firstPictures.length < 4 && i < this.picturesPerTrip.length) {
       this.firstPictures = this.firstPictures.concat(

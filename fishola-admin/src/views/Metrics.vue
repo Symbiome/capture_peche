@@ -190,7 +190,7 @@ export default class Metrics extends Vue {
       { field: "indic_type", label: "Indicateur", sortable: true },
       { field: "total", label: "Valeur", sortable: true }
     ];
-    for (var i = 0; i < columns.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       if (i > 0) {
         csvContent += ";";
       }
@@ -230,7 +230,7 @@ export default class Metrics extends Vue {
 
   exportAsCSV(fileName: string, columns: Array<string>, array: Array<any>) {
     let csvContent = "";
-    for (var i = 0; i < columns.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       if (i > 0) {
         csvContent += ";";
       }
@@ -240,8 +240,8 @@ export default class Metrics extends Vue {
     // Add content rows
     csvContent += array
       .map(row => {
-        var csvRow = "";
-        for (var i = 0; i < columns.length; i++) {
+        const csvRow = "";
+        for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";
           }
@@ -257,8 +257,8 @@ export default class Metrics extends Vue {
     let csvContent = "\n";
     csvContent += (array as Array<any>)
       .map(row => {
-        var csvRow = "";
-        for (var i = 0; i < columns.length; i++) {
+        const csvRow = "";
+        for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";
           }
@@ -276,14 +276,14 @@ export default class Metrics extends Vue {
   }
 
   downloadCSV(fileName: string, csvContent: string) {
-    var hiddenElement = document.createElement("a");
+    const hiddenElement = document.createElement("a");
     hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
     hiddenElement.target = "_blank";
 
     //provide the name for the CSV file to be downloaded
     const d = new Date();
-    var mm = d.getMonth() + 1;
-    var dd = d.getDate();
+    const mm = d.getMonth() + 1;
+    const dd = d.getDate();
     let dateString =
       d.getFullYear() +
       "-" +

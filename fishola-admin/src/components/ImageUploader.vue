@@ -61,7 +61,7 @@ export default class ImageUploader extends Vue {
 
   getBase64(file: any): Promise<string> {
     return new Promise<any>((resolve, reject) => {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = function() {
         resolve(reader.result);

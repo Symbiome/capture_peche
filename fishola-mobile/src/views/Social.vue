@@ -149,7 +149,7 @@ export default class SocialView extends Vue {
   }
 
   formattedDate(rawDate: Date): string {
-    var dayOptions: Intl.DateTimeFormatOptions = {
+    const dayOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "numeric",

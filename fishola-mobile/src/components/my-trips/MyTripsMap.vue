@@ -158,7 +158,7 @@ export default class MyTripsMapView extends Vue {
     }
 
     formattedDate(tripDate: Date): string {
-        var dayOptions: Intl.DateTimeFormatOptions = {
+        const dayOptions: Intl.DateTimeFormatOptions = {
             month: "numeric",
             day: "numeric",
             year: "numeric",
@@ -171,7 +171,7 @@ export default class MyTripsMapView extends Vue {
 
     zoomToVisibleMarkers() {
         if (this.map && this.validMarkers.length > 0) {
-            var visibleLayerGroup = new L.FeatureGroup();
+            const visibleLayerGroup = new L.FeatureGroup();
 
             this.map.eachLayer(function (layer: L.Layer) {
                 if (layer instanceof L.Marker)
