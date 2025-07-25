@@ -46,10 +46,6 @@ import java.util.UUID;
 @Path("/api/v1/about")
 @Produces(MediaType.APPLICATION_JSON)
 public class AboutResource extends AbstractFisholaResource {
-
-    @Inject
-    protected Logger log;
-
     @Inject
     protected ReferentialDao referentialDao;
     @Inject

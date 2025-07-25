@@ -90,9 +90,6 @@ public class TripResource extends AbstractFisholaResource {
     public static final String HOURS_AND_MINUTES = "HH:mm";
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected ReferentialDao referentialDao;
 
     @Inject

@@ -64,9 +64,6 @@ import org.jboss.logging.Logger;
 public class PictureResource extends AbstractFisholaResource {
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected TripsDao tripsDao;
 
     @Inject

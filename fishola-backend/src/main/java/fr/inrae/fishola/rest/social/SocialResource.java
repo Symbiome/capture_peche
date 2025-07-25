@@ -93,9 +93,6 @@ import java.util.stream.Collectors;
 public class SocialResource extends AbstractFisholaResource {
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected ReferentialDao referentialDao;
 
     @Inject

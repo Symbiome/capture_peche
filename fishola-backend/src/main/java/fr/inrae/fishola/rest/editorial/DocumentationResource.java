@@ -103,7 +103,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
         Documentation documentation = optional.get();
         String filename = documentation.getName()
-                .replaceAll(" ", "_");
+                .replace(" ", "_");
         StreamingOutput output = this.wrapAsStreamingOutput(documentation.getContent());
         Response response = Response.ok(output)
                 .header("Content-Disposition", String.format("filename=\"%s.pdf\"", filename))

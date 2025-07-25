@@ -50,9 +50,6 @@ import java.util.Optional;
 public class FeedbackResource extends AbstractFisholaResource {
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected MailService mailService;
 
     @PUT

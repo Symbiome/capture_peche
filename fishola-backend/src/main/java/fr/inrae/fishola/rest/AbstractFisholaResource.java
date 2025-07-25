@@ -47,9 +47,6 @@ import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
 
-    @Inject
-    protected Logger log;
-
     public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
     public static final String ADMIN_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Admin-Token";
@@ -67,6 +64,9 @@ public abstract class AbstractFisholaResource {
 
     @Inject
     protected FisholaConfiguration config;
+
+    @Inject
+    protected Logger log;
 
     @CookieParam(USER_AUTHENTICATION_COOKIE_NAME)
     protected String userToken;
@@ -145,8 +145,8 @@ public abstract class AbstractFisholaResource {
             UUID userId = jwtHelper.verifyExpiredToken(token);
             boolean isValid = usersDao.isValidUserId(userId);
             if (isValid) {
-                if (log.isInfoEnabled()) {
-                    log.infof("Renouvellement automatique du token JWT pour l'utilisateur %s", userId);
+                if (this.log.isInfoEnabled()) {
+                    this.log.infof("Renouvellement automatique du token JWT pour l'utilisateur %s", userId);
                 }
                 String newToken = jwtHelper.createUserToken(userId);
                 UserIdAndRenewal result = UserIdAndRenewal.of(userId, newToken);
@@ -155,7 +155,7 @@ public abstract class AbstractFisholaResource {
                 return Optional.empty();
             }
         } catch (Exception eee) {
-            log.warn("Le renouvellement de Token n'est pas possible", eee);
+            this.log.warn("Le renouvellement de Token n'est pas possible", eee);
             return Optional.empty();
         }
     }

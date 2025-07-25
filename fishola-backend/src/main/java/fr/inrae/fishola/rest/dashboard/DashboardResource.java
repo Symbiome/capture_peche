@@ -62,9 +62,6 @@ import org.jspecify.annotations.Nullable;
 public class DashboardResource extends AbstractFisholaResource {
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected MailService mailService;
 
     @Inject

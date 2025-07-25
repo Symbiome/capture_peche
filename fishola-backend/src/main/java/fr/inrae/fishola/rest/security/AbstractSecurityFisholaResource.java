@@ -15,9 +15,6 @@ public class AbstractSecurityFisholaResource  extends AbstractFisholaResource {
     protected static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected MailService mailService;
 
     protected Optional<String> validatePassword(String password) {

@@ -66,11 +66,6 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
     protected static final String CLAIM_LAKE_IDS = "lakeIds";
 
-    @Inject
-    protected Logger log;
-    @Inject
-    protected AdminDao adminDao;
-
     @POST
     @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
