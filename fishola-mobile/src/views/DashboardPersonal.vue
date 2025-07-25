@@ -63,6 +63,7 @@
             :dashboardData="personalDashboard" :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
           <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
             :lakeId="selectedLakeUUID"
+            :onlyShowUserStats="true"
             >
           </EvolutionMetrics>
         </div>

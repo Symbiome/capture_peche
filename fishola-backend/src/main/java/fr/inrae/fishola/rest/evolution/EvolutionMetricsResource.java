@@ -3,6 +3,7 @@ import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.EvolutionDao;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
 import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForLake;
 import jakarta.inject.Inject;
@@ -34,8 +35,8 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
      * - For each month a pair representing count and avg size of the given specie
      */
     @GET
-    @Path("/evolution/{lakeId}")
-    public EvolutionMetricsForLake getEvolutionStats(
+    @Path("/evolution/global/{lakeId}")
+    public EvolutionMetricsForLake getGlobalEvolutionStats(
             @PathParam("lakeId") UUID lakeId
     ) {
         // TODO
@@ -46,6 +47,16 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
                 false
         );*/
         EvolutionMetricsForLake evolutionStatsForLake = evolutionDao.getEvolutionStatsForLake(lakeId, Optional.empty());
-       return evolutionStatsForLake;
+        return evolutionStatsForLake;
+    }
+
+    @GET
+    @Path("/evolution/personal/{lakeId}")
+    public EvolutionMetricsForLake getPersonalEvolutionStats(
+            @PathParam("lakeId") UUID lakeId
+    ) {
+        UserIdAndRenewal userId = getUserIdOrRenew();
+        EvolutionMetricsForLake evolutionStatsForLake = evolutionDao.getEvolutionStatsForLake(lakeId, Optional.of(userId.userId()));
+        return evolutionStatsForLake;
     }
 }

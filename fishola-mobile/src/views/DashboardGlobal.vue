@@ -67,8 +67,7 @@
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
 
           <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
-            :lakeId="selectedLakeUUID"
-            :global="true">
+            :lakeId="selectedLakeUUID">
           </EvolutionMetrics>
 
         </div>

@@ -12,20 +12,14 @@ import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
 import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForLake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalLong;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Singleton
 public class EvolutionDao  extends AbstractFisholaDao {
@@ -60,7 +54,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
                     if (!catchesOfSpeciesForMonth.isEmpty()) {
                         catchCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
                         tripCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
-                        
+
                         // Count kept and relase catches for this specie
                         Map<Boolean, Long> keptAndUnkeptCount = Maps.newLinkedHashMap();
                         keptAndUnkeptCount.put(true, catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count());
