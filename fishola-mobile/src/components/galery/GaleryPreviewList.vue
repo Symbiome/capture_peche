@@ -56,9 +56,7 @@ export default class GaleryPreviewList extends Vue {
   @Prop({ default: "" }) selectedLakeUUID: string;
 
   firstPictures: string[] = [];
-
-  created() {}
-
+  
   mounted() {
     if (this.picturesPerTrip && this.picturesPerTrip.length > 0) {
       this.picturesPerTripChanged();

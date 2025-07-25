@@ -240,7 +240,7 @@ export default class Metrics extends Vue {
     // Add content rows
     csvContent += array
       .map(row => {
-        const csvRow = "";
+        let csvRow = "";
         for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";
@@ -257,7 +257,7 @@ export default class Metrics extends Vue {
     let csvContent = "\n";
     csvContent += (array as Array<any>)
       .map(row => {
-        const csvRow = "";
+        let csvRow = "";
         for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";

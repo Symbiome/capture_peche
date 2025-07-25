@@ -88,10 +88,6 @@ import { RouterUtils } from "@/router/RouterUtils";
 export default class NewsView extends Vue {
   @Prop() news: NewsBean[];
 
-  mounted() {
-   
-  }
-
   getMiniatureURl(news: NewsBean) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);

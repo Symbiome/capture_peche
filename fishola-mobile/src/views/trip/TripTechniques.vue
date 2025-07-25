@@ -107,8 +107,6 @@ export default class TripTechniquesView extends Vue {
     ReferentialService.getTechniques().then(this.techniquesLoaded);
   }
 
-  mounted() { }
-
   techniquesLoaded(list: Technique[]) {
     this.techniques = list;
     TripsService.getTrip(this.id, this.tripLoaded);

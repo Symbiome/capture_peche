@@ -49,8 +49,6 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 export default class MaillageLegend extends Vue {
   @Prop() maillages: Maillage[];
   @Prop() selectedLakeUUID: string;
-
-  mounted() {}
 }
 </script>
 

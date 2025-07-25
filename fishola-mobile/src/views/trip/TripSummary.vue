@@ -114,8 +114,6 @@ export default class TripSummaryView extends Vue {
     );
   }
 
-  mounted() { }
-
   tripLoaded(someTrip: TripSummary) {
     this.trip = someTrip;
   }

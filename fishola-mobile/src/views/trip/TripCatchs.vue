@@ -109,8 +109,6 @@ export default class TripCatchsView extends Vue {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  mounted() { }
-
   tripLoaded(someTrip: TripMain) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;

@@ -136,9 +136,7 @@ export default class EditTripView extends Vue {
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
-
-  mounted() { }
-
+  
   tripLoaded(someTrip: TripBean) {
     this.trip = someTrip;
     if (this.trip.modifiableUntil) {

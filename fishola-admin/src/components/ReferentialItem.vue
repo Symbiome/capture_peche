@@ -640,7 +640,6 @@ export default class RefenretialItem extends Vue {
 
     blockquote {
       min-height: 80px;
-      padding: 40px;
       position: relative;
       margin: 40px 0;
       padding: 1.6em 2.4em 0.7em calc(1.4em + var(--quote-image-width));

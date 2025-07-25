@@ -128,8 +128,6 @@ export default class TripSpeciesView extends Vue {
     ReferentialService.getSpeciesPerLakePlusCustom().then(this.speciesLoaded);
   }
 
-  mounted() { }
-
   sortedSpecies(): SpeciesWithAlias[] {
     return Vue.lodash.orderBy(this.species, "name");
   }

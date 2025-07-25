@@ -65,10 +65,6 @@ export default class FishingLicenceItem extends Vue {
   selected: boolean = false;
   date: string = "";
 
-  async mounted() {
-  }
-
-
   formattedDate(): string {
     const dayOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",

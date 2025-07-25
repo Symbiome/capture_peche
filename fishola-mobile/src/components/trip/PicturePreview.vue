@@ -69,8 +69,6 @@ export default class PicturePreview extends Vue {
 
   showModal: boolean = false;
 
-  created() {}
-
   openModal() {
     if (this.enableModal) {
       this.showModal = true;

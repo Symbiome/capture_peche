@@ -135,7 +135,7 @@
       :destroy-on-hide="false"
       aria-role="dialog"
       full-screen
-      aria-modal
+      :aria-modal="true"
     >
       <ReferentialItem
         :item="selection.item"

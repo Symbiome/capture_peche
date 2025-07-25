@@ -325,7 +325,7 @@ export default class AuthorizedSamplesVue extends Vue {
     }
     csvContent += "\n";
     this.species.forEach(specie => {
-      const csvRow = "";
+      let csvRow = "";
       csvRow += specie.name + ";";
       this.lakes
         .map(l => l.id)
