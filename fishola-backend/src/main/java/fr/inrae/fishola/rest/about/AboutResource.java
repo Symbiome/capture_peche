@@ -28,7 +28,7 @@ import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.ComputedDataHolder;
+import fr.inrae.fishola.rest.FisholaCache;
 import org.jboss.logging.Logger;
 
 import jakarta.inject.Inject;
@@ -58,8 +58,8 @@ public class AboutResource extends AbstractFisholaResource {
     protected CatchsDao catchsDao;
     @Inject
     protected EditorialAndDocumentationDao editorialAndDocumentationDao;
-
-    public static final ComputedDataHolder<KeyFigures> KEY_FIGURES_HOLDER = new ComputedDataHolder<>();
+    @Inject
+    protected FisholaCache cache;
 
     /**
      * Procède au calcul d'une nouvelle instance de KeyFigures
@@ -95,14 +95,9 @@ public class AboutResource extends AbstractFisholaResource {
     @GET
     @Path("/key-figures")
     public KeyFigures getKeyFigures() {
-
-        final KeyFigures result = KEY_FIGURES_HOLDER.get(
-                this::computeKeyFigures,
-                KeyFigures::computedOn,
-                Duration.ofHours(config.keyFiguresTimeoutHours()),
-                true
+        final KeyFigures result = this.cache.keyFigures.get("key-figures",
+                key -> computeKeyFigures()
         );
-
         return result;
     }
 

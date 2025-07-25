@@ -21,9 +21,10 @@ package fr.inrae.fishola.rest.dashboard;
  * #L%
  */
 
-import com.google.common.base.Charsets;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
@@ -33,7 +34,7 @@ import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
 import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.ComputedDataHolder;
+import fr.inrae.fishola.rest.FisholaCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 
 import java.nio.charset.StandardCharsets;
@@ -54,6 +55,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -71,7 +73,8 @@ public class DashboardResource extends AbstractFisholaResource {
     @Inject
     protected TripsDao tripsDao;
 
-    protected static final ComputedDataHolder<GlobalDashboard> GLOBAL_DASHBOARD_HOLDER = new ComputedDataHolder<>();
+    @Inject
+    protected FisholaCache cache;
 
     @GET
     @Path("/dashboard")
@@ -99,33 +102,17 @@ public class DashboardResource extends AbstractFisholaResource {
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard(
         @QueryParam("year") Integer year,
-        @QueryParam("lake") String lakeId
+        @QueryParam("lake") UUID lakeId
     ) {
-        // Default current dashboard : use cached value
-        if (year == null && lakeId == null) {
-            final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
-                    this::computeNewGlobalDashboard,
-                    GlobalDashboard::computedOn,
-                    Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
-                    false
-            );
-            return result;
-        } else {
-            Optional<Integer> yearFilter = Optional.empty();
-            if (year != null) {
-                yearFilter = Optional.of(year);
-            }
-            Optional<List<UUID>> lakesFilter = Optional.empty();
-            if (lakeId != null && !lakeId.isEmpty()) {
-                lakesFilter = Optional.of(Arrays.asList(UUID.fromString(lakeId)));
-            }
-            return this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log);
+        if (year == null || lakeId == null) {
+            throw new IllegalArgumentException("Dashboard need a year and a lakeId to be computed, got " + year + " and " + lakeId);
         }
+        Optional<Integer> yearFilter = Optional.of(year);
+        Optional<List<UUID>> lakesFilter = Optional.of(List.of(lakeId));
+        String cacheKey = year + "_" + lakeId;
+        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log));
     }
 
-    protected GlobalDashboard computeNewGlobalDashboard() {
-        return this.dashboardDao.computeGlobalDashboard(Optional.empty(), Optional.empty(), this.log);
-    }
 
     @GET
     @Path("/dashboard/export")

@@ -1,22 +1,17 @@
 package fr.inrae.fishola.rest.evolution;
-import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.EvolutionDao;
-import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.FisholaCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
-import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForLake;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-import org.apache.commons.lang3.tuple.Pair;
+import org.jboss.logging.Logger;
 
-import java.time.Month;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +21,9 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
 
     @Inject
     private EvolutionDao evolutionDao;
+
+    @Inject
+    private FisholaCache cache;
 
     /**
      * Returns for the given lake a map having :
@@ -39,16 +37,9 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
     public EvolutionMetricsForLake getGlobalEvolutionStats(
             @PathParam("lakeId") UUID lakeId
     ) {
-        // TODO
-         /*final GlobalDashboard result = GLOBAL_DASHBOARD_HOLDER.get(
-                this::computeNewGlobalDashboard,
-                GlobalDashboard::computedOn,
-                Duration.ofMinutes(config.globalDashboardTimeoutMinutes()),
-                false
-        );*/
-        EvolutionMetricsForLake evolutionStatsForLake = evolutionDao.getEvolutionStatsForLake(lakeId, Optional.empty());
-        return evolutionStatsForLake;
+        return cache.globalEvolution.get(lakeId.toString(), key -> evolutionDao.getEvolutionStatsForLake(lakeId, Optional.empty()));
     }
+
 
     @GET
     @Path("/evolution/personal/{lakeId}")
@@ -56,7 +47,7 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
             @PathParam("lakeId") UUID lakeId
     ) {
         UserIdAndRenewal userId = getUserIdOrRenew();
-        EvolutionMetricsForLake evolutionStatsForLake = evolutionDao.getEvolutionStatsForLake(lakeId, Optional.of(userId.userId()));
-        return evolutionStatsForLake;
+        String cacheKey  = lakeId.toString() + "_" + userId.userId().toString();
+        return cache.personalEvolution.get(cacheKey, key -> evolutionDao.getEvolutionStatsForLake(lakeId, Optional.of(userId.userId())));
     }
 }

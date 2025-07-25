@@ -30,6 +30,8 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 
 import java.util.Base64;
+
+import fr.inrae.fishola.rest.FisholaCache;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
@@ -58,6 +60,9 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @Inject
     protected EditorialAndDocumentationDao dao;
+
+    @Inject
+    protected FisholaCache cache;
 
     @GET
     @Path("/documentations")
@@ -210,7 +215,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         checkIsAdmin();
         dao.updateEditorial(editorial);
         // On veut une mise à jour immédiate sur la page d'accueil
-        AboutResource.KEY_FIGURES_HOLDER.unset();
+        this.cache.keyFigures.invalidateAll();
         return Response.noContent().build();
     }
 

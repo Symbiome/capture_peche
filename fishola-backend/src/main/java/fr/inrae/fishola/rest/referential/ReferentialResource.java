@@ -71,9 +71,6 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Inject
     protected ReferentialDao referentialDao;
 
-    @Inject
-    protected CatchsDao catchsDao;
-
     @GET
     @Path("/lakes")
     public List<Lake> getAllLakes() {

@@ -167,4 +167,6 @@ public interface FisholaConfiguration {
     @WithDefault("15")
     long globalDashboardTimeoutMinutes();
 
+    @WithDefault("400")
+    long globalDashboardCacheSize();
 }

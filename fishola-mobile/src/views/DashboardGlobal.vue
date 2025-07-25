@@ -66,8 +66,11 @@
             :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
             :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
 
-          <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
-            :lakeId="selectedLakeUUID">
+          <EvolutionMetrics 
+            v-if="visualizationMode === 'evolution' && selectedLakeUUID"
+            :lakeId="selectedLakeUUID"
+            @loaded="ready = true"
+            >
           </EvolutionMetrics>
 
         </div>
@@ -136,10 +139,9 @@ export default class DashboardGlobalView extends Vue {
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-    DashboardService.loadGlobalDashboardOrTimeout(
-      this.year,
-      this.selectedLakeUUID
-    ).then(this.globalDashboardLoaded, this.cannotLoad);
+    if (this.year && this.selectedLakeUUID && this.visualizationMode !== 'evolution') {
+      this.reloadDashboard;
+    }
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));
     const scrolllistener = document.getElementById("scrollable");
@@ -157,21 +159,21 @@ export default class DashboardGlobalView extends Vue {
 
   yearChanged(newYear: number) {
     this.year = newYear;
-    this.reloadDashobard();
+    this.reloadDashboard();
   }
 
   lakeChanged(selectedLake: string) {
     this.selectedLakeUUID = selectedLake;
-    this.reloadDashobard();
+    this.reloadDashboard();
   }
 
   yearAndLakeChangedChanged(event: any) {
     this.year = event.year;
     this.selectedLakeUUID = event.lake;
-    this.reloadDashobard();
+    this.reloadDashboard();
   }
 
-  reloadDashobard(): void {
+  reloadDashboard(): void {
     if (this.visualizationMode === 'dashboard') {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,

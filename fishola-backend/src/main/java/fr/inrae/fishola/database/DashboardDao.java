@@ -212,10 +212,6 @@ public class DashboardDao  extends AbstractFisholaDao {
         builder.computedOn(LocalDateTime.now());
 
         GlobalDashboard result = builder.build();
-
-        if (log.isDebugEnabled()) {
-            log.debugf("Nouvelle instance: %s", result);
-        }
         return result;
     }
 

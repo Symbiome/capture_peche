@@ -59,6 +59,7 @@ export default class EvolutionMetricsView extends Vue {
         } else {
             this.evolutionMetrics = await DashboardService.loadGlobalEvolutionOrTimeout(this.lakeId);
         }
+        this.$emit("loaded", true);
     }
   }
   

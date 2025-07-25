@@ -278,6 +278,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.mortennobel</groupId>
             <artifactId>java-image-scaling</artifactId>
         </dependency>
