@@ -41,31 +41,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
             Map<Month, Map<UUID, Long>> tripCountPerMonthAndSpecies = Maps.newLinkedHashMap();
 
             for (Month month : Month.values()) {
-
-                for (UUID speciesId : species) {
-                    List<Catch> catchesOfSpeciesForMonth = monthlyCatches.get(month).stream()
-                            .filter(c -> {
-                                if (useEditedInBackOfficeInformation) {
-                                    return Objects.equals(c.getEditedSpeciesId(),speciesId);
-                                } else {
-                                    return  Objects.equals(c.getSpeciesId(), speciesId);
-                                }
-                            }) .toList();
-                    if (!catchesOfSpeciesForMonth.isEmpty()) {
-                        catchCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
-                        tripCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
-
-                        // Count kept and relase catches for this specie
-                        Map<Boolean, Long> keptAndUnkeptCount = Maps.newLinkedHashMap();
-                        keptAndUnkeptCount.put(true, catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count());
-                        keptAndUnkeptCount.put(false, catchesOfSpeciesForMonth.stream().filter(c -> !c.getKept()).count());
-                        catchCountPerMonthAndSpecies.get(month).put(speciesId, keptAndUnkeptCount);
-
-                        // Count distinct trips for this species
-                        Long tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
-                        tripCountPerMonthAndSpecies.get(month).put(speciesId, tripCount);
-                    }
-                }
+                getEvolutionStatsForLakeYearAndMonth(month, species, monthlyCatches, useEditedInBackOfficeInformation, catchCountPerMonthAndSpecies, tripCountPerMonthAndSpecies);
             }
             if (!catchCountPerMonthAndSpecies.isEmpty()) {
                 builder.putCatchCountPerMonthAndSpecies(year, catchCountPerMonthAndSpecies);
@@ -73,5 +49,32 @@ public class EvolutionDao  extends AbstractFisholaDao {
             }
         }
         return builder.build();
+    }
+
+    private static void getEvolutionStatsForLakeYearAndMonth(Month month, List<UUID> species, Multimap<Month, Catch> monthlyCatches, boolean useEditedInBackOfficeInformation, Map<Month, Map<UUID, Map<Boolean, Long>>> catchCountPerMonthAndSpecies, Map<Month, Map<UUID, Long>> tripCountPerMonthAndSpecies) {
+        for (UUID speciesId : species) {
+            List<Catch> catchesOfSpeciesForMonth = monthlyCatches.get(month).stream()
+                    .filter(c -> {
+                        if (useEditedInBackOfficeInformation) {
+                            return Objects.equals(c.getEditedSpeciesId(),speciesId);
+                        } else {
+                            return  Objects.equals(c.getSpeciesId(), speciesId);
+                        }
+                    }) .toList();
+            if (!catchesOfSpeciesForMonth.isEmpty()) {
+                catchCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
+                tripCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
+
+                // Count kept and relase catches for this specie
+                Map<Boolean, Long> keptAndUnkeptCount = Maps.newLinkedHashMap();
+                keptAndUnkeptCount.put(true, catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count());
+                keptAndUnkeptCount.put(false, catchesOfSpeciesForMonth.stream().filter(c -> !c.getKept()).count());
+                catchCountPerMonthAndSpecies.get(month).put(speciesId, keptAndUnkeptCount);
+
+                // Count distinct trips for this species
+                Long tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
+                tripCountPerMonthAndSpecies.get(month).put(speciesId, tripCount);
+            }
+        }
     }
 }

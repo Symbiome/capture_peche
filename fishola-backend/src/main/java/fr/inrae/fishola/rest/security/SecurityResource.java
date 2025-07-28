@@ -87,7 +87,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         Map<String, String> validationErrors = new HashMap<>();
 
         if (StringUtils.isEmpty(bean.firstName)) {
-            validationErrors.put("firstName", "Le prénom est obligatoire");
+            validationErrors.put(CLAIM_FIRST_NAME, "Le prénom est obligatoire");
         }
 
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();

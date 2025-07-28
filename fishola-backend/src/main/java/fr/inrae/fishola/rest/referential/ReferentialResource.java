@@ -26,7 +26,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -36,8 +35,6 @@ import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
-import fr.inrae.fishola.exceptions.AccessDeniedException;
-import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import java.util.Collection;
 import java.util.HashMap;
@@ -335,52 +332,13 @@ public class ReferentialResource extends AbstractFisholaResource {
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
         Map<Pair<UUID, UUID>, Integer> minSizesMap = new LinkedHashMap<>();
         Map<Pair<UUID, UUID>, Integer> maxSizesMap = new LinkedHashMap<>();
-        Map<UUID, Map<UUID, Object>> authorizations = authorizedSamples.authorizations;
-        Map<UUID, Map<UUID, Object>> minSizes = authorizedSamples.minSizes;
-        Map<UUID, Map<UUID, Object>> maxSizes = authorizedSamples.maxSizes;
-        for (Map.Entry<UUID, Map<UUID, Object>> byLakeEntry : authorizations.entrySet()) {
-            Map<UUID, Object> bySpeciesEntries = byLakeEntry.getValue();
-            for (Map.Entry<UUID, Object> entry : bySpeciesEntries.entrySet()) {
-                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
-                Object authorized = entry.getValue();
-                if (Boolean.TRUE.equals(authorized)) {
-                    authorizationsSet.add(lakePluSpeciesId);
-                }
-                if (minSizes.get(byLakeEntry.getKey()) != null && minSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
-                    minSizesMap.put(lakePluSpeciesId, Integer.parseInt(minSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
-                }
-                if (maxSizes.get(byLakeEntry.getKey()) != null && maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
-                    maxSizesMap.put(lakePluSpeciesId, Integer.parseInt(maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
-                }
-            }
-        }
+        computeMinMaxMaps(authorizedSamples, authorizationsSet, minSizesMap, maxSizesMap);
 
         // On charge les autorisations par lac+espèce et on en fait un index
         List<AuthorizedSample> existingAuthorizations = referentialDao.listAuthorizedSamples();
 
         // On commence par supprimer les autorisations en trop
-        for (AuthorizedSample entity : existingAuthorizations) {
-            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
-            if (lakeScope.contains(entity.getLakeId())) {
-                if (!authorizationsSet.contains(lakePluSpeciesId)) {
-                    referentialDao.deleteAuthorizedSample(entity);
-                } else {
-                    // On met à jour uniquement la taille si l'autorisation existe dejà
-                    Integer minSize = 0;
-                    if (minSizesMap.get(lakePluSpeciesId) != null) {
-                        minSize = minSizesMap.get(lakePluSpeciesId);
-                    }
-                    Integer maxSize = 0;
-                    if (maxSizesMap.get(lakePluSpeciesId) != null) {
-                        maxSize = maxSizesMap.get(lakePluSpeciesId);
-                    }
-                    entity.setMinSize(minSize);
-                    entity.setMaxSize(maxSize);
-                    referentialDao.updateAuthorizeSample(entity);
-                }
-                authorizationsSet.remove(lakePluSpeciesId);
-            }
-        }
+        updateAndDeleteAuthorizations(existingAuthorizations, lakeScope, authorizationsSet, minSizesMap, maxSizesMap);
 
         // Puis on créé les nouvelles
         authorizationsSet
@@ -406,6 +364,53 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         Response response = Response.noContent().build();
         return response;
+    }
+
+    private void updateAndDeleteAuthorizations(List<AuthorizedSample> existingAuthorizations, Set<UUID> lakeScope, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap) {
+        for (AuthorizedSample entity : existingAuthorizations) {
+            Pair<UUID, UUID> lakePluSpeciesId = Pair.of(entity.getLakeId(), entity.getSpeciesId());
+            if (lakeScope.contains(entity.getLakeId())) {
+                if (!authorizationsSet.contains(lakePluSpeciesId)) {
+                    referentialDao.deleteAuthorizedSample(entity);
+                } else {
+                    // On met à jour uniquement la taille si l'autorisation existe dejà
+                    Integer minSize = 0;
+                    if (minSizesMap.get(lakePluSpeciesId) != null) {
+                        minSize = minSizesMap.get(lakePluSpeciesId);
+                    }
+                    Integer maxSize = 0;
+                    if (maxSizesMap.get(lakePluSpeciesId) != null) {
+                        maxSize = maxSizesMap.get(lakePluSpeciesId);
+                    }
+                    entity.setMinSize(minSize);
+                    entity.setMaxSize(maxSize);
+                    referentialDao.updateAuthorizeSample(entity);
+                }
+                authorizationsSet.remove(lakePluSpeciesId);
+            }
+        }
+    }
+
+    private static void computeMinMaxMaps(AuthorizedSamplesModificationBean authorizedSamples, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap) {
+        Map<UUID, Map<UUID, Object>> authorizations = authorizedSamples.authorizations;
+        Map<UUID, Map<UUID, Object>> minSizes = authorizedSamples.minSizes;
+        Map<UUID, Map<UUID, Object>> maxSizes = authorizedSamples.maxSizes;
+        for (Map.Entry<UUID, Map<UUID, Object>> byLakeEntry : authorizations.entrySet()) {
+            Map<UUID, Object> bySpeciesEntries = byLakeEntry.getValue();
+            for (Map.Entry<UUID, Object> entry : bySpeciesEntries.entrySet()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry.getKey());
+                Object authorized = entry.getValue();
+                if (Boolean.TRUE.equals(authorized)) {
+                    authorizationsSet.add(lakePluSpeciesId);
+                }
+                if (minSizes.get(byLakeEntry.getKey()) != null && minSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
+                    minSizesMap.put(lakePluSpeciesId, Integer.parseInt(minSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
+                }
+                if (maxSizes.get(byLakeEntry.getKey()) != null && maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()) != null) {
+                    maxSizesMap.put(lakePluSpeciesId, Integer.parseInt(maxSizes.get(byLakeEntry.getKey()).get(entry.getKey()).toString()));
+                }
+            }
+        }
     }
 
     @GET

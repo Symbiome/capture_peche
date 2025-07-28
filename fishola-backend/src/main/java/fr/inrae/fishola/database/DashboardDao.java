@@ -280,36 +280,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                     .toList();
             Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes = new HashMap<>();
             for (Month month : Month.values()) {
-                Map<Maillage, Pair<Long, Double>> averagePerMaillage = new HashMap<>();
-                for(Maillage maillageType: Maillage.values()) {
-                    List<Catch> filteredCatch = catchs.stream()
-                            .filter(c -> {
-                                        if (month.equals(catchesMonths.get(c.getId()))) {
-                                            // If more than one lake selected, cannot make distrinction
-                                            // as maille size can be different from one lake to another
-                                            if (!lakesFilter.isPresent() || lakesFilter.get().size() > 1) {
-                                                return maillageType == Maillage.NON_DEFINI;
-                                            } else {
-                                                return c.getMaillee() == maillageType;
-                                            }
-                                        }
-                                        return false;
-                                    }
-                        ).collect(Collectors.toList());
-                    OptionalDouble average;
-                    OptionalLong count;
-                    if (useEditedInBoInformation) {
-                        count = OptionalLong.of(filteredCatch.size());
-                        average = filteredCatch.stream().mapToInt((Catch c) -> c.getEditedSize() / 10).average();
-                    } else {
-                        count = OptionalLong.of(filteredCatch.size());
-                        average = filteredCatch.stream().mapToInt(Catch::getSize).average();
-                    }
-                    average.ifPresent(val -> averagePerMaillage.put(maillageType, Pair.of(count.getAsLong(), val)));
-                }
-                if (!averagePerMaillage.isEmpty()) {
-                    speciesMonthlySizes.put(month, averagePerMaillage);
-                }
+                computeMonthlySizesForMonth(useEditedInBoInformation, lakesFilter, catchesMonths, month, catchs, speciesMonthlySizes);
             }
             if (!speciesMonthlySizes.isEmpty()) {
                 builder.put(speciesId, speciesMonthlySizes);
@@ -317,6 +288,39 @@ public class DashboardDao  extends AbstractFisholaDao {
         }
         Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> result = builder.build();
         return result;
+    }
+
+    private static void computeMonthlySizesForMonth(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, Month month, List<Catch> catchs, Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes) {
+        Map<Maillage, Pair<Long, Double>> averagePerMaillage = new HashMap<>();
+        for(Maillage maillageType: Maillage.values()) {
+            List<Catch> filteredCatch = catchs.stream()
+                    .filter(c -> {
+                                if (month.equals(catchesMonths.get(c.getId()))) {
+                                    // If more than one lake selected, cannot make distrinction
+                                    // as maille size can be different from one lake to another
+                                    if (!lakesFilter.isPresent() || lakesFilter.get().size() > 1) {
+                                        return maillageType == Maillage.NON_DEFINI;
+                                    } else {
+                                        return c.getMaillee() == maillageType;
+                                    }
+                                }
+                                return false;
+                            }
+                ).collect(Collectors.toList());
+            OptionalDouble average;
+            OptionalLong count;
+            if (useEditedInBoInformation) {
+                count = OptionalLong.of(filteredCatch.size());
+                average = filteredCatch.stream().mapToInt((Catch c) -> c.getEditedSize() / 10).average();
+            } else {
+                count = OptionalLong.of(filteredCatch.size());
+                average = filteredCatch.stream().mapToInt(Catch::getSize).average();
+            }
+            average.ifPresent(val -> averagePerMaillage.put(maillageType, Pair.of(count.getAsLong(), val)));
+        }
+        if (!averagePerMaillage.isEmpty()) {
+            speciesMonthlySizes.put(month, averagePerMaillage);
+        }
     }
 
     /**

@@ -67,9 +67,6 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
    protected NewsFisholaDao dao;
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected MailService mailService;
 
     /**
@@ -160,34 +157,38 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
                                 n.getIsNational()
                                 || dao.getLakeIds(n.getId()).stream().anyMatch(favoriteLakes::contains))
                         .toList();
-                if (!newsToNotifyByMail.isEmpty()) {
-                    String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
-                    if (newsToNotifyByMail.size() > 1) {
-                        subject += " et autres actualités";
-                    }
-                    for (News news : newsToNotifyByMail) {
-                        if (newsToNotifyByMail.size() > 1) {
-                            htmlContent.append("<h1>").append(news.getName()).append("</h1>");
-                        }
-                        htmlContent.append(news.getContent());
-                        dao.notifySent(news);
-                    }
-                    htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
-
-
-                    String baseURL = "https://fishola.fr";
-                    if (config.backendBaseUrl().isPresent()) {
-                        baseURL = config.backendBaseUrl().get();
-                    }
-                    String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
-                    String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
-                    ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
-                            .subject(subject)
-                            .addTos(user.getEmail())
-                            .build();
-                    mailService.sendMail(mail);
-                }
+                notifySingleUserByCourrielAboutNews(user, newsToNotifyByMail, htmlContent);
             }
+        }
+    }
+
+    private void notifySingleUserByCourrielAboutNews(FisholaUser user, List<News> newsToNotifyByMail, StringBuilder htmlContent) {
+        if (!newsToNotifyByMail.isEmpty()) {
+            String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
+            if (newsToNotifyByMail.size() > 1) {
+                subject += " et autres actualités";
+            }
+            for (News news : newsToNotifyByMail) {
+                if (newsToNotifyByMail.size() > 1) {
+                    htmlContent.append("<h1>").append(news.getName()).append("</h1>");
+                }
+                htmlContent.append(news.getContent());
+                dao.notifySent(news);
+            }
+            htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
+
+
+            String baseURL = "https://fishola.fr";
+            if (config.backendBaseUrl().isPresent()) {
+                baseURL = config.backendBaseUrl().get();
+            }
+            String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
+            String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
+            ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
+                    .subject(subject)
+                    .addTos(user.getEmail())
+                    .build();
+            mailService.sendMail(mail);
         }
     }
 }

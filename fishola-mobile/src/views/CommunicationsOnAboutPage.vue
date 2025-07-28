@@ -134,10 +134,11 @@ export default class CommunicationsOnAboutPage extends Vue {
     .news-row {
       padding-left: @margin-x-large;
       padding-right: @margin-x-large;
+      padding-top: 30px;
+      padding-bottom: 30px;
       height: fit-content;
       width: 350px;
       margin: 15px;
-      padding: 30px;
       background-color: @white;
       border: 1px solid #c4c4c4;
       .news-title {
