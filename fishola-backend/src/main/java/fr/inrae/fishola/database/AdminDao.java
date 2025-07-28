@@ -22,13 +22,19 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
+import fr.inrae.fishola.entities.tables.records.FisholaAdminRecord;
+import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
+import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
+import org.jooq.DSLContext;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +44,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_LAKES;
 
 @Singleton
 public class AdminDao extends AbstractFisholaDao {
@@ -98,23 +105,58 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin) {
+    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, UUID[] lakeIds) {
         String email = rawEmail.toLowerCase();
-        withContext(context -> context.insertInto(FISHOLA_ADMIN,
+        FisholaAdminRecord inserted = withContext(context -> context.insertInto(FISHOLA_ADMIN,
                         FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN)
                 .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin)
-                .execute());
+                .returning(FISHOLA_ADMIN.ID)
+                .fetchOne());
+        UUID insertedAdminId = inserted.getId();
+        withDaoNoResult(FisholaAdminLakesDao.class, dao -> {
+            for (UUID lakeId: lakeIds) {
+                dao.insert(new FisholaAdminLakes(insertedAdminId, lakeId));
+            }
+        });
     }
 
-    public void updateUser(FisholaAdmin existingUser) {
-        withDaoNoResult(FisholaAdminDao.class, dao -> dao.update(existingUser));
-    }
-
-    public void deleteUser(FisholaAdmin existingUser) {
-        withDaoNoResult(FisholaAdminDao.class, dao -> dao.delete(existingUser));
-    }
 
     public Set<UUID> getAllowedLakes(UUID adminID) {
         return withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream().map(FisholaAdminLakes::getLakeId).collect(Collectors.toSet()));
+    }
+
+    public AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {
+        ImmutableAdminProfileForAdmin result = ImmutableAdminProfileForAdmin.builder()
+                .id(input.getId())
+                .email(input.getEmail())
+                .canCreateAdmin(input.getCanCreateAdmin())
+                .isNationalAdmin(input.getIsNationalAdmin())
+                .lakeIds(this.getAllowedLakes(input.getId()))
+                .build();
+        return result;
+    }
+
+    public void updateAdmin(UUID adminId, Boolean canCreateAdmin, Set<UUID> lakeIds) {
+        DSLContext context = newContext();
+        context.update(FISHOLA_ADMIN)
+                .set(FISHOLA_ADMIN.CAN_CREATE_ADMIN, canCreateAdmin)
+                .where(FISHOLA_ADMIN.ID.equal(adminId))
+                .returning(FISHOLA_ADMIN.ID)
+                .fetchOne();
+
+        context.deleteFrom(FISHOLA_ADMIN_LAKES)
+        .where(FISHOLA_ADMIN_LAKES.FISHOLA_ADMIN_ID.equal(adminId))
+        .execute();
+
+        withDaoNoResult(FisholaAdminLakesDao.class, dao -> {
+            for (UUID lakeId : lakeIds) {
+                dao.insert(new FisholaAdminLakes(adminId, lakeId));
+            }
+        });
+    }
+
+
+    public void deleteAdmin(FisholaAdmin existingUser) {
+        withDaoNoResult(FisholaAdminDao.class, dao -> dao.delete(existingUser));
     }
 }

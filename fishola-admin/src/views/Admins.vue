@@ -22,11 +22,12 @@
   <Referential
     v-if="loaded"
     name="Administrateurs"
-    url="/v1/admin/"
+    url="/v1/admin"
+     @elementsLoaded="computeLakeNames"
     :columns="userColumns"
     :createElement="createAdmin"
     :editable="canCreateAdmins"
-    :canDelete="canCreateAdmins"
+    :canDelete="false"
   ></Referential>
 </template>
 
@@ -42,6 +43,7 @@ import { Component, Vue } from "vue-property-decorator";
   }
 })
 export default class UsersVue extends Vue {
+  lakesIdToNameMap = new Map<string, string>();
   loaded = false;
   canCreateAdmins = false
   userColumns: any[] = [
@@ -60,7 +62,8 @@ export default class UsersVue extends Vue {
         lakesOptions.push({
           id: l.id,
           label: l.name
-        })
+        });
+        this.lakesIdToNameMap.set(l.id, l.name);
       });
 
      this.userColumns = [
@@ -75,11 +78,21 @@ export default class UsersVue extends Vue {
         field: "email",
         label: "E-mail",
         searchable: true,
+        readOnlyIfFunction: (admin) => { return admin.id; }
+      },
+       {
+        field: "lakeNames",
+        label: "Lacs",
+        searchable: true,
+        hiddenInPopup: true
       },
       {
         field: "password",
         label: "Mot de passe",
-        visible: false
+        visible: false,
+         showItemIfFunction: (admin) => {
+          return !admin.id;
+        },
       },
       {
         field: "lakeIds",
@@ -87,6 +100,9 @@ export default class UsersVue extends Vue {
         isArray: true,
         visible: false,
         arrayOptions: lakesOptions,
+        possibleValuesForItemFunction: (admin) => {
+          return admin.lakeIds ?? [];
+        },
       },
       {
         field: "isNationalAdmin",
@@ -111,13 +127,19 @@ export default class UsersVue extends Vue {
     ];
     this.loaded = true;
   }
+  computeLakeNames(admins: any[]) {
+    admins.forEach(admin => {
+     admin.lakeNames = admin.isNationalAdmin ?
+        "National" :
+        admin.lakeIds.map((lakeId: string) => this.lakesIdToNameMap.get(lakeId)).join(", ");
+    });
+  }
 
   createAdmin(): any {
     return {
       name: "Nouvel administrateur",
-      builtIn: true,
-      exportAs: "NouvelAdministrateur",
-      mandatorySize: true
+      isNationalAdmin: false,
+      lakeIds: []
     };
   }
 }
