@@ -31,21 +31,19 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.jooq.exception.DataAccessException;
 
 import jakarta.inject.Inject;
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -61,38 +59,21 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
-public class SecurityResource extends AbstractFisholaResource {
+public class SecurityResource extends AbstractSecurityFisholaResource {
 
     public static final String UNKNOWN_USER_ERR_MESSAGE = "Utilisateur inconnu";
-    @Inject
-    protected Logger log;
 
-    private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
-    private static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
     private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
-
-    @Inject
-    protected MailService mailService;
+    private static final String CLAIM_SHARE_TRIPS = "share_trips";
 
     @Inject
     protected TripsDao tripsDao;
-
-    protected Optional<String> validatePassword(String password) {
-        if (StringUtils.isEmpty(password)) {
-            return Optional.of("Le mot de passe est obligatoire");
-        } else if (password.length() < 6) {
-            return Optional.of("Le mot de passe doit comporter au moins 6 caractères");
-        }
-        return Optional.empty();
-    }
 
     @PUT
     @Path("/register")
@@ -106,7 +87,7 @@ public class SecurityResource extends AbstractFisholaResource {
         Map<String, String> validationErrors = new HashMap<>();
 
         if (StringUtils.isEmpty(bean.firstName)) {
-            validationErrors.put("firstName", "Le prénom est obligatoire");
+            validationErrors.put(CLAIM_FIRST_NAME, "Le prénom est obligatoire");
         }
 
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
@@ -138,6 +119,7 @@ public class SecurityResource extends AbstractFisholaResource {
         claims.put(CLAIM_FIRST_NAME, bean.firstName);
         claims.put(CLAIM_LAST_NAME, bean.lastName);
         claims.put(CLAIM_RECEIVE_MAIL_NOTIFICATIONS, ""+ bean.acceptsMailNotifications);
+        claims.put(CLAIM_SHARE_TRIPS, ""+ bean.acceptsShareTrips);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
@@ -166,19 +148,6 @@ public class SecurityResource extends AbstractFisholaResource {
         }
 
         return Response.ok().build();
-    }
-
-    protected boolean isEmailInValidFormat(String email) {
-        try {
-            InternetAddress internetAddress = new InternetAddress(email);
-            internetAddress.validate();
-            return true;
-        } catch (AddressException ex) {
-            if (log.isInfoEnabled()) {
-                log.infof("'%s' does not seem to be a valid email address", email);
-            }
-            return false;
-        }
     }
 
     /**
@@ -239,7 +208,8 @@ public class SecurityResource extends AbstractFisholaResource {
                     getClaimOrNull.apply(CLAIM_LAST_NAME),
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
-                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS))
+                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS)),
+                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_SHARE_TRIPS))
             );
 
             return true;
@@ -463,6 +433,7 @@ public class SecurityResource extends AbstractFisholaResource {
 
     protected UserProfile toUserProfile(FisholaUser input) {
         ImmutableUserProfile.Builder builder = ImmutableUserProfile.builder()
+                .id(input.getId())
                 .email(input.getEmail())
                 .firstName(input.getFirstName())
                 .lastName(Optional.ofNullable(input.getLastName()))
@@ -470,6 +441,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 .gender(Optional.ofNullable(input.getGender()))
                 .sampleBaseId(encodeSampleBaseId(input.getSampleBaseId()))
                 .acceptsMailNotifications(input.getAcceptsMailNotifications())
+                .acceptsShareTrips(input.getAcceptsShareTrips())
                 .lastNewsSeenDate(input.getLastNewsSeenDate());
         ImmutableUserProfile result = builder.build();
         return result;
@@ -514,6 +486,7 @@ public class SecurityResource extends AbstractFisholaResource {
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
         user.setAcceptsMailNotifications(profile.acceptsMailNotifications());
+        user.setAcceptsShareTrips(profile.acceptsShareTrips());
         user.setLastNewsSeenDate(profile.lastNewsSeenDate());
 
         Map<String, String> validationErrors = validateProfile(user);
@@ -602,6 +575,18 @@ public class SecurityResource extends AbstractFisholaResource {
         return response;
     }
 
+    @PUT
+    @Path("/favorite-lakes")
+    public Response modifyFavoriteLakes(Set<UUID> newFavoriteLakeUUIDs) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        Optional<FisholaUser> optional = usersDao.findById(userId);
+        FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
+        usersDao.updateFavoriteLakes(user.getId(), newFavoriteLakeUUIDs);
+        Response response = noContent(userIdAndRenewal);
+        return response;
+    }
+
     protected UserProfileForAdmin toUserProfileForAdmin(FisholaUser input) {
         ImmutableUserProfileForAdmin result = ImmutableUserProfileForAdmin.builder()
                 .id(input.getId())
@@ -613,6 +598,7 @@ public class SecurityResource extends AbstractFisholaResource {
                 .excludeFromExports(input.getExcludeFromExports())
                 .createdOn(input.getCreatedOn())
                 .acceptsEmailNotifications(input.getAcceptsMailNotifications())
+                .acceptsShareTrips(input.getAcceptsShareTrips())
                 .build();
         return result;
     }
@@ -655,47 +641,4 @@ public class SecurityResource extends AbstractFisholaResource {
         usersDao.deleteUser(existingUser);
         return Response.noContent().build();
     }
-
-    @POST
-    @Path("/admin-login")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminLogin(LoginBean loginBean) {
-
-        if (config.adminPassword().equals(loginBean.password)) {
-
-            String token = jwtHelper.createAdminToken();
-
-            NewCookie loginCookie = createAdminTokenCookie(token);
-            Response result = Response.noContent()
-                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
-                .header("Set-Cookie", loginCookie+";SameSite=None")
-            .build();
-            return result;
-        } else {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-    }
-
-    @GET
-    @Path("/admin-check")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response adminCheck() {
-        checkIsAdmin();
-        Response result = Response.noContent().build();
-        return result;
-    }
-
-    @POST
-    @Path("/admin-logout")
-    public Response adminLogout() {
-        // Pour le logout on va générer un cookie qui va écraser/effacer le cookie normal
-        NewCookie logoutCookie = dropAdminTokenCookie();
-        Response result = Response.noContent()
-                // Cannot use cookie() method as SameSite is not yet supported in NewCookie (but is planned to be soon)
-                .header("Set-Cookie", logoutCookie+";SameSite=None")
-        .build();
-        return result;
-    }
-
 }

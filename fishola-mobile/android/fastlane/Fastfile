@@ -1,0 +1,58 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+versionName = "2.0.0"
+
+default_platform(:android)
+platform :android do
+
+  desc "Build a prod apk"
+  lane :build_prod_apk do
+    gradle(
+      task: "clean assembleRelease",
+      print_command: true,
+      properties: {
+        "org.gradle.java.home" => "/opt/java/openjdk",
+        "versCode" => 1,
+        "versName" => versionName
+      }
+    )
+  end
+
+  desc "Build and deploy prod aab"
+  lane :deploy_prod_aaab do
+    previous_build_number = google_play_track_version_codes(
+      package_name: "fr.inrae.fishola",
+      json_key: File.expand_path("../fishola-fastlane-playstore.json"),
+      track: "internal"
+    )[0]
+    versionCode = previous_build_number + 1
+    gradle(
+          task: "clean bundleRelease",
+          print_command: true,
+          properties: {
+            "org.gradle.java.home" => "/opt/java/openjdk",
+            "versCode" => versionCode,
+            "versName" => versionName
+          }
+    )
+    upload_to_play_store(track: 'internal')
+    puts "Aab created with version : "
+    puts versionName
+    puts " code "
+    puts versionCode
+    puts "(last known version was : "
+    previous_build_number
+  end
+end

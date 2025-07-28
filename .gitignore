@@ -27,6 +27,7 @@ doc/icons/.fontcustom-manifest.json
 /*/node_modules
 /*/dist
 package-lock.json
+stats.html
 
 # local env files
 /*/.env.local

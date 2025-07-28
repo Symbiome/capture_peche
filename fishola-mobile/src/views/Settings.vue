@@ -19,54 +19,47 @@
   #L%
   -->
 <template>
-  <div class="settings page-with-header-and-footer shifted-background">
-    <FisholaHeader />
-    <div class="page settings-page">
-      <div class="pane pane-only">
+  <div class="settings-page">
+    <div class="spinner-wrapper" v-if="loading">
+      <div class="spinner"></div>
+    </div>
 
-        <div class="spinner-wrapper" v-if="loading">
-          <div class="spinner"></div>
-        </div>
+    <div class="offline" v-if="!loading && offline">
+      <span>Les paramètres ne sont pas disponible sans connexion internet</span>
+    </div>
 
-        <div class="pane-content offline" v-if="!loading && offline">
-          <span>Les paramètres ne sont pas disponible sans connexion internet</span>
-        </div>
+    <div class="rounded" v-if="!loading && !offline">
+      <div class="settings-row" v-if="settings">
+        <span>Renseigner le poids des captures</span>
+        <FormToggle v-model="settings.promptWeight" />
+      </div>
 
-        <div class="pane-content rounded" v-if="!loading && !offline">
-          <h1 class="no-margin-pane">Paramètres</h1>
+      <div class="settings-row" v-if="settings">
+        <span>Effectuer des prélèvements</span>
+        <FormToggle v-model="settings.promptSamples" />
+      </div>
+      <div class="info" v-if="samplesDocumentationUrl">
+        Pour pouvoir effectuer des prélèvements, vous devez vous munir
+        d'un kit dans un des points de collecte :
+        <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
+      </div>
 
-          <div class="settings-row" v-if="settings">
-            <span>Renseigner le poids des captures</span>
-            <FormToggle v-model="settings.promptWeight" />
-          </div>
+      <div class="settings-row" v-if="currentAppVersion">
+        <span>
+          Version de l'application : <strong>{{ currentAppVersion }}</strong>
+          <span v-if="currentAppVersion == availableAppVersion"> (à jour)</span>
+          <span v-else-if="availableAppVersion">
+            <br />Une mise à jour est disponible sur le Store</span>
+        </span>
+        <div class="info">
 
-          <div class="settings-row" v-if="settings">
-            <span>Effectuer des prélèvements</span>
-            <FormToggle v-model="settings.promptSamples" /><br />
-
-          </div>
-          <div class="info" v-if="samplesDocumentationUrl">
-            Pour pouvoir effectuer des prélèvements, vous devez vous munir
-            d'un kit dans un des points de collecte :
-            <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
-          </div>
-
-          <div class="settings-row" v-if="currentAppVersion">
-            <span>
-              Version de l'application : <strong>{{ currentAppVersion }}</strong>
-              <span v-if="currentAppVersion == availableAppVersion"> (à jour)</span>
-              <span v-else-if="availableAppVersion">
-                <br />Une mise à jour est disponible sur le Store</span>
-            </span>
-            <div class="info">
-
-            </div>
-          </div>
-
-          <div class="bottom-page-spacer"></div>
         </div>
       </div>
+
     </div>
+    <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles"
+      text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
+      @click="becomeScaleCollector" />
     <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>
 </template>
@@ -84,12 +77,14 @@ import { Component, Watch, Vue } from 'vue-property-decorator';
 import DocumentationService from '../services/DocumentationService';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
+import BottomInducementView from '@/components/common/BottomInducement.vue';
 
 @Component({
   components: {
     FisholaHeader,
     FormToggle,
-    FisholaFooter
+    FisholaFooter,
+    BottomInducementView
   }
 })
 export default class SettingsView extends Vue {
@@ -166,6 +161,10 @@ export default class SettingsView extends Vue {
     }
   }
 
+  becomeScaleCollector() {
+    this.$root.$emit("open-feedback", "scale");
+  }
+
 }
 
 </script>
@@ -175,6 +174,7 @@ export default class SettingsView extends Vue {
 @import "../less/main";
 
 .settings-page {
+  height: 100%;
 
   .spinner-wrapper {
     width: 100%;

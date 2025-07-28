@@ -21,7 +21,11 @@ package fr.inrae.fishola.rest.mapper;
  * #L%
  */
 
+import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +33,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
@@ -38,15 +43,21 @@ import static io.restassured.RestAssured.given;
  * Ce test doit rester tel quel à moins de changer le code du front !
  */
 @QuarkusTest
-class LocalDateTimeFormatterTest {
+class LocalDateTimeFormatterTest extends AbstractFisholaTest {
+
+    @Inject
+    ReferentialDao referentialDao;
 
     @Test
+    @Transactional
     void testOnGlobalDashboard() {
         String formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy,M,d,H,m"));
+        UUID lakeId = this.referentialDao.listLakes().iterator().next().getId();
+        Integer year = 2024;
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/global-dashboard")
+                .get("/api/v1/global-dashboard?year="+year + "&lake=" + lakeId)
                 .then()
                 .statusCode(200)
                 .body(CoreMatchers.containsString("\"computedOn\":[" + formatted));

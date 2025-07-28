@@ -29,22 +29,13 @@
           <Running v-if="liveRunning" />
         </h1>
         <h1 class="hide-on-mobile no-margin-pane">
-          <BackButton
-            back-event="backButtonClicked"
-            v-on:backButtonClicked="editSpecies"
-          />
+          <BackButton back-event="backButtonClicked" v-on:backButtonClicked="editSpecies" />
           {{ trip.name }}
         </h1>
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
-            <CatchPreviewList
-              v-if="ready"
-              v-bind:modifiable="true"
-              v-bind:lakeId="trip.lakeId"
-              v-bind:catchs="trip.catchs"
-              v-on:newCatch="newCatch()"
-              v-on:openCatchFromId="openCatch($event)"
-            />
+            <CatchPreviewList v-if="ready" v-bind:modifiable="true" v-bind:lakeId="trip.lakeId"
+              v-bind:catchs="trip.catchs" v-on:newCatch="newCatch()" v-on:openCatchFromId="openCatch($event)" />
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
@@ -64,13 +55,8 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
-      button-text="Fin de pêche"
-      v-on:buttonClicked="finish"
-      shortcuts="back,step-3-4,giveup"
-      back-event="onBackButton"
-      v-on:onBackButton="editSpecies"
-    />
+    <FisholaFooter button-text="Fin de pêche" v-on:buttonClicked="finish" shortcuts="back,step-3-4,giveup"
+      back-event="onBackButton" v-on:onBackButton="editSpecies" />
   </div>
 </template>
 
@@ -123,8 +109,6 @@ export default class TripCatchsView extends Vue {
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
-  mounted() {}
-
   tripLoaded(someTrip: TripMain) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
@@ -145,7 +129,7 @@ export default class TripCatchsView extends Vue {
   }
 
   editSpecies() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-species",
       params: { id: this.id },
     });
@@ -173,7 +157,7 @@ export default class TripCatchsView extends Vue {
   }
 
   tripSaved() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
       params: { id: this.id },
     });
@@ -188,18 +172,18 @@ export default class TripCatchsView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 
   newCatch() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.id, catchId: Constants.NEW_CATCH_ID },
     });
   }
 
   openCatch(catchId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.id, catchId: catchId },
     });
@@ -254,13 +238,16 @@ export default class TripCatchsView extends Vue {
       @media (max-height: 610px) {
         height: 80px;
       }
+
       width: 100%;
 
       button {
         height: 44px;
+
         @media (max-height: 610px) {
           height: 35px;
         }
+
         font-style: normal;
         font-weight: bold;
         font-size: @fontsize-button;

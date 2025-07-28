@@ -55,26 +55,32 @@ export default class UsersVue extends Vue {
     {
       field: "firstName",
       label: "Prénom",
-      readOnly: true
+      readOnly: true,
+      searchable: true,
     },
     {
       field: "lastName",
       label: "Nom",
-      readOnly: true
+      readOnly: true,
+      searchable: true,
     },
     {
       field: "email",
       label: "E-mail",
-      readOnly: true
+      readOnly: true,
+      searchable: true,
     },
     {
       field: "gender",
       label: "Genre",
-      readOnly: true
+      readOnly: true,
+      searchable: true,
+      visible: false,
     },
     {
       field: "birthYear",
       label: "Année de naissance",
+      visible: false,
       readOnly: true
     },
     {
@@ -113,11 +119,12 @@ export default class UsersVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../less/main";
 
 .contact-button {
   position: absolute;
   right: 40px;
   top: 80px;
+  z-index: 2;
+  box-shadow: 0 0 5px 15px #fff;
 }
 </style>

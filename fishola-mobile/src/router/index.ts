@@ -28,8 +28,10 @@ import OfflineHome from "@/views/OfflineHome.vue";
 
 import Login from "@/views/Login.vue";
 import Register from "@/views/Register.vue";
-import TripsAndNews from "@/views/TripsAndNews.vue";
-import Dashboard from "@/views/Dashboard.vue";
+import TripsListAndMapView from "@/views/TripsListAndMap.vue";
+import SocialAndNewsView from "@/views/SocialAndNews.vue";
+import DashboardPersonalView from "@/views/DashboardPersonal.vue";
+import DashboardGlobalView from "@/views/DashboardGlobal.vue";
 
 import FishingLicences from "@/views/FishingLicences.vue";
 import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
@@ -55,7 +57,7 @@ import GaleryFull from "@/components/galery/GaleryFull.vue";
 import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
 
 import Settings from "@/views/Settings.vue";
-import Profile from "@/views/Profile.vue";
+import ProfileAndSettingsView from "@/views/ProfileAndSettings.vue";
 import ProfilePassword from "@/views/ProfilePassword.vue";
 
 import ResetPassword from "@/views/ResetPassword.vue";
@@ -106,9 +108,10 @@ const routes = [
     component: Register,
   },
   {
-    path: "/trips",
-    name: "trips",
-    component: TripsAndNews,
+    path: "/my-trips/:visualizationMode",
+    name: "my-trips",
+    props: true,
+    component: TripsListAndMapView,
   },
   {
     path: "/trips/new",
@@ -158,9 +161,16 @@ const routes = [
     props: true,
   },
   {
-    path: "/dashboard",
-    name: "dashboard",
-    component: Dashboard,
+    path: "/dashboard-personal/:visualizationMode",
+    name: "dashboard-personal",
+    props: true,
+    component: DashboardPersonalView,
+  },
+  {
+    path: "/dashboard-global/:visualizationMode",
+    name: "dashboard-global",
+    props: true,
+    component: DashboardGlobalView,
   },
   {
     path: "/documentation",
@@ -174,11 +184,6 @@ const routes = [
     meta: { public: true },
     component: NewsDetailsVue,
     props: true,
-  },
-  {
-    path: "/licences",
-    name: "licences",
-    component: FishingLicences,
   },
   {
     path: "/licences/new",
@@ -210,15 +215,22 @@ const routes = [
     component: Settings,
   },
   {
+    path: "/community/:visualizationMode",
+    name: "community",
+    props: true,
+    component: SocialAndNewsView,
+  },
+  {
     path: "/credits",
     name: "credits",
     meta: { public: true },
     component: Credits,
   },
   {
-    path: "/profile",
+    path: "/profile/:visualizationMode",
     name: "profile",
-    component: Profile,
+    props: true,
+    component: ProfileAndSettingsView,
   },
   {
     path: "/profile-password",

@@ -57,22 +57,10 @@
       v-on:trip-selected="tripSelected"
       v-on:trip-unselected="tripUnselected"
     />
-    <div class="bottom">
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
-      <FisholaFooter
-        shortcuts="logout,dashboard,home"
-        v-bind:hideButton="hasRunningTrip"
-        v-bind:button-icon="getButtonIcon()"
-        v-bind:button-text="getButtonText()"
-        v-on:buttonClicked="footerButtonClicked"
-        selected="home"
-      />
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { TripLight } from "@/pojos/BackendPojos";
@@ -85,10 +73,9 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTripsHeader from "@/components/my-trips/MyTripsHeader.vue";
 import MyTripsSearch from "@/components/my-trips/MyTripsSearch.vue";
 import MyTripsList from "@/components/my-trips/MyTripsList.vue";
-import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Watch, Vue } from "vue-property-decorator";
+import { Component, Watch, Vue, Prop } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -96,11 +83,13 @@ import { Component, Watch, Vue } from "vue-property-decorator";
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
-    RunningOverlay,
     FisholaFooter,
   },
 })
 export default class MyTripsView extends Vue {
+  @Prop()
+  hasRunningTrip: boolean;
+  
   trips: TripLight[] = [];
   loading: boolean = true;
   offline: boolean = false;
@@ -112,8 +101,6 @@ export default class MyTripsView extends Vue {
   totalCount: number = -1;
 
   refreshTimer: any = undefined;
-
-  hasRunningTrip: boolean = false;
 
   selectedTripIds: string[] = [];
 
@@ -154,9 +141,6 @@ export default class MyTripsView extends Vue {
 
   created() {
     this.loadTrips();
-    TripsService.hasRunningTrip().then(
-      (result: boolean) => (this.hasRunningTrip = result)
-    );
   }
 
   mounted() {
@@ -195,7 +179,7 @@ export default class MyTripsView extends Vue {
     console.error("Erreur au chargement des sorties", data);
     if (data && data.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
   }
 
@@ -236,13 +220,13 @@ export default class MyTripsView extends Vue {
     Helpers.getDeviceType().then((source) => {
       if (source == "web") {
         TripsService.newAfterwardsTrip().then((id: string) => {
-          RouterUtils.pushRouteNoDuplicate(router, {
+          RouterUtils.pushRouteNoDuplicate(this.$router, {
             name: "trip-meta",
             params: { id: id },
           });
         });
       } else {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips/new");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/new");
       }
     });
   }
@@ -306,7 +290,6 @@ export default class MyTripsView extends Vue {
 
       color: @pelorous;
       margin-top: @margin-medium;
-      margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
       line-height: calc(
@@ -346,7 +329,7 @@ export default class MyTripsView extends Vue {
       position: absolute;
       bottom: 0px;
       width: calc(100% - @desktop-menu-width);
-      margin-left: -66px;
+      margin-left: 0;
     }
   }
 }

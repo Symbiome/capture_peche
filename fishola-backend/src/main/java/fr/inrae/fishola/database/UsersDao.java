@@ -22,19 +22,30 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteLakesDao;
+import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteLakes;
+import fr.inrae.fishola.entities.tables.pojos.Lake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.jboss.logging.Logger;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_LAKES;
+import static fr.inrae.fishola.entities.Tables.LAKE;
 
 @Singleton
 public class UsersDao extends AbstractFisholaDao {
@@ -90,11 +101,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String firstName, String lastName, String rawEmail, String passwordHashed, boolean acceptsMailNotifications) {
+    public void create(String firstName, String lastName, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, boolean acceptsShareTrips) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
-                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS)
-                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications)
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.ACCEPTS_SHARE_TRIPS)
+                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, acceptsShareTrips)
                 .execute());
     }
 
@@ -109,6 +120,7 @@ public class UsersDao extends AbstractFisholaDao {
     public void safeDeleteByAnonymiseUser(FisholaUser existingUser ) {
         // Anonymise user but keep his fishing data so that we can still make stat
         existingUser.setAcceptsMailNotifications(false);
+        existingUser.setAcceptsShareTrips(false);
         existingUser.setBirthYear(1920);
         existingUser.setEmail(existingUser.getId().toString().replace("-", "") + "@anonymised.fr");
         existingUser.setGender(Gender.NonBinary);
@@ -129,5 +141,35 @@ public class UsersDao extends AbstractFisholaDao {
 
     public List<FisholaUser> findAllUsersAllowingCourriel() {
        return withDao(FisholaUserDao.class, dao -> dao.fetchByAcceptsMailNotifications(true));
+    }
+
+    public List<Lake> getFavoriteLakes(UUID userUUID) {
+        return withContext(context-> context.select(LAKE.asterisk())
+        .from(LAKE)
+        .join(FISHOLA_USER_FAVORITE_LAKES)
+        .on(FISHOLA_USER_FAVORITE_LAKES.FISHOLA_USER_ID.eq(userUUID)
+                .and(LAKE.ID.eq(FISHOLA_USER_FAVORITE_LAKES.LAKE_ID)))
+                .orderBy(LAKE.NAME)
+        .fetchInto(Lake.class));
+    }
+
+    public void updateFavoriteLakes(UUID userUUID, Set<UUID> newFavoriteLakeIds) {
+        withDaoNoResult(FisholaUserFavoriteLakesDao.class, dao -> {
+            List<FisholaUserFavoriteLakes> oldFavoriteLakes =  dao.fetchByFisholaUserId(userUUID);
+            Set<UUID> oldFavoriteLakeIds = oldFavoriteLakes.stream()
+                    .map(FisholaUserFavoriteLakes::getLakeId)
+                    .collect(Collectors.toSet());
+
+            // Delete removed favorites
+            oldFavoriteLakes.stream()
+                    .filter(fav -> !newFavoriteLakeIds.contains(fav.getLakeId()))
+                    .forEach(dao::delete);
+
+            // Add new favorites
+            newFavoriteLakeIds.stream()
+                    .filter(id -> !oldFavoriteLakeIds.contains(id))
+                    .map(id -> new FisholaUserFavoriteLakes(userUUID, id))
+                    .forEach(dao::insert);
+        });
     }
 }

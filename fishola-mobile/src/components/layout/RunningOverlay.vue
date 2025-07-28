@@ -39,7 +39,6 @@
 import TripsService from "@/services/TripsService";
 import Constants from "@/services/Constants";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
@@ -87,7 +86,7 @@ export default class RunningOverlay extends Vue {
   }
 
   goToRunningTrip() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-catchs",
       params: { id: Constants.RUNNING_ID },
     });
@@ -98,7 +97,7 @@ export default class RunningOverlay extends Vue {
   }
 
   tripSaved() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
       params: { id: Constants.RUNNING_ID },
     });

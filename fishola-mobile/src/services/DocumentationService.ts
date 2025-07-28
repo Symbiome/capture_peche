@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { Editorial, DocumentationLight, News } from "@/pojos/BackendPojos";
+import { Editorial, DocumentationLight, NewsBean } from "@/pojos/BackendPojos";
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import Constants from "@/services/Constants";
 
@@ -50,11 +50,11 @@ export default class DocumentationService extends AbstractFisholaService {
     return this.backendGetWithCache("/v1/documentations");
   }
 
-  static getNews(): Promise<News[]> {
-    return this.backendGetWithCache("/v1/news");
+  static getNews(lakeId: string): Promise<NewsBean[]> {
+    return this.backendGetWithCache("/v1/news/lake/" + lakeId);
   }
 
-  static getSingleNews(newsId: string): Promise<News> {
+  static getSingleNews(newsId: string): Promise<NewsBean> {
     return this.backendGet("/v1/news/" + newsId);
   }
 

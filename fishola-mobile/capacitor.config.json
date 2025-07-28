@@ -18,6 +18,9 @@
       "iosSpinnerStyle": "large",
       "spinnerColor": "#1e9bc4",
       "showSpinner": true
+    },
+     "EdgeToEdge": {
+      "backgroundColor": "#0A3C4D"
     }
   }
 }

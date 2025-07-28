@@ -66,9 +66,6 @@ export default class FormToggle extends Vue {
 
   readonlyValues:string[] = [];
 
-  created() {
-  }
-
   toggle() {
     if (!this.readonly) {
       this.$emit('input', !this.value);

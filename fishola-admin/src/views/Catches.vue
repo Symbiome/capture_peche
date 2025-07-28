@@ -268,12 +268,12 @@ export default class LakesVue extends Vue {
 
   async exportCsv() {
     let csvContent = await BackendService.backendGetRaw("/v1/trips/export");
-    var hiddenElement = document.createElement("a");
+    const hiddenElement = document.createElement("a");
     hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
     hiddenElement.target = "_blank";
     const d = new Date();
-    var mm = d.getMonth() + 1;
-    var dd = d.getDate();
+    const mm = d.getMonth() + 1;
+    const dd = d.getDate();
     let dateString =
       d.getFullYear() +
       "-" +
@@ -293,7 +293,6 @@ export default class LakesVue extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../less/main";
 
 .clickable {
   cursor: pointer;

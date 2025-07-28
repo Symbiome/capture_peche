@@ -102,11 +102,7 @@ export default class ProfilePasswordView extends Vue {
 
   bean: UpdatePasswordBean = { currentPassword: "", newPassword: "" };
   confirm: string = "";
-
-  created() {}
-
-  mounted() {}
-
+  
   cleanValidationErros() {
     if (this.validationErrors) {
       const keys = Object.keys(this.validationErrors);
@@ -133,7 +129,7 @@ export default class ProfilePasswordView extends Vue {
   }
 
   backToProfile() {
-    RouterUtils.pushRouteNoDuplicate(router, "profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 
   onError(response: any) {

@@ -233,11 +233,11 @@ export default abstract class AbstractFisholaService {
         xhr.open('PUT', apiUrl, true);
         xhr.withCredentials = true;
         xhr.onload = function() {
-          if (this.status == 200 || this.status == 201) {
+          if (this.status == 200) {
             const responseText = this['responseText'];
             const parsed = JSON.parse(responseText);
             resolve(parsed);
-          } else if (this.status == 204) {
+          } else if (this.status == 204 || this.status == 201) {
             resolve(undefined);
           } else {
             const result = AbstractFisholaService.wrapResponseReject(this);

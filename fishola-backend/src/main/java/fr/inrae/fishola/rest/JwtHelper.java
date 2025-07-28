@@ -185,14 +185,12 @@ public class JwtHelper {
         }
     }
 
-    public String createAdminToken() {
+    public String createAdminToken(UUID adminID) {
 
         if (log.isInfoEnabled()) {
-            log.info("Création d'un token JWT vide (pour l'admin)");
+            log.info("Création d'un token admin (pour l'admin " + adminID + ")");
         }
-
-        // On utilise un UUID comme subject aléatoire pour ce token
-        String result = createToken0(UUID.randomUUID());
+        String result = createToken0(adminID);
         return result;
 
     }

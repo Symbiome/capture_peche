@@ -60,10 +60,8 @@
       </div>
     </div>
     <div class="bottom">
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
-
       <FisholaFooter
-        shortcuts="back,credits,documentation"
+        shortcuts="logout,dashboard,home"
         selected="documentation"
       />
     </div>
@@ -74,35 +72,23 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-
-import TripsService from "@/services/TripsService";
-import { News } from "@/pojos/BackendPojos";
+import { NewsBean } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
-import router from "../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
     FisholaHeader,
-    RunningOverlay,
     FisholaFooter,
   },
 })
 export default class NewsView extends Vue {
-  @Prop() news: News[];
+  @Prop() news: NewsBean[];
 
-  hasRunningTrip: boolean = false;
-
-  mounted() {
-    TripsService.hasRunningTrip().then(
-      (result: boolean) => (this.hasRunningTrip = result)
-    );
-  }
-
-  getMiniatureURl(news: News) {
+  getMiniatureURl(news: NewsBean) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {
@@ -125,7 +111,7 @@ export default class NewsView extends Vue {
   }
 
   showNewsDetails(newsId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, "/news/" + newsId);
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/news/" + newsId);
   }
 }
 </script>
@@ -139,6 +125,11 @@ export default class NewsView extends Vue {
 .news {
   cursor: pointer;
   padding-top: 20px;
+
+  overflow-y: scroll;
+  height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px - 76px - env(safe-area-inset-bottom) );
+  padding-bottom: @margin-large;
+
   .news-holder {
     border-bottom: 1px solid @gainsboro;
     margin-bottom: 40px;
@@ -146,9 +137,18 @@ export default class NewsView extends Vue {
       display: flex;
       padding-left: @margin-x-large;
       padding-right: @margin-x-large;
+      @media (max-width: 768px) {
+        padding-left: @margin-x-small;
+        padding-right: @margin-x-small;
+        flex-direction: column;
+        align-items: center;
+      }
+
       .news-pic {
-        width: 20vw;
-        height: 20vw;
+        @media (min-width: 768px) {
+          width: 20vw;
+          height: 20vw;
+        }
         max-width: 20vh;
         max-height: 20vh;
         object-fit: cover;
@@ -156,6 +156,9 @@ export default class NewsView extends Vue {
       .right-content {
         width: 100%;
         padding-left: 30px;
+        @media (max-width: 768px) {
+          padding-left: 0;
+        }
         .publication-date {
           padding-top: 10px;
           display: flex;
@@ -173,6 +176,10 @@ export default class NewsView extends Vue {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    @media (max-width: 768px) {
+        padding-left: @margin-x-small;
+        padding-right: @margin-x-small;
+    }
   }
 
   .read-more {

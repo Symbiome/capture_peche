@@ -22,5 +22,5 @@ cp output/Fishola-Icons.woff2 ../../fishola-mobile/public/fonts/
 cp output/Fishola-Icons.eot ../../fishola-mobile/public/fonts/
 
 # Installe le CSS généré après l'avoir rectifié
-cat output/Fishola-Icons.css | sed 's|url("./Fishola-Icons|url("/fonts/Fishola-Icons|g' > ../../fishola-mobile/src/less/_icons.less
+cat output/Fishola-Icons.css | sed 's|url("./Fishola-Icons|url("~/public/fonts/Fishola-Icons|g' > ../../fishola-mobile/src/less/_icons.less
 

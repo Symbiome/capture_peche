@@ -92,6 +92,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
+import ProfileService from "@/services/ProfileService";
 
 @Component({
   components: {
@@ -253,10 +254,13 @@ export default class TripMetaView extends Vue {
   }
 
   tripSaved() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-species",
       params: { id: this.id },
     });
+    if (this.trip.lakeId) {
+      ProfileService.addFavoriteLakeIfNotAlreadyFavorite(this.trip.lakeId);
+    }
   }
 
   giveup() {
@@ -268,7 +272,7 @@ export default class TripMetaView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 }
 </script>

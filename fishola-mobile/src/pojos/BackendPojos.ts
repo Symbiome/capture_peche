@@ -2,7 +2,7 @@
  * #%L
  * Fishola :: Mobile
  * %%
- * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -98,6 +98,7 @@ export interface Lake extends Serializable {
     exportAs: string;
     latitude: number;
     longitude: number;
+    lakeCode: string;
 }
 
 export interface ReleasedFishState extends Serializable {
@@ -147,7 +148,7 @@ export interface DocumentationLight {
     url: string;
 }
 
-export interface News extends Serializable {
+export interface NewsBean {
     id: string;
     name: string;
     content: string;
@@ -155,6 +156,8 @@ export interface News extends Serializable {
     datePublicationFin: Date;
     dateNotificationSent: Date;
     miniatureId: string;
+    isNational: boolean;
+    lakeIds: string[];
 }
 
 export interface UserSettings {
@@ -211,7 +214,7 @@ export interface Dashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
-    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } };
     picturesPerTrip: PicturePerTripBean[];
 }
 
@@ -222,8 +225,13 @@ export interface GlobalDashboard {
     speciesAliases: { [index: string]: string[] };
     orderedMonths: Month[];
     monthlySizes: { [index: string]: { [P in Month]?: number } };
-    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: number } } };
+    monthlySizesPerMaillage: { [index: string]: { [P in Month]?: { [P in Maillage]?: { [index: string]: number } } } };
     computedOn: Date;
+}
+
+export interface EvolutionMetricsForLake {
+    catchCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: { [index: string]: number } } } };
+    tripCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: number } } };
 }
 
 export interface LicenceFromClientBean {
@@ -239,6 +247,32 @@ export interface LicenceResponseBean {
     userId: string;
     expirationDate: Date;
     type: LicenceType;
+}
+
+export interface CatchMarker {
+    id: string;
+    date: Date;
+    tripId: string;
+    tripName: string;
+    specieName: string;
+    lakeName: string;
+    latitude: number;
+    longitude: number;
+    size: number;
+    weight: number;
+    maillage: Maillage;
+    hasValidCoordinates: boolean;
+}
+
+export interface TripSocial {
+    id: string;
+    tripName: string;
+    userName: string;
+    lakeName: string;
+    date: Date;
+    durationInSeconds: number;
+    socialReactions: TripSocialReaction[];
+    catchesCountPerMaillage: { [index: string]: { [P in Maillage]?: number } };
 }
 
 export interface Serializable {
@@ -258,6 +292,13 @@ export interface PicturePerTripBean {
     pictureURLs: string[];
 }
 
+export interface TripSocialReaction extends Serializable {
+    tripId: string;
+    userId: string;
+    message: string;
+    reaction: SocialReaction;
+}
+
 export type TripMode = "Live" | "Afterwards";
 
 export type TripType = "Border" | "Craft";
@@ -269,3 +310,5 @@ export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";
+
+export type SocialReaction = "LIKE" | "LOVE" | "LETS_MEET";

@@ -3,19 +3,20 @@ include:
     file: ci.yml
 
 variables:
-  ANDROID_COMPILE_SDK: "29"
-  ANDROID_BUILD_TOOLS: "29.0.3"
-  ANDROID_SDK_TOOLS: "6200805"
+  ANDROID_COMPILE_SDK: "34"
+  ANDROID_BUILD_TOOLS: "34.0.0"
+  ANDROID_SDK_TOOLS: "6858069"
 
 stages:
   - build
   - package
+  - package_mobile
   - deploy
   - check-releasable
   - sonar
 
 build:compile:
-  image: maven:3.8-eclipse-temurin-17
+  image: maven:3.8-eclipse-temurin-21
   stage: build
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
@@ -38,89 +39,6 @@ build:compile:
     - if: $CI_COMMIT_BRANCH =~ /^(?:master|develop)/
     - if: $CI_COMMIT_TAG
   tags:
-    - docker
-
-# must be run after the build stage
-package:android-demo:
-  image: openjdk:11.0-jdk
-  stage: package
-  when: manual
-  cache:
-    paths:
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-  script:
-    - apt-get --quiet update --yes
-    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-    - unzip -d android-sdk-linux android-sdk.zip
-    - export ANDROID_HOME=$PWD/android-sdk-linux
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
-    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
-    - chmod +x fishola-mobile/android/gradlew
-    # temporarily disable checking for EPIPE error and use yes to accept all licenses
-    - set +o pipefail
-    - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-    - set -o pipefail
-    - cd fishola-mobile
-    - mv target/dist-demo target/dist
-    - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
-    - cd android
-    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} > app/signin.properties
-    - ./gradlew clean
-    - ./gradlew assembleDemo
-    - cp app/build/outputs/apk/demo/release/*.apk ../../
-  artifacts:
-    name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - ./*.apk
-    expire_in: 2 hours
-  tags:
-    - sticky
-
-# must be run after the build stage
-package:android-production:
-  image: openjdk:11.0-jdk
-  stage: package
-  rules:
-    - if: $CI_COMMIT_TAG
-  cache:
-    paths:
-      - fishola-mobile/node
-      - fishola-mobile/node_modules
-  script:
-    - apt-get --quiet update --yes
-    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
-    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
-    - unzip -d android-sdk-linux android-sdk.zip
-    - export ANDROID_HOME=$PWD/android-sdk-linux
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
-    - echo y | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
-    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
-    - chmod +x fishola-mobile/android/gradlew
-    # temporarily disable checking for EPIPE error and use yes to accept all licenses
-    - set +o pipefail
-    - yes | android-sdk-linux/tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
-    - set -o pipefail
-    - cd fishola-mobile
-    - mv target/dist-mobile target/dist
-    - ./node/node node/node_modules/npm/bin/npx-cli.js cap copy
-    - cd android
-    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
-    - cat ${SIGNING_CONFIG} > app/signin.properties
-    - ./gradlew clean
-    - ./gradlew assembleProduction
-    - cp app/build/outputs/apk/production/release/*.apk ../../
-  artifacts:
-    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
-    paths:
-      - ./*.apk
-    expire_in: 2 weeks
-  tags:
     - sticky
 
 package:docker-demo:
@@ -137,24 +55,6 @@ package:docker-demo:
     - docker push $CI_REGISTRY_IMAGE:backend-demo
     - docker push $CI_REGISTRY_IMAGE:web-demo
     - docker push $CI_REGISTRY_IMAGE:admin-demo
-    - docker logout $CI_REGISTRY
-  tags:
-    - docker
-
-package:docker-opencv:
-  image: docker:20
-  stage: package
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "feature/opencv.js" && $CI_PIPELINE_SOURCE != "schedule"'
-      when: always
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --file fishola-backend/src/main/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:backend-opencv fishola-backend
-    - docker build --file fishola-mobile/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:web-opencv fishola-mobile
-    - docker build --file fishola-admin/docker/Dockerfile.demo -t $CI_REGISTRY_IMAGE:admin-opencv fishola-admin
-    - docker push $CI_REGISTRY_IMAGE:backend-opencv
-    - docker push $CI_REGISTRY_IMAGE:web-opencv
-    - docker push $CI_REGISTRY_IMAGE:admin-opencv
     - docker logout $CI_REGISTRY
   tags:
     - docker
@@ -189,45 +89,192 @@ deploy:demo:
     - wget -O- https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
-  image: maven:3.8-eclipse-temurin-17
+  image: maven:3.8-eclipse-temurin-21
   stage: sonar
   when: manual
   script:
     - mvn -e -U clean verify -DskipRelease org.sonarsource.scanner.maven:sonar-maven-plugin:$MAVEN_SONAR_PLUGIN_VERSION:sonar -Dsonar.host.url="$SONAR_INSTANCE_URL" -Dsonar.projectKey=fr.inrae:fishola -Dsonar.exclusions='**/js/libs/*','**/target/*','**/generated*/*'
   tags:
     - docker
-#build:ios:
-#  stage: build
-#  when: manual
-#  script:
-#    - cd fishola-mobile/ios/App
-#    - xcodebuild clean -project App.xcodeproj -scheme App | xcpretty
-#    - pod install
-#    - xcodebuild -workspace App.xcworkspace -scheme App clean archive -configuration release -sdk iphoneos -archivePath App.xcarchive
-#    - xcodebuild -exportArchive -archivePath App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath Fishola.ipa
-#
-#  tags:
-#    - ios
 
-#check-releasable:
-#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
-#  stage: check-releasable
-#  script:
-#    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
-#    - rm * .git* -rf || true
-#  only:
-#    - /^develop.*$/
-#  when: manual
-#  tags:
-#    - tmpfs
-#
-#daily-check-releasable:
-#  image: registry.nuiton.org/codelutin/dockerfiles:maven-release-debian9-openjdk8-with-frequent-libraries
-#  stage: check-releasable
-#  script:
-#    - mvn clean verify -e -U -DperformRelease -Dredmine.skipGenerateChanges -Dmaven.javadoc.skip
-#    - rm * .git* -rf || true
-#  only:
-#    - schedules
-#  tags:
-#    - tmpfs
+package:android-demo:
+  image: eclipse-temurin:21-noble
+  stage: package_mobile
+  before_script:
+    - cd fishola-mobile
+    - echo "en_US UTF-8" > /etc/locale.gen
+    - locale-gen en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    - export LANGUAGE=en_US:en
+    - export LC_ALL=en_US.UTF-8
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1 ruby ruby-dev git build-essential python3 python3-pip libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - source $NVM_DIR/nvm.sh
+    - nvm install 22
+    - nvm use 22
+    - gem install bundler
+    - bundle install
+    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
+    - unzip -d android-sdk-linux android-sdk.zip
+    - export ANDROID_HOME=$PWD/android-sdk-linux
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+    - chmod +x android/gradlew
+    # temporarily disable checking for EPIPE error and use yes to accept all licenses
+    - set +o pipefail
+    - yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+    - set -o pipefail
+  script:
+    - npm ci
+    - npm install --global @capacitor/cli
+    - rm -f target/dist
+    - cp -r target/dist-demo target/dist
+    - npx cap sync
+    - cd android
+    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
+    - cat ${SIGNING_CONFIG} > app/signin.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
+    - bundle exec fastlane android build_prod_apk                                                                                                                                                                                                      ─╯
+    - cp app/build/outputs/apk/production/release/*.apk ../../
+  artifacts:
+    name: "fishola-android-demo-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - ./*.apk
+    expire_in: 2 hours
+  tags:
+    - sticky
+
+# must be run after the build stage
+package:android-production:
+  image: eclipse-temurin:21-noble
+  when: manual
+  stage: package_mobile
+  before_script:
+    - cd fishola-mobile
+    - echo "en_US UTF-8" > /etc/locale.gen
+    - locale-gen en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    - export LANGUAGE=en_US:en
+    - export LC_ALL=en_US.UTF-8
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1 ruby ruby-dev git build-essential python3 python3-pip libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - source $NVM_DIR/nvm.sh
+    - nvm install 22
+    - nvm use 22
+    - gem install bundler
+    - bundle install
+    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
+    - unzip -d android-sdk-linux android-sdk.zip
+    - export ANDROID_HOME=$PWD/android-sdk-linux
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+    - chmod +x android/gradlew
+    # temporarily disable checking for EPIPE error and use yes to accept all licenses
+    - set +o pipefail
+    - yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+    - set -o pipefail
+  script:
+    - rm -f target/dist
+    - cp -r target/dist-mobile target/dist
+    - npm ci
+    - npm install --global @capacitor/cli
+    - npx cap sync
+    - cd android
+    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
+    - cat ${SIGNING_CONFIG} > app/signin.properties
+    - bundle exec fastlane android build_prod_apk                                                                                                                                                                                                      ─╯
+    - cp app/build/outputs/apk/production/release/*.apk ../../
+  artifacts:
+    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - ./*.apk
+    expire_in: 2 weeks
+  tags:
+    - sticky
+
+
+deploy:android-deploy-beta:
+  image: eclipse-temurin:21-noble
+  stage: deploy
+  when: manual
+  before_script:
+    - cd fishola-mobile
+    - echo "en_US UTF-8" > /etc/locale.gen
+    - locale-gen en_US.UTF-8
+    - export LANG=en_US.UTF-8
+    - export LANGUAGE=en_US:en
+    - export LC_ALL=en_US.UTF-8
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1 ruby ruby-dev git build-essential python3 python3-pip libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - source $NVM_DIR/nvm.sh
+    - nvm install 22
+    - nvm use 22
+    - gem install bundler
+    - bundle install
+    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip
+    - unzip -d android-sdk-linux android-sdk.zip
+    - export ANDROID_HOME=$PWD/android-sdk-linux
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "platform-tools" >/dev/null
+    - echo y | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+    - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+    - chmod +x android/gradlew
+    # temporarily disable checking for EPIPE error and use yes to accept all licenses
+    - set +o pipefail
+    - yes | android-sdk-linux/cmdline-tools/bin/sdkmanager --sdk_root=${ANDROID_HOME} --licenses
+    - set -o pipefail
+  script:
+    - rm -f target/dist
+    - cp -r target/dist-mobile target/dist
+    - npm ci
+    - npm install --global @capacitor/cli
+    - npx cap sync
+    - cd android
+    - cat ${KEYSTORE_FISHOLA_JKS} | base64 -d > keystore-fishola.jks
+    - cat ${SIGNING_CONFIG} > app/signin.properties
+    - cat ${SIGNING_CONFIG} > app/signin.properties
+    - cat ${FASTLANE_GOOGLE} | base64 -d > fishola-fastlane-playstore.json
+    - bundle exec fastlane android build_prod_apk                                                                                                                                                                                                      ─╯
+    - cp app/build/outputs/apk/production/release/*.apk ../../
+    - bundle exec fastlane android deploy_prod_aaab
+    - cp app/build/outputs/bundle/release/*.aab ../../
+  artifacts:
+    name: "fishola-android-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - ./*.apk
+    expire_in: 2 weeks
+  tags:
+    - sticky
+
+deploy:ios-deploy-testflight:
+  image: node:22-alpine3.21
+  stage: deploy
+  when: manual
+  tags:
+    - ios
+  script:
+    - export LANG=en_US.UTF-8
+    - export LANGUAGE=en_US:en
+    - export LC_ALL=en_US.UTF-8
+    - cd fishola-mobile
+    - npm ci
+    - cp -r target/dist-mobile target/dist
+    - npx cap sync
+    - git checkout ios/App/App/capacitor.config.json
+    - cd ios/App
+    - pod install
+    - fastlane ios beta
+  artifacts:
+    name: "fishola-ios-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - ./*.ipa

@@ -33,7 +33,7 @@
         />
       </div>
     </div>
-    <div class="two-sections">
+    <div class="section">
       <div class="section shrinked">
         <h2><i class="icon-fish" />Mes poissons</h2>
         <DistributionChart
@@ -42,70 +42,30 @@
           greenLegend="conservés"
         ></DistributionChart>
       </div>
+  </div>
 
-      <div class="section shrinked">
-        <h2><i class="icon-fishing" />Mes captures</h2>
-        <div class="not-enough-data" v-if="latestTrips.length == 0">
-          <span>Pas assez de données</span>
+    <div class="section">
+        <div class="shrinked avg-size">
+          <h2>
+            <i class="icon-fish" /> Nombre de prises par mois
+          </h2>
         </div>
-        <div class="average-header" v-if="latestTrips.length > 0">
-          <div class="count">{{ averageCatchsPerTripRounded }}</div>
-          captures en moyenne / sortie
-        </div>
-        <div class="average">
-          <div
-            v-for="(f, index) in latestTrips"
-            v-bind:key="f.tripId"
-            class="average-column"
-            v-on:click="openTrip(f.tripId)"
-          >
-            <div class="count">
-              {{ f.catchsCount }}
-            </div>
-            <div class="average-row-bar">
-              <div
-                class="average-row-bar-filled"
-                v-if="f.catchsCount > 0"
-                v-bind:class="index % 2 == 0 ? 'even' : 'odd'"
-                v-bind:style="
-                  'height: ' + (f.catchsCount * 100) / maxCatchsCount + '%;'
-                "
-              ></div>
-            </div>
-            <div class="date">
-              <div class="day">
-                {{ getDay(f.day) }}
-              </div>
-              <div class="month">
-                {{ getMonth(f.day) }}
-              </div>
-              <div class="year">
-                {{ getYear(f.day) }}
-              </div>
-            </div>
-          </div>
-          <div
-            v-for="(f, index) in emptylatestTrips"
-            v-bind:key="'empty-' + index"
-            class="average-column"
-          >
-            <div class="count">-</div>
-            <div class="average-row-bar"></div>
-            <div class="date">
-              <div class="day">-</div>
-            </div>
-          </div>
-          <div
-            class="average-threshold"
-            v-if="latestTrips.length > 0"
-            v-bind:style="
-              'bottom: ' +
-              (54 + (averageCatchsPerTrip * 150) / maxCatchsCount) +
-              'px;'
-            "
-          ></div>
-        </div>
+        <div class="not-enough-data" v-if="monthlySizesOptions.length == 0">
+        <span>Pas assez de données</span>
       </div>
+        <OptionsList
+          :items="monthlyCountOptions"
+          v-if="monthlyCountOptions.length > 0"
+          v-on:item-selected="onMonthlyCountSelected"
+        >
+        </OptionsList>
+        <div class="shrinked" v-if="monthlyCount">
+          <HistogramChart
+            :values="monthlyCount"
+            :orderedMonths="orderedMonths"
+            :is-active-month-condition="isActiveMonth"
+          ></HistogramChart>
+        </div>
     </div>
 
     <div class="section">
@@ -132,6 +92,7 @@
         <HistogramChart
           :values="monthlySizes"
           :orderedMonths="orderedMonths"
+          :is-active-month-condition="isActiveMonth"
         ></HistogramChart>
       </div>
     </div>
@@ -207,7 +168,6 @@ import Constants from "@/services/Constants";
 import TripsService from "@/services/TripsService";
 import {
   SpeciesWithAlias,
-  DashboardLastTrip,
   CatchBean,
   Month,
   PicturePerTripBean,
@@ -218,7 +178,6 @@ import OptionItem from "@/pojos/OptionItem";
 import { DashboardAndSpecies } from "@/services/DashboardService";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import router from "../../router";
 
 import moment from "moment";
 import MaillageLegend from "./MaillageLegend.vue";
@@ -234,7 +193,7 @@ export class TopEntry {
     HistogramChart,
     CatchPreviewList,
     GaleryPreviewList,
-    MaillageLegend,
+    MaillageLegend
   },
 })
 export default class PersonalDashboard extends Vue {
@@ -245,18 +204,15 @@ export default class PersonalDashboard extends Vue {
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
   caughtSpeciesDistribution: DistributionEntry[] = [];
-  averageCatchsPerTripRounded: number = 0;
-  averageCatchsPerTrip: number = 0;
-  latestTrips: DashboardLastTrip[] = [];
-  emptylatestTrips: any[] = [];
-  maxCatchsCount: number = 100;
   topBySizeOptions: OptionItem[] = [];
   topBySizeCatchs: CatchBean[] | null = null;
   topByWeightOptions: OptionItem[] = [];
   topByWeightCatchs: CatchBean[] | null = null;
   orderedMonths: Month[] | null = null;
   monthlySizesOptions: OptionItem[] = [];
+  monthlyCountOptions: OptionItem[] = [];
   monthlySizes: { [P in Month]?: number } | null = null;
+  monthlyCount: { [P in Month]?: number } | null = null;
   picturesPerTrip: PicturePerTripBean[] = [];
 
   // On a besoin de maintenir un index de capture -> sortie
@@ -267,26 +223,19 @@ export default class PersonalDashboard extends Vue {
     super();
   }
 
-  created() {
-    this.dashboardDataChanged();
-  }
-
   @Watch("dashboardData")
   dashboardDataChanged(): void {
     this.speciesIndex = {};
     this.caughtSpeciesDistribution = [];
-    this.averageCatchsPerTripRounded = 0;
-    this.averageCatchsPerTrip = 0;
-    this.latestTrips = [];
-    this.emptylatestTrips = [];
-    this.maxCatchsCount = 0;
     this.topBySizeOptions = [];
     this.topBySizeCatchs = [];
     this.topByWeightOptions = [];
     this.topBySizeCatchs = [];
     this.orderedMonths = [];
     this.monthlySizesOptions = [];
+    this.monthlyCountOptions = [];
     this.monthlySizes = null;
+    this.monthlyCount = null;
     this.catchToTripId = {};
     this.picturesPerTrip = [];
 
@@ -326,26 +275,6 @@ export default class PersonalDashboard extends Vue {
       );
       this.caughtSpeciesDistribution.push(entry);
     });
-
-    this.averageCatchsPerTrip =
-      this.dashboardData.dashboard.averageCatchsPerTrip || 0;
-    this.averageCatchsPerTripRounded =
-      Math.round(10 * this.averageCatchsPerTrip) / 10;
-
-    this.maxCatchsCount = 1;
-    this.dashboardData.dashboard.latestTripsCatchs.forEach((trip) => {
-      this.latestTrips.push(trip);
-      if (trip.catchsCount > this.maxCatchsCount) {
-        this.maxCatchsCount = trip.catchsCount;
-      }
-    });
-    this.maxCatchsCount = Math.max(
-      this.maxCatchsCount,
-      this.averageCatchsPerTripRounded
-    );
-    while (this.latestTrips.length + this.emptylatestTrips.length < 9) {
-      this.emptylatestTrips.push({});
-    }
 
     const topBySize: TopEntry[] = this.parseTop(
       this.dashboardData.dashboard.topBySize
@@ -389,12 +318,57 @@ export default class PersonalDashboard extends Vue {
         whatever:
           this.dashboardData.dashboard.monthlySizesPerMaillage[speciesId],
       });
+      this.monthlyCountOptions.push({
+        id: species.id,
+        name: species.name,
+        alias: species.alias,
+        whatever:
+          this.dashboardData.dashboard.monthlySizesPerMaillage[speciesId],
+      })
     });
     this.monthlySizesOptions = Vue.lodash.orderBy(
       this.monthlySizesOptions,
       "name"
     );
+    this.monthlyCountOptions = Vue.lodash.orderBy(
+      this.monthlySizesOptions,
+      "name"
+    );
+    this.monthlyCountOptions.unshift({
+        id: "all",
+        name: "Toutes les espèces",
+        alias: "",
+        whatever:
+          this.computeTotalCountPerMonthAllSpeciesCombined(),
+    });
     this.picturesPerTrip = this.dashboardData.dashboard.picturesPerTrip;
+  }
+
+  computeTotalCountPerMonthAllSpeciesCombined() {
+    const monthlyCount = {};
+    const dashboardPerSpecie = this.dashboardData.dashboard.monthlySizesPerMaillage;
+    Object.keys(dashboardPerSpecie).forEach(specie => {     
+      Object.keys(dashboardPerSpecie[specie]).forEach((month) => {
+        // @ts-ignore
+        monthlyCount[month] = monthlyCount[month] ?? {};
+        // @ts-ignore
+         const dashboardForSpeciePerMonth = dashboardPerSpecie[specie][month];
+        
+        // @ts-ignore
+        Object.keys(dashboardForSpeciePerMonth).forEach((maillage) => {
+          // @ts-ignore
+          const countAndAverage = dashboardForSpeciePerMonth[maillage];
+          // @ts-ignore
+          const previousCount = monthlyCount[month]["NON_DEFINI"] ? parseInt(Object.keys(monthlyCount[month]["NON_DEFINI"])[0]) : 0;
+          const newCount = previousCount + parseInt(Object.keys(countAndAverage)[0]);
+          // @ts-ignore
+          monthlyCount[month]["NON_DEFINI"] = {};
+          // @ts-ignore
+          monthlyCount[month]["NON_DEFINI"][newCount] = 0;
+        });
+      });
+    });
+    return monthlyCount;
   }
 
   parseTop(rawTop: { [index: string]: CatchBean[] }): TopEntry[] {
@@ -427,36 +401,58 @@ export default class PersonalDashboard extends Vue {
   }
 
   onMonthlySizeSelected(item: OptionItem) {
-    this.monthlySizes = item.whatever;
+    // Convert Pairs of Avg size / count into average per maillage
+    const monthlySizes = {};
     this.maillages = [];
     // @ts-ignore
-    Object.keys(this.monthlySizes).forEach((month) => {
+    Object.keys(item.whatever).forEach((month) => {
       // @ts-ignore
-      Object.keys(this.monthlySizes[month]).forEach((maillage) => {
+      monthlySizes[month] = {};
+      // @ts-ignore
+      Object.keys(item.whatever[month]).forEach((maillage) => {
         if (this.maillages.indexOf(maillage as Maillage) == -1) {
           this.maillages.push(maillage as Maillage);
         }
+        // @ts-ignore
+        const countAndAverage = item.whatever[month][maillage];
+         // @ts-ignore
+        monthlySizes[month][maillage] = Object.values(countAndAverage)[0];
       });
     });
+    this.monthlySizes = monthlySizes;
     this.maillages = this.maillages.sort();
   }
 
+  onMonthlyCountSelected(item: OptionItem) {
+    // Convert Pairs of Avg size / count into total count
+    const monthlyCount = {};
+    // @ts-ignore
+    Object.keys(item.whatever).forEach((month) => {
+      // @ts-ignore
+      monthlyCount[month] = {};
+      // @ts-ignore
+      Object.keys(item.whatever[month]).forEach((maillage) => {
+        // @ts-ignore
+        const countAndAverage = item.whatever[month][maillage];
+         // @ts-ignore
+        const previousCount = monthlyCount[month]["NON_DEFINI"] ?? 0;
+        const newCount = previousCount + parseInt(Object.keys(countAndAverage)[0]);
+         // @ts-ignore
+        monthlyCount[month]["NON_DEFINI"] = newCount;
+      });
+    });
+    this.monthlyCount = monthlyCount;
+  }
+
   openCatch(catchId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
       params: { tripId: this.catchToTripId[catchId], catchId: catchId },
     });
   }
 
-  openTrip(tripId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
-      name: "trip",
-      params: { id: tripId },
-    });
-  }
-
   openGalery() {
-    RouterUtils.pushRouteNoDuplicate(router, "/galery");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/galery");
   }
 
   getDay(date: number) {
@@ -471,6 +467,18 @@ export default class PersonalDashboard extends Vue {
 
   getYear(date: number) {
     return new Date(date).getFullYear();
+  }
+
+  isActiveMonth(month: Month) {
+    const today = new Date();
+    const monthNames: Month[] = [
+      "JANUARY", "FEBRUARY", "MARCH", "APRIL",
+      "MAY", "JUNE", "JULY", "AUGUST",
+      "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+    ];
+    const currentMonthName = monthNames[today.getMonth()];
+    return this.year == today.getFullYear() && currentMonthName == month;
+
   }
 }
 </script>

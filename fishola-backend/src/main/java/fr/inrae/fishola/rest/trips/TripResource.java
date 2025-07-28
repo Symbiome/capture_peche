@@ -90,9 +90,6 @@ public class TripResource extends AbstractFisholaResource {
     public static final String HOURS_AND_MINUTES = "HH:mm";
 
     @Inject
-    protected Logger log;
-
-    @Inject
     protected ReferentialDao referentialDao;
 
     @Inject
@@ -513,6 +510,15 @@ public class TripResource extends AbstractFisholaResource {
         return response;
     }
 
+    @GET
+    @Path("/markers")
+    public  Response catchMap() {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        List<CatchMarker> markers = catchsDao.catchMarkersForUser(userId);
+        Response response = wrapEntity(markers, userIdAndRenewal);
+        return response;
+    }
 
 
     @GET

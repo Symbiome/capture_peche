@@ -26,21 +26,11 @@
       <div class="pane">
         <div class="pane-content rounded">
           <h1>
-            <BackButton
-              class="hide-on-mobile"
-              back-event="onBackButton"
-              v-on:onBackButton="backToGaleryOrTrips"
-            />
+            <BackButton class="hide-on-mobile" back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips" />
             Récapitulatif
           </h1>
-          <SomeTripSummary
-            ref="summary"
-            v-if="trip.lakeId"
-            v-bind:trip="trip"
-            v-on:trip-modified="onUpdatedTrip"
-            v-on:goEditSpecies="goEditSpecies"
-            v-on:goEditTechniques="goEditTechniques"
-          />
+          <SomeTripSummary ref="summary" v-if="trip.lakeId" v-bind:trip="trip" v-on:trip-modified="onUpdatedTrip"
+            v-on:goEditSpecies="goEditSpecies" v-on:goEditTechniques="goEditTechniques" />
 
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
@@ -57,17 +47,10 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
-      button-text="Terminer"
-      button-icon="icon-send"
-      v-on:buttonClicked="startSave"
-      back-event="onBackButton"
-      v-on:onBackButton="backToGaleryOrTrips"
-      shortcuts="back,step-4-4,giveup"
-      :isWaitingForPositionBeforeGoingToNextPage="
-        isWaitingForPositionBeforeGoingToNextPage
-      "
-    />
+    <FisholaFooter button-text="Terminer" button-icon="icon-send" v-on:buttonClicked="startSave"
+      back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips" shortcuts="back,step-4-4,giveup"
+      :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage
+        " />
   </div>
 </template>
 
@@ -131,8 +114,6 @@ export default class TripSummaryView extends Vue {
     );
   }
 
-  mounted() {}
-
   tripLoaded(someTrip: TripSummary) {
     this.trip = someTrip;
   }
@@ -152,7 +133,7 @@ export default class TripSummaryView extends Vue {
 
   giveupConfirmed() {
     TripsService.cancelCreations();
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 
   onUpdatedTrip(trip: any) {
@@ -214,15 +195,15 @@ export default class TripSummaryView extends Vue {
   tripSaved() {
     this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
       this.$root.$emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
         params: { id: this.trip!.id },
       });
     } else if (this.actionRequested == "EditTechniques") {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-techniques",
         params: { id: this.trip!.id },
       });
@@ -231,7 +212,7 @@ export default class TripSummaryView extends Vue {
 
   backToGaleryOrTrips() {
     if (this.fromGallery) {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
         params: {
           selectedDefaultPic: "",
@@ -239,7 +220,7 @@ export default class TripSummaryView extends Vue {
         },
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/trips");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
     }
   }
 }

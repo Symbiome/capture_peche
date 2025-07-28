@@ -56,9 +56,7 @@ export default class GaleryPreviewList extends Vue {
   @Prop({ default: "" }) selectedLakeUUID: string;
 
   firstPictures: string[] = [];
-
-  created() {}
-
+  
   mounted() {
     if (this.picturesPerTrip && this.picturesPerTrip.length > 0) {
       this.picturesPerTripChanged();
@@ -68,7 +66,7 @@ export default class GaleryPreviewList extends Vue {
 
   @Watch("picturesPerTrip")
   picturesPerTripChanged() {
-    var i = 0;
+    let i = 0;
     this.firstPictures = [];
     while (this.firstPictures.length < 4 && i < this.picturesPerTrip.length) {
       this.firstPictures = this.firstPictures.concat(
@@ -129,7 +127,7 @@ export default class GaleryPreviewList extends Vue {
       justify-content: center;
       align-items: center;
 
-      background-image: url("~/public/img/illustration_fish_wire.svg");
+      background-image: url("img/illustration_fish_wire.svg");
       background-repeat: no-repeat;
       background-size: auto 75%;
       background-position: center;

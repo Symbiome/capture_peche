@@ -148,7 +148,9 @@ export default class CatchPreview extends Vue {
     });
     data.techniques.forEach((t) => {
       if (this.aCatch.techniqueId == t.id) {
-        this.techniqueLabel = t.name;
+        this.techniqueLabel = t.name.length > 20
+          ? t.name.slice(0, 20) + "..."
+          : t.name;
       }
     });
   }

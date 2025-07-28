@@ -24,33 +24,30 @@
     <div class="page dashboard-page">
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
-          <h1 class="no-margin-pane">
-            <span> Tableau de bord </span>
-            <div class="selects-holder">
-              <select placeholder="lake" v-model="selectedLakeUUID">
-                <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                  {{ lake.name }}
-                </option>
-              </select>
-              <select placeholder="Année" v-model="year">
-                <option v-for="dashboardYear in getDashboardYears()" :value="dashboardYear" :key="dashboardYear">
-                  {{ dashboardYear }}
-                </option>
-              </select>
-            </div>
-            <a v-bind:href="exportUrl" v-if="!globalMode && !asyncExport" id="export-button" class="export"
-              title="Exporter" target="_blank">
+          <h1 class="no-margin-pane h1-with-selects">
+            <span> Mes données </span>
+            <LakeAndYearSelection 
+                :years="getDashboardYears()"
+                :showYears="visualizationMode !== 'evolution'"
+                @lake-and-year="yearAndLakeChangedChanged"
+                @lake="lakeChanged"
+                @year="yearChanged"
+            />
+            <a v-bind:href="exportUrl" v-if="visualizationMode !== 'evolution' && !asyncExport" id="export-button"
+              class="export" title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
             </a>
           </h1>
 
-          <div class="dashboard-modes">
-            <div class="dashboard-mode" v-bind:class="globalMode ? '' : 'selected'" v-on:click="showPersonalDashboard">
-              Personnel
+          <div class="main-tabs">
+            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
+              v-on:click="showPersonalDashboard">
+              Tableau de bord
             </div>
-            <div class="dashboard-mode" v-bind:class="globalMode ? 'selected' : ''" v-on:click="showGlobalDashboard">
-              Global
+            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
+              v-on:click="changeVisualizationMode('evolution')">
+              Évolution
             </div>
           </div>
 
@@ -62,12 +59,13 @@
             <span>Le tableau de bord n'est pas disponible sans connexion
               internet</span>
           </div>
-          <PersonalDashboard v-if="!globalMode && personalDashboard" :year="year" :dashboardData="personalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
-
-          <GlobalDashboardComponent v-if="globalMode && globalDashboard"
-            :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
+          <PersonalDashboard v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
+            :dashboardData="personalDashboard" :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
+          <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
+            :lakeId="selectedLakeUUID"
+            :onlyShowUserStats="true"
+            >
+          </EvolutionMetrics>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -82,22 +80,22 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import PersonalDashboard from "@/components/charts/PersonalDashboard.vue";
-import GlobalDashboardComponent from "@/components/charts/GlobalDashboardComponent.vue";
 
 import DashboardService from "@/services/DashboardService";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import {
-  DashboardAndSpecies,
-  GlobalDashboardAndSpecies,
+  DashboardAndSpecies
 } from "@/services/DashboardService";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
-import router from "../router";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
 import { Lake } from "@/pojos/BackendPojos";
 
 import ReferentialService from "../services/ReferentialService";
+import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
+import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
+
 
 @Component({
   components: {
@@ -105,11 +103,13 @@ import ReferentialService from "../services/ReferentialService";
     RunningOverlay,
     FisholaFooter,
     PersonalDashboard,
-    GlobalDashboardComponent,
+    LakeAndYearSelection,
+    EvolutionMetrics
   },
 })
-export default class DashboardView extends Vue {
-  globalMode: boolean = false;
+export default class DashboardPersonalView extends Vue {
+  @Prop()
+  visualizationMode: string;
 
   exportUrl: string = "";
 
@@ -119,7 +119,6 @@ export default class DashboardView extends Vue {
   asyncExport: boolean = false;
 
   personalDashboard: DashboardAndSpecies | null = null;
-  globalDashboard: GlobalDashboardAndSpecies | null = null;
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
@@ -127,11 +126,10 @@ export default class DashboardView extends Vue {
   lakes: Lake[] = [];
   isFirstLoad = true;
 
-  created() {
-    if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
+  changeVisualizationMode(newMode: string) {
+    if (this.visualizationMode !== newMode) {
+      this.$router.push({ params: { visualizationMode: newMode } });
     }
-    this.loadLakes();
   }
 
   mounted() {
@@ -157,24 +155,28 @@ export default class DashboardView extends Vue {
     });
   }
 
-  @Watch("year")
-  @Watch("selectedLakeUUID")
-  yearOrSelectedLakesChanged(): void {
-    if (this.selectedLakeUUID) {
-      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID
-    } else {
-      localStorage.latestSelectedLakeUUID = "all"
-    }
-    if (!this.globalMode) {
+  yearChanged(newYear: number) {
+    this.year = newYear;
+    this.reloadDashboard();
+  }
+
+  lakeChanged(selectedLake: string) {
+    this.selectedLakeUUID = selectedLake;
+    this.reloadDashboard();
+  }
+
+  yearAndLakeChangedChanged(event: any) {
+    this.year = event.year;
+    this.selectedLakeUUID = event.lake;
+    this.reloadDashboard();
+  }
+
+  reloadDashboard(): void {
+    if (this.visualizationMode == 'dashboard') {
       DashboardService.loadDashboardOrTimeout(
         this.year,
         this.selectedLakeUUID
       ).then(this.personalDashboardLoaded, this.cannotLoad);
-    } else {
-      DashboardService.loadGlobalDashboardOrTimeout(
-        this.year,
-        this.selectedLakeUUID
-      ).then(this.globalDashboardLoaded, this.cannotLoad);
     }
   }
 
@@ -210,7 +212,7 @@ export default class DashboardView extends Vue {
       data.dashboard.latestTripsCatchs.length == 0
     ) {
       this.year = this.year - 1;
-      this.yearOrSelectedLakesChanged();
+      this.reloadDashboard();
     } else {
       this.personalDashboard = data;
       this.ready = true;
@@ -223,32 +225,16 @@ export default class DashboardView extends Vue {
       this.offline = true;
     } else if (error && error.status == 401) {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
-      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
     this.ready = true;
   }
 
   showPersonalDashboard() {
-    this.globalMode = false;
+    this.changeVisualizationMode('dashboard')
     if (this.personalDashboard) {
       this.ready = true;
     }
-  }
-
-  showGlobalDashboard() {
-    this.globalMode = true;
-    if (!this.globalDashboard) {
-      this.ready = false;
-      DashboardService.loadGlobalDashboardOrTimeout(
-        this.year,
-        this.selectedLakeUUID
-      ).then(this.globalDashboardLoaded, this.cannotLoad);
-    }
-  }
-
-  globalDashboardLoaded(data: GlobalDashboardAndSpecies) {
-    this.globalDashboard = data;
-    this.ready = true;
   }
 
   askForAsyncExport() {
@@ -360,25 +346,7 @@ export default class DashboardView extends Vue {
       color: @pale-sky;
     }
 
-    .dashboard-modes {
-      width: 100%;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-evenly;
 
-      .dashboard-mode {
-        color: @pale-sky;
-        padding-bottom: 5px;
-        padding-left: 20px;
-        padding-right: 20px;
-        cursor: pointer;
-
-        &.selected {
-          color: @gunmetal;
-          border-bottom: 2px solid @pelorous;
-        }
-      }
-    }
 
     .two-sections {
       display: flex;
@@ -456,17 +424,6 @@ export default class DashboardView extends Vue {
           margin-left: auto;
         }
       }
-
-      .selects-holder {
-        margin-left: 40px;
-        margin-top: -10px;
-      }
-
-      .dashboard-modes {
-        .dashboard-mode {
-          width: 40%;
-        }
-      }
     }
   }
 
@@ -477,12 +434,6 @@ export default class DashboardView extends Vue {
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
-      }
-
-      .selects-holder {
-        margin-left: 0px;
-        margin-top: 0px;
-        margin-bottom: 20px;
       }
     }
   }
@@ -530,7 +481,7 @@ export default class DashboardView extends Vue {
       h1 {
         a.export {
           position: relative;
-          top: -115px;
+          top: -100px;
           right: 18px;
           font-weight: bold;
           line-height: 22px;
@@ -567,17 +518,6 @@ export default class DashboardView extends Vue {
     .show-if-small {
       display: none;
     }
-  }
-}
-
-.selects-holder {
-  select {
-    background-color: white;
-    padding: 10px;
-    height: 40px;
-    border: 1px solid @pale-sky;
-    border-radius: 3px;
-    margin-left: 10px;
   }
 }
 </style>

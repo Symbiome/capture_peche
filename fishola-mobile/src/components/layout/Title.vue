@@ -28,15 +28,14 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
 export default class Title extends Vue {
-  envName?: string = process.env.VUE_APP_ENV;
+  envName?: string = import.meta.env.VITE__ENV_NAME;
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(router, "/trips");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 }
 </script>
@@ -47,18 +46,22 @@ export default class Title extends Vue {
 
 .header-title {
   font-size: @fontsize-header-title;
+
   img {
     height: calc(@fontsize-header-title + 6px);
   }
+
   span.env {
     color: @terra-cotta;
     font-size: @fontsize-paragraph;
   }
+
   @media (max-width: 340px) {
     img {
       height: 20px;
       margin-top: 5px;
     }
+
     span.env {
       font-size: @fontsize-small-paragraph;
     }

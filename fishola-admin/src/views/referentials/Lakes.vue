@@ -23,6 +23,7 @@
     <Referential
       name="Lacs"
       url="/v1/referential/lakes"
+      :editable="isNationalAdmin"
       :columns="lakeColumns"
       :createElement=createLake
       ></Referential>
@@ -31,6 +32,7 @@
 
 <script lang="ts">
 import Referential from '@/components/Referential.vue'
+import BackendService from '@/services/BackendService';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
@@ -40,6 +42,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
   }
 })
 export default class LakesVue extends Vue {
+  isNationalAdmin = false;
 
   lakeColumns:any[] = [
     {
@@ -49,12 +52,19 @@ export default class LakesVue extends Vue {
       readOnly: true
     },
     {
+      field: 'lakeCode',
+      label: 'Code Lac',
+      searchable: true,
+    },
+    {
       field: 'name',
-      label: 'Nom'
+      label: 'Nom',
+      searchable: true,
     },
     {
       field: 'exportAs',
-      label: 'Nom d\'export'
+      label: 'Nom d\'export',
+      visible: false,
     },
     {
       field: 'latitude',
@@ -73,6 +83,14 @@ export default class LakesVue extends Vue {
       'latitude': 45.5,
       'longitude': 5.8
     };
+  }
+
+  mounted() {
+    BackendService.backendGet("/v1/admin/check").then(
+      (admin) => {
+        this.isNationalAdmin = admin.isNationalAdmin
+      }
+    );
   }
 }
 </script>

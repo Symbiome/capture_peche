@@ -32,14 +32,13 @@
             <i class="icon-news-back icon-arrow" />
             <span class="back-text"> Retour </span>
         </span>
-        <vue-pdf-app v-if="url" class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
+        <component v-if="url" :is="VuePdfApp" class="fullscreen-pdf" :pdf="url" @pages-rendered="pagesRenderedHandler" />
         <span v-else>Chargement en cours...</span>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import VuePdfApp from "vue-pdf-app";
 import PinchZoom from 'vue-pinch-zoom';
 import "vue-pdf-app/dist/icons/main.css";
 import Hammer from 'hammerjs';
@@ -47,7 +46,7 @@ import Hammer from 'hammerjs';
 import FishingLicenceService from "@/services/FishingLicenceService";
 
 @Component({
-    components: { VuePdfApp, PinchZoom }
+    components: { PinchZoom }
 })
 export default class FishingLicenceFullScreen extends Vue {
     @Prop() id: string;
@@ -56,8 +55,13 @@ export default class FishingLicenceFullScreen extends Vue {
     pdfViewer?: any;
     loaded = false;
     pageScale = 2;
+    VuePdfApp: any = null;
 
-    mounted() {
+    async mounted() {
+        if (this.type === "PDF" && import.meta.env.VITE__REMOVE_PDF_VIEWER !== "true") {
+            const module = await import("vue-pdf-app");
+            this.VuePdfApp = module.default;
+        }
         setTimeout(async () => {
             const fileBlob = await FishingLicenceService.getLicenceFile(
                 this.id
@@ -174,7 +178,7 @@ export default class FishingLicenceFullScreen extends Vue {
             });
 
 
-            hammertime.on('panend', function (e) {
+            hammertime.on('panend', function (_e) {
                 // Record final position here to take account of constraint calculations in 
                 // panmove handler; magnitude of e.deltaX may have been limited.
                 offsetX = panOffsetX;

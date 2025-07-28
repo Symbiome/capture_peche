@@ -82,7 +82,7 @@ export default class ResetPassword extends Vue {
   }
 
   backToLogin() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
   }
 }
 </script>

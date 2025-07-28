@@ -225,10 +225,10 @@ export default class GaleryFull extends Vue {
   selectedPicChanged() {
     if (this.selectedPic) {
       this.$nextTick(() => {
-        var selectedPicImg = document.getElementsByClassName("selected");
-        var container = document.getElementById("scroller");
+        const selectedPicImg = document.getElementsByClassName("selected");
+        const container = document.getElementById("scroller");
         if (selectedPicImg.length && container) {
-          var topPos = (selectedPicImg[0] as HTMLElement).offsetTop;
+          const topPos = (selectedPicImg[0] as HTMLElement).offsetTop;
           container.scrollTop = Math.max(0, topPos - 400);
         }
       });
@@ -319,7 +319,7 @@ export default class GaleryFull extends Vue {
   }
 
   async seeTrip(tripId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
       params: {
         id: tripId,
@@ -330,7 +330,7 @@ export default class GaleryFull extends Vue {
   }
 
   goBack() {
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 
   async downloadSelectedPic() {

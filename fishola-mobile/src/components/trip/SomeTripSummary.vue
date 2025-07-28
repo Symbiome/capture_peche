@@ -154,9 +154,6 @@ export default class SomeTripSummary extends Vue {
       .then(this.referentialsLoaded);
   }
 
-  mounted() {
-  }
-
   referentialsLoaded(data:LakesWeathersTripTypesSpeciesAndTechniques) {
     data.lakes.forEach((lake) => this.allLakes.push(lake));
     this.allWeathers.push({

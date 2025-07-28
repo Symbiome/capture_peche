@@ -26,7 +26,7 @@
       </b-navbar-item>
     </template>
     <template slot="start">
-      <b-navbar-dropdown label="Référentiels">
+      <b-navbar-dropdown label="Référentiels" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'lakes' }">
           Lacs
         </b-navbar-item>
@@ -45,10 +45,10 @@
           Espèces par lac
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
-         Maillages et tailles maximales
+          Maillages et tailles maximales
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-dropdown label="Documentations">
+      <b-navbar-dropdown label="Documentations" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'editorial-pages' }">
           Pages éditoriales
         </b-navbar-item>
@@ -59,31 +59,88 @@
           Communications
         </b-navbar-item>
       </b-navbar-dropdown>
+       <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
+          Communications
+        </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
         Chiffres Clés
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
         Sorties
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'users' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
         Utilisateurs
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
+        Administrateurs
       </b-navbar-item>
     </template>
 
     <template slot="end">
-      <b-navbar-item tag="div">
-        <div class="buttons">
-          <b-button type="is-danger" outlined @click="doLogout()">
-            Déconnexion
-          </b-button>
-        </div>
+      <b-navbar-item class="user-dropdown-wrapper">
+        <b-dropdown
+          class="is-right"
+        >
+          <template #trigger>
+            <div class="logged-admin">
+              <b-icon icon="account-circle" size="is-medium"></b-icon>
+              <span class="username">{{ loggedAdmin.email.split('@')[0] }}</span>
+              <b-icon icon="menu-down" size="is-small"></b-icon>
+            </div>
+          </template>
+
+          <!-- Items -->
+           <b-dropdown-item>
+            <div class="logout-item">
+
+                <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
+                <b v-else-if="lakes.length == 1">
+                  Admnistateur du {{ lakes[0].name}}
+                </b>
+                <span v-else>
+                  <b>Administrateur  des lacs : </b><br/>
+                  <p v-for="l in lakes" :id="l.id">
+                    - {{ l.name }}
+                  </p>
+                </span>
+            </div>
+          </b-dropdown-item>
+          <b-dropdown-item>
+            <div class="logout-item">
+              <b-button
+                class="logout-button"
+                type="is-danger"
+                size="is-small"
+                outlined
+                @click="doLogout()"
+              >
+
+              <b-icon icon="logout" size="is-small"></b-icon>
+                Déconnexion
+              </b-button>
+            </div>
+          </b-dropdown-item>
+        </b-dropdown>
       </b-navbar-item>
+      <div class="user-dropdown-wrapper-responsive">
+        <b-button
+                class="logout-button"
+                type="is-danger"
+                size="is-small"
+                outlined
+                @click="doLogout()"
+              >
+
+              <b-icon icon="logout" size="is-small"></b-icon>
+                Se déconnecter du compte {{ loggedAdmin.email}}
+              </b-button>
+      </div>
     </template>
   </b-navbar>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 import router from "@/router";
 
@@ -91,10 +148,14 @@ import BackendService from "@/services/BackendService";
 
 @Component
 export default class Menu extends Vue {
+  loggedAdmin = { email: ''};
+  lakes = []
+
   mounted() {
-    BackendService.backendGet("/v1/security/admin-check").then(
-      () => {
-        // Rien à faire
+    BackendService.backendGet("/v1/referential/lakes").then(lakes => this.lakes = lakes);
+    BackendService.backendGet("/v1/admin/check").then(
+      (admin) => {
+        this.loggedAdmin = admin
       },
       error => {
         this.$buefy.toast.open({
@@ -106,7 +167,7 @@ export default class Menu extends Vue {
     );
   }
   doLogout() {
-    BackendService.backendPost("/v1/security/admin-logout").then(() => {
+    BackendService.backendPost("/v1/admin/logout").then(() => {
       router.push("/login");
     });
   }
@@ -114,10 +175,15 @@ export default class Menu extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .logo {
   height: 52px;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  box-shadow: 0 1px 20px 3px #1e9bc411;
 }
 
 a.navbar-item:focus,
@@ -130,11 +196,36 @@ a.navbar-item.is-active,
 .navbar-link.is-active {
   color: @pelorous !important;
 }
+
 .navbar-link:not(.is-arrowless)::after {
   border-color: @pelorous !important;
 }
 
 .buttons {
   margin-right: 10px;
+}
+
+.logged-admin {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  &:hover {
+    color: @pelorous;
+  }
+}
+
+.user-dropdown-wrapper-responsive {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .user-dropdown-wrapper {
+    display: none;
+  }
+  .user-dropdown-wrapper-responsive {
+    display: block;
+  }
 }
 </style>

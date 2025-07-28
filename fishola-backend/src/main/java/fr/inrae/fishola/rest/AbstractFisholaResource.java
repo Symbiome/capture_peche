@@ -22,8 +22,11 @@ package fr.inrae.fishola.rest;
  */
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.google.common.collect.Sets;
 import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.database.UsersDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import org.jboss.logging.Logger;
@@ -35,17 +38,14 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.transaction.Transactional.TxType.REQUIRED;
 import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Transactional(REQUIRED)
 public abstract class AbstractFisholaResource {
-
-    @Inject
-    protected Logger log;
 
     public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
@@ -60,7 +60,13 @@ public abstract class AbstractFisholaResource {
     protected UsersDao usersDao;
 
     @Inject
+    protected AdminDao adminDao;
+
+    @Inject
     protected FisholaConfiguration config;
+
+    @Inject
+    protected Logger log;
 
     @CookieParam(USER_AUTHENTICATION_COOKIE_NAME)
     protected String userToken;
@@ -139,8 +145,8 @@ public abstract class AbstractFisholaResource {
             UUID userId = jwtHelper.verifyExpiredToken(token);
             boolean isValid = usersDao.isValidUserId(userId);
             if (isValid) {
-                if (log.isInfoEnabled()) {
-                    log.infof("Renouvellement automatique du token JWT pour l'utilisateur %s", userId);
+                if (this.log.isInfoEnabled()) {
+                    this.log.infof("Renouvellement automatique du token JWT pour l'utilisateur %s", userId);
                 }
                 String newToken = jwtHelper.createUserToken(userId);
                 UserIdAndRenewal result = UserIdAndRenewal.of(userId, newToken);
@@ -149,17 +155,36 @@ public abstract class AbstractFisholaResource {
                 return Optional.empty();
             }
         } catch (Exception eee) {
-            log.warn("Le renouvellement de Token n'est pas possible", eee);
+            this.log.warn("Le renouvellement de Token n'est pas possible", eee);
             return Optional.empty();
         }
     }
 
-    protected void checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+    protected FisholaAdmin checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
         if (adminToken == null) {
             throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
         }
         boolean validToken = jwtHelper.isValidToken(adminToken);
         AccessDeniedException.check(validToken, "Accès refusé");
+        UUID adminId = jwtHelper.verifyToken(adminToken);
+        Optional<FisholaAdmin> byId = adminDao.findById(adminId);
+        if (byId.isEmpty()) {
+            AccessDeniedException.throwNew("Admin invalide");
+        }
+        return byId.get();
+    }
+
+    protected Set<UUID> getAllowedAdminLakes() {
+        if (adminToken == null) {
+            return Sets.newLinkedHashSet();
+        }
+        // For admins : only list alllowed lakes
+        try {
+            FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedLakes(fisholaAdmin.getId());
+        } catch (NotAuthenticatedException | AccessDeniedException e) {
+            return Sets.newLinkedHashSet();
+        }
     }
 
     protected StreamingOutput wrapAsStreamingOutput(byte[] array) {

@@ -40,39 +40,39 @@
           <div class="site-logo site-logo-desktop">
             <h1>
               <a href="#/about" v-scroll-to="{
-    el: '#top',
-    container: '#about-scroll-container',
-  }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+                el: '#top',
+                container: '#about-scroll-container',
+              }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
           <nav class="Navigation">
             <ul>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#presentation',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Présentation</a>
+                  el: '#presentation',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Présentation</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#communications',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Communications</a>
+                  el: '#communications',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#contribute',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Comment participer ?</a>
+                  el: '#contribute',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Comment participer ?</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
-    el: '#contact',
-    container: '#about-scroll-container',
-  }" @click="closed = !closed">Contact</a>
+                  el: '#contact',
+                  container: '#about-scroll-container',
+                }" @click="closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
               </li>
             </ul>
@@ -150,8 +150,8 @@
             </div>
             <div class="map">
               <l-map :zoom="9" :center="center" :options="{
-    zoomSnap: 0.5,
-  }" style="height: 100%; width: 100%">
+                zoomSnap: 0.5,
+              }" style="height: 100%; width: 100%">
                 <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
 
@@ -346,7 +346,6 @@ import Counter from "@/components/common/Counter.vue";
 import ProfileService from "@/services/ProfileService";
 import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { latLng, LatLng, Icon } from "leaflet";
@@ -354,19 +353,23 @@ import { latLng, LatLng, Icon } from "leaflet";
 type D = Icon.Default & {
   _getIconUrl?: string;
 };
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 delete (Icon.Default.prototype as D)._getIconUrl;
 
 Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
 });
 
 import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
+import "leaflet/dist/leaflet.css";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { Lake, Feedback, News } from "@/pojos/BackendPojos";
+import { Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 
@@ -395,15 +398,14 @@ export default class AboutView extends Vue {
   picturesCount: number = 0;
   realPicturesCount: number = 212;
   lakes: Lake[] = [];
-  news: News[] = [];
+  news: NewsBean[] = [];
   catchsCountPerLakeId: { [index: string]: number } = {};
 
   contactEmail: string = "";
   contactMessage: string = "";
 
-  // version:string = process.env.VUE_APP_VERSION;
-  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
+  projectVersion: string = import.meta.env.VITE__APP_VERSION;
+  gitRevision: string = import.meta.env.VITE__GIT_REVISION;
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;
@@ -548,16 +550,16 @@ export default class AboutView extends Vue {
     this.closed = true;
     ProfileService.fetchProfile().then(
       (_profile) => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips");
+        RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
       },
       (_status) => {
-        RouterUtils.pushRouteNoDuplicate(router, "/login");
+        RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
       }
     );
   }
 
   goFaq() {
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/faq");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
 }
 </script>
@@ -568,7 +570,6 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
 @import "../less/_responsive";
-@import url("~leaflet/dist/leaflet.css");
 
 #about-scroll-container {
   overflow: auto;
@@ -747,7 +748,7 @@ export default class AboutView extends Vue {
 
 .Title_sec {
   width: 100%;
-  background: url(~/public/img/about-coregones5.jpg) top center no-repeat;
+  background: url(img/about-coregones5.jpg) top center no-repeat;
   height: 680px;
   position: relative;
   background-size: cover;
@@ -927,12 +928,12 @@ export default class AboutView extends Vue {
 }
 
 .Contribute_sec {
-  background: url(~/public/img/about-background.jpg) top center no-repeat;
+  background: url(img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 
 .Get_sec {
-  background: url(~/public/img/about-background.jpg) top center no-repeat;
+  background: url(img/about-background.jpg) top center no-repeat;
   background-size: cover;
 }
 

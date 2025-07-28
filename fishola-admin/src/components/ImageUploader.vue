@@ -34,7 +34,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
-import Constants from "../../../fishola-mobile/src/services/Constants";
+import Constants from "@/services/Constants";
 
 @Component
 export default class ImageUploader extends Vue {
@@ -61,7 +61,7 @@ export default class ImageUploader extends Vue {
 
   getBase64(file: any): Promise<string> {
     return new Promise<any>((resolve, reject) => {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = function() {
         resolve(reader.result);
@@ -73,7 +73,3 @@ export default class ImageUploader extends Vue {
   }
 }
 </script>
-
-<style lang="less">
-@import "../less/main";
-</style>

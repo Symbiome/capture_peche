@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -32,12 +33,16 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @ImmutableObject
 @JsonSerialize(as = ImmutableUserProfile.class)
+@JsonDeserialize(as = ImmutableUserProfile.class)
 public interface UserProfile {
+
+    UUID id();
 
     String firstName();
 
@@ -52,6 +57,8 @@ public interface UserProfile {
     String sampleBaseId();
 
     Boolean acceptsMailNotifications();
+
+    Boolean acceptsShareTrips();
 
     LocalDateTime lastNewsSeenDate();
 

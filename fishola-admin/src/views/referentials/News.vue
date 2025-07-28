@@ -21,6 +21,7 @@
 <template>
   <div class="pages">
     <Referential
+      v-if="docColumns.length > 4"
       name="Communications"
       url="/v1/news-all"
       :default-sort="['isPublic', 'desc']"
@@ -47,52 +48,10 @@ import Constants from "@/services/Constants";
   }
 })
 export default class DocumentationVue extends Vue {
-  docColumns: any[] = [
-    {
-      field: "id",
-      label: "Identifiant technique",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "name",
-      label: "Nom"
-    },
-    {
-      field: "miniatureUrl",
-      label: "Miniature",
-      visible: false,
-      isPicture: true
-    },
-    {
-      field: "datePublicationDebut",
-      label: "Début de publication",
-      isAPeriodBeginning: true
-    },
-    {
-      field: "datePublicationFin",
-      label: "Fin de publication",
-      isAPeriodEnd: true,
-      hiddenInPopup: true
-    },
-    {
-      field: "dateNotificationSent",
-      label: "Date d'envoi de la notification mail",
-      isANotificationDate: true,
-      hiddenInPopup: true
-    },
-    {
-      field: "isPublic",
-      label: "Visible sur le site",
-      isABoolean: true,
-      hiddenInPopup: true
-    },
-    {
-      field: "content",
-      label: "Contenu",
-      isHTML: true
-    }
-  ];
+  lakesIdToNameMap = new Map<string, string>();
+  lakesOptions = [];
+  docColumns = [];
+  loggedAdmin = { }
 
   nextPlannifiedDate: number[] = [];
 
@@ -105,6 +64,8 @@ export default class DocumentationVue extends Vue {
     return {
       name: "Titre de votre communication",
       content: "<h1>Partie 1</h1><p>Le corps de votre <b>communication</b>",
+      lakeIds: [],
+      isNational: false,
       datePublicationDebut: [
         tomorow.year(),
         tomorow.monthValue(),
@@ -136,7 +97,10 @@ export default class DocumentationVue extends Vue {
       actualite.miniatureURL = actualite.miniatureId
         ? Constants.apiUrl("/v1/news-picture/" + actualite.miniatureId)
         : "";
-      console.error(actualite.miniatureId + " => " + actualite.miniatureURL);
+
+      actualite.lakeNames = actualite.isNational ?
+        "National" :
+        actualite.lakeIds.map((lakeId: string) => this.lakesIdToNameMap.get(lakeId)).join(", ");
     });
   }
 
@@ -189,23 +153,109 @@ export default class DocumentationVue extends Vue {
     }
   }
 
-  refreshNextPlannifiedDate(): void {
-    BackendService.backendGet("/v1/news-notifications/next-check").then(
-      nextCheckDate => {
-        this.nextPlannifiedDate = nextCheckDate;
+  async refreshNextPlannifiedDate(): Promise<void> {
+    try {
+      this.loggedAdmin = await BackendService.backendGet("/v1/admin/check");
+      let lakes = await BackendService.backendGet("/v1/referential/lakes");
+        lakes.forEach((lake: { id: string; name: string }) => {
+          this.lakesIdToNameMap.set(lake.id, lake.name);
+      });
+      lakes.forEach( (l: any) => {
+        this.lakesOptions.push({
+          id: l.id,
+          label: l.name,
+        })
+      });
+
+      this.docColumns = [
+      {
+        field: "id",
+        label: "Identifiant technique",
+        visible: false,
+        readOnly: true,
+        hiddenInPopup: true
       },
-      error => {
-        this.$buefy.toast.open({
-          message: "Vous n'êtes plus connecté\u00B7e",
-          type: "is-danger"
-        });
-        this.$router.push("/login");
+      {
+        field: "lakeNames",
+        label: "Lacs",
+        searchable: true,
+        hiddenInPopup: true
+      },
+      {
+        field: "name",
+        label: "Nom",
+        searchable: true,
+      },
+      {
+        field: "miniatureUrl",
+        label: "Miniature",
+        visible: false,
+        isPicture: true
+      },
+      {
+        field: "datePublicationDebut",
+        label: "Début de publication",
+        isAPeriodBeginning: true
+      },
+      {
+        field: "isNational",
+        isABoolean: true,
+        label: "National (concerne tous les lacs)",
+        visible: false,
+        showItemIfFunction: (news) => {
+          return this.loggedAdmin.isNationalAdmin;
+        },
+      },
+      {
+        field: "lakeIds",
+        label: "Lacs",
+        isArray: true,
+        visible: false,
+        showItemIfFunction: (news) => {
+          return !news.isNational
+        },
+        possibleValuesForItemFunction: (news) => {
+          return news.lakeIds ?? [];
+        },
+        arrayOptions: this.lakesOptions
+      },
+      {
+        field: "datePublicationFin",
+        label: "Fin de publication",
+        isAPeriodEnd: true,
+        hiddenInPopup: true
+      },
+      {
+        field: "dateNotificationSent",
+        label: "Date d'envoi de la notification mail",
+        isANotificationDate: true,
+        hiddenInPopup: true
+      },
+      {
+        field: "isPublic",
+        label: "Visible sur le site",
+        isABoolean: true,
+        hiddenInPopup: true
+      },
+      {
+        field: "content",
+        label: "Contenu",
+        isHTML: true
       }
-    );
+    ];
+
+      const nextCheckDate= await BackendService.backendGet("/v1/news-notifications/next-check")
+      this.nextPlannifiedDate = nextCheckDate;
+    } catch (error) {
+      this.$buefy.toast.open({
+        message: "Vous n'êtes plus connecté\u00B7e",
+        type: "is-danger"
+      });
+      this.$router.push("/login");
+    }
   }
 }
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
 </style>

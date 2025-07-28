@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.dashboard;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Maillage;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -48,7 +49,7 @@ public interface GlobalDashboard {
 
     Map<UUID, Map<Month, Double>> monthlySizes();
 
-    Map<UUID, Map<Month, Map<Maillage, Double>>> monthlySizesPerMaillage();
+    Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizesPerMaillage();
 
     LocalDateTime computedOn();
 

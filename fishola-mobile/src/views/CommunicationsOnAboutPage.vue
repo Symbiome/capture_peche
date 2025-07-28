@@ -61,7 +61,7 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import TripsService from "@/services/TripsService";
-import { News } from "@/pojos/BackendPojos";
+import { NewsBean } from "@/pojos/BackendPojos";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import Constants from "../services/Constants";
@@ -77,7 +77,7 @@ import { RouterUtils } from "@/router/RouterUtils";
   },
 })
 export default class CommunicationsOnAboutPage extends Vue {
-  @Prop() news: News[];
+  @Prop() news: NewsBean[];
 
   hasRunningTrip: boolean = false;
 
@@ -87,7 +87,7 @@ export default class CommunicationsOnAboutPage extends Vue {
     );
   }
 
-  getMiniatureURl(news: News) {
+  getMiniatureURl(news: NewsBean) {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {
@@ -110,7 +110,7 @@ export default class CommunicationsOnAboutPage extends Vue {
   }
 
   showNewsDetails(newsId: string) {
-    RouterUtils.pushRouteNoDuplicate(router, "/news/" + newsId);
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/news/" + newsId);
   }
 }
 </script>
@@ -134,10 +134,11 @@ export default class CommunicationsOnAboutPage extends Vue {
     .news-row {
       padding-left: @margin-x-large;
       padding-right: @margin-x-large;
+      padding-top: 30px;
+      padding-bottom: 30px;
       height: fit-content;
       width: 350px;
       margin: 15px;
-      padding: 30px;
       background-color: @white;
       border: 1px solid #c4c4c4;
       .news-title {

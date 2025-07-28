@@ -108,7 +108,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
   currentSlide = 0;
 
   created(): void {
-    for (var i = 0; i < this.otherPics.length; i++) {
+    for (let i = 0; i < this.otherPics.length; i++) {
       const gallerySlide = new GallerySlide();
       gallerySlide.order = i;
       gallerySlide.src = this.otherPics[i].content;
@@ -129,7 +129,7 @@ export default class PictureModalMobileGallerySlider extends Vue {
       gallerySlide.isAddPicButton = true;
       this.slides.push(gallerySlide);
     }
-    for (var j = 0; j < this.slides.length; j++) {
+    for (let j = 0; j < this.slides.length; j++) {
       if (this.slides[j].src.replace("/preview", "") == this.src) {
         this.currentSlide = j;
       }

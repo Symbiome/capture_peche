@@ -28,7 +28,8 @@
             ? 'Période de publication'
             : col.label
         "
-        v-if="!col.hiddenInPopup"
+        :message="col.helpMessage ? col.helpMessage : null"
+        v-if="!col.hiddenInPopup && (col.showItemIfFunction === undefined || col.showItemIfFunction(item))"
       >
         <!-- HTML text -->
         <div v-if="col.isHTML" class="editor-holder">
@@ -232,6 +233,7 @@
               !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
+              !col.isArray &&
               ('' + item[col.field]).length < 200
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
@@ -246,6 +248,7 @@
               !col.isPicture &&
               !col.isABoolean &&
               !col.isADate &&
+              !col.isArray &&
               ('' + item[col.field]).length >= 200
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
@@ -287,12 +290,21 @@
           />
         </div>
 
+        <!-- Array -->
+        <MultipleAutoComplete
+          v-else-if="col.isArray"
+          :defaultSelection="col.possibleValuesForItemFunction ? col.possibleValuesForItemFunction(item) :  []"
+          :data="col.arrayOptions"
+          @updated="(value) => item[col.field] = value"
+        />
+
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
           <b-radio
             v-model="item[col.field]"
             :name="col.field"
             :native-value="true"
+            :disabled="col.readonly"
           >
             Oui
           </b-radio>
@@ -300,6 +312,7 @@
             v-model="item[col.field]"
             :name="col.field"
             :native-value="false"
+            :disabled="col.readonly"
           >
             Non
           </b-radio>
@@ -340,9 +353,10 @@ import StarterKit from "@tiptap/starter-kit";
 
 import { LocalDateTime, nativeJs } from "@js-joda/core";
 import ImageUploader from "./ImageUploader.vue";
+import MultipleAutoComplete from "./MultipleAutoComplete.vue";
 
 @Component({
-  components: { EditorContent, ImageUploader }
+  components: { EditorContent, ImageUploader, MultipleAutoComplete }
 })
 export default class RefenretialItem extends Vue {
   @Prop() item!: any;
@@ -392,7 +406,6 @@ export default class RefenretialItem extends Vue {
   }
 
   uploadedPic(url: string): void {
-    console.error(url);
     this.editor
       .chain()
       .focus()
@@ -529,7 +542,7 @@ export default class RefenretialItem extends Vue {
 
   formatDate(puet: any): string {
     let theDate: Date = this.parseLocalDateTime(puet);
-    var hourOptions: Intl.DateTimeFormatOptions = {
+    const hourOptions: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "numeric",
@@ -542,7 +555,7 @@ export default class RefenretialItem extends Vue {
 
   getBase64(file: any): Promise<string> {
     return new Promise<any>((resolve, reject) => {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = function() {
         resolve(reader.result);
@@ -565,10 +578,9 @@ export default class RefenretialItem extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .referential-item {
-  padding: 10px;
+  padding: 30px;
 
   h2 {
     font-size: 24px;
@@ -628,7 +640,6 @@ export default class RefenretialItem extends Vue {
 
     blockquote {
       min-height: 80px;
-      padding: 40px;
       position: relative;
       margin: 40px 0;
       padding: 1.6em 2.4em 0.7em calc(1.4em + var(--quote-image-width));

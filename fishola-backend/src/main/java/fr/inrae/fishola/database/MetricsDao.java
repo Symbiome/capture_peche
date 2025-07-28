@@ -22,19 +22,31 @@ package fr.inrae.fishola.database;
  */
 
 
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.rest.metrics.CountPerlakeAndPerYear;
 import fr.inrae.fishola.rest.metrics.MetricBean;
 import jakarta.inject.Singleton;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Singleton
 public class MetricsDao extends AbstractFisholaDao {
 
-    public MetricBean getMetrics() {
+    public MetricBean getMetrics(FisholaAdmin fisholaAdmin, Set<UUID> allowedAdminLakes) {
         MetricBean result = new MetricBean();
 
-        String activeUsersPerYearSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(distinct u.id) as total from trip t join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
+        String onlyAllowedLakesJoinCondition = "";
+        if (!fisholaAdmin.getIsNationalAdmin()) {
+            String lakeStringList = "(" + allowedAdminLakes.stream()
+                    .map(uuid -> "'" + uuid.toString() + "'")
+                    .collect(Collectors.joining(",")) +")";
+            onlyAllowedLakesJoinCondition = "lake.id in " + lakeStringList + " and ";
+        }
+
+        String activeUsersPerYearSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(distinct u.id) as total from trip t join lake on " + onlyAllowedLakesJoinCondition + " lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
         List<CountPerlakeAndPerYear> activeUsersPerYear = withContext(context -> context.fetch(activeUsersPerYearSQL).into(CountPerlakeAndPerYear.class));
         result.activeUsersPerYear = activeUsersPerYear;
 
@@ -43,17 +55,17 @@ public class MetricsDao extends AbstractFisholaDao {
         result.userRegistrationsPerYear = userRegistrationsPerYear;
         result.userRegistrationsPerYear.add(getTotalRow(userRegistrationsPerYear));
 
-        String tripsPerLakeSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(*) as total from trip t join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
+        String tripsPerLakeSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(*) as total from trip t join lake on " + onlyAllowedLakesJoinCondition + " lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
         List<CountPerlakeAndPerYear> tripsPerLake = withContext(context -> context.fetch(tripsPerLakeSQL).into(CountPerlakeAndPerYear.class));
         result.tripsPerLake = tripsPerLake;
         result.tripsPerLake.add(getTotalRow(tripsPerLake));
 
-        String catchesPerLakeSQL = "select lake.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from c.created_on) order by lake.name;";
+        String catchesPerLakeSQL = "select lake.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join lake on " + onlyAllowedLakesJoinCondition + " lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from c.created_on) order by lake.name;";
         List<CountPerlakeAndPerYear> catchesPerLake = withContext(context -> context.fetch(catchesPerLakeSQL).into(CountPerlakeAndPerYear.class));
         result.catchesPerLake = catchesPerLake;
         result.catchesPerLake.add(getTotalRow(catchesPerLake));
 
-        String automaticMeasuresPerLakeSQL = "select lake.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join lake on lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false and automatic_measure > 0 group by lake.name, extract(year from c.created_on) order by lake.name;";
+        String automaticMeasuresPerLakeSQL = "select lake.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join lake on " + onlyAllowedLakesJoinCondition + " lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false and automatic_measure > 0 group by lake.name, extract(year from c.created_on) order by lake.name;";
         List<CountPerlakeAndPerYear> automaticMeasuresPerLake = withContext(context -> context.fetch(automaticMeasuresPerLakeSQL).into(CountPerlakeAndPerYear.class));
         result.automaticMeasuresPerLake = automaticMeasuresPerLake;
         result.automaticMeasuresPerLake.add(getTotalRow(automaticMeasuresPerLake));

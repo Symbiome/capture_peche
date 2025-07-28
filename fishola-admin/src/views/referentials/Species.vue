@@ -53,11 +53,13 @@ export default class SpeciesVue extends Vue {
     },
     {
       field: "name",
-      label: "Nom"
+      label: "Nom",
+      searchable: true,
     },
     {
       field: "exportAs",
-      label: "Nom d'export"
+      label: "Nom d'export",
+      searchable: true,
     },
     {
       field: "builtIn",
@@ -85,7 +87,3 @@ export default class SpeciesVue extends Vue {
   }
 }
 </script>
-
-<style scoped lang="less">
-@import "../../less/main";
-</style>

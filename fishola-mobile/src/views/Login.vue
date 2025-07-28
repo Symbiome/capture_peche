@@ -62,7 +62,6 @@ import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
@@ -117,7 +116,7 @@ export default class LoginView extends Vue {
         }
 
         this.$root.$emit("profile-updated");
-        RouterUtils.pushRouteNoDuplicate(router, "trips");
+        RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
 
         // Après login, on tente de télécharger les settings
         ProfileService.prepareCaches().then(
@@ -146,7 +145,7 @@ export default class LoginView extends Vue {
   }
 
   signUp() {
-    RouterUtils.pushRouteNoDuplicate(router, "register");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "register");
   }
 
   autoLogin() {
@@ -156,7 +155,7 @@ export default class LoginView extends Vue {
   }
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(router, "/");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/");
   }
 }
 </script>

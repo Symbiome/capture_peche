@@ -42,7 +42,7 @@ export default class DispatcherView extends Vue {
   }
 
   checkForActiveSession() {
-    BackendService.backendGet("/v1/security/admin-check").then(
+    BackendService.backendGet("/v1/admin/check").then(
       () => {
         router.push("/home");
       },
@@ -56,7 +56,6 @@ export default class DispatcherView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../less/main";
 
 .dispatcher {
   height: 100%;

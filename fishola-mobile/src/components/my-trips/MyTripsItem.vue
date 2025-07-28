@@ -76,7 +76,7 @@ export default class MyTripItem extends Vue {
   created() {
     ReferentialService.getLakesIndex().then(this.lakesIndexLoaded);
 
-    var dayOptions: Intl.DateTimeFormatOptions = {
+    const dayOptions: Intl.DateTimeFormatOptions = {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -92,7 +92,7 @@ export default class MyTripItem extends Vue {
   }
 
   openTrip() {
-    RouterUtils.pushRouteNoDuplicate(router, {
+    RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip",
       params: { id: this.trip.id },
     });

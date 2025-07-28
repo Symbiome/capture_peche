@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="referential">
-    <h1>{{ name }}</h1>
+    <h1>{{ name }} <span class="count">({{ data.length }})</span></h1>
     <b-table
       :data="data"
       :striped="true"
@@ -41,6 +41,7 @@
           :field="col.field"
           :label="col.label"
           :key="col.name"
+          :searchable="col.searchable"
           sortable
         >
           <span v-if="col.isABoolean && props.row[col.field]">
@@ -134,7 +135,7 @@
       :destroy-on-hide="false"
       aria-role="dialog"
       full-screen
-      aria-modal
+      :aria-modal="true"
     >
       <ReferentialItem
         :item="selection.item"
@@ -300,7 +301,6 @@ export default class Refenretial extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
 
 .referential {
   .buttons {
@@ -309,9 +309,15 @@ export default class Refenretial extends Vue {
     flex-direction: row-reverse;
     padding-right: 30px;
     padding-top: 10px;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to bottom, #fff0, #fff);
   }
   table {
     tr {
+      th {
+        border-bottom-color: @pelorous;
+      }
       td {
         overflow: hidden;
         max-width: 200px;
@@ -319,6 +325,14 @@ export default class Refenretial extends Vue {
         text-overflow: ellipsis;
       }
     }
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  .count {
+    color: @pelorous;
+    font-weight: 100;
+    padding-left: 10px;
   }
 }
 </style>

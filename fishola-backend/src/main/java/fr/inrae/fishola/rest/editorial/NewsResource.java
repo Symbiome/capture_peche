@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.editorial;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
@@ -31,10 +32,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -57,15 +63,22 @@ public class NewsResource extends AbstractFisholaResource {
     @Path("/news")
     public List<News> getPublishedNews(@Context HttpServletRequest request) {
         // Return all news for which publication date is active
-        return dao.getNews(true);
+        return dao.getNews(true, Optional.empty());
+    }
+
+    @GET
+    @Path("/news/lake/{lakeId}")
+    public List<News> getPublishedNews(@PathParam("lakeId") UUID lakeId, @Context HttpServletRequest request) {
+        // Return all news for which publication date is active
+        return dao.getPublishedNewsForLake(lakeId);
     }
 
     @GET
     @Path("/news-all")
-    public List<News> getAllNews(@Context HttpServletRequest request) {
+    public List<NewsBean> getAllNews(@Context HttpServletRequest request) {
         // Return all news
-        checkIsAdmin();
-        return dao.getNews(false);
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        return dao.getNews(false, Optional.of(fisholaAdmin)).stream().map(this::newsToNewsBean).collect(Collectors.toList());
     }
     @GET
     @Path("/news/{newsId}")
@@ -90,12 +103,17 @@ public class NewsResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/news-all/{newsId}")
-    public Response updateNews(@PathParam("newsId") UUID newsId, News news) {
-        checkIsAdmin();
+    public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
+        boolean newsIsRegionalAndAdminHasNoRightsOnLake = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminLakes().containsAll(news.lakeIds);
+        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnLake) {
+            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.lakeIds);
+        }
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
-        Preconditions.checkArgument(newsId.equals(news.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(newsId.equals(news.id), "L'identifiant ne correspond pas");
         try {
-            dao.update(news);
+            dao.update(this.newsBeanToNews(news), news.lakeIds);
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
@@ -104,12 +122,18 @@ public class NewsResource extends AbstractFisholaResource {
         }
     }
 
+
     @POST
     @Path("/news-all")
-    public Response createNews(News news) {
-        checkIsAdmin();
+    public Response createNews(NewsBean news) {
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
+        boolean newsIsRegionalAndAdminHasNoRightsOnLake = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminLakes().containsAll(news.lakeIds);
+        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnLake) {
+            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.lakeIds);
+        }
         try {
-            News inserted = dao.insert(news);
+            News inserted = dao.insert(this.newsBeanToNews(news), news.lakeIds);
             // Update all news pictures uploaded with temp id
             dao.updateTempNewsPictureIds(inserted.getId());
             return Response.noContent().build();
@@ -153,5 +177,13 @@ public class NewsResource extends AbstractFisholaResource {
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND))
                 .build();
         return response;
+    }
+
+    private NewsBean newsToNewsBean(News n) {
+        Set<UUID> lakeIds = this.dao.getLakeIds(n.getId());
+        return new NewsBean(n.getId(), n.getName(), n.getContent(), n.getDatePublicationDebut(), n.getDatePublicationFin(), n.getDateNotificationSent(), n.getMiniatureId(), n.getIsNational(), lakeIds);
+    }
+    private News newsBeanToNews(NewsBean news) {
+        return new News(news.id, news.name, news.content, news.datePublicationDebut, news.datePublicationFin, news.dateNotificationSent, news.miniatureId, news.isNational);
     }
 }

@@ -19,41 +19,23 @@
   #L%
   -->
 <template>
-  <div class="licences page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+  <div>
+    <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
 
-    <div class="page licences-page">
-      <div class="pane pane-only">
-        <div class="pane-content rounded">
-          <h1 class="no-margin-pane">Mes cartes de pêche</h1>
-          <FishingLicenceList :licences="licences" @reload="fetchAllLicences" />
-
-          <div class="bottom-page-spacer"></div>
-
-          <div class="create-and-delete hide-on-mobile">
-            <div v-if="!hasRunningTrip" class="button button-primary">
-              <div class=" button button-primary">
-                <button @click="buttonClicked" class="new-button">
-                  <i class="icon-plus" />
-                  Nouvelle carte
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="bottom-page-spacer"></div>
+    <div class="create-and-delete">
+      <div class="button">
+        <button @click="buttonClicked" class="new-button">
+          <i class="icon-plus" />
+          Nouvelle carte
+        </button>
       </div>
-      <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,home,dashboard" v-bind:hideButton="hasRunningTrip" button-icon="icon-plus"
-      button-text="Nouvelle carte" v-on:buttonClicked="buttonClicked" />
   </div>
 </template>
 
 <script lang="ts">
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
-
-import Helpers from "@/services/Helpers";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
@@ -106,7 +88,7 @@ export default class FishingLicencesView extends Vue {
 
 
   buttonClicked() {
-    RouterUtils.pushRouteNoDuplicate(router, "/licences/new");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/licences/new");
   }
 }
 </script>
@@ -114,6 +96,29 @@ export default class FishingLicencesView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 @import "../less/main";
+
+.create-and-delete {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  @media screen and (min-width: 770px) {
+    justify-content: end;
+  }
+}
+
+.new-button {
+  border: 1px solid @pelorous !important;
+  color: @pelorous;
+  background-color: white;
+
+  &:hover {
+    border: 1px solid white;
+    color: white;
+    background-color: @pelorous;
+  }
+}
+
 
 .licences-page {
   display: flex;
@@ -132,7 +137,10 @@ export default class FishingLicencesView extends Vue {
     margin-left: -30px;
   }
 
+
+
   @media screen and (max-width: 1150px) and (min-width: 770px) {
+
     .new-button {
       font-size: 14px;
     }

@@ -93,7 +93,7 @@ export default class NewTripView extends Vue {
 
   newLiveTrip() {
     TripsService.newLiveTrip().then((id: string) => {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-meta",
         params: { id: id },
       });
@@ -102,7 +102,7 @@ export default class NewTripView extends Vue {
 
   newAfterwardsTrip() {
     TripsService.newAfterwardsTrip().then((id: string) => {
-      RouterUtils.pushRouteNoDuplicate(router, {
+      RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-meta",
         params: { id: id },
       });

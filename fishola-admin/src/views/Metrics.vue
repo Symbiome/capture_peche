@@ -49,7 +49,7 @@
           :default-sort="['lac', 'asc']"
         />
 
-        <h2 class="metrics-title">
+        <h2 class="metrics-title" v-if="loggedAdmin.isNationalAdmin">
           Nombre d'inscriptions par an
           <b-button
             type="is-primary"
@@ -63,7 +63,7 @@
             >Exporter en csv</b-button
           >
         </h2>
-        <b-table
+        <b-table v-if="loggedAdmin.isNationalAdmin"
           :data="metrics.userRegistrationsPerYear"
           :columns="userRegistrationsColumns"
           :default-sort="['annee', 'asc']"
@@ -104,7 +104,7 @@
           :columns="catchesPerLakeColumns"
           :default-sort="['lac', 'asc']"
         />
-        <h2 class="metrics-title">
+        <h2 class="metrics-title" v-if="loggedAdmin.isNationalAdmin">
           Nombre de mesures automatiques par lac et par an
           <b-button
             type="is-primary"
@@ -118,7 +118,7 @@
             >Exporter en csv</b-button
           >
         </h2>
-        <b-table
+        <b-table v-if="loggedAdmin.isNationalAdmin"
           :data="metrics.automaticMeasuresPerLake"
           :columns="automaticMeasuresPerLakeColumns"
           :default-sort="['lac', 'asc']"
@@ -137,6 +137,7 @@ import { Component, Vue } from "vue-property-decorator";
 })
 export default class Metrics extends Vue {
   url = "/v1/metrics";
+  loggedAdmin = { isNationalAdmin: false}
   metrics = {
     activeUsersPerYear: [],
     userRegistrationsPerYear: [],
@@ -145,31 +146,36 @@ export default class Metrics extends Vue {
     automaticMeasuresPerLake: []
   };
   activeUsersColumns = [
-    { field: "annee", label: "Année", sortable: true },
-    { field: "lac", label: "Lac", sortable: true },
+    { field: "annee", label: "Année", sortable: true, searchable: true },
+    { field: "lac", label: "Lac", sortable: true, searchable: true },
     { field: "total", label: "Utilisateurs actifs", sortable: true }
   ];
   userRegistrationsColumns = [
-    { field: "annee", label: "Année", sortable: true },
+    { field: "annee", label: "Année", sortable: true, searchable: true },
     { field: "total", label: "Inscriptions", sortable: true }
   ];
   tripsPerLakeColumns = [
-    { field: "annee", label: "Année", sortable: true },
-    { field: "lac", label: "Lac", sortable: true },
+    { field: "annee", label: "Année", sortable: true, searchable: true },
+    { field: "lac", label: "Lac", sortable: true, searchable: true },
     { field: "total", label: "Nombre de sorties", sortable: true }
   ];
   catchesPerLakeColumns = [
-    { field: "annee", label: "Année", sortable: true },
-    { field: "lac", label: "Lac", sortable: true },
+    { field: "annee", label: "Année", sortable: true, searchable: true },
+    { field: "lac", label: "Lac", sortable: true, searchable: true },
     { field: "total", label: "Nombres de prises", sortable: true }
   ];
   automaticMeasuresPerLakeColumns = [
-    { field: "annee", label: "Année", sortable: true },
-    { field: "lac", label: "Lac", sortable: true },
+    { field: "annee", label: "Année", sortable: true, searchable: true },
+    { field: "lac", label: "Lac", sortable: true, searchable: true },
     { field: "total", label: "Mesures automatiques", sortable: true }
   ];
 
   created() {
+    BackendService.backendGet("/v1/admin/check").then(
+      (admin) => {
+        this.loggedAdmin = admin
+      }
+    );
     BackendService.backendGet(this.url).then(res => {
       this.metrics = res;
     });
@@ -184,7 +190,7 @@ export default class Metrics extends Vue {
       { field: "indic_type", label: "Indicateur", sortable: true },
       { field: "total", label: "Valeur", sortable: true }
     ];
-    for (var i = 0; i < columns.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       if (i > 0) {
         csvContent += ";";
       }
@@ -195,11 +201,13 @@ export default class Metrics extends Vue {
       this.metrics.activeUsersPerYear,
       "Nombre d'utilisateurs actifs (au moins une sortie dans l'année)"
     );
-    csvContent += this.getCSVRows(
-      columns,
-      this.metrics.userRegistrationsPerYear,
-      "Nombre d'inscriptions par an"
-    );
+    if (this.loggedAdmin.isNationalAdmin) {
+      csvContent += this.getCSVRows(
+        columns,
+        this.metrics.userRegistrationsPerYear,
+        "Nombre d'inscriptions par an"
+      );
+    }
     csvContent += this.getCSVRows(
       columns,
       this.metrics.tripsPerLake,
@@ -210,17 +218,19 @@ export default class Metrics extends Vue {
       this.metrics.catchesPerLake,
       "Nombre de captures par lac et par an "
     );
-    csvContent += this.getCSVRows(
-      columns,
-      this.metrics.automaticMeasuresPerLake,
-      "Nombre de mesures automatiques par lac et par an"
-    );
+    if (this.loggedAdmin.isNationalAdmin) {
+      csvContent += this.getCSVRows(
+        columns,
+        this.metrics.automaticMeasuresPerLake,
+        "Nombre de mesures automatiques par lac et par an"
+      );
+    }
     this.downloadCSV("ensemble_indicateurs", csvContent);
   }
 
   exportAsCSV(fileName: string, columns: Array<string>, array: Array<any>) {
     let csvContent = "";
-    for (var i = 0; i < columns.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       if (i > 0) {
         csvContent += ";";
       }
@@ -230,8 +240,8 @@ export default class Metrics extends Vue {
     // Add content rows
     csvContent += array
       .map(row => {
-        var csvRow = "";
-        for (var i = 0; i < columns.length; i++) {
+        let csvRow = "";
+        for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";
           }
@@ -247,8 +257,8 @@ export default class Metrics extends Vue {
     let csvContent = "\n";
     csvContent += (array as Array<any>)
       .map(row => {
-        var csvRow = "";
-        for (var i = 0; i < columns.length; i++) {
+        let csvRow = "";
+        for (let i = 0; i < columns.length; i++) {
           if (i > 0) {
             csvRow += ";";
           }
@@ -266,14 +276,14 @@ export default class Metrics extends Vue {
   }
 
   downloadCSV(fileName: string, csvContent: string) {
-    var hiddenElement = document.createElement("a");
+    const hiddenElement = document.createElement("a");
     hiddenElement.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
     hiddenElement.target = "_blank";
 
     //provide the name for the CSV file to be downloaded
     const d = new Date();
-    var mm = d.getMonth() + 1;
-    var dd = d.getDate();
+    const mm = d.getMonth() + 1;
+    const dd = d.getDate();
     let dateString =
       d.getFullYear() +
       "-" +

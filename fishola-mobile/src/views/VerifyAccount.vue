@@ -79,7 +79,7 @@ export default class VerifyAccount extends Vue {
   }
 
   backToLogin() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
   }
 }
 </script>

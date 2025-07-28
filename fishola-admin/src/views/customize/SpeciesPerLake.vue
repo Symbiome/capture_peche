@@ -21,11 +21,20 @@
 <template>
   <div class="species-per-lake">
     <h1 id="table-title">Espèces par lac</h1>
-    <table class="table is-striped" aria-describedby="table-title">
+
+    <div v-if="lakes.length > maxLakeBeforeShowingAutoComplete">
+      Veuillez indiquer les lacs à afficher
+      <MultipleAutoComplete
+        :defaultSelection="lastLakeSelection"
+        :data="lakeSelectionOptions"
+        @updated="(value) => changeLakeSelection(value)"
+      />
+  </div>
+  <table class="table is-striped" aria-describedby="table-title" v-if="selectedLakes.length > 0">
       <thead>
         <tr>
           <th id="empty-lake-cell"></th>
-          <th :id="l.name" v-for="l in lakes" v-bind:key="l.id">
+          <th :id="l.name" v-for="l in selectedLakes" v-bind:key="l.id">
             {{ l.name }}
           </th>
         </tr>
@@ -33,7 +42,7 @@
       <tbody>
         <tr v-for="s in species" v-bind:key="s.id">
           <th :id="s.name">{{ s.name }}</th>
-          <td v-for="l in lakes" v-bind:key="l.id">
+          <td v-for="l in selectedLakes" v-bind:key="l.id">
             <div class="field">
               <b-input
                 v-model="speciesPerLakeAliases[l.id][s.id]"
@@ -52,19 +61,27 @@
   </div>
 </template>
 
-<script lans="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
+import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";
 
-@Component
+@Component(
+  {components: {MultipleAutoComplete}}
+)
 export default class SpeciesPerLakeVue extends Vue {
   lakes = [];
   species = [];
   speciesPerLake = {};
   speciesPerLakeAliases = {};
+  lakeSelectionOptions = [];
+  lastLakeSelection = [];
+  selectedLakes = [];
+  maxLakeBeforeShowingAutoComplete = 5;
 
   created() {
+    this.lastLakeSelection = JSON.parse(localStorage.getItem('lastLakeSelection') ?? "[]");
     Promise.all([
       BackendService.backendGet("/v1/referential/lakes"),
       BackendService.backendGet("/v1/referential/species"),
@@ -73,7 +90,13 @@ export default class SpeciesPerLakeVue extends Vue {
       this.lakes = data[0];
       this.species = data[1];
       this.speciesPerLake = data[2];
-
+      this.lakeSelectionOptions = [];
+      this.lakes.forEach(l => {
+        this.lakeSelectionOptions.push({id: l.id, label: l.name});
+      })
+      if (this.lakes.length < this.maxLakeBeforeShowingAutoComplete) {
+        this.selectedLakes = this.lakes;
+      }
       this.referentialLoaded();
     });
   }
@@ -96,8 +119,10 @@ export default class SpeciesPerLakeVue extends Vue {
   save() {
     BackendService.backendPut(
       "/v1/referential/species-aliases-per-lake",
-      this.speciesPerLakeAliases
-    ).then(
+      {
+        targetLakes: this.selectedLakes.map(l => l.id),
+        speciesPerLakeAliases: this.speciesPerLakeAliases
+      }).then(
       res => {
         this.$buefy.toast.open({
           message: "Espèces par lac enregistrées",
@@ -114,11 +139,15 @@ export default class SpeciesPerLakeVue extends Vue {
       }
     );
   }
+
+  changeLakeSelection(newSelectedLakeIds: string[]) {
+    this.selectedLakes = this.lakes.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
+    localStorage.setItem('lastLakeSelection', JSON.stringify(newSelectedLakeIds));
+  }
 }
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
 
 .species-per-lake {
   .table {

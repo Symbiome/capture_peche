@@ -127,11 +127,10 @@ import { Device } from "@capacitor/device";
 })
 export default class FeedbackModal extends Vue {
   display = false;
-
-  // version:string = process.env.VUE_APP_VERSION;
-  projectVersion: string = process.env.VUE_APP_PROJECT_VERSION;
-  gitRevision: string = process.env.VUE_APP_GIT_REVISION;
-  frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
+  mvnVersion: string = import.meta.env.VITE__MVN_VERSION;
+  packageJSONVersion: string = import.meta.env.VITE__PACKAGE_JSON_VERSION;
+  gitRevision: string = import.meta.env.VITE__GIT_REVISION;
+  frontendVersion: string = `${this.mvnVersion} ${this.packageJSONVersion} ${this.gitRevision}`;
 
   device: string = "";
 
@@ -155,7 +154,7 @@ export default class FeedbackModal extends Vue {
   }
 
   mounted() {
-    this.$root.$on("open-feedback", this.openFeedback);
+    this.$root.$on("open-feedback", event => this.openFeedback(event));
     this.$root.$on("close-feedback", this.closeFeedback);
   }
 
@@ -164,17 +163,22 @@ export default class FeedbackModal extends Vue {
     this.$root.$off("close-feedback");
   }
 
-  openFeedback() {
+  openFeedback(feedbackType: string) {
     // Hide footer to avoid having footer overlaping
     const footer = document?.querySelector("#root")?.querySelector(".footer");
     if (footer != null) {
       footer.classList.add("hidden");
     }
     this.model = {
-      category: "BUG",
+      category: feedbackType ? "OTHER" : "BUG",
       id: "" + new Date().getTime(),
       frontendVersion: this.frontendVersion,
     };
+    if (feedbackType == "scale") {
+      this.model.description = "Je souhaiterais devenir collecteur d'écailles.";
+    } else if (feedbackType == "ambassador") {
+      this.model.description = "Je souhaiterais devenir ambassadeur Fishola.";
+    }
     this.loadProfile();
   }
 
@@ -249,8 +253,8 @@ export default class FeedbackModal extends Vue {
   }
 
   getBrowserNameAndVersion() {
-    var ua = navigator.userAgent,
-      tem,
+    const ua = navigator.userAgent;
+    let tem,
       M =
         ua.match(
           /(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*([\d]+)/i

@@ -63,8 +63,9 @@ public class ReferentialDao extends AbstractFisholaDao {
     protected Logger log;
 
     public List<Lake> listLakes() {
-        List<Lake> result = withDao(LakeDao.class, LakeDao::findAll);
-        return result;
+        return withContext(context -> context.selectFrom(Tables.LAKE)
+                .orderBy(Tables.LAKE.NAME)
+                .fetchInto(Lake.class));
     }
 
     public void updateLake(Lake lake) {
@@ -346,5 +347,12 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     public void updateAuthorizeSample(AuthorizedSample entity) {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
+    }
+
+    public List<Lake> fetchLakesById(Set<UUID> allowedAdminLakes) {
+        return withContext(context -> context.selectFrom(Tables.LAKE)
+                .where(Tables.LAKE.ID.in(allowedAdminLakes.toArray(UUID[]::new)))
+                .orderBy(Tables.LAKE.NAME)
+                .fetchInto(Lake.class));
     }
 }

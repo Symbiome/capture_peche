@@ -30,12 +30,7 @@
       <div class="plus">+</div>
     </div>
     <div class="items">
-      <div
-        class="item"
-        v-if="connected"
-        v-on:click="goProfile"
-        :class="isActive('profile') ? 'active' : ''"
-      >
+      <div class="item" v-if="connected" v-on:click="goProfile" :class="isActive('profile') ? 'active' : ''">
         <span>
           {{ fullName }}
         </span>
@@ -43,13 +38,8 @@
         <div class="active-marker"></div>
       </div>
 
-      <div
-        class="item"
-        v-for="i in availableMenuItems()"
-        :key="'menu-item-' + i.name"
-        v-on:click="i.clickHandler"
-        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }"
-      >
+      <div class="item" v-for="i in availableMenuItems()" :key="'menu-item-' + i.name" v-on:click="i.clickHandler"
+        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }">
         <span>
           {{ i.label }}
         </span>
@@ -71,10 +61,10 @@ import Helpers from "@/services/Helpers";
 import Avatar from "@/components/common/Avatar.vue";
 import UserProfile from "@/pojos/UserProfile";
 
-import router from "@/router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
+import { Device } from "@capacitor/device";
 
 export class MenuItem {
   constructor(
@@ -84,7 +74,7 @@ export class MenuItem {
     public clickHandler: any,
     public onlyConnected: boolean,
     public onlyUnlogged: boolean
-  ) {}
+  ) { }
 }
 
 @Component({
@@ -93,96 +83,13 @@ export class MenuItem {
   },
 })
 export default class Menu extends Vue {
-  envName?: string = process.env.VUE_APP_ENV;
+  envName?: string = import.meta.env.VITE__ENV_NAME;
 
   visibility: string = "menu-hidden";
 
   connected: boolean = false;
 
-  menuItems: MenuItem[] = [
-    {
-      name: "back",
-      label: "Retour",
-      iconName: "arrow icon-back",
-      clickHandler: this.back,
-      onlyConnected: false,
-      onlyUnlogged: true,
-    },
-    {
-      name: "trips",
-      label: "Accueil",
-      iconName: "home",
-      clickHandler: this.goHome,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "offline-home",
-      label: "Accueil",
-      iconName: "home",
-      clickHandler: this.goHome,
-      onlyConnected: false,
-      onlyUnlogged: true,
-    },
-    {
-      name: "dashboard",
-      label: "Tableau de bord",
-      iconName: "dashboard",
-      clickHandler: this.goDashboard,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "licences",
-      label: "Cartes de pêche",
-      iconName: "fishing",
-      clickHandler: this.goLicences,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-    {
-      name: "settings",
-      label: "Paramètres",
-      iconName: "settings",
-      clickHandler: this.goSettings,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-
-    {
-      name: "documentationFaq",
-      label: "Documentation",
-      iconName: "files",
-      clickHandler: this.goDocumentation,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "credits",
-      label: "Infos / Crédits",
-      iconName: "info",
-      clickHandler: this.goCredits,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "feedback",
-      label: "Des retours ?",
-      iconName: "faq",
-      clickHandler: this.openFeedback,
-      onlyConnected: false,
-      onlyUnlogged: false,
-    },
-    {
-      name: "logout",
-      label: "Déconnexion",
-      iconName: "logout",
-      clickHandler: this.logout,
-      onlyConnected: true,
-      onlyUnlogged: false,
-    },
-  ];
-
+  menuItems: MenuItem[] = [];
   fullName: string = "";
   initials: string = "";
 
@@ -245,6 +152,48 @@ export default class Menu extends Vue {
           // @ts-ignore
           profile.lastNewsSeenDate
         );
+        if (!profile.lastNewsSeenDate) {
+          profile.lastNewsSeenDate = new Date(2025, 6, 1);
+        }
+        ProfileService.saveProfile(profile);
+      }
+      // Notify user if it is an old user and he does not know it is possible
+      // To receive notification par mail
+      else if (
+        !profile.acceptsShareTrips &&
+        (!profile.lastNewsSeenDate ||
+          // @ts-ignore
+          !profile.lastNewsSeenDate[0] ||
+          // @ts-ignore
+          profile.lastNewsSeenDate[0] <= 2025 &&
+        // @ts-ignore
+          profile.lastNewsSeenDate[1] < 6)
+      ) {
+        let acceptsShareTrips = false;
+        try {
+          await Helpers.confirm(
+            this.$modal,
+            `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre lac. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+            "Du nouveau sur FISHOLA",
+            "Non",
+            "Oui"
+          );
+          acceptsShareTrips = true;
+        } catch (_e) {
+          acceptsShareTrips = false;
+        }
+        profile.acceptsShareTrips = acceptsShareTrips;
+        // @ts-ignore
+        profile.lastNewsSeenDate[0] = 2025;
+        // @ts-ignore
+        profile.lastNewsSeenDate[1] = 6;
+        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+          // @ts-ignore
+          profile.lastNewsSeenDate
+        );
+        if (!profile.lastNewsSeenDate) {
+          profile.lastNewsSeenDate = new Date(2025, 6, 1);
+        }
         ProfileService.saveProfile(profile);
       }
 
@@ -252,16 +201,18 @@ export default class Menu extends Vue {
     } catch (e) {
       this.connected = false;
     }
+    this.refreshMenuItems()
   }
 
   back() {
-    RouterUtils.pushRouteNoDuplicate(router, "/about");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
   }
 
-  profileLoaded(profile: UserProfile) {
+  async profileLoaded(profile: UserProfile) {
     this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
     this.connected = true;
+    this.refreshMenuItems()
   }
 
   openMenu() {
@@ -280,59 +231,54 @@ export default class Menu extends Vue {
 
   goDispatcher() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/");
   }
 
-  goHome() {
+  goTrips() {
     this.closeMenu();
     if (this.connected) {
       // Si on est sur application -> toujours trips
       Helpers.ifApplication(() => {
-        RouterUtils.pushRouteNoDuplicate(router, "/trips");
+        RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
       });
 
       // Si on est sur navigateur et qu'on est connecté -> trips
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          RouterUtils.pushRouteNoDuplicate(router, "/trips");
+          RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
         } else {
-          RouterUtils.pushRouteNoDuplicate(router, "/about");
+          RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
         }
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(router, "/offline-home/presentation");
+      RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/presentation");
     }
   }
 
   goProfile() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
   }
 
-  goDashboard() {
+  goDashboardPersonal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/dashboard");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 
-  goLicences() {
+  goDashboardGlobal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/licences");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-global/dashboard");
   }
 
   goDocumentation() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/documentation/doc");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/doc");
   }
 
-  goSettings() {
+  goSocialAndNews() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/settings");
-  }
-
-  goCredits() {
-    this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(router, "/credits");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/community/social");
   }
 
   logout() {
@@ -371,7 +317,7 @@ export default class Menu extends Vue {
   }
 
   logguedOut() {
-    RouterUtils.pushRouteNoDuplicate(router, "/login");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     this.onLogguedOut();
   }
 
@@ -379,10 +325,89 @@ export default class Menu extends Vue {
     this.connected = false;
     this.fullName = "";
     this.initials = "";
+    this.refreshMenuItems()
   }
 
   isActive(name: string): boolean {
     return this.$route.name == name;
+  }
+
+  async refreshMenuItems() {
+    const homeShouldBeNameMyTrips = this.connected || (await Device.getInfo()).platform != "web"
+    this.menuItems = [
+      {
+        name: "back",
+        label: "Retour",
+        iconName: "arrow icon-back",
+        clickHandler: this.back,
+        onlyConnected: false,
+        onlyUnlogged: true,
+      },
+      {
+        name: "trips",
+        label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
+        iconName: "fish",
+        clickHandler: this.goTrips,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "offline-home",
+        label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
+        iconName: "home",
+        clickHandler: this.goTrips,
+        onlyConnected: false,
+        onlyUnlogged: true,
+      },
+      {
+        name: "dashboard-personal",
+        label: "Mes données",
+        iconName: "dashboard",
+        clickHandler: this.goDashboardPersonal,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "community",
+        label: "Communauté",
+        iconName: "fishing",
+        clickHandler: this.goSocialAndNews,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "dashboard-global",
+        label: "Statistiques",
+        iconName: "stats",
+        clickHandler: this.goDashboardGlobal,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "documentationFaq",
+        label: "Documentation",
+        iconName: "files",
+        clickHandler: this.goDocumentation,
+        onlyConnected: false,
+        onlyUnlogged: false,
+      },
+      {
+        name: "feedback",
+        label: "Des retours ?",
+        iconName: "faq",
+        clickHandler: this.openFeedback,
+        onlyConnected: false,
+        onlyUnlogged: false,
+      },
+      {
+        name: "logout",
+        label: "Déconnexion",
+        iconName: "logout",
+        clickHandler: this.logout,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+    ];
   }
 }
 </script>
@@ -406,6 +431,7 @@ export default class Menu extends Vue {
       from {
         left: 0px;
       }
+
       to {
         left: calc(100vw);
       }
@@ -422,6 +448,7 @@ export default class Menu extends Vue {
       from {
         left: calc(100vw);
       }
+
       to {
         left: 0px;
       }
@@ -459,6 +486,7 @@ export default class Menu extends Vue {
       img {
         height: calc(@fontsize-header-title + 20px);
       }
+
       span.env {
         color: @terra-cotta;
         font-size: @fontsize-paragraph;
@@ -546,29 +574,35 @@ export default class Menu extends Vue {
           width: 40px;
           height: 40px;
         }
+
         &.active {
           .active-marker {
             background-color: @white;
           }
+
           .pastille {
             color: @pelorous;
             background: @white;
           }
         }
+
         &.is-back {
           background-color: #0f3845;
           width: @desktop-menu-width;
           justify-items: flex-start;
+
           span {
             width: 100%;
           }
         }
+
         &:hover {
           span {
             font-weight: bold;
           }
         }
       }
+
       span {
         margin-right: @margin-medium;
 

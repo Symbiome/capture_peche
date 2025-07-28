@@ -37,9 +37,6 @@ export default {
 </script>
 
 <style scoped lang="less">
-
-@import "../less/main";
-
 .home {
   height: 100%;
   display: flex;

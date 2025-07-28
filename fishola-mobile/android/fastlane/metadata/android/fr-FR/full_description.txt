@@ -1,0 +1,12 @@
+FISHOLA est une application smartphone vous permettant de renseigner vos sorties de pêches et vos captures sur les grands lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette). En renseignant ces informations vous participez à la compréhension et à la préservation des lacs mais aussi à la connaissance du loisir pêche et de sa pratique. 
+FISHOLA est également un projet de science participative qui permet de recueillir des informations essentielles pour une meilleure gestion halieutique mais aussi à des fins de recherche sur les communautés de poissons lacustres. Toutes les données collectées sont analysées par des scientifiques afin de mieux comprendre l’évolution des populations de poissons lacustres face aux changements globaux. Les données collectées permettront également d’adapter au mieux la règlementation de la pêche pour une gestion durable des populations de poissons. L’application FISHOLA n’est pas un outil de contrôle de la pêche. 
+Journal de pêche : 
+    • Consultez votre historique de pêche personnel 
+    • Suivez vos records personnels
+FISHOLA intègre les fonctionnalités suivantes : 
+    • Renseignement de la durée de votre pêche pour obtenir un indice d’abondance des populations (ce sont les CPUE = captures par unité d’efforts, indispensables à une bonne gestion halieutique).
+    • Géolocalisation de l’ensemble des prises, qui permettra des études globales de la répartition des poissons en lien avec les conditions environnementales du lac. 
+    • Ajout de photos pour des études morphologiques des poissons capturés et un indicateur des traces de morsures par des prédateurs (brochet, cormoran, …).
+    • Renseignement de données météo et observations diverses concernant les captures. 
+    • Possibilité de réaliser de prélèvements d’écailles qui permettront aux scientifiques de déterminer l’âge des poissons et leur croissance.
+    • Liens vers des fiches concernant la biologie des principales espèces capturées et la règlementation propre à chaque lac.

@@ -29,7 +29,7 @@
     <parent>
         <groupId>fr.inrae</groupId>
         <artifactId>fishola</artifactId>
-        <version>2.0.12</version>
+        <version>2.0.13</version>
     </parent>
 
     <artifactId>fishola-backend</artifactId>
@@ -278,6 +278,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.mortennobel</groupId>
             <artifactId>java-image-scaling</artifactId>
         </dependency>
@@ -420,15 +425,18 @@
                         <class>fr.inrae.fishola.entities.tables.pojos.Editorial</class>
                         <class>fr.inrae.fishola.entities.tables.pojos.SampleType</class>
                         <class>fr.inrae.fishola.rest.editorial.DocumentationLight</class>
-                        <class>fr.inrae.fishola.entities.tables.pojos.News</class>
+                        <class>fr.inrae.fishola.rest.editorial.NewsBean</class>
                         <class>fr.inrae.fishola.rest.security.UserSettings</class>
                         <class>fr.inrae.fishola.rest.security.UpdatePasswordBean</class>
                         <class>fr.inrae.fishola.rest.about.KeyFigures</class>
                         <class>fr.inrae.fishola.rest.feedback.Feedback</class>
                         <class>fr.inrae.fishola.rest.dashboard.Dashboard</class>
                         <class>fr.inrae.fishola.rest.dashboard.GlobalDashboard</class>
+                        <class>fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceFromClientBean</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceResponseBean</class>
+                        <class>fr.inrae.fishola.rest.trips.CatchMarker</class>
+                        <class>fr.inrae.fishola.rest.social.TripSocial</class>
                     </classes>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>

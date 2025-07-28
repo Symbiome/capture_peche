@@ -77,8 +77,8 @@ public abstract class AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("", config.adminPassword()))
-                .post("/api/v1/security/admin-login")
+                .body(new LoginBean("amorel@codelutin.com", config.adminPassword()))
+                .post("/api/v1/admin/login")
                 .then()
                 .statusCode(204)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);

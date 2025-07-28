@@ -68,8 +68,6 @@ export default class CatchPreviewList extends Vue {
   @Prop({ default: "size" }) metaMode: string;
   @Prop({ default: "species" }) bottomMode: string;
 
-  created() {}
-
   mounted() {
     if (this.catchs && this.catchs.length > 0) {
       this.scrollToFirstElement();
@@ -131,7 +129,7 @@ export default class CatchPreviewList extends Vue {
       justify-content: center;
       align-items: center;
 
-      background-image: url("~/public/img/illustration_fish_wire.svg");
+      background-image: url("img/illustration_fish_wire.svg");
       background-repeat: no-repeat;
       background-size: auto 75%;
       background-position: center;
