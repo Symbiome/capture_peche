@@ -89,7 +89,7 @@ deploy:demo:
     - wget -O- https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
-  image: maven:3.8-eclipse-temurin-17
+  image: maven:3.8-eclipse-temurin-21
   stage: sonar
   when: manual
   script:
@@ -98,7 +98,7 @@ sonarqube:
     - docker
 
 package:android-demo:
-  image: eclipse-temurin:17-noble
+  image: eclipse-temurin:21-noble
   stage: package_mobile
   before_script:
     - cd fishola-mobile
@@ -150,7 +150,7 @@ package:android-demo:
 
 # must be run after the build stage
 package:android-production:
-  image: eclipse-temurin:17-noble
+  image: eclipse-temurin:21-noble
   when: manual
   stage: package_mobile
   before_script:
@@ -202,7 +202,7 @@ package:android-production:
 
 
 deploy:android-deploy-beta:
-  image: eclipse-temurin:17-noble
+  image: eclipse-temurin:21-noble
   stage: deploy
   when: manual
   before_script:
