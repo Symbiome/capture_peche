@@ -78,6 +78,7 @@ export default class LakesVue extends Vue {
 
   createLake(): any {
     return {
+      'lakeCode': '',
       'name': 'Nouveau lac',
       'exportAs': 'NouveauLac',
       'latitude': 45.5,
