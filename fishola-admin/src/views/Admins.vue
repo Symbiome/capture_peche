@@ -138,6 +138,8 @@ export default class UsersVue extends Vue {
   createAdmin(): any {
     return {
       name: "Nouvel administrateur",
+      email: "",
+      password: "",
       isNationalAdmin: false,
       lakeIds: []
     };
