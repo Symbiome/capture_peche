@@ -57,6 +57,13 @@
       v-on:trip-selected="tripSelected"
       v-on:trip-unselected="tripUnselected"
     />
+     <FisholaFooter 
+              shortcuts="logout,dashboard,home" 
+              selected="dashboard"
+              :buttonText="getButtonText()"
+              :buttonIcon="getButtonIcon()"
+              @buttonClicked="footerButtonClicked"
+         />
   </div>
 </template>
 

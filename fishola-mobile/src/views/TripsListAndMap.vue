@@ -41,7 +41,7 @@
           </div>
           <div class="bottom">
             <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip && visualizationMode === 'list'" />
-            <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" v-if="visualizationMode === 'list'" />
+           
           </div>
         </div>
       </div>
@@ -51,7 +51,6 @@
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
@@ -63,7 +62,6 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
   components: {
     FisholaHeader,
     MyTrips,
-    FisholaFooter,
     MyTripsMapView,
     NewsView,
     RunningOverlay
