@@ -33,8 +33,11 @@
             <div class="form-block">
               <FormInput name="name" label="Nom de la sortie" placeholder="Nommez votre sortie" v-model="trip.name"
                 v-bind:error="nameError" />
-              <FormSelect name="lake" label="Lac" v-bind:options="lakes" orderBy="name" v-model="trip.lakeId"
-                v-bind:error="lakeIdError" />
+              <LakeSelection
+                :lakes="lakes"
+                :selectedId="selectedLakeId"
+                v-bind:error="lakeIdError"
+                v-on:updated="selectLake" />
 
               <span v-if="hereIAmError" class="position-error">
                 <i class="icon-warning" />
@@ -84,6 +87,7 @@ import GeolocationService from "@/services/GeolocationService";
 import BackButton from "@/components/common/BackButton.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
+import LakeSelection from "@/components/common/LakeSelection.vue";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
@@ -102,6 +106,7 @@ import ProfileService from "@/services/ProfileService";
     FormInput,
     FormSelect,
     FisholaFooter,
+    LakeSelection,
   },
 })
 export default class TripMetaView extends Vue {
@@ -123,6 +128,7 @@ export default class TripMetaView extends Vue {
   typeError: string = "";
 
   lakes: Lake[] = [];
+  selectedLakeId : string = "";
   types: any[] = [];
 
   created() {
@@ -273,6 +279,11 @@ export default class TripMetaView extends Vue {
   giveupConfirmed() {
     TripsService.cancelCreations();
     RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+  }
+
+  selectLake(lakeId : string) {
+    this.selectedLakeId = lakeId;
+    this.trip.lakeId = lakeId;
   }
 }
 </script>
