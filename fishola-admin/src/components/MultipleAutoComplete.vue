@@ -38,6 +38,7 @@
       <span v-for="selected in selectedIds" class="selected">
           {{getItemLabel(selected)}}
           <b-icon
+            v-if="getItemLabel(selected) !== 'Autre Lac'"
             icon="close"
             size="is-small"
             @click.native="unselectedOption(selected)"
@@ -96,7 +97,7 @@ export default class MultipleAutoComplete extends Vue {
     let filteredItem = this.data.filter((option) => {
       return option.id === id;
     });
-    return filteredItem.length == 1 && filteredItem[0].label;
+    return filteredItem.length == 1 ? filteredItem[0].label : "Autre Lac";
   }
 }
 </script>
