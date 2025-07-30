@@ -20,35 +20,34 @@
   -->
 <template>
     <div class="lake-selection">
-      <label for="field-lakes">
+      <label for="lakes-autocomplete-input">
         Lac
       </label>
       <span class="input-wrapper">
         <input
-          id="field-lakes"
+          id="lakes-autocomplete-input"
           type="text"
           v-model="search"
           :class="{
-            'isSearching' : search != getSelectedLabel(),
+            'isSearching' : search.toLowerCase() != selectedLabel.toLowerCase(),
             'field-error' : error
           }"
-          v-on:keydown="displaySuggestions = false"
+          v-on:keydown="(event) => updateSuggestions(event)"
+          v-on:focusout="(event) => closeSuggestions(event)"
         />
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestions()" />
           <i class="icon-lake" />
         </span>
-        <ul class="suggestions" v-if="displaySuggestions || search != '' && search != getSelectedLabel()">
+        <ul class="suggestions" v-show="displaySuggestions">
           <li
-          v-for="(result, i) in getOptions()"
-          v-if="i < 11000000"
-          :class="result.id == selectedId ? 'selected' : ''"
-          @click="selectOption(result)"
-          v-html="highlightText(result.name)"
-          >
-        </li>
-      </ul>
-    </span>
+            v-for="option in options"
+            :class="option.id == selectedId ? 'selected' : ''"
+            @click="selectOption(option)"
+            v-html="highlightMatchingText(option.name)"
+          />
+        </ul>
+      </span>
 
       <div :class="error ? 'field-error' : ''">
         <span v-if="error">
@@ -61,30 +60,37 @@
 <script lang="ts">
 
 import { Lake } from '@/pojos/BackendPojos';
-import TripMeta from "@/pojos/TripMeta";
-import FormInput from "@/components/common/FormInput.vue";
-import FormSelect from "@/components/common/FormSelect.vue";
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 
 @Component({
   components: {
-    FormInput,
-    FormSelect,
   },
 })
 export default class LakeSelection extends Vue {
   @Prop() lakes: Lake[];
   @Prop() selectedId: string;
-  @Prop() error: string = "";
-  search: string = "";
+  @Prop({default : ""}) error: string;
+
   displaySuggestions: boolean = false;
+  options: Lake[] = [];
+  search: string = "";
+  selectedLabel: string = "";
 
   mounted() {
+    this.options = this.lakes;
+  }
+
+  @Watch("selectedId")
+  updateSelectedLakeLabel() {
+    let filteredItem = this.lakes.filter((option) => {
+      return option.id === this.selectedId;
+    });
+    this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
   }
 
   @Watch("search")
-  getOptions() {
-    return this.search == "" ? 
+  updateOptions() {
+    this.options = this.search == "" || this.selectedLabel == this.search ?
       this.lakes :
       this.lakes.filter((lake) => {
         return lake.name
@@ -94,33 +100,48 @@ export default class LakeSelection extends Vue {
     });
   }
 
-  // @Watch("selectedId")
-  getSelectedLabel() {
-    console.log("getSelectedLabel")
-    let filteredItem = this.lakes.filter((option) => {
-      return option.id === this.selectedId;
-    });
-    return filteredItem.length == 1 && filteredItem[0].name;
-  }
-
   selectOption(selected: Lake) {
     this.search = selected.name;
     this.displaySuggestions = false;
     this.$emit("updated", selected.id);
   }
 
-  highlightText(text) {
-    const regexp = new RegExp(this.search, 'ig');
-    return text.replace(regexp, `<span class="highlight">${this.search}</span>`)
+  highlightMatchingText(text) {
+    if (this.search != this.selectedLabel) {
+      const regexp = new RegExp(RegExp.escape(this.search), 'ig');
+      return text.replace(regexp, `<span class="highlight">${this.search}</span>`)
+    }
+    return text;
+  }
+
+  closeSuggestions(event:Event) {
+    // Hide suggestions when leaving the input field, except when clicking on one of the suggestions
+    if (event.type === 'focusout' && !event.target.parentElement.contains(event.rangeParent)) {
+      this.displaySuggestions = false;
+    }
+  }
+
+  updateSuggestions(event:Event) {
+    // Hide suggestions when the Esc or Enter key is pressed
+    if (event.keyCode == 27 || event.keyCode == 13) {
+      this.displaySuggestions = false;
+      // Hide suggestions and select the matching lake when the Enter key is pressed
+      if (event.keyCode == 13 && this.options.length == 1) {
+        this.$emit("updated", this.options[0].id);
+        this.search = this.options[0].name;
+      }q
+    } else {
+      // Display suggestions when search term is inputted
+      this.displaySuggestions = true;
+      if (this.selectedId) {
+        this.$emit("updated", null);
+      }
+    }
   }
 
   toggleSuggestions() {
-    if (!this.displaySuggestions) {
-      this.search = "";
-    }
     this.displaySuggestions = !this.displaySuggestions;
   }
-
 }
 </script>
 
@@ -163,6 +184,10 @@ export default class LakeSelection extends Vue {
     height: 38px;
     padding: 0 10px;
     gap: 10px;
+
+    i {
+      cursor: pointer;
+    }
   }
 
   input {
