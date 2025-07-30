@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div class="referential-item">
+  <div class="referential-item" v-if="item">
     <h2 v-if="item.name">{{ item.name }}</h2>
     <div v-for="col in columns" v-bind:key="col.field">
 

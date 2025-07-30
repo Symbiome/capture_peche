@@ -72,8 +72,10 @@ export default class MultipleAutoComplete extends Vue {
   }
 
   selectOption(option: any) {
-    this.selectedIds.push(option.id);
-    this.$emit("updated", this.selectedIds)
+    if (option) {
+      this.selectedIds.push(option.id);
+      this.$emit("updated", this.selectedIds)
+    }
   }
 
   unselectedOption(optionId: string) {
