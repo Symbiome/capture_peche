@@ -37,7 +37,7 @@
         />
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestions()" />
-          <i class="icon-lake" />
+          <i class="icon-lake" @click="displayMap = !displayMap"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
@@ -54,6 +54,13 @@
           {{ error }}
         </span>
       </div>
+      <LakesMap
+        v-if="displayMap"
+        :lakes="lakes"
+        class="modal"
+        style="width: 100%; height: 500px"
+        @selectLake="selectLakeById"
+      />
     </div>
 </template>
 
@@ -61,9 +68,11 @@
 
 import { Lake } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import LakesMap from "@/components/common/LakesMap.vue";
 
 @Component({
   components: {
+    LakesMap,
   },
 })
 export default class LakeSelection extends Vue {
@@ -71,6 +80,7 @@ export default class LakeSelection extends Vue {
   @Prop() selectedId: string;
   @Prop({default : ""}) error: string;
 
+  displayMap: boolean = false;
   displaySuggestions: boolean = false;
   options: Lake[] = [];
   search: string = "";
@@ -86,11 +96,12 @@ export default class LakeSelection extends Vue {
       return option.id === this.selectedId;
     });
     this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
+    this.updateOptions();
   }
 
   @Watch("search")
   updateOptions() {
-    this.options = this.search == "" || this.selectedLabel == this.search ?
+    this.options = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
       this.lakes :
       this.lakes.filter((lake) => {
         return lake.name
@@ -98,6 +109,17 @@ export default class LakeSelection extends Vue {
             .toLowerCase()
             .indexOf(this.search.toLowerCase()) >= 0;
     });
+  }
+
+  selectLakeById(id : string) {
+    console.log("selectLakeById", id);
+    let filteredItem = this.lakes.filter((option) => {
+      return option.id === id;
+    });
+    if (filteredItem.length == 1 ? filteredItem[0].name : '') {
+      this.selectOption(filteredItem[0]);
+      this.displayMap = false;
+    }
   }
 
   selectOption(selected: Lake) {
@@ -129,7 +151,7 @@ export default class LakeSelection extends Vue {
       if (event.keyCode == 13 && this.options.length == 1) {
         this.$emit("updated", this.options[0].id);
         this.search = this.options[0].name;
-      }q
+      }
     } else {
       // Display suggestions when search term is inputted
       this.displaySuggestions = true;
@@ -265,7 +287,19 @@ export default class LakeSelection extends Vue {
     }
   }
 }
-
+.modal {
+  position: absolute;
+  z-index: 1500;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 500px !important;
+  background-color: @black-alpha-90;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
 <style  lang="less">
 .highlight {
