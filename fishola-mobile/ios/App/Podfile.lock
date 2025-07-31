@@ -1,25 +1,27 @@
 PODS:
   - ByteowlsCapacitorFilesharer (5.0.0):
     - Capacitor
-  - Capacitor (6.1.0):
+  - Capacitor (7.0.1):
     - CapacitorCordova
-  - CapacitorApp (6.0.0):
+  - CapacitorApp (7.0.0):
     - Capacitor
-  - CapacitorCamera (6.0.1):
+  - CapacitorCamera (7.0.0):
     - Capacitor
-  - CapacitorCordova (6.1.0)
-  - CapacitorDevice (6.0.0):
+  - CapacitorCordova (7.0.1)
+  - CapacitorDevice (7.0.0):
     - Capacitor
-  - CapacitorGeolocation (6.0.0):
+  - CapacitorGeolocation (7.1.1):
     - Capacitor
-  - CapacitorKeyboard (6.0.1):
+    - IONGeolocationLib (~> 1.0)
+  - CapacitorKeyboard (7.0.0):
     - Capacitor
-  - CapacitorSplashScreen (6.0.1):
+  - CapacitorSplashScreen (7.0.0):
     - Capacitor
-  - CapacitorStatusBar (6.0.0):
+  - CapacitorStatusBar (7.0.0):
     - Capacitor
-  - CapawesomeCapacitorAppUpdate (6.0.0):
+  - CapawesomeCapacitorAppUpdate (7.0.1):
     - Capacitor
+  - IONGeolocationLib (1.0.0)
 
 DEPENDENCIES:
   - "ByteowlsCapacitorFilesharer (from `../../node_modules/@byteowls/capacitor-filesharer`)"
@@ -33,6 +35,10 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorAppUpdate (from `../../node_modules/@capawesome/capacitor-app-update`)"
+
+SPEC REPOS:
+  trunk:
+    - IONGeolocationLib
 
 EXTERNAL SOURCES:
   ByteowlsCapacitorFilesharer:
@@ -59,18 +65,19 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capawesome/capacitor-app-update"
 
 SPEC CHECKSUMS:
-  ByteowlsCapacitorFilesharer: 69c10c3f50ac9b16f3c38a792c4ea31e9a46f0eb
-  Capacitor: 3aff4dee0552f6badcd04f47ab3174387d71f47d
-  CapacitorApp: 30145f2ea2311e4f3744472119ec87d2ddf4c0a7
-  CapacitorCamera: 4792443e91e3cf83c36d72f16500f4bcd3a8e20a
-  CapacitorCordova: be703980ca797f847c3356f78fa175d21c8330c2
-  CapacitorDevice: 38ad323d74e3a86b56253680538ac23a2c9b4a68
-  CapacitorGeolocation: 86f82a32b238ff79d5be6fc0943f2866965d3f1b
-  CapacitorKeyboard: f38d730356be5569d72eb87ad9c8166947728c36
-  CapacitorSplashScreen: d2d8fe9541d7bebdf735839b89edf6e762cea969
-  CapacitorStatusBar: 129c68650d3f950e080e8e7e03d69c3b361dbe52
-  CapawesomeCapacitorAppUpdate: 08a91f5be8dc99ad336fe131d3b011b7acb49c22
+  ByteowlsCapacitorFilesharer: bda07882639e7d7b37de16426f2deb82d793c0b6
+  Capacitor: de199cba6c8b20995428ad0b7cb0bc6ca625ffd4
+  CapacitorApp: 9cb31064a6c6bb2b1438583733a7bf45557fc1da
+  CapacitorCamera: 20a37684b81c69c0c33fb5a7216919f135371a6f
+  CapacitorCordova: 63d476958d5022d76f197031e8b7ea3519988c64
+  CapacitorDevice: 069faf433b3a99c3d5f0e500fbe634f60a8c6a84
+  CapacitorGeolocation: c0755715aaadf5c86dc0053e1127b368444c914b
+  CapacitorKeyboard: 4db71e694e7afb5d7c0be09b05495c19f7d6c914
+  CapacitorSplashScreen: 7e7a0a1113833032f196b3af6fa437baccacf5bc
+  CapacitorStatusBar: a8c4c83ed2e973bdafb979e80e4b00d027832cb7
+  CapawesomeCapacitorAppUpdate: d1f04c1c870388248889908cf2ca960c7fdbf0ef
+  IONGeolocationLib: 81f33f88d025846946de2cf63b0c7628e7c6bc9d
 
-PODFILE CHECKSUM: 91ee1be2bd1c06cfe13042253cb470f237d7d5b9
+PODFILE CHECKSUM: ac58ca179ea4a0197ea90886fa1da6cbd0d9cc37
 
-COCOAPODS: 1.14.2
+COCOAPODS: 1.16.2
