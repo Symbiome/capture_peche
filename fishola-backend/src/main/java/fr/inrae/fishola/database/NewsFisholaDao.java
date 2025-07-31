@@ -21,14 +21,13 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
-import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
 import fr.inrae.fishola.entities.tables.daos.NewsLakeDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
 import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsLake;
@@ -36,16 +35,17 @@ import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.entities.tables.pojos.NextScheduledCourrielNotificationCheck;
 import fr.inrae.fishola.entities.tables.records.NewsRecord;
 import fr.inrae.fishola.rest.ImageHelper;
+import jakarta.inject.Singleton;
+import org.jooq.DSLContext;
+import org.jooq.Record1;
+import org.jooq.impl.DAOImpl;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.inject.Singleton;
-import org.jooq.DSLContext;
-import org.jooq.Record1;
-import org.jooq.impl.DAOImpl;
 
 @Singleton
 public class NewsFisholaDao extends AbstractFisholaDao {
@@ -62,7 +62,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
             ).toList();
         }
-        if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
+        if (admin.isPresent() && admin.get().getIsNationalAdmin()) {
             // For local admin, only keep national and lake-related actus
             UUID[] adminLakeIds = withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminLakes::getLakeId)).toArray(UUID[]::new);
             Set<UUID> newsOfReleventLakes =  withDao(NewsLakeDao.class, dao -> dao.fetchByLakeId(adminLakeIds).stream().map(NewsLake::getNewsId).collect(Collectors.toSet()));

@@ -173,10 +173,6 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> getTripSpecies(UUID tripId) {
-//        Set<UUID> speciesIds = withDao(TripExpectedSpeciesDao.class, dao -> dao.fetchByTripId(tripId)
-//                .stream()
-//                .map(TripExpectedSpecies::getSpeciesId)
-//                .collect(Collectors.toSet()));
         // Pour plus de performances, on ne charge pas l'objet complet mais on fait une projection
         Set<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
                 .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))

@@ -25,7 +25,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
@@ -38,20 +37,6 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.CatchMeasurementPicture;
 import fr.inrae.fishola.entities.tables.pojos.CatchPicture;
 import fr.inrae.fishola.entities.tables.records.CatchRecord;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.CatchMarker;
 import fr.inrae.fishola.rest.trips.ImmutableCatchMarker;
 import jakarta.inject.Singleton;
@@ -63,6 +48,17 @@ import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.count;
@@ -95,8 +91,8 @@ public class CatchsDao extends AbstractFisholaDao {
                     .set(record)
                     .returning(Tables.CATCH.ID)
                     .fetchOne();
-            UUID id = recordInserted.getId();
-            return id;
+            UUID insertedId = recordInserted.getId();
+            return insertedId;
         });
     }
 
@@ -132,21 +128,22 @@ public class CatchsDao extends AbstractFisholaDao {
              .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
              .where(Tables.TRIP.OWNER_ID.eq(userId))
              .fetch()
-             .map(record -> ImmutableCatchMarker.builder()
-                .id(record.get(Tables.CATCH.ID))
-                .tripId(record.get("tripId", UUID.class))
-                .tripName(record.get("tripName", String.class))
-                .specieName(record.get("specieName", String.class))
-                .date(record.get("date", LocalDateTime.class).toLocalDate())
-                .lakeName(record.get("lakeName", String.class))
-                .longitude(record.get("longitude", Double.class))
-                .latitude(record.get("latitude", Double.class))
-                .size(record.get("size", Double.class))
-                .weight(record.get("weight", Double.class))
-                .maillage(record.get("maillage", Maillage.class))
+             .map(markerRecord
+                     -> ImmutableCatchMarker.builder()
+                .id(markerRecord.get(Tables.CATCH.ID))
+                .tripId(markerRecord.get("tripId", UUID.class))
+                .tripName(markerRecord.get("tripName", String.class))
+                .specieName(markerRecord.get("specieName", String.class))
+                .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
+                .lakeName(markerRecord.get("lakeName", String.class))
+                .longitude(markerRecord.get("longitude", Double.class))
+                .latitude(markerRecord.get("latitude", Double.class))
+                .size(markerRecord.get("size", Double.class))
+                .weight(markerRecord.get("weight", Double.class))
+                .maillage(markerRecord.get("maillage", Maillage.class))
                 .hasValidCoordinates(
-                        record.get("default_lake_longitude") != null && !record.get("default_lake_longitude").equals(record.get("longitude")) ||
-                        record.get("default_lake_latitude") != null && !record.get("default_lake_latitude").equals(record.get("latitude"))
+                        markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get("longitude")) ||
+                        markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get("latitude"))
                 )
                 .build())
             );
@@ -235,14 +232,14 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public ListMultimap<UUID, Integer> getPictureIndexes(Set<UUID> catchIds) {
         ListMultimap<UUID, Integer> result = withContext(context -> {
-            Result<Record2<UUID, Integer>> records = context.select(Tables.CATCH_PICTURE.CATCH_ID, Tables.CATCH_PICTURE.PICTURE_INDEX)
+            Result<Record2<UUID, Integer>> catchIdToPictureIndexes = context.select(Tables.CATCH_PICTURE.CATCH_ID, Tables.CATCH_PICTURE.PICTURE_INDEX)
                     .from(Tables.CATCH_PICTURE)
                     .where(Tables.CATCH_PICTURE.CATCH_ID.in(catchIds))
                     .fetch();
             LinkedListMultimap<UUID, Integer> multimap = LinkedListMultimap.create();
-            for (Record2<UUID, Integer> record : records) {
-                final UUID catchId = record.component1();
-                final int order = record.component2();
+            for (Record2<UUID, Integer> catchIdToPictureIndex : catchIdToPictureIndexes) {
+                final UUID catchId = catchIdToPictureIndex.component1();
+                final int order = catchIdToPictureIndex.component2();
                 multimap.put(catchId, order);
             }
             return multimap;

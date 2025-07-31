@@ -362,11 +362,11 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         Optional<Integer> yearFilter = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
-        return this.dashboardDao.computeGlobalDashboard(yearFilter, Optional.empty(), this.log);
+        return this.dashboardDao.computeGlobalDashboard(yearFilter, Optional.empty());
     }
 
     private GlobalDashboard getGlobalDashboardForYear(Integer year) {
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty(), this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty());
     }
 
     private GlobalDashboard getGlobalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
@@ -374,6 +374,6 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         if (lakeIds.length > 0) {
             lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
         }
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter, this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter);
     }
 }

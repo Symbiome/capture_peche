@@ -338,9 +338,9 @@ export default class AuthorizedSamplesVue extends Vue {
             : "";
           if (maillageSize) {
             csvRow +=
-              (maillageSize ? maillageSize : "") +
+              (maillageSize ?? "") +
               "-" +
-              (maximumSize ? maximumSize : "1000") +
+              (maximumSize ?? "1000") +
               ";";
           } else {
             csvRow += ";";
@@ -436,15 +436,14 @@ export default class AuthorizedSamplesVue extends Vue {
     padding-top: 10px;
   }
 
-  .specie-container {
-    display: flex;
-  }
   .error {
     color: red;
     font-weight: bold;
   }
 
   .specie-container {
+    display: flex;
+
     .minsize-input {
       width: 80px !important;
       border: 2px solid green !important;

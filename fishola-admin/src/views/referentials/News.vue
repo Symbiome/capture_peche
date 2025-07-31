@@ -256,6 +256,3 @@ export default class DocumentationVue extends Vue {
   }
 }
 </script>
-
-<style scoped lang="less">
-</style>

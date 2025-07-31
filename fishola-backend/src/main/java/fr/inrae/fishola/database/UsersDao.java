@@ -22,26 +22,23 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteLakesDao;
-import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteLakes;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jboss.logging.Logger;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.jboss.logging.Logger;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_LAKES;

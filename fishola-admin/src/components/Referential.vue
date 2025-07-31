@@ -234,10 +234,8 @@ export default class Refenretial extends Vue {
               this.allowedDeletionElements.push(element["id"]);
             }
           });
-        } else {
-          if (this.allowedDeletionElements != null) {
+        } else if (this.allowedDeletionElements != null) {
             this.allowedDeletionElements.push(element["id"]);
-          }
         }
       });
     }

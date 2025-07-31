@@ -51,22 +51,6 @@ public class ImageHelper {
 
             image = ImageHelper.removeAlphaIfPresent(image);
 
-//            Set<String> formats = ImmutableSet.of("jpeg");
-//            for (String format : formats) {
-//                for (float quality = 1f; quality >= 0.90f; quality -= 0.01f) {
-//                    // write the image to a file
-//                    byte[] testBytes = imageToBytes(image, format, quality);
-//                    File parent = new File("/tmp/taiste-0.01");
-//                    parent.mkdirs();
-//                    File file = new File(parent, String.format("%s-%s-%.3f.%s", format, catchId, quality, format));
-//                    Files.write(testBytes, file);
-//
-//                    if (testBytes.length > 0) {
-//                        log.info(String.format("%s/%.3f=%dkb en %s", format, quality, testBytes.length / 1024, file.getAbsolutePath()));
-//                    }
-//                }
-//            }
-
             byte[] jpegBytes = ImageHelper.imageToBytes(image, "jpeg", rawImageQuality);
             if (jpegBytes.length > 0) {
                 log.info("Pas de soucis pour: " + image);

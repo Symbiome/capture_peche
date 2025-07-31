@@ -78,7 +78,7 @@ public class NewsResource extends AbstractFisholaResource {
     public List<NewsBean> getAllNews(@Context HttpServletRequest request) {
         // Return all news
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        return dao.getNews(false, Optional.of(fisholaAdmin)).stream().map(this::newsToNewsBean).collect(Collectors.toList());
+        return dao.getNews(false, Optional.of(fisholaAdmin)).stream().map(this::newsToNewsBean).toList();
     }
     @GET
     @Path("/news/{newsId}")

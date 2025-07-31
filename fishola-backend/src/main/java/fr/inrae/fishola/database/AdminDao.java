@@ -22,7 +22,6 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -32,7 +31,6 @@ import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.jooq.DSLContext;
 

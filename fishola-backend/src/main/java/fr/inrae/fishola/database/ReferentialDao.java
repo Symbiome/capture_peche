@@ -42,6 +42,11 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.logging.Logger;
+
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
@@ -50,11 +55,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 
 @Singleton
 public class ReferentialDao extends AbstractFisholaDao {

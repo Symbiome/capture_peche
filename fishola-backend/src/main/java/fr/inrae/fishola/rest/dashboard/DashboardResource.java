@@ -20,10 +20,6 @@ package fr.inrae.fishola.rest.dashboard;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.TripsDao;
@@ -38,7 +34,6 @@ import fr.inrae.fishola.rest.FisholaCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -54,8 +49,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
-import org.jspecify.annotations.Nullable;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -107,7 +100,7 @@ public class DashboardResource extends AbstractFisholaResource {
         Optional<Integer> yearFilter = Optional.of(year);
         Optional<List<UUID>> lakesFilter = Optional.of(List.of(lakeId));
         String cacheKey = year + "_" + lakeId;
-        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log));
+        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter));
     }
 
 

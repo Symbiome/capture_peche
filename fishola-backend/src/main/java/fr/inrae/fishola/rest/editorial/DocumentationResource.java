@@ -28,9 +28,6 @@ import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-
-import java.util.Base64;
-
 import fr.inrae.fishola.rest.FisholaCache;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,14 +42,14 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import fr.inrae.fishola.rest.about.AboutResource;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)

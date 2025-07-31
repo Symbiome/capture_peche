@@ -34,13 +34,8 @@ import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -50,8 +45,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.jboss.logging.Logger;
+import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
 
