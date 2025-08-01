@@ -33,7 +33,7 @@
     >
       <div class="news-row">
         <div class="left-pic">
-          <img :src="getMiniatureURl(doc)" class="news-pic" alt="image de l'actualité"/>
+          <img :src="getMiniatureURl(doc)" class="news-pic" alt="miniature de l'actualité"/>
         </div>
         <div class="right-content">
           <strong>{{ doc.name }}</strong> <br />

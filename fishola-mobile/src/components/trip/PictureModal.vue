@@ -59,7 +59,7 @@
             'pic-selected': pictureSrc.content == focusedPicSrc,
           }"
         >
-          <img class="picture" :src="pictureSrc.content" alt="picture" />
+          <img class="picture" :src="pictureSrc.content" alt="miniature" />
         </div>
         <!-- Then measurement pic (if any) -->
         <div
@@ -72,7 +72,7 @@
             'pic-selected': measurementPictureSrc == focusedPicSrc,
           }"
         >
-          <img class="picture" :src="measurementPictureSrc" alt="picture" />
+          <img class="picture" :src="measurementPictureSrc" alt="measure" />
         </div>
         <!-- Empty miniature picture for adding pictures -->
         <div
@@ -105,7 +105,7 @@
             :class="{ hidden: forceMobileMode }"
             class="picture"
             v-bind:src="focusedPicSrc"
-            alt="Photo de la capture"
+            alt="Capture"
           />
         </div>
       </div>

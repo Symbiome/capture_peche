@@ -40,7 +40,6 @@ export default abstract class AbstractFisholaService {
   }
 
   static pushToCache(uri: string, content: any) {
-    // console.debug(`Mise en cache pour ${uri}`, content);
     const newEntry: CacheEntry = new CacheEntry(new Date().getTime(), content);
     this.caches.set(uri, newEntry);
   }
@@ -73,7 +72,6 @@ export default abstract class AbstractFisholaService {
   static backendGetWithCache(uri: string): Promise<any> {
     const entry = this.caches.get(uri);
     if (entry && new Date().getTime() - entry.since < 1000 * 60 * 60) {
-      // console.debug("On utilise le cache", uri);
       return Promise.resolve(entry.content);
     }
 

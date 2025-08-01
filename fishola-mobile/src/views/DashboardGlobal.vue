@@ -140,7 +140,7 @@ export default class DashboardGlobalView extends Vue {
       (result: boolean) => (this.hasRunningTrip = result)
     );
     if (this.year && this.selectedLakeUUID && this.visualizationMode !== 'evolution') {
-      this.reloadDashboard;
+      this.reloadDashboard();
     }
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));

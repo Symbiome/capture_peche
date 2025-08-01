@@ -302,7 +302,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                                 }
                                 return false;
                             }
-                ).collect(Collectors.toList());
+                ).toList();
             OptionalDouble average;
             OptionalLong count;
             if (useEditedInBoInformation) {

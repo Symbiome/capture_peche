@@ -63,6 +63,7 @@ import org.jboss.logging.Logger;
 @Path("/api/v1/pictures")
 public class PictureResource extends AbstractFisholaResource {
 
+    public static final String MISSING_CAPTURE_ID = "Identifiant de capture manquant";
     @Inject
     protected TripsDao tripsDao;
 
@@ -281,7 +282,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.empty());
 
@@ -316,7 +317,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.of(order).map(String::valueOf));
 
@@ -348,7 +349,7 @@ public class PictureResource extends AbstractFisholaResource {
     @Produces("image/jpeg")
     public Response getMeasurementPicturePreview(@PathParam("catchId") UUID catchId) {
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.of("measure"));
 

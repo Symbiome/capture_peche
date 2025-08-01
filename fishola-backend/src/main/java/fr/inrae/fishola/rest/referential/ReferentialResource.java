@@ -65,6 +65,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReferentialResource extends AbstractFisholaResource {
 
+    public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
     @Inject
     protected ReferentialDao referentialDao;
 
@@ -94,7 +95,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/lakes/{lakeId}")
     public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
         Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
-        Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(lakeId.equals(lake.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateLake(lake);
         return Response.noContent().build();
@@ -119,7 +120,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/techniques/{techniqueId}")
     public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
         Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
-        Preconditions.checkArgument(techniqueId.equals(technique.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(techniqueId.equals(technique.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateTechnique(technique);
         return Response.noContent().build();
@@ -159,7 +160,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/raw-species/{speciesId}")
     public Response updateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
-        Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(speciesId.equals(species.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateSpecies(species);
         return Response.noContent().build();
@@ -214,7 +215,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         // On récupère la liste des toutes les espèces builtIn et des lacs
         List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
-        Set<UUID> lakeIds = Sets.newLinkedHashSet();
+        Set<UUID> lakeIds;
         // If logged as local admin
         // We filter the species ton only show relevant ones
         Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
@@ -267,7 +268,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/species-aliases-per-lake")
     public Response saveSpeciesAliasesPerLake(SpeciesAliasesPerLakeBean salp) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        checkIsAdmin();
 
         // On transforme la map pour avoir en clé lakeId+speciesId et en valeur les alias
         Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
@@ -432,7 +433,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
         checkIsAdmin();
         Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
-        Preconditions.checkArgument(weatherId.equals(weather.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(weatherId.equals(weather.getId()), NO_MATCHING_ID);
         referentialDao.updateWeather(weather);
         return Response.noContent().build();
     }

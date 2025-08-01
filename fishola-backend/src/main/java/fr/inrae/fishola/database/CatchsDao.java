@@ -68,6 +68,9 @@ import static org.jooq.impl.DSL.trueCondition;
 @Singleton
 public class CatchsDao extends AbstractFisholaDao {
 
+    public static final String DEFAULT_LAKE_LATITUDE = "latitude";
+    public static final String DEFAULT_LAKE_LONGITUDE = "longitude";
+
     public UUID create(Catch c) {
         if (c.getEditedSpeciesId() == null) {
             c.setEditedSpeciesId(c.getSpeciesId());
@@ -114,10 +117,10 @@ public class CatchsDao extends AbstractFisholaDao {
                      Tables.TRIP.NAME.as("tripName"),
                      Tables.TRIP.CREATED_ON.as("date"),
                      Tables.LAKE.NAME.as("lakeName"),
-                     coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as("longitude"),
-                     coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as("latitude"),
-                     Tables.LAKE.LATITUDE.as("default_lake_latitude"),
-                     Tables.LAKE.LONGITUDE.as("default_lake_longitude"),
+                     coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as(Tables.CATCH.LONGITUDE.getName()),
+                     coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as(Tables.CATCH.LATITUDE.getName()),
+                     Tables.LAKE.LATITUDE.as(DEFAULT_LAKE_LATITUDE),
+                     Tables.LAKE.LONGITUDE.as(DEFAULT_LAKE_LONGITUDE),
                      coalesce(Tables.CATCH.SIZE, 0).as("size"),
                      coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
                      Tables.CATCH.MAILLEE.as("maillage")
@@ -136,14 +139,14 @@ public class CatchsDao extends AbstractFisholaDao {
                 .specieName(markerRecord.get("specieName", String.class))
                 .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
                 .lakeName(markerRecord.get("lakeName", String.class))
-                .longitude(markerRecord.get("longitude", Double.class))
-                .latitude(markerRecord.get("latitude", Double.class))
+                .longitude(markerRecord.get(DEFAULT_LAKE_LONGITUDE, Double.class))
+                .latitude(markerRecord.get(DEFAULT_LAKE_LATITUDE, Double.class))
                 .size(markerRecord.get("size", Double.class))
                 .weight(markerRecord.get("weight", Double.class))
                 .maillage(markerRecord.get("maillage", Maillage.class))
                 .hasValidCoordinates(
-                        markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get("longitude")) ||
-                        markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get("latitude"))
+                        markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get(DEFAULT_LAKE_LONGITUDE)) ||
+                        markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get(DEFAULT_LAKE_LATITUDE))
                 )
                 .build())
             );

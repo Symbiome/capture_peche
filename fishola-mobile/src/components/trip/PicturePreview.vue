@@ -28,7 +28,7 @@
       <img
         class="picture"
         v-bind:src="src"
-        alt="Photo de la capture"
+        alt="Capture"
         @load="pictureLoaded"
       />
     </div>

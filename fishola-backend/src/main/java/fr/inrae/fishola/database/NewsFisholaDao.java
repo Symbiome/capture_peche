@@ -62,13 +62,13 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                             news.getDatePublicationFin() != null && now.isBefore(news.getDatePublicationFin())
             ).toList();
         }
-        if (admin.isPresent() && admin.get().getIsNationalAdmin()) {
+        if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
             // For local admin, only keep national and lake-related actus
             UUID[] adminLakeIds = withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminLakes::getLakeId)).toArray(UUID[]::new);
             Set<UUID> newsOfReleventLakes =  withDao(NewsLakeDao.class, dao -> dao.fetchByLakeId(adminLakeIds).stream().map(NewsLake::getNewsId).collect(Collectors.toSet()));
             allNews = allNews.stream().filter(news ->
                     newsOfReleventLakes.contains(news.getId())
-            ).collect(Collectors.toList());
+            ).toList();
         }
         allNews = allNews.stream().sorted(
                 (n1, n2) -> -1 * n1.getDatePublicationDebut().compareTo(n2.getDatePublicationDebut())
@@ -200,7 +200,7 @@ public class NewsFisholaDao extends AbstractFisholaDao {
 
         List<Record1<UUID>> miniature = dslContext.select(Tables.NEWS_PICTURE.ID)
                 .from(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId).and(Tables.NEWS_PICTURE.IS_MINIATURE
-                .eq(true))).fetch().collect(Collectors.toList());
+                .eq(true))).fetch().stream().toList();
         if (!miniature.isEmpty()) {
             News news = findById(newsId);
             if (news != null) {

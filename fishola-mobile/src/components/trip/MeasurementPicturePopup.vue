@@ -26,7 +26,7 @@
       style="position: absolute"
       @load="sourcePictureLoaded(0)"
       :src="measurementPictureSrc"
-      alt="Photo de mesure"
+      alt="Msure"
     />
     <div class="transparent-background" @click="$emit('close')"></div>
     <div class="pane popup-content">
@@ -498,7 +498,6 @@ export default class MeasurementPicturePopup extends Vue {
       font-size: @fontsize-form-input;
       font-family: "Open Sans", sans-serif;
       text-align: right;
-      font-size: 14px;
     }
   }
 }

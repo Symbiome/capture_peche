@@ -79,13 +79,13 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static boolean readBoolean(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         boolean result;
-        if (subNode instanceof BooleanNode booleanNode) {
-            result = booleanNode.booleanValue();
-        } else if (subNode instanceof TextNode textNode) {
-            String resultString = textNode.textValue();
-            result = Boolean.parseBoolean(resultString);
-        } else {
-            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
+        switch (subNode) {
+            case BooleanNode booleanNode -> result = booleanNode.booleanValue();
+            case TextNode textNode -> {
+                String resultString = textNode.textValue();
+                result = Boolean.parseBoolean(resultString);
+            }
+            default -> throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
@@ -93,13 +93,13 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static int readInt(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         int result;
-        if (subNode instanceof IntNode intNode) {
-            result = intNode.intValue();
-        } else if (subNode instanceof TextNode textNode) {
-            String resultString = textNode.textValue();
-            result = Integer.parseInt(resultString);
-        } else {
-            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
+        switch (subNode) {
+            case IntNode intNode -> result = intNode.intValue();
+            case TextNode textNode -> {
+                String resultString = textNode.textValue();
+                result = Integer.parseInt(resultString);
+            }
+            default -> throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }

@@ -223,7 +223,7 @@
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
-    <img alt="Photo de mesure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
+    <img alt="Msure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
       v-show="false" />
   </div>
 </template>

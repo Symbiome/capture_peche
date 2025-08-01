@@ -330,28 +330,7 @@ public class TripResource extends AbstractFisholaResource {
 
         Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
         Collection<CatchBean> incomingCatchBeans = CollectionUtils.emptyIfNull(trip.catchs);
-        for (CatchBean aCatch : incomingCatchBeans) {
-
-            if (log.isTraceEnabled()) {
-                log.tracef("Détails de la capture : %s", aCatch);
-            }
-
-            Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
-            if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
-                Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
-                updateCatch(trip.lakeId, existingCatch, aCatch);
-                updatedCatchsIds.add(parsedCatchId.get());
-                if (log.isDebugEnabled()) {
-                    log.debugf("Capture mise à jour : %s", parsedCatchId.get());
-                }
-            } else {
-                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
-                replacements.put(aCatch.id, catchId);
-                if (log.isDebugEnabled()) {
-                    log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
-                }
-            }
-        }
+        updateAndCreateFromIncomingCatchBeans(tripId, trip, incomingCatchBeans, existingCatchsIndex, updatedCatchsIds, replacements);
 
         Sets.SetView<UUID> toDeleteCatchsIds = Sets.difference(existingCatchsIndex.keySet(), updatedCatchsIds);
         toDeleteCatchsIds.forEach(catchId -> {
@@ -376,6 +355,31 @@ public class TripResource extends AbstractFisholaResource {
 
         Response response = wrapEntity(replacements, userIdAndRenewal);
         return response;
+    }
+
+    private void updateAndCreateFromIncomingCatchBeans(UUID tripId, TripBean trip, Collection<CatchBean> incomingCatchBeans, ImmutableMap<UUID, Catch> existingCatchsIndex, Set<UUID> updatedCatchsIds, Map<String, UUID> replacements) {
+        for (CatchBean aCatch : incomingCatchBeans) {
+
+            if (log.isTraceEnabled()) {
+                log.tracef("Détails de la capture : %s", aCatch);
+            }
+
+            Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
+            if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
+                Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
+                updateCatch(trip.lakeId, existingCatch, aCatch);
+                updatedCatchsIds.add(parsedCatchId.get());
+                if (log.isDebugEnabled()) {
+                    log.debugf("Capture mise à jour : %s", parsedCatchId.get());
+                }
+            } else {
+                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
+                replacements.put(aCatch.id, catchId);
+                if (log.isDebugEnabled()) {
+                    log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
+                }
+            }
+        }
     }
 
     @DELETE
@@ -650,8 +654,8 @@ public class TripResource extends AbstractFisholaResource {
         result.type = entity.getType();
         result.lakeId = entity.getLakeId();
         result.date = entity.getDay();
-        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
+        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.weatherId = Optional.ofNullable(entity.getWeatherId());
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);

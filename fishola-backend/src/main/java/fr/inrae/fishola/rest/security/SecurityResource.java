@@ -92,13 +92,13 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
 
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
         if (StringUtils.isEmpty(email)) {
-            validationErrors.put("email", "L'e-mail est obligatoire");
+            validationErrors.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "Le format n'est pas correct");
+            validationErrors.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else if (usersDao.findByEmail(email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "E-mail déjà utilisé");
+            validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -138,7 +138,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/email-validation.html",
                     "verifyLink", verifyUrl,
-                    "firstName", bean.firstName);
+                    CLAIM_FIRST_NAME, bean.firstName);
             FisholaMail mail = builder
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")
@@ -295,7 +295,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/password_reset.html",
                     "resetLink", resetUrl,
-                    "firstName", correspondingUser.get().getFirstName());
+                    CLAIM_FIRST_NAME, correspondingUser.get().getFirstName());
             FisholaMail mail = builder
                     .addTos(reset.email)
                     .subject("FISHOLA - Réinitialisation de votre mot de passe")
@@ -523,19 +523,19 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         Map<String, String> result = new HashMap<>();
 
         if (StringUtils.isEmpty(bean.getFirstName())) {
-            result.put("firstName", "Le prénom est obligatoire");
+            result.put(CLAIM_FIRST_NAME, "Le prénom est obligatoire");
         }
 
         if (StringUtils.isEmpty(bean.getEmail())) {
-            result.put("email", "L'e-mail est obligatoire");
+            result.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(bean.getEmail())) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            result.put("email", "Le format n'est pas correct");
+            result.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else {
             Optional<FisholaUser> existingUser = usersDao.findByEmail(bean.getEmail());
             if (existingUser.isPresent() && !bean.getId().equals(existingUser.get().getId())) {
                 // On vérifie qu'il n'y a pas déjà un compte avec cet email
-                result.put("email", "E-mail déjà utilisé");
+                result.put(CLAIM_EMAIL, "E-mail déjà utilisé");
             }
         }
 

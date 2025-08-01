@@ -126,16 +126,16 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         Map<String, String> validationErrors = new HashMap<>();
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
         if (StringUtils.isEmpty(email)) {
-            validationErrors.put("email", "L'e-mail est obligatoire");
+            validationErrors.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "Le format n'est pas correct");
+            validationErrors.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else if (adminDao.findByEmail(email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "E-mail déjà utilisé");
+            validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
         }
         if (bean.lakeIds.isEmpty()) {
-            validationErrors.put("lakeIds", "Au moins un lac doit être associé à l'administrateur");
+            validationErrors.put(CLAIM_LAKE_IDS, "Au moins un lac doit être associé à l'administrateur");
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -173,7 +173,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/admin-email-validation.html",
                     "verifyLink", verifyUrl,
-                    "email", bean.email);
+                    CLAIM_EMAIL, bean.email);
             FisholaMail mail = builder
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")

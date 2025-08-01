@@ -30,7 +30,12 @@
       <div class="plus">+</div>
     </div>
     <div class="items">
-      <div class="item" v-if="connected" v-on:click="goProfile" :class="isActive('profile') ? 'active' : ''">
+      <div
+        class="item"
+        v-if="connected"
+        v-on:click="goProfile"
+        :class="isActive('profile') ? 'active' : ''"
+      >
         <span>
           {{ fullName }}
         </span>
@@ -38,8 +43,13 @@
         <div class="active-marker"></div>
       </div>
 
-      <div class="item" v-for="i in availableMenuItems()" :key="'menu-item-' + i.name" v-on:click="i.clickHandler"
-        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }">
+      <div
+        class="item"
+        v-for="i in availableMenuItems()"
+        :key="'menu-item-' + i.name"
+        v-on:click="i.clickHandler"
+        :class="{ active: isActive(i.name), 'is-back': i.name == 'back' }"
+      >
         <span>
           {{ i.label }}
         </span>
@@ -74,7 +84,7 @@ export class MenuItem {
     public clickHandler: any,
     public onlyConnected: boolean,
     public onlyUnlogged: boolean
-  ) { }
+  ) {}
 }
 
 @Component({
@@ -132,30 +142,7 @@ export default class Menu extends Vue {
           // @ts-ignore
           profile.lastNewsSeenDate[0] == 2021)
       ) {
-        let acceptsMailNotifications = false;
-        try {
-          await Helpers.confirm(
-            this.$modal,
-            `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-            "Du nouveau sur FISHOLA",
-            "Non",
-            "Oui"
-          );
-          acceptsMailNotifications = true;
-        } catch (_e) {
-          acceptsMailNotifications = false;
-        }
-        profile.acceptsMailNotifications = acceptsMailNotifications;
-        // @ts-ignore
-        profile.lastNewsSeenDate[0] = 2022;
-        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-          // @ts-ignore
-          profile.lastNewsSeenDate
-        );
-        if (!profile.lastNewsSeenDate) {
-          profile.lastNewsSeenDate = new Date(2025, 6, 1);
-        }
-        ProfileService.saveProfile(profile);
+        await this.askAcceptMailNotification(profile);
       }
       // Notify user if it is an old user and he does not know it is possible
       // To receive notification par mail
@@ -165,43 +152,74 @@ export default class Menu extends Vue {
           // @ts-ignore
           !profile.lastNewsSeenDate[0] ||
           // @ts-ignore
-          profile.lastNewsSeenDate[0] <= 2025 &&
-        // @ts-ignore
-          profile.lastNewsSeenDate[1] < 6)
+          (profile.lastNewsSeenDate[0] <= 2025 &&
+            // @ts-ignore
+            profile.lastNewsSeenDate[1] < 6))
       ) {
-        let acceptsShareTrips = false;
-        try {
-          await Helpers.confirm(
-            this.$modal,
-            `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre lac. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-            "Du nouveau sur FISHOLA",
-            "Non",
-            "Oui"
-          );
-          acceptsShareTrips = true;
-        } catch (_e) {
-          acceptsShareTrips = false;
-        }
-        profile.acceptsShareTrips = acceptsShareTrips;
-        // @ts-ignore
-        profile.lastNewsSeenDate[0] = 2025;
-        // @ts-ignore
-        profile.lastNewsSeenDate[1] = 6;
-        profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-          // @ts-ignore
-          profile.lastNewsSeenDate
-        );
-        if (!profile.lastNewsSeenDate) {
-          profile.lastNewsSeenDate = new Date(2025, 6, 1);
-        }
-        ProfileService.saveProfile(profile);
+        await this.askAcceptShareTrips(profile);
       }
 
       this.profileLoaded(profile);
     } catch (e) {
       this.connected = false;
     }
-    this.refreshMenuItems()
+    this.refreshMenuItems();
+  }
+
+  private async askAcceptShareTrips(profile: UserProfile) {
+    let acceptsShareTrips = false;
+    try {
+      await Helpers.confirm(
+        this.$modal,
+        `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre lac. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+        "Du nouveau sur FISHOLA",
+        "Non",
+        "Oui"
+      );
+      acceptsShareTrips = true;
+    } catch (_e) {
+      acceptsShareTrips = false;
+    }
+    profile.acceptsShareTrips = acceptsShareTrips;
+    // @ts-ignore
+    profile.lastNewsSeenDate[0] = 2025;
+    // @ts-ignore
+    profile.lastNewsSeenDate[1] = 6;
+    profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+      // @ts-ignore
+      profile.lastNewsSeenDate
+    );
+    if (!profile.lastNewsSeenDate) {
+      profile.lastNewsSeenDate = new Date(2025, 6, 1);
+    }
+    ProfileService.saveProfile(profile);
+  }
+
+  private async askAcceptMailNotification(profile: UserProfile) {
+    let acceptsMailNotifications = false;
+    try {
+      await Helpers.confirm(
+        this.$modal,
+        `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+        "Du nouveau sur FISHOLA",
+        "Non",
+        "Oui"
+      );
+      acceptsMailNotifications = true;
+    } catch (_e) {
+      acceptsMailNotifications = false;
+    }
+    profile.acceptsMailNotifications = acceptsMailNotifications;
+    // @ts-ignore
+    profile.lastNewsSeenDate[0] = 2022;
+    profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+      // @ts-ignore
+      profile.lastNewsSeenDate
+    );
+    if (!profile.lastNewsSeenDate) {
+      profile.lastNewsSeenDate = new Date(2025, 6, 1);
+    }
+    ProfileService.saveProfile(profile);
   }
 
   back() {
@@ -212,7 +230,7 @@ export default class Menu extends Vue {
     this.fullName = UserProfile.fullName(profile);
     this.initials = profile.initials;
     this.connected = true;
-    this.refreshMenuItems()
+    this.refreshMenuItems();
   }
 
   openMenu() {
@@ -246,13 +264,19 @@ export default class Menu extends Vue {
       // Si on est sur navigateur et qu'on est pas connecté -> about
       Helpers.ifWeb(() => {
         if (this.connected) {
-          RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
+          RouterUtils.pushRouteNoDuplicate(
+            this.$router,
+            RouterUtils.homeRoute()
+          );
         } else {
           RouterUtils.pushRouteNoDuplicate(this.$router, "/about");
         }
       });
     } else {
-      RouterUtils.pushRouteNoDuplicate(this.$router, "/offline-home/presentation");
+      RouterUtils.pushRouteNoDuplicate(
+        this.$router,
+        "/offline-home/presentation"
+      );
     }
   }
 
@@ -263,12 +287,18 @@ export default class Menu extends Vue {
 
   goDashboardPersonal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
+    RouterUtils.pushRouteNoDuplicate(
+      this.$router,
+      "/dashboard-personal/dashboard"
+    );
   }
 
   goDashboardGlobal() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-global/dashboard");
+    RouterUtils.pushRouteNoDuplicate(
+      this.$router,
+      "/dashboard-global/dashboard"
+    );
   }
 
   goDocumentation() {
@@ -325,7 +355,7 @@ export default class Menu extends Vue {
     this.connected = false;
     this.fullName = "";
     this.initials = "";
-    this.refreshMenuItems()
+    this.refreshMenuItems();
   }
 
   isActive(name: string): boolean {
@@ -333,7 +363,8 @@ export default class Menu extends Vue {
   }
 
   async refreshMenuItems() {
-    const homeShouldBeNameMyTrips = this.connected || (await Device.getInfo()).platform != "web"
+    const homeShouldBeNameMyTrips =
+      this.connected || (await Device.getInfo()).platform != "web";
     this.menuItems = [
       {
         name: "back",

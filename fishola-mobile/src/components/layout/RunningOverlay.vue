@@ -128,8 +128,6 @@ export default class RunningOverlay extends Vue {
     display: flex;
     justify-content: center;
 
-    z-index: 10;
-
     div {
       height: 41px;
     }

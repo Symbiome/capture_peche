@@ -141,28 +141,38 @@ export default class ReferentialService extends AbstractFisholaService {
       Promise.all([
         ReferentialService.getSpeciesPerLake(),
         ReferentialService.getSpeciesCustom(),
-      ]).then((data: [Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]) => {
-        const result: Map<string, SpeciesWithAlias[]> = new Map<
-          string,
-          SpeciesWithAlias[]
-        >();
-
-        const custom: SpeciesWithAlias[] = data[1];
-
-        const perLake = data[0];
-        perLake.forEach((value, lakeId) => {
-          if (lakeId != "offlineMarker") {
-            const lakeSpecies: SpeciesWithAlias[] = [];
-            value.forEach((s) => lakeSpecies.push(s));
-            // Quel que soit le lac, on ajoute les espèces custom à la liste
-            custom.forEach((s) => lakeSpecies.push(s));
-            result.set(lakeId, lakeSpecies);
-          }
-        });
-
-        resolve(result);
-      }, reject);
+      ]).then(
+        (
+          serverResponse: [Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]
+        ) => {
+          resolve(ReferentialService.buildSpeciesAliasMapFromServerResponse(serverResponse));
+        },
+        reject
+      );
     });
+  }
+
+  static buildSpeciesAliasMapFromServerResponse(
+    serverResponse: [Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]
+  ) {
+    const result: Map<string, SpeciesWithAlias[]> = new Map<
+      string,
+      SpeciesWithAlias[]
+    >();
+
+    const custom: SpeciesWithAlias[] = serverResponse[1];
+
+    const perLake = serverResponse[0];
+    perLake.forEach((value, lakeId) => {
+      if (lakeId != "offlineMarker") {
+        const lakeSpecies: SpeciesWithAlias[] = [];
+        value.forEach((s) => lakeSpecies.push(s));
+        // Quel que soit le lac, on ajoute les espèces custom à la liste
+        custom.forEach((s) => lakeSpecies.push(s));
+        result.set(lakeId, lakeSpecies);
+      }
+    });
+    return result;
   }
 
   static getSpecies(lakeId: string): Promise<SpeciesWithAlias[]> {
