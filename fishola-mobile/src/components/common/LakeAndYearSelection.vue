@@ -21,9 +21,16 @@
 <template>
     <div class="selects-holder">
         <select placeholder="lake" v-model="selectedLakeUUID">
-            <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                {{ lake.name }}
-            </option>
+            <optgroup label="Favoris" v-if="favoriteLakes.length">
+              <option v-for="lake in favoriteLakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+              </option>
+            </optgroup>
+            <optgroup label="Tous les lacs">
+              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+              </option>
+            </optgroup>
             </select>
             <select placeholder="Année" v-model="selectedYear" v-if="showYears">
             <option v-for="year in years" :value="year" :key="'year_' + year">
@@ -31,10 +38,6 @@
             </option>
         </select>
 
-    <span class="show-all-lakes" @click="showAllLakes = !showAllLakes">
-        <span v-if="showAllLakes">Seulement mes lacs favoris</span>
-        <span v-else>Voir tous les lacs</span>
-    </span>
     </div>
 </template>
 
@@ -55,7 +58,7 @@ export default class LakeAndYearSelection extends Vue {
   selectedYear = 0;
   selectedLakeUUID = "";
   lakes: Lake[] = [];
-  showAllLakes = false;
+  favoriteLakes: Lake[] = [];
   doneLoading = false;
 
   mounted() {
@@ -68,24 +71,22 @@ export default class LakeAndYearSelection extends Vue {
         this.selectedYear = this.years[0];
        }
     }
-    if (localStorage && localStorage.showAllLakes) {
-      this.showAllLakes = localStorage.showAllLakes === "true";
-    }
     if (query.lakeId) {
       this.selectedLakeUUID = query.lakeId as string;
     }
     this.loadLakes();
   }
 
-  
-  @Watch("showAllLakes")
   async loadLakes(): Promise<void> {
     try {
-        if (this.showAllLakes)  {
-            this.lakes = await ReferentialService.getLakes();
-        } else {
-            this.lakes = await ReferentialService.getFavoriteLakes();
-        }
+        const allLakes = await ReferentialService.getLakes();
+        this.favoriteLakes = await ReferentialService.getFavoriteLakes();
+
+        this.lakes = allLakes.filter(( l ) => {
+            return !this.favoriteLakes.find((l2) => {
+                return l.id === l2.id
+            })
+        } );
     } catch (e) {
         // Silent catch
         console.error(e);
@@ -142,12 +143,6 @@ export default class LakeAndYearSelection extends Vue {
       this.$emit("year", this.selectedYear);
     }
   }
-
-  @Watch("showAllLakes")
-  showAllLakesChanged() {
-    localStorage.showAllLakes = this.showAllLakes;
-  }
-
 }
 </script>
 
