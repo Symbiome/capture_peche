@@ -37,7 +37,7 @@
         />
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestions()" />
-          <i class="icon-lake" @click="displayMap = !displayMap"/>
+          <i class="icon-map" @click="displayMap = !displayMap"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
