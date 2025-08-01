@@ -47,14 +47,12 @@ import fr.inrae.fishola.rest.trips.TripResource;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;

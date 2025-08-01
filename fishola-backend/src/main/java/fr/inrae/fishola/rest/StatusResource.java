@@ -22,12 +22,12 @@ package fr.inrae.fishola.rest;
  */
 
 import fr.inrae.fishola.FisholaConfiguration;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.time.LocalDateTime;

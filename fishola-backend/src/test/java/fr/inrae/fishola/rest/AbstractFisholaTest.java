@@ -24,9 +24,9 @@ package fr.inrae.fishola.rest;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.security.LoginBean;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 import org.hamcrest.CustomMatcher;
 
-import jakarta.ws.rs.core.MediaType;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;

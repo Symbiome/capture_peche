@@ -47,6 +47,7 @@ import fr.inrae.fishola.rest.security.UserProfile;
 import fr.inrae.fishola.rest.security.UserProfileForAdmin;
 import fr.inrae.fishola.rest.security.UserSettings;
 import io.quarkus.jackson.ObjectMapperCustomizer;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,7 +55,6 @@ import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -71,6 +71,7 @@ import java.util.UUID;
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     public static final String UNEXPECTED_TYPE_MESSAGE = "Unexpected type:";
+    public static final String EMAIL = "email";
 
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
@@ -198,7 +199,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Preconditions.checkArgument(StringUtils.isNotEmpty(category), "La catégorie est obligatoire");
             builder.category(category);
             readText(node, "userId").ifPresent(builder::userId);
-            readText(node, "email").ifPresent(builder::email);
+            readText(node, EMAIL).ifPresent(builder::email);
             readText(node, "description").ifPresent(builder::description);
             readText(node, "screenshot").ifPresent(builder::screenshot);
             readText(node, "browser").ifPresent(builder::browser);
@@ -260,7 +261,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             TreeNode node = jp.readValueAsTree();
 
             String firstName = readTextOrNull(node, "firstName");
-            String email = readTextOrNull(node, "email");
+            String email = readTextOrNull(node, EMAIL);
             Optional<String> lastName = readText(node, "lastName");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");
@@ -306,7 +307,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
             UUID id = readUuidOrNull(node, "id");
             String firstName = readTextOrNull(node, "firstName");
-            String email = readTextOrNull(node, "email");
+            String email = readTextOrNull(node, EMAIL);
             Optional<String> lastName = readText(node, "lastName");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");

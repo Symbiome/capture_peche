@@ -117,8 +117,6 @@ export default class FormRadio extends Vue {
   font-size: @fontsize-form-input;
   line-height: calc(@fontsize-form-input + @line-height-padding-medium);
 
-  // color: @white;
-
   display: flex;
   flex-direction: column;
   align-items: flex-start;

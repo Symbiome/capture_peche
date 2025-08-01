@@ -44,11 +44,6 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import io.quarkus.test.junit.QuarkusTest;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
@@ -56,6 +51,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @QuarkusTest
 class DashboardResourceTest  extends AbstractFisholaTest {

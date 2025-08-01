@@ -32,11 +32,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;

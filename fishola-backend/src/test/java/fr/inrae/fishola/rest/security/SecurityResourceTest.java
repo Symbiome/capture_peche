@@ -24,10 +24,9 @@ package fr.inrae.fishola.rest.security;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import jakarta.ws.rs.core.MediaType;
 
 import static io.restassured.RestAssured.given;
 

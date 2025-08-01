@@ -21,71 +21,30 @@ package fr.inrae.fishola.rest.social;
  * #L%
  */
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
-import fr.inrae.fishola.entities.enums.DeviceType;
-import fr.inrae.fishola.entities.enums.Maillage;
-import fr.inrae.fishola.entities.tables.pojos.Catch;
-import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.TripSocialReaction;
-import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import fr.inrae.fishola.rest.trips.CatchBean;
-import fr.inrae.fishola.rest.trips.CatchMarker;
-import fr.inrae.fishola.rest.trips.ImmutableTripLight;
-import fr.inrae.fishola.rest.trips.PaginatedExportBean;
-import fr.inrae.fishola.rest.trips.TripBean;
-import fr.inrae.fishola.rest.trips.TripLight;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
-import java.net.URI;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Path("/api/v1/social")
 @Consumes(MediaType.APPLICATION_JSON)

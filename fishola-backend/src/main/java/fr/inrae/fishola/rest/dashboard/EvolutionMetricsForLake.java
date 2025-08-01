@@ -24,7 +24,6 @@ package fr.inrae.fishola.rest.dashboard;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
-import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

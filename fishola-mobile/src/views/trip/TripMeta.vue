@@ -217,7 +217,26 @@ export default class TripMetaView extends Vue {
     }
 
     if (this.trip!.mode == "Afterwards") {
-      if (this.date) {
+      hasError = hasError || this.handleAfterwards();
+    }
+
+    if (hasError) {
+      this.$root.$emit(
+        "toaster-error",
+        "Vous devez renseigner les champs obligatoires"
+      );
+    } else {
+      // this.trip!.name = this.name;
+      // this.trip!.lakeId = this.lakeId;
+      // this.trip!.type = this.type;
+
+      TripsService.saveTripMeta(this.trip!, this.tripSaved);
+    }
+  }
+
+  handleAfterwards(): boolean {
+    let hasError = false;
+    if (this.date) {
         this.dateError = "";
         const newDate = new Date(this.date);
         this.trip!.date = newDate;
@@ -245,20 +264,7 @@ export default class TripMetaView extends Vue {
         this.dateError = "Vous devez renseigner la date";
         hasError = true;
       }
-    }
-
-    if (hasError) {
-      this.$root.$emit(
-        "toaster-error",
-        "Vous devez renseigner les champs obligatoires"
-      );
-    } else {
-      // this.trip!.name = this.name;
-      // this.trip!.lakeId = this.lakeId;
-      // this.trip!.type = this.type;
-
-      TripsService.saveTripMeta(this.trip!, this.tripSaved);
-    }
+      return hasError;
   }
 
   tripSaved() {

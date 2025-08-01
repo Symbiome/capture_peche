@@ -30,19 +30,7 @@ import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
-import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
-import org.jooq.exception.DataAccessException;
-
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -58,7 +46,17 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataAccessException;
+
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 @Path("/api/v1/security")

@@ -29,14 +29,14 @@ import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
-import org.jboss.logging.Logger;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.jboss.logging.Logger;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
