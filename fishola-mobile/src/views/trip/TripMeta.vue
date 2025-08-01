@@ -34,9 +34,11 @@
               <FormInput name="name" label="Nom de la sortie" placeholder="Nommez votre sortie" v-model="trip.name"
                 v-bind:error="nameError" />
               <LakeSelection
-                :selectedId="selectedLakeId"
+                :selectedLakes="selectedLakes"
+                :favoriteLakes="favoriteLakes"
                 v-bind:error="lakeIdError"
-                v-on:updated="selectLake" />
+                v-on:updated="selectLake"
+                @favoriteLakesChanged="favoriteLakesChanged" />
 
               <span v-if="hereIAmError" class="position-error">
                 <i class="icon-warning" />
@@ -127,7 +129,8 @@ export default class TripMetaView extends Vue {
   typeError: string = "";
 
   lakes: Lake[] = [];
-  selectedLakeId : string = "";
+  selectedLakes : Lake[] = [];
+  favoriteLakes: Lake[] = [];
   types: any[] = [];
 
   created() {
@@ -282,12 +285,16 @@ export default class TripMetaView extends Vue {
 
   selectLake(lake : Lake) {
     if (lake) {
-      this.selectedLakeId = lake.id;
+      this.selectedLakes = [lake];
       this.trip.lakeId = lake.id;
     } else {
-      this.selectedLakeId = "";
+      this.selectedLakes = [];
       delete this.trip.lakeId;
     }
+  }
+
+  favoriteLakesChanged(newFavoriteLakes: Lake[]) {
+    this.favoriteLakes = newFavoriteLakes;
   }
 }
 </script>

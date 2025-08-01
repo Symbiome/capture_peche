@@ -32,8 +32,8 @@
             'isSearching' : search.toLowerCase() != selectedLabel.toLowerCase(),
             'field-error' : error
           }"
-          v-on:keydown="(event) => updateSuggestions(event)"
-          v-on:focusout="(event) => closeSuggestions(event)"
+          v-on:keydown="updateSuggestions"
+          v-on:focusout="closeSuggestions"
         />
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestions()" />
@@ -41,16 +41,25 @@
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
-            v-for="option in options"
-            :class="option.id == selectedId ? 'selected' : ''"
-            @click="selectOption(option)"
-            v-html="highlightMatchingText(option.name)"
+            v-for="lake in suggestedFavorites"
+            class="favorite"
+            :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
+            @click="selectOption(lake)"
+            v-html="highlightMatchingText(lake.name)"
+          />
+          <li
+            v-for="lake in suggestedLakes"
+            :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
+            @click="selectOption(lake)"
+            v-html="highlightMatchingText(lake.name)"
           />
         </ul>
       </span>
 
-      <div :class="error ? 'field-error' : ''"  v-if="error">
-        {{ error }}
+      <div :class="error ? 'field-error' : ''">
+        <span v-if="error">
+          {{ error }}
+        </span>
       </div>
 
       <div v-if="allowMultipleSelection" class="selectedLakes">
@@ -61,7 +70,7 @@
 
       <LakesMap
         v-if="displayMap"
-        :lakes="lakes"
+        :lakes="allLakes"
         :favoriteLakes="selectedLakes"
         class="modal"
         style="width: 100%; height: 500px"
@@ -85,42 +94,63 @@ import ReferentialService from '@/services/ReferentialService';
 export default class LakeSelection extends Vue {
   @Prop() selectedId: string;
   @Prop() selectedLakes: Lake[];
+  @Prop() favoriteLakes: Lake[];
   @Prop({default : ""}) error: string;
   @Prop({default : false}) allowMultipleSelection: boolean;
 
   displayMap: boolean = false;
   displaySuggestions: boolean = false;
-  lakes: Lake[];
-  options: Lake[] = [];
+  allLakes: Lake[] = [];
+  suggestedLakes: Lake[] = [];
+  suggestedFavorites: Lake[] = [];
   search: string = "";
   selectedLabel: string = "";
+  selectedLakesId: string[] = [];
 
   mounted() {
     this.loadLakes();
   }
 
   async loadLakes() {
-      this.lakes = await ReferentialService.getLakes();
-      this.options = this.lakes;
       let favoriteLakes = await ReferentialService.getFavoriteLakes();
+      const fetchedLakes = await ReferentialService.getLakes();
+      this.allLakes = fetchedLakes.filter(el => {
+            return !favoriteLakes.find(el2 => {
+                return el.id === el2.id
+            })
+        });
+      this.suggestedLakes = this.allLakes;
+      this.suggestedFavorites = favoriteLakes;
 
       this.$emit('favoriteLakesChanged', favoriteLakes);
   }
 
-  @Watch("selectedId")
+  @Watch("selectedLakes")
   updateSelectedLakeLabel() {
-    let filteredItem = this.lakes.filter((option) => {
-      return option.id === this.selectedId;
-    });
-    this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
-    this.updateOptions();
+    this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
+    if (this.selectedLakesId.length == 1 && this.allLakes) {
+      const selectedLake = this.selectedLakesId[0];
+      let filteredItem = this.allLakes.filter((l) => {
+        return l.id === selectedLake;
+      });
+      this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
+      this.updateSuggestedLakes();
+    }
   }
 
   @Watch("search")
-  updateOptions() {
-    this.options = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.lakes :
-      this.lakes.filter((lake) => {
+  updateSuggestedLakes() {
+    this.suggestedLakes = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
+      this.allLakes :
+      this.allLakes.filter((lake) => {
+        return lake.name
+            .toString()
+            .toLowerCase()
+            .indexOf(this.search.toLowerCase()) >= 0;
+    });
+    this.suggestedFavorites = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
+      this.favoriteLakes :
+      this.favoriteLakes.filter((lake) => {
         return lake.name
             .toString()
             .toLowerCase()
@@ -129,17 +159,17 @@ export default class LakeSelection extends Vue {
   }
 
   selectLakeById(id : string) {
-    let lakes = this.lakes ? this.lakes : this.options;
-    let filteredItem = lakes.filter((option) => {
-      return option.id === id;
+    let lakes = this.allLakes ? this.allLakes : this.suggestedLakes;
+    let filteredItem = lakes.filter((l) => {
+      return l.id === id;
     });
     if (filteredItem.length == 1 ? filteredItem[0].name : '') {
-      this.selectOption(filteredItem[0]);
+      this.selectLake(filteredItem[0]);
       this.displayMap = false;
     }
   }
 
-  selectOption(selected: Lake) {
+  selectLake(selected: Lake) {
     if (!this.allowMultipleSelection) {
       this.search = selected.name;
     }
@@ -147,7 +177,7 @@ export default class LakeSelection extends Vue {
     this.$emit("updated", selected);
   }
 
-  toggleOption(lake: Lake) {
+  toggleLake(lake: Lake) {
     this.$emit("updated", lake);
   }
 
@@ -174,22 +204,24 @@ export default class LakeSelection extends Vue {
         this.search = "";
       }
       // Hide suggestions and select the matching lake when the Enter key is pressed
-      if (event.keyCode == 13 && this.options.length == 1) {
-        this.$emit("updated", this.options[0]);
+      if (event.keyCode == 13 && this.suggestedLakes.length == 1) {
+        this.$emit("updated", this.suggestedLakes[0]);
         if (!this.allowMultipleSelection) {
-          this.search = this.options[0].name;
+          this.search = this.suggestedLakes[0].name;
         }
       }
     } else {
       // Display suggestions when search term is inputted
       this.displaySuggestions = true;
-      if (this.selectedId) {
+      if (!this.allowMultipleSelection) {
+        this.selectedLabel = "";
         this.$emit("updated", null);
       }
     }
   }
 
   toggleSuggestions() {
+    this.search = "";
     this.displaySuggestions = !this.displaySuggestions;
   }
 }
@@ -238,6 +270,10 @@ export default class LakeSelection extends Vue {
     i {
       cursor: pointer;
     }
+    i.icon-chevron {
+      font-size: 12px;
+      margin-top: 7px;
+    }
   }
 
   input {
@@ -280,8 +316,14 @@ export default class LakeSelection extends Vue {
     box-shadow: 0 0 5px #0002;
 
     & > li {
-      padding: 5px;
+      padding: 5px 5px 5px 20px;
 
+      &.favorite:before {
+        font-family: "Fishola-Icons";
+        content: '\f114';
+        position: absolute;
+        left: 15px;
+      }
       &:hover {
         cursor: pointer;
         background-color: #0001;
@@ -293,7 +335,6 @@ export default class LakeSelection extends Vue {
     height: auto;
     display: flex;
     flex: 1;
-    margin-top: 10px;
     flex-wrap: wrap;
     gap: 10px 15px;
 
