@@ -57,15 +57,14 @@ public class EvolutionDao  extends AbstractFisholaDao {
         boolean useEditedInBackOfficeInformation = userId.isEmpty();
 
         for (UUID specieId : species) {
-            Map<String, EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecie = Maps.newLinkedHashMap();
+            List<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecie = Lists.newArrayList();
 
             for (int year = 2018; year < LocalDate.now().getYear(); year++) {
                 Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
 
-                for (Month month : Month.values()) {
-                    EvolutionMetricForSpecieAndMonth evolutionMetricsForSpecieAndMonth = getEvolutionMetricsForSpecieAndMonth(month, specieId, monthlyCatches, useEditedInBackOfficeInformation);
-                    String yearAndMonthString = month.getDisplayName(TextStyle.SHORT, Locale.FRANCE) + " "  + year;
-                    evolutionMetricsForSpecie.put(yearAndMonthString, evolutionMetricsForSpecieAndMonth);
+                for (Month month : monthlyCatches.keySet()) {
+                    Optional<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecieAndMonth = getEvolutionMetricsForSpecieAndMonth(year, month, specieId, monthlyCatches, useEditedInBackOfficeInformation);
+                    evolutionMetricsForSpecieAndMonth.ifPresent(evolutionMetricsForSpecie::add);
                 }
             }
 
@@ -75,12 +74,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
         return builder.build();
     }
 
-    private static EvolutionMetricForSpecieAndMonth getEvolutionMetricsForSpecieAndMonth(Month month, UUID specieId, Multimap<Month, Catch> monthlyCatches, boolean useEditedInBackOfficeInformation) {
-        ImmutableEvolutionMetricForSpecieAndMonth.Builder builder = ImmutableEvolutionMetricForSpecieAndMonth.builder();
-        Long keptCatchCount = 0L;
-        Long totalCatchCount = 0L;
-        Long tripCount = 0L;
-
+    private static Optional<EvolutionMetricForSpecieAndMonth> getEvolutionMetricsForSpecieAndMonth(Integer year, Month month, UUID specieId, Multimap<Month, Catch> monthlyCatches, boolean useEditedInBackOfficeInformation) {
         if (monthlyCatches.containsKey(month)) {
             List<Catch> catchesOfSpeciesForMonth = monthlyCatches.get(month).stream()
                     .filter(c -> {
@@ -91,14 +85,20 @@ public class EvolutionDao  extends AbstractFisholaDao {
                         }
                     }).toList();
             if (!catchesOfSpeciesForMonth.isEmpty()) {
-                keptCatchCount = catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count();
-                totalCatchCount = (long) catchesOfSpeciesForMonth.size();
-                tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
+                Long keptCatchCount = catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count();
+                Long totalCatchCount = (long) catchesOfSpeciesForMonth.size();
+                Long tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
+                String monthYear = month.getDisplayName(TextStyle.SHORT, Locale.FRANCE) + " "  + year;
+                return Optional.of(
+                        ImmutableEvolutionMetricForSpecieAndMonth.builder()
+                        .monthYear(monthYear)
+                        .totalCatchesCount(totalCatchCount)
+                        .tripsCount(tripCount)
+                        .keptCatchesCount(keptCatchCount)
+                        .build()
+                );
             }
         }
-        builder.totalCatchesCount(totalCatchCount);
-        builder.tripsCount(tripCount);
-        builder.keptCatchesCount(keptCatchCount);
-        return builder.build();
+        return Optional.empty();
     }
 }

@@ -6,6 +6,7 @@ import fr.inrae.fishola.ImmutableObject;
 @ImmutableObject
 @JsonSerialize(as = ImmutableEvolutionMetricForSpecieAndMonth.class)
 public interface EvolutionMetricForSpecieAndMonth {
+    String monthYear();
     Long tripsCount();
     Long keptCatchesCount();
     Long totalCatchesCount();

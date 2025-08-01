@@ -25,11 +25,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
 import java.time.Month;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @ImmutableObject
 @JsonSerialize(as= ImmutableEvolutionMetricsForLake.class)
 public interface EvolutionMetricsForLake {
-    Map<UUID, Map<String, EvolutionMetricForSpecieAndMonth>> evolutionPerMonthAndSpecie();
+    Map<UUID, List<EvolutionMetricForSpecieAndMonth>> evolutionPerMonthAndSpecie();
 }
