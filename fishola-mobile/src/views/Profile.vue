@@ -24,8 +24,13 @@
       <h1> Mes cartes de pêches </h1>
       <FishingLicencesView />
 
-      <h1>Mes lac favoris</h1>
-      <FavoriteLakes @favoriteLakesChanged="favoriteLakesChanged"/>
+      <h1>Mes lacs favoris</h1>
+      <LakeSelection
+        :selectedLakes="favoriteLakes"
+        :allowMultipleSelection="true"
+        v-on:updated="toggleLakeFavorite"
+        @favoriteLakesChanged="favoriteLakesChanged"
+      />
 
       <h1>Mon profil</h1>
       <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="profile.firstName"
@@ -79,6 +84,7 @@
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormMultiValues from "@/components/common/FormMultiValues.vue";
+import LakeSelection from "@/components/common/LakeSelection.vue";
 
 import UserProfile from "@/pojos/UserProfile";
 import ProfileService from "@/services/ProfileService";
@@ -91,7 +97,6 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
 import BottomInducementView from "@/components/common/BottomInducement.vue";
-import FavoriteLakes from "@/components/my-trips/FavoriteLakes.vue";
 import { Lake } from "@/pojos/BackendPojos";
 
 @Component({
@@ -102,7 +107,7 @@ import { Lake } from "@/pojos/BackendPojos";
     FishingLicencesView,
     FisholaFooter,
     BottomInducementView,
-    FavoriteLakes
+    LakeSelection
   },
 })
 export default class ProfileView extends Vue {
@@ -149,6 +154,18 @@ export default class ProfileView extends Vue {
   favoriteLakesChanged(newFavoriteLakes: Lake[]) {
     this.favoriteChanged = true;
     this.favoriteLakes = newFavoriteLakes;
+  }
+  toggleLakeFavorite(lake : Lake) {
+    this.favoriteChanged = true;
+
+    let filteredItem = this.favoriteLakes.filter((l) => {
+      return l.id === lake.id;
+    });
+    if (filteredItem.length == 1) {
+      this.favoriteLakes = this.favoriteLakes.filter(function(l) { return l.id != lake.id });
+    } else {
+      this.favoriteLakes.push(lake);
+    }
   }
 
   saveProfile() {

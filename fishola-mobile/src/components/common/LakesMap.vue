@@ -25,7 +25,7 @@
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
         <v-marker-cluster>
             <l-marker
-                v-for="l in allLakes" v-bind:key="l.id"
+                v-for="l in lakes" v-bind:key="l.id"
                 :lat-lng="toLatLng(l)"
                 :icon="isFavorite(l) ? icon2 : icon1"
                 @click="selectLake(l.id)"
@@ -78,9 +78,8 @@ import { LMap, LTileLayer, LMarker, LPopup, LIcon, LTooltip } from "vue2-leaflet
 })
 export default class LakesMap extends Vue {
     @Prop() lakes: Lake[];
+    @Prop() favoriteLakes: Lake[];
 
-    allLakes: Lake[] = [];
-    favoriteLakes: Lake[] = [];
     map: any;
     mapIsLoading = false;
     icon1 = icon({
@@ -95,23 +94,13 @@ export default class LakesMap extends Vue {
     })
 
     mounted() {
-        if (this.lakes != null) {
-            this.allLakes = this.lakes;
-            this.mapReady();
-        } else {
-            this.loadLakes();
-        }
-    }
-
-    async loadLakes() {
-        console.log("LOAD LAKES")
-        this.allLakes = await ReferentialService.getLakes();
-        this.favoriteLakes = await ReferentialService.getFavoriteLakes();
-        this.mapReady();
+        // @ts-ignore
+        this.map = this.$refs.map.mapObject;
+        this.zoomToVisibleMarkers(this.favoriteLakes != null && this.favoriteLakes.length > 0);
     }
 
     isFavorite(lake:Lake) {
-        return this.favoriteLakes.some(fav => fav.id === lake.id);
+        return this.favoriteLakes && this.favoriteLakes.some(fav => fav.id === lake.id);
     }
 
     toggleFavorite(lake: Lake) {
@@ -125,7 +114,7 @@ export default class LakesMap extends Vue {
     }
 
     zoomToVisibleMarkers(onlyFavorites: boolean) {
-        let markers = onlyFavorites ? this.favoriteLakes : this.allLakes;
+        let markers = onlyFavorites ? this.favoriteLakes : this.lakes;
         if (this.map && markers.length > 0) {
             this.map.fitBounds(
                 markers.map(lake => { return [lake.latitude, lake.longitude] }),
@@ -133,12 +122,6 @@ export default class LakesMap extends Vue {
             );
             this.mapIsLoading = false;
         }
-    }
-
-    mapReady() {
-        // @ts-ignore
-        this.map = this.$refs.map.mapObject;
-        this.zoomToVisibleMarkers(this.favoriteLakes != null && this.favoriteLakes.length > 0);
     }
 
     toLatLng(lake: Lake) {

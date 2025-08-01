@@ -21,7 +21,7 @@
 <template>
     <div class="lake-selection">
       <label for="lakes-autocomplete-input">
-        Lac
+        Lac<span v-if="allowMultipleSelection">s</span>
       </label>
       <span class="input-wrapper">
         <input
@@ -49,14 +49,20 @@
         </ul>
       </span>
 
-      <div :class="error ? 'field-error' : ''">
-        <span v-if="error">
-          {{ error }}
+      <div :class="error ? 'field-error' : ''"  v-if="error">
+        {{ error }}
+      </div>
+
+      <div v-if="allowMultipleSelection" class="selectedLakes">
+        <span v-for="l in selectedLakes">
+          {{ l.name }} <i class="icon-error" @click="toggleOption(l)" />
         </span>
       </div>
+
       <LakesMap
         v-if="displayMap"
         :lakes="lakes"
+        :favoriteLakes="selectedLakes"
         class="modal"
         style="width: 100%; height: 500px"
         @selectLake="selectLakeById"
@@ -69,6 +75,7 @@
 import { Lake } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import LakesMap from "@/components/common/LakesMap.vue";
+import ReferentialService from '@/services/ReferentialService';
 
 @Component({
   components: {
@@ -76,18 +83,28 @@ import LakesMap from "@/components/common/LakesMap.vue";
   },
 })
 export default class LakeSelection extends Vue {
-  @Prop() lakes: Lake[];
   @Prop() selectedId: string;
+  @Prop() selectedLakes: Lake[];
   @Prop({default : ""}) error: string;
+  @Prop({default : false}) allowMultipleSelection: boolean;
 
   displayMap: boolean = false;
   displaySuggestions: boolean = false;
+  lakes: Lake[];
   options: Lake[] = [];
   search: string = "";
   selectedLabel: string = "";
 
   mounted() {
-    this.options = this.lakes;
+    this.loadLakes();
+  }
+
+  async loadLakes() {
+      this.lakes = await ReferentialService.getLakes();
+      this.options = this.lakes;
+      let favoriteLakes = await ReferentialService.getFavoriteLakes();
+
+      this.$emit('favoriteLakesChanged', favoriteLakes);
   }
 
   @Watch("selectedId")
@@ -112,8 +129,8 @@ export default class LakeSelection extends Vue {
   }
 
   selectLakeById(id : string) {
-    console.log("selectLakeById", id);
-    let filteredItem = this.lakes.filter((option) => {
+    let lakes = this.lakes ? this.lakes : this.options;
+    let filteredItem = lakes.filter((option) => {
       return option.id === id;
     });
     if (filteredItem.length == 1 ? filteredItem[0].name : '') {
@@ -123,9 +140,15 @@ export default class LakeSelection extends Vue {
   }
 
   selectOption(selected: Lake) {
-    this.search = selected.name;
+    if (!this.allowMultipleSelection) {
+      this.search = selected.name;
+    }
     this.displaySuggestions = false;
-    this.$emit("updated", selected.id);
+    this.$emit("updated", selected);
+  }
+
+  toggleOption(lake: Lake) {
+    this.$emit("updated", lake);
   }
 
   highlightMatchingText(text) {
@@ -147,10 +170,15 @@ export default class LakeSelection extends Vue {
     // Hide suggestions when the Esc or Enter key is pressed
     if (event.keyCode == 27 || event.keyCode == 13) {
       this.displaySuggestions = false;
+      if (this.allowMultipleSelection) {
+        this.search = "";
+      }
       // Hide suggestions and select the matching lake when the Enter key is pressed
       if (event.keyCode == 13 && this.options.length == 1) {
-        this.$emit("updated", this.options[0].id);
-        this.search = this.options[0].name;
+        this.$emit("updated", this.options[0]);
+        if (!this.allowMultipleSelection) {
+          this.search = this.options[0].name;
+        }
       }
     } else {
       // Display suggestions when search term is inputted
@@ -260,6 +288,29 @@ export default class LakeSelection extends Vue {
       }
     }
   }
+
+  .selectedLakes {
+    height: auto;
+    display: flex;
+    flex: 1;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    gap: 10px 15px;
+
+    & > span {
+      border-radius: 20px;
+      border: 1px solid @pelorous;
+      padding: 5px 10px;
+      i {
+        margin-left: 5px;
+        cursor: pointer;
+        &:hover {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+
   div {
     height: calc(@fontsize-form-error + @line-height-padding-medium);
   }

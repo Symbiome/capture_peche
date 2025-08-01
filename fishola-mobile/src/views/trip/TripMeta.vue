@@ -34,7 +34,6 @@
               <FormInput name="name" label="Nom de la sortie" placeholder="Nommez votre sortie" v-model="trip.name"
                 v-bind:error="nameError" />
               <LakeSelection
-                :lakes="lakes"
                 :selectedId="selectedLakeId"
                 v-bind:error="lakeIdError"
                 v-on:updated="selectLake" />
@@ -281,9 +280,14 @@ export default class TripMetaView extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
 
-  selectLake(lakeId : string) {
-    this.selectedLakeId = lakeId;
-    this.trip.lakeId = lakeId;
+  selectLake(lake : Lake) {
+    if (lake) {
+      this.selectedLakeId = lake.id;
+      this.trip.lakeId = lake.id;
+    } else {
+      this.selectedLakeId = "";
+      delete this.trip.lakeId;
+    }
   }
 }
 </script>
