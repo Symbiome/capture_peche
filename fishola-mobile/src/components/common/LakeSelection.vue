@@ -342,6 +342,9 @@ export default class LakeSelection extends Vue {
         cursor: pointer;
         background-color: #0001;
       }
+      &.selected {
+        background-color: #1e9bc422;
+      }
     }
   }
 
@@ -393,6 +396,7 @@ export default class LakeSelection extends Vue {
     }
   }
 }
+
 .modal {
   position: absolute;
   z-index: 1500;
@@ -411,10 +415,7 @@ export default class LakeSelection extends Vue {
 }
 </style>
 <style  lang="less">
-.highlight {
+.lake-selection .suggestions .highlight {
   font-weight: bold;
-}
-.selected {
-  background-color: #1e9bc422;
 }
 </style>
