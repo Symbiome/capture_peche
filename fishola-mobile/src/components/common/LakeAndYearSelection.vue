@@ -151,20 +151,33 @@ export default class LakeAndYearSelection extends Vue {
 
 .selects-holder {
   select {
-    background-color: white;
-    padding: 10px;
-    height: 40px;
-    border: 1px solid @pale-sky;
-    border-radius: 3px;
+    background: transparent;
+    padding: 0 10px;
+    height: 35px;
+    border: 1px solid @pelorous;
+    border-radius: 20px;
     margin-left: 10px;
     max-width: 150px;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: inherit;
+    color: @pelorous;
+    cursor: pointer;
+
+    option {
+      color: black;
+    }
+
+    &:hover {
+      background-color: white;
+    }
   }
 }
 
 @media screen and (min-width: @desktop-min-width) {
     .selects-holder {
-        margin-left: 40px;
-        margin-top: -10px;
+        margin-left: 20px;
+        // margin-top: -10px;
     }
 }
 
