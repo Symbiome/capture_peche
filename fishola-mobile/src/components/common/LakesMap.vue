@@ -20,6 +20,8 @@
   -->
 <template>
 <div class="map">
+    <div v-if="mapIsLoading" class="loading">Chargement ...</div>
+    <i class="icon-error close-button" @click="closeMap" />
     <l-map ref="map" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
         <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
@@ -27,7 +29,15 @@
             <l-marker
                 v-for="l in lakes" v-bind:key="l.id"
                 :lat-lng="toLatLng(l)"
-                :icon="isFavorite(l) ? icon2 : icon1"
+                :icon="lakeIcon"
+                @click="selectLake(l.id)"
+            >
+                <l-tooltip>{{ l.name }}</l-tooltip>
+            </l-marker>
+            <l-marker
+                v-for="l in favoriteLakes" v-bind:key="l.id"
+                :lat-lng="toLatLng(l)"
+                :icon="favoriteLakeIcon"
                 @click="selectLake(l.id)"
             >
                 <l-tooltip>{{ l.name }}</l-tooltip>
@@ -41,7 +51,6 @@
 import { Lake } from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue } from 'vue-property-decorator';
-import ReferentialService from '@/services/ReferentialService';
 
 import L, { latLng, Icon, icon } from "leaflet";
 import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
@@ -79,24 +88,29 @@ import { LMap, LTileLayer, LMarker, LPopup, LIcon, LTooltip } from "vue2-leaflet
 export default class LakesMap extends Vue {
     @Prop() lakes: Lake[];
     @Prop() favoriteLakes: Lake[];
+    @Prop() selectedLakes: Lake[];
 
     map: any;
     mapIsLoading = false;
-    icon1 = icon({
+    lakeIcon = icon({
         iconUrl: "/img/lake.svg",
         iconSize: [32, 37],
         iconAnchor: [16, 37]
     })
-    icon2 = icon({
+    favoriteLakeIcon = icon({
         iconUrl: "/img/heart.svg",
         iconSize: [32, 37],
         iconAnchor: [16, 37]
     })
 
+    created() {
+        this.mapIsLoading = true;
+    }
+
     mounted() {
         // @ts-ignore
         this.map = this.$refs.map.mapObject;
-        this.zoomToVisibleMarkers(this.favoriteLakes != null && this.favoriteLakes.length > 0);
+        this.zoomToVisibleMarkers();
     }
 
     isFavorite(lake:Lake) {
@@ -113,12 +127,21 @@ export default class LakesMap extends Vue {
         this.$emit('favoriteLakesChanged', this.favoriteLakes);
     }
 
-    zoomToVisibleMarkers(onlyFavorites: boolean) {
-        let markers = onlyFavorites ? this.favoriteLakes : this.lakes;
+    zoomToVisibleMarkers() {
+        let markers = this.lakes;
+        if (this.favoriteLakes != null && this.favoriteLakes.length > 0) {
+            markers = this.favoriteLakes;
+        }
+        if (this.selectedLakes != null && this.selectedLakes.length == 1) {
+            markers = this.selectedLakes;
+        }
         if (this.map && markers.length > 0) {
             this.map.fitBounds(
                 markers.map(lake => { return [lake.latitude, lake.longitude] }),
-                {padding: [20, 20]}
+                {
+                    padding: [20, 20],
+                    maxZoom: 10
+                }
             );
             this.mapIsLoading = false;
         }
@@ -131,6 +154,9 @@ export default class LakesMap extends Vue {
     selectLake(id: string) {
         this.$emit('selectLake', id);
     }
+    closeMap() {
+        this.$emit('close');
+    }
 }
 
 </script>
@@ -142,5 +168,32 @@ export default class LakesMap extends Vue {
 .map {
     width: 100%;
     height: 100%;
+    position: relative;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: #aaa;
+    z-index: 99999;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: @pelorous;
+    color: white;
+    z-index: 99999;
+    font-size: 30px;
+    box-shadow: 0 0 2px #0002;
+    border-radius: 50%;
+    cursor: pointer;
+    &:hover {
+        background-color: @terra-cotta;
+    }
 }
 </style>

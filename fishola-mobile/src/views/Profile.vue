@@ -27,6 +27,7 @@
       <h1>Mes lacs favoris</h1>
       <LakeSelection
         :selectedLakes="favoriteLakes"
+        :favoriteLakes="favoriteLakes"
         :allowMultipleSelection="true"
         v-on:updated="toggleLakeFavorite"
         @favoriteLakesChanged="favoriteLakesChanged"

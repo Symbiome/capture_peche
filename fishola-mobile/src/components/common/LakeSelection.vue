@@ -36,21 +36,21 @@
           v-on:focusout="closeSuggestions"
         />
         <span class="input-actions">
-          <i class="icon-chevron" @click="toggleSuggestions()" />
-          <i class="icon-map" @click="displayMap = !displayMap"/>
+          <i class="icon-chevron" @click="toggleSuggestionsDisplay" />
+          <i class="icon-map" @click="toggleMapDisplay"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
             v-for="lake in suggestedFavorites"
             class="favorite"
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
-            @click="selectOption(lake)"
+            @click="selectLake(lake)"
             v-html="highlightMatchingText(lake.name)"
           />
           <li
             v-for="lake in suggestedLakes"
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
-            @click="selectOption(lake)"
+            @click="selectLake(lake)"
             v-html="highlightMatchingText(lake.name)"
           />
         </ul>
@@ -71,10 +71,12 @@
       <LakesMap
         v-if="displayMap"
         :lakes="allLakes"
-        :favoriteLakes="selectedLakes"
+        :favoriteLakes="favoriteLakes"
+        :selectedLakes="selectedLakes"
         class="modal"
         style="width: 100%; height: 500px"
         @selectLake="selectLakeById"
+        v-on:close="toggleMapDisplay"
       />
     </div>
 </template>
@@ -92,7 +94,6 @@ import ReferentialService from '@/services/ReferentialService';
   },
 })
 export default class LakeSelection extends Vue {
-  @Prop() selectedId: string;
   @Prop() selectedLakes: Lake[];
   @Prop() favoriteLakes: Lake[];
   @Prop({default : ""}) error: string;
@@ -132,7 +133,9 @@ export default class LakeSelection extends Vue {
       const selectedLake = this.selectedLakesId[0];
       let filteredItem = this.allLakes.filter((l) => {
         return l.id === selectedLake;
-      });
+      }).concat(this.favoriteLakes.filter((l) => {
+        return l.id === selectedLake;
+      }));
       this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
       this.updateSuggestedLakes();
     }
@@ -204,10 +207,11 @@ export default class LakeSelection extends Vue {
         this.search = "";
       }
       // Hide suggestions and select the matching lake when the Enter key is pressed
-      if (event.keyCode == 13 && this.suggestedLakes.length == 1) {
-        this.$emit("updated", this.suggestedLakes[0]);
+      if (event.keyCode == 13 && (this.suggestedLakes.length + this.suggestedFavorites.length) == 1) {
+        const selectedLake = this.suggestedLakes.length ? this.suggestedLakes[0] : this.suggestedFavorites[0]
+        this.$emit("updated", selectedLake);
         if (!this.allowMultipleSelection) {
-          this.search = this.suggestedLakes[0].name;
+          this.search = selectedLake.name;
         }
       }
     } else {
@@ -220,9 +224,13 @@ export default class LakeSelection extends Vue {
     }
   }
 
-  toggleSuggestions() {
-    this.search = "";
+  toggleSuggestionsDisplay() {
+    this.displayMap = false;
     this.displaySuggestions = !this.displaySuggestions;
+  }
+  toggleMapDisplay() {
+    this.displaySuggestions = false;
+    this.displayMap = !this.displayMap;
   }
 }
 </script>
@@ -269,6 +277,9 @@ export default class LakeSelection extends Vue {
 
     i {
       cursor: pointer;
+      &:hover {
+        color: @terra-cotta;
+      }
     }
     i.icon-chevron {
       font-size: 12px;
@@ -310,19 +321,22 @@ export default class LakeSelection extends Vue {
     max-height: 250px;
     overflow-y: auto;
     margin: 0;
-    padding: 10px 20px;
+    padding: 0;
     list-style: none;
     background-color: white;
     box-shadow: 0 0 5px #0002;
 
     & > li {
-      padding: 5px 5px 5px 20px;
+      padding: 6px 10px 6px 40px;
 
       &.favorite:before {
         font-family: "Fishola-Icons";
         content: '\f114';
         position: absolute;
         left: 15px;
+        padding-top: 2px;
+        color: @pelorous;
+        font-weight: bold;
       }
       &:hover {
         cursor: pointer;
@@ -382,7 +396,7 @@ export default class LakeSelection extends Vue {
 .modal {
   position: absolute;
   z-index: 1500;
-  top: 100%;
+  top: 70px;
   left: 0;
   width: 100%;
   height: 500px !important;
@@ -391,6 +405,9 @@ export default class LakeSelection extends Vue {
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid #aaa;
+  box-shadow: 0px 2px 5px #0002;
+  border-radius: 4px;
 }
 </style>
 <style  lang="less">
@@ -398,6 +415,6 @@ export default class LakeSelection extends Vue {
   font-weight: bold;
 }
 .selected {
-  color: red;
+  background-color: #1e9bc422;
 }
 </style>
