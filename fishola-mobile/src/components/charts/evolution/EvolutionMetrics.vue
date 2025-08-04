@@ -20,29 +20,17 @@
   -->
 <template>
     <div class="section shrinked">
-        <div v-if="speciesNameForLake.length == 0 || getYears().length == 0">
-            Aucune donnée pour ce lac.
+        <div v-if="!containsData">
+          Aucune donnée pour ce lac.
         </div>
         <div v-else>
-            <h3>TODO Graphique 1 <span v-if="onlyShowUserStats">(stats personnelles)</span><span v-else>(stats globales)</span></h3>
-            <p>Par mois de chaque année, par espèce (filtrable) : nombre d'individus capturés (avec distingo relaché/gardé)</p>
-            <h3>TODO Graphique 2 <span v-if="onlyShowUserStats">(stats personnelles)</span><span v-else>(stats globales)</span></h3>
-            <p>Par mois de chaque année, par espèce (filtrable) : nombre de sortie effectuées avec au moins une prise de l'espèce</p>
+            <select v-model="displayMode" @change="switchMode">
+              <option value="tripsCount">Nombre de sorties avec au moins une prise</option>
+              <option value="totalCatchesCount">Nombre d'individus capturés (Total)</option>
+              <option value="keptCatchesCount">Nombre d'individus capturés (et conservés)</option>
+            </select>
+            <Bar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" ref='chart' />
             <h3>TODO ajouter lien vers la dashboard pole ECLA </h3>
-            <h2>Données brutes : </h2>
-            <div  v-for="year in getYears()" :key="year">
-                <b>{{year}} </b><br/>
-                 <p v-for="month in getMonths(year)" :key="month"> 
-                    - {{ month}}  ( {{ getSpecies(year, month).length }} )
-                    <ul v-for="specie in getSpecies(year, month)" :key="specie">   
-                    - Espece {{ getSpecieNameForLake(specie) }} <br/>
-                        * Relâchés : {{ getReleasedCount(year, month, specie) }} <br/>
-                       * Conservés: {{ getKeptCount(year, month, specie) }} <br/>
-                        * Nombre de sorties : {{ getTripCount(year, month, specie) }} <br/>
-                    </ul>
-                 </p>
-                 
-            </div>
         </div>
     </div>
 </template>
@@ -54,22 +42,59 @@ import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
-@Component
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js'
+import { Bar } from 'vue-chartjs'
+import { months } from 'moment';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+
+@Component({
+  components: {
+    Bar,
+  },
+})
 export default class EvolutionMetricsView extends Vue {
   @Prop() lakeId: string;
   @Prop({default: false}) onlyShowUserStats: boolean;
   speciesNameForLake: SpeciesWithAlias[] = [];
+  allSpecies: string[];
 
+  displayMode = 'tripsCount';
+  containsData:boolean = false;
+  chartData : any | null = null;
+  chartOptions : any | null =  {
+    responsive: true,
+    parsing: {
+      xAxisKey: 'monthYear',
+      yAxisKey: this.displayMode
+    },
+    scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true
+      }
+    },
+  };
 
   evolutionMetrics: EvolutionMetricsForLake = {
-    catchCountPerMonthAndSpecies: {},
-    tripCountPerMonthAndSpecies: {}
+    evolutionPerMonthAndSpecie: {},
   };
 
   mounted() {
     this.loadEvolutionData();
+    
   }
-  
+
   @Watch("lakeId")
   async loadEvolutionData() {
     if (this.lakeId) {
@@ -80,70 +105,117 @@ export default class EvolutionMetricsView extends Vue {
             this.evolutionMetrics = await DashboardService.loadGlobalEvolutionOrTimeout(this.lakeId);
         }
         this.$emit("loaded", true);
+
+        let checkForData = false;
+        for (const specie in this.evolutionMetrics.evolutionPerMonthAndSpecie) {
+          if (this.evolutionMetrics.evolutionPerMonthAndSpecie[specie].length) {
+            checkForData = true;
+            break;
+          }
+        }
+        this.containsData = checkForData;
+
+        this.initChartData();
     }
   }
-  
 
-    getYears() : string[] {
-        return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies);
-    }
+  getYears() : string[] {
+    return ['2020', '2021', '2022', '2023', '2024'];
+  }
 
-    getMonths(year: string) : Month[] {
-        if (year && this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) {
-        return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) as Month[];
+  getMonths() : string[] {
+      // if (year && this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) {
+      // return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) as Month[];
+      // }
+      // return [];
+    return ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  }
+
+  getSpecieNameForLake(specieId: string) {
+    const specie = this.speciesNameForLake.find(s => {
+        return s.id == specieId;
+    });
+    return specie ? (specie.alias ?? specie.name) : specieId;
+  }
+
+  initChartData() {
+
+    let years = this.getYears();
+    let monthsFr = this.getMonths();
+    let labels : any[] = [];
+    years.forEach(y => {
+      monthsFr.forEach(m => {
+        labels.push(m + ' ' + y)
+      });
+    })
+
+    let datasets : any[] = [];
+    let colors = ['#1971c2', '#099268', '#66a80f', '#a9e34b', '#ffd43b', '#9c36b5', '#e03131',
+        '#4dabf7', '#38d9a9', '#a9e34b', '#ffd43b', '#ffd43b', '#da77f2', '#ff8787'];
+
+    if (this.evolutionMetrics && this.evolutionMetrics.evolutionPerMonthAndSpecie) {
+      Object.keys(this.evolutionMetrics.evolutionPerMonthAndSpecie).forEach((element, i) => {
+        if (this.evolutionMetrics.evolutionPerMonthAndSpecie[element].length) {
+          let dataset = {
+            label: this.getSpecieNameForLake(element),
+            data: this.evolutionMetrics.evolutionPerMonthAndSpecie[element],
+            backgroundColor: colors[i % colors.length]
+          }
+          datasets.push(dataset);
         }
-        return [];
+      });
     }
+    this.chartData = {
+      labels: labels,
+      datasets: datasets
+    }
+  }
 
-    getSpecies(year: string, month: Month): string[] {
-        if (year && this.evolutionMetrics.catchCountPerMonthAndSpecies[year] && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]) {
-            return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month])
+  switchMode() {
+    this.chartOptions = {
+      responsive: true,
+      parsing: {
+        xAxisKey: 'monthYear',
+        yAxisKey: this.displayMode
+      },
+      scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true
         }
-        return [];
+      },
     }
-
-    getSpecieNameForLake(specieId: string) {
-        const specie = this.speciesNameForLake.find(s => {
-            return s.id == specieId;
-        });
-        return specie ? (specie.alias ?? specie.name) : specieId;
-    }
-
-    getReleasedCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.catchCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]["false"];
-        }
-        return 0;
-    }
-   
-   getKeptCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.catchCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]["true"];
-        }
-        return 0;
-    }
-
-     getTripCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.tripCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month][specieId];
-        }
-        return 0;
-    }
+    /* The following instructions is added to be sure the chart is updated with the correct option change */
+    this.$refs.chart.options.parsing.yAxisKey = this.displayMode
+  }
 }
 </script>
 
 <style scoped lang="less">
+@import "../../../less/main";
+
+select {
+  background: transparent;
+  padding: 0 10px;
+  height: 35px;
+  border: 1px solid @pelorous;
+  border-radius: 20px;
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  font-family: inherit;
+  color: @pelorous;
+  cursor: pointer;
+
+  option {
+    color: black;
+  }
+
+  &:hover {
+    background-color: white;
+  }
+}
 
 </style>

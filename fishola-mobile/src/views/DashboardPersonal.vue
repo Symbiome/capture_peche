@@ -59,11 +59,17 @@
             <span>Le tableau de bord n'est pas disponible sans connexion
               internet</span>
           </div>
-          <PersonalDashboard v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
-            :dashboardData="personalDashboard" :selectedLakeUUID="selectedLakeUUID"></PersonalDashboard>
-          <EvolutionMetrics v-if="visualizationMode === 'evolution' && selectedLakeUUID"
+
+          <PersonalDashboard
+            v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
+            :dashboardData="personalDashboard"
+            :selectedLakeUUID="selectedLakeUUID"
+          />
+          <EvolutionMetrics
+            v-if="visualizationMode === 'evolution' && selectedLakeUUID"
             :lakeId="selectedLakeUUID"
             :onlyShowUserStats="true"
+            @loaded="ready = true"
             >
           </EvolutionMetrics>
         </div>
