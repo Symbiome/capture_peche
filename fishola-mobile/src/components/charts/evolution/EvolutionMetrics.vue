@@ -29,7 +29,10 @@
           <option value="keptCatchesCount">Nombre d'individus capturés (et conservés)</option>
         </select>
         <Bar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" ref='chart' />
-        <h3>TODO ajouter lien vers la dashboard pole ECLA </h3>
+
+        <a class="link" href="https://dashboard.ecla.inrae.fr/fishola/">
+          Voir les données sur la plateforme ECLA
+        </a>
     </div>
 </template>
 
@@ -254,15 +257,15 @@ export default class EvolutionMetricsView extends Vue {
 
 select {
   background: transparent;
-  padding: 0 10px;
+  padding: 5px 10px;
   height: 35px;
   border: 1px solid @pelorous;
   border-radius: 20px;
-  margin-left: 10px;
   font-weight: bold;
   font-size: 14px;
   font-family: inherit;
-  color: @pelorous;
+  background-color: @pelorous;
+  color: white;
   cursor: pointer;
   max-width: 80vw;
 
@@ -272,11 +275,33 @@ select {
 
   option {
     color: black;
+    background-color: white;
   }
 
   &:hover {
-    background-color: white;
+    background-color: @terra-cotta;
   }
 }
+.link {
+  border-radius: 50px;
 
+  font-style: normal;
+  font-weight: bold;
+  font-size: @fontsize-button;
+  line-height: calc(@fontsize-button + @line-height-padding-x-large);
+
+  border: 1px solid @pelorous;
+  padding: @margin-x-small @margin-medium;
+  margin-top: @margin-medium;
+
+  background-color: @white-smoke;
+  color: @pelorous;
+  text-decoration: none;
+
+  &:hover {
+    background-color: @terra-cotta;
+    color: white;
+    border-color: white;
+  }
+}
 </style>
