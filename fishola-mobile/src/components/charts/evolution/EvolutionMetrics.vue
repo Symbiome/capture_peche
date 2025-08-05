@@ -180,9 +180,9 @@ export default class EvolutionMetricsView extends Vue {
     let currentMonthIndex = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
-    years.forEach((y, i) => {
-      monthsFr.forEach((m, j) => {
-        if (i < currentYear || j < currentMonthIndex) {
+    years.forEach(y => {
+      monthsFr.forEach((m, index) => {
+        if (parseInt(y) < currentYear || index < currentMonthIndex) {
           labels.push(m + ' ' + y)
         }
       });
@@ -224,7 +224,7 @@ export default class EvolutionMetricsView extends Vue {
   switchMode() {
     this.chartOptions = {...this.chartOptions};
     /* The following instructions is added to be sure the chart is updated with the correct option change */
-    this.$refs.chart.options.parsing.xAxisKey = this.displayMode
+    this.$refs.chart.options.parsing.yAxisKey = this.displayMode
   }
 }
 </script>
