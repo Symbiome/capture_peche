@@ -10,12 +10,12 @@ package fr.inrae.fishola.database;
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -68,9 +68,6 @@ import static org.jooq.impl.DSL.trueCondition;
 @Singleton
 public class CatchsDao extends AbstractFisholaDao {
 
-    public static final String DEFAULT_LAKE_LATITUDE = "latitude";
-    public static final String DEFAULT_LAKE_LONGITUDE = "longitude";
-
     public UUID create(Catch c) {
         if (c.getEditedSpeciesId() == null) {
             c.setEditedSpeciesId(c.getSpeciesId());
@@ -111,45 +108,44 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public List<CatchMarker> catchMarkersForUser(UUID userId) {
         List<CatchMarker> result = withContext(context -> context
-             .select(Tables.CATCH.ID,
-                     Tables.SPECIES.NAME.as("specieName"),
-                     Tables.TRIP.ID.as("tripId"),
-                     Tables.TRIP.NAME.as("tripName"),
-                     Tables.TRIP.CREATED_ON.as("date"),
-                     Tables.LAKE.NAME.as("lakeName"),
-                     coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as(Tables.CATCH.LONGITUDE.getName()),
-                     coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as(Tables.CATCH.LATITUDE.getName()),
-                     Tables.LAKE.LATITUDE.as(DEFAULT_LAKE_LATITUDE),
-                     Tables.LAKE.LONGITUDE.as(DEFAULT_LAKE_LONGITUDE),
-                     coalesce(Tables.CATCH.SIZE, 0).as("size"),
-                     coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
-                     Tables.CATCH.MAILLEE.as("maillage")
-             )
-             .from(Tables.CATCH)
-             .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
-             .innerJoin(Tables.LAKE).on(Tables.TRIP.LAKE_ID.eq(Tables.LAKE.ID))
-             .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
-             .where(Tables.TRIP.OWNER_ID.eq(userId))
-             .fetch()
-             .map(markerRecord
-                     -> ImmutableCatchMarker.builder()
-                .id(markerRecord.get(Tables.CATCH.ID))
-                .tripId(markerRecord.get("tripId", UUID.class))
-                .tripName(markerRecord.get("tripName", String.class))
-                .specieName(markerRecord.get("specieName", String.class))
-                .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
-                .lakeName(markerRecord.get("lakeName", String.class))
-                .longitude(markerRecord.get(DEFAULT_LAKE_LONGITUDE, Double.class))
-                .latitude(markerRecord.get(DEFAULT_LAKE_LATITUDE, Double.class))
-                .size(markerRecord.get("size", Double.class))
-                .weight(markerRecord.get("weight", Double.class))
-                .maillage(markerRecord.get("maillage", Maillage.class))
-                .hasValidCoordinates(
-                        markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get(DEFAULT_LAKE_LONGITUDE)) ||
-                        markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get(DEFAULT_LAKE_LATITUDE))
+                .select(Tables.CATCH.ID,
+                        Tables.SPECIES.NAME.as("specieName"),
+                        Tables.TRIP.ID.as("tripId"),
+                        Tables.TRIP.NAME.as("tripName"),
+                        Tables.TRIP.CREATED_ON.as("date"),
+                        Tables.LAKE.NAME.as("lakeName"),
+                        coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as("longitude"),
+                        coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as("latitude"),
+                        Tables.LAKE.LATITUDE.as("default_lake_latitude"),
+                        Tables.LAKE.LONGITUDE.as("default_lake_longitude"),
+                        coalesce(Tables.CATCH.SIZE, 0).as("size"),
+                        coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
+                        Tables.CATCH.MAILLEE.as("maillage")
                 )
-                .build())
-            );
+                .from(Tables.CATCH)
+                .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                .innerJoin(Tables.LAKE).on(Tables.TRIP.LAKE_ID.eq(Tables.LAKE.ID))
+                .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
+                .where(Tables.TRIP.OWNER_ID.eq(userId))
+                .fetch()
+                .map(markerRecord -> ImmutableCatchMarker.builder()
+                        .id(markerRecord.get(Tables.CATCH.ID))
+                        .tripId(markerRecord.get("tripId", UUID.class))
+                        .tripName(markerRecord.get("tripName", String.class))
+                        .specieName(markerRecord.get("specieName", String.class))
+                        .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
+                        .lakeName(markerRecord.get("lakeName", String.class))
+                        .longitude(markerRecord.get("longitude", Double.class))
+                        .latitude(markerRecord.get("latitude", Double.class))
+                        .size(markerRecord.get("size", Double.class))
+                        .weight(markerRecord.get("weight", Double.class))
+                        .maillage(markerRecord.get("maillage", Maillage.class))
+                        .hasValidCoordinates(
+                                markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get("longitude")) ||
+                                markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get("latitude"))
+                        )
+                        .build())
+        );
         return result;
     }
 
