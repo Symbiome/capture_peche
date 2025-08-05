@@ -64,7 +64,7 @@
 
       <div v-if="allowMultipleSelection" class="selectedLakes">
         <span v-for="l in selectedLakes">
-          {{ l.name }} <i class="icon-error" @click="toggleOption(l)" />
+          {{ l.name }} <i class="icon-error" @click="toggleLake(l)" />
         </span>
       </div>
 
