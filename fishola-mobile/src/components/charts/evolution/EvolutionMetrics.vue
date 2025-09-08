@@ -70,39 +70,7 @@ export default class EvolutionMetricsView extends Vue {
   displayMode = 'tripsCount';
   containsData:boolean = false;
   chartData : any | null = null;
-  chartOptions : any | null = {
-    responsive: true,
-    maintainAspectRatio: false,
-    parsing: {
-      xAxisKey: 'monthYear',
-      yAxisKey: this.displayMode
-    },
-    scales: {
-      x: {
-        stacked: true,
-        grid: {
-            color: 'transparent'
-        },
-        border: {
-            color: '#1E9BC4'
-        }
-      },
-      y: {
-        stacked: true,
-        grid: {
-            color: '#DFE6E9'
-        },
-        border: {
-            color: '#1E9BC4'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'bottom'
-      },
-    }
-  };
+  chartOptions : any | null = null;
 
   evolutionMetrics: EvolutionMetricsForLake = {
     evolutionPerMonthAndSpecie: {},
@@ -134,6 +102,7 @@ export default class EvolutionMetricsView extends Vue {
         this.containsData = checkForData;
 
         this.initChartData();
+        this.initChartOptions();
     }
   }
 
@@ -171,24 +140,18 @@ export default class EvolutionMetricsView extends Vue {
     return years;
   }
 
-  getMonths() : string[] {
-    // Harcoded to match generated string from backend : java.time.Month getDisplayName(TextStyle.SHORT, Locale.FRANCE)
-    return ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-  }
-
   getLabels() {
     let labels : any[] = [];
     let years = this.getYears();
-    let monthsFr = this.getMonths()
     let currentMonthIndex = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
-    years.forEach(y => {
-      monthsFr.forEach((m, index) => {
-        if (parseInt(y) < currentYear || index < currentMonthIndex) {
-          labels.push(m + ' ' + y)
+    years.forEach(year => {
+      for (var month = 1 ; month <= 12; month++) {
+          if (parseInt(year) < currentYear || month < currentMonthIndex) {
+          labels.push((month < 10 ? '0' : '') + month + '/' + year)
         }
-      });
+      }
     })
     return labels;
   }
@@ -200,19 +163,35 @@ export default class EvolutionMetricsView extends Vue {
     return specie ? (specie.alias ?? specie.name) : specieId;
   }
 
-  initChartData() {;
+  initChartData() {
     let labels : any[] = this.getLabels();
     let datasets : any[] = [];
-    let colors = ['#1971c2', '#099268', '#66a80f', '#a9e34b', '#ffd43b', '#9c36b5', '#e03131',
-        '#4dabf7', '#38d9a9', '#a9e34b', '#ffd43b', '#ffd43b', '#da77f2', '#ff8787'];
+    let colors = [
+      '#69db7c', // light green
+      '#4dabf7', // light blue
+      '#ffd43b', // light orange
+      '#faa2c1', // light pink
+      '#cc5de8', // light purple
+      '#1971c2', // dark blue
+      '#c2255c', // dark pink
+      '#2f9e44', // dark green
+      '#f08c00', // dark orange
+      '#862e9c', // dark purple
+      '#99e9f2', // light cyan
+      '#c0eb75', // light lime
+      '#03045e', // Various colors then
+      '#99582a', '#bb9457', '#cfbaf0', '#9e0059', '#390099',
+      '#6a994e', '#7b2cbf', '#daddd8', '#fed766', '#5e6472'
+    ];
+    let colorIndex = 0;
 
     if (this.evolutionMetrics && this.evolutionMetrics.evolutionPerMonthAndSpecie) {
-      Object.keys(this.evolutionMetrics.evolutionPerMonthAndSpecie).forEach((element, i) => {
+      Object.keys(this.evolutionMetrics.evolutionPerMonthAndSpecie).forEach((element) => {
         if (this.evolutionMetrics.evolutionPerMonthAndSpecie[element].length) {
           let dataset = {
             label: this.getSpecieNameForLake(element),
             data: this.evolutionMetrics.evolutionPerMonthAndSpecie[element],
-            backgroundColor: colors[i % colors.length]
+            backgroundColor: colors[colorIndex++ % colors.length]
           }
           datasets.push(dataset);
         }
@@ -222,6 +201,115 @@ export default class EvolutionMetricsView extends Vue {
       labels: labels,
       datasets: datasets
     }
+  }
+
+  initChartOptions() {
+    this.chartOptions =  {
+      responsive: true,
+      maintainAspectRatio: false,
+      parsing: {
+        xAxisKey: 'monthYear',
+        yAxisKey: this.displayMode
+      },
+      interaction: {
+        mode: 'x'
+      },
+      layout: {
+        padding: {
+          top: 20,
+          right: 1 /* to be prevent grid display issue */
+        }
+      },
+      onResize: function(chart, size) {
+        // Hide month labels display on low resolution screens
+        chart.options.scales.x.ticks.display = (size.width > 1000);
+        if (chart.scales.secondX) {
+          chart.scales.secondX._labelSizes.widths = [20,20,20,300,20,20];
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: {
+            color:  function(context) {
+              console.log(context)
+              if (context.tick && context.tick.label == '01') {
+                return '#ccc';
+              }
+            },
+            offset: true
+          },
+          border: {
+            color: 'transparent'
+          },
+          ticks : {
+            maxRotation: 0,
+            maxTicksLimit: 36,
+            font: {
+              size: 16,
+              lineHeight: 1.5
+            },
+            callback: function(value) {
+              let label = this.getLabelForValue(value);
+              // Display only the month
+              return label.split("/")[0];
+            }
+          }
+        },
+        secondX: {
+          position: 'bottom',
+          grid: {
+            color: 'transparent',
+          },
+          border: {
+              color: '#ccc',
+          },
+          ticks : {
+            maxRotation: 0,
+            font: {
+              size: 16,
+              lineHeight: 1.5
+            },
+            callback: function(value) {
+              let label = this.getLabelForValue(value);
+              // Display the year only once
+              return label.split("/")[0] == '07' ? label.split("/")[1] : null;
+            }
+          }
+        },
+        y: {
+          stacked: true,
+          grid: {
+              color: '#DFE6E9'
+          },
+          border: {
+              color: '#1E9BC4'
+          },
+          ticks : {
+            font: {
+              size: 16,
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          align:'end',
+        },
+        tooltip: {
+          callbacks: {
+            title: function(tooltipItems, data) {
+                const l = tooltipItems[0].label,
+                    monthsFr = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+                    month = monthsFr[parseInt(l.split("/")) - 1],
+                    year = l.split("/")[1];
+                return month + " " + year;
+            },
+          }
+        }
+      }
+    };
   }
 
   switchMode() {

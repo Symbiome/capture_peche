@@ -86,7 +86,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
                 Long keptCatchCount = catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count();
                 Long totalCatchCount = (long) catchesOfSpeciesForMonth.size();
                 Long tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
-                String monthYear = month.getDisplayName(TextStyle.SHORT, Locale.FRANCE) + " "  + year;
+                String monthYear = (month.getValue() < 10 ? "0" : "") + month.getValue()  + "/"  + year;
                 return Optional.of(
                         ImmutableEvolutionMetricForSpecieAndMonth.builder()
                         .monthYear(monthYear)
