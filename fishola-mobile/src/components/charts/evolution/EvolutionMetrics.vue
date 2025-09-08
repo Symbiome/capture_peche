@@ -42,6 +42,7 @@ import { EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithA
 import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import chartjsPluginDatalables from 'chartjs-plugin-datalabels'
 
 import {
   Chart as ChartJS,
@@ -54,7 +55,7 @@ import {
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables)
 
 @Component({
   components: {
@@ -78,7 +79,6 @@ export default class EvolutionMetricsView extends Vue {
 
   mounted() {
     this.loadEvolutionData();
-    
   }
 
   @Watch("lakeId")
@@ -197,6 +197,7 @@ export default class EvolutionMetricsView extends Vue {
         }
       });
     }
+
     this.chartData = {
       labels: labels,
       datasets: datasets
@@ -232,7 +233,6 @@ export default class EvolutionMetricsView extends Vue {
           stacked: true,
           grid: {
             color:  function(context) {
-              console.log(context)
               if (context.tick && context.tick.label == '01') {
                 return '#ccc';
               }
@@ -240,7 +240,7 @@ export default class EvolutionMetricsView extends Vue {
             offset: true
           },
           border: {
-            color: 'transparent'
+            color: '#999'
           },
           ticks : {
             maxRotation: 0,
@@ -262,18 +262,19 @@ export default class EvolutionMetricsView extends Vue {
             color: 'transparent',
           },
           border: {
-              color: '#ccc',
+              color: '#ccc'
           },
           ticks : {
             maxRotation: 0,
             font: {
               size: 16,
+              weight: 'bold',
               lineHeight: 1.5
             },
             callback: function(value) {
               let label = this.getLabelForValue(value);
               // Display the year only once
-              return label.split("/")[0] == '07' ? label.split("/")[1] : null;
+              return label.split("/")[0] == '06' ? label.split("/")[1] : null;
             }
           }
         },
@@ -283,7 +284,7 @@ export default class EvolutionMetricsView extends Vue {
               color: '#DFE6E9'
           },
           border: {
-              color: '#1E9BC4'
+              color: '#999'
           },
           ticks : {
             font: {
@@ -307,7 +308,36 @@ export default class EvolutionMetricsView extends Vue {
                 return month + " " + year;
             },
           }
-        }
+        },
+
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          font: {
+            size: 14,
+            weight: 'bold'
+          },
+          formatter: (value, context) => {
+            let sum = 0,
+                last = null;
+
+            context.chart.data.datasets.forEach((dataset, index) => {
+              let siblings = context.chart.isDatasetVisible(index) && dataset.data.filter((option) => {
+                return option.monthYear == value.monthYear
+              })
+              if (siblings && siblings[0] && siblings[0][this.displayMode]) {
+                sum += siblings[0][this.displayMode];
+                last = siblings[0]
+              }
+            })
+
+            if (value == last) {
+              return sum;
+            } else {
+              return '';
+            }
+          }
+        },
       }
     };
   }
