@@ -43,6 +43,7 @@ import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import chartjsPluginDatalables from 'chartjs-plugin-datalabels'
+import chartjsPluginZoom from 'chartjs-plugin-zoom'
 
 import {
   Chart as ChartJS,
@@ -55,7 +56,7 @@ import {
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables, chartjsPluginZoom)
 
 @Component({
   components: {
@@ -309,7 +310,6 @@ export default class EvolutionMetricsView extends Vue {
             },
           }
         },
-
         datalabels: {
           anchor: 'end',
           align: 'top',
@@ -338,6 +338,27 @@ export default class EvolutionMetricsView extends Vue {
             }
           }
         },
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+            threshold: 5,
+          },
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: 'x',
+          },
+          limits: {
+            x: {
+              minRange: 10
+            }
+          }
+        }
       }
     };
   }
