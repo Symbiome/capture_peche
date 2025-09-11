@@ -137,6 +137,7 @@ export default class MyTripsList extends Vue {
 
   .no-trips {
     height: 100%;
+    min-height: 65vh;
 
     display: flex;
     flex-direction: column;
@@ -367,7 +368,7 @@ export default class MyTripsList extends Vue {
 
       .bottom {
         height: fit-content;
-        width: 415px;
+        width: 283px;
         flex-direction: column-reverse;
         i {
           transform: rotate(180deg);

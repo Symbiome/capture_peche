@@ -408,6 +408,7 @@ html {
   }
 
   &.pane-only {
+    height: 100%;
     margin-top: @vertical-margin-medium;
   }
 

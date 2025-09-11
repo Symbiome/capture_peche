@@ -263,7 +263,7 @@ export default class MyTripsView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
 @import "../less/main";
 
 .my-trips-page {
