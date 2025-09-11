@@ -28,11 +28,14 @@
           id="lakes-autocomplete-input"
           type="text"
           v-model="search"
+          inputmode="search"
+          autocomplete="off"
           :class="{
             'isSearching' : search.toLowerCase() != selectedLabel.toLowerCase(),
             'field-error' : error
           }"
           v-on:keydown="updateSuggestions"
+          v-on:input="updateSearch"
           v-on:focusout="closeSuggestions"
         />
         <span class="input-actions">
@@ -102,6 +105,7 @@ export default class LakeSelection extends Vue {
   displayMap: boolean = false;
   displaySuggestions: boolean = false;
   allLakes: Lake[] = [];
+  allLakesExecptFavorites: Lake[] = [];
   suggestedLakes: Lake[] = [];
   suggestedFavorites: Lake[] = [];
   search: string = "";
@@ -115,27 +119,38 @@ export default class LakeSelection extends Vue {
   async loadLakes() {
       let favoriteLakes = await ReferentialService.getFavoriteLakes();
       const fetchedLakes = await ReferentialService.getLakes();
-      this.allLakes = fetchedLakes.filter(el => {
+      this.allLakes = fetchedLakes;
+      this.allLakesExecptFavorites = fetchedLakes.filter(el => {
             return !favoriteLakes.find(el2 => {
                 return el.id === el2.id
             })
         });
-      this.suggestedLakes = this.allLakes;
+      this.suggestedLakes = this.allLakesExecptFavorites;
       this.suggestedFavorites = favoriteLakes;
 
       this.$emit('favoriteLakesChanged', favoriteLakes);
   }
 
+  @Watch("favoriteLakes")
+  favoriteLakesChanged() {
+    let favorites = this.favoriteLakes;
+    this.allLakesExecptFavorites = this.allLakes.filter(lake => {
+        return !favorites.find(other => {
+            return lake.id === other.id
+        })
+    });
+    this.suggestedLakes = this.allLakesExecptFavorites;
+    this.updateSuggestedLakes();
+  }
+
   @Watch("selectedLakes")
   updateSelectedLakeLabel() {
     this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
-    if (this.selectedLakesId.length == 1 && this.allLakes) {
+    if (this.selectedLakesId.length == 1 && this.allLakesExecptFavorites) {
       const selectedLake = this.selectedLakesId[0];
       let filteredItem = this.allLakes.filter((l) => {
         return l.id === selectedLake;
-      }).concat(this.favoriteLakes.filter((l) => {
-        return l.id === selectedLake;
-      }));
+      });
       this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
       this.updateSuggestedLakes();
     }
@@ -144,8 +159,8 @@ export default class LakeSelection extends Vue {
   @Watch("search")
   updateSuggestedLakes() {
     this.suggestedLakes = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.allLakes :
-      this.allLakes.filter((lake) => {
+      this.suggestedLakes :
+      this.allLakesExecptFavorites.filter((lake) => {
         return lake.name
             .toString()
             .toLowerCase()
@@ -161,14 +176,22 @@ export default class LakeSelection extends Vue {
     });
   }
 
+  updateSearch(event: any) {
+    /* Because v-model is not updated with mobile keyboard */
+    if (event.isComposing) {
+      this.search = event.data;
+    }
+  }
+
   selectLakeById(id : string) {
-    let lakes = this.allLakes ? this.allLakes : this.suggestedLakes;
-    let filteredItem = lakes.filter((l) => {
+    let filteredItem = this.allLakes.filter((l) => {
       return l.id === id;
     });
     if (filteredItem.length == 1 ? filteredItem[0].name : '') {
       this.selectLake(filteredItem[0]);
-      this.displayMap = false;
+      if (!this.allowMultipleSelection) {
+        this.displayMap = false;
+      }
     }
   }
 
@@ -194,9 +217,10 @@ export default class LakeSelection extends Vue {
 
   closeSuggestions(event:Event) {
     // Hide suggestions when leaving the input field, except when clicking on one of the suggestions
-    if (event.type === 'focusout' && !event.target.parentElement.contains(event.rangeParent)) {
-      this.displaySuggestions = false;
-    }
+    // Timeout to be sure that another event is not dismissed
+      setTimeout(() => {
+        this.displaySuggestions = false;
+      }, "100");
   }
 
   updateSuggestions(event:Event) {
@@ -323,6 +347,7 @@ export default class LakeSelection extends Vue {
     list-style: none;
     background-color: white;
     box-shadow: 0 0 5px #0002;
+    z-index: 100;
 
     & > li {
       padding: 6px 10px 6px 40px;
@@ -354,6 +379,8 @@ export default class LakeSelection extends Vue {
     gap: 10px 15px;
 
     & > span {
+      display: flex;
+      align-items: center;
       border-radius: 20px;
       border: 1px solid @pelorous;
       padding: 5px 10px;

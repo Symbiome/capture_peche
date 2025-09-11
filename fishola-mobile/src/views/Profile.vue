@@ -154,8 +154,11 @@ export default class ProfileView extends Vue {
 
   favoriteLakesChanged(newFavoriteLakes: Lake[]) {
     this.favoriteChanged = true;
-    this.favoriteLakes = newFavoriteLakes;
+    this.favoriteLakes = newFavoriteLakes.sort((a,b) => {
+      return a.name > b.name ? 1 : -1;
+    })
   }
+
   toggleLakeFavorite(lake : Lake) {
     this.favoriteChanged = true;
 
@@ -166,6 +169,9 @@ export default class ProfileView extends Vue {
       this.favoriteLakes = this.favoriteLakes.filter(function(l) { return l.id != lake.id });
     } else {
       this.favoriteLakes.push(lake);
+      this.favoriteLakes =  this.favoriteLakes.sort((a,b) => {
+      return a.name > b.name ? 1 : -1;
+    })
     }
   }
 
