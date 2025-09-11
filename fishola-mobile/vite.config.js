@@ -104,5 +104,13 @@ export default defineConfig( ({mode}) => {
         fonts: path.resolve(__dirname, "public/fonts"),
       },
     },
+    css: {
+      preprocessorOptions: {
+        less: {
+          javascriptEnabled: true,
+          additionalData: `@import "@/less/variables.less";`,
+        },
+      },
+    },
   };
 });
