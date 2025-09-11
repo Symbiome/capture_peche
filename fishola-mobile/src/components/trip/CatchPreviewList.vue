@@ -108,8 +108,6 @@ export default class CatchPreviewList extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .catch-preview-list {
   height: 100%;
   display: flex;

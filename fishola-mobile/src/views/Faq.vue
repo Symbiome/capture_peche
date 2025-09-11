@@ -83,8 +83,6 @@ export default class CreditsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../less/main";
-
 .faq-page {
 
   p.faq-p {

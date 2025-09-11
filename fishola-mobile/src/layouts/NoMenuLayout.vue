@@ -38,7 +38,6 @@ export default class NoMenuLayout extends Vue {
 </script>
 
 <style scoped lang="less">
-
 #root-without-menu {
   height: 100%;
   width: 100%;

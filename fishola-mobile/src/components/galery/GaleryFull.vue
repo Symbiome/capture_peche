@@ -347,8 +347,6 @@ export default class GaleryFull extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .picture-modal-gallery-full {
   display: none;
   @media screen and (max-width: 1300px) {

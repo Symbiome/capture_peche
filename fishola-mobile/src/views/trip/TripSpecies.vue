@@ -302,7 +302,7 @@ export default class TripSpeciesView extends Vue {
 </script>
 
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-trip-species-page {
   .pane .pane-content {

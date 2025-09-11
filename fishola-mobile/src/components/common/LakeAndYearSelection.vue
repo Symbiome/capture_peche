@@ -147,8 +147,6 @@ export default class LakeAndYearSelection extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
-
 .selects-holder {
   select {
     background: transparent;

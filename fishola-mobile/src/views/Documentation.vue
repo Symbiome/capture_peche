@@ -158,8 +158,6 @@ export default class DocumentationView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .documentation-page {
   .pane .pane-content {
     padding-left: 0px;

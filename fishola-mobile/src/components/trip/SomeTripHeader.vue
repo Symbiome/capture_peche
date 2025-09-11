@@ -59,9 +59,6 @@ export default class SomeTripHeader extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .some-trip-header {
 
   display: flex;

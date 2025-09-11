@@ -130,8 +130,6 @@ export default class FishingLicenceItem extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .licence-item {
   display: flex;
   align-items: center;

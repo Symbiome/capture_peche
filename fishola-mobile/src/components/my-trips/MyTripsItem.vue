@@ -111,8 +111,6 @@ export default class MyTripItem extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .my-trips-item {
   display: flex;
   align-items: center;

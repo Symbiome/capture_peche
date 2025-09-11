@@ -84,8 +84,6 @@ export default class VerifyAccount extends Vue {
 }
 </script>
 <style lang="less">
-@import "../less/main";
-
 .page-with-header {
   .verify-account-page {
     display: flex;

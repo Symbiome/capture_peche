@@ -120,8 +120,6 @@ export default class NewsDetailsView extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
-
 .news-details-title {
   display: flex;
   align-items: center;

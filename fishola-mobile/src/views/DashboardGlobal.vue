@@ -236,8 +236,6 @@ export default class DashboardGlobalView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .dashboard-page {
   display: flex;
   flex-direction: column;

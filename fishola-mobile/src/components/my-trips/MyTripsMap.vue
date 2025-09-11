@@ -204,8 +204,6 @@ export default class MyTripsMapView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .info {
     position: absolute;
     right: 50px;

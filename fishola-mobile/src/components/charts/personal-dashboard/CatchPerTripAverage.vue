@@ -140,8 +140,3 @@ export default class AverageCatchChart extends Vue {
   }
 }
 </script>
-
-<style scoped lang="less">
-@import "../../less/main";
-
-</style>

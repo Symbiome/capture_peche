@@ -172,8 +172,6 @@ export default class PictureModal extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .no-scroll {
   overflow: hidden;
 }

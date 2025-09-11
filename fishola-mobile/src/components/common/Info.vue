@@ -31,8 +31,3 @@ import { Component, Vue } from 'vue-property-decorator';
 export default class Info extends Vue {
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-
-</style>

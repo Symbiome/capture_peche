@@ -307,7 +307,7 @@ export default class TripMetaView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .position-error {
   font-size: 14px;

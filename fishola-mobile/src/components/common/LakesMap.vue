@@ -162,8 +162,8 @@ export default class LakesMap extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
-@import "../../less/main";
+<style scoped lang="less">
+
 
 .map {
     width: 100%;

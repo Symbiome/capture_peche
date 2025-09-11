@@ -221,8 +221,6 @@ export default class NewFishingLicence extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
-
 .page {
   form {
     margin-top: @vertical-margin-large;

@@ -170,8 +170,6 @@ export default class RegisterView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .register.page-with-header {
   .page.register-page {
     height: calc(100% - @header-height - @vertical-margin-xx-large);

@@ -115,8 +115,6 @@ export default class ProfileAndSettingsView extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
-
 .profile-header {
     background-image: url("img/background_transparent.png");
     background-repeat: no-repeat;

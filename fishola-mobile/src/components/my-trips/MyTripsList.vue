@@ -123,9 +123,6 @@ export default class MyTripsList extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .my-trips-list {
 
   .pane-content {

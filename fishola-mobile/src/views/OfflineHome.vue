@@ -104,9 +104,7 @@ export default class OfflineHome extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .trips-and-news-tab {
   width: 100%;
   display: flex;

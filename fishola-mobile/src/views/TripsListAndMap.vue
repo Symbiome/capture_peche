@@ -87,9 +87,7 @@ export default class TripsListAndMapView extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .news-badge {
   width: 30px;
   height: 25px;

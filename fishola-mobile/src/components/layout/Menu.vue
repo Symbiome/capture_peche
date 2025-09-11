@@ -445,8 +445,6 @@ export default class Menu extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 @media screen and (max-width: @mobile-max-width) {
   .menu-hidden {
     left: calc(100vw);

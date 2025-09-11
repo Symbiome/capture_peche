@@ -312,7 +312,6 @@ export default class OpenCVSizeComputation extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
 .measure-tests {
   padding: 20px;
   padding-left: 30px;

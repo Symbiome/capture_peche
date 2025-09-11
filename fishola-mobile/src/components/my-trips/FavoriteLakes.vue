@@ -68,12 +68,32 @@ export default class SettingsView extends Vue {
         }
         this.$emit('favoriteLakesChanged', this.favoriteLakes);
     }
+
+    zoomToFavoriteMarkers() {
+        if (this.map && this.favoriteLakes.length > 0) {
+            this.map.fitBounds(
+                this.favoriteLakes.map(lake => { return [lake.latitude, lake.longitude] }),
+                {padding: [20, 20]}
+            );
+            this.mapIsLoading = false;
+        } else {
+            this.mapIsLoading = false;
+        }
+    }
+
+    mapReady() {
+        // @ts-ignore
+        this.map = this.$refs.map.mapObject;
+        this.zoomToFavoriteMarkers();
+    }
+
+    toLatLng(lake: Lake) {
+        return latLng(lake.latitude, lake.longitude);
+    }
 }
 
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
-
 </style>

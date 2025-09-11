@@ -171,8 +171,6 @@ export default class SettingsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .settings-page {
   height: 100%;
 

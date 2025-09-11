@@ -372,8 +372,6 @@ export default class EvolutionMetricsView extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../../less/main";
-
 .not-enough-data {
   font-style: italic;
   font-size: @fontsize-button;

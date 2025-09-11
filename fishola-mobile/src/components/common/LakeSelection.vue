@@ -236,8 +236,6 @@ export default class LakeSelection extends Vue {
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
-
 .lake-selection {
   position: relative;
   margin-top: @vertical-margin-x-small;

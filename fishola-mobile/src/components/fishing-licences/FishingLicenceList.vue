@@ -44,7 +44,3 @@ export default class FishingLicenceList extends Vue {
 
 }
 </script>
-
-<style scoped lang="less">
-@import "../../less/main";
-</style>

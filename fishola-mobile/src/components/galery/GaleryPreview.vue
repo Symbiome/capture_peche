@@ -74,7 +74,7 @@ export default class GaleryPreview extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .galery-preview {
   width: calc(100vw - 80px);

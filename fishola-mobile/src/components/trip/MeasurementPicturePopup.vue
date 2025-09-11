@@ -289,7 +289,7 @@ export default class MeasurementPicturePopup extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less" scoped>
-@import "../../less/main";
+
 
 .picture-source-chooser {
   position: absolute;

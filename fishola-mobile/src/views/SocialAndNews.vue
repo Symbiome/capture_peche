@@ -166,9 +166,7 @@ export default class SocialAndNewsView extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .h1-with-selects {
   @media screen and (max-width: @desktop-min-width) {
     margin-top: -20px !important;

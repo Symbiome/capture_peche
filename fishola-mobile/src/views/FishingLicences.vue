@@ -95,8 +95,6 @@ export default class FishingLicencesView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .create-and-delete {
   width: 100%;
   display: flex;

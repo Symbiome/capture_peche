@@ -37,9 +37,6 @@ export default class Running extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-  @import "../../less/main";
-
   .running {
     width: 50px;
     text-align: center;
