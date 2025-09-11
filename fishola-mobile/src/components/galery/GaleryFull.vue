@@ -300,7 +300,7 @@ export default class GaleryFull extends Vue {
     this.lakes = [];
     const defaultLake = {
       id: "",
-      name: "Tous les lacs",
+      name: "Tous les plans d'eau",
       exportAs: "",
       latitude: 0,
       longitude: 0,

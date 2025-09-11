@@ -26,7 +26,7 @@
                   {{ lake.name }}
               </option>
             </optgroup>
-            <optgroup label="Tous les lacs">
+            <optgroup label="Tous les plans d'eau">
               <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
                   {{ lake.name }}
               </option>

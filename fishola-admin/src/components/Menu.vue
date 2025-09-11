@@ -28,7 +28,7 @@
     <template slot="start">
       <b-navbar-dropdown label="Référentiels" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'lakes' }">
-          Lacs
+          Plans d'eau
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'species' }">
           Espèces
@@ -42,7 +42,7 @@
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Paramétrage">
         <b-navbar-item tag="router-link" :to="{ name: 'species-per-lake' }">
-          Espèces par lac
+          Espèces par plan d'eau
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
           Maillages et tailles maximales
@@ -98,7 +98,7 @@
                   Admnistateur du {{ lakes[0].name}}
                 </b>
                 <span v-else>
-                  <b>Administrateur  des lacs : </b><br/>
+                  <b>Administrateur  des plans d'eau : </b><br/>
                   <p v-for="l in lakes" :id="l.id">
                     - {{ l.name }}
                   </p>

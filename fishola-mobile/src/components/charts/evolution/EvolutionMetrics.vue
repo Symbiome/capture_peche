@@ -20,7 +20,7 @@
   -->
 <template>
     <div v-if="!containsData" class="not-enough-data">
-      Aucune donnée pour ce lac.
+      Aucune donnée pour ce plan d'eau.
     </div>
     <div v-else  id="evolution-graph">
         <select v-model="displayMode" @change="switchMode">

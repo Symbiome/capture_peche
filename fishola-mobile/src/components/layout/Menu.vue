@@ -171,7 +171,7 @@ export default class Menu extends Vue {
     try {
       await Helpers.confirm(
         this.$modal,
-        `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre lac. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+        `Vous pouvez désormais voir et partager les sorties des utilisateurs FISHOLA pêchant sur votre plan d'eau. Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
         "Du nouveau sur FISHOLA",
         "Non",
         "Oui"

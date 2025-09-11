@@ -114,7 +114,7 @@
         <section class="section column">
           <h2 class="title">Autres informations</h2>
           <b-field grouped>
-            <b-field label="Lac"
+            <b-field label="Plan d'eau"
               ><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span
               ><span v-else>Non renseigné</span>
             </b-field>

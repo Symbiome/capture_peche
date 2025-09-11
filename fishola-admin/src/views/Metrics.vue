@@ -70,7 +70,7 @@
         />
 
         <h2 class="metrics-title">
-          Nombre de sorties par lac et par an
+          Nombre de sorties par plan d'eau et par an
           <b-button
             type="is-primary"
             @click="
@@ -86,7 +86,7 @@
         />
 
         <h2 class="metrics-title">
-          Nombre de captures par lac et par an
+          Nombre de captures par plan d'eau et par an
           <b-button
             type="is-primary"
             @click="
@@ -105,7 +105,7 @@
           :default-sort="['lac', 'asc']"
         />
         <h2 class="metrics-title" v-if="loggedAdmin.isNationalAdmin">
-          Nombre de mesures automatiques par lac et par an
+          Nombre de mesures automatiques par plan d'eau et par an
           <b-button
             type="is-primary"
             @click="
@@ -147,7 +147,7 @@ export default class Metrics extends Vue {
   };
   activeUsersColumns = [
     { field: "annee", label: "Année", sortable: true, searchable: true },
-    { field: "lac", label: "Lac", sortable: true, searchable: true },
+    { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
     { field: "total", label: "Utilisateurs actifs", sortable: true }
   ];
   userRegistrationsColumns = [
@@ -156,17 +156,17 @@ export default class Metrics extends Vue {
   ];
   tripsPerLakeColumns = [
     { field: "annee", label: "Année", sortable: true, searchable: true },
-    { field: "lac", label: "Lac", sortable: true, searchable: true },
+    { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
     { field: "total", label: "Nombre de sorties", sortable: true }
   ];
   catchesPerLakeColumns = [
     { field: "annee", label: "Année", sortable: true, searchable: true },
-    { field: "lac", label: "Lac", sortable: true, searchable: true },
+    { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
     { field: "total", label: "Nombres de prises", sortable: true }
   ];
   automaticMeasuresPerLakeColumns = [
     { field: "annee", label: "Année", sortable: true, searchable: true },
-    { field: "lac", label: "Lac", sortable: true, searchable: true },
+    { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
     { field: "total", label: "Mesures automatiques", sortable: true }
   ];
 
@@ -186,7 +186,7 @@ export default class Metrics extends Vue {
 
     const columns = [
       { field: "annee", label: "Année", sortable: true },
-      { field: "lac", label: "Lac", sortable: true },
+      { field: "lac", label: "Plan d'eau", sortable: true },
       { field: "indic_type", label: "Indicateur", sortable: true },
       { field: "total", label: "Valeur", sortable: true }
     ];
@@ -211,18 +211,18 @@ export default class Metrics extends Vue {
     csvContent += this.getCSVRows(
       columns,
       this.metrics.tripsPerLake,
-      "Nombre de sorties par lac et par an"
+      "Nombre de sorties par plan d'eau et par an"
     );
     csvContent += this.getCSVRows(
       columns,
       this.metrics.catchesPerLake,
-      "Nombre de captures par lac et par an "
+      "Nombre de captures par plan d'eau et par an "
     );
     if (this.loggedAdmin.isNationalAdmin) {
       csvContent += this.getCSVRows(
         columns,
         this.metrics.automaticMeasuresPerLake,
-        "Nombre de mesures automatiques par lac et par an"
+        "Nombre de mesures automatiques par plan d'eau et par an"
       );
     }
     this.downloadCSV("ensemble_indicateurs", csvContent);

@@ -21,7 +21,7 @@
 <template>
     <div class="lake-selection">
       <label for="lakes-autocomplete-input">
-        Lac<span v-if="allowMultipleSelection">s</span>
+        Plan<span v-if="allowMultipleSelection">s</span> d'eau
       </label>
       <span class="input-wrapper">
         <input

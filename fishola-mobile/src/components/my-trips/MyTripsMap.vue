@@ -180,8 +180,8 @@ export default class MyTripsMapView extends Vue {
 
             const bounds = visibleLayerGroup.getBounds();
             this.map.fitBounds(bounds);
-            this.mapIsLoading = false;
         }
+        this.mapIsLoading = false;
     }
 
     madReady() {

@@ -95,7 +95,7 @@
           <div class="main-title">La science tous ensemble</div>
           <div class="sub-title">
             En utilisant FISHOLA vous participez à la compréhension et la
-            préservation des lacs
+            préservation des plans d'eau
           </div>
         </div>
       </div>
@@ -388,7 +388,7 @@ export default class AboutView extends Vue {
   center = latLng(46.071623, 5.890511);
 
   titleText: string =
-    "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
+    "est l'application smartphone pour une gestion durable de la pêche sur les plans d'eau français.";
   contributeText: string =
     "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount: number = 0;

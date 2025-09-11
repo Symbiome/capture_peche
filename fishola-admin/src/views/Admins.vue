@@ -82,7 +82,7 @@ export default class UsersVue extends Vue {
       },
        {
         field: "lakeNames",
-        label: "Lacs",
+        label: "Plans d'eau",
         searchable: true,
         hiddenInPopup: true
       },
@@ -96,7 +96,7 @@ export default class UsersVue extends Vue {
       },
       {
         field: "lakeIds",
-        label: "Lacs",
+        label: "Plans d'eau",
         isArray: true,
         visible: false,
         arrayOptions: lakesOptions,

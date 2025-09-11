@@ -56,7 +56,7 @@
           <input type="checkbox" id="show-trips" class="pelorous-checkbox" v-model="bean.acceptsShareTrips" />
           <label for="show-trips"></label>
           <label for="show-trips" class="register-cgu-label">
-            Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes lacs que moi.
+            Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes plans d'eau que moi.
           </label>
         </div>
         <div class="bottom-page-spacer"></div>

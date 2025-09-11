@@ -177,7 +177,7 @@ export default class DocumentationVue extends Vue {
       },
       {
         field: "lakeNames",
-        label: "Lacs",
+        label: "Plans d'eau",
         searchable: true,
         hiddenInPopup: true
       },
@@ -200,7 +200,7 @@ export default class DocumentationVue extends Vue {
       {
         field: "isNational",
         isABoolean: true,
-        label: "National (concerne tous les lacs)",
+        label: "National (concerne tous les plans d'eau)",
         visible: false,
         showItemIfFunction: (news) => {
           return this.loggedAdmin.isNationalAdmin;
@@ -208,7 +208,7 @@ export default class DocumentationVue extends Vue {
       },
       {
         field: "lakeIds",
-        label: "Lacs",
+        label: "Plans d'eau",
         isArray: true,
         visible: false,
         showItemIfFunction: (news) => {

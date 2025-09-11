@@ -93,7 +93,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/lakes/{lakeId}")
     public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
-        Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
+        Preconditions.checkArgument(lakeId != null, "Identifiant de plan d'eau obligatoire");
         Preconditions.checkArgument(lakeId.equals(lake.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateLake(lake);

@@ -155,7 +155,7 @@ export default class TripMetaView extends Vue {
     if (this.id == Constants.NEW_TRIP_ID) {
       GeolocationService.getClosestLake().then(
         (lake: Lake) => {
-          console.debug("Le lac le plus proche est ", lake);
+          console.debug("Le plan d'eau le plus proche est ", lake);
           this.trip.lakeId = lake.id;
           // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
           this.lakeIdError = lake.id;
@@ -168,7 +168,7 @@ export default class TripMetaView extends Vue {
           );
           if (JSON.stringify(e).indexOf("location unavailable") != -1) {
             this.hereIAmError =
-              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le lac";
+              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le plan d'eau";
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
@@ -179,7 +179,7 @@ export default class TripMetaView extends Vue {
             }
           } else if (JSON.stringify(e).indexOf("User denied") != -1) {
             this.hereIAmError =
-              "Partage de position refusé, il n'est pas possible de pré-sélectionner le lac";
+              "Partage de position refusé, il n'est pas possible de pré-sélectionner le plan d'eau";
           }
         }
       );
@@ -198,7 +198,7 @@ export default class TripMetaView extends Vue {
       this.lakeIdError = "";
     } else {
       hasError = true;
-      this.lakeIdError = "Vous devez sélectionner le lac";
+      this.lakeIdError = "Vous devez sélectionner le plan d'eau";
     }
     if (localStorage) {
       localStorage.latestSelectedLakeUUID = this.trip.lakeId

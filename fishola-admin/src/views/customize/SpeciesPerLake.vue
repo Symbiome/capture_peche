@@ -20,10 +20,10 @@
   -->
 <template>
   <div class="species-per-lake">
-    <h1 id="table-title">Espèces par lac</h1>
+    <h1 id="table-title">Espèces par plan d'eau</h1>
 
     <div v-if="lakes.length > maxLakeBeforeShowingAutoComplete">
-      Veuillez indiquer les lacs à afficher
+      Veuillez indiquer les plans d'eau à afficher
       <MultipleAutoComplete
         :defaultSelection="lastLakeSelection"
         :data="lakeSelectionOptions"
@@ -125,14 +125,14 @@ export default class SpeciesPerLakeVue extends Vue {
       }).then(
       res => {
         this.$buefy.toast.open({
-          message: "Espèces par lac enregistrées",
+          message: "Espèces par plan d'eau enregistrées",
           type: "is-success"
         });
       },
       error => {
         this.$buefy.toast.open({
           message:
-            "Erreur lors de l'enregistrement des espèces par lac : " +
+            "Erreur lors de l'enregistrement des espèces par plan d'eau : " +
             error.message,
           type: "is-danger"
         });

@@ -32,7 +32,7 @@
         />
         <FormSelect
           name="lake"
-          label="Lac"
+          label="Plan d'eau"
           v-bind:options="allLakes"
           orderBy="name"
           v-model="trip.lakeId"
