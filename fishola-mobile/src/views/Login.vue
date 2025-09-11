@@ -172,6 +172,10 @@ export default class LoginView extends Vue {
   }
 }
 
+.login {
+  background-color: @pelorous;
+}
+
 .login-page {
   display: flex;
   flex-direction: row;
