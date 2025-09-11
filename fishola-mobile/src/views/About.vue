@@ -36,7 +36,7 @@
           <i class="icon-menu"></i>
         </div>
 
-        <div class="whatever" :class="{ closed: closed }">
+        <div class="menu" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
               <a href="#/about" v-scroll-to="{
@@ -615,7 +615,7 @@ export default class AboutView extends Vue {
       }
     }
 
-    .whatever {
+    .menu {
       width: 100%;
       height: 73px;
 
@@ -693,7 +693,7 @@ export default class AboutView extends Vue {
         right: 0;
         width: 250px;
         height: 100vh;
-
+        height: 100dvh; /* Good height for mobile screens, with navigation bar, if supported */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -720,7 +720,6 @@ export default class AboutView extends Vue {
     }
   }
 }
-
 .Navigation li a {
   color: @gunmetal;
 }
