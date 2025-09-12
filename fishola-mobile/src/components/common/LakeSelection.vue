@@ -38,9 +38,15 @@
           v-on:input="updateSearch"
           v-on:focusout="closeSuggestions"
         />
+        <i
+          v-if="!allowMultipleSelection && search != '' &&  (search.toLowerCase() == selectedLabel.toLowerCase())"
+          class="icon-error input-delete"
+          @click="clearSelection"
+          title="Retirer la sélection"
+        />
         <span class="input-actions">
-          <i class="icon-chevron" @click="toggleSuggestionsDisplay" />
-          <i class="icon-map" @click="toggleMapDisplay"/>
+          <i class="icon-chevron" @click="toggleSuggestionsDisplay" title="Voir les suggestions" />
+          <i class="icon-map" @click="toggleMapDisplay" title="Voir les suggestions sur une carte"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
@@ -203,6 +209,10 @@ export default class LakeSelection extends Vue {
     this.$emit("updated", selected);
   }
 
+  clearSelection() {
+    this.search = "";
+  }
+
   toggleLake(lake: Lake) {
     this.$emit("updated", lake);
   }
@@ -217,10 +227,10 @@ export default class LakeSelection extends Vue {
 
   closeSuggestions(event:Event) {
     // Hide suggestions when leaving the input field, except when clicking on one of the suggestions
-    // Timeout to be sure that another event is not dismissed
-      setTimeout(() => {
-        this.displaySuggestions = false;
-      }, "100");
+    // Timeout to be sure that another event is not dismissed, specially the click on a suggestion
+    setTimeout(() => {
+      this.displaySuggestions = false;
+    }, "500");
   }
 
   updateSuggestions(event:Event) {
@@ -228,9 +238,9 @@ export default class LakeSelection extends Vue {
     if (event.keyCode == 27 || event.keyCode == 13) {
       this.displaySuggestions = false;
       if (this.allowMultipleSelection) {
-        this.search = "";
+        this.clearSelection();
       }
-      // Hide suggestions and select the matching lake when the Enter key is pressed
+      // Hide suggestions and select the matching lake, it there is only one, when the Enter key is pressed
       if (event.keyCode == 13 && (this.suggestedLakes.length + this.suggestedFavorites.length) == 1) {
         const selectedLake = this.suggestedLakes.length ? this.suggestedLakes[0] : this.suggestedFavorites[0]
         this.$emit("updated", selectedLake);
@@ -306,6 +316,18 @@ export default class LakeSelection extends Vue {
     i.icon-chevron {
       font-size: 12px;
       margin-top: 7px;
+    }
+  }
+  .input-delete {
+    position: absolute;
+    top:  calc(@vertical-margin-xx-small + 1px);
+    right: 80px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    &:hover {
+      color: @terra-cotta;
     }
   }
 
