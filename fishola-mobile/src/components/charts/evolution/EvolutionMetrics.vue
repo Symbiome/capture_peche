@@ -395,7 +395,7 @@ export default class EvolutionMetricsView extends Vue {
 select {
   background: transparent;
   padding: 5px 10px;
-  height: 35px;
+  min-height: 35px;
   border: 1px solid @pelorous;
   border-radius: 20px;
   font-weight: bold;

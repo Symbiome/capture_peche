@@ -88,7 +88,7 @@ export default class MyTripItem extends Vue {
   }
 
   lakesIndexLoaded(lakes: Map<string, Lake>) {
-    this.lakeName = lakes.get(this.trip.lakeId)!.name;
+    this.lakeName = lakes.get(this.trip.lakeId)?.name ?? "";
   }
 
   openTrip() {

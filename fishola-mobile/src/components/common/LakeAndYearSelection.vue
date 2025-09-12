@@ -151,7 +151,7 @@ export default class LakeAndYearSelection extends Vue {
   select {
     background: transparent;
     padding: 0 10px;
-    height: 35px;
+    min-height: 35px;
     border: 1px solid @pelorous;
     border-radius: 20px;
     margin-left: 10px;
