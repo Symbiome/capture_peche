@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="24"
+   viewBox="0 0 24 24"
+   width="24"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="selected.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter7"
+       x="-0.44665759"
+       y="-0.44665759"
+       width="1.9446637"
+       height="1.9497986">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="0.215686"
+         flood-color="rgb(24,16,0)"
+         id="feFlood6" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="3.524393"
+         id="feGaussianBlur6" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="1.000000"
+         dy="1.100000"
+         id="feOffset6" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite6" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite7" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="24.75"
+     inkscape:cx="5.8787879"
+     inkscape:cy="9.2121212"
+     inkscape:window-width="2560"
+     inkscape:window-height="1367"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <circle
+     style="fill:#ffffff;fill-opacity:1;stroke:#099268;stroke-width:0.48;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;filter:url(#filter7);stroke-dasharray:none"
+     id="path2"
+     cx="12"
+     cy="12"
+     r="9.7373734" />
+  <g
+     style="fill:#099268;fill-opacity:1"
+     id="g2"
+     transform="matrix(0.55078237,0,0,0.55078237,6.4921833,6.3845262)">
+    <path
+       d="m 7.19544,17.3909 c -0.4058,0 -0.81201,-0.1548 -1.12158,-0.4646 L 0.464693,11.3172 c -0.619591,-0.6196 -0.619591,-1.624 0,-2.24359 0.619587,-0.61959 1.623977,-0.61959 2.243567,0 L 7.19544,13.5608 17.2918,3.46462 c 0.6196,-0.6194 1.6242,-0.61959 2.2434,0 0.6197,0.61959 0.6197,1.62421 0,2.24357 L 8.31724,16.9263 c -0.30979,0.3097 -0.71582,0.4646 -1.1218,0.4646 z"
+       fill="#000000"
+       id="path1"
+       style="fill:#099268;fill-opacity:1" />
+  </g>
+</svg>

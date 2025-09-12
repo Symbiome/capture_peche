@@ -20,16 +20,19 @@
   -->
 <template>
 <div class="map">
-    <div v-if="mapIsLoading" class="loading">Chargement ...</div>
     <i class="icon-error close-button" @click="closeMap" />
-    <l-map ref="map" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
-        <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
+    <l-map  ref="map" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
+        <l-tile-layer
+            v-on:load="mapIsLoading = false"
+            v-on:loading="mapIsLoading = true"
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        />
         <v-marker-cluster>
             <l-marker
                 v-for="l in lakes" v-bind:key="l.id"
                 :lat-lng="toLatLng(l)"
-                :icon="lakeIcon"
+                :icon="selectedLake?.id == l.id ? selectedLakeIcon : lakeIcon"
                 @click="selectLake(l.id)"
             >
                 <l-tooltip>{{ l.name }}</l-tooltip>
@@ -37,20 +40,24 @@
             <l-marker
                 v-for="l in favoriteLakes" v-bind:key="l.id"
                 :lat-lng="toLatLng(l)"
-                :icon="favoriteLakeIcon"
+                :icon="selectedLake?.id == l.id ? selectedLakeIcon : favoriteLakeIcon"
                 @click="selectLake(l.id)"
             >
                 <l-tooltip>{{ l.name }}</l-tooltip>
             </l-marker>
         </v-marker-cluster>
     </l-map>
+    <div v-if="mapIsLoading" class="is-loading">
+        <div class="loader" />
+        Chargement ...
+    </div>
 </div>
 </template>
 
 <script lang="ts">
 import { Lake } from '@/pojos/BackendPojos';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import L, { latLng, Icon, icon } from "leaflet";
 import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
@@ -88,12 +95,17 @@ import { LMap, LTileLayer, LMarker, LPopup, LIcon, LTooltip } from "vue2-leaflet
 export default class LakesMap extends Vue {
     @Prop() lakes: Lake[];
     @Prop() favoriteLakes: Lake[];
-    @Prop() selectedLakes: Lake[];
+    @Prop() selectedLake: Lake;
+    @Prop() isVisible: boolean;
 
     map: any;
-    mapIsLoading = false;
     lakeIcon = icon({
         iconUrl: "/img/lake.svg",
+        iconSize: [32, 37],
+        iconAnchor: [16, 37]
+    })
+    selectedLakeIcon = icon({
+        iconUrl: "/img/selected.svg",
         iconSize: [32, 37],
         iconAnchor: [16, 37]
     })
@@ -102,15 +114,13 @@ export default class LakesMap extends Vue {
         iconSize: [32, 37],
         iconAnchor: [16, 37]
     })
+    mapIsLoading = false;
 
-    created() {
-        this.mapIsLoading = true;
-    }
-
-    mounted() {
-        // @ts-ignore
-        this.map = this.$refs.map.mapObject;
-        this.zoomToVisibleMarkers();
+    @Watch("isVisible")
+    redrawMapIfVisible() {
+        if (this.isVisible) {
+            this.mapReady();
+        }
     }
 
     isFavorite(lake:Lake) {
@@ -132,8 +142,8 @@ export default class LakesMap extends Vue {
         if (this.favoriteLakes != null && this.favoriteLakes.length > 0) {
             markers = this.favoriteLakes;
         }
-        if (this.selectedLakes != null && this.selectedLakes.length == 1) {
-            markers = this.selectedLakes;
+        if (this.selectedLake != null) {
+            markers = [this.selectedLake];
         }
         if (this.map && markers.length > 0) {
             this.map.fitBounds(
@@ -143,7 +153,15 @@ export default class LakesMap extends Vue {
                     maxZoom: 10
                 }
             );
-            this.mapIsLoading = false;
+            this.$emit('zoomed');
+        }
+    }
+
+    mapReady() {
+        if (this.$refs.map) {
+            this.map = this.$refs.map.mapObject;
+            this.map.invalidateSize(false); /* To force the redraw of the map */
+            this.zoomToVisibleMarkers();
         }
     }
 
@@ -168,32 +186,74 @@ export default class LakesMap extends Vue {
 .map {
     width: 100%;
     height: 100%;
+    max-height: 70vh;
     position: relative;
 }
 
-.loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+.map {
+  position: fixed;
+  z-index: 1500;
+  bottom: 0;
+  left: 0;
+  background-color: @black-alpha-90;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+
+  @media screen and (min-width: @desktop-min-width) {
+    position: absolute;
+    top: 70px;
+    left: 0;
     width: 100%;
-    height: 100%;
-    background-color: #aaa;
-    z-index: 99999;
+    height: 500px !important;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    box-shadow: 0px 2px 5px #0002;
+  }
+}
+.is-loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 9999999;
+  background: #fffa;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #777;
+  height: 100%;
+  width: 100%;
 }
 
 .close-button {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 20px;
+    right: 20px;
     background-color: @pelorous;
     color: white;
     z-index: 99999;
-    font-size: 30px;
+    font-size: 40px;
     box-shadow: 0 0 2px #0002;
     border-radius: 50%;
     cursor: pointer;
     &:hover {
         background-color: @terra-cotta;
     }
+
+    @media screen and (min-width: @desktop-min-width) {
+        top: 10px;
+        right: 10px;
+        font-size: 30px;
+    }
 }
+
 </style>

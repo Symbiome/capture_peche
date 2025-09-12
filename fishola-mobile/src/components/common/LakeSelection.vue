@@ -78,12 +78,11 @@
       </div>
 
       <LakesMap
-        v-if="displayMap"
-        :lakes="allLakes"
+        v-show="displayMap"
+        :isVisible="displayMap"
+        :lakes="allLakesExecptFavorites"
         :favoriteLakes="favoriteLakes"
-        :selectedLakes="selectedLakes"
-        class="modal"
-        style="width: 100%; height: 500px"
+        :selectedLake="selectedLakes.length == 1 ? selectedLakes[0] : null"
         @selectLake="selectLakeById"
         v-on:close="toggleMapDisplay"
       />
@@ -204,6 +203,8 @@ export default class LakeSelection extends Vue {
   selectLake(selected: Lake) {
     if (!this.allowMultipleSelection) {
       this.search = selected.name;
+    } else {
+      this.clearSelection()
     }
     this.displaySuggestions = false;
     this.$emit("updated", selected);
@@ -211,6 +212,7 @@ export default class LakeSelection extends Vue {
 
   clearSelection() {
     this.search = "";
+    this.$emit("updated", null);
   }
 
   toggleLake(lake: Lake) {
@@ -442,23 +444,6 @@ export default class LakeSelection extends Vue {
       height: 42px;
     }
   }
-}
-
-.modal {
-  position: absolute;
-  z-index: 1500;
-  top: 70px;
-  left: 0;
-  width: 100%;
-  height: 500px !important;
-  background-color: @black-alpha-90;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #aaa;
-  box-shadow: 0px 2px 5px #0002;
-  border-radius: 4px;
 }
 </style>
 <style  lang="less">

@@ -162,16 +162,18 @@ export default class ProfileView extends Vue {
   toggleLakeFavorite(lake : Lake) {
     this.favoriteChanged = true;
 
-    let filteredItem = this.favoriteLakes.filter((l) => {
-      return l.id === lake.id;
-    });
-    if (filteredItem.length == 1) {
-      this.favoriteLakes = this.favoriteLakes.filter(function(l) { return l.id != lake.id });
-    } else {
-      this.favoriteLakes.push(lake);
-      this.favoriteLakes =  this.favoriteLakes.sort((a,b) => {
-      return a.name > b.name ? 1 : -1;
-    })
+    if (lake) {
+      let filteredItem = this.favoriteLakes.filter((l) => {
+        return l.id === lake.id;
+      });
+      if (filteredItem.length == 1) {
+        this.favoriteLakes = this.favoriteLakes.filter(function(l) { return l.id != lake.id });
+      } else {
+        this.favoriteLakes.push(lake);
+        this.favoriteLakes =  this.favoriteLakes.sort((a,b) => {
+        return a.name > b.name ? 1 : -1;
+      })
+      }
     }
   }
 
