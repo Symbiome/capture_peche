@@ -473,6 +473,8 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
+        aCatch.latitude.ifPresent(existingCatch::setLatitude);
+        aCatch.longitude.ifPresent(existingCatch::setLongitude);
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
