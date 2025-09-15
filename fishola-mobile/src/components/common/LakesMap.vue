@@ -186,7 +186,6 @@ export default class LakesMap extends Vue {
 .map {
     width: 100%;
     height: 100%;
-    max-height: 70vh;
     position: relative;
 }
 
@@ -194,7 +193,9 @@ export default class LakesMap extends Vue {
 .map {
   position: fixed;
   z-index: 1500;
-  bottom: 0;
+  bottom: @footer-height;
+  max-height: 70vh; // fallback if dvh is not supported
+  max-height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
   left: 0;
   background-color: @black-alpha-90;
   transition: opacity 0.3s ease;

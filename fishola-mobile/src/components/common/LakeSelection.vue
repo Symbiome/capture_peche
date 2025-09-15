@@ -36,6 +36,7 @@
           }"
           v-on:keydown="updateSuggestions"
           v-on:input="updateSearch"
+          v-on:focusin="showSuggestions"
           v-on:focusout="closeSuggestions"
         />
         <i
@@ -65,7 +66,7 @@
         </ul>
       </span>
 
-      <div :class="error ? 'field-error' : ''">
+      <div class="input-error" :class="error ? 'field-error' : ''">
         <span v-if="error">
           {{ error }}
         </span>
@@ -225,6 +226,13 @@ export default class LakeSelection extends Vue {
       return text.replace(regexp, `<span class="highlight">${this.search}</span>`)
     }
     return text;
+  }
+
+  showSuggestions() {
+    console.log("showSuggestions")
+    if (this.search && (this.search != this.selectedLabel)) {
+      this.displaySuggestions = true;
+    }
   }
 
   closeSuggestions(event:Event) {
@@ -418,9 +426,10 @@ export default class LakeSelection extends Vue {
     }
   }
 
-  div {
+  div.input-error {
     height: calc(@fontsize-form-error + @line-height-padding-medium);
   }
+
   div.field-error {
     background-color: transparent;
     color: @cardinal;
