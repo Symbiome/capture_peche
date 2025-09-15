@@ -314,6 +314,10 @@ export default class EditTripView extends Vue {
       }
     }
 
+    .edit-trip-modifiable-until {
+      margin-bottom: 0;
+    }
+
     .summary-pane {
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;

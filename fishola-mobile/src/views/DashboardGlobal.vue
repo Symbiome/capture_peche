@@ -250,6 +250,10 @@ export default class DashboardGlobalView extends Vue {
     }
   }
 
+  #scrollable {
+    padding-bottom: @margin-large;
+  }
+
   .alias {
     font-style: italic;
     color: @pale-sky;

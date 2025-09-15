@@ -178,6 +178,17 @@ button:active {
   100%{transform: rotate(1turn)}
 }
 
+/*========= Leaflet css classes override ============ */
+.leaflet-popup {
+  max-width: 80vw;
+  .leaflet-popup-content {
+    max-width: calc(100% - 44px);
+    button {
+      width: auto;
+    }
+  }
+}
+
 /*========= iOS-specific ============ */
 // Required on iPhone to avoid app to overlapp status bar and other protected zones*/
 .header {

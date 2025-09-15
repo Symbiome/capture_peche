@@ -307,7 +307,7 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
-  height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
+  height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
 
   &.keyboardShowing {
     // Take reduced footer height into account
@@ -377,7 +377,9 @@ html {
 
   .pane-content {
     overflow: auto;
-    height: 100vh;
+    height: calc(100dvh - @header-height - @vertical-margin-medium);
+    display: flex;
+    flex-direction: column;
 
     padding-left: @margin-large;
     padding-right: @margin-large;
@@ -398,6 +400,8 @@ html {
   }
 
   .padding-content {
+    height: 100%;
+    overflow: hidden;
     padding-left: @margin-large;
     padding-right: @margin-large;
 
@@ -408,7 +412,7 @@ html {
   }
 
   &.pane-only {
-    height: 100%;
+    height: calc(100% - @vertical-margin-medium);
     margin-top: @vertical-margin-medium;
   }
 
@@ -438,6 +442,7 @@ html {
     }
 
     &.pane-only {
+      height: 100%;
       margin-top: 0px;
     }
   }

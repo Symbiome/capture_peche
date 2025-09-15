@@ -19,7 +19,10 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header shifted-background">
+  <div
+    class="my-trips shifted-background"
+    :class="visualizationMode === 'list' ? 'page-with-header-and-footer' : 'page-with-header'"
+  >
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">

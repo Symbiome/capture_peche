@@ -157,7 +157,7 @@ export default class DocumentationView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
 .documentation-page {
   .pane .pane-content {
     padding-left: 0px;
@@ -224,10 +224,14 @@ export default class DocumentationView extends Vue {
     display: flex;
     flex-direction: column;
 
-    /deep/ .faq {
+    :deep(.faq) {
       margin-top: 10px;
       margin-bottom: 10px;
 
+      h1 {
+        margin-top: @margin-medium;
+        height: auto;
+      }
       h4 {
         margin-top: 0px;
         margin-bottom: 0px;

@@ -134,7 +134,7 @@ export default class MyTripsList extends Vue {
 
   .no-trips {
     height: 100%;
-    min-height: 65vh;
+    min-height: 60dvh;
 
     display: flex;
     flex-direction: column;
@@ -161,6 +161,7 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
+      flex: 0;
       height: 176px;
       min-height: 100px;
       display: flex;
@@ -356,6 +357,7 @@ export default class MyTripsList extends Vue {
         height: calc(100% - 200px);
         img {
           height: 50%;
+          max-height: 500px;
         }
         span {
           font-size: @fontsize-span-big-desktop;

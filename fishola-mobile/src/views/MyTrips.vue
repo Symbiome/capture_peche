@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div>
+  <div class="my-trips-wrapper">
     <div class="my-trips-top">
       <MyTripsHeader
         v-bind:count="count"
@@ -270,8 +270,16 @@ export default class MyTripsView extends Vue {
 
   .my-trips-list {
     flex-grow: 1;
-    overflow: auto;
-    padding-bottom: 100px;
+    overflow: hidden;
+    height: 100%;;
+    border-radius: 0;
+    padding-bottom: @margin-xx-large;
+  }
+
+  .my-trips-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .bottom {

@@ -1124,6 +1124,10 @@ export default class EditCatchView extends Vue {
 
 
 .edit-catch {
+  .edit-catch-form {
+    padding-bottom: @margin-xx-large;
+  }
+
   .automatic-measure {
     margin-left: 0px;
     margin-top: 20px;

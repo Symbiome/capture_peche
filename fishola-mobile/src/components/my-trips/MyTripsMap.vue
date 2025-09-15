@@ -281,6 +281,7 @@ export default class MyTripsMapView extends Vue {
     width: 100%;
     color: @cardinal;
     text-align: right;
+    margin-top: @margin-small;
 }
 
 .custom-icon {

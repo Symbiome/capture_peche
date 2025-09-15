@@ -192,7 +192,7 @@ export default class SocialView extends Vue {
 #social-trips-list {
   overflow-y: scroll;
   height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px);
-  padding-bottom: 200px;
+  padding-bottom: 250px;
 }
 
 .social-trip-item {

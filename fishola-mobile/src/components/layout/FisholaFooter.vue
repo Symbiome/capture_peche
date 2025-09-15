@@ -271,6 +271,7 @@ export default class FisholaFooter extends Vue {
   left:0;
   background-color: @zircon;
   color: @pelorous;
+  z-index: 10;
 
   .footer-element {
     height: 40px;

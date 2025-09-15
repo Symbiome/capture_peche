@@ -306,7 +306,7 @@ export default class TripMetaView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
 
 
 .position-error {
