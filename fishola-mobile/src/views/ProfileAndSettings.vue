@@ -42,7 +42,7 @@
                             {{ fullName }}
                         </div>
                     </div>
-                    <div class="padding-content">
+                    <div class="profile-body">
                         <ProfileView v-if="visualizationMode == 'profile' && profile" :profile="profile"
                             @profile-updated="loadProfile" />
                         <SettingsView v-else-if="profile" />
@@ -163,6 +163,11 @@ export default class ProfileAndSettingsView extends Vue {
             height: 60px;
         }
     }
+}
+
+.profile-body {
+    height: 100%;
+    overflow: hidden;
 }
 
 @media screen and (min-width: @desktop-min-width) {

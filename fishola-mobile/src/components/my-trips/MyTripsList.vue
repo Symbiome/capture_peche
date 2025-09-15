@@ -134,6 +134,7 @@ export default class MyTripsList extends Vue {
 
   .no-trips {
     height: 100%;
+    min-height: 60vh; // fallback if dvh is not supported
     min-height: 60dvh;
 
     display: flex;

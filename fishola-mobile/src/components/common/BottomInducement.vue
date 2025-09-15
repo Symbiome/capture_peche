@@ -51,14 +51,9 @@ export default class BottomInducementView extends Vue {
     align-items: center;
     margin-top: 50px;
     margin-bottom: 100px;
-    width: 100vw;
     padding: 20px;
-    margin-left: calc(-1 * @margin-large);
-
-
-    @media screen and (min-width: @desktop-min-width) {
-        width: calc(100vw - @desktop-menu-width);
-    }
+    width: calc(100% + 60px);
+    margin-left: -30px;
 
     img {
         width: 50px;

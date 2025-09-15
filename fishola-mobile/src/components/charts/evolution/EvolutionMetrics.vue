@@ -428,6 +428,7 @@ export default class EvolutionMetricsView extends Vue {
   max-height: 80%;
 
   @media screen and (min-width: @desktop-min-width) {
+    min-height: 40vh;
     margin-left: @margin-large;
     margin-right: @margin-large;
   }
@@ -469,7 +470,8 @@ select {
   }
 }
 .link {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   border-radius: 50px;
 
   font-style: normal;
@@ -478,8 +480,7 @@ select {
 
   border: 1px solid @pelorous;
   padding: @margin-x-small @margin-medium;
-  margin-top: @margin-medium;
-  margin-bottom: @margin-medium;
+  margin: @margin-medium auto;
 
   background-color: @white-smoke;
   color: @pelorous;

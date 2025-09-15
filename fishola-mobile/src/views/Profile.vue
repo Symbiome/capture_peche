@@ -268,6 +268,13 @@ export default class ProfileView extends Vue {
 .profile-page {
   height: 100%;
 
+  .rounded {
+    overflow: hidden auto;
+    height: 100%;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
+  }
+
   .safe-delete-button {
     font-weight: bold;
     color: @pelorous;

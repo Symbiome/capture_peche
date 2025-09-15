@@ -225,11 +225,15 @@ html {
 
   height: 100%;
 
+  @media screen and (min-width: @desktop-min-width) {
+    height: 100vh;
+  }
+
   .page {
     height: calc(100% - @header-height);
 
     @media screen and (min-width: @desktop-min-width) {
-      height: 100%;
+      height: 100vh;
     }
   }
 }
@@ -239,6 +243,10 @@ html {
   flex-direction: column;
 
   height: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    height: 100vh;
+  }
 
   .page {
     display: flex;
@@ -437,6 +445,7 @@ html {
     }
 
     .pane-content {
+      height: 100vh;
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;
     }

@@ -125,7 +125,7 @@ export default class NewsView extends Vue {
   cursor: pointer;
   padding-top: 20px;
 
-  overflow-y: scroll;
+  overflow-y: auto;
   height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px - 76px - env(safe-area-inset-bottom) );
   padding-bottom: @margin-large;
 

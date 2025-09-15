@@ -341,7 +341,7 @@ export default class FeedbackModal extends Vue {
   }
   @media screen and (min-width: @desktop-min-width) {
     top: 0px;
-    z-index: 101; // Juste au dessus du menu
+    z-index: 1000001; // Juste au dessus du menu
     height: 100%;
     .feedback-page {
       height: 100%;
@@ -353,7 +353,10 @@ export default class FeedbackModal extends Vue {
         justify-content: center;
         .pane-content {
           background-color: #f7f7f7;
-          width: @desktop-min-width;
+          width: auto;
+          height: auto;
+          max-width: 70vw;
+          max-height: 70vh;
           border-bottom-left-radius: 30px;
           border-bottom-right-radius: 30px;
         }

@@ -56,10 +56,10 @@
         </div>
       </div>
 
+      <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles"
+        text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
+        @click="becomeScaleCollector" />
     </div>
-    <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles"
-      text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
-      @click="becomeScaleCollector" />
     <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>
 </template>
@@ -173,6 +173,15 @@ export default class SettingsView extends Vue {
 <style lang="less">
 .settings-page {
   height: 100%;
+
+
+
+  .rounded {
+    overflow: hidden auto;
+    height: 100%;
+    padding-left: @margin-large;
+    padding-right: @margin-large;
+  }
 
   .spinner-wrapper {
     width: 100%;
