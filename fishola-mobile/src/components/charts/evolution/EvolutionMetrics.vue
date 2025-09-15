@@ -22,17 +22,25 @@
     <div v-if="!containsData" class="not-enough-data">
       Aucune donnée pour ce plan d'eau.
     </div>
-    <div v-else  id="evolution-graph">
+    <div v-else id="evolution-graph">
         <select v-model="displayMode" @change="switchMode">
           <option value="tripsCount">Nombre de sorties avec au moins une prise</option>
           <option value="totalCatchesCount">Nombre d'individus capturés (Total)</option>
           <option value="keptCatchesCount">Nombre d'individus capturés (et conservés)</option>
         </select>
         <Bar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" ref='chart' />
-
-        <a class="link" href="https://dashboard.ecla.inrae.fr/fishola/">
-          Voir les données sur la plateforme ECLA
-        </a>
+        <p>
+          Ce graphique représente les données sur plusieurs années, avec les intéractions suivantes :
+          <ul>
+            <li>La liste déroulante située au dessus du graphique vous permet de choisir le <b>type de données</b> à afficher.</li>
+            <li>La <b>légende</b> est intéractive : en cliquant sur une des espèces, vous pouvez choisir de l'afficher ou de la masquer.</li>
+            <li>Vous pouvez <b>zoomer</b> le graphique en utlisant le scroll de votre souris sur ordinateur, ou en écartant/resserant deux doigts sur l'écran de votre mobile.</li>
+            <li>Vous pouvez vous <b>déplacer</b> sur le graphique zoomé en cliquant (ou en appuyant) sur la zone, puis en la déplaçant vers la gauche ou la droite.</li>
+          </ul>
+          <a class="link" href="https://dashboard.ecla.inrae.fr/fishola/">
+            Voir les données sur la plateforme ECLA
+          </a>
+        </p>
     </div>
 </template>
 
@@ -70,6 +78,7 @@ export default class EvolutionMetricsView extends Vue {
   allSpecies: string[];
 
   displayMode = 'tripsCount';
+  max = {'tripsCount' : 0, 'keptCatchesCount' : 0, 'totalCatchesCount' : 0 }
   containsData:boolean = false;
   chartData : any | null = null;
   chartOptions : any | null = null;
@@ -203,6 +212,28 @@ export default class EvolutionMetricsView extends Vue {
       labels: labels,
       datasets: datasets
     }
+
+    // Calculate max value per display mode
+    Object.keys(this.max).forEach(displayMode => {
+      let maxOfDisplayMode = 0;
+      labels.forEach((label) => {
+        let sum = 0;
+        datasets.forEach(dataset => {
+          let siblings =  dataset.data.filter((option) => {
+            return option.monthYear == label
+          })
+          if (siblings && siblings[0] && siblings[0][displayMode]) {
+            sum += siblings[0][displayMode];
+          }
+        })
+        if (sum > maxOfDisplayMode) { maxOfDisplayMode = sum; }
+      })
+      let max = maxOfDisplayMode + 5;
+      if (max % 10 != 0) {
+        max =  max + (10 - max % 10);
+      }
+      this.max[displayMode] = max;
+    });
   }
 
   initChartOptions() {
@@ -218,19 +249,18 @@ export default class EvolutionMetricsView extends Vue {
       },
       layout: {
         padding: {
-          top: 20,
+          top: 10,
           right: 1 /* to be prevent grid display issue */
         }
       },
       onResize: function(chart, size) {
         // Hide month labels display on low resolution screens
         chart.options.scales.x.ticks.display = (size.width > 1000);
-        if (chart.scales.secondX) {
-          chart.scales.secondX._labelSizes.widths = [20,20,20,300,20,20];
-        }
       },
       scales: {
         x: {
+          type: 'category',
+          min: "01/" + (new Date().getFullYear() - 1),
           stacked: true,
           grid: {
             color:  function(context) {
@@ -259,6 +289,7 @@ export default class EvolutionMetricsView extends Vue {
         },
         secondX: {
           position: 'bottom',
+          min: "01/" + (new Date().getFullYear() - 1),
           grid: {
             color: 'transparent',
           },
@@ -281,6 +312,7 @@ export default class EvolutionMetricsView extends Vue {
         },
         y: {
           stacked: true,
+          max: this.max[this.displayMode],
           grid: {
               color: '#DFE6E9'
           },
@@ -290,7 +322,7 @@ export default class EvolutionMetricsView extends Vue {
           ticks : {
             font: {
               size: 16,
-            }
+            },
           }
         }
       },
@@ -313,10 +345,14 @@ export default class EvolutionMetricsView extends Vue {
         datalabels: {
           anchor: 'end',
           align: 'top',
+          clamp: true,
+          clip: true,
+          offset: -5,
           font: {
             size: 14,
-            weight: 'bold'
+            weight: 'bold',
           },
+          rotation: -55,
           formatter: (value, context) => {
             let sum = 0,
                 last = null;
@@ -342,7 +378,7 @@ export default class EvolutionMetricsView extends Vue {
           pan: {
             enabled: true,
             mode: 'x',
-            threshold: 5,
+            threshold: 12,
           },
           zoom: {
             wheel: {
@@ -355,9 +391,9 @@ export default class EvolutionMetricsView extends Vue {
           },
           limits: {
             x: {
-              minRange: 10
+              minRange: 11
             }
-          }
+          },
         }
       }
     };
@@ -367,6 +403,7 @@ export default class EvolutionMetricsView extends Vue {
     this.chartOptions = {...this.chartOptions};
     /* The following instructions is added to be sure the chart is updated with the correct option change */
     this.$refs.chart.options.parsing.yAxisKey = this.displayMode
+    this.$refs.chart.options.scales.y.max = this.max[this.displayMode];
   }
 }
 </script>
@@ -385,11 +422,23 @@ export default class EvolutionMetricsView extends Vue {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 50px;
+  padding: @margin-medium;
   margin: 0;
-  min-height: 500px;
-  min-height: 40vh;
+  min-height: 60vh;
   max-height: 80%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    margin-left: @margin-large;
+    margin-right: @margin-large;
+  }
+
+  & > canvas {
+    touch-action: pan-y !important;
+  }
+
+  p {
+    text-align: left;
+  }
 }
 
 select {
@@ -420,20 +469,23 @@ select {
   }
 }
 .link {
+  display: inline-block;
   border-radius: 50px;
 
   font-style: normal;
   font-weight: bold;
   font-size: @fontsize-button;
-  line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
   border: 1px solid @pelorous;
   padding: @margin-x-small @margin-medium;
   margin-top: @margin-medium;
+  margin-bottom: @margin-medium;
 
   background-color: @white-smoke;
   color: @pelorous;
   text-decoration: none;
+  text-align: center;
+  font-size: 1rem;
 
   &:hover {
     background-color: @terra-cotta;
