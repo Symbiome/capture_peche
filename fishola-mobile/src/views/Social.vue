@@ -21,6 +21,10 @@
 <template>
   <div id="social-trips">
     <div id="social-trips-list">
+      <div v-if="!socialTrips || socialTrips.length == 0" class="empty">
+        Pas de sorties sur ce plan d'eau dans la communauté.
+      </div>
+
       <div v-for="socialTrip in socialTrips" :key="socialTrip.id" class="social-trip-item">
         <div class="social-trip-infos">
           <div class="social-trip-title">{{ socialTrip.tripName }}</div>
