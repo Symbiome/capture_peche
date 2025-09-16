@@ -175,9 +175,11 @@ export default class FeedbackModal extends Vue {
       frontendVersion: this.frontendVersion,
     };
     if (feedbackType == "scale") {
-      this.model.description = "Je souhaiterais devenir collecteur d'écailles.";
+      this.model.description =
+        "Bonjour,\nJe souhaiterais devenir collecteur d'écailles.\nVoici mon adresse : ...\n";
     } else if (feedbackType == "ambassador") {
-      this.model.description = "Je souhaiterais devenir ambassadeur Fishola.";
+      this.model.description =
+        "Bonjour,\nJe souhaiterais devenir ambassadeur Fishola.\n";
     }
     this.loadProfile();
   }
