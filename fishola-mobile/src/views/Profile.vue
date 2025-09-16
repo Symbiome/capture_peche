@@ -266,11 +266,7 @@ export default class ProfileView extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
 .profile-page {
-  height: 100%;
-
   .rounded {
-    overflow: hidden auto;
-    height: 100%;
     padding-left: @margin-large;
     padding-right: @margin-large;
   }

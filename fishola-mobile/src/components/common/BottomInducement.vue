@@ -46,6 +46,8 @@ export default class BottomInducementView extends Vue {
 .bottom-inducement {
     color: white;
     display: flex;
+    flex-wrap: wrap;
+    text-align: center;
     justify-content: center;
     gap: 20px;
     align-items: center;
@@ -54,6 +56,11 @@ export default class BottomInducementView extends Vue {
     padding: 20px;
     width: calc(100% + 60px);
     margin-left: -30px;
+
+    @media screen and (min-width: @desktop-min-width) {
+        flex-wrap: wrap;
+        text-align: left;
+    }
 
     img {
         width: 50px;
@@ -75,6 +82,10 @@ export default class BottomInducementView extends Vue {
 
         background-color: @terra-cotta;
         color: @white;
+    }
+
+    p {
+        margin-bottom: 0;
     }
 
     background: linear-gradient(-45deg, #0A3C4D, #0F5A6F, #0A3C4D, #06333F);

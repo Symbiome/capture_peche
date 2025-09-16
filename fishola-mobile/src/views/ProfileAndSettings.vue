@@ -125,11 +125,7 @@ export default class ProfileAndSettingsView extends Vue {
     height: 150px;
     margin-bottom: 10px;
     margin-top: -5px;
-    width: calc(100% + (2 * @margin-large));
-
-    @media screen and (min-width: @desktop-min-width) {
-        width: calc(100vw - @desktop-menu-width);
-    }
+    width: 100%;
 
     display: flex;
     flex-direction: column;
@@ -163,11 +159,6 @@ export default class ProfileAndSettingsView extends Vue {
             height: 60px;
         }
     }
-}
-
-.profile-body {
-    height: 100%;
-    overflow: hidden;
 }
 
 @media screen and (min-width: @desktop-min-width) {
