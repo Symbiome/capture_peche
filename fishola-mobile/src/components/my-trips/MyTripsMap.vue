@@ -25,8 +25,8 @@
             Chargement de la carte...
         </span>
         <div id="info" class="info" v-if="validMarkers.length > 0" v-show="showPersonnalMapWarning">
-            Cette carte n'est visible que par vous. Les coordonnées de vos prises ne sont pas divulgées aux autres
-            pêcheurs.
+            Cette carte n'est pas visible par les autres pêcheurs.
+            Pour rappel, vous pouvez autoriser ou non la géolocalisation des prises dans les paramètres système de l'application.
             <i class="icon icon-plus close" @click="showPersonnalMapWarning = false"></i>
         </div>
         <div class="map" v-if="validMarkers.length > 0">
