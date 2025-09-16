@@ -37,7 +37,7 @@
             <li>Vous pouvez <b>zoomer</b> le graphique en utlisant le scroll de votre souris sur ordinateur, ou en écartant/resserant deux doigts sur l'écran de votre mobile.</li>
             <li>Vous pouvez vous <b>déplacer</b> sur le graphique zoomé en cliquant (ou en appuyant) sur la zone, puis en la déplaçant vers la gauche ou la droite.</li>
           </ul>
-          <a class="link" href="https://dashboard.ecla.inrae.fr/fishola/">
+          <a class="link-to-ecla" href="https://dashboard.ecla.inrae.fr/fishola/">
             Voir les données sur la plateforme ECLA
           </a>
         </p>
@@ -465,29 +465,34 @@ select {
     background-color: @terra-cotta;
   }
 }
-.link {
-  display: block;
-  width: fit-content;
-  border-radius: 50px;
+.link-to-ecla {
+  // OFB choice to hide it for now because ECLA plateform is not responsive and not adapted for mobile devices
+  display: none;
 
-  font-style: normal;
-  font-weight: bold;
-  font-size: @fontsize-button;
+  @media screen and (min-width: @desktop-min-width) {
+    display: block;
+    width: fit-content;
+    border-radius: 50px;
 
-  border: 1px solid @pelorous;
-  padding: @margin-x-small @margin-medium;
-  margin: @margin-medium auto;
+    font-style: normal;
+    font-weight: bold;
+    font-size: @fontsize-button;
 
-  background-color: @white-smoke;
-  color: @pelorous;
-  text-decoration: none;
-  text-align: center;
-  font-size: 1rem;
+    border: 1px solid @pelorous;
+    padding: @margin-x-small @margin-medium;
+    margin: @margin-medium auto;
 
-  &:hover {
-    background-color: @terra-cotta;
-    color: white;
-    border-color: white;
+    background-color: @white-smoke;
+    color: @pelorous;
+    text-decoration: none;
+    text-align: center;
+    font-size: 1rem;
+
+    &:hover {
+      background-color: @terra-cotta;
+      color: white;
+      border-color: white;
+    }
   }
 }
 </style>
