@@ -85,7 +85,7 @@
 <script lang="ts">
 
 
-import { Lake, Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
+import { Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import ProfileService from "@/services/ProfileService";
@@ -99,7 +99,6 @@ export default class SocialView extends Vue {
   socialTrips: TripSocial[] = [];
   @Prop()
   lakeId: string;
-  allLakes: Lake[] = [];
   userId = "";
 
 
@@ -118,7 +117,9 @@ export default class SocialView extends Vue {
 
   @Watch("lakeId")
   async loadSocialTrips() {
-    this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
+    if (this.lakeId) {
+      this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
+    }
   }
 
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {

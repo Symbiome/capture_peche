@@ -112,6 +112,7 @@ export default class SocialAndNewsView extends Vue {
       if (lastLocalStorageDateString) {
         lastNewsSeenDateForLake = new Date(lastLocalStorageDateString);
       }
+
       let lastProfileSeenDate = undefined;
       let profile = await ProfileService.getProfile();
       if (profile.lastNewsSeenDate) {

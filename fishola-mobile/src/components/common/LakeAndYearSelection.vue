@@ -96,7 +96,7 @@ export default class LakeAndYearSelection extends Vue {
       this.selectedLakeUUID = query.lakeId as string;
     } else {
       if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-        if (this.lakes.some(l => l.id === localStorage.latestSelectedLakeUUID)) {
+        if (this.lakes.concat(this.favoriteLakes).some(l => l.id === localStorage.latestSelectedLakeUUID)) {
           this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
         } else {
           this.selectedLakeUUID = this.lakes[0].id;
