@@ -176,7 +176,7 @@ export default class FeedbackModal extends Vue {
     };
     if (feedbackType == "scale") {
       this.model.description =
-        "Bonjour,\nJe souhaiterais devenir collecteur d'écailles.\nVoici mon adresse : ...\n";
+        "Bonjour,\nJe souhaiterais devenir collecteur d'écailles salmonidés.\nVoici mon adresse : ...\n";
     } else if (feedbackType == "ambassador") {
       this.model.description =
         "Bonjour,\nJe souhaiterais devenir ambassadeur Fishola.\n";

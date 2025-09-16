@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles"
+      <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles salmonidés"
         text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
         @click="becomeScaleCollector" />
     </div>
