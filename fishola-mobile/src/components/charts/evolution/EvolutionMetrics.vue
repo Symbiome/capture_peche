@@ -253,10 +253,6 @@ export default class EvolutionMetricsView extends Vue {
           right: 1 /* to be prevent grid display issue */
         }
       },
-      onResize: function(chart, size) {
-        // Hide month labels display on low resolution screens
-        chart.options.scales.x.ticks.display = (size.width > 1000);
-      },
       scales: {
         x: {
           type: 'category',
