@@ -524,7 +524,7 @@ export default class Menu extends Vue {
   }
 
   height: 100vh;
-  z-index: 1000000; // Very high to avoid leaflet map to be over the menu
+  z-index: 998; // Very high to avoid leaflet map to be over the menu
 
   display: flex;
   flex-direction: column;

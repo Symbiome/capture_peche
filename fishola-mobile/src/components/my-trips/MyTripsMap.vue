@@ -214,7 +214,7 @@ export default class MyTripsMapView extends Vue {
     position: absolute;
     right: 50px;
     width: 70vw;
-    z-index: 100000;
+    z-index: 997;
     padding: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
