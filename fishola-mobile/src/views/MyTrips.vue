@@ -273,7 +273,6 @@ export default class MyTripsView extends Vue {
     overflow: hidden;
     height: 100%;;
     border-radius: 0;
-    padding-bottom: @margin-xx-large;
   }
 
   .my-trips-wrapper {
