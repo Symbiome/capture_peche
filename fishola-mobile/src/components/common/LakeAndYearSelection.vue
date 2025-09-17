@@ -21,12 +21,19 @@
 <template>
     <div class="selects-holder">
         <select placeholder="lake" v-model="selectedLakeUUID">
-            <optgroup label="Favoris" v-if="favoriteLakes.length">
+            <optgroup label="Plans d'eau favoris" v-if="favoriteLakes.length">
               <option v-for="lake in favoriteLakes" :value="lake.id" :key="lake.uuid">
                   {{ lake.name }}
               </option>
             </optgroup>
-            <optgroup label="Tous les plans d'eau">
+            <optgroup v-if="!displayAllOtherLakes" label="Autres plans d'eau">
+              <option value="all">Voir tous les plans d'eau disponibles
+              </option>
+            </optgroup>
+            <optgroup
+              v-if="displayAllOtherLakes"
+              :label="favoriteLakes.length ? 'Plans d\'eau' : 'Autres plans d\'eau'"
+            >
               <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
                   {{ lake.name }}
               </option>
@@ -37,7 +44,6 @@
                 {{ year }}
             </option>
         </select>
-
     </div>
 </template>
 
@@ -60,19 +66,17 @@ export default class LakeAndYearSelection extends Vue {
   lakes: Lake[] = [];
   favoriteLakes: Lake[] = [];
   doneLoading = false;
+  displayAllOtherLakes = false;
 
   mounted() {
     const query = this.$route.query;
     if (this.years && this.years.length > 0) {
       const yearFromURL = parseInt(query.currentYear as string);
-       if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
+      if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
         this.selectedYear = yearFromURL;
-       } else {
+      } else {
         this.selectedYear = this.years[0];
-       }
-    }
-    if (query.lakeId) {
-      this.selectedLakeUUID = query.lakeId as string;
+      }
     }
     this.loadLakes();
   }
@@ -105,27 +109,43 @@ export default class LakeAndYearSelection extends Vue {
           this.selectedLakeUUID = this.lakes[0].id;
       }
     }
+    this.displayAllOtherLakes =
+      this.favoriteLakes.length == 0
+      || !this.favoriteLakes.some(l => l.id ===this.selectedLakeUUID);
+
     this.$emit("lake-and-year", {lake: this.selectedLakeUUID, year: this.selectedYear});
     this.doneLoading = true; 
   }
 
+  @Watch("$route")
+  routeUpdated() {
+    const query = this.$route.query;
+    if (query.lakeId) {
+      this.selectedLakeUUID = query.lakeId as string;
+      if (query.lakeId && !this.favoriteLakes.some(l => l.id === query.lakeId)) {
+        this.displayAllOtherLakes = true;
+      }
+    }
+  }
+
   @Watch("selectedLakeUUID")
   selectedLakeUUIDChanged() {
-    if (this.selectedLakeUUID) {
-      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID
+    if (this.selectedLakeUUID == 'all') {
+      this.displayAllOtherLakes = true;
+      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID;
     } else {
-      localStorage.latestSelectedLakeUUID = "all"
-    }
-    if (this.selectedLakeUUID !== this.$route.query.lakeId) {
-      this.$router.replace({
-        query: {
-          ...this.$route.query,
-          lakeId: this.selectedLakeUUID,
-        }
-      });
-    }
-    if (this.doneLoading) {
-      this.$emit("lake", this.selectedLakeUUID);
+      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID ? this.selectedLakeUUID : "all";
+      if (this.selectedLakeUUID !== this.$route.query.lakeId) {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            lakeId: this.selectedLakeUUID,
+          }
+        });
+      }
+      if (this.doneLoading) {
+        this.$emit("lake", this.selectedLakeUUID);
+      }
     }
   }
 
