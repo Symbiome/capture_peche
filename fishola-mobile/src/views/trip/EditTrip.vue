@@ -314,8 +314,16 @@ export default class EditTripView extends Vue {
       }
     }
 
+    .edit-trip-header {
+      h1 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
     .edit-trip-modifiable-until {
       margin-bottom: 0;
+      flex: 1 0 300px;
     }
 
     .summary-pane {
