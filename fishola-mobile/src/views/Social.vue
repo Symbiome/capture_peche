@@ -269,6 +269,7 @@ export default class SocialView extends Vue {
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: @margin-x-small;
   }
   .reaction-button {
     width: auto;
@@ -293,17 +294,17 @@ export default class SocialView extends Vue {
   text-transform: lowercase;
   & > span {
     position: relative;
-    padding-left: @margin-x-small;
-    margin-left: @margin-x-small;
+    padding-left: 5px;
+    margin-left: 8px;
 
     &::before {
       content: '';
       position: absolute;
       left: 0;
-      height: 70%;
+      height: 12px;
       width: 1px;
       background: #636E72;
-      top: 20%;
+      top: 4px;
       opacity: 0.6;
     }
 
