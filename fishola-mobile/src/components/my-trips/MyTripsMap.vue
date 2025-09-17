@@ -233,6 +233,7 @@ export default class MyTripsMapView extends Vue {
 
 .map {
     height: 80vh;
+    z-index: 995;
 
     .catch-marker {
         .title {
