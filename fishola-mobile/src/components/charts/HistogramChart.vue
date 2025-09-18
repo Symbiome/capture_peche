@@ -81,6 +81,11 @@
           </div>
         </div>
       </div>
+      <div
+        class="bar-average"
+        v-if="average"
+        v-bind:style="'top: ' + (100 - (average * 100) / maxValue) + '%;'">
+      </div>
     </div>
     <div class="labels" >
       <div
@@ -100,6 +105,9 @@
         {{ midMonth(m) }}
       </div>
     </div>
+    <div v-if="average" class="average">
+      <span class="count">{{ average }} </span> {{ averageLabel }}
+    </div>
   </div>
 </template>
 
@@ -115,6 +123,8 @@ export default class HistogramChart extends Vue {
   @Prop() orderedMonths: Month[];
   @Prop() values: { [P in Month]?: { [S in Maillage]: any } };
   @Prop() isActiveMonthCondition: (m: Month) => {};
+  @Prop() average: number;
+  @Prop() averageLabel: string;
 
   maxValue: number = 50;
 
@@ -167,6 +177,7 @@ export default class HistogramChart extends Vue {
   height: 250px;
 
   .bars {
+    position: relative;
     padding-top: 10px;
     width: 100%;
     height: calc(100% - 18px - 25px);
@@ -235,6 +246,46 @@ export default class HistogramChart extends Vue {
           }
         }
       }
+    }
+    .bar-average {
+      position: absolute;
+      width: 100%;
+      border-bottom: 1px dotted @terra-cotta;
+    }
+  }
+  .average {
+    height: @average-header-height;
+    line-height: @average-header-height;
+    font-weight: bold;
+    font-size: @fontsize-header-paragraph;
+    color: @terra-cotta;
+    margin: @margin-small auto 0 auto;
+    padding-right: @margin-medium;
+
+    display: flex;
+    flex-direction: row;
+
+    .count {
+      width: 30px;
+      border-radius: 15px;
+      background-color: @terra-cotta;
+      color: @white;
+      margin-right: @margin-small;
+    }
+
+    &:hover {
+      cursor: default;
+      background: @terra-cotta;
+      border-radius: 15px;
+      color: white;
+    }
+  }
+  .bars:has(~ .average:hover) {
+    .bar {
+      opacity: 0.2;
+    }
+    .bar-average {
+      border-bottom-width: 2px;
     }
   }
 
