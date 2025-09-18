@@ -45,8 +45,12 @@
               }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
+
           <nav class="Navigation">
             <ul>
+              <li class="close hide-on-desktop">
+                <div class="plus" v-on:click="closeMenu">+</div>
+              </li>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
                   el: '#presentation',
@@ -558,6 +562,10 @@ export default class AboutView extends Vue {
     );
   }
 
+  closeMenu() {
+    this.closed = true;
+  }
+
   goFaq() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
@@ -913,6 +921,10 @@ export default class AboutView extends Vue {
   }
 
   .map {
+    // avoid the map controls and credits to be above the header
+    position: relative;
+    z-index: 5;
+
     margin-top: 30px;
     height: 600px;
 
@@ -1163,6 +1175,24 @@ footer {
       background-color: #e17055;
       border: 1px solid white;
     }
+  }
+}
+
+.close {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  padding: 22px 30px;
+
+  height: @pastille-size;
+  margin: @vertical-margin-small;
+  width: 100%;
+  color: @gunmetal;
+
+  div.plus {
+    font-size: @pastille-size;
+    width: fit-content;
+    transform: rotate(45deg);
   }
 }
 
