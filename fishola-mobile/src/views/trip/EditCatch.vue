@@ -34,7 +34,9 @@
         v-on:delete-picture="deletePicture" />
       <!-- Empty miniature picture for adding pictures -->
       <!-- Empty picture if no picture yet -->
-      <PicturePreview v-else-if="!allNonMeasurePictures.length" noPictureText="Appuyer pour ajouter une photo"
+      <PicturePreview
+        v-else-if="!allNonMeasurePictures.length"
+        :noPictureText="modifiable ? 'Appuyer pour ajouter une photo' : 'Aucune photo'"
         v-bind:deletable="false" v-on:take-picture="takePicture" />
     </div>
     <div class="edit-catch-page page">
@@ -54,7 +56,8 @@
             <div class="catch-picture-desktop hide-on-mobile">
               <!-- Show focused pic -->
               <PicturePreview class="pic-focused" v-bind:src="focusedPicSrc"
-                noPictureText="Appuyer pour ajouter une photo" v-bind:deletable="focusedPicSrc != measurementPictureSrc"
+                :noPictureText="modifiable ? 'Appuyer pour ajouter une photo' : 'Aucune photo'"
+                v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture" v-on:delete-picture="deletePicture" :otherPics="allNonMeasurePictures"
                 :measurementPictureSrc="measurementPictureSrc" />
               <div class="pic-miniatures-container">

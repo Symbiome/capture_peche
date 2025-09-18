@@ -268,6 +268,7 @@ export default class EditTripView extends Vue {
   .edit-trip-catchs {
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     align-items: center;
     overflow-x: auto;
     overflow-y: hidden;
