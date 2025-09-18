@@ -95,6 +95,18 @@ export default class MyTripsList extends Vue {
     this.moreTripsTimer = Vue.lodash.throttle(this.askForMoreTrips, 1000);
   }
 
+  updated() {
+    // Force le chargement de résultats supplémentaires pour les grandes résolutions d'écrans,
+    // où l'espace disponible est plus grand que celui requis pour afficher les 10 premiers résultas
+    // et l'évènement scroll ne sera pas détecté
+    const elem = document.getElementById('scroll-container');
+    if (elem) {
+      if (elem.scrollHeight == elem.offsetHeight) {
+        this.moreTripsTimer();
+      }
+    }
+  }
+
   scrolled() {
     const elem = document.getElementById('scroll-container');
     if (elem) {
