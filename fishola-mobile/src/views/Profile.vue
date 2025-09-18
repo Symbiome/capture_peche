@@ -67,9 +67,10 @@
           <button v-on:click="saveProfile">Modifier</button>
         </div>
       </div>
-      <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
+      <!--  It was decided to hide it until the ambassador program is up and running
+        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
         text="Vous pouvez vous inscrire à notre nouveau programme d'ambassadeur." actionText="Je m'inscris"
-        @click="becomeAmbassador" />
+        @click="becomeAmbassador" /> -->
 
       <div class="bottom-page-spacer">
       </div>
