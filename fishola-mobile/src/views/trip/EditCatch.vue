@@ -620,9 +620,11 @@ export default class EditCatchView extends Vue {
   referentialLoaded(data: SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
       if (
-        s.builtIn || // Espèce de base
-        this.aCatch.speciesId == s.id || // Espèce custom sélectionnée pour la capture
-        this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+          (s.present || ((localStorage.getItem("manual-species")?.indexOf(s.id) ?? -1) > -1)) && (
+          s.builtIn || // Espèce de base
+          this.aCatch.speciesId == s.id || // Espèce custom sélectionnée pour la capture
+          this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+        )
       ) {
         const speciesWithAlias: SpeciesWithAlias = this.embedAlias(s);
         this.allSpeciesWithAliases.push(speciesWithAlias);

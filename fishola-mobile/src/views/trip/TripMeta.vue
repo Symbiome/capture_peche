@@ -153,6 +153,7 @@ export default class TripMetaView extends Vue {
     }
 
     if (this.id == Constants.NEW_TRIP_ID) {
+      localStorage.setItem("manual-species", "");
       GeolocationService.getClosestLake().then(
         (lake: Lake) => {
           console.debug("Le plan d'eau le plus proche est ", lake);

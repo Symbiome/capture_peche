@@ -27,5 +27,6 @@ import java.util.UUID;
 
 public class SpeciesAliasesPerLakeBean {
     public List<UUID> targetLakes;
+    public Map<UUID, List<UUID>> speciesPerLakeAbsent;
     public Map<UUID, Map<UUID, String>> speciesPerLakeAliases;
 }

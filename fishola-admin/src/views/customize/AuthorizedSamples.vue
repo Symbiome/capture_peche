@@ -126,7 +126,7 @@
                 </div>
               </div>
               <i v-else class="specie-container-without-size">
-                Espèce non présente
+                Taille non réglementée
               </i>
             </div>
           </td>

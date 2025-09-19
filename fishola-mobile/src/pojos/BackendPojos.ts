@@ -67,6 +67,7 @@ export interface SpeciesWithAlias {
     builtIn: boolean;
     mandatorySize: boolean;
     alias?: string;
+    present: boolean;
     authorizedSample: boolean;
     minSize: number;
     maxSize: number;
