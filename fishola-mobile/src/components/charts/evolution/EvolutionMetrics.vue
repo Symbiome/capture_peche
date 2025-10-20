@@ -33,12 +33,12 @@
           Ce graphique représente les données sur plusieurs années, avec les intéractions suivantes :
           <ul>
             <li>La liste déroulante située au dessus du graphique vous permet de choisir le <b>type de données</b> à afficher.</li>
-            <li>La <b>légende</b> est intéractive : en cliquant sur une des espèces, vous pouvez choisir de l'afficher ou de la masquer.</li>
+            <li>La <b>légende</b> est intéractive : en cliquant sur une des espèces, vous pouvez choisir de la masquer et de l'afficher à nouveau.</li>
             <li>Vous pouvez <b>zoomer</b> le graphique en utlisant le scroll de votre souris sur ordinateur, ou en écartant/resserant deux doigts sur l'écran de votre mobile.</li>
             <li>Vous pouvez vous <b>déplacer</b> sur le graphique zoomé en cliquant (ou en appuyant) sur la zone, puis en la déplaçant vers la gauche ou la droite.</li>
           </ul>
           <a class="link-to-ecla" href="https://dashboard.ecla.inrae.fr/fishola/">
-            Voir les données sur la plateforme ECLA
+            Voir d'autres résultats sur la plateforme ECLA
           </a>
         </p>
     </div>
