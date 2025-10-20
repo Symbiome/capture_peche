@@ -38,11 +38,6 @@
         <span>Effectuer des prélèvements</span>
         <FormToggle v-model="settings.promptSamples" />
       </div>
-      <div class="info" v-if="samplesDocumentationUrl">
-        Pour pouvoir effectuer des prélèvements, vous devez vous munir
-        d'un kit dans un des points de collecte :
-        <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
-      </div>
 
       <div class="settings-row" v-if="currentAppVersion">
         <span>
@@ -56,9 +51,14 @@
         </div>
       </div>
 
-      <BottomInducementView icon="/img/fish-blue.svg" title="Devenez collecteur d'écailles salmonidés"
-        text="Vous recevrez un kit de collectes d'écailles à votre adresse" actionText="Plus d'infos"
-        @click="becomeScaleCollector" />
+      <BottomInducementView
+        icon="/img/fish-blue.svg"
+        title="Devenez collecteur d'écailles salmonidés"
+        text="Pour pouvoir effectuer des prélèvements, vous devez vous munir d'un kit de collectes d'écailles. À récupérer dans un des points de collecte ou en nous contactant pour le recevoir à votre adresse."
+        :actions=bottomInducementActions
+        @becomeScaleCollector="becomeScaleCollector"
+        @getSamplesCollectionPoints="getSamplesCollectionPoints"
+        />
     </div>
     <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
   </div>
@@ -97,6 +97,16 @@ export default class SettingsView extends Vue {
   availableAppVersion = "";
 
   samplesDocumentationUrl: string = '';
+  bottomInducementActions = [
+    {
+      name: "Voir les points de collecte",
+      action: "getSamplesCollectionPoints"
+    },
+    {
+      name: "Nous contacter",
+      action: "becomeScaleCollector"
+    },
+  ];
 
   constructor() {
     super();
@@ -163,6 +173,14 @@ export default class SettingsView extends Vue {
 
   becomeScaleCollector() {
     this.$root.$emit("open-feedback", "scale");
+  }
+
+  getSamplesCollectionPoints() {
+    if (this.samplesDocumentationUrl) {
+      window.open(this.samplesDocumentationUrl);
+    } else {
+      this.$root.$emit('toaster-error', "La liste des points de collecte n'est pas disponible")
+    }
   }
 
 }

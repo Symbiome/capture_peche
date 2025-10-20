@@ -25,19 +25,30 @@
             <strong>{{ title }}</strong>
             <p>{{ text }} </p>
         </div>
-        <button class="button" @click="$emit('click')"> {{ actionText }}</button>
+
+        <button 
+            v-for="action in actions"
+            class="button"
+            @click="$emit(action.action)">
+          {{ action.name }}
+        </button>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
+interface Action {
+    action: string;
+    name: string;
+}
+
 @Component
 export default class BottomInducementView extends Vue {
     @Prop() icon: string;
     @Prop() title: string;
     @Prop() text: string;
-    @Prop() actionText: string;
+    @Prop() actions: Action[];
 }
 </script>
 
