@@ -377,6 +377,7 @@ html {
       &.selected {
         color: @gunmetal;
         border-bottom: 2px solid @pelorous;
+        font-weight: bold;
       }
     }
 

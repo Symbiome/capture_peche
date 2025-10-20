@@ -23,16 +23,23 @@
       Aucune donnée pour ce plan d'eau.
     </div>
     <div v-else id="evolution-graph">
-        <select v-model="displayMode" @change="switchMode">
-          <option value="tripsCount">Nombre de sorties avec au moins une prise</option>
-          <option value="totalCatchesCount">Nombre d'individus capturés (Total)</option>
-          <option value="keptCatchesCount">Nombre d'individus capturés (et conservés)</option>
-        </select>
+      <div id="evolution-graph-title">
+        <h2 v-if="displayMode">
+          <i :class="displayMode == 'tripsCount' ? 'icon-fish' : 'icon-fishing'" />
+          {{ displayModeChoices[displayMode] }}
+        </h2>
+        <div class="select-wrapper">
+          <select v-model="displayMode" @change="switchMode" ref="select">
+            <option v-for="modeLabel, modeId in displayModeChoices" :value="modeId"> {{ modeLabel }}</option>
+          </select>
+          <span>Modifier</span>
+        </div>
+      </div>
         <Bar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" ref='chart' />
         <p>
           Ce graphique représente les données sur plusieurs années, avec les intéractions suivantes :
           <ul>
-            <li>La liste déroulante située au dessus du graphique vous permet de choisir le <b>type de données</b> à afficher.</li>
+            <li>Le bouton &laquo; Modifier &raquo; situé à côté du titre du graphique vous permet de choisir le <b>type de données</b> à afficher.</li>
             <li>La <b>légende</b> est intéractive : en cliquant sur une des espèces, vous pouvez choisir de la masquer et de l'afficher à nouveau.</li>
             <li>Vous pouvez <b>zoomer</b> le graphique en utlisant le scroll de votre souris sur ordinateur, ou en écartant/resserant deux doigts sur l'écran de votre mobile.</li>
             <li>Vous pouvez vous <b>déplacer</b> sur le graphique zoomé en cliquant (ou en appuyant) sur la zone, puis en la déplaçant vers la gauche ou la droite.</li>
@@ -82,6 +89,12 @@ export default class EvolutionMetricsView extends Vue {
   containsData:boolean = false;
   chartData : any | null = null;
   chartOptions : any | null = null;
+
+  displayModeChoices = {
+    'tripsCount' : "Nombre de sorties avec au moins une prise" ,
+    'totalCatchesCount' : "Nombre d'individus capturés (Total)" ,
+    'keptCatchesCount' : "Nombre d'individus capturés (et conservés)"
+  }
 
   evolutionMetrics: EvolutionMetricsForLake = {
     evolutionPerMonthAndSpecie: {},
@@ -438,10 +451,37 @@ export default class EvolutionMetricsView extends Vue {
   }
 }
 
+#evolution-graph-title {
+  display: flex;
+  align-items: center;
+  gap: @margin-small;
+  font-weight: bold;
+  color: @gunmetal;
+}
+
+.select-wrapper {
+  position: relative;
+
+  & > span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: white;
+    font-weight: bold;
+  }
+}
+
 select {
+  width: 100px;
+  text-indent: -999px;
   background: transparent;
   padding: 5px 10px;
-  min-height: 35px;
   border: 1px solid @pelorous;
   border-radius: 20px;
   font-weight: bold;
