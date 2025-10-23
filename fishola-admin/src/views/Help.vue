@@ -25,6 +25,7 @@
       Télécharger en PDF
     </b-button>
 
+
     <div id="help-content">
       <div class="intro">
         <h1>Aide à l'utilisation du back-office de Fishola</h1>
@@ -32,6 +33,7 @@
           Cette page d'aide propose un mémo des fonctionnalités essentielles du back-office.<br/>
         </p>
       </div>
+      <ul id="toc" />
 
       <h2>Autorisations par type d'administrateur</h2>
       <p>
@@ -182,8 +184,6 @@
         <img class="screen-capture" src="/img/help/config-species-per-lake.png" alt="Écran de paramétrage des espèces par plan d'eau" />
       </p>
     </div>
-
-    <ul id="toc" />
   </div>
 </template>
 
@@ -234,28 +234,25 @@ export default class Help extends Vue {
     display: none;
   }
 
+  .export-button {
+    margin: 20px auto;
+  }
+
   h2 {
     padding-top: 3.25rem;
     margin-bottom: 1rem;
     font-size: 24px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     border-bottom: 1px solid #888;
   }
 
-  .export-button {
-    position: absolute;
-    right: 40px;
-    top: 80px;
-    z-index: 2;
-    box-shadow: 0 0 5px 15px #fff;
-  }
-
   #toc {
-    position: fixed;
-    right: 0;
-    top: 140px;
+    padding: 15px 50px;
+    margin-top: 20px;
     background-color: #EEE;
+    list-style: circle;
 
     :deep(li) {
       margin-bottom: 5px;
@@ -346,9 +343,17 @@ export default class Help extends Vue {
       max-width: 80%;
       text-align: justify;
     }
+    .export-button {
+      position: absolute;
+      right: 40px;
+      top: 80px;
+      z-index: 2;
+    }
     #toc {
+      position: fixed;
+      right: 0;
+      top: 140px;
       width: 20%;
-      padding: 50px 20px;
     }
   }
 </style>
