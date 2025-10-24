@@ -29,6 +29,8 @@
           v-bind:error="validationErrors['firstName']" />
         <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="bean.lastName"
           v-bind:error="validationErrors['lastName']" />
+        <FormInput name="pseudo" label="Pseudo" placeholder="Renseignez votre pseudo" v-model="bean.pseudo"
+          v-bind:error="validationErrors['pseudo']" />
         <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="bean.email"
           v-bind:error="validationErrors['email']" />
         <FormInput name="password" type="password" label="Mot de passe" placeholder="Choisissez un mot de passe"
@@ -85,7 +87,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import DocumentationService from "@/services/DocumentationService";
 import ProfileService from "@/services/ProfileService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -113,7 +115,7 @@ export default class RegisterView extends Vue {
   cancel() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
   }
-
+  
   register() {
     this.cleanValidationErros();
 

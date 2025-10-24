@@ -45,6 +45,8 @@ public interface UserProfile {
 
     String firstName();
 
+    String pseudo();
+
     Optional<String> lastName();
 
     String email();

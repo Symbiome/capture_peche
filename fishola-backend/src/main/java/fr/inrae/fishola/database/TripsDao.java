@@ -355,11 +355,8 @@ public class TripsDao extends AbstractFisholaDao {
                         .on(Tables.TRIP.OWNER_ID.eq(Tables.FISHOLA_USER.ID)).where(conditions));
 
                 List<TripSocial> tripsWithSocial = tripsWithoutSocial.stream().map( t -> {
-                    String userName = "";
                     FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
-                    if ( user != null ) {
-                        userName = Objects.toString(user.getFirstName(), "") + " " + Objects.toString(user.getLastName(), "").trim();
-                    }
+                    String userName = user.getPseudo();
                     String lakeName = withDao(LakeDao.class, lakeDao -> lakeDao.fetchById(t.getLakeId()).getFirst().getName());
                     long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();
                     List<TripSocialReaction> socialReactions = withDao(TripSocialReactionDao.class, dao -> dao.fetchByTripId(t.getId()));

@@ -38,6 +38,8 @@
         v-bind:error="validationErrors['firstName']" />
       <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="profile.lastName"
         v-bind:error="validationErrors['lastName']" />
+      <FormInput name="pseudo" label="Pseudo" placeholder="Renseignez votre pseudonyme" v-model="profile.pseudo"
+        v-bind:error="validationErrors['pseudo']" />
       <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="profile.email"
         v-bind:error="validationErrors['email']" />
       <FormSelect name="birthYear" label="Année de naissance (optionnelle)" v-bind:options="years"
@@ -192,10 +194,12 @@ export default class ProfileView extends Vue {
     } else {
       this.profile.gender = this.gender;
     }
-    this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-      // @ts-ignore
-      this.profile.lastNewsSeenDate
-    );
+    if (!this.profile.lastNewsSeenDate) {
+      this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+        // @ts-ignore
+        this.profile.lastNewsSeenDate
+      );
+    }
     if (!this.profile.lastNewsSeenDate) {
       this.profile.lastNewsSeenDate = new Date(2025,6,1);
     }

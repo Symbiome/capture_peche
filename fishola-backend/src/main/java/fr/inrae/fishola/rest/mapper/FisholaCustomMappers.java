@@ -263,6 +263,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             String firstName = readTextOrNull(node, "firstName");
             String email = readTextOrNull(node, EMAIL);
             Optional<String> lastName = readText(node, "lastName");
+            Optional<String> pseudo = readText(node, "pseudo");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");
             Boolean acceptsMailNotifications = readBoolean(node, "acceptsMailNotifications");
@@ -273,6 +274,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             builder.firstName(firstName);
             builder.email(email);
             lastName.ifPresent(builder::lastName);
+            pseudo.ifPresent(builder::pseudo);
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
             builder.acceptsMailNotifications(acceptsMailNotifications);
