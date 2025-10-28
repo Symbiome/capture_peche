@@ -34,7 +34,7 @@
 
     <groupId>fr.inrae</groupId>
     <artifactId>fishola</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
 
     <name>Fishola</name>
     <description>Application smartphone en sciences participatives pour la pêche amateur sur les les plans d'eau français
