@@ -34,11 +34,10 @@
 
     <groupId>fr.inrae</groupId>
     <artifactId>fishola</artifactId>
-    <version>2.0.13</version>
+    <version>3.0.0</version>
 
     <name>Fishola</name>
-    <description>Application smartphone en sciences participatives pour la pêche amateur sur les lacs de l’observatoire
-        OLA
+    <description>Application smartphone en sciences participatives pour la pêche amateur sur les les plans d'eau français
     </description>
     <url>${projectUrl}</url>
     <inceptionYear>2019</inceptionYear>

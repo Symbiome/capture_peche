@@ -996,7 +996,7 @@ class TripResourceTest extends AbstractFisholaTest {
     }
 
     private void checkGlobalDashboardInformation(boolean expectedIsPresent, Optional<Integer> expectedSize, Optional<Integer> expectedWeight, String expectedSpeciesId, Optional<Integer> yearFilter, Optional<List<UUID>> newLakeFilter) {
-        GlobalDashboard globalDashboardForYear = this.dashboardDao.computeGlobalDashboard(yearFilter, newLakeFilter, this.log);
+        GlobalDashboard globalDashboardForYear = this.dashboardDao.computeGlobalDashboard(yearFilter, newLakeFilter);
         if (expectedIsPresent) {
             Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesCount().size());
             Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesDistribution().size());

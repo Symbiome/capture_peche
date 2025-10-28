@@ -64,6 +64,8 @@
             :values="monthlyCount"
             :orderedMonths="orderedMonths"
             :is-active-month-condition="isActiveMonth"
+            :average="averageCatchsPerTripRounded"
+            averageLabel="Nombre moyen de prises par sortie de pêche (Toutes espèces confondues)"
           ></HistogramChart>
         </div>
     </div>
@@ -203,6 +205,7 @@ export default class PersonalDashboard extends Vue {
 
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 
+  averageCatchsPerTripRounded: number = 0;
   caughtSpeciesDistribution: DistributionEntry[] = [];
   topBySizeOptions: OptionItem[] = [];
   topBySizeCatchs: CatchBean[] | null = null;
@@ -275,6 +278,11 @@ export default class PersonalDashboard extends Vue {
       );
       this.caughtSpeciesDistribution.push(entry);
     });
+
+    const averageCatchsPerTrip =
+      this.dashboardData.dashboard.averageCatchsPerTrip || 0;
+    this.averageCatchsPerTripRounded =
+      Math.round(10 * averageCatchsPerTrip) / 10;
 
     const topBySize: TopEntry[] = this.parseTop(
       this.dashboardData.dashboard.topBySize
@@ -484,28 +492,7 @@ export default class PersonalDashboard extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
-@import "../../less/main";
-
-.average-header {
-  height: @average-header-height;
-  line-height: @average-header-height;
-  font-weight: bold;
-  font-size: @fontsize-header-paragraph;
-  color: @terra-cotta;
-
-  display: flex;
-  flex-direction: row;
-
-  .count {
-    width: 30px;
-    border-radius: 15px;
-    background-color: @terra-cotta;
-    color: @white;
-    margin-right: @margin-small;
-  }
-}
-
+<style scoped lang="less">
 .average {
   position: relative;
   margin-top: @vertical-margin-small;

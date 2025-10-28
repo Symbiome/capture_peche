@@ -38,7 +38,7 @@
       </div>
     </h1>
     <div v-if="lakes.length > maxLakeBeforeShowingAutoComplete">
-        Veuillez indiquer les lacs à afficher
+        Veuillez indiquer les plans d'eau à afficher
         <MultipleAutoComplete
           :defaultSelection="lastLakeSelection"
           :data="lakeSelectionOptions"
@@ -46,7 +46,7 @@
         />
       </div>
     <p id="table-desc" style="display:none">
-      Tableau des lacs
+      Tableau des plans d'eau
     </p>
     <table class="table is-striped" aria-describedby="table-desc" v-if="selectedLakes.length > 0">
       <thead>
@@ -126,7 +126,7 @@
                 </div>
               </div>
               <i v-else class="specie-container-without-size">
-                Espèce non présente
+                Taille non réglementée
               </i>
             </div>
           </td>
@@ -284,7 +284,7 @@ export default class AuthorizedSamplesVue extends Vue {
           const lakeId = getLakeWithName(csvLakes[j]);
           if (!lakeId) {
             buefy.toast.open({
-              message: "Lac inconnu : " + csvLakes[j],
+              message: "Plan d'eau inconnu : " + csvLakes[j],
               type: "is-danger"
             });
             return;
@@ -338,9 +338,9 @@ export default class AuthorizedSamplesVue extends Vue {
             : "";
           if (maillageSize) {
             csvRow +=
-              (maillageSize ? maillageSize : "") +
+              (maillageSize ?? "") +
               "-" +
-              (maximumSize ? maximumSize : "1000") +
+              (maximumSize ?? "1000") +
               ";";
           } else {
             csvRow += ";";
@@ -436,15 +436,14 @@ export default class AuthorizedSamplesVue extends Vue {
     padding-top: 10px;
   }
 
-  .specie-container {
-    display: flex;
-  }
   .error {
     color: red;
     font-weight: bold;
   }
 
   .specie-container {
+    display: flex;
+
     .minsize-input {
       width: 80px !important;
       border: 2px solid green !important;

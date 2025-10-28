@@ -28,7 +28,7 @@
       <img
         class="picture"
         v-bind:src="src"
-        alt="Photo de la capture"
+        alt="Capture"
         @load="pictureLoaded"
       />
     </div>
@@ -93,7 +93,7 @@ export default class PicturePreview extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .picture-preview {
   height: 100%;

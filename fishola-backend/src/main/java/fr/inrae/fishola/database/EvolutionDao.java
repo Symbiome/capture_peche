@@ -21,23 +21,23 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Species;
+import fr.inrae.fishola.rest.dashboard.EvolutionMetricForSpecieAndMonth;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
+import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricForSpecieAndMonth;
 import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForLake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,48 +54,49 @@ public class EvolutionDao  extends AbstractFisholaDao {
         List<UUID> species = withDao(SpeciesDao.class, SpeciesDao::findAll).stream().map(Species::getId).toList();
         boolean useEditedInBackOfficeInformation = userId.isEmpty();
 
-        for (int year = 2018; year < LocalDate.now().getYear(); year++) {
+        for (UUID specieId : species) {
+            List<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecie = Lists.newArrayList();
 
-            // Get all catches made this month on this lake (with user filter or not)
-            Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
-            Map<Month, Map<UUID, Map<Boolean, Long>>> catchCountPerMonthAndSpecies = Maps.newLinkedHashMap();
-            Map<Month, Map<UUID, Long>> tripCountPerMonthAndSpecies = Maps.newLinkedHashMap();
+            for (int year = 2018; year < LocalDate.now().getYear(); year++) {
+                Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
 
-            for (Month month : Month.values()) {
-                getEvolutionStatsForLakeYearAndMonth(month, species, monthlyCatches, useEditedInBackOfficeInformation, catchCountPerMonthAndSpecies, tripCountPerMonthAndSpecies);
+                for (Month month : monthlyCatches.keySet()) {
+                    Optional<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecieAndMonth = getEvolutionMetricsForSpecieAndMonth(year, month, specieId, monthlyCatches, useEditedInBackOfficeInformation);
+                    evolutionMetricsForSpecieAndMonth.ifPresent(evolutionMetricsForSpecie::add);
+                }
             }
-            if (!catchCountPerMonthAndSpecies.isEmpty()) {
-                builder.putCatchCountPerMonthAndSpecies(year, catchCountPerMonthAndSpecies);
-                builder.putTripCountPerMonthAndSpecies(year, tripCountPerMonthAndSpecies);
-            }
+
+            builder.putEvolutionPerMonthAndSpecie(specieId, evolutionMetricsForSpecie);
         }
+
         return builder.build();
     }
 
-    private static void getEvolutionStatsForLakeYearAndMonth(Month month, List<UUID> species, Multimap<Month, Catch> monthlyCatches, boolean useEditedInBackOfficeInformation, Map<Month, Map<UUID, Map<Boolean, Long>>> catchCountPerMonthAndSpecies, Map<Month, Map<UUID, Long>> tripCountPerMonthAndSpecies) {
-        for (UUID speciesId : species) {
+    private static Optional<EvolutionMetricForSpecieAndMonth> getEvolutionMetricsForSpecieAndMonth(Integer year, Month month, UUID specieId, Multimap<Month, Catch> monthlyCatches, boolean useEditedInBackOfficeInformation) {
+        if (monthlyCatches.containsKey(month)) {
             List<Catch> catchesOfSpeciesForMonth = monthlyCatches.get(month).stream()
                     .filter(c -> {
                         if (useEditedInBackOfficeInformation) {
-                            return Objects.equals(c.getEditedSpeciesId(),speciesId);
+                            return Objects.equals(c.getEditedSpeciesId(), specieId);
                         } else {
-                            return  Objects.equals(c.getSpeciesId(), speciesId);
+                            return Objects.equals(c.getSpeciesId(), specieId);
                         }
-                    }) .toList();
+                    }).toList();
             if (!catchesOfSpeciesForMonth.isEmpty()) {
-                catchCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
-                tripCountPerMonthAndSpecies.putIfAbsent(month, Maps.newLinkedHashMap());
-
-                // Count kept and relase catches for this specie
-                Map<Boolean, Long> keptAndUnkeptCount = Maps.newLinkedHashMap();
-                keptAndUnkeptCount.put(true, catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count());
-                keptAndUnkeptCount.put(false, catchesOfSpeciesForMonth.stream().filter(c -> !c.getKept()).count());
-                catchCountPerMonthAndSpecies.get(month).put(speciesId, keptAndUnkeptCount);
-
-                // Count distinct trips for this species
+                Long keptCatchCount = catchesOfSpeciesForMonth.stream().filter(Catch::getKept).count();
+                Long totalCatchCount = (long) catchesOfSpeciesForMonth.size();
                 Long tripCount = catchesOfSpeciesForMonth.stream().map(Catch::getTripId).distinct().count();
-                tripCountPerMonthAndSpecies.get(month).put(speciesId, tripCount);
+                String monthYear = (month.getValue() < 10 ? "0" : "") + month.getValue()  + "/"  + year;
+                return Optional.of(
+                        ImmutableEvolutionMetricForSpecieAndMonth.builder()
+                        .monthYear(monthYear)
+                        .totalCatchesCount(totalCatchCount)
+                        .tripsCount(tripCount)
+                        .keptCatchesCount(keptCatchCount)
+                        .build()
+                );
             }
         }
+        return Optional.empty();
     }
 }

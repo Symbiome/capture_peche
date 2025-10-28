@@ -112,7 +112,7 @@
             <div class="right-part">
               <img
                 v-if="selectedPic"
-                alt="image sélectionnée"
+                alt="Sélectionnée"
                 class="main-pic"
                 :src="getFullPicURL(selectedPic)"
                 :enableModal="false"
@@ -300,7 +300,7 @@ export default class GaleryFull extends Vue {
     this.lakes = [];
     const defaultLake = {
       id: "",
-      name: "Tous les lacs",
+      name: "Tous les plans d'eau",
       exportAs: "",
       latitude: 0,
       longitude: 0,
@@ -347,8 +347,6 @@ export default class GaleryFull extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .picture-modal-gallery-full {
   display: none;
   @media screen and (max-width: 1300px) {
@@ -468,8 +466,6 @@ export default class GaleryFull extends Vue {
         display: flex;
         justify-content: center;
 
-        z-index: 10;
-
         div {
           height: 41px;
         }
@@ -566,11 +562,9 @@ export default class GaleryFull extends Vue {
   }
 
   .no-pic-in-galery {
-    height: 100%;
     width: 134px;
     height: 93px;
     margin-top: 40px;
-    background-color: #e7e7e7;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     display: flex;
@@ -595,7 +589,6 @@ export default class GaleryFull extends Vue {
     position: absolute;
     right: 20px;
     bottom: 20px;
-    height: 20px;
 
     z-index: 10;
 
@@ -604,8 +597,6 @@ export default class GaleryFull extends Vue {
 
     display: flex;
     justify-content: center;
-
-    z-index: 10;
 
     button {
       height: 100%;

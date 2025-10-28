@@ -42,7 +42,7 @@ export default class Title extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .header-title {
   font-size: @fontsize-header-title;

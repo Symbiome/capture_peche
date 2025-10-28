@@ -21,10 +21,9 @@ package fr.inrae.fishola.exceptions;
  * #L%
  */
 
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import jakarta.ws.rs.core.Response;
 
 /**
  * @author Arnaud Thimel (Code Lutin)

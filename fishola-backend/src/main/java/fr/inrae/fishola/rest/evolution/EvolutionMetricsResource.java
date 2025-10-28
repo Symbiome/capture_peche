@@ -20,6 +20,7 @@ package fr.inrae.fishola.rest.evolution;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 import fr.inrae.fishola.database.EvolutionDao;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
@@ -31,7 +32,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import org.jboss.logging.Logger;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -107,8 +107,6 @@ export default class RunningOverlay extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .running-overlay {
   position: relative;
   width: 100%;
@@ -127,8 +125,6 @@ export default class RunningOverlay extends Vue {
 
     display: flex;
     justify-content: center;
-
-    z-index: 10;
 
     div {
       height: 41px;

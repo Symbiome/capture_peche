@@ -19,9 +19,9 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header-and-footer shifted-background">
+  <div class="page-with-header shifted-background">
     <FisholaHeader />
-    <div class="page my-trips-page">
+    <div class="page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
           <h1 class="hide-on-mobile">Accueil</h1>
@@ -104,9 +104,7 @@ export default class OfflineHome extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .trips-and-news-tab {
   width: 100%;
   display: flex;

@@ -117,7 +117,6 @@ export default class CommunicationsOnAboutPage extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
 .no-news {
   color: @pale-sky;
   padding: 20px;

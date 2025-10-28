@@ -104,7 +104,7 @@
 <script lang="ts">
 import ReferentialItem from "@/components/ReferentialItem.vue";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
 @Component({

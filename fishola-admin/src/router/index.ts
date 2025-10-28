@@ -25,6 +25,7 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Dispatcher from "@/views/Dispatcher.vue";
 import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
+import Help from "@/views/Help.vue";
 
 import Lakes from "@/views/referentials/Lakes.vue";
 import Weathers from "@/views/referentials/Weathers.vue";
@@ -59,6 +60,11 @@ const routes: Array<RouteConfig> = [
     path: "/home",
     name: "home",
     component: Home
+  },
+  {
+    path: "/help",
+    name: "help",
+    component: Help
   },
   {
     path: "/referentials/lakes",
@@ -134,7 +140,15 @@ const routes: Array<RouteConfig> = [
 ];
 
 const router = new VueRouter({
-  routes
+  routes,
+  mode: 'history',
+  scrollBehavior (to) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+      }
+    }
+  }
 });
 
 export default router;

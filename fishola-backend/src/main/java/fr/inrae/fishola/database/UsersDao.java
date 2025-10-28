@@ -22,26 +22,23 @@ package fr.inrae.fishola.database;
  */
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteLakesDao;
-import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteLakes;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jboss.logging.Logger;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.jboss.logging.Logger;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_LAKES;
@@ -101,11 +98,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String firstName, String lastName, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, boolean acceptsShareTrips) {
+    public void create(String firstName, String lastName, String pseudo, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, boolean acceptsShareTrips) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
-                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.ACCEPTS_SHARE_TRIPS)
-                .values(firstName, lastName, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, acceptsShareTrips)
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.PSEUDO, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.ACCEPTS_SHARE_TRIPS)
+                .values(firstName, lastName, pseudo, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, acceptsShareTrips)
                 .execute());
     }
 
@@ -122,6 +119,7 @@ public class UsersDao extends AbstractFisholaDao {
         existingUser.setAcceptsMailNotifications(false);
         existingUser.setAcceptsShareTrips(false);
         existingUser.setBirthYear(1920);
+        existingUser.setPseudo("Anonymisé");
         existingUser.setEmail(existingUser.getId().toString().replace("-", "") + "@anonymised.fr");
         existingUser.setGender(Gender.NonBinary);
         existingUser.setFirstName("Anonymisé");
@@ -171,5 +169,9 @@ public class UsersDao extends AbstractFisholaDao {
                     .map(id -> new FisholaUserFavoriteLakes(userUUID, id))
                     .forEach(dao::insert);
         });
+    }
+
+    public List<FisholaUser> findByPseudo(String pseudo) {
+        return withDao(FisholaUserDao.class, dao -> dao.fetchByPseudo(pseudo));
     }
 }

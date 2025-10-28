@@ -172,7 +172,7 @@ export default class TripTechniquesView extends Vue {
 </script>
 
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-trip-techniques-page {
   .pane .pane-content {

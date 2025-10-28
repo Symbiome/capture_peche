@@ -22,8 +22,8 @@
 import { DeviceType } from "@/pojos/BackendPojos";
 
 import { Device } from "@capacitor/device";
-
 import moment from "moment";
+import 'moment/dist/locale/fr';
 
 export default class Helpers {
   static renderDuration(startedAt: string, finishedAt?: string): string {

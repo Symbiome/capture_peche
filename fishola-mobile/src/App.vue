@@ -151,7 +151,6 @@ export default class AppView extends Vue {
   }
 
   checkOutOfSyncTrips() {
-    // console.debug("SYNCHO : Recherche des sorties");
     TripsService.syncTrips().then(this.tripsSyncFinished, (e) => {
       console.error("Apparement, il y a un pb de sync", e);
       // Même en cas d'erreur on essaye de synchro les photos
@@ -167,7 +166,6 @@ export default class AppView extends Vue {
   }
 
   checkOutOfSyncPicturesAndFeedbacks() {
-    // console.debug("SYNCHO : Recherche des photos");
     PicturesService.syncPictures();
     // Check for out of sync feedbacks any time we check for pictures
     FeedbackService.syncFeedbacks();
@@ -227,11 +225,15 @@ html {
 
   height: 100%;
 
+  @media screen and (min-width: @desktop-min-width) {
+    height: 100vh;
+  }
+
   .page {
     height: calc(100% - @header-height);
 
     @media screen and (min-width: @desktop-min-width) {
-      height: 100%;
+      height: 100vh;
     }
   }
 }
@@ -241,6 +243,10 @@ html {
   flex-direction: column;
 
   height: 100%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    height: 100vh;
+  }
 
   .page {
     display: flex;
@@ -309,7 +315,7 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
-  height: calc(100% - @header-height - @secondary-header-height - @footer-height - 10px);
+  height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
 
   &.keyboardShowing {
     // Take reduced footer height into account
@@ -371,6 +377,7 @@ html {
       &.selected {
         color: @gunmetal;
         border-bottom: 2px solid @pelorous;
+        font-weight: bold;
       }
     }
 
@@ -379,7 +386,9 @@ html {
 
   .pane-content {
     overflow: auto;
-    height: 100vh;
+    height: calc(100dvh - @header-height - @vertical-margin-medium);
+    display: flex;
+    flex-direction: column;
 
     padding-left: @margin-large;
     padding-right: @margin-large;
@@ -400,6 +409,8 @@ html {
   }
 
   .padding-content {
+    height: 100%;
+    overflow: hidden;
     padding-left: @margin-large;
     padding-right: @margin-large;
 
@@ -410,6 +421,7 @@ html {
   }
 
   &.pane-only {
+    height: calc(100% - @vertical-margin-medium);
     margin-top: @vertical-margin-medium;
   }
 
@@ -434,11 +446,13 @@ html {
     }
 
     .pane-content {
+      height: 100vh;
       padding-left: @margin-large-desktop;
       padding-right: @margin-large-desktop;
     }
 
     &.pane-only {
+      height: 100%;
       margin-top: 0px;
     }
   }

@@ -19,9 +19,10 @@
   #L%
   -->
 <template>
-  <div class="referential-item">
+  <div class="referential-item" v-if="item">
     <h2 v-if="item.name">{{ item.name }}</h2>
     <div v-for="col in columns" v-bind:key="col.field">
+
       <b-field
         :label="
           col.field == 'datePublicationDebut'
@@ -236,7 +237,7 @@
               !col.isArray &&
               ('' + item[col.field]).length < 200
           "
-          :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
+          :disabled="col.readOnly || col.readOnlyIfFunction && col.readOnlyIfFunction(item) || (col.readOnlyEdition && item['id'])"
         ></b-input>
 
         <!-- Long strings -->
@@ -297,7 +298,6 @@
           :data="col.arrayOptions"
           @updated="(value) => item[col.field] = value"
         />
-
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
           <b-radio

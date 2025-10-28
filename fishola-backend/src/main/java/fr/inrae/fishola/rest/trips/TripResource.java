@@ -38,23 +38,6 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import java.net.URI;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -73,9 +56,26 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
+
+import java.net.URI;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -330,28 +330,7 @@ public class TripResource extends AbstractFisholaResource {
 
         Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
         Collection<CatchBean> incomingCatchBeans = CollectionUtils.emptyIfNull(trip.catchs);
-        for (CatchBean aCatch : incomingCatchBeans) {
-
-            if (log.isTraceEnabled()) {
-                log.tracef("Détails de la capture : %s", aCatch);
-            }
-
-            Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
-            if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
-                Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
-                updateCatch(trip.lakeId, existingCatch, aCatch);
-                updatedCatchsIds.add(parsedCatchId.get());
-                if (log.isDebugEnabled()) {
-                    log.debugf("Capture mise à jour : %s", parsedCatchId.get());
-                }
-            } else {
-                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
-                replacements.put(aCatch.id, catchId);
-                if (log.isDebugEnabled()) {
-                    log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
-                }
-            }
-        }
+        updateAndCreateFromIncomingCatchBeans(tripId, trip, incomingCatchBeans, existingCatchsIndex, updatedCatchsIds, replacements);
 
         Sets.SetView<UUID> toDeleteCatchsIds = Sets.difference(existingCatchsIndex.keySet(), updatedCatchsIds);
         toDeleteCatchsIds.forEach(catchId -> {
@@ -376,6 +355,31 @@ public class TripResource extends AbstractFisholaResource {
 
         Response response = wrapEntity(replacements, userIdAndRenewal);
         return response;
+    }
+
+    private void updateAndCreateFromIncomingCatchBeans(UUID tripId, TripBean trip, Collection<CatchBean> incomingCatchBeans, ImmutableMap<UUID, Catch> existingCatchsIndex, Set<UUID> updatedCatchsIds, Map<String, UUID> replacements) {
+        for (CatchBean aCatch : incomingCatchBeans) {
+
+            if (log.isTraceEnabled()) {
+                log.tracef("Détails de la capture : %s", aCatch);
+            }
+
+            Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
+            if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
+                Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
+                updateCatch(trip.lakeId, existingCatch, aCatch);
+                updatedCatchsIds.add(parsedCatchId.get());
+                if (log.isDebugEnabled()) {
+                    log.debugf("Capture mise à jour : %s", parsedCatchId.get());
+                }
+            } else {
+                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
+                replacements.put(aCatch.id, catchId);
+                if (log.isDebugEnabled()) {
+                    log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
+                }
+            }
+        }
     }
 
     @DELETE
@@ -469,6 +473,8 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
+        aCatch.latitude.ifPresent(existingCatch::setLatitude);
+        aCatch.longitude.ifPresent(existingCatch::setLongitude);
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
@@ -650,8 +656,8 @@ public class TripResource extends AbstractFisholaResource {
         result.type = entity.getType();
         result.lakeId = entity.getLakeId();
         result.date = entity.getDay();
-        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
+        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.weatherId = Optional.ofNullable(entity.getWeatherId());
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);

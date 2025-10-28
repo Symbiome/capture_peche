@@ -19,57 +19,91 @@
   #L%
   -->
 <template>
-    <div class="section shrinked">
-        <div v-if="speciesNameForLake.length == 0 || getYears().length == 0">
-            Aucune donnée pour ce lac.
+    <div v-if="!containsData" class="not-enough-data">
+      Aucune donnée pour ce plan d'eau.
+    </div>
+    <div v-else id="evolution-graph">
+      <div id="evolution-graph-title">
+        <h2 v-if="displayMode">
+          <i :class="displayMode == 'tripsCount' ? 'icon-fish' : 'icon-fishing'" />
+          {{ displayModeChoices[displayMode] }}
+        </h2>
+        <div class="select-wrapper">
+          <select v-model="displayMode" @change="switchMode" ref="select">
+            <option v-for="modeLabel, modeId in displayModeChoices" :value="modeId"> {{ modeLabel }}</option>
+          </select>
+          <span>Modifier</span>
         </div>
-        <div v-else>
-            <h3>TODO Graphique 1 <span v-if="onlyShowUserStats">(stats personnelles)</span><span v-else>(stats globales)</span></h3>
-            <p>Par mois de chaque année, par espèce (filtrable) : nombre d'individus capturés (avec distingo relaché/gardé)</p>
-            <h3>TODO Graphique 2 <span v-if="onlyShowUserStats">(stats personnelles)</span><span v-else>(stats globales)</span></h3>
-            <p>Par mois de chaque année, par espèce (filtrable) : nombre de sortie effectuées avec au moins une prise de l'espèce</p>
-            <h3>TODO ajouter lien vers la dashboard pole ECLA </h3>
-            <h2>Données brutes : </h2>
-            <div  v-for="year in getYears()" :key="year">
-                <b>{{year}} </b><br/>
-                 <p v-for="month in getMonths(year)" :key="month"> 
-                    - {{ month}}  ( {{ getSpecies(year, month).length }} )
-                    <ul v-for="specie in getSpecies(year, month)" :key="specie">   
-                    - Espece {{ getSpecieNameForLake(specie) }} <br/>
-                        * Relâchés : {{ getReleasedCount(year, month, specie) }} <br/>
-                       * Conservés: {{ getKeptCount(year, month, specie) }} <br/>
-                        * Nombre de sorties : {{ getTripCount(year, month, specie) }} <br/>
-                    </ul>
-                 </p>
-                 
-            </div>
-        </div>
+      </div>
+        <Bar v-if="chartData && chartOptions" :data="chartData" :options="chartOptions" ref='chart' />
+        <p>
+          Ce graphique représente les données sur plusieurs années, avec les intéractions suivantes :
+          <ul>
+            <li>Le bouton &laquo; Modifier &raquo; situé à côté du titre du graphique vous permet de choisir le <b>type de données</b> à afficher.</li>
+            <li>La <b>légende</b> est intéractive : en cliquant sur une des espèces, vous pouvez choisir de la masquer et de l'afficher à nouveau.</li>
+            <li>Vous pouvez <b>zoomer</b> le graphique en utlisant le scroll de votre souris sur ordinateur, ou en écartant/resserant deux doigts sur l'écran de votre mobile.</li>
+            <li>Vous pouvez vous <b>déplacer</b> sur le graphique zoomé en cliquant (ou en appuyant) sur la zone, puis en la déplaçant vers la gauche ou la droite.</li>
+          </ul>
+          <a class="link-to-ecla" href="https://dashboard.ecla.inrae.fr/fishola/">
+            Voir d'autres résultats sur la plateforme ECLA
+          </a>
+        </p>
     </div>
 </template>
 
 <script lang="ts">
 
-import { EvolutionMetricsForLake, Month, SpeciesWithAlias } from '@/pojos/BackendPojos';
+import { EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
 import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import chartjsPluginDatalables from 'chartjs-plugin-datalabels'
+import chartjsPluginZoom from 'chartjs-plugin-zoom'
 
-@Component
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js'
+import { Bar } from 'vue-chartjs'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables, chartjsPluginZoom)
+
+@Component({
+  components: {
+    Bar,
+  },
+})
 export default class EvolutionMetricsView extends Vue {
   @Prop() lakeId: string;
   @Prop({default: false}) onlyShowUserStats: boolean;
   speciesNameForLake: SpeciesWithAlias[] = [];
+  allSpecies: string[];
 
+  displayMode = 'tripsCount';
+  max = {'tripsCount' : 0, 'keptCatchesCount' : 0, 'totalCatchesCount' : 0 }
+  containsData:boolean = false;
+  chartData : any | null = null;
+  chartOptions : any | null = null;
+
+  displayModeChoices = {
+    'tripsCount' : "Nombre de sorties avec au moins une prise" ,
+    'totalCatchesCount' : "Nombre d'individus capturés (Total)" ,
+    'keptCatchesCount' : "Nombre d'individus capturés (et conservés)"
+  }
 
   evolutionMetrics: EvolutionMetricsForLake = {
-    catchCountPerMonthAndSpecies: {},
-    tripCountPerMonthAndSpecies: {}
+    evolutionPerMonthAndSpecie: {},
   };
 
   mounted() {
     this.loadEvolutionData();
   }
-  
+
   @Watch("lakeId")
   async loadEvolutionData() {
     if (this.lakeId) {
@@ -80,70 +114,425 @@ export default class EvolutionMetricsView extends Vue {
             this.evolutionMetrics = await DashboardService.loadGlobalEvolutionOrTimeout(this.lakeId);
         }
         this.$emit("loaded", true);
+
+        let checkForData = false;
+        for (const specie in this.evolutionMetrics.evolutionPerMonthAndSpecie) {
+          if (this.evolutionMetrics.evolutionPerMonthAndSpecie[specie].length) {
+            checkForData = true;
+            break;
+          }
+        }
+        this.containsData = checkForData;
+
+        this.initChartData();
+        this.initChartOptions();
     }
   }
-  
 
-    getYears() : string[] {
-        return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies);
+  extractYearFromMetric(metric: EvolutionMetricForSpecieAndMonth) {
+    const regexp = /20\d{2}$/g;
+    let parsedYear = metric.monthYear.match(regexp);
+    if (parsedYear) {
+      return parseInt(parsedYear[0]);
     }
+    return new Date().getFullYear();
+  }
 
-    getMonths(year: string) : Month[] {
-        if (year && this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) {
-        return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies[year]) as Month[];
+  /* Determines the years to display based on the evolution data fetched */
+  getYears() : string[] {
+    const currentYear = new Date().getFullYear();
+    let earliestYear = currentYear;
+
+    for (const specie in this.evolutionMetrics.evolutionPerMonthAndSpecie) {
+      if (this.evolutionMetrics.evolutionPerMonthAndSpecie[specie].length) {
+        let metricWithEarliestYear = this.evolutionMetrics.evolutionPerMonthAndSpecie[specie].reduce((min, obj) => {
+          const year = this.extractYearFromMetric(obj);
+          const yearMin = this.extractYearFromMetric(min)
+          return  year < yearMin ? obj : min;
+        })
+        let earliestYearForSpecie = this.extractYearFromMetric(metricWithEarliestYear);
+        if (earliestYear > earliestYearForSpecie) {
+          earliestYear = earliestYearForSpecie;
         }
-        return [];
+      }
+    }
+    let years : string[] = [];
+    while(earliestYear <= currentYear) {
+      years.push((earliestYear++).toString());
+    }
+    return years;
+  }
+
+  getLabels() {
+    let labels : any[] = [];
+    let years = this.getYears();
+    let currentMonthIndex = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    years.forEach(year => {
+      for (var month = 1 ; month <= 12; month++) {
+          if (parseInt(year) < currentYear || month < currentMonthIndex) {
+          labels.push((month < 10 ? '0' : '') + month + '/' + year)
+        }
+      }
+    })
+    return labels;
+  }
+
+  getSpecieNameForLake(specieId: string) {
+    const specie = this.speciesNameForLake.find(s => {
+        return s.id == specieId;
+    });
+    return specie ? (specie.alias ?? specie.name) : specieId;
+  }
+
+  initChartData() {
+    let labels : any[] = this.getLabels();
+    let datasets : any[] = [];
+    let colors = [
+      '#69db7c', // light green
+      '#4dabf7', // light blue
+      '#ffd43b', // light orange
+      '#faa2c1', // light pink
+      '#cc5de8', // light purple
+      '#1971c2', // dark blue
+      '#c2255c', // dark pink
+      '#2f9e44', // dark green
+      '#f08c00', // dark orange
+      '#862e9c', // dark purple
+      '#99e9f2', // light cyan
+      '#c0eb75', // light lime
+      '#03045e', // Various colors then
+      '#99582a', '#bb9457', '#cfbaf0', '#9e0059', '#390099',
+      '#6a994e', '#7b2cbf', '#daddd8', '#fed766', '#5e6472'
+    ];
+    let colorIndex = 0;
+
+    if (this.evolutionMetrics && this.evolutionMetrics.evolutionPerMonthAndSpecie) {
+      Object.keys(this.evolutionMetrics.evolutionPerMonthAndSpecie).forEach((element) => {
+        if (this.evolutionMetrics.evolutionPerMonthAndSpecie[element].length) {
+          let dataset = {
+            label: this.getSpecieNameForLake(element),
+            data: this.evolutionMetrics.evolutionPerMonthAndSpecie[element],
+            backgroundColor: colors[colorIndex++ % colors.length]
+          }
+          datasets.push(dataset);
+        }
+      });
     }
 
-    getSpecies(year: string, month: Month): string[] {
-        if (year && this.evolutionMetrics.catchCountPerMonthAndSpecies[year] && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]) {
-            return Object.keys(this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month])
-        }
-        return [];
+    this.chartData = {
+      labels: labels,
+      datasets: datasets
     }
 
-    getSpecieNameForLake(specieId: string) {
-        const specie = this.speciesNameForLake.find(s => {
-            return s.id == specieId;
-        });
-        return specie ? (specie.alias ?? specie.name) : specieId;
-    }
+    // Calculate max value per display mode
+    Object.keys(this.max).forEach(displayMode => {
+      let maxOfDisplayMode = 0;
+      labels.forEach((label) => {
+        let sum = 0;
+        datasets.forEach(dataset => {
+          let siblings =  dataset.data.filter((option) => {
+            return option.monthYear == label
+          })
+          if (siblings && siblings[0] && siblings[0][displayMode]) {
+            sum += siblings[0][displayMode];
+          }
+        })
+        if (sum > maxOfDisplayMode) { maxOfDisplayMode = sum; }
+      })
+      let max = maxOfDisplayMode + 5;
+      if (max % 10 != 0) {
+        max =  max + (10 - max % 10);
+      }
+      this.max[displayMode] = max;
+    });
+  }
 
-    getReleasedCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.catchCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]["false"];
+  initChartOptions() {
+    this.chartOptions =  {
+      responsive: true,
+      maintainAspectRatio: false,
+      parsing: {
+        xAxisKey: 'monthYear',
+        yAxisKey: this.displayMode
+      },
+      interaction: {
+        mode: 'x'
+      },
+      layout: {
+        padding: {
+          top: 10,
+          right: 1 /* to be prevent grid display issue */
         }
-        return 0;
-    }
-   
-   getKeptCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.catchCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.catchCountPerMonthAndSpecies[year][month][specieId]["true"];
+      },
+      scales: {
+        x: {
+          type: 'category',
+          min: "01/" + (new Date().getFullYear() - 1),
+          stacked: true,
+          grid: {
+            color:  function(context) {
+              if (context.tick && context.tick.label == '01') {
+                return '#ccc';
+              }
+            },
+            offset: true
+          },
+          border: {
+            color: '#999'
+          },
+          ticks : {
+            maxRotation: 0,
+            maxTicksLimit: 36,
+            font: {
+              size: 16,
+              lineHeight: 1.5
+            },
+            callback: function(value) {
+              let label = this.getLabelForValue(value);
+              // Display only the month
+              return label.split("/")[0];
+            }
+          }
+        },
+        secondX: {
+          position: 'bottom',
+          min: "01/" + (new Date().getFullYear() - 1),
+          grid: {
+            color: 'transparent',
+          },
+          border: {
+              color: '#ccc'
+          },
+          ticks : {
+            maxRotation: 0,
+            font: {
+              size: 16,
+              weight: 'bold',
+              lineHeight: 1.5
+            },
+            callback: function(value) {
+              let label = this.getLabelForValue(value);
+              // Display the year only once
+              return label.split("/")[0] == '06' ? label.split("/")[1] : null;
+            }
+          }
+        },
+        y: {
+          stacked: true,
+          max: this.max[this.displayMode],
+          grid: {
+              color: '#DFE6E9'
+          },
+          border: {
+              color: '#999'
+          },
+          ticks : {
+            font: {
+              size: 16,
+            },
+          }
         }
-        return 0;
-    }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          align:'end',
+        },
+        tooltip: {
+          callbacks: {
+            title: function(tooltipItems, data) {
+                const l = tooltipItems[0].label,
+                    monthsFr = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+                    month = monthsFr[parseInt(l.split("/")) - 1],
+                    year = l.split("/")[1];
+                return month + " " + year;
+            },
+          }
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          clamp: true,
+          clip: true,
+          offset: -5,
+          font: {
+            size: 14,
+            weight: 'bold',
+          },
+          rotation: -55,
+          formatter: (value, context) => {
+            let sum = 0,
+                last = null;
 
-     getTripCount(year: string, month: Month, specieId: string) : number {
-        if (year && specieId && month &&
-        this.evolutionMetrics.tripCountPerMonthAndSpecies[year] 
-        && this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month]
-        && this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month][specieId]
-        ) {
-            return this.evolutionMetrics.tripCountPerMonthAndSpecies[year][month][specieId];
+            context.chart.data.datasets.forEach((dataset, index) => {
+              let siblings = context.chart.isDatasetVisible(index) && dataset.data.filter((option) => {
+                return option.monthYear == value.monthYear
+              })
+              if (siblings && siblings[0] && siblings[0][this.displayMode]) {
+                sum += siblings[0][this.displayMode];
+                last = siblings[0]
+              }
+            })
+
+            if (value == last) {
+              return sum;
+            } else {
+              return '';
+            }
+          }
+        },
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+            threshold: 12,
+          },
+          zoom: {
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: 'x',
+          },
+          limits: {
+            x: {
+              minRange: 11
+            }
+          },
         }
-        return 0;
-    }
+      }
+    };
+  }
+
+  switchMode() {
+    this.chartOptions = {...this.chartOptions};
+    /* The following instructions is added to be sure the chart is updated with the correct option change */
+    this.$refs.chart.options.parsing.yAxisKey = this.displayMode
+    this.$refs.chart.options.scales.y.max = this.max[this.displayMode];
+  }
 }
 </script>
 
 <style scoped lang="less">
+.not-enough-data {
+  font-style: italic;
+  font-size: @fontsize-button;
+  line-height: calc(@fontsize-button + @line-height-padding-x-large);
+  color: @pale-sky;
+  text-align: center;
+  margin-top: @vertical-margin-large;
+}
 
+#evolution-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: @margin-medium;
+  margin: 0;
+  min-height: 60vh;
+  max-height: 80%;
+
+  @media screen and (min-width: @desktop-min-width) {
+    min-height: 40vh;
+    margin-left: @margin-large;
+    margin-right: @margin-large;
+  }
+
+  & > canvas {
+    touch-action: pan-y !important;
+  }
+
+  p {
+    text-align: left;
+  }
+}
+
+#evolution-graph-title {
+  display: flex;
+  align-items: center;
+  gap: @margin-small;
+  font-weight: bold;
+  color: @gunmetal;
+}
+
+.select-wrapper {
+  position: relative;
+
+  & > span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: white;
+    font-weight: bold;
+  }
+}
+
+select {
+  width: 100px;
+  text-indent: -999px;
+  background: transparent;
+  padding: 5px 10px;
+  border: 1px solid @pelorous;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: @pelorous;
+  color: white;
+  cursor: pointer;
+  max-width: 80vw;
+
+  @media screen and (min-width: @desktop-min-width) {
+    font-size: 16px;
+  }
+
+  option {
+    color: black;
+    background-color: white;
+  }
+
+  &:hover {
+    background-color: @terra-cotta;
+  }
+}
+.link-to-ecla {
+  // OFB choice to hide it for now because ECLA plateform is not responsive and not adapted for mobile devices
+  display: none;
+
+  @media screen and (min-width: @desktop-min-width) {
+    display: block;
+    width: fit-content;
+    border-radius: 50px;
+
+    font-style: normal;
+    font-weight: bold;
+    font-size: @fontsize-button;
+
+    border: 1px solid @pelorous;
+    padding: @margin-x-small @margin-medium;
+    margin: @margin-medium auto;
+
+    background-color: @white-smoke;
+    color: @pelorous;
+    text-decoration: none;
+    text-align: center;
+    font-size: 1rem;
+
+    &:hover {
+      background-color: @terra-cotta;
+      color: white;
+      border-color: white;
+    }
+  }
+}
 </style>

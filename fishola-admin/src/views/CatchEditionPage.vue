@@ -114,7 +114,7 @@
         <section class="section column">
           <h2 class="title">Autres informations</h2>
           <b-field grouped>
-            <b-field label="Lac"
+            <b-field label="Plan d'eau"
               ><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span
               ><span v-else>Non renseigné</span>
             </b-field>
@@ -182,11 +182,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 import BackendService from "@/services/BackendService";
-import UtilityServices from "@/services/UtilityServices";
 import Constants from "@/services/Constants";
+import UtilityServices from "@/services/UtilityServices";
 
 @Component({
   components: {}

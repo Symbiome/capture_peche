@@ -144,7 +144,3 @@ export default class ProfilePasswordView extends Vue {
   }
 }
 </script>
-
-<style lang="less">
-@import "../less/main";
-</style>

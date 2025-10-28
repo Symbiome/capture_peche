@@ -241,7 +241,7 @@ export default class EditTripView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-trip-page {
   h1 {
@@ -268,6 +268,7 @@ export default class EditTripView extends Vue {
   .edit-trip-catchs {
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     align-items: center;
     overflow-x: auto;
     overflow-y: hidden;
@@ -312,6 +313,18 @@ export default class EditTripView extends Vue {
       br {
         display: none;
       }
+    }
+
+    .edit-trip-header {
+      h1 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    .edit-trip-modifiable-until {
+      margin-bottom: 0;
+      flex: 1 0 300px;
     }
 
     .summary-pane {

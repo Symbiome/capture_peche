@@ -194,8 +194,6 @@ export default class FishingLicenceFullScreen extends Vue {
 
 
 <style scoped lang="less">
-@import "../../less/main";
-
 .bg {
     padding-top: calc(5px + env(safe-area-inset-top));
     width: 100%;

@@ -27,7 +27,6 @@ import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
 import fr.inrae.fishola.entities.tables.daos.LakeDao;
-import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TripDao;
 import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
@@ -45,6 +44,19 @@ import fr.inrae.fishola.rest.social.TripSocial;
 import fr.inrae.fishola.rest.trips.ExportBean;
 import fr.inrae.fishola.rest.trips.PaginatedExportBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.MultivaluedMap;
+import org.jooq.Condition;
+import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectSeekStep2;
+import org.jooq.SortField;
+import org.jooq.impl.DSL;
+import org.nuiton.util.pagination.PaginationOrder;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -60,19 +72,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import jakarta.ws.rs.core.MultivaluedMap;
-import org.jooq.Condition;
-import org.jooq.Record;
-import org.jooq.Record1;
-import org.jooq.SelectConditionStep;
-import org.jooq.SelectSeekStep2;
-import org.jooq.SortField;
-import org.jooq.impl.DSL;
-import org.nuiton.util.pagination.PaginationOrder;
-import org.nuiton.util.pagination.PaginationParameter;
-import org.nuiton.util.pagination.PaginationResult;
 
 @Singleton
 public class TripsDao extends AbstractFisholaDao {
@@ -173,10 +172,6 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> getTripSpecies(UUID tripId) {
-//        Set<UUID> speciesIds = withDao(TripExpectedSpeciesDao.class, dao -> dao.fetchByTripId(tripId)
-//                .stream()
-//                .map(TripExpectedSpecies::getSpeciesId)
-//                .collect(Collectors.toSet()));
         // Pour plus de performances, on ne charge pas l'objet complet mais on fait une projection
         Set<UUID> speciesIds = withContext(context -> context.selectFrom(Tables.TRIP_EXPECTED_SPECIES)
                 .where(Tables.TRIP_EXPECTED_SPECIES.TRIP_ID.eq(tripId))
@@ -185,10 +180,6 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public Set<UUID> getTripTechniques(UUID tripId) {
-//        Set<UUID> techniqueIds = withDao(TripTechniquesDao.class, dao -> dao.fetchByTripId(tripId)
-//                .stream()
-//                .map(TripTechniques::getTechniqueId)
-//                .collect(Collectors.toSet()));
         // Pour plus de performances, on ne charge pas l'objet complet mais on fait une projection
         Set<UUID> techniqueIds = withContext(context -> context.selectFrom(Tables.TRIP_TECHNIQUES)
                 .where(Tables.TRIP_TECHNIQUES.TRIP_ID.eq(tripId))
@@ -364,11 +355,8 @@ public class TripsDao extends AbstractFisholaDao {
                         .on(Tables.TRIP.OWNER_ID.eq(Tables.FISHOLA_USER.ID)).where(conditions));
 
                 List<TripSocial> tripsWithSocial = tripsWithoutSocial.stream().map( t -> {
-                    String userName = "";
                     FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
-                    if ( user != null ) {
-                        userName = Objects.toString(user.getFirstName(), "") + " " + Objects.toString(user.getLastName(), "").trim();
-                    }
+                    String userName = user.getPseudo();
                     String lakeName = withDao(LakeDao.class, lakeDao -> lakeDao.fetchById(t.getLakeId()).getFirst().getName());
                     long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();
                     List<TripSocialReaction> socialReactions = withDao(TripSocialReactionDao.class, dao -> dao.fetchByTripId(t.getId()));

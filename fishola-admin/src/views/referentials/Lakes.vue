@@ -21,7 +21,7 @@
 <template>
   <div class="lakes">
     <Referential
-      name="Lacs"
+      name="Plans d'eau"
       url="/v1/referential/lakes"
       :editable="isNationalAdmin"
       :columns="lakeColumns"
@@ -34,7 +34,7 @@
 import Referential from '@/components/Referential.vue'
 import BackendService from '@/services/BackendService';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 
 @Component({
   components: {
@@ -53,7 +53,7 @@ export default class LakesVue extends Vue {
     },
     {
       field: 'lakeCode',
-      label: 'Code Lac',
+      label: 'Code Plan d\'eau',
       searchable: true,
     },
     {
@@ -78,7 +78,8 @@ export default class LakesVue extends Vue {
 
   createLake(): any {
     return {
-      'name': 'Nouveau lac',
+      'lakeCode': '',
+      'name': 'Nouveau Plan d\'eau',
       'exportAs': 'NouveauLac',
       'latitude': 45.5,
       'longitude': 5.8

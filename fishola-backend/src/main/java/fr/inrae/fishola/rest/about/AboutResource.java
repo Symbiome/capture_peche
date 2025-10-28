@@ -29,14 +29,12 @@ import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
-import org.jboss.logging.Logger;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import java.time.Duration;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;

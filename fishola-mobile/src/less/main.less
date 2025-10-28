@@ -1,18 +1,4 @@
-@import "_colors";
-@import "_font";
 @import "_icons";
-@import "_responsive";
-
-@header-height: calc(40px + env(safe-area-inset-top));
-@secondary-header-height: 40px;
-@average-header-height: 30px;
-@footer-height: calc(76px + env(safe-area-inset-bottom));
-@reduced-footer-height: calc(0px + env(safe-area-inset-bottom));
-@feedback-top: calc(50px + env(safe-area-inset-top));
-@toaster-height: calc(50px + env(safe-area-inset-top));
-@toaster-height-desktop: 73px; // Coïncide avec la hauteur du header sur la page d'accueil
-
-@desktop-button-width: 283px;
 
 button {
   cursor: pointer;
@@ -29,8 +15,6 @@ button {
 }
 
 /* ========== Pastilles ========== */
-@avatar-background: #81ECEC;
-
 .pastille {
   width: 30px;
   height: 30px;
@@ -176,6 +160,32 @@ button:active {
   &.keyboardShowing {
     height: 50px;
     min-height: 50px;
+  }
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side,@pelorous 94%,#0000) top/8px 8px no-repeat,
+    conic-gradient(#0000 30%,@pelorous);
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 8px),#000 0);
+  animation:s3 1s infinite linear;
+}
+
+@keyframes s3{
+  100%{transform: rotate(1turn)}
+}
+
+/*========= Leaflet css classes override ============ */
+.leaflet-popup {
+  max-width: 80vw;
+  .leaflet-popup-content {
+    max-width: calc(100% - 44px);
+    button {
+      width: auto;
+    }
   }
 }
 

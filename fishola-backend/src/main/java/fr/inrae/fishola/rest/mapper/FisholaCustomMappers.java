@@ -47,6 +47,7 @@ import fr.inrae.fishola.rest.security.UserProfile;
 import fr.inrae.fishola.rest.security.UserProfileForAdmin;
 import fr.inrae.fishola.rest.security.UserSettings;
 import io.quarkus.jackson.ObjectMapperCustomizer;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,7 +55,6 @@ import org.nuiton.util.pagination.PaginationOrder;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
-import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -71,6 +71,7 @@ import java.util.UUID;
 public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
     public static final String UNEXPECTED_TYPE_MESSAGE = "Unexpected type:";
+    public static final String EMAIL = "email";
 
     public void customize(ObjectMapper mapper) {
         mapper.registerModule(new FisholaModule());
@@ -79,13 +80,13 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static boolean readBoolean(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         boolean result;
-        if (subNode instanceof BooleanNode booleanNode) {
-            result = booleanNode.booleanValue();
-        } else if (subNode instanceof TextNode textNode) {
-            String resultString = textNode.textValue();
-            result = Boolean.parseBoolean(resultString);
-        } else {
-            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
+        switch (subNode) {
+            case BooleanNode booleanNode -> result = booleanNode.booleanValue();
+            case TextNode textNode -> {
+                String resultString = textNode.textValue();
+                result = Boolean.parseBoolean(resultString);
+            }
+            default -> throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
@@ -93,13 +94,13 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     static int readInt(TreeNode node, String name) {
         TreeNode subNode = node.get(name);
         int result;
-        if (subNode instanceof IntNode intNode) {
-            result = intNode.intValue();
-        } else if (subNode instanceof TextNode textNode) {
-            String resultString = textNode.textValue();
-            result = Integer.parseInt(resultString);
-        } else {
-            throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
+        switch (subNode) {
+            case IntNode intNode -> result = intNode.intValue();
+            case TextNode textNode -> {
+                String resultString = textNode.textValue();
+                result = Integer.parseInt(resultString);
+            }
+            default -> throw new IllegalArgumentException(UNEXPECTED_TYPE_MESSAGE + subNode.getClass().getName());
         }
         return result;
     }
@@ -198,7 +199,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             Preconditions.checkArgument(StringUtils.isNotEmpty(category), "La catégorie est obligatoire");
             builder.category(category);
             readText(node, "userId").ifPresent(builder::userId);
-            readText(node, "email").ifPresent(builder::email);
+            readText(node, EMAIL).ifPresent(builder::email);
             readText(node, "description").ifPresent(builder::description);
             readText(node, "screenshot").ifPresent(builder::screenshot);
             readText(node, "browser").ifPresent(builder::browser);
@@ -260,8 +261,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             TreeNode node = jp.readValueAsTree();
 
             String firstName = readTextOrNull(node, "firstName");
-            String email = readTextOrNull(node, "email");
+            String email = readTextOrNull(node, EMAIL);
             Optional<String> lastName = readText(node, "lastName");
+            Optional<String> pseudo = readText(node, "pseudo");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");
             Boolean acceptsMailNotifications = readBoolean(node, "acceptsMailNotifications");
@@ -272,6 +274,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             builder.firstName(firstName);
             builder.email(email);
             lastName.ifPresent(builder::lastName);
+            pseudo.ifPresent(builder::pseudo);
             birthYear.ifPresent(builder::birthYear);
             genderString.map(Gender::valueOf).ifPresent(builder::gender);
             builder.acceptsMailNotifications(acceptsMailNotifications);
@@ -306,7 +309,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
 
             UUID id = readUuidOrNull(node, "id");
             String firstName = readTextOrNull(node, "firstName");
-            String email = readTextOrNull(node, "email");
+            String email = readTextOrNull(node, EMAIL);
             Optional<String> lastName = readText(node, "lastName");
             Optional<Integer> birthYear = readInteger(node, "birthYear");
             Optional<String> genderString = readText(node, "gender");

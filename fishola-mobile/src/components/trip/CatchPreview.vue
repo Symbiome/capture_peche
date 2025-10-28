@@ -159,7 +159,7 @@ export default class CatchPreview extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .catch-preview {
   width: calc(100vw - 80px);

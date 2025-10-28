@@ -140,7 +140,7 @@ export default class DashboardGlobalView extends Vue {
       (result: boolean) => (this.hasRunningTrip = result)
     );
     if (this.year && this.selectedLakeUUID && this.visualizationMode !== 'evolution') {
-      this.reloadDashboard;
+      this.reloadDashboard();
     }
     this.exportUrl = DashboardService.getExportUrl();
     Helpers.ifApplication(() => (this.asyncExport = true));
@@ -236,8 +236,6 @@ export default class DashboardGlobalView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .dashboard-page {
   display: flex;
   flex-direction: column;
@@ -250,6 +248,10 @@ export default class DashboardGlobalView extends Vue {
       -webkit-transform: rotate(360deg);
       transform: rotate(360deg);
     }
+  }
+
+  #scrollable {
+    padding-bottom: @margin-large;
   }
 
   .alias {

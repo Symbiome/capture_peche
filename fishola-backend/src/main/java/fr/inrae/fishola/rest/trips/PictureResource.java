@@ -35,6 +35,18 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,22 +59,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import javax.imageio.ImageIO;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
 
 @Path("/api/v1/pictures")
 public class PictureResource extends AbstractFisholaResource {
 
+    public static final String MISSING_CAPTURE_ID = "Identifiant de capture manquant";
     @Inject
     protected TripsDao tripsDao;
 
@@ -281,7 +282,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.empty());
 
@@ -316,7 +317,7 @@ public class PictureResource extends AbstractFisholaResource {
 
         // XXX AThimel 22/07/2020 Faut-il sécuriser l'accès aux images ?
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.of(order).map(String::valueOf));
 
@@ -348,7 +349,7 @@ public class PictureResource extends AbstractFisholaResource {
     @Produces("image/jpeg")
     public Response getMeasurementPicturePreview(@PathParam("catchId") UUID catchId) {
 
-        Preconditions.checkArgument(catchId != null, "Identifiant de capture manquant");
+        Preconditions.checkArgument(catchId != null, MISSING_CAPTURE_ID);
 
         File file = getPreviewFile(catchId, Optional.of("measure"));
 

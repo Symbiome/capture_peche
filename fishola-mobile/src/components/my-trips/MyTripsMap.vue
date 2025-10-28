@@ -19,15 +19,18 @@
   #L%
   -->
 <template>
-    <div class="pane ">
-        <span v-if="mapIsLoading">Chargement de la carte...</span>
+    <div class="pane " v-if="visible">
+        <span v-if="mapIsLoading" class="is-loading">
+            <div class="loader" />
+            Chargement de la carte...
+        </span>
         <div id="info" class="info" v-if="validMarkers.length > 0" v-show="showPersonnalMapWarning">
-            Cette carte n'est visible que par vous. Les coordonnées de vos prises ne sont pas divulgées aux autres
-            pêcheurs.
+            Cette carte n'est pas visible par les autres pêcheurs.
+            Pour rappel, vous pouvez autoriser ou non la géolocalisation des prises dans les paramètres système de l'application.
             <i class="icon icon-plus close" @click="showPersonnalMapWarning = false"></i>
         </div>
         <div class="map" v-if="validMarkers.length > 0">
-            <l-map ref="map" @ready="madReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
+            <l-map ref="map" @ready="mapReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
                 <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
                 <v-marker-cluster>
@@ -70,6 +73,9 @@
                 </li>
             </ul>-->
 
+        </div>
+        <div v-if="!mapIsLoading && validMarkers.length == 0 && invalidMarkers.length == 0">
+            Aucune sortie enregistrée
         </div>
     </div>
 </template>
@@ -180,11 +186,11 @@ export default class MyTripsMapView extends Vue {
 
             const bounds = visibleLayerGroup.getBounds();
             this.map.fitBounds(bounds);
-            this.mapIsLoading = false;
         }
+        this.mapIsLoading = false;
     }
 
-    madReady() {
+    mapReady() {
         // @ts-ignore
         this.map = this.$refs.map.mapObject;
         this.zoomToVisibleMarkers();
@@ -204,13 +210,11 @@ export default class MyTripsMapView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .info {
     position: absolute;
     right: 50px;
     width: 70vw;
-    z-index: 100000;
+    z-index: 997;
     padding: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -229,6 +233,7 @@ export default class MyTripsMapView extends Vue {
 
 .map {
     height: 80vh;
+    z-index: 995;
 
     .catch-marker {
         .title {
@@ -277,6 +282,7 @@ export default class MyTripsMapView extends Vue {
     width: 100%;
     color: @cardinal;
     text-align: right;
+    margin-top: @margin-small;
 }
 
 .custom-icon {
@@ -289,5 +295,13 @@ export default class MyTripsMapView extends Vue {
     .icon-fish {
         color: @pelorous;
     }
+}
+
+.is-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin: 70px;
 }
 </style>

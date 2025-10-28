@@ -49,7 +49,6 @@ export class TripsAndCount {
 }
 
 export default class TripsService extends AbstractFisholaService {
-
   static instance?: TripsService;
 
   constructor() {
@@ -218,13 +217,16 @@ export default class TripsService extends AbstractFisholaService {
     const params = {
       lakeId: lakeId,
       pageNumber: 1,
-      pageSize: 40
+      pageSize: 40,
     };
     const result = await this.backendGetWithArgs("/v1/social/", params);
     return result.elements;
   }
 
-  static async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
+  static async postSocialReaction(
+    tripId: string,
+    socialReaction: SocialReaction
+  ) {
     const tripSocialReaction: TripSocialReaction = {
       tripId: tripId,
       userId: "",
@@ -234,7 +236,10 @@ export default class TripsService extends AbstractFisholaService {
     await this.backendPost("/v1/social/" + tripId, tripSocialReaction);
   }
 
-  static async deleteSocialReaction(tripId: string, socialReaction: SocialReaction) {
+  static async deleteSocialReaction(
+    tripId: string,
+    socialReaction: SocialReaction
+  ) {
     const tripSocialReaction: TripSocialReaction = {
       tripId: tripId,
       userId: "",
@@ -530,37 +535,9 @@ export default class TripsService extends AbstractFisholaService {
 
   static syncTrips(): Promise<boolean> {
     const result: Promise<boolean> = new Promise<boolean>((resolve, reject) => {
-      let someTripsSaved: boolean = false;
-      const allPromises: Promise<void>[] = [];
-
       this.getDatabase().dirtyTrips.toArray((dirtyTrips) => {
         if (dirtyTrips && dirtyTrips.length > 0) {
-          console.info(`${dirtyTrips.length} sorties à synchroniser`);
-          dirtyTrips.forEach((dirtyTrip: TripBean) => {
-            if (this.shouldDelaySave(dirtyTrip)) {
-              console.debug(
-                `On ignore la sortie qui est peut-être encore en cours de modif`,
-                dirtyTrip.id
-              );
-            } else {
-              const promise = this.syncTrip(dirtyTrip);
-              promise.then(
-                () => {
-                  this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
-                  someTripsSaved = true;
-                  console.debug("Trip saved !");
-                },
-                (error) => {
-                  console.error("Unable to sync trip ", error);
-                }
-              );
-              allPromises.push(promise);
-            }
-          });
-
-          Promise.all(allPromises).then(() => {
-            resolve(someTripsSaved);
-          }, reject);
+          TripsService.doSyncDirtyTrips(dirtyTrips, resolve, reject);
         } else {
           console.info("Aucune sortie à synchroniser");
           resolve(false);
@@ -569,6 +546,41 @@ export default class TripsService extends AbstractFisholaService {
     });
 
     return result;
+  }
+
+  static doSyncDirtyTrips(
+    dirtyTrips: TripBean[],
+    resolve: (value: boolean | PromiseLike<boolean>) => void,
+    reject: (cause: any) => void
+  ) {
+    console.info(`${dirtyTrips.length} sorties à synchroniser`);
+    let someTripsSaved: boolean = false;
+    const allPromises: Promise<void>[] = [];
+    dirtyTrips.forEach((dirtyTrip: TripBean) => {
+      if (this.shouldDelaySave(dirtyTrip)) {
+        console.debug(
+          `On ignore la sortie qui est peut-être encore en cours de modif`,
+          dirtyTrip.id
+        );
+      } else {
+        const promise = this.syncTrip(dirtyTrip);
+        promise.then(
+          () => {
+            this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
+            someTripsSaved = true;
+            console.debug("Trip saved !");
+          },
+          (error) => {
+            console.error("Unable to sync trip ", error);
+          }
+        );
+        allPromises.push(promise);
+      }
+    });
+
+    Promise.all(allPromises).then(() => {
+      resolve(someTripsSaved);
+    }, reject);
   }
 
   static hasOtherSpecies(trip: TripBean): boolean {

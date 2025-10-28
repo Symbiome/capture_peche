@@ -80,6 +80,6 @@ public class LicenceDaoTest extends AbstractFisholaTest {
         Assertions.assertTrue(fishingLicencesDao.getLicence(licence.getId()).isEmpty());
 
         // User is needed for other tests, so we add it again.
-        usersDao.create(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getAcceptsShareTrips());
+        usersDao.create(user.getFirstName(), user.getLastName(), user.getPseudo(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getAcceptsShareTrips());
     }
 }

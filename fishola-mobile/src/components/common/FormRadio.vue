@@ -108,16 +108,11 @@ export default class FormRadio extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .form-radio {
   margin-top: @vertical-margin-x-small;
 
   font-size: @fontsize-form-input;
   line-height: calc(@fontsize-form-input + @line-height-padding-medium);
-
-  // color: @white;
 
   display: flex;
   flex-direction: column;

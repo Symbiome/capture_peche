@@ -29,6 +29,8 @@
           v-bind:error="validationErrors['firstName']" />
         <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="bean.lastName"
           v-bind:error="validationErrors['lastName']" />
+        <FormInput name="pseudo" label="Pseudo" placeholder="Renseignez votre pseudo" v-model="bean.pseudo"
+          v-bind:error="validationErrors['pseudo']" />
         <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="bean.email"
           v-bind:error="validationErrors['email']" />
         <FormInput name="password" type="password" label="Mot de passe" placeholder="Choisissez un mot de passe"
@@ -56,7 +58,7 @@
           <input type="checkbox" id="show-trips" class="pelorous-checkbox" v-model="bean.acceptsShareTrips" />
           <label for="show-trips"></label>
           <label for="show-trips" class="register-cgu-label">
-            Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes lacs que moi.
+            Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes plans d'eau que moi.
           </label>
         </div>
         <div class="bottom-page-spacer"></div>
@@ -85,7 +87,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import DocumentationService from "@/services/DocumentationService";
 import ProfileService from "@/services/ProfileService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -113,7 +115,7 @@ export default class RegisterView extends Vue {
   cancel() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
   }
-
+  
   register() {
     this.cleanValidationErros();
 
@@ -170,8 +172,6 @@ export default class RegisterView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .register.page-with-header {
   .page.register-page {
     height: calc(100% - @header-height - @vertical-margin-xx-large);

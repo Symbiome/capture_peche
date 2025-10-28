@@ -88,7 +88,7 @@ export default class MyTripItem extends Vue {
   }
 
   lakesIndexLoaded(lakes: Map<string, Lake>) {
-    this.lakeName = lakes.get(this.trip.lakeId)!.name;
+    this.lakeName = lakes.get(this.trip.lakeId)?.name ?? "";
   }
 
   openTrip() {
@@ -111,21 +111,19 @@ export default class MyTripItem extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .my-trips-item {
   display: flex;
   align-items: center;
 
   margin: 0px;
   padding-right: @margin-large;
-  padding-top: @vertical-margin-medium;
-  padding-bottom: @vertical-margin-medium;
+  padding-top: @vertical-margin-small;
+  padding-bottom: @vertical-margin-small;
 
   border-bottom: 1px solid @gainsboro;
 
   width: 100%;
-  height: 110px;
+  min-height: 110px;
 
   .item-selection {
     width: 16px;
@@ -154,6 +152,13 @@ export default class MyTripItem extends Vue {
         font-weight: bold;
         font-size: @fontsize-header-paragraph;
         color: @gunmetal;
+
+        // Truncate text over 2 lines
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .left-part {
@@ -199,7 +204,7 @@ export default class MyTripItem extends Vue {
   }
 
   @media (max-height: 650px) {
-    height: 90px;
+    min-height: 90px;
 
     .item-description {
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-small);

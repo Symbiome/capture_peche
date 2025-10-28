@@ -88,9 +88,6 @@ export default class FormTextarea extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .form-textarea {
   margin-top: @vertical-margin-x-small;
 

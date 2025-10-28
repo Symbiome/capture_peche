@@ -25,41 +25,52 @@
             <strong>{{ title }}</strong>
             <p>{{ text }} </p>
         </div>
-        <button class="button" @click="$emit('click')"> {{ actionText }}</button>
+
+        <button 
+            v-for="action in actions"
+            class="button"
+            @click="$emit(action.action)">
+          {{ action.name }}
+        </button>
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
+interface Action {
+    action: string;
+    name: string;
+}
+
 @Component
 export default class BottomInducementView extends Vue {
     @Prop() icon: string;
     @Prop() title: string;
     @Prop() text: string;
-    @Prop() actionText: string;
+    @Prop() actions: Action[];
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .bottom-inducement {
     color: white;
     display: flex;
+    flex-wrap: wrap;
+    text-align: center;
     justify-content: center;
     gap: 20px;
     align-items: center;
     margin-top: 50px;
     margin-bottom: 100px;
-    width: 100vw;
     padding: 20px;
-    margin-left: calc(-1 * @margin-large);
-
+    width: calc(100% + 60px);
+    margin-left: -30px;
 
     @media screen and (min-width: @desktop-min-width) {
-        width: calc(100vw - @desktop-menu-width);
+        flex-wrap: wrap;
+        text-align: left;
     }
 
     img {
@@ -82,6 +93,10 @@ export default class BottomInducementView extends Vue {
 
         background-color: @terra-cotta;
         color: @white;
+    }
+
+    p {
+        margin-bottom: 0;
     }
 
     background: linear-gradient(-45deg, #0A3C4D, #0F5A6F, #0A3C4D, #06333F);

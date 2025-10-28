@@ -162,8 +162,6 @@ export default class LoginView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 @media screen and (min-width: @desktop-min-width) {
   div.login {
     &.full-background {
@@ -172,6 +170,10 @@ export default class LoginView extends Vue {
       background-position-y: 60%;
     }
   }
+}
+
+.login {
+  background-color: @pelorous;
 }
 
 .login-page {

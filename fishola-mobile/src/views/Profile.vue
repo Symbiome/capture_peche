@@ -24,14 +24,22 @@
       <h1> Mes cartes de pêches </h1>
       <FishingLicencesView />
 
-      <h1>Mes lac favoris</h1>
-      <FavoriteLakes @favoriteLakesChanged="favoriteLakesChanged"/>
+      <h1>Mes lacs favoris</h1>
+      <LakeSelection
+        :selectedLakes="favoriteLakes"
+        :favoriteLakes="favoriteLakes"
+        :allowMultipleSelection="true"
+        v-on:updated="toggleLakeFavorite"
+        @favoriteLakesChanged="favoriteLakesChanged"
+      />
 
       <h1>Mon profil</h1>
       <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="profile.firstName"
         v-bind:error="validationErrors['firstName']" />
       <FormInput name="lastName" label="Nom (optionnel)" placeholder="Renseignez votre nom" v-model="profile.lastName"
         v-bind:error="validationErrors['lastName']" />
+      <FormInput name="pseudo" label="Pseudo" placeholder="Renseignez votre pseudonyme" v-model="profile.pseudo"
+        v-bind:error="validationErrors['pseudo']" />
       <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="profile.email"
         v-bind:error="validationErrors['email']" />
       <FormSelect name="birthYear" label="Année de naissance (optionnelle)" v-bind:options="years"
@@ -61,9 +69,10 @@
           <button v-on:click="saveProfile">Modifier</button>
         </div>
       </div>
-      <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
+      <!--  It was decided to hide it until the ambassador program is up and running
+        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
         text="Vous pouvez vous inscrire à notre nouveau programme d'ambassadeur." actionText="Je m'inscris"
-        @click="becomeAmbassador" />
+        @click="becomeAmbassador" /> -->
 
       <div class="bottom-page-spacer">
       </div>
@@ -79,6 +88,7 @@
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormMultiValues from "@/components/common/FormMultiValues.vue";
+import LakeSelection from "@/components/common/LakeSelection.vue";
 
 import UserProfile from "@/pojos/UserProfile";
 import ProfileService from "@/services/ProfileService";
@@ -91,7 +101,6 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
 import BottomInducementView from "@/components/common/BottomInducement.vue";
-import FavoriteLakes from "@/components/my-trips/FavoriteLakes.vue";
 import { Lake } from "@/pojos/BackendPojos";
 
 @Component({
@@ -102,7 +111,7 @@ import { Lake } from "@/pojos/BackendPojos";
     FishingLicencesView,
     FisholaFooter,
     BottomInducementView,
-    FavoriteLakes
+    LakeSelection
   },
 })
 export default class ProfileView extends Vue {
@@ -148,7 +157,27 @@ export default class ProfileView extends Vue {
 
   favoriteLakesChanged(newFavoriteLakes: Lake[]) {
     this.favoriteChanged = true;
-    this.favoriteLakes = newFavoriteLakes;
+    this.favoriteLakes = newFavoriteLakes.sort((a,b) => {
+      return a.name > b.name ? 1 : -1;
+    })
+  }
+
+  toggleLakeFavorite(lake : Lake) {
+    this.favoriteChanged = true;
+
+    if (lake) {
+      let filteredItem = this.favoriteLakes.filter((l) => {
+        return l.id === lake.id;
+      });
+      if (filteredItem.length == 1) {
+        this.favoriteLakes = this.favoriteLakes.filter(function(l) { return l.id != lake.id });
+      } else {
+        this.favoriteLakes.push(lake);
+        this.favoriteLakes =  this.favoriteLakes.sort((a,b) => {
+        return a.name > b.name ? 1 : -1;
+      })
+      }
+    }
   }
 
   saveProfile() {
@@ -165,10 +194,12 @@ export default class ProfileView extends Vue {
     } else {
       this.profile.gender = this.gender;
     }
-    this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
-      // @ts-ignore
-      this.profile.lastNewsSeenDate
-    );
+    if (!this.profile.lastNewsSeenDate) {
+      this.profile.lastNewsSeenDate = Helpers.parseLocalDateTime(
+        // @ts-ignore
+        this.profile.lastNewsSeenDate
+      );
+    }
     if (!this.profile.lastNewsSeenDate) {
       this.profile.lastNewsSeenDate = new Date(2025,6,1);
     }
@@ -239,10 +270,11 @@ export default class ProfileView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .profile-page {
-  height: 100%;
+  .rounded {
+    padding-left: @margin-large;
+    padding-right: @margin-large;
+  }
 
   .safe-delete-button {
     font-weight: bold;

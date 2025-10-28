@@ -112,6 +112,7 @@ export default class SocialAndNewsView extends Vue {
       if (lastLocalStorageDateString) {
         lastNewsSeenDateForLake = new Date(lastLocalStorageDateString);
       }
+
       let lastProfileSeenDate = undefined;
       let profile = await ProfileService.getProfile();
       if (profile.lastNewsSeenDate) {
@@ -166,9 +167,7 @@ export default class SocialAndNewsView extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .h1-with-selects {
   @media screen and (max-width: @desktop-min-width) {
     margin-top: -20px !important;

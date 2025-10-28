@@ -108,8 +108,6 @@ export default class Toaster extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-@import "../../less/main";
-
 .toaster-hidden {
   top: calc(-1 * @toaster-height);
 }

@@ -31,6 +31,7 @@ export default class UserProfile {
   constructor(
     public firstName: string,
     public email: string,
+    public pseudo: string,
     public initials: string,
     public sampleBaseId: string,
     public acceptsMailNotifications: boolean,
@@ -50,6 +51,7 @@ export default class UserProfile {
     const result = new UserProfile(
       input.firstName,
       input.email,
+      input.pseudo,
       input.initials,
       input.sampleBaseId,
       input.acceptsMailNotifications,

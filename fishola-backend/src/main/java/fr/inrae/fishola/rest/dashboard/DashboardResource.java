@@ -21,9 +21,6 @@ package fr.inrae.fishola.rest.dashboard;
  * #L%
  */
 
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.TripsDao;
@@ -36,16 +33,6 @@ import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -54,8 +41,15 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
-import org.jspecify.annotations.Nullable;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
@@ -107,7 +101,7 @@ public class DashboardResource extends AbstractFisholaResource {
         Optional<Integer> yearFilter = Optional.of(year);
         Optional<List<UUID>> lakesFilter = Optional.of(List.of(lakeId));
         String cacheKey = year + "_" + lakeId;
-        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter, this.log));
+        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter));
     }
 
 

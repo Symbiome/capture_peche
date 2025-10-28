@@ -7,7 +7,8 @@
 	"cordova": {},
 	"linuxAndroidStudioPath": "/usr/local/android-studio/bin/studio.sh",
 	"server": {
-		"androidScheme": "http"
+		"androidScheme": "http",
+		"hostname": "fishola.fr"
 	},
 	"plugins": {
 		"SplashScreen": {

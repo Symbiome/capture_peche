@@ -29,7 +29,7 @@
         v-touch:swipe="swiped"
       >
         <img
-          alt="Photo de la prise"
+          alt="Prise"
           v-if="!slide.isAddPicButton"
           :src="getFullPicURL(slide.src)"
           v-touch:swipe="swiped"
@@ -173,7 +173,7 @@ class GallerySlide {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .mobile-gallery-slider {
   .slider-pic {

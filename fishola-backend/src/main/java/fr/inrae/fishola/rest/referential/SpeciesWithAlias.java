@@ -40,20 +40,22 @@ public interface SpeciesWithAlias {
 
     // Informations dépendante du lac
     Optional<String> alias();
+    boolean present();
     boolean authorizedSample();
     Integer minSize();
     Integer maxSize();
 
     static SpeciesWithAlias of(Species source) {
-        SpeciesWithAlias result = of(source, Optional.empty(), false, 0, 1000);
+        SpeciesWithAlias result = of(source, Optional.empty(), Optional.empty(), false, 0, 1000);
         return result;
     }
 
-    static SpeciesWithAlias of(Species source, Optional<String> alias, boolean authorizedSample, Integer minSize, Integer maxSize) {
+    static SpeciesWithAlias of(Species source, Optional<String> alias, Optional<Boolean> present, boolean authorizedSample, Integer minSize, Integer maxSize) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
                 .builtIn(source.getBuiltIn())
+                .present(present.orElse(true))
                 .mandatorySize(source.getMandatorySize())
                 .alias(alias)
                 .minSize(minSize)

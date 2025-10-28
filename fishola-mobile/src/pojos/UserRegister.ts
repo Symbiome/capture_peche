@@ -22,6 +22,7 @@
 export default class UserRegister {
   lastName: string;
   firstName: string;
+  pseudo: string;
   email: string;
   password: string;
   acceptsMailNotifications: boolean;
@@ -30,6 +31,7 @@ export default class UserRegister {
   constructor() {
     this.lastName = "";
     this.firstName = "";
+    this.pseudo = "";
     this.email = "";
     this.password = "";
     this.acceptsMailNotifications = false;

@@ -95,6 +95,18 @@ export default class MyTripsList extends Vue {
     this.moreTripsTimer = Vue.lodash.throttle(this.askForMoreTrips, 1000);
   }
 
+  updated() {
+    // Force le chargement de résultats supplémentaires pour les grandes résolutions d'écrans,
+    // où l'espace disponible est plus grand que celui requis pour afficher les 10 premiers résultas
+    // et l'évènement scroll ne sera pas détecté
+    const elem = document.getElementById('scroll-container');
+    if (elem) {
+      if (elem.scrollHeight == elem.offsetHeight) {
+        this.moreTripsTimer();
+      }
+    }
+  }
+
   scrolled() {
     const elem = document.getElementById('scroll-container');
     if (elem) {
@@ -123,9 +135,6 @@ export default class MyTripsList extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .my-trips-list {
 
   .pane-content {
@@ -137,6 +146,8 @@ export default class MyTripsList extends Vue {
 
   .no-trips {
     height: 100%;
+    min-height: 60vh; // fallback if dvh is not supported
+    min-height: 60dvh;
 
     display: flex;
     flex-direction: column;
@@ -163,11 +174,14 @@ export default class MyTripsList extends Vue {
     }
 
     .bottom {
+      flex: 1;
+      padding-bottom: @margin-x-large;
+
       height: 176px;
       min-height: 100px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: end;
 
       text-align: center;
 
@@ -358,6 +372,7 @@ export default class MyTripsList extends Vue {
         height: calc(100% - 200px);
         img {
           height: 50%;
+          max-height: 500px;
         }
         span {
           font-size: @fontsize-span-big-desktop;
@@ -367,8 +382,10 @@ export default class MyTripsList extends Vue {
 
       .bottom {
         height: fit-content;
-        width: 415px;
+        width: 283px;
         flex-direction: column-reverse;
+        padding-bottom: 0;
+
         i {
           transform: rotate(180deg);
         }

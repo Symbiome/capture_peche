@@ -30,19 +30,7 @@ import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
-import fr.inrae.fishola.mails.MailService;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
-import org.jooq.exception.DataAccessException;
-
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -58,7 +46,17 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataAccessException;
+
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 @Path("/api/v1/security")
@@ -69,6 +67,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
 
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
+    private static final String CLAIM_PSEUDO = "pseudo";
     private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
     private static final String CLAIM_SHARE_TRIPS = "share_trips";
 
@@ -92,13 +91,21 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
 
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
         if (StringUtils.isEmpty(email)) {
-            validationErrors.put("email", "L'e-mail est obligatoire");
+            validationErrors.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "Le format n'est pas correct");
+            validationErrors.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else if (usersDao.findByEmail(email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "E-mail déjà utilisé");
+            validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
+        }
+        if (StringUtils.isEmpty(bean.pseudo)) {
+            validationErrors.put(CLAIM_PSEUDO, "Le pseudo est obligatoire");
+        }  else {
+            List<FisholaUser> usersWithPseudo = usersDao.findByPseudo(bean.pseudo);
+            if (!usersWithPseudo.isEmpty()) {
+                validationErrors.put(CLAIM_PSEUDO, "Pseudo déjà utilisé");
+            }
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -118,6 +125,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_FIRST_NAME, bean.firstName);
         claims.put(CLAIM_LAST_NAME, bean.lastName);
+        claims.put(CLAIM_PSEUDO, bean.pseudo);
         claims.put(CLAIM_RECEIVE_MAIL_NOTIFICATIONS, ""+ bean.acceptsMailNotifications);
         claims.put(CLAIM_SHARE_TRIPS, ""+ bean.acceptsShareTrips);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
@@ -138,7 +146,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/email-validation.html",
                     "verifyLink", verifyUrl,
-                    "firstName", bean.firstName);
+                    CLAIM_FIRST_NAME, bean.firstName);
             FisholaMail mail = builder
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")
@@ -206,6 +214,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             usersDao.create(
                     getClaimOrFail.apply(CLAIM_FIRST_NAME),
                     getClaimOrNull.apply(CLAIM_LAST_NAME),
+                    getClaimOrFail.apply(CLAIM_PSEUDO),
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS)),
@@ -295,7 +304,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/password_reset.html",
                     "resetLink", resetUrl,
-                    "firstName", correspondingUser.get().getFirstName());
+                    CLAIM_FIRST_NAME, correspondingUser.get().getFirstName());
             FisholaMail mail = builder
                     .addTos(reset.email)
                     .subject("FISHOLA - Réinitialisation de votre mot de passe")
@@ -436,6 +445,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                 .id(input.getId())
                 .email(input.getEmail())
                 .firstName(input.getFirstName())
+                .pseudo(input.getPseudo())
                 .lastName(Optional.ofNullable(input.getLastName()))
                 .birthYear(Optional.ofNullable(input.getBirthYear()))
                 .gender(Optional.ofNullable(input.getGender()))
@@ -482,6 +492,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
 
         user.setFirstName(profile.firstName());
         user.setLastName(profile.lastName().map(StringUtils::trimToNull).orElse(null));
+        user.setPseudo(profile.pseudo());
         user.setEmail(profile.email().toLowerCase());
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
@@ -523,22 +534,30 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         Map<String, String> result = new HashMap<>();
 
         if (StringUtils.isEmpty(bean.getFirstName())) {
-            result.put("firstName", "Le prénom est obligatoire");
+            result.put(CLAIM_FIRST_NAME, "Le prénom est obligatoire");
         }
 
         if (StringUtils.isEmpty(bean.getEmail())) {
-            result.put("email", "L'e-mail est obligatoire");
+            result.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(bean.getEmail())) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            result.put("email", "Le format n'est pas correct");
+            result.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else {
             Optional<FisholaUser> existingUser = usersDao.findByEmail(bean.getEmail());
             if (existingUser.isPresent() && !bean.getId().equals(existingUser.get().getId())) {
                 // On vérifie qu'il n'y a pas déjà un compte avec cet email
-                result.put("email", "E-mail déjà utilisé");
+                result.put(CLAIM_EMAIL, "E-mail déjà utilisé");
             }
         }
 
+        if (StringUtils.isEmpty(bean.getPseudo())) {
+            result.put(CLAIM_PSEUDO, "Le pseudo est obligatoire");
+        }  else {
+            List<FisholaUser> usersWithPseudo = usersDao.findByPseudo(bean.getPseudo());
+            if (usersWithPseudo.size() > 1 || (usersWithPseudo.size() == 1 && !bean.getId().equals(usersWithPseudo.getFirst().getId()))) {
+                result.put(CLAIM_PSEUDO, "Pseudo déjà utilisé");
+            }
+        }
         return result;
     }
 

@@ -66,7 +66,7 @@ import router from "@/router";
 
 import BackendService from "@/services/BackendService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {}

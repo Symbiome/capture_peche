@@ -21,20 +21,29 @@
 <template>
     <div class="selects-holder">
         <select placeholder="lake" v-model="selectedLakeUUID">
-            <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
-                {{ lake.name }}
-            </option>
+            <optgroup label="Plans d'eau favoris" v-if="favoriteLakes.length">
+              <option v-for="lake in favoriteLakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+              </option>
+            </optgroup>
+            <optgroup v-if="!displayAllOtherLakes" label="Autres plans d'eau">
+              <option value="all">Voir tous les plans d'eau disponibles
+              </option>
+            </optgroup>
+            <optgroup
+              v-if="displayAllOtherLakes"
+              :label="favoriteLakes.length ? 'Plans d\'eau' : 'Autres plans d\'eau'"
+            >
+              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+                  {{ lake.name }}
+              </option>
+            </optgroup>
             </select>
             <select placeholder="Année" v-model="selectedYear" v-if="showYears">
             <option v-for="year in years" :value="year" :key="'year_' + year">
                 {{ year }}
             </option>
         </select>
-
-    <span class="show-all-lakes" @click="showAllLakes = !showAllLakes">
-        <span v-if="showAllLakes">Seulement mes lacs favoris</span>
-        <span v-else>Voir tous les lacs</span>
-    </span>
     </div>
 </template>
 
@@ -55,37 +64,33 @@ export default class LakeAndYearSelection extends Vue {
   selectedYear = 0;
   selectedLakeUUID = "";
   lakes: Lake[] = [];
-  showAllLakes = false;
+  favoriteLakes: Lake[] = [];
   doneLoading = false;
+  displayAllOtherLakes = false;
 
   mounted() {
     const query = this.$route.query;
     if (this.years && this.years.length > 0) {
       const yearFromURL = parseInt(query.currentYear as string);
-       if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
+      if (yearFromURL && this.years.indexOf(yearFromURL) > -1) {
         this.selectedYear = yearFromURL;
-       } else {
+      } else {
         this.selectedYear = this.years[0];
-       }
-    }
-    if (localStorage && localStorage.showAllLakes) {
-      this.showAllLakes = localStorage.showAllLakes === "true";
-    }
-    if (query.lakeId) {
-      this.selectedLakeUUID = query.lakeId as string;
+      }
     }
     this.loadLakes();
   }
 
-  
-  @Watch("showAllLakes")
   async loadLakes(): Promise<void> {
     try {
-        if (this.showAllLakes)  {
-            this.lakes = await ReferentialService.getLakes();
-        } else {
-            this.lakes = await ReferentialService.getFavoriteLakes();
-        }
+        const allLakes = await ReferentialService.getLakes();
+        this.favoriteLakes = await ReferentialService.getFavoriteLakes();
+
+        this.lakes = allLakes.filter(( l ) => {
+            return !this.favoriteLakes.find((l2) => {
+                return l.id === l2.id
+            })
+        } );
     } catch (e) {
         // Silent catch
         console.error(e);
@@ -95,7 +100,7 @@ export default class LakeAndYearSelection extends Vue {
       this.selectedLakeUUID = query.lakeId as string;
     } else {
       if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
-        if (this.lakes.some(l => l.id === localStorage.latestSelectedLakeUUID)) {
+        if (this.lakes.concat(this.favoriteLakes).some(l => l.id === localStorage.latestSelectedLakeUUID)) {
           this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
         } else {
           this.selectedLakeUUID = this.lakes[0].id;
@@ -104,27 +109,43 @@ export default class LakeAndYearSelection extends Vue {
           this.selectedLakeUUID = this.lakes[0].id;
       }
     }
+    this.displayAllOtherLakes =
+      this.favoriteLakes.length == 0
+      || !this.favoriteLakes.some(l => l.id ===this.selectedLakeUUID);
+
     this.$emit("lake-and-year", {lake: this.selectedLakeUUID, year: this.selectedYear});
     this.doneLoading = true; 
   }
 
+  @Watch("$route")
+  routeUpdated() {
+    const query = this.$route.query;
+    if (query.lakeId) {
+      this.selectedLakeUUID = query.lakeId as string;
+      if (query.lakeId && !this.favoriteLakes.some(l => l.id === query.lakeId)) {
+        this.displayAllOtherLakes = true;
+      }
+    }
+  }
+
   @Watch("selectedLakeUUID")
   selectedLakeUUIDChanged() {
-    if (this.selectedLakeUUID) {
-      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID
+    if (this.selectedLakeUUID == 'all') {
+      this.displayAllOtherLakes = true;
+      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID;
     } else {
-      localStorage.latestSelectedLakeUUID = "all"
-    }
-    if (this.selectedLakeUUID !== this.$route.query.lakeId) {
-      this.$router.replace({
-        query: {
-          ...this.$route.query,
-          lakeId: this.selectedLakeUUID,
-        }
-      });
-    }
-    if (this.doneLoading) {
-      this.$emit("lake", this.selectedLakeUUID);
+      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID ? this.selectedLakeUUID : "all";
+      if (this.selectedLakeUUID !== this.$route.query.lakeId) {
+        this.$router.replace({
+          query: {
+            ...this.$route.query,
+            lakeId: this.selectedLakeUUID,
+          }
+        });
+      }
+      if (this.doneLoading) {
+        this.$emit("lake", this.selectedLakeUUID);
+      }
     }
   }
 
@@ -142,34 +163,39 @@ export default class LakeAndYearSelection extends Vue {
       this.$emit("year", this.selectedYear);
     }
   }
-
-  @Watch("showAllLakes")
-  showAllLakesChanged() {
-    localStorage.showAllLakes = this.showAllLakes;
-  }
-
 }
 </script>
 
 <style scoped lang="less">
-@import "../../less/main";
-
 .selects-holder {
   select {
-    background-color: white;
-    padding: 10px;
-    height: 40px;
-    border: 1px solid @pale-sky;
-    border-radius: 3px;
+    background: transparent;
+    padding: 0 10px;
+    min-height: 35px;
+    border: 1px solid @pelorous;
+    border-radius: 20px;
     margin-left: 10px;
     max-width: 150px;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: inherit;
+    color: @pelorous;
+    cursor: pointer;
+
+    option {
+      color: black;
+    }
+
+    &:hover {
+      background-color: white;
+    }
   }
 }
 
 @media screen and (min-width: @desktop-min-width) {
     .selects-holder {
-        margin-left: 40px;
-        margin-top: -10px;
+        margin-left: 20px;
+        // margin-top: -10px;
     }
 }
 

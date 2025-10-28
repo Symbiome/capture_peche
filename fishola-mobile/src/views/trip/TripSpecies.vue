@@ -129,7 +129,8 @@ export default class TripSpeciesView extends Vue {
   }
 
   sortedSpecies(): SpeciesWithAlias[] {
-    return Vue.lodash.orderBy(this.species, "name");
+    const manualSpecies = localStorage.getItem("manual-species") ?? "";
+    return Vue.lodash.orderBy(this.species, "name").filter(s => s.present || manualSpecies.indexOf(s.id) > -1);
   }
 
   speciesLoaded(map: Map<string, SpeciesWithAlias[]>) {
@@ -185,6 +186,11 @@ export default class TripSpeciesView extends Vue {
             ) {
               this.trip.speciesIds.push(existingSpecieWithAlias.id);
             }
+            let manualSpecies = localStorage.getItem("manual-species") ?? "";
+            if (manualSpecies.indexOf(existingSpecieWithAlias.id) == -1) {
+             manualSpecies += "," + existingSpecieWithAlias.id;
+            }
+            localStorage.setItem("manual-species", manualSpecies);
           }
         });
 
@@ -302,7 +308,7 @@ export default class TripSpeciesView extends Vue {
 </script>
 
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-trip-species-page {
   .pane .pane-content {

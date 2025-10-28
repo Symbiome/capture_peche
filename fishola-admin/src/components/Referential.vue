@@ -130,7 +130,7 @@
     </div>
     <b-modal
       v-if="editable"
-      :active.sync="selection.item"
+      :active.sync="selection.item != null"
       trap-focus
       :destroy-on-hide="false"
       aria-role="dialog"
@@ -165,10 +165,10 @@ export default class Refenretial extends Vue {
   @Prop() name!: string;
   @Prop() url!: string;
   @Prop() columns!: any[];
-  @Prop() data: any[] = [];
   @Prop({ default: true }) editable: boolean;
-  @Prop({ default: ["id", "desc"] }) defaultSort: string[];
+  @Prop({ default: function () { return ["id", "desc"]; } }) defaultSort: string[];
   @Prop() nextPlannifiedDate: number[];
+  data: any[] = [];
   selection = { item: null };
 
   /* The function used to create new elements. If not specified, create button will not be displayed */
@@ -204,6 +204,7 @@ export default class Refenretial extends Vue {
     this.allowedDeletionElements = [];
     BackendService.backendGet(this.url).then(res => {
       this.data = res;
+      this.selection.item = null;
       this.$emit("elementsLoaded", this.data);
       this.checkCanDeletePredicate();
     });
@@ -233,10 +234,8 @@ export default class Refenretial extends Vue {
               this.allowedDeletionElements.push(element["id"]);
             }
           });
-        } else {
-          if (this.allowedDeletionElements != null) {
+        } else if (this.allowedDeletionElements != null) {
             this.allowedDeletionElements.push(element["id"]);
-          }
         }
       });
     }

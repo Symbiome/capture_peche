@@ -24,24 +24,23 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.database.ReferentialDao;
-import fr.inrae.fishola.entities.tables.daos.LakeDao;
 import fr.inrae.fishola.entities.tables.pojos.Lake;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;

@@ -25,7 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -36,17 +35,6 @@ import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
@@ -61,10 +49,23 @@ import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 @Path("/api/v1/referential")
 @Produces(MediaType.APPLICATION_JSON)
 public class ReferentialResource extends AbstractFisholaResource {
 
+    public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
     @Inject
     protected ReferentialDao referentialDao;
 
@@ -93,8 +94,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/lakes/{lakeId}")
     public Response updateLake(@PathParam("lakeId") UUID lakeId, Lake lake) {
-        Preconditions.checkArgument(lakeId != null, "Identifiant de lac obligatoire");
-        Preconditions.checkArgument(lakeId.equals(lake.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(lakeId != null, "Identifiant de plan d'eau obligatoire");
+        Preconditions.checkArgument(lakeId.equals(lake.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateLake(lake);
         return Response.noContent().build();
@@ -119,7 +120,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/techniques/{techniqueId}")
     public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
         Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
-        Preconditions.checkArgument(techniqueId.equals(technique.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(techniqueId.equals(technique.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateTechnique(technique);
         return Response.noContent().build();
@@ -159,7 +160,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/raw-species/{speciesId}")
     public Response updateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
-        Preconditions.checkArgument(speciesId.equals(species.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(speciesId.equals(species.getId()), NO_MATCHING_ID);
         checkIsAdmin();
         referentialDao.updateSpecies(species);
         return Response.noContent().build();
@@ -214,7 +215,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
         // On récupère la liste des toutes les espèces builtIn et des lacs
         List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
-        Set<UUID> lakeIds = Sets.newLinkedHashSet();
+        Set<UUID> lakeIds;
         // If logged as local admin
         // We filter the species ton only show relevant ones
         Set<UUID> allowedAdminLakes = getAllowedAdminLakes();
@@ -249,6 +250,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         lakeIds.forEach(lakeId -> builtInSpecies.forEach(rawSpecies -> {
             Pair<UUID, UUID> lakePlusSpeciesIds = Pair.of(lakeId, rawSpecies.getId());
             Optional<String> alias = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getAlias);
+            Optional<Boolean> present = Optional.ofNullable(speciesByLakeIndex.get(lakePlusSpeciesIds)).map(SpeciesByLake::getPresent);
             boolean authorizedSample = authorizedSamplesSet.contains(lakePlusSpeciesIds);
             Integer minSize = 0;
             Integer maxSize = 1000;
@@ -258,7 +260,7 @@ public class ReferentialResource extends AbstractFisholaResource {
             if (authorizedSamplesMaxSizes.get(lakePlusSpeciesIds) != null) {
                 maxSize = authorizedSamplesMaxSizes.get(lakePlusSpeciesIds);
             }
-            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, authorizedSample, minSize, maxSize);
+            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, present, authorizedSample, minSize, maxSize);
             result.put(lakeId, speciesWithAlias);
         }));
         return result.asMap();
@@ -267,10 +269,11 @@ public class ReferentialResource extends AbstractFisholaResource {
     @PUT
     @Path("/species-aliases-per-lake")
     public Response saveSpeciesAliasesPerLake(SpeciesAliasesPerLakeBean salp) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        checkIsAdmin();
 
-        // On transforme la map pour avoir en clé lakeId+speciesId et en valeur les alias
+        // On transforme les maps pour avoir en clé lakeId+speciesId et en valeur les alias
         Map<Pair<UUID, UUID>, String> aliasesMap = new HashMap<>();
+        List<Pair<UUID, UUID>> absentList = new ArrayList<>();
         for (Map.Entry<UUID, Map<UUID, String>> byLakeEntry : salp.speciesPerLakeAliases.entrySet()) {
             Map<UUID, String> bySpeciesEntries = byLakeEntry.getValue();
             for (Map.Entry<UUID, String> entry : bySpeciesEntries.entrySet()) {
@@ -281,6 +284,13 @@ public class ReferentialResource extends AbstractFisholaResource {
                 }
             }
         }
+        for (Map.Entry<UUID, List<UUID>> byLakeEntry : salp.speciesPerLakeAbsent.entrySet()) {
+            for (UUID entry : byLakeEntry.getValue()) {
+                Pair<UUID, UUID> lakePluSpeciesId = Pair.of(byLakeEntry.getKey(), entry);
+                absentList.add(lakePluSpeciesId);
+            }
+        }
+
 
         // On charge les alias par lac+espèce
         List<SpeciesByLake> speciesByLake = referentialDao.listSpeciesByLake();
@@ -292,11 +302,18 @@ public class ReferentialResource extends AbstractFisholaResource {
                 if (aliasesMap.containsKey(lakePluSpeciesId)) {
                     String newAlias = salp.speciesPerLakeAliases.get(entity.getLakeId()).get(entity.getSpeciesId());
                     entity.setAlias(newAlias);
+                    entity.setPresent(!absentList.contains(lakePluSpeciesId));
                     referentialDao.updateSpeciesByLake(entity);
                 } else {
-                    referentialDao.deleteSpeciesByLake(entity);
+                    if (!absentList.contains(lakePluSpeciesId)) {
+                        referentialDao.deleteSpeciesByLake(entity);
+                    } else {
+                        entity.setPresent(false);
+                        referentialDao.updateSpeciesByLake(entity);
+                    }
                 }
                 aliasesMap.remove(lakePluSpeciesId);
+                absentList.remove(lakePluSpeciesId);
             }
         }
 
@@ -308,7 +325,20 @@ public class ReferentialResource extends AbstractFisholaResource {
                     UUID lakeId = entry.getKey().getKey();
                     UUID speciesId = entry.getKey().getValue();
                     String alias = entry.getValue();
-                    SpeciesByLake result = new SpeciesByLake(lakeId, speciesId, alias);
+                    SpeciesByLake result = new SpeciesByLake(lakeId, speciesId, alias, true);
+                    return result;
+                })
+                .forEach(spl -> {
+                    referentialDao.createSpeciesByLake(spl);
+                    Pair<UUID, UUID> lakePluSpeciesId = Pair.of(spl.getLakeId(), spl.getSpeciesId());
+                    absentList.remove(lakePluSpeciesId);
+                });
+        absentList.stream()
+                .filter(entry -> salp.targetLakes.contains(entry.getKey()))
+                .map(entry -> {
+                    UUID lakeId = entry.getKey();
+                    UUID speciesId = entry.getValue();
+                    SpeciesByLake result = new SpeciesByLake(lakeId, speciesId, "", false);
                     return result;
                 })
                 .forEach(spl -> {
@@ -432,7 +462,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
         checkIsAdmin();
         Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
-        Preconditions.checkArgument(weatherId.equals(weather.getId()), "L'identifiant ne correspond pas");
+        Preconditions.checkArgument(weatherId.equals(weather.getId()), NO_MATCHING_ID);
         referentialDao.updateWeather(weather);
         return Response.noContent().build();
     }

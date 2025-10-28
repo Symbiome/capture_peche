@@ -26,10 +26,9 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.MediaType;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
-
-import jakarta.ws.rs.core.MediaType;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

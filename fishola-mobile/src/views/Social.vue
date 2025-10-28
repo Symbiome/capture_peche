@@ -21,6 +21,10 @@
 <template>
   <div id="social-trips">
     <div id="social-trips-list">
+      <div v-if="!socialTrips || socialTrips.length == 0" class="empty">
+        Pas de sorties sur ce plan d'eau dans la communauté.
+      </div>
+
       <div v-for="socialTrip in socialTrips" :key="socialTrip.id" class="social-trip-item">
         <div class="social-trip-infos">
           <div class="social-trip-title">{{ socialTrip.tripName }}</div>
@@ -81,7 +85,7 @@
 <script lang="ts">
 
 
-import { Lake, Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
+import { Maillage, SocialReaction, TripSocial } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 import ProfileService from "@/services/ProfileService";
@@ -95,7 +99,6 @@ export default class SocialView extends Vue {
   socialTrips: TripSocial[] = [];
   @Prop()
   lakeId: string;
-  allLakes: Lake[] = [];
   userId = "";
 
 
@@ -114,7 +117,9 @@ export default class SocialView extends Vue {
 
   @Watch("lakeId")
   async loadSocialTrips() {
-    this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
+    if (this.lakeId) {
+      this.socialTrips = await TripsService.listSocialTrips(this.lakeId);
+    }
   }
 
   async postSocialReaction(tripId: string, socialReaction: SocialReaction) {
@@ -185,16 +190,14 @@ export default class SocialView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 #social-trips-top {
   text-align: center;
 }
 
 #social-trips-list {
-  overflow-y: scroll;
+  overflow-y: auto;
   height: calc(100vh - 40px - env(safe-area-inset-top) - 20px - 22px - 8px);
-  padding-bottom: 200px;
+  padding-bottom: 250px;
 }
 
 .social-trip-item {
@@ -266,6 +269,7 @@ export default class SocialView extends Vue {
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: @margin-x-small;
   }
   .reaction-button {
     width: auto;
@@ -290,17 +294,17 @@ export default class SocialView extends Vue {
   text-transform: lowercase;
   & > span {
     position: relative;
-    padding-left: @margin-x-small;
-    margin-left: @margin-x-small;
+    padding-left: 5px;
+    margin-left: 8px;
 
     &::before {
       content: '';
       position: absolute;
       left: 0;
-      height: 70%;
+      height: 12px;
       width: 1px;
       background: #636E72;
-      top: 20%;
+      top: 4px;
       opacity: 0.6;
     }
 

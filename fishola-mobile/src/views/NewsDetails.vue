@@ -39,7 +39,7 @@
             >
           </span>
           <div class="miniature-pic">
-            <img :src="getMiniatureURl(news)" alt="image de l'actualité"/>
+            <img :src="getMiniatureURl(news)" alt="miniature l'actualité"/>
           </div>
 
           <div class="news-details-content" v-html="news.content" />
@@ -120,12 +120,11 @@ export default class NewsDetailsView extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
-
 .news-details-title {
   display: flex;
   align-items: center;
   gap: 25px;
+  height: auto !important;
   .icon-news-back {
     cursor: pointer;
     display: inline-block;
@@ -134,12 +133,15 @@ export default class NewsDetailsView extends Vue {
   }
 }
 .publication-date-details {
-  margin-top: -20px;
   display: flex;
   align-items: center;
   gap: 15px;
   color: @pale-sky;
   text-transform: uppercase;
+
+  @media screen and (min-width: @desktop-min-width) {
+    margin-top: -20px;
+  }
 }
 
 .miniature-pic {

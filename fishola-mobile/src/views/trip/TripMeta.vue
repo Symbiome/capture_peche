@@ -33,8 +33,12 @@
             <div class="form-block">
               <FormInput name="name" label="Nom de la sortie" placeholder="Nommez votre sortie" v-model="trip.name"
                 v-bind:error="nameError" />
-              <FormSelect name="lake" label="Lac" v-bind:options="lakes" orderBy="name" v-model="trip.lakeId"
-                v-bind:error="lakeIdError" />
+              <LakeSelection
+                :selectedLakes="selectedLakes"
+                :favoriteLakes="favoriteLakes"
+                v-bind:error="lakeIdError"
+                v-on:updated="selectLake"
+                @favoriteLakesChanged="favoriteLakesChanged" />
 
               <span v-if="hereIAmError" class="position-error">
                 <i class="icon-warning" />
@@ -84,6 +88,7 @@ import GeolocationService from "@/services/GeolocationService";
 import BackButton from "@/components/common/BackButton.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
+import LakeSelection from "@/components/common/LakeSelection.vue";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
@@ -102,6 +107,7 @@ import ProfileService from "@/services/ProfileService";
     FormInput,
     FormSelect,
     FisholaFooter,
+    LakeSelection,
   },
 })
 export default class TripMetaView extends Vue {
@@ -123,6 +129,8 @@ export default class TripMetaView extends Vue {
   typeError: string = "";
 
   lakes: Lake[] = [];
+  selectedLakes : Lake[] = [];
+  favoriteLakes: Lake[] = [];
   types: any[] = [];
 
   created() {
@@ -145,9 +153,10 @@ export default class TripMetaView extends Vue {
     }
 
     if (this.id == Constants.NEW_TRIP_ID) {
+      localStorage.setItem("manual-species", "");
       GeolocationService.getClosestLake().then(
         (lake: Lake) => {
-          console.debug("Le lac le plus proche est ", lake);
+          console.debug("Le plan d'eau le plus proche est ", lake);
           this.trip.lakeId = lake.id;
           // Les lignes suivantes sont une bidouille pour que le Select s'affiche .......
           this.lakeIdError = lake.id;
@@ -160,7 +169,7 @@ export default class TripMetaView extends Vue {
           );
           if (JSON.stringify(e).indexOf("location unavailable") != -1) {
             this.hereIAmError =
-              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le lac";
+              "La position n'est pas activée, il n'est pas possible de pré-sélectionner le plan d'eau";
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
@@ -171,7 +180,7 @@ export default class TripMetaView extends Vue {
             }
           } else if (JSON.stringify(e).indexOf("User denied") != -1) {
             this.hereIAmError =
-              "Partage de position refusé, il n'est pas possible de pré-sélectionner le lac";
+              "Partage de position refusé, il n'est pas possible de pré-sélectionner le plan d'eau";
           }
         }
       );
@@ -190,7 +199,7 @@ export default class TripMetaView extends Vue {
       this.lakeIdError = "";
     } else {
       hasError = true;
-      this.lakeIdError = "Vous devez sélectionner le lac";
+      this.lakeIdError = "Vous devez sélectionner le plan d'eau";
     }
     if (localStorage) {
       localStorage.latestSelectedLakeUUID = this.trip.lakeId
@@ -209,7 +218,26 @@ export default class TripMetaView extends Vue {
     }
 
     if (this.trip!.mode == "Afterwards") {
-      if (this.date) {
+      hasError = hasError || this.handleAfterwards();
+    }
+
+    if (hasError) {
+      this.$root.$emit(
+        "toaster-error",
+        "Vous devez renseigner les champs obligatoires"
+      );
+    } else {
+      // this.trip!.name = this.name;
+      // this.trip!.lakeId = this.lakeId;
+      // this.trip!.type = this.type;
+
+      TripsService.saveTripMeta(this.trip!, this.tripSaved);
+    }
+  }
+
+  handleAfterwards(): boolean {
+    let hasError = false;
+    if (this.date) {
         this.dateError = "";
         const newDate = new Date(this.date);
         this.trip!.date = newDate;
@@ -237,20 +265,7 @@ export default class TripMetaView extends Vue {
         this.dateError = "Vous devez renseigner la date";
         hasError = true;
       }
-    }
-
-    if (hasError) {
-      this.$root.$emit(
-        "toaster-error",
-        "Vous devez renseigner les champs obligatoires"
-      );
-    } else {
-      // this.trip!.name = this.name;
-      // this.trip!.lakeId = this.lakeId;
-      // this.trip!.type = this.type;
-
-      TripsService.saveTripMeta(this.trip!, this.tripSaved);
-    }
+      return hasError;
   }
 
   tripSaved() {
@@ -274,12 +289,26 @@ export default class TripMetaView extends Vue {
     TripsService.cancelCreations();
     RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
   }
+
+  selectLake(lake : Lake) {
+    if (lake) {
+      this.selectedLakes = [lake];
+      this.trip.lakeId = lake.id;
+    } else {
+      this.selectedLakes = [];
+      delete this.trip.lakeId;
+    }
+  }
+
+  favoriteLakesChanged(newFavoriteLakes: Lake[]) {
+    this.favoriteLakes = newFavoriteLakes;
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
-@import "../../less/main";
+<style scoped lang="less">
+
 
 .position-error {
   font-size: 14px;

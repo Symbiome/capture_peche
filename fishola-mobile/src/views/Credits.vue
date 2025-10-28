@@ -111,8 +111,6 @@ export default class CreditsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../less/main";
-
 .credits-page {
 
   p.credits-p {

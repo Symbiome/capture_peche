@@ -19,7 +19,10 @@
   #L%
   -->
 <template>
-  <div class="my-trips page-with-header shifted-background">
+  <div
+    class="my-trips shifted-background"
+    :class="visualizationMode === 'list' ? 'page-with-header-and-footer' : 'page-with-header'"
+  >
     <FisholaHeader />
     <div class="page my-trips-page">
       <div class="pane pane-only">
@@ -41,7 +44,7 @@
           </div>
           <div class="bottom">
             <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip && visualizationMode === 'list'" />
-            <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" v-if="visualizationMode === 'list'" />
+           
           </div>
         </div>
       </div>
@@ -51,7 +54,6 @@
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
@@ -63,7 +65,6 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
   components: {
     FisholaHeader,
     MyTrips,
-    FisholaFooter,
     MyTripsMapView,
     NewsView,
     RunningOverlay
@@ -89,9 +90,7 @@ export default class TripsListAndMapView extends Vue {
 }
 </script>
 
-<style scope lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .news-badge {
   width: 30px;
   height: 25px;

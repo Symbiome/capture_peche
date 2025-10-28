@@ -87,6 +87,7 @@ export interface SpeciesWithAlias {
     builtIn: boolean;
     mandatorySize: boolean;
     alias?: string;
+    present: boolean;
     authorizedSample: boolean;
     minSize: number;
     maxSize: number;
@@ -230,8 +231,7 @@ export interface GlobalDashboard {
 }
 
 export interface EvolutionMetricsForLake {
-    catchCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: { [index: string]: number } } } };
-    tripCountPerMonthAndSpecies: { [index: string]: { [P in Month]?: { [index: string]: number } } };
+    evolutionPerMonthAndSpecie: { [index: string]: EvolutionMetricForSpecieAndMonth[] };
 }
 
 export interface LicenceFromClientBean {
@@ -290,6 +290,13 @@ export interface PicturePerTripBean {
     tripName: string;
     tripLakeName: string;
     pictureURLs: string[];
+}
+
+export interface EvolutionMetricForSpecieAndMonth {
+    monthYear: string;
+    tripsCount: number;
+    keptCatchesCount: number;
+    totalCatchesCount: number;
 }
 
 export interface TripSocialReaction extends Serializable {

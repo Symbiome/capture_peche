@@ -8,12 +8,12 @@
   it under the terms of the GNU Affero General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU Affero General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #L%
@@ -35,10 +35,10 @@
     </b-autocomplete>
 
     <div class="selection">
-      Sélection :
       <span v-for="selected in selectedIds" class="selected">
           {{getItemLabel(selected)}}
           <b-icon
+            v-if="getItemLabel(selected) !== 'Autre plan d\'eau'"
             icon="close"
             size="is-small"
             @click.native="unselectedOption(selected)"
@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component
 export default class MultipleAutoComplete extends Vue {
@@ -60,14 +60,22 @@ export default class MultipleAutoComplete extends Vue {
   search: string = "";
   selectedIds: string[] = [];
 
-  created() {
+  mounted() {
+    this.defaultSelectionChanged();
+  }
+
+
+  @Watch("defaultSelection")
+  defaultSelectionChanged() {
     this.selectedIds = this.defaultSelection;
     this.$emit("updated", this.selectedIds);
   }
 
   selectOption(option: any) {
-    this.selectedIds.push(option.id);
-    this.$emit("updated", this.selectedIds)
+    if (option) {
+      this.selectedIds.push(option.id);
+      this.$emit("updated", this.selectedIds)
+    }
   }
 
   unselectedOption(optionId: string) {
@@ -91,7 +99,7 @@ export default class MultipleAutoComplete extends Vue {
     let filteredItem = this.data.filter((option) => {
       return option.id === id;
     });
-    return filteredItem.length == 1 && filteredItem[0].label;
+    return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
   }
 }
 </script>

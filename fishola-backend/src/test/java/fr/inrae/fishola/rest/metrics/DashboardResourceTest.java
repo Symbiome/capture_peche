@@ -44,11 +44,6 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import io.quarkus.test.junit.QuarkusTest;
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
@@ -56,6 +51,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @QuarkusTest
 class DashboardResourceTest  extends AbstractFisholaTest {
@@ -362,11 +363,11 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         Optional<Integer> yearFilter = config.dashboardOnlyCurrentYear()
                 ? Optional.of(Year.now().getValue())
                 : Optional.empty();
-        return this.dashboardDao.computeGlobalDashboard(yearFilter, Optional.empty(), this.log);
+        return this.dashboardDao.computeGlobalDashboard(yearFilter, Optional.empty());
     }
 
     private GlobalDashboard getGlobalDashboardForYear(Integer year) {
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty(), this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty());
     }
 
     private GlobalDashboard getGlobalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
@@ -374,6 +375,6 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         if (lakeIds.length > 0) {
             lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
         }
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter, this.log);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter);
     }
 }

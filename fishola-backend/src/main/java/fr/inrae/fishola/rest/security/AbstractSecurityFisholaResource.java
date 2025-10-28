@@ -27,7 +27,6 @@ import jakarta.inject.Inject;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 
 import java.util.Optional;
 

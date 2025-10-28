@@ -42,7 +42,7 @@
                             {{ fullName }}
                         </div>
                     </div>
-                    <div class="padding-content">
+                    <div class="profile-body">
                         <ProfileView v-if="visualizationMode == 'profile' && profile" :profile="profile"
                             @profile-updated="loadProfile" />
                         <SettingsView v-else-if="profile" />
@@ -115,8 +115,6 @@ export default class ProfileAndSettingsView extends Vue {
 </script>
 
 <style lang="less">
-@import "../less/main";
-
 .profile-header {
     background-image: url("img/background_transparent.png");
     background-repeat: no-repeat;
@@ -127,11 +125,7 @@ export default class ProfileAndSettingsView extends Vue {
     height: 150px;
     margin-bottom: 10px;
     margin-top: -5px;
-    width: calc(100% + (2 * @margin-large));
-
-    @media screen and (min-width: @desktop-min-width) {
-        width: calc(100vw - @desktop-menu-width);
-    }
+    width: 100%;
 
     display: flex;
     flex-direction: column;

@@ -36,7 +36,7 @@
           <i class="icon-menu"></i>
         </div>
 
-        <div class="whatever" :class="{ closed: closed }">
+        <div class="menu" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
               <a href="#/about" v-scroll-to="{
@@ -45,8 +45,12 @@
               }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
+
           <nav class="Navigation">
             <ul>
+              <li class="close hide-on-desktop">
+                <div class="plus" v-on:click="closeMenu">+</div>
+              </li>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
                 <a href="#/about" v-scroll-to="{
                   el: '#presentation',
@@ -95,7 +99,7 @@
           <div class="main-title">La science tous ensemble</div>
           <div class="sub-title">
             En utilisant FISHOLA vous participez à la compréhension et la
-            préservation des lacs
+            préservation des plans d'eau
           </div>
         </div>
       </div>
@@ -388,7 +392,7 @@ export default class AboutView extends Vue {
   center = latLng(46.071623, 5.890511);
 
   titleText: string =
-    "est l'application smartphone pour une gestion durable de la pêche sur les lacs alpins (Léman, lac d’Annecy, du Bourget et d’Aiguebelette).";
+    "est l'application smartphone pour une gestion durable de la pêche sur les plans d'eau français.";
   contributeText: string =
     "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount: number = 0;
@@ -558,6 +562,10 @@ export default class AboutView extends Vue {
     );
   }
 
+  closeMenu() {
+    this.closed = true;
+  }
+
   goFaq() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/documentation/faq");
   }
@@ -615,7 +623,7 @@ export default class AboutView extends Vue {
       }
     }
 
-    .whatever {
+    .menu {
       width: 100%;
       height: 73px;
 
@@ -693,7 +701,7 @@ export default class AboutView extends Vue {
         right: 0;
         width: 250px;
         height: 100vh;
-
+        height: 100dvh; /* Good height for mobile screens, with navigation bar, if supported */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -720,7 +728,6 @@ export default class AboutView extends Vue {
     }
   }
 }
-
 .Navigation li a {
   color: @gunmetal;
 }
@@ -914,6 +921,10 @@ export default class AboutView extends Vue {
   }
 
   .map {
+    // avoid the map controls and credits to be above the header
+    position: relative;
+    z-index: 5;
+
     margin-top: 30px;
     height: 600px;
 
@@ -1164,6 +1175,24 @@ footer {
       background-color: #e17055;
       border: 1px solid white;
     }
+  }
+}
+
+.close {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  padding: 22px 30px;
+
+  height: @pastille-size;
+  margin: @vertical-margin-small;
+  width: 100%;
+  color: @gunmetal;
+
+  div.plus {
+    font-size: @pastille-size;
+    width: fit-content;
+    transform: rotate(45deg);
   }
 }
 

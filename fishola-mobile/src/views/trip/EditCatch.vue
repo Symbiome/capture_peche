@@ -34,7 +34,9 @@
         v-on:delete-picture="deletePicture" />
       <!-- Empty miniature picture for adding pictures -->
       <!-- Empty picture if no picture yet -->
-      <PicturePreview v-else-if="!allNonMeasurePictures.length" noPictureText="Appuyer pour ajouter une photo"
+      <PicturePreview
+        v-else-if="!allNonMeasurePictures.length"
+        :noPictureText="modifiable ? 'Appuyer pour ajouter une photo' : 'Aucune photo'"
         v-bind:deletable="false" v-on:take-picture="takePicture" />
     </div>
     <div class="edit-catch-page page">
@@ -54,7 +56,8 @@
             <div class="catch-picture-desktop hide-on-mobile">
               <!-- Show focused pic -->
               <PicturePreview class="pic-focused" v-bind:src="focusedPicSrc"
-                noPictureText="Appuyer pour ajouter une photo" v-bind:deletable="focusedPicSrc != measurementPictureSrc"
+                :noPictureText="modifiable ? 'Appuyer pour ajouter une photo' : 'Aucune photo'"
+                v-bind:deletable="focusedPicSrc != measurementPictureSrc"
                 v-on:take-picture="takePicture" v-on:delete-picture="deletePicture" :otherPics="allNonMeasurePictures"
                 :measurementPictureSrc="measurementPictureSrc" />
               <div class="pic-miniatures-container">
@@ -223,7 +226,7 @@
     <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
     <!-- To enable silent automatic size computation, simply add this to the following img
       @load="launchSilentAutomaticMeasureIfRequired" -->
-    <img alt="Photo de mesure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
+    <img alt="Msure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
       v-show="false" />
   </div>
 </template>
@@ -617,9 +620,11 @@ export default class EditCatchView extends Vue {
   referentialLoaded(data: SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
       if (
-        s.builtIn || // Espèce de base
-        this.aCatch.speciesId == s.id || // Espèce custom sélectionnée pour la capture
-        this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+          (s.present || ((localStorage.getItem("manual-species")?.indexOf(s.id) ?? -1) > -1)) && (
+          s.builtIn || // Espèce de base
+          this.aCatch.speciesId == s.id || // Espèce custom sélectionnée pour la capture
+          this.tripSpeciesIds.indexOf(s.id) != -1 // Espèce custom sélectionnée pour la sortie
+        )
       ) {
         const speciesWithAlias: SpeciesWithAlias = this.embedAlias(s);
         this.allSpeciesWithAliases.push(speciesWithAlias);
@@ -1121,9 +1126,13 @@ export default class EditCatchView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-catch {
+  .edit-catch-form {
+    padding-bottom: @margin-xx-large;
+  }
+
   .automatic-measure {
     margin-left: 0px;
     margin-top: 20px;

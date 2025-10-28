@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.security;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
+import java.util.List;
 import java.util.UUID;
 
 @ImmutableObject
@@ -37,5 +38,7 @@ public interface AdminProfileForAdmin {
     boolean canCreateAdmin();
 
     boolean isNationalAdmin();
+
+    List<UUID> lakeIds();
 
 }

@@ -23,21 +23,21 @@ package fr.inrae.fishola.rest.security.admin;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
-import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.rest.security.AbstractSecurityFisholaResource;
 import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
-import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.LoginBean;
-import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
@@ -45,7 +45,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.logging.Logger;
 import org.jooq.exception.DataAccessException;
 import org.nuiton.util.ResourceNotFoundException;
 
@@ -59,6 +58,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Path("/api/v1/admin")
 @Produces(MediaType.APPLICATION_JSON)
@@ -88,23 +88,49 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
     }
 
+    @PUT
+    @Path("/{adminId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateAdmin(RegisterAdminBean bean, @PathParam("adminId") UUID adminId, @Context HttpServletRequest request) {
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
+            throw new ForbiddenException("Cannot update admin");
+        }
+        if (bean == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        adminDao.updateAdmin(
+                adminId,
+                bean.canCreateAdmin,
+                bean.lakeIds
+        );
+        return Response.noContent().build();
+    }
+
     @POST
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response register(RegisterAdminBean bean, @Context HttpServletRequest request) {
+    public Response registerAdmin(RegisterAdminBean bean, @Context HttpServletRequest request) {
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
+            throw new ForbiddenException("Cannot create admin");
+        }
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         Map<String, String> validationErrors = new HashMap<>();
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
         if (StringUtils.isEmpty(email)) {
-            validationErrors.put("email", "L'e-mail est obligatoire");
+            validationErrors.put(CLAIM_EMAIL, "L'e-mail est obligatoire");
         } else if (!isEmailInValidFormat(email)) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "Le format n'est pas correct");
+            validationErrors.put(CLAIM_EMAIL, "Le format n'est pas correct");
         } else if (adminDao.findByEmail(email).isPresent()) {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
-            validationErrors.put("email", "E-mail déjà utilisé");
+            validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
+        }
+        if (bean.lakeIds.isEmpty()) {
+            validationErrors.put(CLAIM_LAKE_IDS, "Au moins un lac doit être associé à l'administrateur");
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -123,7 +149,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         Map<String, String> claims = new HashMap<>();
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
-        claims.put(CLAIM_LAKE_IDS, bean.lakeIds.stream().map(UUID::toString).collect(Collectors.joining("")));
+        claims.put(CLAIM_LAKE_IDS, bean.lakeIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
         claims.put(CLAIM_CAN_CREATE_ADMIN, bean.canCreateAdmin.toString());
 
         String token = jwtHelper.createCustomToken("register-admin", 1, claims);
@@ -142,7 +168,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/admin-email-validation.html",
                     "verifyLink", verifyUrl,
-                    "email", bean.email);
+                    CLAIM_EMAIL, bean.email);
             FisholaMail mail = builder
                     .addTos(email)
                     .subject("FISHOLA - Validation de votre e-mail")
@@ -198,16 +224,6 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
     }
 
-    protected AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {
-        ImmutableAdminProfileForAdmin result = ImmutableAdminProfileForAdmin.builder()
-                .id(input.getId())
-                .email(input.getEmail())
-                .canCreateAdmin(input.getCanCreateAdmin())
-                .isNationalAdmin(input.getIsNationalAdmin())
-                .build();
-        return result;
-    }
-
     @GET
     @Path("/")
     public List<AdminProfileForAdmin> listAdmins() {
@@ -223,7 +239,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                 Set<UUID> adminLakes = adminDao.getAllowedLakes(admin.getId());
                 return !Collections.disjoint(allowedLakes, adminLakes);
             })
-            .map(this::toUserProfileForAdmin)
+            .map(this.adminDao::toUserProfileForAdmin)
             .toList();
         return result;
     }
@@ -239,16 +255,20 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             };
 
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
+            String lakeIdsString = getClaimOrFail.apply(CLAIM_LAKE_IDS);
+            UUID[] lakeIds = Stream.of(lakeIdsString.split(","))
+                    .map(UUID::fromString)
+                    .toList().toArray(UUID[]::new);
 
             if (log.isInfoEnabled()) {
                 log.infof("Email verified, create account for %s", email);
             }
-
             adminDao.create(
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_CAN_CREATE_ADMIN)),
-                    false
+                    false,
+                    lakeIds
             );
 
             return true;

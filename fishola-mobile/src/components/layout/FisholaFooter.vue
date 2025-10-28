@@ -252,7 +252,7 @@ export default class FisholaFooter extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .footer {
   display: flex;
@@ -271,6 +271,7 @@ export default class FisholaFooter extends Vue {
   left:0;
   background-color: @zircon;
   color: @pelorous;
+  z-index: 10;
 
   .footer-element {
     height: 40px;

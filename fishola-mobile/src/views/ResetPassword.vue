@@ -87,8 +87,6 @@ export default class ResetPassword extends Vue {
 }
 </script>
 <style lang="less">
-@import "../less/main";
-
 .page-with-header {
   .password-reset-page {
     display: flex;

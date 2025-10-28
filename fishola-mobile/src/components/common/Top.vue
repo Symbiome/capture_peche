@@ -35,9 +35,6 @@ export default class Top extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-  @import "../../less/main";
-
   .top {
     font-weight: bold;
     font-size: @fontsize-top;

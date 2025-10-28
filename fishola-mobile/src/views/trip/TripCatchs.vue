@@ -193,7 +193,7 @@ export default class TripCatchsView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
-@import "../../less/main";
+
 
 .edit-trip-catchs-page {
   .pane {

@@ -75,9 +75,6 @@ export default class DistributionChart extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
-@import "../../less/main";
-
 .distribution {
   width: 100%;
   display: flex;

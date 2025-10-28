@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-  <div>
+  <div class="my-trips-wrapper">
     <div class="my-trips-top">
       <MyTripsHeader
         v-bind:count="count"
@@ -57,6 +57,13 @@
       v-on:trip-selected="tripSelected"
       v-on:trip-unselected="tripUnselected"
     />
+     <FisholaFooter 
+              shortcuts="logout,dashboard,home" 
+              selected="dashboard"
+              :buttonText="getButtonText()"
+              :buttonIcon="getButtonIcon()"
+              @buttonClicked="footerButtonClicked"
+         />
   </div>
 </template>
 
@@ -256,17 +263,22 @@ export default class MyTripsView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
-@import "../less/main";
-
+<style scoped lang="less">
 .my-trips-page {
   display: flex;
   flex-direction: column;
 
   .my-trips-list {
     flex-grow: 1;
-    overflow: auto;
-    padding-bottom: 100px;
+    overflow: hidden;
+    height: 100%;;
+    border-radius: 0;
+  }
+
+  .my-trips-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .bottom {

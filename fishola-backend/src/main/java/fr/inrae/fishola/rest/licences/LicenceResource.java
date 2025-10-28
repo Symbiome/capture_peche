@@ -49,6 +49,7 @@ import java.util.UUID;
 @Path("/api/v1/licences")
 public class LicenceResource extends AbstractFisholaResource {
 
+    public static final String ERROR_KEY = "error";
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
 
@@ -156,9 +157,9 @@ public class LicenceResource extends AbstractFisholaResource {
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
             if (StringUtils.isNotEmpty(e.getMessage())) {
-                entity.put("error", e.getMessage());
+                entity.put(ERROR_KEY, e.getMessage());
             } else {
-                entity.put("error", "Unexpected error");
+                entity.put(ERROR_KEY, "Unexpected error");
             }
             Response.ResponseBuilder responseBuilder = Response.status(Response.Status.BAD_REQUEST);
             responseBuilder.entity(entity);
@@ -185,9 +186,9 @@ public class LicenceResource extends AbstractFisholaResource {
         } catch (IllegalArgumentException e) {
             Map<String, String> entity = new LinkedHashMap<>();
             if (StringUtils.isNotEmpty(e.getMessage())) {
-                entity.put("error", e.getMessage());
+                entity.put(ERROR_KEY, e.getMessage());
             } else {
-                entity.put("error", "Illegal argument exception.");
+                entity.put(ERROR_KEY, "Illegal argument exception.");
             }
             Response.ResponseBuilder responseBuilder = Response.status(Response.Status.BAD_REQUEST);
             responseBuilder.entity(entity);

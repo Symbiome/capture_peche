@@ -26,16 +26,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import fr.inrae.fishola.entities.enums.Maillage;
-import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
-import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
@@ -47,8 +44,12 @@ import fr.inrae.fishola.rest.dashboard.ImmutableGlobalDashboard;
 import fr.inrae.fishola.rest.trips.CatchBean;
 import fr.inrae.fishola.rest.trips.PicturePerTripBean;
 import fr.inrae.fishola.rest.trips.TripResource;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import org.apache.commons.lang3.tuple.Pair;
+import org.nuiton.util.pagination.PaginationParameter;
+import org.nuiton.util.pagination.PaginationResult;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Collection;
@@ -60,22 +61,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jboss.logging.Logger;
-import org.nuiton.util.pagination.PaginationParameter;
-import org.nuiton.util.pagination.PaginationResult;
 
 @Singleton
 public class DashboardDao  extends AbstractFisholaDao {
@@ -157,21 +149,23 @@ public class DashboardDao  extends AbstractFisholaDao {
 
     private Map<UUID, Map<Month, Double>> getLegacyMonthlySizesWithoutMaillage(Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes) {
         Map<UUID, Map<Month, Double>> monthlySizesWithoutMaillage = new LinkedHashMap<>();
-        for (UUID uuid : monthlySizes.keySet()) {
+        for (Map.Entry<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> specieIdToMonthlySizesEntry : monthlySizes.entrySet()) {
             Map<Month, Double> sizesForSpecie = new LinkedHashMap<>();
-            for (Month month: monthlySizes.get(uuid).keySet()) {
-                Pair<Long, Double> countAndSize = monthlySizes.get(uuid).get(month).get(Maillage.NON_DEFINI);
+            UUID speciedId = specieIdToMonthlySizesEntry.getKey();
+            for (Map.Entry<Month, Map<Maillage, Pair<Long, Double>>> monthToMonthlySizesEntry: specieIdToMonthlySizesEntry.getValue().entrySet()) {
+                Month month = monthToMonthlySizesEntry.getKey();
+                Pair<Long, Double> countAndSize = monthToMonthlySizesEntry.getValue().get(Maillage.NON_DEFINI);
                 if (countAndSize != null) {
                     Double size = countAndSize.getRight();
                     sizesForSpecie.put(month, size);
                 }
             }
-            monthlySizesWithoutMaillage.put(uuid, sizesForSpecie);
+            monthlySizesWithoutMaillage.put(speciedId, sizesForSpecie);
         }
         return monthlySizesWithoutMaillage;
     }
 
-    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter, Logger log) {
+    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
 
         ImmutableGlobalDashboard.Builder builder = ImmutableGlobalDashboard.builder();
 
@@ -278,7 +272,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                         }
                      })
                     .toList();
-            Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes = new HashMap<>();
+            Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes = Maps.newEnumMap(Month.class);
             for (Month month : Month.values()) {
                 computeMonthlySizesForMonth(useEditedInBoInformation, lakesFilter, catchesMonths, month, catchs, speciesMonthlySizes);
             }
@@ -306,7 +300,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                                 }
                                 return false;
                             }
-                ).collect(Collectors.toList());
+                ).toList();
             OptionalDouble average;
             OptionalLong count;
             if (useEditedInBoInformation) {

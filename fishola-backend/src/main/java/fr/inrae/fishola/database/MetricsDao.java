@@ -39,7 +39,7 @@ public class MetricsDao extends AbstractFisholaDao {
         MetricBean result = new MetricBean();
 
         String onlyAllowedLakesJoinCondition = "";
-        if (!fisholaAdmin.getIsNationalAdmin()) {
+        if (Boolean.FALSE.equals(fisholaAdmin.getIsNationalAdmin())) {
             String lakeStringList = "(" + allowedAdminLakes.stream()
                     .map(uuid -> "'" + uuid.toString() + "'")
                     .collect(Collectors.joining(",")) +")";
@@ -47,8 +47,7 @@ public class MetricsDao extends AbstractFisholaDao {
         }
 
         String activeUsersPerYearSQL = "select lake.name as lac, extract(year from t.created_on)::INTEGER as annee, count(distinct u.id) as total from trip t join lake on " + onlyAllowedLakesJoinCondition + " lake.id = t.lake_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by lake.name, extract(year from t.created_on) order by lake.name;";
-        List<CountPerlakeAndPerYear> activeUsersPerYear = withContext(context -> context.fetch(activeUsersPerYearSQL).into(CountPerlakeAndPerYear.class));
-        result.activeUsersPerYear = activeUsersPerYear;
+        result.activeUsersPerYear = withContext(context -> context.fetch(activeUsersPerYearSQL).into(CountPerlakeAndPerYear.class));
 
         String userRegistrationsPerYearSQL = "select '-' as lac, extract(year from created_on)::INTEGER as annee, count(*) as total from fishola_user where exclude_from_exports = false group by extract(year from created_on);";
         List<CountPerlakeAndPerYear> userRegistrationsPerYear = withContext(context -> context.fetch(userRegistrationsPerYearSQL).into(CountPerlakeAndPerYear.class));
