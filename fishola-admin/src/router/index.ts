@@ -142,6 +142,7 @@ const routes: Array<RouteConfig> = [
 const router = new VueRouter({
   routes,
   mode: 'history',
+  base: import.meta.env.VITE__BASE ?? '/',
   scrollBehavior (to) {
     if (to.hash) {
       return {

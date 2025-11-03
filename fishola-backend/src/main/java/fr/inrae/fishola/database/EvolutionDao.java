@@ -57,7 +57,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
         for (UUID specieId : species) {
             List<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecie = Lists.newArrayList();
 
-            for (int year = 2018; year < LocalDate.now().getYear(); year++) {
+            for (int year = 2018; year <= LocalDate.now().getYear(); year++) {
                 Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
 
                 for (Month month : monthlyCatches.keySet()) {
