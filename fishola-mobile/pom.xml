@@ -29,7 +29,7 @@
   <parent>
     <groupId>fr.inrae</groupId>
     <artifactId>fishola</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
   </parent>
 
   <artifactId>fishola-mobile</artifactId>
