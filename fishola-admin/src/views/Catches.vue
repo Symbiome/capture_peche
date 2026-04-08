@@ -43,7 +43,7 @@
       @sort="onSort"
       @click="rowClicked"
       per-page="15"
-      :current-page.sync="page"
+      v-model:current-page="page"
       :striped="true"
       :default-sort="[sortField, sortOrder]"
       :loading="!catches"
@@ -85,7 +85,7 @@
           )"
           :field="col.field"
           :label="col.label"
-          @click.native="showLink($event, props.row[col.field])"
+          @click="showLink($event, props.row[col.field])"
           :key="col.name"
           sortable
         >

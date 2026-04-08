@@ -25,7 +25,7 @@
       :data="data"
       :striped="true"
       :default-sort="defaultSort"
-      :selected.sync="selection.item"
+      v-model:selected="selection.item"
       :loading="!data"
     >
       <template v-slot:default="props">
@@ -86,7 +86,7 @@
           )"
           :field="col.field"
           :label="col.label"
-          @click.native="showLink($event, props.row[col.field])"
+          @click="showLink($event, props.row[col.field])"
           :key="col.name"
           sortable
         >
@@ -101,7 +101,7 @@
         <b-table-column
           v-if="editable && canDelete"
           label="Action"
-          @click.native="showDeleteDialog($event, props.row)"
+          @click="showDeleteDialog($event, props.row)"
         >
           <button
             v-if="allowedDeletionElements.includes(props.row['id'])"
@@ -130,7 +130,7 @@
     </div>
     <b-modal
       v-if="editable"
-      :active.sync="selection.item != null"
+      v-model="isItemSelected"
       trap-focus
       :destroy-on-hide="false"
       aria-role="dialog"
@@ -170,6 +170,9 @@ export default class Refenretial extends Vue {
   @Prop() nextPlannifiedDate: number[];
   data: any[] = [];
   selection = { item: null };
+  // Fix for something no longer working in Vue3:
+  // v-model value must be a valid JavaScript member expression.
+  isItemSelected: boolean = false;
 
   /* The function used to create new elements. If not specified, create button will not be displayed */
   @Prop({ default: null }) createElement: () => any;
@@ -205,6 +208,7 @@ export default class Refenretial extends Vue {
     BackendService.backendGet(this.url).then(res => {
       this.data = res;
       this.selection.item = null;
+      this.isItemSelected = true;
       this.$emit("elementsLoaded", this.data);
       this.checkCanDeletePredicate();
     });
@@ -214,6 +218,7 @@ export default class Refenretial extends Vue {
     let newElement = this.createElement();
     // This will trigger modal appearance
     this.selection.item = newElement;
+    this.isItemSelected = false;
   }
 
   sendNotification(target: any, event: Event) {

@@ -41,7 +41,7 @@
             v-if="getItemLabel(selected) !== 'Autre plan d\'eau'"
             icon="close"
             size="is-small"
-            @click.native="unselectedOption(selected)"
+            @click="unselectedOption(selected)"
             title="Retirer de la sélection">
           </b-icon>
       </span>

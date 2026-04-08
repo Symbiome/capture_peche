@@ -347,7 +347,7 @@ import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
 import BackendService from "@/services/BackendService";
 
-import { Editor, EditorContent } from "@tiptap/vue-2";
+import { Editor, EditorContent } from "@tiptap/vue-3";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 

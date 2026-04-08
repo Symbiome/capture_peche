@@ -36,7 +36,6 @@
       <ul id="toc" />
 
       <h2>Autorisations par type d'administrateur</h2>
-      <p>
         <table>
           <thead>
             <tr>
@@ -136,7 +135,6 @@
             </tr>
           </tbody>
         </table>
-      </p>
 
       <h2>Ajouter une espèce <span class="nationalAdmin">Administrateurs nationaux</span></h2>
       <!-- <div class="regionalAdmin">Administrateurs régionaux</div> -->
