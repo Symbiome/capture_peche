@@ -28,7 +28,7 @@
       :selected.sync="selection.item"
       :loading="!data"
     >
-      <template slot-scope="props">
+      <template v-slot:default="props">
         <b-table-column
           v-for="col in columns.filter(
             col =>

@@ -20,12 +20,12 @@
   -->
 <template>
   <b-navbar>
-    <template slot="brand">
+    <template v-slot:brand>
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
         <img class="logo" src="/img/logo-ligne-positif.svg" alt="FISHOLA" />
       </b-navbar-item>
     </template>
-    <template slot="start">
+    <template v-slot:start>
       <b-navbar-dropdown label="Référentiels" v-if="loggedAdmin.isNationalAdmin">
         <b-navbar-item tag="router-link" :to="{ name: 'lakes' }">
           Plans d'eau
@@ -76,7 +76,7 @@
       </b-navbar-item>
     </template>
 
-    <template slot="end">
+    <template v-slot:end>
       <b-navbar-item tag="router-link" :to="{ name: 'help' }" class="help-link">
         <b-icon icon="help-circle" size="is-medium"></b-icon>
         Aide
