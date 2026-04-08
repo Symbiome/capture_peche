@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
-import vue from "@vitejs/plugin-vue2";
+import vue from "@vitejs/plugin-vue";
 import path from "path";
 import packageJson from "./package.json";
 
@@ -14,7 +14,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: base,
-    plugins: [vue()],
+    plugins: [
+      vue({
+        template: {
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2
+            }
+          }
+        }
+      })
+    ],
     server: {
       port: 8082,
       hmr: {
@@ -35,6 +45,7 @@ export default defineConfig(({ mode }) => {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
         img: path.resolve(__dirname, "public/img"),
         fonts: path.resolve(__dirname, "public/fonts"),
+        vue: "@vue/compat"
       },
     },
     css: {
