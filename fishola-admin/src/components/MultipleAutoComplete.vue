@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
 @Component
 export default class MultipleAutoComplete extends Vue {

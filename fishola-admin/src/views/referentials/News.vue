@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import Referential from "@/components/Referential.vue";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 
 import { LocalDateTime, ZoneOffset, nativeJs } from "@js-joda/core";
 import BackendService from "@/services/BackendService";

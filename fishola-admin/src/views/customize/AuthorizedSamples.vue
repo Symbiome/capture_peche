@@ -142,7 +142,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 
 import BackendService from "@/services/BackendService";
 import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";

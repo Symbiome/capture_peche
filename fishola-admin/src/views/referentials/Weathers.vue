@@ -35,7 +35,7 @@
 import Referential from "@/components/Referential.vue";
 
 import BackendService from "@/services/BackendService";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component({
   components: {

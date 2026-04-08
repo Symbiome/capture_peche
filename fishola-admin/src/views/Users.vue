@@ -36,7 +36,7 @@
 <script lang="ts">
 import Referential from "@/components/Referential.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 
 @Component({
   components: {

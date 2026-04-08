@@ -27,7 +27,7 @@ import BackendService from "@/services/BackendService";
 
 import router from "@/router";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 
 @Component({
   components: {}

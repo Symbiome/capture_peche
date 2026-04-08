@@ -188,14 +188,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 import html2pdf from "html2pdf.js";
 
 @Component({
   components: {}
 })
 export default class Help extends Vue {
-  
+
   mounted() {
     this.generateTableOfContent();
   }
