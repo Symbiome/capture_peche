@@ -22,7 +22,7 @@
     "vue": "^3.5.32",
     "@vue/compat": "^3.5.32",
     "vue-facing-decorator": "^4.0.1",
-    "vue-router": "^3.4.9"
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",

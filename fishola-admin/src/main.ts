@@ -22,11 +22,9 @@
 document.documentElement.style
 .setProperty('$primary', 'yellow');
 
-import Vue from 'vue'
+import Vue, {createApp} from 'vue'
 import Buefy from 'buefy'
 import 'buefy/dist/css/buefy.css'
-
-
 
 Vue.use(Buefy)
 
@@ -35,9 +33,6 @@ import router from './router'
 
 Vue.config.productionTip = false
 
-
-
-new Vue({
-  router,
-  render: h => h(App)
-}).$mount('#app')
+createApp(App)
+  .use(router)
+  .mount('#app');
