@@ -42,6 +42,9 @@ import { Component, Vue } from "vue-facing-decorator";
 import { LocalDateTime, ZoneOffset, nativeJs } from "@js-joda/core";
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
+
+import router from "@/router";
+
 @Component({
   components: {
     Referential
@@ -251,7 +254,7 @@ export default class DocumentationVue extends Vue {
         message: "Vous n'êtes plus connecté\u00B7e",
         type: "is-danger"
       });
-      this.$router.push("/login");
+      await router.push("/login");
     }
   }
 }

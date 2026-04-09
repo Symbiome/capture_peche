@@ -188,6 +188,8 @@ import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
 
+import router from "@/router";
+
 @Component({
   components: {}
 })
@@ -271,7 +273,7 @@ export default class CatchEditionPage extends Vue {
   }
 
   cancel() {
-    this.$router.go(-1);
+    router.go(-1);
   }
 
   formatDate(date: number[]): string {

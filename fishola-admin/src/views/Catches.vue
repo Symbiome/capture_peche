@@ -107,6 +107,9 @@ import ReferentialItem from "@/components/ReferentialItem.vue";
 import { Component, Vue } from "vue-facing-decorator";
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
+
+import router from "@/router";
+
 @Component({
   components: {
     ReferentialItem
@@ -287,7 +290,7 @@ export default class LakesVue extends Vue {
   }
 
   rowClicked(row: any) {
-    this.$router.push("/catch/" + row.catchId);
+    router.push("/catch/" + row.catchId);
   }
 }
 </script>
