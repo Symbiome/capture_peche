@@ -67,7 +67,12 @@ import router from "@/router";
 import BackendService from "@/services/BackendService";
 
 import {BButton, BField, BInput} from "buefy";
-import {ref} from "vue";
+import {ref, configureCompat} from "vue";
+
+// disable compat for certain features
+configureCompat({
+  COMPONENT_V_MODEL: false,
+});
 
 const email = ref(localStorage.getItem("last-fishola-admin-email") ?? "");
 const password = ref("");
