@@ -15,7 +15,7 @@
     "@tiptap/extension-image": "2.24.0",
     "@tiptap/starter-kit": "2.24.0",
     "@tiptap/vue-3": "2.24.0",
-    "buefy": "3.0.4",
+    "buefy": "^3.0.5",
     "core-js": "^3.43.0",
     "html2pdf.js": "^0.12.1",
     "js-joda": "^1.11.0",

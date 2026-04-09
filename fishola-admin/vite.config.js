@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const gitRevision = gitDescribeSync().suffix;
   const frontendVersion = packageJson.version;
   const mvnVersion = process.env.MAVEN_PROJECT_VERSION || "N/A";
-  const base = mode == 'production' ? '/admin/': "/"
+  const base = mode == 'production' ? '/admin/': "/";
 
   return {
     base: base,
