@@ -42,7 +42,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "uploaded-pic", url: string): void,
+  (e: "uploadedPic", url: string): void,
 }>();
 
 async function uploadImageFile(payload: Event) {
@@ -59,7 +59,7 @@ async function uploadImageFile(payload: Event) {
     const newsPicturesURL = Constants.apiUrl(
       "/v1/news-picture/" + newsPicture["id"]
     );
-    emit("uploaded-pic", newsPicturesURL);
+    emit("uploadedPic", newsPicturesURL);
   }
 }
 

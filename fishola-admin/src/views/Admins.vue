@@ -23,7 +23,7 @@
     v-if="loaded"
     name="Administrateurs"
     url="/v1/admin"
-     @elementsLoaded="computeLakeNames"
+     @elements-loaded="computeLakeNames"
     :columns="userColumns"
     :createElement="createAdmin"
     :editable="canCreateAdmins"

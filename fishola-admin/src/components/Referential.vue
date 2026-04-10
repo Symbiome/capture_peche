@@ -172,7 +172,7 @@ function formatDate(puet: number[]): string {
 }
 
 function showCreateDialog() {
-  let newElement = props.createElement?.();
+  const newElement = props.createElement?.();
   // This will trigger modal appearance
   selection.value.item = newElement;
 }

@@ -27,7 +27,7 @@
       name="Utilisateurs"
       url="/v1/security/users"
       :columns="userColumns"
-      @elementsLoaded="usersLoaded"
+      @elements-loaded="usersLoaded"
       :canDelete="true"
     ></Referential>
   </div>

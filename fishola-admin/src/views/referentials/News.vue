@@ -28,8 +28,8 @@
       :columns="docColumns"
       :createElement="createDocumentation"
       :canDelete="true"
-      @elementsLoaded="computeIsPublicAndMiniatureURLs"
-      @sendNotification="sendNotification"
+      @elements-loaded="computeIsPublicAndMiniatureURLs"
+      @send-notification="sendNotification"
       :nextPlannifiedDate="nextPlannifiedDate"
     ></Referential>
   </div>
