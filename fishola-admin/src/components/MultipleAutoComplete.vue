@@ -54,9 +54,9 @@ import {BAutocomplete} from "buefy";
 import {onMounted, ref, Ref, watch} from "vue";
 
 interface Props {
-  data: any[]
-  defaultSelection: string[]
-  placeholder: string
+  data: any[];
+  defaultSelection: string[];
+  placeholder: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,12 +64,12 @@ const props = withDefaults(defineProps<Props>(), {
   defaultSelection: () => [],
 });
 
+const search = ref("");
+const selectedIds: Ref<string[]> = ref([]);
+
 const emit = defineEmits<{
   (e: "updated", value: string[]): void
 }>();
-
-const search = ref("");
-const selectedIds: Ref<string[]> = ref([]);
 
 onMounted(() => {
   selectedIds.value = props.defaultSelection;
@@ -112,6 +112,7 @@ function getItemLabel(id: string) {
   return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
 }
 </script>
+
 <style lang="less">
 .selection {
   min-height: 40px;

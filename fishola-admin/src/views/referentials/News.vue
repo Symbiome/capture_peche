@@ -29,7 +29,7 @@
       :createElement="createDocumentation"
       :canDelete="true"
       @elementsLoaded="computeIsPublicAndMiniatureURLs"
-      @send-notification="sendNotification"
+      @sendNotification="sendNotification"
       :nextPlannifiedDate="nextPlannifiedDate"
     ></Referential>
   </div>
