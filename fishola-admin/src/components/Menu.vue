@@ -22,7 +22,7 @@
   <b-navbar>
     <template v-slot:brand>
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
-        <img class="logo" src="/img/logo-ligne-positif.svg" alt="FISHOLA" />
+        <img class="logo" src="/img/logo-ligne-positif.svg" alt="FISHOLA"/>
       </b-navbar-item>
     </template>
     <template v-slot:start>
@@ -59,9 +59,9 @@
           Communications
         </b-navbar-item>
       </b-navbar-dropdown>
-       <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
-          Communications
-        </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
+        Communications
+      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
         Chiffres Clés
       </b-navbar-item>
@@ -94,14 +94,14 @@
           </template>
 
           <!-- Items -->
-           <b-dropdown-item>
+          <b-dropdown-item>
             <div class="logout-item">
 
-                <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
-                <b v-else-if="lakes.length == 1">
-                  Admnistateur du {{ lakes[0].name}}
-                </b>
-                <span v-else>
+              <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
+              <b v-else-if="lakes.length == 1">
+                Admnistateur du {{ lakes[0].name }}
+              </b>
+              <span v-else>
                   <b>Administrateur  des plans d'eau : </b><br/>
                   <p v-for="l in lakes" :id="l.id">
                     - {{ l.name }}
@@ -119,7 +119,7 @@
                 @click="doLogout()"
               >
 
-              <b-icon icon="logout" size="is-small"></b-icon>
+                <b-icon icon="logout" size="is-small"></b-icon>
                 Déconnexion
               </b-button>
             </div>
@@ -128,53 +128,53 @@
       </b-navbar-item>
       <div class="user-dropdown-wrapper-responsive">
         <b-button
-                class="logout-button"
-                type="is-danger"
-                size="is-small"
-                outlined
-                @click="doLogout()"
-              >
+          class="logout-button"
+          type="is-danger"
+          size="is-small"
+          outlined
+          @click="doLogout()"
+        >
 
-              <b-icon icon="logout" size="is-small"></b-icon>
-                Se déconnecter du compte {{ loggedAdmin.email}}
-              </b-button>
+          <b-icon icon="logout" size="is-small"></b-icon>
+          Se déconnecter du compte {{ loggedAdmin.email }}
+        </b-button>
       </div>
     </template>
   </b-navbar>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from "vue-facing-decorator";
-
+<script setup lang="ts">
 import router from "@/router";
 
 import BackendService from "@/services/BackendService";
+import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNavbarItem, useToast} from "buefy";
+import {onMounted, ref} from "vue";
 
-@Component
-export default class Menu extends Vue {
-  loggedAdmin = { email: ''};
-  lakes = []
+const loggedAdmin = ref({ email: "" });
+const lakes = ref([]);
 
-  mounted() {
-    BackendService.backendGet("/v1/referential/lakes").then(lakes => this.lakes = lakes);
-    BackendService.backendGet("/v1/admin/check").then(
-      (admin) => {
-        this.loggedAdmin = admin
-      },
-      error => {
-        this.$buefy.toast.open({
-          message: "Vous n'êtes plus connecté\u00B7e",
-          type: "is-danger"
-        });
-        router.push("/login");
-      }
-    );
-  }
-  doLogout() {
-    BackendService.backendPost("/v1/admin/logout").then(() => {
+const Toast = useToast();
+
+onMounted(() => {
+  BackendService.backendGet("/v1/referential/lakes").then(lakes => lakes.value = lakes);
+  BackendService.backendGet("/v1/admin/check").then(
+    (admin) => {
+      loggedAdmin.value = admin
+    },
+    error => {
+      Toast.open({
+        message: "Vous n'êtes plus connecté\u00B7e",
+        type: "is-danger"
+      });
       router.push("/login");
-    });
-  }
+    }
+  );
+});
+
+function doLogout() {
+  BackendService.backendPost("/v1/admin/logout").then(() => {
+    router.push("/login");
+  });
 }
 </script>
 
@@ -215,6 +215,7 @@ a.navbar-item.is-active,
   display: flex;
   gap: 10px;
   cursor: pointer;
+
   &:hover {
     color: @pelorous;
   }
@@ -234,6 +235,7 @@ a.navbar-item.is-active,
   .help-link .icon {
     display: none;
   }
+
   .user-dropdown-wrapper-responsive {
     display: block;
   }
