@@ -45,7 +45,7 @@ const emit = defineEmits<{
   (e: "uploaded-pic", url: string): void,
 }>();
 
-async function uploadImageFile(_: InputEvent): Promise<void> {
+async function uploadImageFile(payload: Event) {
   const uploadedFile = useTemplateRef("upload").value as HTMLInputElement;
   if (uploadedFile.files) {
     const file = uploadedFile.files[0];

@@ -30,7 +30,7 @@
       clear-on-select
       icon="magnify"
       @select="(option) => (selectOption(option))"
-    >
+      >
       <template #empty>Aucun résultat</template>
     </b-autocomplete>
 
@@ -49,58 +49,67 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+<script setup lang="ts">
+import {BAutocomplete} from "buefy";
+import {onMounted, ref, Ref, watch} from "vue";
 
-@Component
-export default class MultipleAutoComplete extends Vue {
-  @Prop({default : []}) data: any[];
-  @Prop({default : []}) defaultSelection: string[];
-  @Prop() placeholder: string;
-  search: string = "";
-  selectedIds: string[] = [];
+interface Props {
+  data: any[]
+  defaultSelection: string[]
+  placeholder: string
+}
 
-  mounted() {
-    this.defaultSelectionChanged();
+const props = withDefaults(defineProps<Props>(), {
+  data: () => [],
+  defaultSelection: () => [],
+});
+
+const emit = defineEmits<{
+  (e: "updated", value: string[]): void
+}>();
+
+const search = ref("");
+const selectedIds: Ref<string[]> = ref([]);
+
+onMounted(() => {
+  selectedIds.value = props.defaultSelection;
+  emit("updated", selectedIds.value);
+});
+
+watch(props.defaultSelection, (oldSelection, newSelection) => {
+  selectedIds.value = newSelection;
+  emit("updated", selectedIds.value);
+});
+
+function selectOption(option: any) {
+  if (option) {
+    selectedIds.value.push(option.id);
+    emit("updated", selectedIds.value);
   }
+}
 
+function unselectedOption(optionId: string) {
+  selectedIds.value = selectedIds.value.filter(item => item !== optionId);
+  emit("updated", selectedIds.value);
+}
 
-  @Watch("defaultSelection")
-  defaultSelectionChanged() {
-    this.selectedIds = this.defaultSelection;
-    this.$emit("updated", this.selectedIds);
-  }
+function getOptions() {
+  return props.data.filter((option) => {
+    return (
+      option.label
+        .toString()
+        .toLowerCase()
+        .indexOf(search.value.toLowerCase()) >= 0
+      && !selectedIds.value.includes(option.id)
+    );
+  });
+}
 
-  selectOption(option: any) {
-    if (option) {
-      this.selectedIds.push(option.id);
-      this.$emit("updated", this.selectedIds)
-    }
-  }
-
-  unselectedOption(optionId: string) {
-    this.selectedIds = this.selectedIds.filter(item => item !== optionId)
-    this.$emit("updated", this.selectedIds)
-  }
-
-  getOptions() {
-    return this.data.filter((option) => {
-      return (
-        option.label
-          .toString()
-          .toLowerCase()
-          .indexOf(this.search.toLowerCase()) >= 0
-        && !this.selectedIds.includes(option.id)
-      );
-    });
-  }
-
-  getItemLabel(id: string) {
-    let filteredItem = this.data.filter((option) => {
-      return option.id === id;
-    });
-    return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
-  }
+function getItemLabel(id: string) {
+  let filteredItem = props.data.filter((option) => {
+    return option.id === id;
+  });
+  return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
 }
 </script>
 <style lang="less">
