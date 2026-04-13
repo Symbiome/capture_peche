@@ -26,13 +26,8 @@
 </template>
 
 <script>
-// @ is an alias to /src
-
 export default {
-  name: 'Home',
-  components: {
-    // Menu
-  }
+  name: "Home",
 }
 </script>
 
