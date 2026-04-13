@@ -222,7 +222,7 @@ import { useToast } from "buefy";
 
 const Toast = useToast();
 
-const props = defineProps<{
+const { catchId } = defineProps<{
   catchId: string,
 }>();
 
@@ -270,9 +270,9 @@ async function loadCatch() {
   measurementPicURL.value = "";
   otherPicsUrls.value = [];
   trip.value = await BackendService.backendGet(
-    "/v1/trips/catches/" + props.catchId
+    "/v1/trips/catches/" + catchId
   );
-  aCatch.value = trip.value.catchs.find((c: any) => c.id == props.catchId);
+  aCatch.value = trip.value.catchs.find((c: any) => c.id == catchId);
   if (aCatch.value.hasMeasurementPicture) {
     measurementPicURL.value = Constants.apiUrl(
       `/v1/pictures/measure/${aCatch.value.id}/preview`
@@ -280,7 +280,7 @@ async function loadCatch() {
   }
   aCatch.value.pictureOrders.forEach((picOrder: string) => {
     const otherPicURL = Constants.apiUrl(
-      `/v1/pictures/${props.catchId}/${picOrder}`
+      `/v1/pictures/${catchId}/${picOrder}`
     );
     otherPicsUrls.value.push(otherPicURL);
   });
@@ -288,7 +288,7 @@ async function loadCatch() {
 }
 
 async function save() {
-  const url = "/v1/trips/catches/" + props.catchId;
+  const url = "/v1/trips/catches/" + catchId;
   try {
     await BackendService.backendPut(url, aCatch.value);
     emit("referentialUpdated");

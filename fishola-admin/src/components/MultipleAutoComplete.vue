@@ -59,24 +59,24 @@ interface Props {
   placeholder: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  data: () => [],
-  defaultSelection: () => [],
-});
+const {
+  data = [],
+  defaultSelection = [],
+} = defineProps<Props>();
 
 const search = ref("");
-const selectedIds: Ref<string[]> = ref([]);
+const selectedIds: Ref<string[]> = ref(defaultSelection);
 
 const emit = defineEmits<{
   (e: "updated", value: string[]): void
 }>();
 
 onMounted(() => {
-  selectedIds.value = props.defaultSelection;
+  selectedIds.value = defaultSelection;
   emit("updated", selectedIds.value);
 });
 
-watch(props.defaultSelection, (oldSelection, newSelection) => {
+watch(() => defaultSelection, (oldSelection, newSelection) => {
   selectedIds.value = newSelection;
   emit("updated", selectedIds.value);
 });
@@ -94,7 +94,7 @@ function unselectedOption(optionId: string) {
 }
 
 function getOptions() {
-  return props.data.filter((option) => {
+  return data.filter((option) => {
     return (
       option.label
         .toString()
@@ -106,7 +106,7 @@ function getOptions() {
 }
 
 function getItemLabel(id: string) {
-  let filteredItem = props.data.filter((option) => {
+  const filteredItem = data.filter((option) => {
     return option.id === id;
   });
   return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';

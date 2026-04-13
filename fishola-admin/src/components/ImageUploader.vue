@@ -36,7 +36,7 @@ import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import {useTemplateRef} from "vue";
 
-const props = defineProps<{
+const { itemId, isMiniature } = defineProps<{
   itemId: string,
   isMiniature: boolean,
 }>();
@@ -50,9 +50,9 @@ async function uploadImageFile(payload: Event) {
   if (uploadedFile.files) {
     const file = uploadedFile.files[0];
     const base64 = await getBase64(file);
-    const id = props.itemId ? props.itemId : "temp-id";
+    const id = itemId ? itemId : "temp-id";
     let url = "/v1/news-picture/";
-    if (props.isMiniature) {
+    if (isMiniature) {
       url = "/v1/news-miniature/";
     }
     const newsPicture = await BackendService.backendPost(url + id, base64);

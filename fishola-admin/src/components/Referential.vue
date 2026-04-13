@@ -127,13 +127,17 @@ interface Props {
   canDeletePredicate: ((elementToDelete: any) => Promise<boolean>) | null;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  editable: true,
-  defaultSort: () => ["id", "desc"],
-  createElement: null,
-  canDelete: false,
-  canDeletePredicate: null,
-});
+const {
+  name,
+  url,
+  columns,
+  editable = true,
+  defaultSort = ["id", "desc"],
+  nextPlannifiedDate,
+  createElement = null,
+  canDelete = false,
+  canDeletePredicate = null,
+} = defineProps<Props>();
 
 const data = ref([]);
 const selection = ref({ item: null });
@@ -150,7 +154,7 @@ const emit = defineEmits<{
 
 onMounted(() => loadData());
 
-watch(props.nextPlannifiedDate, (oldDate, newDate) => {
+watch(() => nextPlannifiedDate, (oldDate, newDate) => {
   loadData();
 });
 
@@ -159,7 +163,7 @@ function loadData() {
     data.value.pop();
   }
   allowedDeletionElements.value = [];
-  BackendService.backendGet(props.url).then(res => {
+  BackendService.backendGet(url).then(res => {
     data.value = res;
     selection.value.item = null;
     emit("elementsLoaded", data.value);
@@ -172,7 +176,7 @@ function formatDate(puet: number[]): string {
 }
 
 function showCreateDialog() {
-  const newElement = props.createElement?.();
+  const newElement = createElement?.();
   // This will trigger modal appearance
   selection.value.item = newElement;
 }
@@ -186,11 +190,11 @@ function sendNotification(target: any, event: Event) {
  * If required by configuration, ask to server if delete is allowed.
  */
 function checkCanDeletePredicate() {
-  if (props.canDelete && data.value) {
+  if (canDelete && data.value) {
     data.value.forEach(element => {
       // Call predicate for each element
-      if (props.canDeletePredicate != null) {
-        props.canDeletePredicate(element).then(allowDeletion => {
+      if (canDeletePredicate != null) {
+        canDeletePredicate(element).then(allowDeletion => {
           if (allowDeletion && allowedDeletionElements.value != null) {
             allowedDeletionElements.value.push(element["id"]);
           }
@@ -229,7 +233,7 @@ function showDeleteDialog(event: Event, element: any) {
       hasIcon: true,
       onConfirm: () => {
         // Sends an HTTP DELETE request at url/id
-        BackendService.backendDelete(`${props.url}/${element["id"]}`).then(
+        BackendService.backendDelete(`${url}/${element["id"]}`).then(
           res => {
             Toast.open({
               message: (element["name"] || "Élément") + " supprimé",

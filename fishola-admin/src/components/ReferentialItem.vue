@@ -255,7 +255,11 @@ import { useToast } from "buefy";
 
 const Toast = useToast();
 
-const props = defineProps<{
+const {
+  item,
+  columns,
+  backendUrl,
+} = defineProps<{
   item: any,
   columns: any[],
   backendUrl: string,
@@ -282,13 +286,13 @@ onBeforeUnmount(() => {
   editor?.destroy();
 });
 
-watch(props.item, (oldItem, newItem) => itemChanged());
+watch(() => item, (oldItem, newItem) => itemChanged());
 
 function itemChanged(): void {
   // Search for an html column (only one per item permited)
-  let htmlColumns = props.columns.filter(c => c.isHTML);
+  let htmlColumns = columns.filter(c => c.isHTML);
   if (htmlColumns.length > 0) {
-    let htmlContent = props.item[htmlColumns[0].field];
+    let htmlContent = item[htmlColumns[0].field];
     // Update editor accordingly
     if (htmlContent) {
       editor.commands.setContent(htmlContent, { emitUpdate: false });
@@ -296,15 +300,15 @@ function itemChanged(): void {
   }
 
   // Initialize dateRange
-  let rangeBeginningColumn = props.columns.filter(c => c.isAPeriodBeginning);
-  let rangeEndColumn = props.columns.filter(c => c.isAPeriodEnd);
+  let rangeBeginningColumn = columns.filter(c => c.isAPeriodBeginning);
+  let rangeEndColumn = columns.filter(c => c.isAPeriodEnd);
   if (rangeBeginningColumn.length && rangeEndColumn.length) {
     dateRange.value = [];
     dateRange.value.push(
-      parseLocalDateTime(props.item[rangeBeginningColumn[0].field])
+      parseLocalDateTime(item[rangeBeginningColumn[0].field])
     );
     dateRange.value.push(
-      parseLocalDateTime(props.item[rangeEndColumn[0].field])
+      parseLocalDateTime(item[rangeEndColumn[0].field])
     );
   }
 }
@@ -318,35 +322,35 @@ function uploadedPic(url: string): void {
 }
 
 function uploadedMiniature(url: string): void {
-  props.item["miniatureURL"] = url;
+  item["miniatureURL"] = url;
   const splitted = url.split("/");
-  props.item["miniatureId"] = splitted[splitted.length - 1];
+  item["miniatureId"] = splitted[splitted.length - 1];
   const instance = getCurrentInstance();
   instance?.proxy?.$forceUpdate();
 }
 
 function save(closeModal: () => void) {
   // Search for an html column (only one per item permited)
-  let htmlColumns = props.columns.filter(c => c.isHTML);
+  let htmlColumns = columns.filter(c => c.isHTML);
   if (htmlColumns.length > 0) {
     // Get editor value
-    props.item[htmlColumns[0].field] = editor.getHTML();
+    item[htmlColumns[0].field] = editor.getHTML();
   }
 
   // Translate dateRange into beggining/end dates
-  let rangeBeginningColumn = props.columns.filter(c => c.isAPeriodBeginning);
-  let rangeEndColumn = props.columns.filter(c => c.isAPeriodEnd);
+  let rangeBeginningColumn = columns.filter(c => c.isAPeriodBeginning);
+  let rangeEndColumn = columns.filter(c => c.isAPeriodEnd);
 
   if (dateRange.value && dateRange.value[0] && dateRange.value[1]) {
     dateRange.value[0].setHours(7);
     dateRange.value[0].setMinutes(30);
-    props.item[rangeBeginningColumn[0].field] = LocalDateTime.from(
+    item[rangeBeginningColumn[0].field] = LocalDateTime.from(
       nativeJs(dateRange.value[0])
     );
 
     dateRange.value[1].setHours(21);
     dateRange.value[1].setMinutes(0);
-    props.item[rangeEndColumn[0].field] = LocalDateTime.from(
+    item[rangeEndColumn[0].field] = LocalDateTime.from(
       nativeJs(dateRange.value[1])
     );
   }
@@ -366,7 +370,7 @@ function save(closeModal: () => void) {
   if (input.value.file) {
     getBase64(input.value.file).then(
       base64 => {
-        props.item["base64Content"] = base64;
+        item["base64Content"] = base64;
         doSave(onSavedCallback);
       },
       err => {
@@ -379,7 +383,7 @@ function save(closeModal: () => void) {
   } else if (picture.value.file) {
     getBase64(picture.value.file).then(
       base64 => {
-        props.item["miniaturePic"] = base64;
+        item["miniaturePic"] = base64;
         doSave(onSavedCallback);
       },
       err => {
@@ -395,24 +399,24 @@ function save(closeModal: () => void) {
 }
 
 function doSave(onSavedCallback: () => void) {
-  if (props.item.id) {
+  if (item.id) {
     // Update : PUT
-    const url = props.backendUrl + "/" + props.item.id;
+    const url = backendUrl + "/" + item.id;
     BackendService.backendPut(url, item.value).then(onSavedCallback, err => {
       input.value.file = null;
       picture.value.file = null;
       Toast.open({
         message:
           "Erreur lors de la modification de " +
-          props.item["name"] +
+          item["name"] +
           ". Veuillez vérifier vos modifications.",
         type: "is-danger"
       });
     });
   } else {
     // Create : POST
-    const url = props.backendUrl;
-    BackendService.backendPost(url, props.item).then(onSavedCallback, err => {
+    const url = backendUrl;
+    BackendService.backendPost(url, item).then(onSavedCallback, err => {
       input.value.file = null;
       picture.value.file = null;
       Toast.open({
