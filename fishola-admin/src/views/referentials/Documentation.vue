@@ -30,7 +30,7 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from '@/components/Referential.vue'
 
 const docColumns: any[] = [
