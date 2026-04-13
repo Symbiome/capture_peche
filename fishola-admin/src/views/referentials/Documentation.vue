@@ -26,58 +26,44 @@
       :columns="docColumns"
       :createElement=createDocumentation
       :canDelete=true
-      ></Referential>
+    ></Referential>
   </div>
 </template>
 
 <script lang="ts">
-import Referential from '@/components/Referential.vue'
-
-import { Component, Vue } from 'vue-facing-decorator';
-
-@Component({
-  components: {
-    Referential
+const docColumns: any[] = [
+  {
+    field: 'id',
+    label: 'Identifiant technique',
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: 'naturalId',
+    label: 'Identifiant naturel',
+    readOnlyEdition: true
+  },
+  {
+    field: 'name',
+    label: 'Nom'
+  },
+  {
+    field: 'url',
+    label: 'Fichier',
+    isFile: true
   }
-})
-export default class DocumentationVue extends Vue {
+];
 
-  docColumns:any[] = [
-    {
-      field: 'id',
-      label: 'Identifiant technique',
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: 'naturalId',
-      label: 'Identifiant naturel',
-      readOnlyEdition: true
-    },
-    {
-      field: 'name',
-      label: 'Nom'
-    },
-    {
-      field: 'url',
-      label: 'Fichier',
-      isFile: true
-    }
-  ];
-
-  createDocumentation() {
-    return {
-      'naturalId': '',
-      'name': 'Nouvelle documentation',
-      'url': '',
-      'base64Content': ''
-    };
-  }
+function createDocumentation() {
+  return {
+    'naturalId': '',
+    'name': 'Nouvelle documentation',
+    'url': '',
+    'base64Content': ''
+  };
 }
 </script>
 
 <style scoped lang="less">
-
 @import "../../less/main";
-
 </style>
