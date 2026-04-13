@@ -15,15 +15,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: base,
     plugins: [
-      vue({
-        template: {
-          compilerOptions: {
-            compatConfig: {
-              MODE: 3
-            }
-          }
-        }
-      })
+      vue({})
     ],
     server: {
       port: 8082,
@@ -45,7 +37,6 @@ export default defineConfig(({ mode }) => {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
         img: path.resolve(__dirname, "public/img"),
         fonts: path.resolve(__dirname, "public/fonts"),
-        vue: "@vue/compat"
       },
     },
     css: {

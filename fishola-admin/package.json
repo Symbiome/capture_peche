@@ -15,12 +15,10 @@
     "@tiptap/extension-image": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
     "@tiptap/vue-3": "^3.22.3",
-    "@vue/compat": "^3.5.32",
     "buefy": "^3.0.5",
     "core-js": "^3.49.0",
     "html2pdf.js": "^0.14.0",
     "vue": "^3.5.32",
-    "vue-facing-decorator": "^4.0.1",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
