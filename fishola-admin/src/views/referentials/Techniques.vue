@@ -31,47 +31,39 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from "@/components/Referential.vue";
 import BackendService from "@/services/BackendService";
-import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component({
-  components: {
-    Referential
+const url = "/v1/referential/techniques";
+const techniqueColumns: any[] = [
+  {
+    field: "id",
+    label: "Identifiant",
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: "name",
+    label: "Nom"
+  },
+  {
+    field: "exportAs",
+    label: "Nom d'export"
   }
-})
-export default class TechniquesVue extends Vue {
-  url = "/v1/referential/techniques";
-  techniqueColumns: any[] = [
-    {
-      field: "id",
-      label: "Identifiant",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "name",
-      label: "Nom"
-    },
-    {
-      field: "exportAs",
-      label: "Nom d'export"
-    }
-  ];
+];
 
-  createTechnique(): any {
-    return {
-      name: "Nouvelle technique",
-      builtIn: true,
-      exportAs: "technique"
-    };
-  }
+function createTechnique(): any {
+  return {
+    name: "Nouvelle technique",
+    builtIn: true,
+    exportAs: "technique"
+  };
+}
 
-  canDeleteTechnique(technique: any): Promise<boolean> {
-    return BackendService.backendGet(
-      this.url + "/can-delete/" + technique["id"]
-    );
-  }
+function canDeleteTechnique(technique: any): Promise<boolean> {
+  return BackendService.backendGet(
+    url + "/can-delete/" + technique["id"]
+  );
 }
 </script>
