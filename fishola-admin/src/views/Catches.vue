@@ -49,7 +49,6 @@
       :total="total"
       class="clickable"
     >
-      <template v-slot:default="props">
         <b-table-column
           v-for="col in columns.filter(
             col =>
@@ -64,6 +63,7 @@
           :key="col.name"
           :sortable="col.sortable"
           :searchable="col.searchable"
+          v-slot="props"
         >
           <span v-if="col.isABoolean && props.row[col.field]">
             Oui
@@ -84,21 +84,22 @@
           )"
           :field="col.field"
           :label="col.label"
-          @click="showLink($event, props.row[col.field])"
           :key="col.name"
           sortable
+          v-slot="props"
         >
-          <span v-if="col.isUrl">
-            {{ props.row[col.field] }}
-          </span>
-          <button class="button is-small is-info">
-            <b-icon
-              icon="eye"
-              size="is-small"
-            ></b-icon>
-          </button>
+          <div @click="showLink($event, props.row[col.field])">
+            <span v-if="col.isUrl">
+              {{ props.row[col.field] }}
+            </span>
+            <button class="button is-small is-info">
+              <b-icon
+                icon="eye"
+                size="is-small"
+              ></b-icon>
+            </button>
+          </div>
         </b-table-column>
-      </template>
     </b-table>
   </div>
 </template>

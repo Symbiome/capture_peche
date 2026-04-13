@@ -21,79 +21,138 @@
 <template>
   <div class="referential">
     <h1>{{ name }} <span class="count">({{ data.length }})</span></h1>
-    <b-table :data="data" :striped="true" :default-sort="defaultSort" v-model:selected="selection.item"
-      :loading="!data">
-      <template v-slot:default="props">
-        <b-table-column v-for="col in columns.filter(
+    <b-table
+      :data="data"
+      :striped="true"
+      :default-sort="defaultSort"
+      v-model:selected="selection.item"
+      :loading="!data"
+    >
+      <b-table-column
+        v-for="col in columns.filter(
           col =>
             col.visible !== false &&
             !col.isUrl &&
             !col.isFile &&
             !col.isHTML &&
             !col.isPicture
-        )" :field="col.field" :label="col.label" :key="col.name" :searchable="col.searchable" sortable>
-          <span v-if="col.isABoolean && props.row[col.field]">
-            Oui
-          </span>
-          <span v-else-if="col.isANotificationDate">
-            <span v-if="props.row[col.field]">
-              {{ formatDate(props.row[col.field]) }}
-            </span>
-            <span v-else-if="props.row['isPublic']">
-              Plannifié le {{ formatDate(nextPlannifiedDate) }}
-              <b-button class="button is-small is-primary" @click="sendNotification(props.row, $event)">Envoyer
-                maintenant</b-button>
-            </span>
-            <span v-else>
-              Non envoyé
-            </span>
-          </span>
-          <span v-else-if="col.isABoolean && !props.row[col.field]">
-            Non
-          </span>
-          <span v-else-if="
-            (col.isADate || col.isAPeriodBeginning || col.isAPeriodEnd) &&
-            props.row[col.field]
-          ">
+        )"
+        :field="col.field"
+        :label="col.label"
+        :key="col.name"
+        :searchable="col.searchable"
+        sortable
+        v-slot="props"
+      >
+        <span v-if="col.isABoolean && props.row[col.field]">
+          Oui
+        </span>
+        <span v-else-if="col.isANotificationDate">
+          <span v-if="props.row[col.field]">
             {{ formatDate(props.row[col.field]) }}
           </span>
-          <span v-else-if="!col.isABoolean && !col.isADate">
-            {{ props.row[col.field] }}
+          <span v-else-if="props.row['isPublic']">
+            Plannifié le {{ formatDate(nextPlannifiedDate) }}
+            <b-button
+              class="button is-small is-primary"
+              @click="sendNotification(props.row, $event)"
+            >Envoyer
+              maintenant</b-button>
           </span>
-        </b-table-column>
-        <b-table-column v-for="col in columns.filter(
+          <span v-else>
+            Non envoyé
+          </span>
+        </span>
+        <span v-else-if="col.isABoolean && !props.row[col.field]">
+          Non
+        </span>
+        <span v-else-if="
+          (col.isADate || col.isAPeriodBeginning || col.isAPeriodEnd) &&
+          props.row[col.field]
+        ">
+          {{ formatDate(props.row[col.field]) }}
+        </span>
+        <span v-else-if="!col.isABoolean && !col.isADate">
+          {{ props.row[col.field] }}
+        </span>
+      </b-table-column>
+      <b-table-column
+        v-for="col in columns.filter(
           col =>
             col.visible !== false &&
             (col.isUrl || col.isFile || col.isPicture)
-        )" :field="col.field" :label="col.label" @click="showLink($event, props.row[col.field])" :key="col.name"
-          sortable>
+        )"
+        :field="col.field"
+        :label="col.label"
+        :key="col.name"
+        sortable
+        v-slot="props"
+      >
+        <div @click="showLink($event, props.row[col.field])">
           <span v-if="col.isUrl">
             {{ props.row[col.field] }}
           </span>
           <button class="button is-small is-info">
-            <b-icon icon="eye" size="is-small"></b-icon>
+            <b-icon
+              icon="eye"
+              size="is-small"
+            ></b-icon>
           </button>
-        </b-table-column>
-        <!-- Deletion button (only displayed if delete is allow) -->
-        <b-table-column v-if="editable && canDelete" label="Action" @click="showDeleteDialog($event, props.row)">
-          <button v-if="allowedDeletionElements.includes(props.row['id'])" class="button is-small is-danger">
-            <b-icon icon="delete" size="is-small"></b-icon>
+        </div>
+      </b-table-column>
+      <!-- Deletion button (only displayed if delete is allow) -->
+      <b-table-column
+        v-if="editable && canDelete"
+        label="Action"
+        v-slot="props"
+      >
+        <div @click="showDeleteDialog($event, props.row)">
+          <button
+            v-if="allowedDeletionElements.includes(props.row['id'])"
+            class="button is-small is-danger"
+          >
+            <b-icon
+              icon="delete"
+              size="is-small"
+            ></b-icon>
           </button>
-          <button v-if="!allowedDeletionElements.includes(props.row['id'])" class="button is-small is-light">
-            <b-icon icon="delete-off" size="is-small"></b-icon>
+          <button
+            v-if="!allowedDeletionElements.includes(props.row['id'])"
+            class="button is-small is-light"
+          >
+            <b-icon
+              icon="delete-off"
+              size="is-small"
+            ></b-icon>
           </button>
-        </b-table-column>
-      </template>
+        </div>
+      </b-table-column>
     </b-table>
     <div class="buttons">
       <!-- Creation button (only displayed if createElement is defined) -->
-      <button class="button is-primary" v-if="editable && createElement != null" @click="showCreateDialog()">
+      <button
+        class="button is-primary"
+        v-if="editable && createElement != null"
+        @click="showCreateDialog()"
+      >
         Nouveau
       </button>
     </div>
-    <b-modal v-if="editable" v-model="isItemSelected" trap-focus :destroy-on-hide="false" aria-role="dialog" full-screen
-      :aria-modal="true">
-      <ReferentialItem :item="selection.item" :columns="columns" :backendUrl="url" v-on:referential-updated="loadData">
+    <b-modal
+      v-if="editable"
+      v-model="isItemSelected"
+      trap-focus
+      :destroy-on-hide="false"
+      aria-role="dialog"
+      full-screen
+      :aria-modal="true"
+    >
+      <ReferentialItem
+        :item="selection.item"
+        :columns="columns"
+        :backendUrl="url"
+        v-on:referential-updated="loadData"
+      >
       </ReferentialItem>
     </b-modal>
   </div>
