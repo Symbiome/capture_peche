@@ -20,7 +20,11 @@
   -->
 <template>
   <div class="lakes">
-    <b-button type="is-primary" @click="copyMails" class="contact-button">
+    <b-button
+      type="is-primary"
+      @click="copyMails"
+      class="contact-button"
+    >
       Copier les emails de tous les utilisateurs acceptant d'être contactés
     </b-button>
     <Referential
@@ -33,80 +37,76 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from "@/components/Referential.vue";
+import { useToast } from "buefy";
+import { ref } from "vue";
 
-import { Component, Vue } from "vue-facing-decorator";
+const Toast = useToast();
 
-@Component({
-  components: {
-    Referential
+const userEmails = ref("");
+const userColumns: any[] = [
+  {
+    field: "id",
+    label: "Identifiant",
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: "firstName",
+    label: "Prénom",
+    readOnly: true,
+    searchable: true,
+  },
+  {
+    field: "lastName",
+    label: "Nom",
+    readOnly: true,
+    searchable: true,
+  },
+  {
+    field: "email",
+    label: "E-mail",
+    readOnly: true,
+    searchable: true,
+  },
+  {
+    field: "gender",
+    label: "Genre",
+    readOnly: true,
+    searchable: true,
+    visible: false,
+  },
+  {
+    field: "birthYear",
+    label: "Année de naissance",
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: "excludeFromExports",
+    label: "Exclu des exports",
+    isABoolean: true
+  },
+  {
+    field: "createdOn",
+    label: "Date de création",
+    isADate: true,
+    readOnly: true
   }
-})
-export default class UsersVue extends Vue {
-  userEmails = "";
-  userColumns: any[] = [
-    {
-      field: "id",
-      label: "Identifiant",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "firstName",
-      label: "Prénom",
-      readOnly: true,
-      searchable: true,
-    },
-    {
-      field: "lastName",
-      label: "Nom",
-      readOnly: true,
-      searchable: true,
-    },
-    {
-      field: "email",
-      label: "E-mail",
-      readOnly: true,
-      searchable: true,
-    },
-    {
-      field: "gender",
-      label: "Genre",
-      readOnly: true,
-      searchable: true,
-      visible: false,
-    },
-    {
-      field: "birthYear",
-      label: "Année de naissance",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "excludeFromExports",
-      label: "Exclu des exports",
-      isABoolean: true
-    },
-    {
-      field: "createdOn",
-      label: "Date de création",
-      isADate: true,
-      readOnly: true
-    }
-  ];
+];
 
-  usersLoaded(zeUsers: any[]) {
-    this.userEmails = zeUsers
+function usersLoaded(zeUsers: any[]) {
+    userEmails.value = zeUsers
       .filter(u => u.acceptsEmailNotifications)
       .map(u => u.email)
       .join(";");
   }
 
-  copyMails() {
-    navigator.clipboard.writeText(this.userEmails);
-    const nbUsers = this.userEmails.split(";").length;
-    this.$buefy.toast.open({
+  function copyMails() {
+    navigator.clipboard.writeText(userEmails.value);
+    const nbUsers = userEmails.value.split(";").length;
+    Toast.open({
       message:
         "Les emails des " +
         nbUsers +
@@ -115,11 +115,9 @@ export default class UsersVue extends Vue {
       duration: 7000
     });
   }
-}
 </script>
 
 <style scoped lang="less">
-
 .contact-button {
   position: absolute;
   right: 40px;
