@@ -31,45 +31,37 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from "@/components/Referential.vue";
 
 import BackendService from "@/services/BackendService";
-import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component({
-  components: {
-    Referential
+const url = "/v1/referential/weathers";
+const weatherColumns: any[] = [
+  {
+    field: "id",
+    label: "Identifiant",
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: "name",
+    label: "Nom"
+  },
+  {
+    field: "exportAs",
+    label: "Nom d'export"
   }
-})
-export default class WeathersVue extends Vue {
-  url = "/v1/referential/weathers";
-  weatherColumns: any[] = [
-    {
-      field: "id",
-      label: "Identifiant",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "name",
-      label: "Nom"
-    },
-    {
-      field: "exportAs",
-      label: "Nom d'export"
-    }
-  ];
+];
 
-  createWeather(): any {
-    return {
-      name: "Sans Nuage",
-      exportAs: "nouveautemps"
-    };
-  }
+function createWeather(): any {
+  return {
+    name: "Sans Nuage",
+    exportAs: "nouveautemps"
+  };
+}
 
-  canDeleteWeather(weather: any): Promise<boolean> {
-    return BackendService.backendGet(this.url + "/can-delete/" + weather["id"]);
-  }
+function canDeleteWeather(weather: any): Promise<boolean> {
+  return BackendService.backendGet(url + "/can-delete/" + weather["id"]);
 }
 </script>
