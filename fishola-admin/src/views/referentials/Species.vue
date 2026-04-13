@@ -31,59 +31,51 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from "@/components/Referential.vue";
 
 import BackendService from "@/services/BackendService";
-import { Component, Vue } from "vue-facing-decorator";
 
-@Component({
-  components: {
-    Referential
+const url = "/v1/referential/raw-species";
+const specieColumns: any[] = [
+  {
+    field: "id",
+    label: "Identifiant",
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: "name",
+    label: "Nom",
+    searchable: true,
+  },
+  {
+    field: "exportAs",
+    label: "Nom d'export",
+    searchable: true,
+  },
+  {
+    field: "builtIn",
+    label: "Pour tout le monde ?",
+    isABoolean: true
+  },
+  {
+    field: "mandatorySize",
+    label: "Taille obligatoire ?",
+    isABoolean: true
   }
-})
-export default class SpeciesVue extends Vue {
-  url = "/v1/referential/raw-species";
-  specieColumns: any[] = [
-    {
-      field: "id",
-      label: "Identifiant",
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: "name",
-      label: "Nom",
-      searchable: true,
-    },
-    {
-      field: "exportAs",
-      label: "Nom d'export",
-      searchable: true,
-    },
-    {
-      field: "builtIn",
-      label: "Pour tout le monde ?",
-      isABoolean: true
-    },
-    {
-      field: "mandatorySize",
-      label: "Taille obligatoire ?",
-      isABoolean: true
-    }
-  ];
+];
 
-  createSpecie(): any {
-    return {
-      name: "Nouvelle espèce",
-      builtIn: true,
-      exportAs: "NouvelleEspece",
-      mandatorySize: true
-    };
-  }
+function createSpecie(): any {
+  return {
+    name: "Nouvelle espèce",
+    builtIn: true,
+    exportAs: "NouvelleEspece",
+    mandatorySize: true
+  };
+}
 
-  canDeleteSpecie(specie: any): Promise<boolean> {
-    return BackendService.backendGet(this.url + "/can-delete/" + specie["id"]);
-  }
+function canDeleteSpecie(specie: any): Promise<boolean> {
+  return BackendService.backendGet(url + "/can-delete/" + specie["id"]);
 }
 </script>
