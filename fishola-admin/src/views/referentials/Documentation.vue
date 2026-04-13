@@ -31,6 +31,8 @@
 </template>
 
 <script lang="ts">
+import Referential from '@/components/Referential.vue'
+
 const docColumns: any[] = [
   {
     field: 'id',
