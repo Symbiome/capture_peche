@@ -26,37 +26,27 @@
 import BackendService from "@/services/BackendService";
 
 import router from "@/router";
+import { onMounted } from "vue";
 
-import { Component, Vue } from "vue-facing-decorator";
-
-@Component({
-  components: {}
+onMounted(() => {
+  checkForActiveSession();
 })
-export default class DispatcherView extends Vue {
-  constructor() {
-    super();
-  }
 
-  mounted() {
-    this.checkForActiveSession();
-  }
-
-  checkForActiveSession() {
-    BackendService.backendGet("/v1/admin/check").then(
-      () => {
-        router.push("/home");
-      },
-      error => {
-        router.push("/login");
-      }
-    );
-  }
+function checkForActiveSession() {
+  BackendService.backendGet("/v1/admin/check").then(
+    () => {
+      router.push("/home");
+    },
+    error => {
+      router.push("/login");
+    }
+  );
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 .dispatcher {
   height: 100%;
 
