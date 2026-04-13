@@ -104,15 +104,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, Ref } from "vue";
-
-import ReferentialItem from "@/components/ReferentialItem.vue";
+import { onMounted, ref, Ref } from "vue";
 
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
 
 import router from "@/router";
-import { onMounted } from "vue";
 
 const page = ref(1);
 const total = ref(0);

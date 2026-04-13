@@ -22,11 +22,12 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { onMounted } from "vue";
+
 import BackendService from "@/services/BackendService";
 
 import router from "@/router";
-import { onMounted } from "vue";
 
 onMounted(() => {
   checkForActiveSession();
