@@ -19,7 +19,6 @@
  * #L%
  */
 
-import Vue from "vue";
 import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 
 import Dispatcher from "@/views/Dispatcher.vue";

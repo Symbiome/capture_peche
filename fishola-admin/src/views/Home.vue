@@ -25,10 +25,10 @@
   </div>
 </template>
 
-<script>
-export default {
+<script setup lang="ts">
+defineOptions({
   name: "Home",
-}
+});
 </script>
 
 <style scoped lang="less">

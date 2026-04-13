@@ -30,16 +30,16 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Menu from "@/components/Menu.vue";
 import "@mdi/font/css/materialdesignicons.css";
 
-export default {
+defineOptions({
   name: "App",
   components: {
     Menu
-  }
-};
+  },
+});
 </script>
 
 <style lang="less">
