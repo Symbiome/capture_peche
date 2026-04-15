@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DBdir=/home/laura/Documents/Projects/Fishola/postgresql-12
+DBdir=/home/postgresql-12
 DB=fishola
 docker run \
   --name postgres-12-${DB} \
