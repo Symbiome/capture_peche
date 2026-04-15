@@ -61,6 +61,7 @@
         <gitlabProjectName>fishola</gitlabProjectName>
 
         <quarkusVersion>3.34.3</quarkusVersion>
+        <immutablesVersion>2.12.1</immutablesVersion>
         <jooqVersion>3.21.1</jooqVersion>
         <flywayVersion>12.0.0</flywayVersion>
         <postgresqlDriverVersion>42.7.10</postgresqlDriverVersion>
@@ -104,8 +105,9 @@
 
             <dependency>
                 <groupId>org.immutables</groupId>
-                <artifactId>value</artifactId>
-                <version>2.10.1</version>
+                <artifactId>value-annotations</artifactId>
+                <version>${immutablesVersion}</version>
+                <scope>provided</scope> <!-- compile only -->
             </dependency>
 
             <dependency>
@@ -201,6 +203,21 @@
                         <extraExtensions>
                             <vue>html</vue>
                         </extraExtensions>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <!-- Explicit annotation processor path -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.immutables</groupId>
+                                <artifactId>value</artifactId> <!-- contains the annotation processor -->
+                                <version>${immutablesVersion}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
             </plugins>
