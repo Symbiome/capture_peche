@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
-import {useTemplateRef} from "vue";
+import { useTemplateRef } from "vue";
 
 const { itemId, isMiniature } = defineProps<{
   itemId: string,
@@ -67,10 +67,10 @@ function getBase64(file: any): Promise<string> {
   return new Promise<any>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = function() {
+    reader.onload = function () {
       resolve(reader.result);
     };
-    reader.onerror = function(error) {
+    reader.onerror = function (error) {
       reject(error);
     };
   });
