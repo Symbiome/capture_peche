@@ -173,17 +173,17 @@ interface Props {
   name: string;
   url: string;
   columns: any[];
-  editable: boolean;
-  defaultSort: string[];
-  nextPlannifiedDate: number[];
+  editable?: boolean;
+  defaultSort?: string[];
+  nextPlannifiedDate?: number[];
   /* The function used to create new elements. If not specified, create button will not be displayed */
-  createElement: (() => any) | null;
+  createElement?: (() => any) | null;
   /* Indicates whether user is allowed to deleted elements in the table. */
-  canDelete: boolean;
+  canDelete?: boolean;
   /** The function used to determine if a given element can be deleted.
    * If not specified, only the "canDelete" boolean wil be used to determine if deletion is allowed.
    * */
-  canDeletePredicate: ((elementToDelete: any) => Promise<boolean>) | null;
+  canDeletePredicate?: ((elementToDelete: any) => Promise<boolean>) | null;
 }
 
 const {
@@ -192,7 +192,7 @@ const {
   columns,
   editable = true,
   defaultSort = ["id", "desc"],
-  nextPlannifiedDate,
+  nextPlannifiedDate = [],
   createElement = null,
   canDelete = false,
   canDeletePredicate = null,

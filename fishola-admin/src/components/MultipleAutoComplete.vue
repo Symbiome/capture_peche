@@ -54,9 +54,9 @@ import {BAutocomplete} from "buefy";
 import {onMounted, ref, Ref, watch} from "vue";
 
 interface Props {
-  data: any[];
-  defaultSelection: string[];
-  placeholder: string;
+  data?: any[];
+  defaultSelection?: string[];
+  placeholder?: string | undefined;
 }
 
 const {

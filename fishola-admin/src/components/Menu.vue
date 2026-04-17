@@ -148,10 +148,10 @@ import router from "@/router";
 
 import BackendService from "@/services/BackendService";
 import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNavbarItem, useToast} from "buefy";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, Ref} from "vue";
 
-const loggedAdmin = ref({ email: "" });
-const lakes = ref([]);
+const loggedAdmin: Ref<Admin> = ref({ email: "" });
+const lakes: Ref<Lake[]> = ref([]);
 
 const Toast = useToast();
 

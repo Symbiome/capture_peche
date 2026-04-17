@@ -36,10 +36,15 @@ import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import { useTemplateRef } from "vue";
 
-const { itemId, isMiniature } = defineProps<{
-  itemId: string,
-  isMiniature: boolean,
-}>();
+interface Props {
+  itemId: string;
+  isMiniature?: boolean;
+}
+
+const {
+  itemId,
+  isMiniature = false,
+} = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: "uploadedPic", url: string): void,

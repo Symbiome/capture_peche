@@ -189,16 +189,16 @@ import { useToast } from "buefy";
 
 const Toast = useToast();
 
-const lakes = ref([]);
-const species = ref([]);
+const lakes: Ref<Lake[]> = ref([]);
+const species: Ref<Specie[]> = ref([]);
 const speciesPerLake: Ref<any> = ref({});
 const authorizedSamplesMap: Ref<any> = ref({});
 const minSizeMap: Ref<any> = ref({});
 const maxSizeMap: Ref<any> = ref({});
-const loggedAdmin = ref({ isNationalAdmin: false });
+const loggedAdmin: Ref<Admin> = ref({ email: "", isNationalAdmin: false });
 const lakeSelectionOptions: Ref<any[]> = ref([]);
 const lastLakeSelection = ref([]);
-const selectedLakes = ref([]);
+const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = ref(5);
 
 Promise.all([
@@ -388,7 +388,7 @@ function exportCsv() {
   hiddenElement.click();
 }
 
-function getSpecieWithName(specieName) {
+function getSpecieWithName(specieName: string) {
   const specie = species.value.filter(s => s.name == specieName);
   if (specie.length == 1) {
     return specie[0].id;
@@ -397,7 +397,7 @@ function getSpecieWithName(specieName) {
   }
 }
 
-function getLakeWithName(lakeName) {
+function getLakeWithName(lakeName: string) {
   const lake = lakes.value.filter(l => l.name == lakeName);
   if (lake.length == 1) {
     return lake[0].id;
@@ -406,7 +406,7 @@ function getLakeWithName(lakeName) {
   }
 }
 
-function minSizeCheckboxInput(l, s, value) {
+function minSizeCheckboxInput(l: Lake, s: Specie, value: number) {
   if (value) {
     minSizeMap.value[l.id][s.id] = 45;
   } else {
@@ -419,7 +419,7 @@ function minSizeCheckboxInput(l, s, value) {
   instance?.proxy?.$forceUpdate();
 }
 
-function maxSizeCheckboxInput(l, s, value) {
+function maxSizeCheckboxInput(l: Lake, s: Specie, value: number) {
   if (value) {
     maxSizeMap.value[l.id][s.id] = 800;
   } else {

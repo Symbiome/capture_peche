@@ -101,16 +101,16 @@ import { useToast } from "buefy";
 
 const Toast = useToast();
 
-const lakes = ref([]);
-const species = ref([]);
+const lakes: Ref<Lake[]> = ref([]);
+const species: Ref<Specie[]> = ref([]);
 const speciesPerLake: Ref<any> = ref({});
 const speciesPerLakeAliases: Ref<any> = ref({});
 const speciesPerLakeAbsent: Ref<any> = ref({});
 const lakeSelectionOptions: Ref<any[]> = ref(JSON.parse(
   localStorage.getItem("lastLakeSelection") ?? "[]"
 ));
-const lastLakeSelection = ref([]);
-const selectedLakes = ref([]);
+const lastLakeSelection: Ref<string[]> = ref([]);
+const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = 5;
 
 

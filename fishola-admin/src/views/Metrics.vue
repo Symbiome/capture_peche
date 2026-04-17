@@ -234,7 +234,7 @@ function exportAllAsCSV() {
   downloadCSV("ensemble_indicateurs", csvContent);
 }
 
-function exportAsCSV(fileName: string, columns: Array<string>, array: Array<any>) {
+function exportAsCSV(fileName: string, columns: Array<any>, array: Array<any>) {
   let csvContent = "";
   for (let i = 0; i < columns.length; i++) {
     if (i > 0) {
