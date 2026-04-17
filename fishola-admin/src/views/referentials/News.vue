@@ -200,7 +200,7 @@ async function refreshNextPlannifiedDate(): Promise<void> {
         isABoolean: true,
         label: "National (concerne tous les plans d'eau)",
         visible: false,
-        showItemIfFunction: (news) => {
+        showItemIfFunction: (news: News) => {
           return loggedAdmin.value.isNationalAdmin;
         },
       },
@@ -209,10 +209,10 @@ async function refreshNextPlannifiedDate(): Promise<void> {
         label: "Plans d'eau",
         isArray: true,
         visible: false,
-        showItemIfFunction: (news) => {
+        showItemIfFunction: (news: News) => {
           return !news.isNational
         },
-        possibleValuesForItemFunction: (news) => {
+        possibleValuesForItemFunction: (news: News) => {
           return news.lakeIds ?? [];
         },
         arrayOptions: lakesOptions

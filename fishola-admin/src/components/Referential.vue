@@ -163,6 +163,7 @@ import BackendService from "@/services/BackendService";
 
 import ReferentialItem from "@/components/ReferentialItem.vue";
 import UtilityServices from "@/services/UtilityServices";
+import { showLink } from "@/utils/utils";
 import { computed, onMounted, ref, Ref, watch } from "vue";
 import { useDialog, useToast } from "buefy";
 
@@ -263,13 +264,6 @@ function checkCanDeletePredicate() {
       }
     });
   }
-}
-
-function showLink(event: Event, url: string) {
-  // Do not foward click event to row (would trigger modal)
-  event.stopPropagation();
-
-  window.open(url, "_blank");
 }
 
 function showDeleteDialog(event: Event, element: any) {

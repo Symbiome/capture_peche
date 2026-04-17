@@ -227,13 +227,13 @@
       <div class="spacer" />
     </div>
     <div class="buttons">
-      <button v-if="!item.id" class="button is-primary" @click="save($parent.close)">
+      <button v-if="!item.id" class="button is-primary" @click="save($parent?.close)">
         Créer
       </button>
-      <button v-if="item.id" class="button is-primary" @click="save($parent.close)">
+      <button v-if="item.id" class="button is-primary" @click="save($parent?.close)">
         Enregistrer
       </button>
-      <button class="button" type="button" @click="onSaved($parent.close)">
+      <button class="button" type="button" @click="onSaved($parent?.close)">
         Annuler
       </button>
     </div>
@@ -250,7 +250,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { LocalDateTime, nativeJs } from "@js-joda/core";
 import ImageUploader from "./ImageUploader.vue";
 import MultipleAutoComplete from "./MultipleAutoComplete.vue";
-import { getCurrentInstance, onBeforeUnmount, onMounted, reactive, ref, Ref, watch } from "vue";
+import { getCurrentInstance, onBeforeUnmount, onMounted, Reactive, reactive, ref, Ref, watch } from "vue";
 import { useToast } from "buefy";
 
 const Toast = useToast();
@@ -268,10 +268,10 @@ const {
 const input = ref({ file: null });
 const picture = ref({ file: null });
 const miniaturePicURL = ref("");
-const editor = reactive(new Editor({
+const editor: Editor = new Editor({
   content: "",
   extensions: [StarterKit, Image]
-}));
+});
 const dateRange: Ref<Date[]> = ref([]);
 
 const emit = defineEmits<{
@@ -329,7 +329,7 @@ function uploadedMiniature(url: string): void {
   instance?.proxy?.$forceUpdate();
 }
 
-function save(closeModal: () => void) {
+function save(closeModal: (() => void) | null) {
   // Search for an html column (only one per item permited)
   let htmlColumns = columns.filter(c => c.isHTML);
   if (htmlColumns.length > 0) {

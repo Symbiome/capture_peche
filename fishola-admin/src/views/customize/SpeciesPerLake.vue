@@ -126,7 +126,7 @@ Promise.all([
   lakes.value.forEach((l) => {
     lakeSelectionOptions.value.push({ id: l.id, label: l.name });
   });
-  if (lakes.value.length < maxLakeBeforeShowingAutoComplete.value) {
+  if (lakes.value.length < maxLakeBeforeShowingAutoComplete) {
     selectedLakes.value = lakes.value;
   }
   referentialLoaded();

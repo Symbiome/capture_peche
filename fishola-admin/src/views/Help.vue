@@ -303,11 +303,14 @@ function generateTableOfContent() {
     console.log(allH2Tags[el]);
     toc += "<li><a href=#" + allH2Tags[el].id + ">" + allH2Tags[el].firstChild.textContent + "</a></li>"
   })
-  document.getElementById("toc").innerHTML = toc;
+  document.getElementById("toc")!.innerHTML = toc;
 }
 
 function exportToPDF() {
   const content = document.getElementById("help-content");
+
+  if (!content) return;
+
   content.classList.add('print');
   html2pdf(content, {
     margin: 20,
