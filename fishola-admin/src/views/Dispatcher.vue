@@ -31,15 +31,13 @@ import router from "@/router";
 
 onMounted(checkForActiveSession)
 
-function checkForActiveSession() {
-  BackendService.backendGet("/v1/admin/check").then(
-    () => {
-      router.push("/home");
-    },
-    error => {
-      router.push("/login");
-    }
-  );
+async function checkForActiveSession() {
+  try {
+    await BackendService.backendGet("/v1/admin/check");
+    router.push("/home");
+  } catch (error) {
+    router.push("/login");
+  }
 }
 
 </script>

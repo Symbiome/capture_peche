@@ -155,26 +155,23 @@ const lakes: Ref<Lake[]> = ref([]);
 
 const Toast = useToast();
 
-onMounted(() => {
-  BackendService.backendGet("/v1/referential/lakes").then(lakes => lakes.value = lakes);
-  BackendService.backendGet("/v1/admin/check").then(
-    (admin) => {
-      loggedAdmin.value = admin
-    },
-    error => {
-      Toast.open({
-        message: "Vous n'êtes plus connecté\u00B7e",
-        type: "is-danger"
-      });
-      router.push("/login");
-    }
-  );
+onMounted(async () => {
+  lakes.value = await BackendService.backendGet("/v1/referential/lakes");
+
+  try {
+    loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");
+  } catch (error) {
+    Toast.open({
+      message: "Vous n'êtes plus connecté\u00B7e",
+      type: "is-danger"
+    });
+    router.push("/login");
+  }
 });
 
-function doLogout() {
-  BackendService.backendPost("/v1/admin/logout").then(() => {
-    router.push("/login");
-  });
+async function doLogout() {
+  await BackendService.backendPost("/v1/admin/logout");
+  router.push("/login");
 }
 </script>
 

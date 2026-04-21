@@ -218,17 +218,17 @@ watch(() => nextPlannifiedDate, (oldDate, newDate) => {
   loadData();
 });
 
-function loadData() {
+async function loadData() {
   while (data.value && data.value.length) {
     data.value.pop();
   }
   allowedDeletionElements.value = [];
-  BackendService.backendGet(url).then(res => {
-    data.value = res;
-    selection.value.item = null;
-    emit("elementsLoaded", data.value);
-    checkCanDeletePredicate();
-  });
+
+  const res = await BackendService.backendGet(url);
+  data.value = res;
+  selection.value.item = null;
+  emit("elementsLoaded", data.value);
+  checkCanDeletePredicate();
 }
 
 function formatDate(puet: number[]): string {
@@ -249,20 +249,20 @@ function sendNotification(target: any, event: Event) {
 /**
  * If required by configuration, ask to server if delete is allowed.
  */
-function checkCanDeletePredicate() {
+async function checkCanDeletePredicate() {
   if (canDelete && data.value) {
-    data.value.forEach(element => {
+    await Promise.all(data.value.map(async (element) => {
       // Call predicate for each element
       if (canDeletePredicate != null) {
-        canDeletePredicate(element).then(allowDeletion => {
-          if (allowDeletion && allowedDeletionElements.value != null) {
-            allowedDeletionElements.value.push(element["id"]);
-          }
-        });
+        const allowDeletion = await canDeletePredicate(element);
+        
+        if (allowDeletion && allowedDeletionElements.value != null) {
+          allowedDeletionElements.value.push(element["id"]);
+        }
       } else if (allowedDeletionElements.value != null) {
         allowedDeletionElements.value.push(element["id"]);
       }
-    });
+    }));
   }
 }
 

@@ -19,69 +19,101 @@
   #L%
   -->
 <template>
-  <div class="referential-item" v-if="item">
+  <div
+    class="referential-item"
+    v-if="item"
+  >
     <h2 v-if="item.name">{{ item.name }}</h2>
-    <div v-for="col in columns" v-bind:key="col.field">
+    <div
+      v-for="col in columns"
+      v-bind:key="col.field"
+    >
 
-      <b-field :label="col.field == 'datePublicationDebut'
-        ? 'Période de publication'
-        : col.label
-        " :message="col.helpMessage ? col.helpMessage : null"
-        v-if="!col.hiddenInPopup && (col.showItemIfFunction === undefined || col.showItemIfFunction(item))">
+      <b-field
+        :label="col.field == 'datePublicationDebut'
+          ? 'Période de publication'
+          : col.label
+          "
+        :message="col.helpMessage ? col.helpMessage : null"
+        v-if="!col.hiddenInPopup && (col.showItemIfFunction === undefined || col.showItemIfFunction(item))"
+      >
         <!-- HTML text -->
-        <div v-if="col.isHTML" class="editor-holder">
+        <div
+          v-if="col.isHTML"
+          class="editor-holder"
+        >
           <div v-if="editor">
             <div class="editor-buttons-holder">
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .setParagraph()
-                  .run()
-                " class="editor-button" :class="{ 'is-active': editor.isActive('paragraph') }">
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .setParagraph()
+                    .run()
+                  "
+                class="editor-button"
+                :class="{ 'is-active': editor.isActive('paragraph') }"
+              >
                 Paragraphe
               </button>
 
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleHeading({ level: 1 })
-                  .run()
-                " class="editor-button" :class="{
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleHeading({ level: 1 })
+                    .run()
+                  "
+                class="editor-button"
+                :class="{
                   'is-active': editor.isActive('heading', { level: 1 })
-                }">
+                }"
+              >
                 Titre 1
               </button>
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleHeading({ level: 2 })
-                  .run()
-                " class="editor-button" :class="{
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleHeading({ level: 2 })
+                    .run()
+                  "
+                class="editor-button"
+                :class="{
                   'is-active': editor.isActive('heading', { level: 2 })
-                }">
+                }"
+              >
                 Titre 2
               </button>
 
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleBulletList()
-                  .run()
-                " class="editor-button" :class="{ 'is-active': editor.isActive('bulletList') }">
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleBulletList()
+                    .run()
+                  "
+                class="editor-button"
+                :class="{ 'is-active': editor.isActive('bulletList') }"
+              >
                 Liste
               </button>
 
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleBlockquote()
-                  .run()
-                " class="editor-button" :class="{ 'is-active': editor.isActive('blockquote') }">
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleBlockquote()
+                    .run()
+                  "
+                class="editor-button"
+                :class="{ 'is-active': editor.isActive('blockquote') }"
+              >
                 Citation
               </button>
               <button @click="
@@ -93,70 +125,94 @@
                 ">
                 Ligne Horizontale
               </button>
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleBold()
-                  .run()
-                " :disabled="!editor
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleBold()
+                    .run()
+                  "
+                :disabled="!editor
                   .can()
                   .chain()
                   .focus()
                   .toggleBold()
                   .run()
-                  " class="editor-button" :class="{ 'is-active': editor.isActive('bold') }">
+                  "
+                class="editor-button"
+                :class="{ 'is-active': editor.isActive('bold') }"
+              >
                 Gras
               </button>
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .toggleItalic()
-                  .run()
-                " :disabled="!editor
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleItalic()
+                    .run()
+                  "
+                :disabled="!editor
                   .can()
                   .chain()
                   .focus()
                   .toggleItalic()
                   .run()
-                  " class="editor-button" :class="{ 'is-active': editor.isActive('italic') }">
+                  "
+                class="editor-button"
+                :class="{ 'is-active': editor.isActive('italic') }"
+              >
                 Italique
               </button>
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .undo()
-                  .run()
-                " :disabled="!editor
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .undo()
+                    .run()
+                  "
+                :disabled="!editor
                   .can()
                   .chain()
                   .focus()
                   .undo()
                   .run()
-                  " class="editor-button">
+                  "
+                class="editor-button"
+              >
                 Annuler
               </button>
-              <button @click="
-                editor
-                  .chain()
-                  .focus()
-                  .redo()
-                  .run()
-                " :disabled="!editor
+              <button
+                @click="
+                  editor
+                    .chain()
+                    .focus()
+                    .redo()
+                    .run()
+                  "
+                :disabled="!editor
                   .can()
                   .chain()
                   .focus()
                   .redo()
                   .run()
-                  " class="editor-button">
+                  "
+                class="editor-button"
+              >
                 Rétablir
               </button>
-              <ImageUploader :item-id="item['id']" @uploaded-pic="uploadedPic" />
+              <ImageUploader
+                :item-id="item['id']"
+                @uploaded-pic="uploadedPic"
+              />
             </div>
           </div>
-          <EditorContent class="editor" :editor="editor" />
+          <EditorContent
+            class="editor"
+            :editor="editor"
+          />
         </div>
         <!-- DateTime -->
         <div v-else-if="col.isADate">
@@ -165,61 +221,108 @@
 
         <!-- DateRange -->
         <div v-else-if="col.isAPeriodBeginning">
-          <b-datepicker v-model="dateRange" placeholder="Type or select a date..." icon="calendar-today" locale="fr-FR"
-            range editable>
+          <b-datepicker
+            v-model="dateRange"
+            placeholder="Type or select a date..."
+            icon="calendar-today"
+            locale="fr-FR"
+            range
+            editable
+          >
           </b-datepicker>
         </div>
         <!-- Short strings -->
-        <b-input v-model="item[col.field]" v-else-if="
-          !col.isFile &&
-          !col.isPicture &&
-          !col.isABoolean &&
-          !col.isADate &&
-          !col.isArray &&
-          ('' + item[col.field]).length < 200
-        "
-          :disabled="col.readOnly || col.readOnlyIfFunction && col.readOnlyIfFunction(item) || (col.readOnlyEdition && item['id'])"></b-input>
+        <b-input
+          v-model="item[col.field]"
+          v-else-if="
+            !col.isFile &&
+            !col.isPicture &&
+            !col.isABoolean &&
+            !col.isADate &&
+            !col.isArray &&
+            ('' + item[col.field]).length < 200
+          "
+          :disabled="col.readOnly || col.readOnlyIfFunction && col.readOnlyIfFunction(item) || (col.readOnlyEdition && item['id'])"
+        ></b-input>
 
         <!-- Long strings -->
-        <b-input v-model="item[col.field]" type="textarea" v-else-if="
-          !col.isFile &&
-          !col.isPicture &&
-          !col.isABoolean &&
-          !col.isADate &&
-          !col.isArray &&
-          ('' + item[col.field]).length >= 200
-        " :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"></b-input>
+        <b-input
+          v-model="item[col.field]"
+          type="textarea"
+          v-else-if="
+            !col.isFile &&
+            !col.isPicture &&
+            !col.isABoolean &&
+            !col.isADate &&
+            !col.isArray &&
+            ('' + item[col.field]).length >= 200
+          "
+          :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
+        ></b-input>
 
         <!-- PDF Files -->
-        <b-upload v-model="input.file" v-else-if="col.isFile" accept="application/pdf">
+        <b-upload
+          v-model="input.file"
+          v-else-if="col.isFile"
+          accept="application/pdf"
+        >
           <a class="button is-primary">
             <b-icon icon="upload"></b-icon>
             <span>Cliquez pour téléverser un nouveau fichier</span>
           </a>
-          <a v-if="!input.file && item[col.field] && item[col.field].length > 10" :href="item[col.field]"
-            target="blank">
+          <a
+            v-if="!input.file && item[col.field] && item[col.field].length > 10"
+            :href="item[col.field]"
+            target="blank"
+          >
             Voir le fichier actuel
           </a>
-          <span v-if="input.file" :href="item[col.field]" target="blank">
+          <span
+            v-if="input.file"
+            :href="item[col.field]"
+            target="blank"
+          >
             {{ input.file.name }}
           </span>
         </b-upload>
 
         <div v-else-if="col.isPicture">
-          <img alt="miniature" class="miniture-pic" v-if="item['miniatureURL']" :src="item['miniatureURL']" />
-          <ImageUploader :isMiniature="true" :item-id="item['id']" @uploaded-pic="uploadedMiniature" />
+          <img
+            alt="miniature"
+            class="miniture-pic"
+            v-if="item['miniatureURL']"
+            :src="item['miniatureURL']"
+          />
+          <ImageUploader
+            :isMiniature="true"
+            :item-id="item['id']"
+            @uploaded-pic="uploadedMiniature"
+          />
         </div>
 
         <!-- Array -->
-        <MultipleAutoComplete v-else-if="col.isArray"
+        <MultipleAutoComplete
+          v-else-if="col.isArray"
           :defaultSelection="col.possibleValuesForItemFunction ? col.possibleValuesForItemFunction(item) : []"
-          :data="col.arrayOptions" @updated="(value) => item[col.field] = value" />
+          :data="col.arrayOptions"
+          @updated="(value) => item[col.field] = value"
+        />
         <!-- Booleans -->
         <div v-else-if="col.isABoolean">
-          <b-radio v-model="item[col.field]" :name="col.field" :native-value="true" :disabled="col.readonly">
+          <b-radio
+            v-model="item[col.field]"
+            :name="col.field"
+            :native-value="true"
+            :disabled="col.readonly"
+          >
             Oui
           </b-radio>
-          <b-radio v-model="item[col.field]" :name="col.field" :native-value="false" :disabled="col.readonly">
+          <b-radio
+            v-model="item[col.field]"
+            :name="col.field"
+            :native-value="false"
+            :disabled="col.readonly"
+          >
             Non
           </b-radio>
         </div>
@@ -227,13 +330,25 @@
       <div class="spacer" />
     </div>
     <div class="buttons">
-      <button v-if="!item.id" class="button is-primary" @click="save($parent?.close)">
+      <button
+        v-if="!item.id"
+        class="button is-primary"
+        @click="save($parent?.close)"
+      >
         Créer
       </button>
-      <button v-if="item.id" class="button is-primary" @click="save($parent?.close)">
+      <button
+        v-if="item.id"
+        class="button is-primary"
+        @click="save($parent?.close)"
+      >
         Enregistrer
       </button>
-      <button class="button" type="button" @click="onSaved($parent?.close)">
+      <button
+        class="button"
+        type="button"
+        @click="onSaved($parent?.close)"
+      >
         Annuler
       </button>
     </div>
@@ -327,7 +442,7 @@ function uploadedMiniature(url: string): void {
   instance?.proxy?.$forceUpdate();
 }
 
-function save(closeModal: (() => void) | null) {
+async function save(closeModal: (() => void) | null) {
   // Search for an html column (only one per item permited)
   let htmlColumns = columns.filter(c => c.isHTML);
   if (htmlColumns.length > 0) {
@@ -365,42 +480,31 @@ function save(closeModal: (() => void) | null) {
     }
   };
   // Convert file in base64 (if required)
-  if (input.value.file) {
-    getBase64(input.value.file).then(
-      base64 => {
-        item["base64Content"] = base64;
-        doSave(onSavedCallback);
-      },
-      err => {
-        Toast.open({
-          message: "Erreur lors de la lecture du fichier.",
-          type: "is-danger"
-        });
-      }
-    );
-  } else if (picture.value.file) {
-    getBase64(picture.value.file).then(
-      base64 => {
-        item["miniaturePic"] = base64;
-        doSave(onSavedCallback);
-      },
-      err => {
-        Toast.open({
-          message: "Erreur lors de la lecture du fichier.",
-          type: "is-danger"
-        });
-      }
-    );
-  } else {
+  try {
+    if (input.value.file) {
+      const base64 = await getBase64(input.value.file);
+      item["base64Content"] = base64;
+    } else if (picture.value.file) {
+      const base64 = await getBase64(picture.value.file);
+      item["miniaturePic"] = base64;
+    }
     doSave(onSavedCallback);
+  } catch (err) {
+    Toast.open({
+      message: "Erreur lors de la lecture du fichier.",
+      type: "is-danger"
+    });
   }
 }
 
-function doSave(onSavedCallback: () => void) {
+async function doSave(onSavedCallback: () => void) {
   if (item.id) {
     // Update : PUT
     const url = backendUrl + "/" + item.id;
-    BackendService.backendPut(url, item.value).then(onSavedCallback, err => {
+    try {
+      await BackendService.backendPut(url, item.value);
+      onSavedCallback();  
+    } catch (err) {
       input.value.file = null;
       picture.value.file = null;
       Toast.open({
@@ -410,11 +514,14 @@ function doSave(onSavedCallback: () => void) {
           ". Veuillez vérifier vos modifications.",
         type: "is-danger"
       });
-    });
+    }
   } else {
     // Create : POST
     const url = backendUrl;
-    BackendService.backendPost(url, item).then(onSavedCallback, err => {
+    try {
+      await BackendService.backendPost(url, item);
+      onSavedCallback();
+    } catch (err) {
       input.value.file = null;
       picture.value.file = null;
       Toast.open({
@@ -422,7 +529,7 @@ function doSave(onSavedCallback: () => void) {
           "Erreur lors de la création. Veuillez vérifier qu'un élément avec ce nom n'existe pas déjà.",
         type: "is-danger"
       });
-    });
+    }
   }
 }
 

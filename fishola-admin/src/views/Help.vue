@@ -304,21 +304,20 @@ function generateTableOfContent() {
   document.getElementById("toc")!.innerHTML = toc;
 }
 
-function exportToPDF() {
+async function exportToPDF() {
   const content = document.getElementById("help-content");
 
   if (!content) return;
 
   content.classList.add('print');
-  html2pdf(content, {
+  await html2pdf(content, {
     margin: 20,
     filename: "Fishola-aide.pdf",
     image: { type: 'jpeg', quality: 1 },
     pagebreak: { mode: "css", before: "h2" },
     jsPDF: { format: 'a4', orientation: 'landscape' }
-  }).then(() => {
-    content.classList.remove('print');
   });
+  content.classList.remove('print');
 }
 </script>
 

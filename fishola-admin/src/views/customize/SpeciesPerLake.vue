@@ -153,27 +153,25 @@ function referentialLoaded() {
   });
 }
 
-function save() {
-  BackendService.backendPut("/v1/referential/species-aliases-per-lake", {
-    targetLakes: selectedLakes.value.map((l) => l.id),
-    speciesPerLakeAliases: speciesPerLakeAliases.value,
-    speciesPerLakeAbsent: speciesPerLakeAbsent.value,
-  }).then(
-    (res) => {
-      Toast.open({
-        message: "Espèces par plan d'eau enregistrées",
-        type: "is-success",
-      });
-    },
-    (error) => {
-      Toast.open({
-        message:
-          "Erreur lors de l'enregistrement des espèces par plan d'eau : " +
-          error.message,
-        type: "is-danger",
-      });
-    }
-  );
+async function save() {
+  try {
+    await BackendService.backendPut("/v1/referential/species-aliases-per-lake", {
+      targetLakes: selectedLakes.value.map((l) => l.id),
+      speciesPerLakeAliases: speciesPerLakeAliases.value,
+      speciesPerLakeAbsent: speciesPerLakeAbsent.value,
+    });
+    Toast.open({
+      message: "Espèces par plan d'eau enregistrées",
+      type: "is-success",
+    });
+  } catch (error: any) {
+    Toast.open({
+      message:
+        "Erreur lors de l'enregistrement des espèces par plan d'eau : " +
+        error.message,
+      type: "is-danger",
+    });
+  }
 }
 
 function changeLakeSelection(newSelectedLakeIds: string[]) {

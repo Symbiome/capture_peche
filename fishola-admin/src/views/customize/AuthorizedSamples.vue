@@ -248,30 +248,28 @@ function referentialLoaded() {
   instance?.proxy?.$forceUpdate();
 }
 
-function save() {
-  BackendService.backendPut("/v1/referential/authorized-samples", {
-    targetLakes: selectedLakes.value.map(l => l.id),
-    authorizations: authorizedSamplesMap.value,
-    minSizes: minSizeMap.value,
-    maxSizes: maxSizeMap.value
-  }).then(
-    res => {
-      reloadData();
-      console.info(res);
-      Toast.open({
-        message: "Tailles enregistrées",
-        type: "is-success"
-      });
-    },
-    error => {
-      Toast.open({
-        message:
-          "Erreur lors de l'enregistrement des tailles : " +
-          error.message,
-        type: "is-danger"
-      });
-    }
-  );
+async function save() {
+  try {
+    const res = await BackendService.backendPut("/v1/referential/authorized-samples", {
+      targetLakes: selectedLakes.value.map(l => l.id),
+      authorizations: authorizedSamplesMap.value,
+      minSizes: minSizeMap.value,
+      maxSizes: maxSizeMap.value
+    });
+    reloadData();
+    console.info(res);
+    Toast.open({
+      message: "Tailles enregistrées",
+      type: "is-success"
+    });
+  } catch (error: any) {
+    Toast.open({
+      message:
+        "Erreur lors de l'enregistrement des tailles : " +
+        error.message,
+      type: "is-danger"
+    });
+  }
 }
 
 function importCsv(file) {

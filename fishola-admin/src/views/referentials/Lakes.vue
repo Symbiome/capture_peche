@@ -68,12 +68,9 @@ const lakeColumns: any[] = [
   }
 ];
 
-onMounted(() => {
-  BackendService.backendGet("/v1/admin/check").then(
-    (admin) => {
-      isNationalAdmin.value = admin.isNationalAdmin;
-    }
-  );
+onMounted(async () => {
+  const admin = await BackendService.backendGet("/v1/admin/check");
+  isNationalAdmin.value = admin.isNationalAdmin;
 });
 
 function createLake(): any {
