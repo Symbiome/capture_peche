@@ -29,9 +29,7 @@ import BackendService from "@/services/BackendService";
 
 import router from "@/router";
 
-onMounted(() => {
-  checkForActiveSession();
-})
+onMounted(checkForActiveSession)
 
 function checkForActiveSession() {
   BackendService.backendGet("/v1/admin/check").then(

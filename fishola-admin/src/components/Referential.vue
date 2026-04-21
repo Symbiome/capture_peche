@@ -212,7 +212,7 @@ const emit = defineEmits<{
   (e: "sendNotification", notification: any): void,
 }>();
 
-onMounted(() => loadData());
+onMounted(loadData);
 
 watch(() => nextPlannifiedDate, (oldDate, newDate) => {
   loadData();

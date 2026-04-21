@@ -278,9 +278,7 @@ const emit = defineEmits<{
   (e: "referentialUpdated"): void
 }>();
 
-onMounted(() => {
-  itemChanged();
-});
+onMounted(itemChanged);
 
 onBeforeUnmount(() => {
   editor?.destroy();

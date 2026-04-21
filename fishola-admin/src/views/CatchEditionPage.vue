@@ -240,9 +240,7 @@ const sortedSpeciesNames: Ref<Array<string>> = ref([]);
 const measurementPicURL = ref("");
 const otherPicsUrls: Ref<Array<string>> = ref([]);
 
-onMounted(() => {
-  loadCatch();
-});
+onMounted(loadCatch);
 
 async function loadCatch() {
   if (speciesIdMap.size == 0) {

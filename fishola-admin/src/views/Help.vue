@@ -290,9 +290,7 @@
 import html2pdf from "html2pdf.js";
 import { onMounted } from "vue";
 
-onMounted(() => {
-  generateTableOfContent();
-});
+onMounted(generateTableOfContent);
 
 function generateTableOfContent() {
   const allH2Tags = document.getElementsByTagName('h2');
