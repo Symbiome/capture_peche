@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: "target/dist-" + mode,
+      cssMinify: "esbuild",
     },
     define: {
       "import.meta.env.VITE__PACKAGE_JSON_VERSION":
