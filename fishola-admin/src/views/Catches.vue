@@ -225,8 +225,8 @@ function onSort(field: string, order: string) {
   loadData();
 }
 
-function onFiltersChange(filters: any) {
-  filters.value = filters;
+function onFiltersChange(newFilters: any) {
+  filters.value = newFilters;
   page.value = 1;
   loadDataDebounced();
 }
