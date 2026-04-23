@@ -186,6 +186,7 @@ import { getCurrentInstance, ref, Ref } from "vue";
 import BackendService from "@/services/BackendService";
 import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";
 import { useToast } from "buefy";
+import { useStorage } from "@vueuse/core";
 
 const Toast = useToast();
 
@@ -197,7 +198,10 @@ const minSizeMap: Ref<any> = ref({});
 const maxSizeMap: Ref<any> = ref({});
 const loggedAdmin: Ref<Admin> = ref({ email: "", isNationalAdmin: false });
 const lakeSelectionOptions: Ref<any[]> = ref([]);
-const lastLakeSelection = ref([]);
+const lastLakeSelection = useStorage(
+  "lastLakeSelection",
+  [],
+);
 const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = ref(5);
 
@@ -432,7 +436,7 @@ function maxSizeCheckboxInput(l: Lake, s: Specie, value: number) {
 
 function changeLakeSelection(newSelectedLakeIds: string[]) {
   selectedLakes.value = lakes.value.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
-  localStorage.setItem('lastLakeSelection', JSON.stringify(newSelectedLakeIds));
+  localStorage.setItem("lastLakeSelection", JSON.stringify(newSelectedLakeIds));
 }
 </script>
 
