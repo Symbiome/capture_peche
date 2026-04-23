@@ -98,6 +98,7 @@ import { getCurrentInstance, ref, Ref } from "vue";
 import BackendService from "@/services/BackendService";
 import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";
 import { useToast } from "buefy";
+import { useStorage } from "@vueuse/core";
 
 const Toast = useToast();
 
@@ -106,13 +107,13 @@ const species: Ref<Specie[]> = ref([]);
 const speciesPerLake: Ref<any> = ref({});
 const speciesPerLakeAliases: Ref<any> = ref({});
 const speciesPerLakeAbsent: Ref<any> = ref({});
-const lakeSelectionOptions: Ref<any[]> = ref(JSON.parse(
-  localStorage.getItem("lastLakeSelection") ?? "[]"
-));
-const lastLakeSelection: Ref<string[]> = ref([]);
+const lakeSelectionOptions: Ref<any[]> = ref([]);
+const lastLakeSelection = useStorage(
+  "lastLakeSelection",
+  [],
+);
 const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = 5;
-
 
 Promise.all([
   BackendService.backendGet("/v1/referential/lakes"),
