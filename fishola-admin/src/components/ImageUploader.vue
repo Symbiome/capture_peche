@@ -50,8 +50,10 @@ const emit = defineEmits<{
   (e: "uploadedPic", url: string): void,
 }>();
 
+const uploadInput = useTemplateRef("upload");
+
 async function uploadImageFile(payload: Event) {
-  const uploadedFile = useTemplateRef("upload").value as HTMLInputElement;
+  const uploadedFile = uploadInput.value as HTMLInputElement;
   if (uploadedFile.files) {
     const file = uploadedFile.files[0];
     const base64 = await getBase64(file);
