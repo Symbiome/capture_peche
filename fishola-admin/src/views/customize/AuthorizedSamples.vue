@@ -95,12 +95,13 @@
               >
                 Taille maillage : <br />
                 <div class="input-holder">
-                  <b-checkbox
-                    grouped
-                    :value="minSizeMap[l.id][s.id] > 0"
-                    @input="value => { minSizeCheckboxInput(l, s, value) }"
-                  >
-                  </b-checkbox>
+                    <input type="checkbox" class="sample-checkbox"
+                      :checked="minSizeMap[l.id][s.id] > 0"
+                      @change="$event => {
+                        // @ts-expect-error checked property exists as target is a checkox
+                        minSizeCheckboxInput(l, s, $event.target?.checked) }"
+                    >
+                  </input>
                   <b-input
                     grouped
                     placeholder="Taille minimale"
@@ -120,12 +121,14 @@
                 <br />
                 Taille maximale : <br />
                 <div class="input-holder">
-                  <b-checkbox
-                    grouped
-                    :value="maxSizeMap[l.id][s.id] != 1000"
-                    @input="value => { maxSizeCheckboxInput(l, s, value) }"
+                   <input type="checkbox" class="sample-checkbox"
+                      :checked="maxSizeMap[l.id][s.id] != 1000"
+                   @change="$event => {
+                      // @ts-expect-error checked property exists as target is a checkox
+                      maxSizeCheckboxInput(l, s, $event.target?.checked)
+                    }"/>
                   >
-                  </b-checkbox>
+                  </input>
                   <b-input
                     grouped
                     placeholder="Taille maximale"
@@ -408,7 +411,7 @@ function getLakeWithName(lakeName: string) {
   }
 }
 
-function minSizeCheckboxInput(l: Lake, s: Specie, value: number) {
+function minSizeCheckboxInput(l: Lake, s: Specie, value: boolean) {
   if (value) {
     minSizeMap.value[l.id][s.id] = 45;
   } else {
@@ -421,7 +424,7 @@ function minSizeCheckboxInput(l: Lake, s: Specie, value: number) {
   instance?.proxy?.$forceUpdate();
 }
 
-function maxSizeCheckboxInput(l: Lake, s: Specie, value: number) {
+function maxSizeCheckboxInput(l: Lake, s: Specie, value: boolean) {
   if (value) {
     maxSizeMap.value[l.id][s.id] = 800;
   } else {
