@@ -25,15 +25,10 @@
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
-
-export default {
-  name: 'Home',
-  components: {
-    // Menu
-  }
-}
+<script setup lang="ts">
+defineOptions({
+  name: "Home",
+});
 </script>
 
 <style scoped lang="less">

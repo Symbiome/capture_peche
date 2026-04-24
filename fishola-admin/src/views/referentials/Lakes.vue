@@ -26,78 +26,65 @@
       :editable="isNationalAdmin"
       :columns="lakeColumns"
       :createElement=createLake
-      ></Referential>
+    ></Referential>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from '@/components/Referential.vue'
 import BackendService from '@/services/BackendService';
+import { onMounted, ref } from 'vue';
 
-import { Component, Vue } from 'vue-property-decorator';
-
-@Component({
-  components: {
-    Referential
+const isNationalAdmin = ref(false);
+const lakeColumns: any[] = [
+  {
+    field: 'id',
+    label: 'Identifiant',
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: 'lakeCode',
+    label: 'Code Plan d\'eau',
+    searchable: true,
+  },
+  {
+    field: 'name',
+    label: 'Nom',
+    searchable: true,
+  },
+  {
+    field: 'exportAs',
+    label: 'Nom d\'export',
+    visible: false,
+  },
+  {
+    field: 'latitude',
+    label: 'Latitude'
+  },
+  {
+    field: 'longitude',
+    label: 'Longitude'
   }
-})
-export default class LakesVue extends Vue {
-  isNationalAdmin = false;
+];
 
-  lakeColumns:any[] = [
-    {
-      field: 'id',
-      label: 'Identifiant',
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: 'lakeCode',
-      label: 'Code Plan d\'eau',
-      searchable: true,
-    },
-    {
-      field: 'name',
-      label: 'Nom',
-      searchable: true,
-    },
-    {
-      field: 'exportAs',
-      label: 'Nom d\'export',
-      visible: false,
-    },
-    {
-      field: 'latitude',
-      label: 'Latitude'
-    },
-    {
-      field: 'longitude',
-      label: 'Longitude'
-    }
-  ];
+onMounted(async () => {
+  const admin = await BackendService.backendGet("/v1/admin/check");
+  isNationalAdmin.value = admin.isNationalAdmin;
+});
 
-  createLake(): any {
-    return {
-      'lakeCode': '',
-      'name': 'Nouveau Plan d\'eau',
-      'exportAs': 'NouveauLac',
-      'latitude': 45.5,
-      'longitude': 5.8
-    };
-  }
-
-  mounted() {
-    BackendService.backendGet("/v1/admin/check").then(
-      (admin) => {
-        this.isNationalAdmin = admin.isNationalAdmin
-      }
-    );
-  }
+function createLake(): any {
+  return {
+    'lakeCode': '',
+    'name': 'Nouveau Plan d\'eau',
+    'exportAs': 'NouveauLac',
+    'latitude': 45.5,
+    'longitude': 5.8
+  };
 }
+
 </script>
 
 <style scoped lang="less">
-
 @import "../../less/main";
-
 </style>

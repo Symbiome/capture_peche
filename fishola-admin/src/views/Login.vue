@@ -19,7 +19,7 @@
   #L%
   -->
 <template>
-   <section class="section is-fullheight has-background-light login">
+  <section class="section is-fullheight has-background-light login">
     <div class="container ">
       <div class="columns is-centered ">
         <div class="column is-5-tablet is-4-desktop is-3-widescreen login-box">
@@ -27,8 +27,8 @@
             <h1 class="title is-4 has-text-primary">Interface d'administration de FISHOLA</h1>
 
             <b-field label="Email"
-              :type="errorMessage ? 'is-danger' : ''"
-              :message="errorMessage">
+                     :type="errorMessage ? 'is-danger' : ''"
+                     :message="errorMessage">
               <b-input
                 icon="email"
                 type="email"
@@ -52,7 +52,7 @@
             </b-field>
 
             <b-button type="is-primary" expanded @click="doLogin">
-              Connexion {{ errorMessage}}
+              Connexion {{ errorMessage }}
             </b-button>
           </div>
         </div>
@@ -61,48 +61,38 @@
   </section>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import router from "@/router";
 
 import BackendService from "@/services/BackendService";
 
-import { Component, Vue } from "vue-property-decorator";
+import {BButton, BField, BInput} from "buefy";
+import {ref} from "vue";
 
-@Component({
-  components: {}
-})
-export default class LoginView extends Vue {
-  email = localStorage.getItem("last-fishola-admin-email") ?? "";
-  password = "";
-  errorMessage = "";
-  passwordErrorMessage = "";
+const email = ref(localStorage.getItem("last-fishola-admin-email") ?? "");
+const password = ref("");
+const errorMessage = ref("");
+const passwordErrorMessage = ref("");
 
-  constructor() {
-    super();
-  }
-
-  doLogin() {
-    this.errorMessage = "";
-    this.passwordErrorMessage = "";
-    if (!this.email || this.email.length <5 || this.email.indexOf('@') == -1) {
-      this.errorMessage = "Email incorrect"
-    } else {
-      BackendService.backendPost("/v1/admin/login", {
-        email: this.email,
-        password: this.password
-      }).then(
-        () => {
-          localStorage.setItem("last-fishola-admin-email", this.email);
-          router.push("home");
-        },
-        err => {
-          if (err.status == 401) {
-            this.passwordErrorMessage = "Mot de passe incorrect";
-          } else {
-            this.errorMessage = err.message ?? "Veuillez vérifier votre email et mot de passe";
-          }
-        }
-      );
+async function doLogin() {
+  errorMessage.value = "";
+  passwordErrorMessage.value = "";
+  if (!email.value || email.value.length < 5 || email.value.indexOf('@') == -1) {
+    errorMessage.value = "Email incorrect"
+  } else {
+    try {
+      await BackendService.backendPost("/v1/admin/login", {
+        email: email.value,
+        password: password.value
+      });
+      localStorage.setItem("last-fishola-admin-email", email.value);
+      await router.push("home");
+    } catch (err: any) {
+      if (err.status == 401) {
+        passwordErrorMessage.value = "Mot de passe incorrect";
+      } else {
+        errorMessage.value = err.message ?? "Veuillez vérifier votre email et mot de passe";
+      }
     }
   }
 }
@@ -114,10 +104,11 @@ export default class LoginView extends Vue {
 
 .login {
   height: 100%;
+
   .login-box {
     min-width: 50vw;
     padding-top: 20vh;
-    margin:auto;
+    margin: auto;
   }
 }
 

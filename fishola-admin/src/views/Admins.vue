@@ -23,7 +23,7 @@
     v-if="loaded"
     name="Administrateurs"
     url="/v1/admin"
-     @elementsLoaded="computeLakeNames"
+    @elements-loaded="computeLakeNames"
     :columns="userColumns"
     :createElement="createAdmin"
     :editable="canCreateAdmins"
@@ -31,118 +31,108 @@
   ></Referential>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from "@/components/Referential.vue";
 import BackendService from "@/services/BackendService";
+import { ref, Ref } from "vue";
 
-import { Component, Vue } from "vue-property-decorator";
+const lakesIdToNameMap = ref(new Map<string, string>());
+const loaded = ref(false);
+const canCreateAdmins = ref(false);
+const userColumns: Ref<any[]> = ref([]);
 
-@Component({
-  components: {
-    Referential
-  }
-})
-export default class UsersVue extends Vue {
-  lakesIdToNameMap = new Map<string, string>();
-  loaded = false;
-  canCreateAdmins = false
-  userColumns: any[] = [
-  ];
+loadLakes();
 
-  created() {
-   this.loadLakes();
-  }
-
-  async loadLakes() {
-     const admin = await BackendService.backendGet("/v1/admin/check");
-     this.canCreateAdmins = admin.isNationalAdmin || admin.canCreateAdmins;
-     const lakes = await BackendService.backendGet("/v1/referential/lakes");
-     const lakesOptions: any[] = [];
-     lakes.forEach( (l: any) => {
-        lakesOptions.push({
-          id: l.id,
-          label: l.name
-        });
-        this.lakesIdToNameMap.set(l.id, l.name);
-      });
-
-     this.userColumns = [
-      {
-        field: "id",
-        label: "Identifiant",
-        visible: false,
-        readOnly: true,
-        hiddenInPopup: true
-      },
-      {
-        field: "email",
-        label: "E-mail",
-        searchable: true,
-        readOnlyIfFunction: (admin) => { return admin.id; }
-      },
-       {
-        field: "lakeNames",
-        label: "Plans d'eau",
-        searchable: true,
-        hiddenInPopup: true
-      },
-      {
-        field: "password",
-        label: "Mot de passe",
-        visible: false,
-         showItemIfFunction: (admin) => {
-          return !admin.id;
-        },
-      },
-      {
-        field: "lakeIds",
-        label: "Plans d'eau",
-        isArray: true,
-        visible: false,
-        arrayOptions: lakesOptions,
-        possibleValuesForItemFunction: (admin) => {
-          return admin.lakeIds ?? [];
-        },
-      },
-      {
-        field: "isNationalAdmin",
-        label: "Administrateur national",
-        isABoolean: true,
-        readonly: true,
-        helpMessage: "Non modifiable depuis les écrans d'administration, par mesure de sécurité."
-      },
-      {
-        field: "canCreateAdmin",
-        label: "Droit de gestion des administrateurs",
-        isABoolean: true
-      },
-      {
-        field: "createdOn",
-        label: "Date de création",
-        isADate: true,
-        readOnly: true,
-        visible: false,
-        hiddenInPopup: true
-      }
-    ];
-    this.loaded = true;
-  }
-  computeLakeNames(admins: any[]) {
-    admins.forEach(admin => {
-     admin.lakeNames = admin.isNationalAdmin ?
-        "National" :
-        admin.lakeIds.map((lakeId: string) => this.lakesIdToNameMap.get(lakeId)).join(", ");
+async function loadLakes() {
+  const admin = await BackendService.backendGet("/v1/admin/check");
+  canCreateAdmins.value = admin.isNationalAdmin || admin.canCreateAdmins;
+  const lakes = await BackendService.backendGet("/v1/referential/lakes");
+  const lakesOptions: any[] = [];
+  lakes.forEach((l: any) => {
+    lakesOptions.push({
+      id: l.id,
+      label: l.name
     });
-  }
+    lakesIdToNameMap.value.set(l.id, l.name);
+  });
 
-  createAdmin(): any {
-    return {
-      name: "Nouvel administrateur",
-      email: "",
-      password: "",
-      isNationalAdmin: false,
-      lakeIds: []
-    };
-  }
+  userColumns.value = [
+    {
+      field: "id",
+      label: "Identifiant",
+      visible: false,
+      readOnly: true,
+      hiddenInPopup: true
+    },
+    {
+      field: "email",
+      label: "E-mail",
+      searchable: true,
+      readOnlyIfFunction: (admin) => { return admin.id; }
+    },
+    {
+      field: "lakeNames",
+      label: "Plans d'eau",
+      searchable: true,
+      hiddenInPopup: true
+    },
+    {
+      field: "password",
+      label: "Mot de passe",
+      visible: false,
+      showItemIfFunction: (admin) => {
+        return !admin.id;
+      },
+    },
+    {
+      field: "lakeIds",
+      label: "Plans d'eau",
+      isArray: true,
+      visible: false,
+      arrayOptions: lakesOptions,
+      possibleValuesForItemFunction: (admin) => {
+        return admin.lakeIds ?? [];
+      },
+    },
+    {
+      field: "isNationalAdmin",
+      label: "Administrateur national",
+      isABoolean: true,
+      readonly: true,
+      helpMessage: "Non modifiable depuis les écrans d'administration, par mesure de sécurité."
+    },
+    {
+      field: "canCreateAdmin",
+      label: "Droit de gestion des administrateurs",
+      isABoolean: true
+    },
+    {
+      field: "createdOn",
+      label: "Date de création",
+      isADate: true,
+      readOnly: true,
+      visible: false,
+      hiddenInPopup: true
+    }
+  ];
+  loaded.value = true;
+}
+
+function computeLakeNames(admins: any[]) {
+  admins.forEach(admin => {
+    admin.lakeNames = admin.isNationalAdmin ?
+      "National" :
+      admin.lakeIds.map((lakeId: string) => lakesIdToNameMap.value.get(lakeId)).join(", ");
+  });
+}
+
+function createAdmin(): any {
+  return {
+    name: "Nouvel administrateur",
+    email: "",
+    password: "",
+    isNationalAdmin: false,
+    lakeIds: []
+  };
 }
 </script>

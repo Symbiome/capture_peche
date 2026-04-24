@@ -19,8 +19,7 @@
  * #L%
  */
 
-import Vue from "vue";
-import VueRouter, { RouteConfig } from "vue-router";
+import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 
 import Dispatcher from "@/views/Dispatcher.vue";
 import Login from "@/views/Login.vue";
@@ -43,9 +42,7 @@ import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Users from "@/views/Users.vue";
 
-Vue.use(VueRouter);
-
-const routes: Array<RouteConfig> = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "dispatcher",
@@ -139,10 +136,9 @@ const routes: Array<RouteConfig> = [
   }
 ];
 
-const router = new VueRouter({
+const router = createRouter({
   routes,
-  mode: 'history',
-  base: import.meta.env.VITE__BASE ?? '/',
+  history: createWebHistory(import.meta.env.VITE__BASE ?? '/'),
   scrollBehavior (to) {
     if (to.hash) {
       return {

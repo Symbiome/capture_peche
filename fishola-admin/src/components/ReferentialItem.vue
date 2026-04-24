@@ -19,21 +19,29 @@
   #L%
   -->
 <template>
-  <div class="referential-item" v-if="item">
+  <div
+    class="referential-item"
+    v-if="item"
+  >
     <h2 v-if="item.name">{{ item.name }}</h2>
-    <div v-for="col in columns" v-bind:key="col.field">
+    <div
+      v-for="col in columns"
+      v-bind:key="col.field"
+    >
 
       <b-field
-        :label="
-          col.field == 'datePublicationDebut'
-            ? 'Période de publication'
-            : col.label
-        "
+        :label="col.field == 'datePublicationDebut'
+          ? 'Période de publication'
+          : col.label
+          "
         :message="col.helpMessage ? col.helpMessage : null"
         v-if="!col.hiddenInPopup && (col.showItemIfFunction === undefined || col.showItemIfFunction(item))"
       >
         <!-- HTML text -->
-        <div v-if="col.isHTML" class="editor-holder">
+        <div
+          v-if="col.isHTML"
+          class="editor-holder"
+        >
           <div v-if="editor">
             <div class="editor-buttons-holder">
               <button
@@ -43,7 +51,7 @@
                     .focus()
                     .setParagraph()
                     .run()
-                "
+                  "
                 class="editor-button"
                 :class="{ 'is-active': editor.isActive('paragraph') }"
               >
@@ -57,7 +65,7 @@
                     .focus()
                     .toggleHeading({ level: 1 })
                     .run()
-                "
+                  "
                 class="editor-button"
                 :class="{
                   'is-active': editor.isActive('heading', { level: 1 })
@@ -72,7 +80,7 @@
                     .focus()
                     .toggleHeading({ level: 2 })
                     .run()
-                "
+                  "
                 class="editor-button"
                 :class="{
                   'is-active': editor.isActive('heading', { level: 2 })
@@ -88,7 +96,7 @@
                     .focus()
                     .toggleBulletList()
                     .run()
-                "
+                  "
                 class="editor-button"
                 :class="{ 'is-active': editor.isActive('bulletList') }"
               >
@@ -102,21 +110,19 @@
                     .focus()
                     .toggleBlockquote()
                     .run()
-                "
+                  "
                 class="editor-button"
                 :class="{ 'is-active': editor.isActive('blockquote') }"
               >
                 Citation
               </button>
-              <button
-                @click="
-                  editor
-                    .chain()
-                    .focus()
-                    .setHorizontalRule()
-                    .run()
-                "
-              >
+              <button @click="
+                editor
+                  .chain()
+                  .focus()
+                  .setHorizontalRule()
+                  .run()
+                ">
                 Ligne Horizontale
               </button>
               <button
@@ -126,15 +132,14 @@
                     .focus()
                     .toggleBold()
                     .run()
-                "
-                :disabled="
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleBold()
-                    .run()
-                "
+                  "
+                :disabled="!editor
+                  .can()
+                  .chain()
+                  .focus()
+                  .toggleBold()
+                  .run()
+                  "
                 class="editor-button"
                 :class="{ 'is-active': editor.isActive('bold') }"
               >
@@ -147,15 +152,14 @@
                     .focus()
                     .toggleItalic()
                     .run()
-                "
-                :disabled="
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .toggleItalic()
-                    .run()
-                "
+                  "
+                :disabled="!editor
+                  .can()
+                  .chain()
+                  .focus()
+                  .toggleItalic()
+                  .run()
+                  "
                 class="editor-button"
                 :class="{ 'is-active': editor.isActive('italic') }"
               >
@@ -168,15 +172,14 @@
                     .focus()
                     .undo()
                     .run()
-                "
-                :disabled="
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .undo()
-                    .run()
-                "
+                  "
+                :disabled="!editor
+                  .can()
+                  .chain()
+                  .focus()
+                  .undo()
+                  .run()
+                  "
                 class="editor-button"
               >
                 Annuler
@@ -188,15 +191,14 @@
                     .focus()
                     .redo()
                     .run()
-                "
-                :disabled="
-                  !editor
-                    .can()
-                    .chain()
-                    .focus()
-                    .redo()
-                    .run()
-                "
+                  "
+                :disabled="!editor
+                  .can()
+                  .chain()
+                  .focus()
+                  .redo()
+                  .run()
+                  "
                 class="editor-button"
               >
                 Rétablir
@@ -207,7 +209,10 @@
               />
             </div>
           </div>
-          <EditorContent class="editor" :editor="editor" />
+          <EditorContent
+            class="editor"
+            :editor="editor"
+          />
         </div>
         <!-- DateTime -->
         <div v-else-if="col.isADate">
@@ -231,11 +236,11 @@
           v-model="item[col.field]"
           v-else-if="
             !col.isFile &&
-              !col.isPicture &&
-              !col.isABoolean &&
-              !col.isADate &&
-              !col.isArray &&
-              ('' + item[col.field]).length < 200
+            !col.isPicture &&
+            !col.isABoolean &&
+            !col.isADate &&
+            !col.isArray &&
+            ('' + item[col.field]).length < 200
           "
           :disabled="col.readOnly || col.readOnlyIfFunction && col.readOnlyIfFunction(item) || (col.readOnlyEdition && item['id'])"
         ></b-input>
@@ -246,11 +251,11 @@
           type="textarea"
           v-else-if="
             !col.isFile &&
-              !col.isPicture &&
-              !col.isABoolean &&
-              !col.isADate &&
-              !col.isArray &&
-              ('' + item[col.field]).length >= 200
+            !col.isPicture &&
+            !col.isABoolean &&
+            !col.isADate &&
+            !col.isArray &&
+            ('' + item[col.field]).length >= 200
           "
           :disabled="col.readOnly || (col.readOnlyEdition && item['id'])"
         ></b-input>
@@ -272,7 +277,11 @@
           >
             Voir le fichier actuel
           </a>
-          <span v-if="input.file" :href="item[col.field]" target="blank">
+          <span
+            v-if="input.file"
+            :href="item[col.field]"
+            target="blank"
+          >
             {{ input.file.name }}
           </span>
         </b-upload>
@@ -294,7 +303,7 @@
         <!-- Array -->
         <MultipleAutoComplete
           v-else-if="col.isArray"
-          :defaultSelection="col.possibleValuesForItemFunction ? col.possibleValuesForItemFunction(item) :  []"
+          :defaultSelection="col.possibleValuesForItemFunction ? col.possibleValuesForItemFunction(item) : []"
           :data="col.arrayOptions"
           @updated="(value) => item[col.field] = value"
         />
@@ -324,261 +333,264 @@
       <button
         v-if="!item.id"
         class="button is-primary"
-        @click="save($parent.close)"
+        @click="save($parent?.close)"
       >
         Créer
       </button>
       <button
         v-if="item.id"
         class="button is-primary"
-        @click="save($parent.close)"
+        @click="save($parent?.close)"
       >
         Enregistrer
       </button>
-      <button class="button" type="button" @click="onSaved($parent.close)">
+      <button
+        class="button"
+        type="button"
+        @click="onSaved($parent?.close)"
+      >
         Annuler
       </button>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
+<script setup lang="ts">
 import BackendService from "@/services/BackendService";
 
-import { Editor, EditorContent } from "@tiptap/vue-2";
+import { Editor, EditorContent } from "@tiptap/vue-3";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 
 import { LocalDateTime, nativeJs } from "@js-joda/core";
 import ImageUploader from "./ImageUploader.vue";
 import MultipleAutoComplete from "./MultipleAutoComplete.vue";
+import { getCurrentInstance, onBeforeUnmount, onMounted, Reactive, reactive, ref, Ref, watch } from "vue";
+import { useToast } from "buefy";
 
-@Component({
-  components: { EditorContent, ImageUploader, MultipleAutoComplete }
-})
-export default class RefenretialItem extends Vue {
-  @Prop() item!: any;
-  @Prop() columns!: any[];
-  @Prop() backendUrl!: string;
-  input = { file: null };
-  picture = { file: null };
-  miniaturePicURL = "";
-  editor = new Editor({
-    content: "",
-    extensions: [StarterKit, Image]
-  });
-  dateRange: Date[] = [];
+const Toast = useToast();
 
-  mounted(): void {
-    this.itemChanged();
-  }
+const {
+  item,
+  columns,
+  backendUrl,
+} = defineProps<{
+  item: any,
+  columns: any[],
+  backendUrl: string,
+}>();
 
-  @Watch("item")
-  itemChanged(): void {
-    // Search for an html column (only one per item permited)
-    let htmlColumns = this.columns.filter(c => c.isHTML);
-    if (htmlColumns.length > 0) {
-      let htmlContent = this.item[htmlColumns[0].field];
-      // Update editor accordingly
-      if (htmlContent) {
-        this.editor.commands.setContent(htmlContent, false);
-      }
-    }
+const input = ref({ file: null });
+const picture = ref({ file: null });
+const miniaturePicURL = ref("");
+const editor: Editor = new Editor({
+  content: "",
+  extensions: [StarterKit, Image]
+});
+const dateRange: Ref<Date[]> = ref([]);
 
-    // Initialize dateRange
-    let rangeBeginningColumn = this.columns.filter(c => c.isAPeriodBeginning);
-    let rangeEndColumn = this.columns.filter(c => c.isAPeriodEnd);
-    if (rangeBeginningColumn.length && rangeEndColumn.length) {
-      this.dateRange = [];
-      this.dateRange.push(
-        this.parseLocalDateTime(this.item[rangeBeginningColumn[0].field])
-      );
-      this.dateRange.push(
-        this.parseLocalDateTime(this.item[rangeEndColumn[0].field])
-      );
-    }
-  }
+const emit = defineEmits<{
+  (e: "referentialUpdated"): void
+}>();
 
-  beforeDestroy() {
-    this.editor?.destroy();
-  }
+onMounted(itemChanged);
 
-  uploadedPic(url: string): void {
-    this.editor
-      .chain()
-      .focus()
-      .setImage({ src: url })
-      .run();
-  }
+onBeforeUnmount(() => {
+  editor?.destroy();
+});
 
-  uploadedMiniature(url: string): void {
-    this.item["miniatureURL"] = url;
-    const splitted = url.split("/");
-    this.item["miniatureId"] = splitted[splitted.length - 1];
-    this.$forceUpdate();
-  }
+watch(() => item, (oldItem, newItem) => {itemChanged(newItem)});
 
-  save(closeModal: () => void) {
-    // Search for an html column (only one per item permited)
-    let htmlColumns = this.columns.filter(c => c.isHTML);
-    if (htmlColumns.length > 0) {
-      // Get editor value
-      this.item[htmlColumns[0].field] = this.editor.getHTML();
-    }
-
-    // Translate dateRange into beggining/end dates
-    let rangeBeginningColumn = this.columns.filter(c => c.isAPeriodBeginning);
-    let rangeEndColumn = this.columns.filter(c => c.isAPeriodEnd);
-
-    if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
-      this.dateRange[0].setHours(7);
-      this.dateRange[0].setMinutes(30);
-      this.item[rangeBeginningColumn[0].field] = LocalDateTime.from(
-        nativeJs(this.dateRange[0])
-      );
-
-      this.dateRange[1].setHours(21);
-      this.dateRange[1].setMinutes(0);
-      this.item[rangeEndColumn[0].field] = LocalDateTime.from(
-        nativeJs(this.dateRange[1])
-      );
-    }
-    let onSavedCallback = () => {
-      this.$emit("referential-updated");
-      this.input.file = null;
-      this.picture.file = null;
-      this.$buefy.toast.open({
-        message: "Modifications enregistrées",
-        type: "is-success"
-      });
-      if (closeModal) {
-        closeModal();
-      }
-    };
-    // Convert file in base64 (if required)
-    if (this.input.file) {
-      this.getBase64(this.input.file).then(
-        base64 => {
-          this.item["base64Content"] = base64;
-          this.doSave(onSavedCallback);
-        },
-        err => {
-          this.$buefy.toast.open({
-            message: "Erreur lors de la lecture du fichier.",
-            type: "is-danger"
-          });
-        }
-      );
-    } else if (this.picture.file) {
-      this.getBase64(this.picture.file).then(
-        base64 => {
-          this.item["miniaturePic"] = base64;
-          this.doSave(onSavedCallback);
-        },
-        err => {
-          this.$buefy.toast.open({
-            message: "Erreur lors de la lecture du fichier.",
-            type: "is-danger"
-          });
-        }
-      );
-    } else {
-      this.doSave(onSavedCallback);
+function itemChanged(newItem?: unknown): void {
+  const targetItem = newItem ?? item
+  // Search for an html column (only one per item permited)
+  let htmlColumns = columns.filter(c => c.isHTML);
+  if (htmlColumns.length > 0) {
+    let htmlContent = targetItem[htmlColumns[0].field];
+    // Update editor accordingly
+    if (htmlContent) {
+      editor.commands.setContent(htmlContent, { emitUpdate: false });
     }
   }
 
-  doSave(onSavedCallback: () => void) {
-    if (this.item.id) {
-      // Update : PUT
-      let url = this.backendUrl + "/" + this.item.id;
-      BackendService.backendPut(url, this.item).then(onSavedCallback, err => {
-        this.input.file = null;
-        this.picture.file = null;
-        this.$buefy.toast.open({
-          message:
-            "Erreur lors de la modification de " +
-            this.item["name"] +
-            ". Veuillez vérifier vos modifications.",
-          type: "is-danger"
-        });
-      });
-    } else {
-      // Create : POST
-      let url = this.backendUrl;
-      BackendService.backendPost(url, this.item).then(onSavedCallback, err => {
-        this.input.file = null;
-        this.picture.file = null;
-        this.$buefy.toast.open({
-          message:
-            "Erreur lors de la création. Veuillez vérifier qu'un élément avec ce nom n'existe pas déjà.",
-          type: "is-danger"
-        });
-      });
-    }
+  // Initialize dateRange
+  let rangeBeginningColumn = columns.filter(c => c.isAPeriodBeginning);
+  let rangeEndColumn = columns.filter(c => c.isAPeriodEnd);
+  if (rangeBeginningColumn.length && rangeEndColumn.length) {
+    dateRange.value = [];
+    dateRange.value.push(
+      parseLocalDateTime(targetItem[rangeBeginningColumn[0].field])
+    );
+    dateRange.value.push(
+      parseLocalDateTime(targetItem[rangeEndColumn[0].field])
+    );
+  }
+}
+
+function uploadedPic(url: string): void {
+  editor
+    .chain()
+    .focus()
+    .setImage({ src: url })
+    .run();
+}
+
+function uploadedMiniature(url: string): void {
+  item["miniatureURL"] = url;
+  const splitted = url.split("/");
+  item["miniatureId"] = splitted[splitted.length - 1];
+  const instance = getCurrentInstance();
+  instance?.proxy?.$forceUpdate();
+}
+
+async function save(closeModal: (() => void) | null) {
+  // Search for an html column (only one per item permited)
+  let htmlColumns = columns.filter(c => c.isHTML);
+  if (htmlColumns.length > 0) {
+    // Get editor value
+    item[htmlColumns[0].field] = editor.getHTML();
   }
 
-  parseLocalDateTime(someLocalDateTime: number[]): Date {
-    if (someLocalDateTime[5]) {
-      return new Date(
-        someLocalDateTime[0],
-        someLocalDateTime[1] - 1,
-        someLocalDateTime[2],
-        someLocalDateTime[3],
-        someLocalDateTime[4],
-        someLocalDateTime[5]
-      );
-    } else {
-      return new Date(
-        someLocalDateTime[0],
-        someLocalDateTime[1] - 1,
-        someLocalDateTime[2],
-        someLocalDateTime[3],
-        someLocalDateTime[4]
-      );
-    }
-  }
+  // Translate dateRange into beggining/end dates
+  let rangeBeginningColumn = columns.filter(c => c.isAPeriodBeginning);
+  let rangeEndColumn = columns.filter(c => c.isAPeriodEnd);
 
-  formatDate(puet: any): string {
-    let theDate: Date = this.parseLocalDateTime(puet);
-    const hourOptions: Intl.DateTimeFormatOptions = {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric"
-    };
-    let result: string = theDate.toLocaleTimeString("fr-FR", hourOptions);
-    return result;
-  }
+  if (dateRange.value && dateRange.value[0] && dateRange.value[1]) {
+    dateRange.value[0].setHours(7);
+    dateRange.value[0].setMinutes(30);
+    item[rangeBeginningColumn[0].field] = LocalDateTime.from(
+      nativeJs(dateRange.value[0])
+    );
 
-  getBase64(file: any): Promise<string> {
-    return new Promise<any>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = function() {
-        resolve(reader.result);
-      };
-      reader.onerror = function(error) {
-        reject(error);
-      };
+    dateRange.value[1].setHours(21);
+    dateRange.value[1].setMinutes(0);
+    item[rangeEndColumn[0].field] = LocalDateTime.from(
+      nativeJs(dateRange.value[1])
+    );
+  }
+  let onSavedCallback = () => {
+    emit("referentialUpdated");
+    input.value.file = null;
+    picture.value.file = null;
+    Toast.open({
+      message: "Modifications enregistrées",
+      type: "is-success"
     });
-  }
-
-  onSaved(closeModal: () => void) {
-    this.$emit("referential-updated");
-    this.input.file = null;
-    this.picture.file = null;
     if (closeModal) {
       closeModal();
     }
+  };
+  // Convert file in base64 (if required)
+  try {
+    if (input.value.file) {
+      const base64 = await getBase64(input.value.file);
+      item["base64Content"] = base64;
+    } else if (picture.value.file) {
+      const base64 = await getBase64(picture.value.file);
+      item["miniaturePic"] = base64;
+    }
+    doSave(onSavedCallback);
+  } catch (err) {
+    Toast.open({
+      message: "Erreur lors de la lecture du fichier.",
+      type: "is-danger"
+    });
+  }
+}
+
+async function doSave(onSavedCallback: () => void) {
+  if (item.id) {
+    // Update : PUT
+    const url = backendUrl + "/" + item.id;
+    try {
+      await BackendService.backendPut(url, item);
+      onSavedCallback();
+    } catch (err) {
+      input.value.file = null;
+      picture.value.file = null;
+      Toast.open({
+        message:
+          "Erreur lors de la modification de " +
+          item["name"] +
+          ". Veuillez vérifier vos modifications.",
+        type: "is-danger"
+      });
+    }
+  } else {
+    // Create : POST
+    const url = backendUrl;
+    try {
+      await BackendService.backendPost(url, item);
+      onSavedCallback();
+    } catch (err) {
+      input.value.file = null;
+      picture.value.file = null;
+      Toast.open({
+        message:
+          "Erreur lors de la création. Veuillez vérifier qu'un élément avec ce nom n'existe pas déjà.",
+        type: "is-danger"
+      });
+    }
+  }
+}
+
+function parseLocalDateTime(someLocalDateTime: number[]): Date {
+  if (someLocalDateTime[5]) {
+    return new Date(
+      someLocalDateTime[0],
+      someLocalDateTime[1] - 1,
+      someLocalDateTime[2],
+      someLocalDateTime[3],
+      someLocalDateTime[4],
+      someLocalDateTime[5]
+    );
+  } else {
+    return new Date(
+      someLocalDateTime[0],
+      someLocalDateTime[1] - 1,
+      someLocalDateTime[2],
+      someLocalDateTime[3],
+      someLocalDateTime[4]
+    );
+  }
+}
+
+function formatDate(puet: any): string {
+  const theDate: Date = parseLocalDateTime(puet);
+  const hourOptions: Intl.DateTimeFormatOptions = {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric"
+  };
+  return theDate.toLocaleTimeString("fr-FR", hourOptions);
+}
+
+function getBase64(file: any): Promise<string> {
+  return new Promise<any>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+      resolve(reader.result);
+    };
+    reader.onerror = function (error) {
+      reject(error);
+    };
+  });
+}
+
+function onSaved(closeModal: () => void) {
+  emit("referentialUpdated");
+  input.value.file = null;
+  picture.value.file = null;
+  if (closeModal) {
+    closeModal();
   }
 }
 </script>
 
 <style lang="less">
-
 .referential-item {
   padding: 30px;
 
@@ -618,6 +630,7 @@ export default class RefenretialItem extends Vue {
 
   .editor-buttons-holder {
     padding-bottom: 10px;
+
     .editor-button {
       margin-left: 2px;
       margin-right: 2px;
@@ -627,6 +640,7 @@ export default class RefenretialItem extends Vue {
 
   .editor {
     padding-left: 30px;
+
     li {
       list-style: circle;
       margin-left: 20px;
@@ -691,6 +705,7 @@ export default class RefenretialItem extends Vue {
       text-indent: 0;
     }
   }
+
   .is-active {
     background-color: @pelorous;
     color: white;

@@ -27,9 +27,12 @@ interface ViteTypeOptions {
 interface ImportMetaEnv {
   readonly VITE__ENV_NAME: string;
   readonly VITE__API_URL: string;
+  readonly VITE__API_DEFAULT_PORT: string;
   readonly VITE__BASE: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module "*.css" {}

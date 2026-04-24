@@ -22,41 +22,28 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { onMounted } from "vue";
+
 import BackendService from "@/services/BackendService";
 
 import router from "@/router";
 
-import { Component, Vue } from "vue-property-decorator";
+onMounted(checkForActiveSession)
 
-@Component({
-  components: {}
-})
-export default class DispatcherView extends Vue {
-  constructor() {
-    super();
-  }
-
-  mounted() {
-    this.checkForActiveSession();
-  }
-
-  checkForActiveSession() {
-    BackendService.backendGet("/v1/admin/check").then(
-      () => {
-        router.push("/home");
-      },
-      error => {
-        router.push("/login");
-      }
-    );
+async function checkForActiveSession() {
+  try {
+    await BackendService.backendGet("/v1/admin/check");
+    router.push("/home");
+  } catch (error) {
+    router.push("/login");
   }
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 .dispatcher {
   height: 100%;
 

@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
-import vue from "@vitejs/plugin-vue2";
+import vue from "@vitejs/plugin-vue";
 import path from "path";
 import packageJson from "./package.json";
 
@@ -10,11 +10,13 @@ export default defineConfig(({ mode }) => {
   const gitRevision = gitDescribeSync().suffix;
   const frontendVersion = packageJson.version;
   const mvnVersion = process.env.MAVEN_PROJECT_VERSION || "N/A";
-  const base = mode == 'production' ? '/admin/': "/"
+  const base = mode == 'production' ? '/admin/': "/";
 
   return {
     base: base,
-    plugins: [vue()],
+    plugins: [
+      vue({})
+    ],
     server: {
       port: 8082,
       hmr: {
@@ -23,6 +25,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: "target/dist-" + mode,
+      cssMinify: "esbuild",
     },
     define: {
       "import.meta.env.VITE__PACKAGE_JSON_VERSION":

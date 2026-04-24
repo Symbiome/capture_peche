@@ -31,7 +31,10 @@
         <section class="section column">
           <h2 class="title">Informations éditables</h2>
           <div class="columns">
-            <b-field label="Espèce corrigée" class="column">
+            <b-field
+              label="Espèce corrigée"
+              class="column"
+            >
               <b-select
                 placeholder="Sélectionnez une espèce"
                 v-model="aCatch.editedSpeciesId"
@@ -46,8 +49,14 @@
               </b-select>
             </b-field>
 
-            <b-field label="Espèce renseignée par le pêcheur" class="column">
-              <b-select v-model="aCatch.speciesId" disabled>
+            <b-field
+              label="Espèce renseignée par le pêcheur"
+              class="column"
+            >
+              <b-select
+                v-model="aCatch.speciesId"
+                disabled
+              >
                 <option
                   v-for="specie in sortedSpeciesNames"
                   :value="speciesNamesMap.get(specie)"
@@ -60,14 +69,20 @@
           </div>
 
           <div class="columns">
-            <b-field label="Taille corrigée (mm)" class="column">
+            <b-field
+              label="Taille corrigée (mm)"
+              class="column"
+            >
               <b-numberinput
                 v-model="aCatch.editedSize"
                 type="numeric"
                 class="number-input"
               />
             </b-field>
-            <b-field label="Taille renseignée par le pêcheur (mm)" class="column">
+            <b-field
+              label="Taille renseignée par le pêcheur (mm)"
+              class="column"
+            >
               <b-numberinput
                 v-model="aCatch.sizeInMm"
                 disabled
@@ -77,14 +92,20 @@
             </b-field>
           </div>
           <div class="columns">
-            <b-field label="Poids corrigé (g)" class="column">
+            <b-field
+              label="Poids corrigé (g)"
+              class="column"
+            >
               <b-numberinput
                 v-model="aCatch.editedWeight"
                 type="numeric"
                 class="number-input"
               />
             </b-field>
-            <b-field label="Poids renseigné par le pêcheur (g)" class="column">
+            <b-field
+              label="Poids renseigné par le pêcheur (g)"
+              class="column"
+            >
               <b-numberinput
                 v-model="aCatch.weight"
                 disabled
@@ -114,35 +135,33 @@
         <section class="section column">
           <h2 class="title">Autres informations</h2>
           <b-field grouped>
-            <b-field label="Plan d'eau"
-              ><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span
-              ><span v-else>Non renseigné</span>
+            <b-field label="Plan d'eau"><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span><span
+                v-else>Non renseigné</span>
             </b-field>
             <b-field label="Date de la prise">
-              <span v-if="trip.createdOn"
-                >{{ formatDate(trip.createdOn) }} </span
-              ><span v-else>Aucune</span>
+              <span v-if="trip.createdOn">{{ formatDate(trip.createdOn) }} </span><span v-else>Aucune</span>
             </b-field>
-            <b-field label="Prise conservée"
-              ><span v-if="aCatch.keep">Oui</span><span v-else>Non</span>
+            <b-field label="Prise conservée"><span v-if="aCatch.keep">Oui</span><span v-else>Non</span>
             </b-field>
           </b-field>
           <b-field grouped>
-            <b-field label="Mesure automatique"
-              ><span v-if="aCatch.automaticMeasure">{{
-                aCatch.automaticMeasure
-              }}</span
-              ><span v-else>Aucune</span>
+            <b-field label="Mesure automatique"><span v-if="aCatch.automaticMeasure">{{
+              aCatch.automaticMeasure
+                }}</span><span v-else>Aucune</span>
             </b-field>
-            <b-field label="Technique"
-              ><span v-if="aCatch.techniqueId">
-                {{ techniquesIdMap.get(aCatch.techniqueId) }}</span
-              ><span v-else>Non renseignée</span>
+            <b-field label="Technique"><span v-if="aCatch.techniqueId">
+                {{ techniquesIdMap.get(aCatch.techniqueId) }}</span><span v-else>Non renseignée</span>
             </b-field>
           </b-field>
           <hr />
-          <b-field label="Photo de mesure automatique" v-if="measurementPicURL">
-            <a :href="measurementPicURL" target="blank">
+          <b-field
+            label="Photo de mesure automatique"
+            v-if="measurementPicURL"
+          >
+            <a
+              :href="measurementPicURL"
+              target="blank"
+            >
               <img
                 alt="mesure"
                 class="bo-detail-pic"
@@ -151,7 +170,10 @@
             </a>
           </b-field>
 
-          <b-field label="Autres photos" v-if="otherPicsUrls.length"> </b-field>
+          <b-field
+            label="Autres photos"
+            v-if="otherPicsUrls.length"
+          > </b-field>
 
           <a
             v-for="otherPicURL in otherPicsUrls"
@@ -171,117 +193,128 @@
     </div>
 
     <div class="buttons">
-      <button v-if="aCatch.id" class="button is-primary" @click="save()">
+      <button
+        v-if="aCatch.id"
+        class="button is-primary"
+        @click="save()"
+      >
         Enregistrer
       </button>
-      <button class="button" type="button" @click="cancel()">
+      <button
+        class="button"
+        type="button"
+        @click="cancel()"
+      >
         Annuler
       </button>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-
+<script setup lang="ts">
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
 
-@Component({
-  components: {}
-})
-export default class CatchEditionPage extends Vue {
-  @Prop() catchId: string;
-  aCatch: any = {};
-  trip: any = {};
-  speciesIdMap = new Map<string, string>();
-  techniquesIdMap = new Map<string, string>();
-  lakesIdMap = new Map<string, string>();
-  speciesNamesMap = new Map<string, string>();
-  sortedSpeciesNames: Array<string> = [];
-  measurementPicURL = "";
-  otherPicsUrls: Array<string> = [];
+import router from "@/router";
+import { onMounted, reactive, ref, Ref } from "vue";
+import { useToast } from "buefy";
 
-  mounted(): void {
-    this.loadCatch();
-  }
+const Toast = useToast();
 
-  async loadCatch() {
-    if (this.speciesIdMap.size == 0) {
-      let species = await BackendService.backendGet(
-        "/v1/referential/raw-species"
-      );
-      species.forEach((specie: { id: string; name: string }) => {
-        this.speciesIdMap.set(specie.id, specie.name);
-        this.speciesNamesMap.set(specie.name, specie.id);
-        this.sortedSpeciesNames.push(specie.name);
-      });
-      this.sortedSpeciesNames = this.sortedSpeciesNames.sort();
+const { catchId } = defineProps<{
+  catchId: string,
+}>();
 
-      let techniques = await BackendService.backendGet(
-        "/v1/referential/techniques"
-      );
-      techniques.forEach((technique: { id: string; name: string }) => {
-        this.techniquesIdMap.set(technique.id, technique.name);
-      });
-      let lakes = await BackendService.backendGet("/v1/referential/lakes");
-      lakes.forEach((lake: { id: string; name: string }) => {
-        this.lakesIdMap.set(lake.id, lake.name);
-      });
-    }
-    this.measurementPicURL = "";
-    this.otherPicsUrls = [];
-    this.trip = await BackendService.backendGet(
-      "/v1/trips/catches/" + this.catchId
+const emit = defineEmits<{
+  (e: "referentialUpdated"): void,
+}>();
+
+const aCatch: Ref<any> = ref({});
+const trip: Ref<any> = ref({});
+const speciesIdMap = reactive(new Map<string, string>());
+const techniquesIdMap = reactive(new Map<string, string>());
+const lakesIdMap = reactive(new Map<string, string>());
+const speciesNamesMap = reactive(new Map<string, string>());
+const sortedSpeciesNames: Ref<Array<string>> = ref([]);
+const measurementPicURL = ref("");
+const otherPicsUrls: Ref<Array<string>> = ref([]);
+
+onMounted(loadCatch);
+
+async function loadCatch() {
+  if (speciesIdMap.size == 0) {
+    const species = await BackendService.backendGet(
+      "/v1/referential/raw-species"
     );
-    this.aCatch = this.trip.catchs.find((c: any) => c.id == this.catchId);
-    if (this.aCatch.hasMeasurementPicture) {
-      this.measurementPicURL = Constants.apiUrl(
-        `/v1/pictures/measure/${this.aCatch.id}/preview`
-      );
-    }
-    this.aCatch.pictureOrders.forEach((picOrder: string) => {
-      const otherPicURL = Constants.apiUrl(
-        `/v1/pictures/${this.catchId}/${picOrder}`
-      );
-      this.otherPicsUrls.push(otherPicURL);
+    species.forEach((specie: { id: string; name: string }) => {
+      speciesIdMap.set(specie.id, specie.name);
+      speciesNamesMap.set(specie.name, specie.id);
+      sortedSpeciesNames.value.push(specie.name);
     });
-    this.aCatch.sizeInMm = this.aCatch.size * 10;
-  }
+    sortedSpeciesNames.value = sortedSpeciesNames.value.sort();
 
-  async save() {
-    let url = "/v1/trips/catches/" + this.catchId;
-    try {
-      await BackendService.backendPut(url, this.aCatch);
-      this.$emit("referential-updated");
-      this.$buefy.toast.open({
-        message: "Informations modifiée avec succès.",
-        type: "is-success"
-      });
-      this.loadCatch();
-    } catch (e) {
-      console.error(e);
-      this.$buefy.toast.open({
-        message:
-          "Erreur lors de la modification de la prise. Veuillez vérifier vos modifications.",
-        type: "is-danger"
-      });
-    }
+    const techniques = await BackendService.backendGet(
+      "/v1/referential/techniques"
+    );
+    techniques.forEach((technique: { id: string; name: string }) => {
+      techniquesIdMap.set(technique.id, technique.name);
+    });
+    const lakes = await BackendService.backendGet("/v1/referential/lakes");
+    lakes.forEach((lake: { id: string; name: string }) => {
+      lakesIdMap.set(lake.id, lake.name);
+    });
   }
+  measurementPicURL.value = "";
+  otherPicsUrls.value = [];
+  trip.value = await BackendService.backendGet(
+    "/v1/trips/catches/" + catchId
+  );
+  aCatch.value = trip.value.catchs.find((c: any) => c.id == catchId);
+  if (aCatch.value.hasMeasurementPicture) {
+    measurementPicURL.value = Constants.apiUrl(
+      `/v1/pictures/measure/${aCatch.value.id}/preview`
+    );
+  }
+  aCatch.value.pictureOrders.forEach((picOrder: string) => {
+    const otherPicURL = Constants.apiUrl(
+      `/v1/pictures/${catchId}/${picOrder}`
+    );
+    otherPicsUrls.value.push(otherPicURL);
+  });
+  aCatch.value.sizeInMm = aCatch.value.size * 10;
+}
 
-  cancel() {
-    this.$router.go(-1);
+async function save() {
+  const url = "/v1/trips/catches/" + catchId;
+  try {
+    await BackendService.backendPut(url, aCatch.value);
+    emit("referentialUpdated");
+    Toast.open({
+      message: "Informations modifiée avec succès.",
+      type: "is-success"
+    });
+    loadCatch();
+  } catch (e) {
+    console.error(e);
+    Toast.open({
+      message:
+        "Erreur lors de la modification de la prise. Veuillez vérifier vos modifications.",
+      type: "is-danger"
+    });
   }
+}
 
-  formatDate(date: number[]): string {
-    return UtilityServices.formatDate(date);
-  }
+function cancel() {
+  router.go(-1);
+}
+
+function formatDate(date: number[]): string {
+  return UtilityServices.formatDate(date);
 }
 </script>
 
 <style lang="less">
-
 .referential-aCatch {
   padding: 10px;
 
@@ -294,9 +327,11 @@ export default class CatchEditionPage extends Vue {
   .number-input {
     max-width: 250px;
   }
+
   .section {
     max-width: 900px;
   }
+
   .bo-detail-pic {
     max-height: 300px;
   }

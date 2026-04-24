@@ -31,45 +31,55 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+<script setup lang="ts">
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
+import { useTemplateRef } from "vue";
 
-@Component
-export default class ImageUploader extends Vue {
-  @Prop() itemId: string;
-  @Prop() isMiniature: boolean;
+interface Props {
+  itemId: string;
+  isMiniature?: boolean;
+}
 
-  async uploadImageFile(e: InputEvent): Promise<void> {
-    const uploadedFile = this.$refs.upload as HTMLInputElement;
-    if (uploadedFile.files) {
-      const file = uploadedFile.files[0];
-      const base64 = await this.getBase64(file);
-      const id = this.itemId ? this.itemId : "temp-id";
-      let url = "/v1/news-picture/";
-      if (this.isMiniature) {
-        url = "/v1/news-miniature/";
-      }
-      const newsPicture = await BackendService.backendPost(url + id, base64);
-      const newsPicturesURL = Constants.apiUrl(
-        "/v1/news-picture/" + newsPicture["id"]
-      );
-      this.$emit("uploaded-pic", newsPicturesURL);
+const {
+  itemId,
+  isMiniature = false,
+} = defineProps<Props>();
+
+const emit = defineEmits<{
+  (e: "uploadedPic", url: string): void,
+}>();
+
+const uploadInput = useTemplateRef("upload");
+
+async function uploadImageFile(payload: Event) {
+  const uploadedFile = uploadInput.value as HTMLInputElement;
+  if (uploadedFile.files) {
+    const file = uploadedFile.files[0];
+    const base64 = await getBase64(file);
+    const id = itemId ? itemId : "temp-id";
+    let url = "/v1/news-picture/";
+    if (isMiniature) {
+      url = "/v1/news-miniature/";
     }
+    const newsPicture = await BackendService.backendPost(url + id, base64);
+    const newsPicturesURL = Constants.apiUrl(
+      "/v1/news-picture/" + newsPicture["id"]
+    );
+    emit("uploadedPic", newsPicturesURL);
   }
+}
 
-  getBase64(file: any): Promise<string> {
-    return new Promise<any>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = function() {
-        resolve(reader.result);
-      };
-      reader.onerror = function(error) {
-        reject(error);
-      };
-    });
-  }
+function getBase64(file: any): Promise<string> {
+  return new Promise<any>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+      resolve(reader.result);
+    };
+    reader.onerror = function (error) {
+      reject(error);
+    };
+  });
 }
 </script>

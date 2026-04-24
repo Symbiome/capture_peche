@@ -19,25 +19,19 @@
  * #L%
  */
 
-document.documentElement.style
-.setProperty('$primary', 'yellow');
+document
+  .documentElement
+  .style
+  .setProperty("$primary", "yellow");
 
-import Vue from 'vue'
-import Buefy from 'buefy'
-import 'buefy/dist/buefy.css'
+import {createApp} from "vue";
+import Buefy from "buefy";
+import "buefy/dist/css/buefy.css";
 
+import App from "./App.vue";
+import router from "./router";
 
-
-Vue.use(Buefy)
-
-import App from './App.vue'
-import router from './router'
-
-Vue.config.productionTip = false
-
-
-
-new Vue({
-  router,
-  render: h => h(App)
-}).$mount('#app')
+createApp(App)
+  .use(Buefy)
+  .use(router)
+  .mount("#app");

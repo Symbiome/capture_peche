@@ -24,48 +24,36 @@
       name="Pages éditoriales"
       url="/v1/editorial"
       :columns="pageColumns"
-      ></Referential>
+    ></Referential>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Referential from '@/components/Referential.vue'
 
-import { Component, Vue } from 'vue-property-decorator';
-
-@Component({
-  components: {
-    Referential
+const pageColumns: any[] = [
+  {
+    field: 'id',
+    label: 'Identifiant',
+    visible: false,
+    readOnly: true
+  },
+  {
+    field: 'name',
+    label: 'Nom'
+  },
+  {
+    field: 'content',
+    label: 'Contenu'
+  },
+  {
+    field: 'link',
+    label: 'Lien',
+    isUrl: true
   }
-})
-export default class EditorialPagesVue extends Vue {
-
-  pageColumns:any[] = [
-    {
-      field: 'id',
-      label: 'Identifiant',
-      visible: false,
-      readOnly: true
-    },
-    {
-      field: 'name',
-      label: 'Nom'
-    },
-    {
-      field: 'content',
-      label: 'Contenu'
-    },
-    {
-      field: 'link',
-      label: 'Lien',
-      isUrl: true
-    }
-  ];
-}
+];
 </script>
 
 <style scoped lang="less">
-
 @import "../../less/main";
-
 </style>

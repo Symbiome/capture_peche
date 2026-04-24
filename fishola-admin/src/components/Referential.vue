@@ -25,98 +25,108 @@
       :data="data"
       :striped="true"
       :default-sort="defaultSort"
-      :selected.sync="selection.item"
+      v-model:selected="selection.item"
       :loading="!data"
     >
-      <template slot-scope="props">
-        <b-table-column
-          v-for="col in columns.filter(
-            col =>
-              col.visible !== false &&
-              !col.isUrl &&
-              !col.isFile &&
-              !col.isHTML &&
-              !col.isPicture
-          )"
-          :field="col.field"
-          :label="col.label"
-          :key="col.name"
-          :searchable="col.searchable"
-          sortable
-        >
-          <span v-if="col.isABoolean && props.row[col.field]">
-            Oui
-          </span>
-          <span v-else-if="col.isANotificationDate">
-            <span v-if="props.row[col.field]">
-              {{ formatDate(props.row[col.field]) }}
-            </span>
-            <span v-else-if="props.row['isPublic']">
-              Plannifié le {{ formatDate(nextPlannifiedDate) }}
-              <b-button
-                class="button is-small is-primary"
-                @click="sendNotification(props.row, $event)"
-                >Envoyer maintenant</b-button
-              >
-            </span>
-            <span v-else>
-              Non envoyé
-            </span>
-          </span>
-          <span v-else-if="col.isABoolean && !props.row[col.field]">
-            Non
-          </span>
-          <span
-            v-else-if="
-              (col.isADate || col.isAPeriodBeginning || col.isAPeriodEnd) &&
-                props.row[col.field]
-            "
-          >
+      <b-table-column
+        v-for="col in columns.filter(
+          col =>
+            col.visible !== false &&
+            !col.isUrl &&
+            !col.isFile &&
+            !col.isHTML &&
+            !col.isPicture
+        )"
+        :field="col.field"
+        :label="col.label"
+        :key="col.name"
+        :searchable="col.searchable"
+        sortable
+        v-slot="props"
+      >
+        <span v-if="col.isABoolean && props.row[col.field]">
+          Oui
+        </span>
+        <span v-else-if="col.isANotificationDate">
+          <span v-if="props.row[col.field]">
             {{ formatDate(props.row[col.field]) }}
           </span>
-          <span v-else-if="!col.isABoolean && !col.isADate">
-            {{ props.row[col.field] }}
+          <span v-else-if="props.row['isPublic']">
+            Plannifié le {{ formatDate(nextPlannifiedDate) }}
+            <b-button
+              class="button is-small is-primary"
+              @click="sendNotification(props.row, $event)"
+            >Envoyer
+              maintenant</b-button>
           </span>
-        </b-table-column>
-        <b-table-column
-          v-for="col in columns.filter(
-            col =>
-              col.visible !== false &&
-              (col.isUrl || col.isFile || col.isPicture)
-          )"
-          :field="col.field"
-          :label="col.label"
-          @click.native="showLink($event, props.row[col.field])"
-          :key="col.name"
-          sortable
-        >
+          <span v-else>
+            Non envoyé
+          </span>
+        </span>
+        <span v-else-if="col.isABoolean && !props.row[col.field]">
+          Non
+        </span>
+        <span v-else-if="
+          (col.isADate || col.isAPeriodBeginning || col.isAPeriodEnd) &&
+          props.row[col.field]
+        ">
+          {{ formatDate(props.row[col.field]) }}
+        </span>
+        <span v-else-if="!col.isABoolean && !col.isADate">
+          {{ props.row[col.field] }}
+        </span>
+      </b-table-column>
+      <b-table-column
+        v-for="col in columns.filter(
+          col =>
+            col.visible !== false &&
+            (col.isUrl || col.isFile || col.isPicture)
+        )"
+        :field="col.field"
+        :label="col.label"
+        :key="col.name"
+        sortable
+        v-slot="props"
+      >
+        <div @click="showLink($event, props.row[col.field])">
           <span v-if="col.isUrl">
             {{ props.row[col.field] }}
           </span>
           <button class="button is-small is-info">
-            <b-icon icon="eye" size="is-small"></b-icon>
+            <b-icon
+              icon="eye"
+              size="is-small"
+            ></b-icon>
           </button>
-        </b-table-column>
-        <!-- Deletion button (only displayed if delete is allow) -->
-        <b-table-column
-          v-if="editable && canDelete"
-          label="Action"
-          @click.native="showDeleteDialog($event, props.row)"
-        >
+        </div>
+      </b-table-column>
+      <!-- Deletion button (only displayed if delete is allow) -->
+      <b-table-column
+        v-if="editable && canDelete"
+        label="Action"
+        v-slot="props"
+      >
+        <div @click="showDeleteDialog($event, props.row)">
           <button
             v-if="allowedDeletionElements.includes(props.row['id'])"
             class="button is-small is-danger"
           >
-            <b-icon icon="delete" size="is-small"></b-icon>
+            <b-icon
+              icon="delete"
+              size="is-small"
+            ></b-icon>
           </button>
           <button
             v-if="!allowedDeletionElements.includes(props.row['id'])"
             class="button is-small is-light"
           >
-            <b-icon icon="delete-off" size="is-small"></b-icon>
+            <b-icon
+              icon="delete-off"
+              size="is-small"
+            ></b-icon>
           </button>
-        </b-table-column>
-      </template>
+        </div>
+      </b-table-column>
     </b-table>
     <div class="buttons">
       <!-- Creation button (only displayed if createElement is defined) -->
@@ -130,7 +140,7 @@
     </div>
     <b-modal
       v-if="editable"
-      :active.sync="selection.item != null"
+      v-model="isItemSelected"
       trap-focus
       :destroy-on-hide="false"
       aria-role="dialog"
@@ -148,159 +158,165 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
+<script setup lang="ts">
 import BackendService from "@/services/BackendService";
 
 import ReferentialItem from "@/components/ReferentialItem.vue";
 import UtilityServices from "@/services/UtilityServices";
+import { showLink } from "@/utils/utils";
+import { computed, onMounted, ref, Ref, watch } from "vue";
+import { useDialog, useToast } from "buefy";
 
-@Component({
-  components: {
-    ReferentialItem
-  }
-})
-export default class Refenretial extends Vue {
-  @Prop() name!: string;
-  @Prop() url!: string;
-  @Prop() columns!: any[];
-  @Prop({ default: true }) editable: boolean;
-  @Prop({ default: function () { return ["id", "desc"]; } }) defaultSort: string[];
-  @Prop() nextPlannifiedDate: number[];
-  data: any[] = [];
-  selection = { item: null };
+const Dialog = useDialog();
+const Toast = useToast();
 
+interface Props {
+  name: string;
+  url: string;
+  columns: any[];
+  editable?: boolean;
+  defaultSort?: string[];
+  nextPlannifiedDate?: number[];
   /* The function used to create new elements. If not specified, create button will not be displayed */
-  @Prop({ default: null }) createElement: () => any;
+  createElement?: (() => any) | null;
   /* Indicates whether user is allowed to deleted elements in the table. */
-  @Prop({ default: false }) canDelete: boolean;
+  canDelete?: boolean;
   /** The function used to determine if a given element can be deleted.
    * If not specified, only the "canDelete" boolean wil be used to determine if deletion is allowed.
    * */
-  @Prop({ default: null }) canDeletePredicate: (
-    elemenToDelete: any
-  ) => Promise<boolean>;
-  // Cached value of all elements for which deletion is allowed
-  allowedDeletionElements: any[] = [];
+  canDeletePredicate?: ((elementToDelete: any) => Promise<boolean>) | null;
+}
 
-  mounted() {
-    this.loadData();
+const {
+  name,
+  url,
+  columns,
+  editable = true,
+  defaultSort = ["id", "desc"],
+  nextPlannifiedDate = [],
+  createElement = null,
+  canDelete = false,
+  canDeletePredicate = null,
+} = defineProps<Props>();
+
+const data = ref([]);
+const selection = ref({ item: null });
+// Cached value of all elements for which deletion is allowed
+const allowedDeletionElements: Ref<any[]> = ref([]);
+// Fix for something no longer working in Vue3:
+// v-model value must be a valid JavaScript member expression.
+const isItemSelected = computed(() => selection.value.item != null);
+
+const emit = defineEmits<{
+  (e: "elementsLoaded", data: any[]): void,
+  (e: "sendNotification", notification: any): void,
+}>();
+
+onMounted(loadData);
+
+watch(() => nextPlannifiedDate, (oldDate, newDate) => {
+  loadData();
+});
+
+async function loadData() {
+  while (data.value && data.value.length) {
+    data.value.pop();
   }
+  allowedDeletionElements.value = [];
 
-  @Watch("nextPlannifiedDate")
-  nextPlannifiedDateChanged(): void {
-    this.loadData();
+  const res = await BackendService.backendGet(url);
+  data.value = res;
+  selection.value.item = null;
+  emit("elementsLoaded", data.value);
+  checkCanDeletePredicate();
+}
+
+function formatDate(puet: number[]): string {
+  return UtilityServices.formatDate(puet);
+}
+
+function showCreateDialog() {
+  const newElement = createElement?.();
+  // This will trigger modal appearance
+  selection.value.item = newElement;
+}
+
+function sendNotification(target: any, event: Event) {
+  event.stopPropagation();
+  emit("sendNotification", target);
+}
+
+/**
+ * If required by configuration, ask to server if delete is allowed.
+ */
+async function checkCanDeletePredicate() {
+  if (canDelete && data.value) {
+    await Promise.all(data.value.map(async (element) => {
+      // Call predicate for each element
+      if (canDeletePredicate != null) {
+        const allowDeletion = await canDeletePredicate(element);
+        
+        if (allowDeletion && allowedDeletionElements.value != null) {
+          allowedDeletionElements.value.push(element["id"]);
+        }
+      } else if (allowedDeletionElements.value != null) {
+        allowedDeletionElements.value.push(element["id"]);
+      }
+    }));
   }
+}
 
-  formatDate(puet: number[]): string {
-    return UtilityServices.formatDate(puet);
-  }
+function showDeleteDialog(event: Event, element: any) {
+  // Do not foward click event to row (would trigger modal)
+  event.stopPropagation();
 
-  loadData() {
-    while (this.data && this.data.length) {
-      this.data.pop();
-    }
-    this.allowedDeletionElements = [];
-    BackendService.backendGet(this.url).then(res => {
-      this.data = res;
-      this.selection.item = null;
-      this.$emit("elementsLoaded", this.data);
-      this.checkCanDeletePredicate();
+  if (
+    allowedDeletionElements.value &&
+    allowedDeletionElements.value.includes(element["id"])
+  ) {
+    // Ask for confirmation
+    Dialog.confirm({
+      title: "Suppression",
+      message:
+        "Êtes-vous sûr de vouloir supprimer " +
+        (element["name"] || "cet élément") +
+        " ?",
+      confirmText: "Supprimer",
+      type: "is-danger",
+      hasIcon: true,
+      onConfirm: () => {
+        // Sends an HTTP DELETE request at url/id
+        BackendService.backendDelete(`${url}/${element["id"]}`).then(
+          res => {
+            Toast.open({
+              message: (element["name"] || "Élément") + " supprimé",
+              type: "is-success"
+            });
+            loadData();
+          },
+          error => {
+            Toast.open({
+              message:
+                "Erreur lors de la supression de " +
+                (element["name"] || "l'élément") +
+                " : " +
+                error.message,
+              type: "is-danger"
+            });
+          }
+        );
+      }
     });
-  }
-
-  showCreateDialog() {
-    let newElement = this.createElement();
-    // This will trigger modal appearance
-    this.selection.item = newElement;
-  }
-
-  sendNotification(target: any, event: Event) {
-    event.stopPropagation();
-    this.$emit("send-notification", target);
-  }
-
-  /**
-   * If required by configuration, ask to server if delete is allowed.
-   */
-  checkCanDeletePredicate() {
-    if (this.canDelete && this.data) {
-      this.data.forEach(element => {
-        // Call predicate for each element
-        if (this.canDeletePredicate != null) {
-          this.canDeletePredicate(element).then(allowDeletion => {
-            if (allowDeletion && this.allowedDeletionElements != null) {
-              this.allowedDeletionElements.push(element["id"]);
-            }
-          });
-        } else if (this.allowedDeletionElements != null) {
-            this.allowedDeletionElements.push(element["id"]);
-        }
-      });
-    }
-  }
-
-  showLink(event: Event, url: string) {
-    // Do not foward click event to row (would trigger modal)
-    event.stopPropagation();
-
-    window.open(url, "_blank");
-  }
-
-  showDeleteDialog(event: Event, element: any) {
-    // Do not foward click event to row (would trigger modal)
-    event.stopPropagation();
-
-    if (
-      this.allowedDeletionElements &&
-      this.allowedDeletionElements.includes(element["id"])
-    ) {
-      // Ask for confirmation
-      this.$buefy.dialog.confirm({
-        title: "Suppression",
-        message:
-          "Êtes-vous sûr de vouloir supprimer " +
-          (element["name"] || "cet élément") +
-          " ?",
-        confirmText: "Supprimer",
-        type: "is-danger",
-        hasIcon: true,
-        onConfirm: () => {
-          // Sends an HTTP DELETE request at url/id
-          BackendService.backendDelete(`${this.url}/${element["id"]}`).then(
-            res => {
-              this.$buefy.toast.open({
-                message: (element["name"] || "Élément") + " supprimé",
-                type: "is-success"
-              });
-              this.loadData();
-            },
-            error => {
-              this.$buefy.toast.open({
-                message:
-                  "Erreur lors de la supression de " +
-                  (element["name"] || "l'élément") +
-                  " : " +
-                  error.message,
-                type: "is-danger"
-              });
-            }
-          );
-        }
-      });
-    } else {
-      // Explain why we cannot delete
-      this.$buefy.dialog.alert(
-        "Impossible de supprimer cet élément car il est référencé ailleurs au sein de l'application"
-      );
-    }
+  } else {
+    // Explain why we cannot delete
+    Dialog.alert(
+      "Impossible de supprimer cet élément car il est référencé ailleurs au sein de l'application"
+    );
   }
 }
 </script>
 
 <style lang="less">
-
 .referential {
   .buttons {
     width: 100%;
@@ -312,11 +328,13 @@ export default class Refenretial extends Vue {
     bottom: 0;
     background: linear-gradient(to bottom, #fff0, #fff);
   }
+
   table {
     tr {
       th {
         border-bottom-color: @pelorous;
       }
+
       td {
         overflow: hidden;
         max-width: 200px;
@@ -325,9 +343,11 @@ export default class Refenretial extends Vue {
       }
     }
   }
+
   h1 {
     margin-bottom: 10px;
   }
+
   .count {
     color: @pelorous;
     font-weight: 100;

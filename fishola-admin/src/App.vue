@@ -20,26 +20,26 @@
   -->
 <template>
   <div id="app">
-    <router-link v-if="!$router.currentRoute.name" to="/">Perdu ?</router-link>
+    <router-link v-if="!$router.currentRoute.value.name" to="/">Perdu ?</router-link>
     <Menu v-if="
-      $router.currentRoute.name &&
-      $router.currentRoute.name != 'login' &&
-      $router.currentRoute.name != 'dispatcher'
+      $router.currentRoute.value.name &&
+      $router.currentRoute.value.name != 'login' &&
+      $router.currentRoute.value.name != 'dispatcher'
     " />
     <router-view class="page-content" />
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Menu from "@/components/Menu.vue";
 import "@mdi/font/css/materialdesignicons.css";
 
-export default {
+defineOptions({
   name: "App",
   components: {
     Menu
-  }
-};
+  },
+});
 </script>
 
 <style lang="less">

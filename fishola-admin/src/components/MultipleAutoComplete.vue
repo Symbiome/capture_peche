@@ -30,7 +30,7 @@
       clear-on-select
       icon="magnify"
       @select="(option) => (selectOption(option))"
-    >
+      >
       <template #empty>Aucun résultat</template>
     </b-autocomplete>
 
@@ -41,7 +41,7 @@
             v-if="getItemLabel(selected) !== 'Autre plan d\'eau'"
             icon="close"
             size="is-small"
-            @click.native="unselectedOption(selected)"
+            @click="unselectedOption(selected)"
             title="Retirer de la sélection">
           </b-icon>
       </span>
@@ -49,60 +49,70 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+<script setup lang="ts">
+import {BAutocomplete} from "buefy";
+import {onMounted, ref, Ref, watch} from "vue";
 
-@Component
-export default class MultipleAutoComplete extends Vue {
-  @Prop({default : []}) data: any[];
-  @Prop({default : []}) defaultSelection: string[];
-  @Prop() placeholder: string;
-  search: string = "";
-  selectedIds: string[] = [];
+interface Props {
+  data?: any[];
+  defaultSelection?: string[];
+  placeholder?: string | undefined;
+}
 
-  mounted() {
-    this.defaultSelectionChanged();
-  }
+const {
+  data = [],
+  defaultSelection = [],
+} = defineProps<Props>();
 
+const search = ref("");
+const selectedIds: Ref<string[]> = ref(defaultSelection);
 
-  @Watch("defaultSelection")
-  defaultSelectionChanged() {
-    this.selectedIds = this.defaultSelection;
-    this.$emit("updated", this.selectedIds);
-  }
+const emit = defineEmits<{
+  (e: "updated", value: string[]): void
+}>();
 
-  selectOption(option: any) {
-    if (option) {
-      this.selectedIds.push(option.id);
-      this.$emit("updated", this.selectedIds)
-    }
-  }
+onMounted(() => {
+  selectedIds.value = defaultSelection;
+  emit("updated", selectedIds.value);
+});
 
-  unselectedOption(optionId: string) {
-    this.selectedIds = this.selectedIds.filter(item => item !== optionId)
-    this.$emit("updated", this.selectedIds)
-  }
+watch(() => defaultSelection, (oldSelection, newSelection) => {
+  selectedIds.value = newSelection;
+  emit("updated", selectedIds.value);
+});
 
-  getOptions() {
-    return this.data.filter((option) => {
-      return (
-        option.label
-          .toString()
-          .toLowerCase()
-          .indexOf(this.search.toLowerCase()) >= 0
-        && !this.selectedIds.includes(option.id)
-      );
-    });
-  }
-
-  getItemLabel(id: string) {
-    let filteredItem = this.data.filter((option) => {
-      return option.id === id;
-    });
-    return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
+function selectOption(option: any) {
+  if (option) {
+    selectedIds.value.push(option.id);
+    emit("updated", selectedIds.value);
   }
 }
+
+function unselectedOption(optionId: string) {
+  selectedIds.value = selectedIds.value.filter(item => item !== optionId);
+  emit("updated", selectedIds.value);
+}
+
+function getOptions() {
+  return data.filter((option) => {
+    return (
+      option.label
+        .toString()
+        .toLowerCase()
+        .indexOf(search.value.toLowerCase()) >= 0
+      && !selectedIds.value.includes(option.id)
+    );
+  });
+}
+
+function getItemLabel(id: string) {
+  const filteredItem = data.filter((option) => {
+    return option.id === id;
+  });
+  return filteredItem.length == 1 ? filteredItem[0].label : 'Autre plan d\'eau';
+}
 </script>
+
 <style lang="less">
 .selection {
   min-height: 40px;
