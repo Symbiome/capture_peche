@@ -399,13 +399,14 @@ onBeforeUnmount(() => {
   editor?.destroy();
 });
 
-watch(() => item, (oldItem, newItem) => itemChanged());
+watch(() => item, (oldItem, newItem) => {itemChanged(newItem)});
 
-function itemChanged(): void {
+function itemChanged(newItem?: unknown): void {
+  const targetItem = newItem ?? item
   // Search for an html column (only one per item permited)
   let htmlColumns = columns.filter(c => c.isHTML);
   if (htmlColumns.length > 0) {
-    let htmlContent = item[htmlColumns[0].field];
+    let htmlContent = targetItem[htmlColumns[0].field];
     // Update editor accordingly
     if (htmlContent) {
       editor.commands.setContent(htmlContent, { emitUpdate: false });
@@ -418,10 +419,10 @@ function itemChanged(): void {
   if (rangeBeginningColumn.length && rangeEndColumn.length) {
     dateRange.value = [];
     dateRange.value.push(
-      parseLocalDateTime(item[rangeBeginningColumn[0].field])
+      parseLocalDateTime(targetItem[rangeBeginningColumn[0].field])
     );
     dateRange.value.push(
-      parseLocalDateTime(item[rangeEndColumn[0].field])
+      parseLocalDateTime(targetItem[rangeEndColumn[0].field])
     );
   }
 }
@@ -502,8 +503,8 @@ async function doSave(onSavedCallback: () => void) {
     // Update : PUT
     const url = backendUrl + "/" + item.id;
     try {
-      await BackendService.backendPut(url, item.value);
-      onSavedCallback();  
+      await BackendService.backendPut(url, item);
+      onSavedCallback();
     } catch (err) {
       input.value.file = null;
       picture.value.file = null;
