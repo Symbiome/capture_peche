@@ -19,7 +19,10 @@
   #L%
   -->
 <template>
-    <div v-if="!containsData" class="not-enough-data">
+    <div v-if="loading">
+      Chargement...
+    </div>
+    <div v-else-if="!containsData" class="not-enough-data">
       Aucune donnée pour ce plan d'eau.
     </div>
     <div v-else id="evolution-graph">
@@ -89,6 +92,7 @@ export default class EvolutionMetricsView extends Vue {
   containsData:boolean = false;
   chartData : any | null = null;
   chartOptions : any | null = null;
+  loading = true;
 
   displayModeChoices = {
     'tripsCount' : "Nombre de sorties avec au moins une prise" ,
@@ -107,6 +111,7 @@ export default class EvolutionMetricsView extends Vue {
   @Watch("lakeId")
   async loadEvolutionData() {
     if (this.lakeId) {
+    this.loading = true;
         this.speciesNameForLake = await ReferentialService.getSpeciesPlusCustom(this.lakeId);
         if (this.onlyShowUserStats) {
             this.evolutionMetrics = await DashboardService.loadUserEvolutionOrTimeout(this.lakeId);
@@ -114,6 +119,7 @@ export default class EvolutionMetricsView extends Vue {
             this.evolutionMetrics = await DashboardService.loadGlobalEvolutionOrTimeout(this.lakeId);
         }
         this.$emit("loaded", true);
+        this.loading=false;
 
         let checkForData = false;
         for (const specie in this.evolutionMetrics.evolutionPerMonthAndSpecie) {
