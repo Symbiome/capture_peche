@@ -7,30 +7,16 @@ android {
         applicationId "fr.inrae.fishola"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode versCode as Integer
-        versionName versName
+        versionCode 42
+        versionName "4.2"
         testInstrumentationRunner "androidx.test.runner.AndroixoJUnitRunner"
         resValue "string", "DEEP_LINK_URL", "fishola.demo.codelutin.com"
     }
-    signingConfigs {
-        signing {
-            def Properties signinProps = new Properties()
-            signinProps.load(new FileInputStream(file('./signin.properties')))
-            storeFile file(signinProps["RELEASE_STORE_FILE"])
-            keyAlias signinProps["RELEASE_KEY_ALIAS"]
-            storePassword signinProps["RELEASE_STORE_PASSWORD"]
-            keyPassword signinProps["RELEASE_KEY_PASSWORD"]
 
-            // Optional, specify signing versions used
-            v1SigningEnabled true
-            v2SigningEnabled true
-        }
-    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.signing
             applicationVariants.all { variant ->
                 variant.outputs.each { output ->
                     def versionName = variant.versionName
