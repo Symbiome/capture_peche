@@ -28,7 +28,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.signing
             applicationVariants.all { variant ->
@@ -39,6 +41,10 @@ android {
                     output.outputFileName = "fishola-v${versionName}-c${versionCode}-r${gitRevision}.apk"
                 }
             }
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
         }
     }
     flavorDimensions "version"
