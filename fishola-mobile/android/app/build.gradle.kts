@@ -10,6 +10,8 @@ plugins {
     id("com.android.application")
 }
 
+val versCode: String by project
+val versName: String by project
 android {
     namespace = "fr.inrae.fishola"
     compileSdk = rootProject.extra.get("compileSdkVersion") as Int
@@ -17,7 +19,7 @@ android {
         applicationId = "fr.inrae.fishola"
         minSdk = rootProject.extra.get("minSdkVersion") as Int
         targetSdk = rootProject.extra.get("targetSdkVersion") as Int
-        versionCode = versCode as Integer
+        versionCode = versCode.toInt()
         versionName = versName
         testInstrumentationRunner = "androidx.test.runner.AndroixoJUnitRunner"
         resValue("string", "DEEP_LINK_URL", "fishola.demo.codelutin.com")
