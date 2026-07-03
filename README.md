@@ -1,8 +1,11 @@
-# Fishola
+# Outil open source de collecte, traitement et valorisation des données de pêche
+
+
+## Appli pêcheur (basée sur Fishola cf: https://gitlab.nuiton.org/inrae/fishola)
 
 Application smartphone en sciences participatives pour la pêche amateur sur les plans d'eau français.
 
-## Pré-requis
+### Pré-requis
 
 Les prérequis sont :
 * OpenJDK 15+
@@ -14,7 +17,7 @@ Les prérequis sont :
 À noter qu'il est possible de construire le front sans installer `Node` & `NPM`, mais il ne sera pas possible de
 démarrer le projet en mode dev.
 
-## Démarer le projet (mode dev)
+### Démarer le projet (mode dev)
 
 Il est recommandé de lancer une première fois la compilation pour installer le POM parent :
 
@@ -28,7 +31,7 @@ Ensuite il faut démarrer :
 * [l'interface d'administration](/fishola-admin/README.md)
 
 
-## Déploiement sur démo
+### Déploiement sur démo
 
 Sur chaque pipeline il y a une tâche permettant de construire les images Docker contenant l'application : `package:docker-demo`.
 Une fois que les images sont construites, elles sont disponibles dans le registry. Il suffit ensuite d'utiliser la tâche `deploy:demo` pour déclencher un rechargement de l'application.
@@ -63,7 +66,7 @@ Celle-ci va merger la branche sur `develop`, créer le tag et mettre à jour `ma
 
 De façon automatisée, le Gitlab CI va construire l'image Docker associée au tag.
 
-## Mise en production
+### Mise en production
 
 L'application FISHOLA est composée de 5 éléments :
  - 1 base de donnée PostgreSQL
@@ -74,6 +77,6 @@ L'application FISHOLA est composée de 5 éléments :
 
 Le déploiement est détaillé dans le [Guide de mise en production](/doc/MEP.md)
 
-## Licence
+### Licence
 
 L'application FISHOLA est sous licence [GNU Affero General Public License v3](/LICENSE.txt).
