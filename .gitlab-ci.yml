@@ -16,7 +16,7 @@ stages:
   - sonar
 
 build:compile:
-  image: maven:3.8-eclipse-temurin-21
+  image: maven:3.9-eclipse-temurin-25
   stage: build
   artifacts:
     name: "fishola-$CI_COMMIT_SHORT_SHA"
@@ -89,7 +89,7 @@ deploy:demo:
     - wget -O- https://webhooks.demo.codelutin.com/redeploy-fishola-demo
 
 sonarqube:
-  image: maven:3.8-eclipse-temurin-21
+  image: maven:3.9-eclipse-temurin-25
   stage: sonar
   when: manual
   script:
@@ -257,7 +257,7 @@ deploy:android-deploy-beta:
     - sticky
 
 deploy:ios-deploy-testflight:
-  image: node:22-alpine3.21
+  image: node:24-alpine
   stage: deploy
   when: manual
   tags:

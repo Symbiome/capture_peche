@@ -23,19 +23,19 @@ sudo usermod -aG docker "$USER"
 
 > Déconnectez-vous/reconnectez-vous (ou `newgrp docker`) pour que l'ajout au groupe `docker` soit pris en compte sans `sudo`.
 
-## 3. Java 21 + Maven
+## 3. Java 25 (LTS) + Maven
 
-Quarkus 3.34 nécessite Java 17 minimum (Java 21 LTS recommandé).
+Quarkus 3.37 nécessite Java 17 minimum ; on cible ici **Java 25 LTS** (support long terme, recommandé pour un système de production plutôt que la dernière version non-LTS).
 
 ```bash
-sudo apt install -y openjdk-26-jdk maven
+sudo apt install -y openjdk-25-jdk maven
 java -version
 mvn -version
 ```
 
-## 4. Node.js 22 + npm
+## 4. Node.js 24 (LTS) + npm
 
-Le build pin `nodeVersion v22.14.0` / `npmVersion 11.2.0` (voir `fishola-mobile/pom.xml` et `fishola-admin/pom.xml`). On installe Node via `nvm` pour matcher cette version précisément.
+Le build pin `nodeVersion v24.18.0` / `npmVersion 11.16.0` (voir `fishola-mobile/pom.xml` et `fishola-admin/pom.xml`) — Node 24 est la ligne **Active LTS**. On installe Node via `nvm` pour matcher cette version précisément.
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -43,7 +43,7 @@ source ~/.bashrc
 
 nvm install 24.18.0
 nvm use 24.18.0
-npm install -g npm@11.18.0
+npm install -g npm@11.16.0
 
 node -v
 npm -v
@@ -69,7 +69,7 @@ cd fishola-backend
 ./start_db.sh
 ```
 
-Ce script lance un conteneur `postgres:12` avec la base `fishola`, exposée sur le port hôte `15432`.
+Ce script lance un conteneur `postgis/postgis:18-3.6-alpine` (PostgreSQL 18 + PostGIS 3.6) avec la base `fishola`, exposée sur le port hôte `15432`.
 
 Vérifier la connexion (nécessite `psql` installé sur l'hôte) :
 

@@ -4,7 +4,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-DB_CONTAINER=postgres-12-fishola
+DB_CONTAINER=postgres-18-fishola
 PIDS=()
 
 cleanup() {
