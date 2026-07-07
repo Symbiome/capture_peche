@@ -22,6 +22,7 @@ démarrer le projet en mode dev.
 Il est recommandé de lancer une première fois la compilation pour installer le POM parent :
 
 ```bash
+sudo apt install default-jdk maven
 mvn clean install
 ```
 
