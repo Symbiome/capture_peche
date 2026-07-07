@@ -1,5 +1,6 @@
 #!/bin/bash
 
+DBdir=/home/postgresql-18
 DB=fishola
 CONTAINER=postgres-12-${DB}
 
@@ -25,10 +26,10 @@ if [ -n "$(docker ps -aq -f name=^/${CONTAINER}$)" ]; then
 fi
 
 docker run \
-  --name ${CONTAINER} \
+  --name postgres-18-${DB} \
   --restart always \
-  -v ${DBvolume}:/var/lib/postgresql/data \
+  -v ${DBdir}/${DB}:/var/lib/postgresql \
   -e POSTGRES_DB=${DB} \
   -e POSTGRES_PASSWORD=whatever \
   -p 15432:5432 \
-  -d postgres:12
+  -d postgis/postgis:18-3.6-alpine
