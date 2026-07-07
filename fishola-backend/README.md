@@ -20,7 +20,8 @@ ou bien par la commande `psql` via Docker :
 ./psql-by-docker.sh
 ```
 
-La base démarrée est une base PostgreSQL 12 dont le volume est monté dans `/home/postgres-12`.
+La base démarrée est une base PostgreSQL 12 dont le volume est monté dans `/home/postgres-12` sous Linux.
+Sous macOS (où `/home` est réservé à l'automonteur), le script utilise à la place un volume Docker nommé `fishola-pgdata`.
 
 Pour connaître l'IP de la base de données :
 
