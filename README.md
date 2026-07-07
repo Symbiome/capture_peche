@@ -81,3 +81,9 @@ Le déploiement est détaillé dans le [Guide de mise en production](/doc/MEP.md
 ### Licence
 
 L'application FISHOLA est sous licence [GNU Affero General Public License v3](/LICENSE.txt).
+
+
+### Schéma de données
+
+Le DDL généré à partir des migrations est disponibe ici:
+```fishola-backend/target/init-fishola-database.sql``
