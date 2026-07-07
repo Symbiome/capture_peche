@@ -86,4 +86,19 @@ L'application FISHOLA est sous licence [GNU Affero General Public License v3](/L
 ### Schéma de données
 
 Le DDL généré à partir des migrations est disponibe ici:
-```fishola-backend/target/init-fishola-database.sql``
+```fishola-backend/target/init-fishola-database.sql```
+
+
+### Data
+
+#### Données Hydrographiques
+
+Pour étendre à tous types de plan d'eau et de cours d'eau, nous utilisons la base de données TOPO fournie par l'IGN disponible sur https://cartes.gouv.fr/rechercher-une-donnee/dataset/IGNF_BD-TOPO
+
+Dans le geopackage téléchargé, les attributs pertinents sont:
+* noeud_hydrographique (les points de jointure entre les cours d'eau, plans d'eau et tronçon)
+* troncon_hydrographique (Cours d'eau non permanent?)
+* cours_d_eau
+* plan_d_eau
+* surface_hydrographique (Donne la largeur des cours d'eau, si largeure significative)
+
