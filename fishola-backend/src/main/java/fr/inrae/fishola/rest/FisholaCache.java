@@ -25,7 +25,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.inrae.fishola.FisholaConfiguration;
 import fr.inrae.fishola.rest.about.KeyFigures;
-import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
+import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -37,9 +37,9 @@ public class FisholaCache {
 
     public final Cache<String, GlobalDashboard> globalDashboard;
 
-    public final Cache<String, EvolutionMetricsForLake> globalEvolution;
+    public final Cache<String, EvolutionMetricsForWaterEntity> globalEvolution;
 
-    public final Cache<String, EvolutionMetricsForLake> personalEvolution;
+    public final Cache<String, EvolutionMetricsForWaterEntity> personalEvolution;
 
 
     public final Cache<String, KeyFigures> keyFigures;

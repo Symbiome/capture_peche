@@ -37,7 +37,7 @@ public interface TripSocial {
     UUID id();
     String tripName();
     String userName();
-    String lakeName();
+    String waterEntityName();
     LocalDate date();
     long durationInSeconds();
     List<TripSocialReaction> socialReactions();

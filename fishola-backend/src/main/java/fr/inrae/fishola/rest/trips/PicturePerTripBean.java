@@ -29,6 +29,6 @@ public class PicturePerTripBean {
     public LocalDate tripDate;
     public UUID tripId;
     public String tripName;
-    public String tripLakeName;
+    public String tripWaterEntityName;
     public List<String> pictureURLs;
 }

@@ -39,6 +39,6 @@ public interface AdminProfileForAdmin {
 
     boolean isNationalAdmin();
 
-    List<UUID> lakeIds();
+    List<UUID> waterEntityIds();
 
 }

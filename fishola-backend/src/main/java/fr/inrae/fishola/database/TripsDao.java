@@ -26,7 +26,7 @@ import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
-import fr.inrae.fishola.entities.tables.daos.LakeDao;
+import fr.inrae.fishola.entities.tables.daos.WaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TripDao;
 import fr.inrae.fishola.entities.tables.daos.TripExpectedSpeciesDao;
@@ -83,12 +83,36 @@ public class TripsDao extends AbstractFisholaDao {
     public UUID create(Trip trip) {
         return withContext(context -> {
             TripRecord newRecord = context.newRecord(Tables.TRIP, trip);
+            // begin/end_latitude/longitude are GENERATED ALWAYS AS ... STORED (derived
+            // from begin/end_position); newRecord() marks every field as changed
+            // regardless of whether the POJO getter is null, so they must be excluded
+            // explicitly or Postgres rejects the insert outright.
+            newRecord.changed(Tables.TRIP.BEGIN_LATITUDE, false);
+            newRecord.changed(Tables.TRIP.BEGIN_LONGITUDE, false);
+            newRecord.changed(Tables.TRIP.END_LATITUDE, false);
+            newRecord.changed(Tables.TRIP.END_LONGITUDE, false);
             TripRecord recordInserted = context.insertInto(Tables.TRIP)
                     .set(newRecord)
                     .returning(Tables.TRIP.ID)
                     .fetchOne();
             UUID id = recordInserted.getId();
             return id;
+        });
+    }
+
+    /**
+     * begin_position/end_position are PostGIS geometry columns; the generated DAO's
+     * typed setter can't bind a WKT string into them directly (no implicit cast on a
+     * JDBC bind parameter), so they're set explicitly via ST_GeomFromText instead.
+     */
+    public void updatePositions(UUID tripId, String beginWktPoint, String endWktPoint) {
+        withContextNoResult(context -> {
+            if (beginWktPoint != null) {
+                context.execute("UPDATE trip SET begin_position = ST_GeomFromText(?, 4326) WHERE id = ?", beginWktPoint, tripId);
+            }
+            if (endWktPoint != null) {
+                context.execute("UPDATE trip SET end_position = ST_GeomFromText(?, 4326) WHERE id = ?", endWktPoint, tripId);
+            }
         });
     }
 
@@ -110,7 +134,7 @@ public class TripsDao extends AbstractFisholaDao {
         return techniques.size();
     }
 
-    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
+    public List<Trip> listMyTrips(UUID userId, boolean orderDesc, Optional<String> searchTerm, Optional<Integer> yearFilter, Optional<List<UUID>> waterEntitiesFilter) {
         List<Trip> result = withContext(context -> {
             List<Condition> conditions = new LinkedList<>();
             conditions.add(Tables.TRIP.OWNER_ID.eq(userId));
@@ -123,7 +147,7 @@ public class TripsDao extends AbstractFisholaDao {
                 LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
                 conditions.add(Tables.TRIP.DAY.between(min, max));
             });
-            lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesFilter.get())));
+            waterEntitiesFilter.ifPresent(waterEntitiesIds -> conditions.add(Tables.TRIP.WATER_ENTITY_ID.in(waterEntitiesFilter.get())));
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
             SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
@@ -149,14 +173,14 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
+    public PaginationResult<Trip> listMyTrips(UUID userId, PaginationParameter page, Optional<String> searchTerm, Optional<Integer> year, Optional<List<UUID>> waterEntitiesFilter) {
         // TODO AThimel 13/01/2020 La page doit être gérée au niveau de la requête
         boolean orderDesc = true;
         if (!page.getOrderClauses().isEmpty()) {
             PaginationOrder order = page.getOrderClauses().get(0);
             orderDesc = order.isDesc();
         }
-        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year,lakesFilter);
+        List<Trip> entities = listMyTrips(userId, orderDesc, searchTerm, year,waterEntitiesFilter);
         PaginationResult<Trip> result = PaginationResult.fromFullList(entities, page);
         return result;
     }
@@ -188,7 +212,15 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     public void updateTrip(Trip existingTrip) {
-        withDaoNoResult(TripDao.class, dao -> dao.update(existingTrip));
+        withContextNoResult(context -> {
+            TripRecord record = context.newRecord(Tables.TRIP, existingTrip);
+            // begin/end_latitude/longitude are GENERATED ALWAYS AS ... STORED; see create().
+            record.changed(Tables.TRIP.BEGIN_LATITUDE, false);
+            record.changed(Tables.TRIP.BEGIN_LONGITUDE, false);
+            record.changed(Tables.TRIP.END_LATITUDE, false);
+            record.changed(Tables.TRIP.END_LONGITUDE, false);
+            record.update();
+        });
     }
 
     protected void deleteTripSpecies(UUID tripId) {
@@ -301,9 +333,9 @@ public class TripsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<PicturePerTripBean> getPicturesPerTripForYearAndLakes(UUID userId, Integer year, Optional<List<UUID>> lakesFilter) {
+    public List<PicturePerTripBean> getPicturesPerTripForYearAndWaterEntities(UUID userId, Integer year, Optional<List<UUID>> waterEntitiesFilter) {
         List<PicturePerTripBean> picturesPerTripForYear = new ArrayList<>();
-        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), lakesFilter);
+        List<Trip> tripsForYear = this.listMyTrips(userId, true, Optional.empty(), Optional.of(year), waterEntitiesFilter);
         for(Trip trip : tripsForYear) {
             Set<UUID> catchIds = catchsDao.listCatchIds(trip.getId());
             PicturePerTripBean picturesForTrip = new PicturePerTripBean();
@@ -311,7 +343,7 @@ public class TripsDao extends AbstractFisholaDao {
             picturesForTrip.tripDate = trip.getDay();
             picturesForTrip.tripId = trip.getId();
             picturesForTrip.tripName = trip.getName();
-            withDaoNoResult(LakeDao.class, lakeDao -> picturesForTrip.tripLakeName = lakeDao.findById(trip.getLakeId()).getName());
+            withDaoNoResult(WaterEntityDao.class, waterEntityDao -> picturesForTrip.tripWaterEntityName = waterEntityDao.findById(trip.getWaterEntityId()).getName());
             ListMultimap<UUID, Integer> catchsWithPictures = catchsDao.getPictureIndexes(catchIds);
             for (Map.Entry<UUID, Integer> catchWithPicture : catchsWithPictures.entries()) {
                 picturesForTrip.pictureURLs.add("/v1/pictures/" + catchWithPicture.getKey() + "/preview/" + catchWithPicture.getValue());
@@ -328,13 +360,13 @@ public class TripsDao extends AbstractFisholaDao {
         return picturesPerTripForYear;
     }
 
-    public PaginationResult<TripSocial> socialTrips(UUID userId, Optional<List<UUID>> lakesFilter, PaginationParameter page) {
+    public PaginationResult<TripSocial> socialTrips(UUID userId, Optional<List<UUID>> waterEntitiesFilter, PaginationParameter page) {
         return withContext(context -> {
                 List<Condition> conditions = new LinkedList<>();
                 conditions.add(Tables.TRIP.HIDDEN.eq(false));
                 conditions.add(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
                 conditions.add(Tables.FISHOLA_USER.ACCEPTS_SHARE_TRIPS.eq(true));
-                lakesFilter.ifPresent(lakesIds -> conditions.add(Tables.TRIP.LAKE_ID.in(lakesIds)));
+                waterEntitiesFilter.ifPresent(waterEntitiesIds -> conditions.add(Tables.TRIP.WATER_ENTITY_ID.in(waterEntitiesIds)));
                 SelectConditionStep<Record> builder = context.select(Tables.TRIP.asterisk(),
                                 Tables.FISHOLA_USER.ID.as("ownerId"),
                                 Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS,
@@ -357,7 +389,7 @@ public class TripsDao extends AbstractFisholaDao {
                 List<TripSocial> tripsWithSocial = tripsWithoutSocial.stream().map( t -> {
                     FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
                     String userName = user.getPseudo();
-                    String lakeName = withDao(LakeDao.class, lakeDao -> lakeDao.fetchById(t.getLakeId()).getFirst().getName());
+                    String waterEntityName = withDao(WaterEntityDao.class, waterEntityDao -> waterEntityDao.fetchById(t.getWaterEntityId()).getFirst().getName());
                     long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();
                     List<TripSocialReaction> socialReactions = withDao(TripSocialReactionDao.class, dao -> dao.fetchByTripId(t.getId()));
                     Map<String, ? extends Map<Maillage, Integer>> catchesCountPerMaillage = withDao(CatchDao.class, dao ->
@@ -380,7 +412,7 @@ public class TripsDao extends AbstractFisholaDao {
                            .id(t.getId())
                            .userName(userName)
                            .tripName(t.getName())
-                           .lakeName(lakeName)
+                           .waterEntityName(waterEntityName)
                            .durationInSeconds(durationInSeconds)
                            .date(t.getDay())
                            .socialReactions(socialReactions)

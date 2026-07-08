@@ -65,10 +65,10 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     @GET
-    @Path("/news/lake/{lakeId}")
-    public List<News> getPublishedNews(@PathParam("lakeId") UUID lakeId, @Context HttpServletRequest request) {
+    @Path("/news/waterEntity/{waterEntityId}")
+    public List<News> getPublishedNews(@PathParam("waterEntityId") UUID waterEntityId, @Context HttpServletRequest request) {
         // Return all news for which publication date is active
-        return dao.getPublishedNewsForLake(lakeId);
+        return dao.getPublishedNewsForWaterEntity(waterEntityId);
     }
 
     @GET
@@ -104,14 +104,14 @@ public class NewsResource extends AbstractFisholaResource {
     public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
-        boolean newsIsRegionalAndAdminHasNoRightsOnLake = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminLakes().containsAll(news.lakeIds);
-        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnLake) {
-            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.lakeIds);
+        boolean newsIsRegionalAndAdminHasNoRightsOnWaterEntity = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminWaterEntities().containsAll(news.waterEntityIds);
+        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnWaterEntity) {
+            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
         Preconditions.checkArgument(newsId.equals(news.id), "L'identifiant ne correspond pas");
         try {
-            dao.update(this.newsBeanToNews(news), news.lakeIds);
+            dao.update(this.newsBeanToNews(news), news.waterEntityIds);
             return Response.noContent().build();
         } catch (Exception e) {
             Map<String, String> entity = new LinkedHashMap<>();
@@ -126,12 +126,12 @@ public class NewsResource extends AbstractFisholaResource {
     public Response createNews(NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
-        boolean newsIsRegionalAndAdminHasNoRightsOnLake = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminLakes().containsAll(news.lakeIds);
-        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnLake) {
-            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.lakeIds);
+        boolean newsIsRegionalAndAdminHasNoRightsOnWaterEntity = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminWaterEntities().containsAll(news.waterEntityIds);
+        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnWaterEntity) {
+            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         try {
-            News inserted = dao.insert(this.newsBeanToNews(news), news.lakeIds);
+            News inserted = dao.insert(this.newsBeanToNews(news), news.waterEntityIds);
             // Update all news pictures uploaded with temp id
             dao.updateTempNewsPictureIds(inserted.getId());
             return Response.noContent().build();
@@ -178,8 +178,8 @@ public class NewsResource extends AbstractFisholaResource {
     }
 
     private NewsBean newsToNewsBean(News n) {
-        Set<UUID> lakeIds = this.dao.getLakeIds(n.getId());
-        return new NewsBean(n.getId(), n.getName(), n.getContent(), n.getDatePublicationDebut(), n.getDatePublicationFin(), n.getDateNotificationSent(), n.getMiniatureId(), n.getIsNational(), lakeIds);
+        Set<UUID> waterEntityIds = this.dao.getWaterEntityIds(n.getId());
+        return new NewsBean(n.getId(), n.getName(), n.getContent(), n.getDatePublicationDebut(), n.getDatePublicationFin(), n.getDateNotificationSent(), n.getMiniatureId(), n.getIsNational(), waterEntityIds);
     }
     private News newsBeanToNews(NewsBean news) {
         return new News(news.id, news.name, news.content, news.datePublicationDebut, news.datePublicationFin, news.dateNotificationSent, news.miniatureId, news.isNational);

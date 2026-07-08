@@ -25,10 +25,10 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import fr.inrae.fishola.entities.Sequences;
 import fr.inrae.fishola.entities.enums.Gender;
 import fr.inrae.fishola.entities.tables.daos.FisholaUserDao;
-import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteLakesDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaUserFavoriteWaterEntitiesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteLakes;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.FisholaUserFavoriteWaterEntities;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jboss.logging.Logger;
@@ -41,8 +41,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
-import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_LAKES;
-import static fr.inrae.fishola.entities.Tables.LAKE;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_WATER_ENTITIES;
+import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
 
 @Singleton
 public class UsersDao extends AbstractFisholaDao {
@@ -141,32 +141,32 @@ public class UsersDao extends AbstractFisholaDao {
        return withDao(FisholaUserDao.class, dao -> dao.fetchByAcceptsMailNotifications(true));
     }
 
-    public List<Lake> getFavoriteLakes(UUID userUUID) {
-        return withContext(context-> context.select(LAKE.asterisk())
-        .from(LAKE)
-        .join(FISHOLA_USER_FAVORITE_LAKES)
-        .on(FISHOLA_USER_FAVORITE_LAKES.FISHOLA_USER_ID.eq(userUUID)
-                .and(LAKE.ID.eq(FISHOLA_USER_FAVORITE_LAKES.LAKE_ID)))
-                .orderBy(LAKE.NAME)
-        .fetchInto(Lake.class));
+    public List<WaterEntity> getFavoriteWaterEntities(UUID userUUID) {
+        return withContext(context-> context.select(WATER_ENTITY.asterisk())
+        .from(WATER_ENTITY)
+        .join(FISHOLA_USER_FAVORITE_WATER_ENTITIES)
+        .on(FISHOLA_USER_FAVORITE_WATER_ENTITIES.FISHOLA_USER_ID.eq(userUUID)
+                .and(WATER_ENTITY.ID.eq(FISHOLA_USER_FAVORITE_WATER_ENTITIES.WATER_ENTITY_ID)))
+                .orderBy(WATER_ENTITY.NAME)
+        .fetchInto(WaterEntity.class));
     }
 
-    public void updateFavoriteLakes(UUID userUUID, Set<UUID> newFavoriteLakeIds) {
-        withDaoNoResult(FisholaUserFavoriteLakesDao.class, dao -> {
-            List<FisholaUserFavoriteLakes> oldFavoriteLakes =  dao.fetchByFisholaUserId(userUUID);
-            Set<UUID> oldFavoriteLakeIds = oldFavoriteLakes.stream()
-                    .map(FisholaUserFavoriteLakes::getLakeId)
+    public void updateFavoriteWaterEntities(UUID userUUID, Set<UUID> newFavoriteWaterEntityIds) {
+        withDaoNoResult(FisholaUserFavoriteWaterEntitiesDao.class, dao -> {
+            List<FisholaUserFavoriteWaterEntities> oldFavoriteWaterEntities =  dao.fetchByFisholaUserId(userUUID);
+            Set<UUID> oldFavoriteWaterEntityIds = oldFavoriteWaterEntities.stream()
+                    .map(FisholaUserFavoriteWaterEntities::getWaterEntityId)
                     .collect(Collectors.toSet());
 
             // Delete removed favorites
-            oldFavoriteLakes.stream()
-                    .filter(fav -> !newFavoriteLakeIds.contains(fav.getLakeId()))
+            oldFavoriteWaterEntities.stream()
+                    .filter(fav -> !newFavoriteWaterEntityIds.contains(fav.getWaterEntityId()))
                     .forEach(dao::delete);
 
             // Add new favorites
-            newFavoriteLakeIds.stream()
-                    .filter(id -> !oldFavoriteLakeIds.contains(id))
-                    .map(id -> new FisholaUserFavoriteLakes(userUUID, id))
+            newFavoriteWaterEntityIds.stream()
+                    .filter(id -> !oldFavoriteWaterEntityIds.contains(id))
+                    .map(id -> new FisholaUserFavoriteWaterEntities(userUUID, id))
                     .forEach(dao::insert);
         });
     }

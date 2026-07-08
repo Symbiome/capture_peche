@@ -37,7 +37,7 @@ public interface CatchMarker {
     UUID tripId();
     String tripName();
     String specieName();
-    String lakeName();
+    String waterEntityName();
     Double latitude();
     Double longitude();
     Double size();

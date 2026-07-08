@@ -121,12 +121,12 @@ SELECT
     c.size * 10 AS longueur_totale_du_poisson,
     c.automatic_measure * 10 AS longueur_totale_du_poisson_calculee,
     c.weight AS poids_du_poisson,
-    c.latitude AS latitude_de_la_capture,
-    c.longitude AS longitude_de_la_capture,
-    t.begin_latitude AS latitude_debut_de_peche,
-    t.begin_longitude AS longitude_debut_de_peche,
-    t.end_latitude AS latitude_fin_de_peche,
-    t.end_longitude AS longitude_fin_de_peche,
+    ST_Y(c.position) AS latitude_de_la_capture,
+    ST_X(c.position) AS longitude_de_la_capture,
+    ST_Y(t.begin_position) AS latitude_debut_de_peche,
+    ST_X(t.begin_position) AS longitude_debut_de_peche,
+    ST_Y(t.end_position) AS latitude_fin_de_peche,
+    ST_X(t.end_position) AS longitude_fin_de_peche,
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
@@ -138,7 +138,7 @@ SELECT
                 WHEN 'Afterwards' THEN 'A posteriori'
                 END AS mode_de_peche
 FROM trip t
-INNER JOIN lake l ON l.id = t.lake_id
+INNER JOIN water_entity l ON l.id = t.water_entity_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
 LEFT JOIN trip_species_names tsn ON tsn.trip_id = t.id
 LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
@@ -188,7 +188,7 @@ SELECT
     CASE c.exclude_from_exports WHEN true THEN 'oui' ELSE 'non' END as a_exclure,
     c.id as catch_id
 FROM trip t
-INNER JOIN lake l ON l.id = t.lake_id
+INNER JOIN water_entity l ON l.id = t.water_entity_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
 LEFT JOIN trip_species_names tsn ON tsn.trip_id = t.id
 LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id
@@ -231,12 +231,12 @@ SELECT
     c.size * 10 AS longueur_totale_du_poisson,
     c.automatic_measure * 10 AS longueur_totale_du_poisson_calculee,
     c.weight AS poids_du_poisson,
-    c.latitude AS latitude_de_la_capture,
-    c.longitude AS longitude_de_la_capture,
-    t.begin_latitude AS latitude_debut_de_peche,
-    t.begin_longitude AS longitude_debut_de_peche,
-    t.end_latitude AS latitude_fin_de_peche,
-    t.end_longitude AS longitude_fin_de_peche,
+    ST_Y(c.position) AS latitude_de_la_capture,
+    ST_X(c.position) AS longitude_de_la_capture,
+    ST_Y(t.begin_position) AS latitude_debut_de_peche,
+    ST_X(t.begin_position) AS longitude_debut_de_peche,
+    ST_Y(t.end_position) AS latitude_fin_de_peche,
+    ST_X(t.end_position) AS longitude_fin_de_peche,
     CASE c.kept WHEN true THEN 'non'
                 WHEN false THEN 'oui'
                 END AS poisson_relache,
@@ -248,7 +248,7 @@ SELECT
                 WHEN 'Afterwards' THEN 'A posteriori'
                 END AS mode_de_peche
 FROM trip t
-INNER JOIN lake l ON l.id = t.lake_id
+INNER JOIN water_entity l ON l.id = t.water_entity_id
 LEFT JOIN fishola_user u ON u.id = t.owner_id
 LEFT JOIN trip_species_names tsn ON tsn.trip_id = t.id
 LEFT JOIN trip_techniques_names ttn ON ttn.trip_id = t.id

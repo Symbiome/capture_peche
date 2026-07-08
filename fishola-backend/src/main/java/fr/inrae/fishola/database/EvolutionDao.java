@@ -27,9 +27,9 @@ import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricForSpecieAndMonth;
-import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
+import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity;
 import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricForSpecieAndMonth;
-import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForLake;
+import fr.inrae.fishola.rest.dashboard.ImmutableEvolutionMetricsForWaterEntity;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -48,9 +48,9 @@ public class EvolutionDao  extends AbstractFisholaDao {
     @Inject
     protected CatchsDao catchsDao;
 
-    public EvolutionMetricsForLake getEvolutionStatsForLake(UUID lakeId, Optional<UUID> userId) {
-        ImmutableEvolutionMetricsForLake.Builder builder = ImmutableEvolutionMetricsForLake.builder();
-        Optional<List<UUID>> lakeFilter = Optional.of(Lists.newArrayList(lakeId));
+    public EvolutionMetricsForWaterEntity getEvolutionStatsForWaterEntity(UUID waterEntityId, Optional<UUID> userId) {
+        ImmutableEvolutionMetricsForWaterEntity.Builder builder = ImmutableEvolutionMetricsForWaterEntity.builder();
+        Optional<List<UUID>> waterEntityFilter = Optional.of(Lists.newArrayList(waterEntityId));
         List<UUID> species = withDao(SpeciesDao.class, SpeciesDao::findAll).stream().map(Species::getId).toList();
         boolean useEditedInBackOfficeInformation = userId.isEmpty();
 
@@ -58,7 +58,7 @@ public class EvolutionDao  extends AbstractFisholaDao {
             List<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecie = Lists.newArrayList();
 
             for (int year = 2018; year <= LocalDate.now().getYear(); year++) {
-                Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), lakeFilter);
+                Multimap<Month, Catch> monthlyCatches = catchsDao.findMonthly0(userId, Optional.of(year), waterEntityFilter);
 
                 for (Month month : monthlyCatches.keySet()) {
                     Optional<EvolutionMetricForSpecieAndMonth> evolutionMetricsForSpecieAndMonth = getEvolutionMetricsForSpecieAndMonth(year, month, specieId, monthlyCatches, useEditedInBackOfficeInformation);

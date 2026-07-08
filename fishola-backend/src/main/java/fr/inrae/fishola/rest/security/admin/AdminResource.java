@@ -64,7 +64,7 @@ import java.util.stream.Stream;
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource extends AbstractSecurityFisholaResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
-    protected static final String CLAIM_LAKE_IDS = "lakeIds";
+    protected static final String CLAIM_WATER_ENTITY_IDS = "waterEntityIds";
 
     @POST
     @Path("/login")
@@ -102,7 +102,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         adminDao.updateAdmin(
                 adminId,
                 bean.canCreateAdmin,
-                bean.lakeIds
+                bean.waterEntityIds
         );
         return Response.noContent().build();
     }
@@ -129,8 +129,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
         }
-        if (bean.lakeIds.isEmpty()) {
-            validationErrors.put(CLAIM_LAKE_IDS, "Au moins un lac doit être associé à l'administrateur");
+        if (bean.waterEntityIds.isEmpty()) {
+            validationErrors.put(CLAIM_WATER_ENTITY_IDS, "Au moins un lac doit être associé à l'administrateur");
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -149,7 +149,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         Map<String, String> claims = new HashMap<>();
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
-        claims.put(CLAIM_LAKE_IDS, bean.lakeIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+        claims.put(CLAIM_WATER_ENTITY_IDS, bean.waterEntityIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
         claims.put(CLAIM_CAN_CREATE_ADMIN, bean.canCreateAdmin.toString());
 
         String token = jwtHelper.createCustomToken("register-admin", 1, claims);
@@ -229,15 +229,15 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     public List<AdminProfileForAdmin> listAdmins() {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         List<FisholaAdmin> admins = adminDao.findAll();
-        Set<UUID> allowedLakes = getAllowedAdminLakes();
+        Set<UUID> allowedWaterEntities = getAllowedAdminWaterEntities();
         List<AdminProfileForAdmin> result = admins.stream()
             .filter(admin -> {
                 if (fisholaAdmin.getIsNationalAdmin()) {
                     return true;
                 }
-                // Local admins can only see admin of their lakes
-                Set<UUID> adminLakes = adminDao.getAllowedLakes(admin.getId());
-                return !Collections.disjoint(allowedLakes, adminLakes);
+                // Local admins can only see admin of their waterEntities
+                Set<UUID> adminWaterEntities = adminDao.getAllowedWaterEntities(admin.getId());
+                return !Collections.disjoint(allowedWaterEntities, adminWaterEntities);
             })
             .map(this.adminDao::toUserProfileForAdmin)
             .toList();
@@ -255,8 +255,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             };
 
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
-            String lakeIdsString = getClaimOrFail.apply(CLAIM_LAKE_IDS);
-            UUID[] lakeIds = Stream.of(lakeIdsString.split(","))
+            String waterEntityIdsString = getClaimOrFail.apply(CLAIM_WATER_ENTITY_IDS);
+            UUID[] waterEntityIds = Stream.of(waterEntityIdsString.split(","))
                     .map(UUID::fromString)
                     .toList().toArray(UUID[]::new);
 
@@ -268,7 +268,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_CAN_CREATE_ADMIN)),
                     false,
-                    lakeIds
+                    waterEntityIds
             );
 
             return true;

@@ -51,12 +51,12 @@ class LocalDateTimeFormatterTest extends AbstractFisholaTest {
     @Transactional
     void testOnGlobalDashboard() {
         String formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy,M,d,H,m"));
-        UUID lakeId = this.referentialDao.listLakes().iterator().next().getId();
+        UUID waterEntityId = this.referentialDao.listWaterEntities().iterator().next().getId();
         Integer year = 2024;
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .get("/api/v1/global-dashboard?year="+year + "&lake=" + lakeId)
+                .get("/api/v1/global-dashboard?year="+year + "&waterEntity=" + waterEntityId)
                 .then()
                 .statusCode(200)
                 .body(CoreMatchers.containsString("\"computedOn\":[" + formatted));

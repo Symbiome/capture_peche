@@ -102,3 +102,7 @@ Dans le geopackage téléchargé, les attributs pertinents sont:
 * plan_d_eau
 * surface_hydrographique (Donne la largeur des cours d'eau, si largeure significative)
 
+#### Connexion à la base de dev locale
+
+psql postgresql://postgres:whatever@localhost:15432/fishola
+

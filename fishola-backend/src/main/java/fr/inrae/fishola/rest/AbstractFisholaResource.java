@@ -174,14 +174,14 @@ public abstract class AbstractFisholaResource {
         return byId.get();
     }
 
-    protected Set<UUID> getAllowedAdminLakes() {
+    protected Set<UUID> getAllowedAdminWaterEntities() {
         if (adminToken == null) {
             return Sets.newLinkedHashSet();
         }
-        // For admins : only list alllowed lakes
+        // For admins : only list alllowed waterEntities
         try {
             FisholaAdmin fisholaAdmin = this.checkIsAdmin();
-            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedLakes(fisholaAdmin.getId());
+            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedWaterEntities(fisholaAdmin.getId());
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();
         }

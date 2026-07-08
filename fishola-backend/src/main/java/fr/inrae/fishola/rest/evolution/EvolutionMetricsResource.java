@@ -25,7 +25,7 @@ import fr.inrae.fishola.database.EvolutionDao;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
-import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake;
+import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -47,28 +47,28 @@ public class EvolutionMetricsResource extends AbstractFisholaResource {
     private FisholaCache cache;
 
     /**
-     * Returns for the given lake a map having :
+     * Returns for the given waterEntity a map having :
      * - One entry per year
      * - For each year, on entry per specie id
      * - For each specie, one entry per month
      * - For each month a pair representing count and avg size of the given specie
      */
     @GET
-    @Path("/evolution/global/{lakeId}")
-    public EvolutionMetricsForLake getGlobalEvolutionStats(
-            @PathParam("lakeId") UUID lakeId
+    @Path("/evolution/global/{waterEntityId}")
+    public EvolutionMetricsForWaterEntity getGlobalEvolutionStats(
+            @PathParam("waterEntityId") UUID waterEntityId
     ) {
-        return cache.globalEvolution.get(lakeId.toString(), key -> evolutionDao.getEvolutionStatsForLake(lakeId, Optional.empty()));
+        return cache.globalEvolution.get(waterEntityId.toString(), key -> evolutionDao.getEvolutionStatsForWaterEntity(waterEntityId, Optional.empty()));
     }
 
 
     @GET
-    @Path("/evolution/personal/{lakeId}")
-    public EvolutionMetricsForLake getPersonalEvolutionStats(
-            @PathParam("lakeId") UUID lakeId
+    @Path("/evolution/personal/{waterEntityId}")
+    public EvolutionMetricsForWaterEntity getPersonalEvolutionStats(
+            @PathParam("waterEntityId") UUID waterEntityId
     ) {
         UserIdAndRenewal userId = getUserIdOrRenew();
-        String cacheKey  = lakeId.toString() + "_" + userId.userId().toString();
-        return cache.personalEvolution.get(cacheKey, key -> evolutionDao.getEvolutionStatsForLake(lakeId, Optional.of(userId.userId())));
+        String cacheKey  = waterEntityId.toString() + "_" + userId.userId().toString();
+        return cache.personalEvolution.get(cacheKey, key -> evolutionDao.getEvolutionStatsForWaterEntity(waterEntityId, Optional.of(userId.userId())));
     }
 }

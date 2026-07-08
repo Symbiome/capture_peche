@@ -41,6 +41,6 @@ public class MetricsResource extends AbstractFisholaResource {
     @Path("")
     public MetricBean getMetrics() {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        return metricsDao.getMetrics(fisholaAdmin, getAllowedAdminLakes());
+        return metricsDao.getMetrics(fisholaAdmin, getAllowedAdminWaterEntities());
     }
 }

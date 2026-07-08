@@ -27,6 +27,6 @@ public class RegisterAdminBean {
 
     public String email;
     public String password;
-    public Set<UUID> lakeIds;
+    public Set<UUID> waterEntityIds;
     public Boolean canCreateAdmin;
 }
