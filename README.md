@@ -106,3 +106,6 @@ Dans le geopackage téléchargé, les attributs pertinents sont:
 
 psql postgresql://postgres:whatever@localhost:15432/fishola
 
+#### Run les migrations
+
+mvn flyway:migrate
