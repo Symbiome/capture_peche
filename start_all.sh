@@ -51,11 +51,18 @@ echo "==> Starting admin front (Vue) on :8082..."
 ) &
 PIDS+=($!)
 
+echo "==> Starting maildev (Docker) on :41080..."
+(
+  docker run -p 41080:80 -p 41025:25 -d --name maildev --rm djfarrelly/maildev
+) &
+PIDS+=($!)
+
 echo ""
 echo "All services starting (Ctrl+C stops everything). Logs are interleaved below."
 echo "  Backend : http://localhost:8080/api/v1/status"
 echo "  Mobile  : http://localhost:8081"
 echo "  Admin   : http://localhost:8082"
+echo "  Maildev : http://localhost:41080"
 echo ""
 
 wait

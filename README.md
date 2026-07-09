@@ -113,3 +113,10 @@ mvn flyway:migrate
 
 insert into fishola_user (first_name, last_name, email, password) values
     ('Arthur', 'Talpaert', 'arthur@symbiome.eu', 'hash_password');
+
+#### Lancer l'app mobile Fishola en mode dev
+
+Editer le fichier .env et décommenter:
+```
+VITE__FORCED_DEVICE_TYPE=application
+```
