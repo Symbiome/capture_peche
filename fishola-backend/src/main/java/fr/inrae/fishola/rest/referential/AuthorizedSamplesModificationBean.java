@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class AuthorizedSamplesModificationBean {
-    public List<UUID> targetLakes;
+    public List<UUID> targetWaterEntities;
     public Map<UUID, Map<UUID, Object>> authorizations;
     public Map<UUID, Map<UUID, Object>> minSizes;
     public Map<UUID, Map<UUID, Object>> maxSizes;

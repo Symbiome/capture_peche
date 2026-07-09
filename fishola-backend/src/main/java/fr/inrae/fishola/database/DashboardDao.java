@@ -33,7 +33,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
-import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
+import fr.inrae.fishola.entities.tables.pojos.SpeciesByWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.DashboardLastTrip;
@@ -80,9 +80,9 @@ public class DashboardDao  extends AbstractFisholaDao {
     protected TripsDao tripsDao;
 
 
-    public Dashboard getPersonalDashboard(UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
+    public Dashboard getPersonalDashboard(UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> waterEntitiesFilter) {
         ImmutableDashboard.Builder builder = ImmutableDashboard.builder();
-        Multimap<Month, Catch> monthlyCatchs = catchsDao.findMonthlyByUserId(userId, yearFilter, lakesFilter);
+        Multimap<Month, Catch> monthlyCatchs = catchsDao.findMonthlyByUserId(userId, yearFilter, waterEntitiesFilter);
 
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
@@ -97,7 +97,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
-        PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches, yearFilter, lakesFilter);
+        PaginationResult<DashboardLastTrip> latestTrips = computeLatestTrips(userId, allCatches, yearFilter, waterEntitiesFilter);
         builder.latestTripsCatchs(latestTrips.getElements());
         int allTripsCount = (int) latestTrips.getCount();
         if (allTripsCount > 0) {
@@ -116,11 +116,11 @@ public class DashboardDao  extends AbstractFisholaDao {
         Map<UUID, List<CatchBean>> topByWeight = computeTopCatchs(allCatches, catchsWithPictures, measurementPictures, Catch::getWeight);
         builder.topByWeight(topByWeight);
 
-        List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
-        Multimap<UUID, SpeciesByLake> speciesWithAliasesIndex = Multimaps.index(speciesByLakes, SpeciesByLake::getSpeciesId);
+        List<SpeciesByWaterEntity> speciesByWaterEntities = referentialDao.listSpeciesWithAliases();
+        Multimap<UUID, SpeciesByWaterEntity> speciesWithAliasesIndex = Multimaps.index(speciesByWaterEntities, SpeciesByWaterEntity::getSpeciesId);
         speciesWithAliasesIndex.asMap().forEach((speciesId, speciesWithAlias) -> {
             Set<String> aliases = speciesWithAlias.stream()
-                    .map(SpeciesByLake::getAlias)
+                    .map(SpeciesByWaterEntity::getAlias)
                     .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
             builder.putSpeciesAliases(speciesId, aliases);
         });
@@ -129,7 +129,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(false, lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(false, waterEntitiesFilter, mostCaughtSpecies, monthlyCatchs);
         builder.monthlySizesPerMaillage(monthlySizes);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
@@ -140,7 +140,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         if (yearFilter.isPresent()) {
             year = yearFilter.get();
         }
-        List<PicturePerTripBean> picturePerTrip = tripsDao.getPicturesPerTripForYearAndLakes(userId, year, lakesFilter);
+        List<PicturePerTripBean> picturePerTrip = tripsDao.getPicturesPerTripForYearAndWaterEntities(userId, year, waterEntitiesFilter);
         builder.picturesPerTrip(picturePerTrip);
 
         Dashboard result = builder.build();
@@ -165,11 +165,11 @@ public class DashboardDao  extends AbstractFisholaDao {
         return monthlySizesWithoutMaillage;
     }
 
-    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
+    public GlobalDashboard computeGlobalDashboard(Optional<Integer> yearFilter, Optional<List<UUID>> waterEntitiesFilter) {
 
         ImmutableGlobalDashboard.Builder builder = ImmutableGlobalDashboard.builder();
 
-        Multimap<Month, Catch> monthlyCatchs = catchsDao.findAll(yearFilter, lakesFilter);
+        Multimap<Month, Catch> monthlyCatchs = catchsDao.findAll(yearFilter, waterEntitiesFilter);
 
         Collection<Catch> allCatches = monthlyCatchs.values();
         int allCatchsCount = allCatches.size();
@@ -184,11 +184,11 @@ public class DashboardDao  extends AbstractFisholaDao {
         Map<UUID, Double> caughtAndReleasedSpeciesDistribution = Maps.transformValues(caughtAndReleasedSpeciesCount, count -> count * 100d / allCatchsCount);
         builder.caughtAndReleasedSpeciesDistribution(caughtAndReleasedSpeciesDistribution);
 
-        List<SpeciesByLake> speciesByLakes = referentialDao.listSpeciesWithAliases();
-        Multimap<UUID, SpeciesByLake> speciesWithAliasesIndex = Multimaps.index(speciesByLakes, SpeciesByLake::getSpeciesId);
+        List<SpeciesByWaterEntity> speciesByWaterEntities = referentialDao.listSpeciesWithAliases();
+        Multimap<UUID, SpeciesByWaterEntity> speciesWithAliasesIndex = Multimaps.index(speciesByWaterEntities, SpeciesByWaterEntity::getSpeciesId);
         speciesWithAliasesIndex.asMap().forEach((speciesId, speciesWithAlias) -> {
             Set<String> aliases = speciesWithAlias.stream()
-                    .map(SpeciesByLake::getAlias)
+                    .map(SpeciesByWaterEntity::getAlias)
                     .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
             builder.putSpeciesAliases(speciesId, aliases);
         });
@@ -197,7 +197,7 @@ public class DashboardDao  extends AbstractFisholaDao {
 
         List<UUID> mostCaughtSpecies = get5MostCaughtSpecies(caughtSpeciesCount);
 
-        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(true, lakesFilter, mostCaughtSpecies, monthlyCatchs);
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> monthlySizes = computeMonthlySizes(true, waterEntitiesFilter, mostCaughtSpecies, monthlyCatchs);
         // Legacy field for old applications that do not know maillage
         // This legacy field may be deleted in a few versions.
         builder.monthlySizes(getLegacyMonthlySizesWithoutMaillage(monthlySizes));
@@ -227,12 +227,12 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    protected PaginationResult<DashboardLastTrip> computeLatestTrips(UUID userId, Collection<Catch> allCatches, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
+    protected PaginationResult<DashboardLastTrip> computeLatestTrips(UUID userId, Collection<Catch> allCatches, Optional<Integer> yearFilter, Optional<List<UUID>> waterEntitiesFilter) {
         ImmutableListMultimap<UUID, Catch> allCatchsIndex = Multimaps.index(allCatches, Catch::getTripId);
         PaginationParameter page = PaginationParameter.builder(0, 9)
                 .addOrder("date", true)
                 .build();
-        PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty(), yearFilter, lakesFilter);
+        PaginationResult<Trip> latestTripsEntities = tripsDao.listMyTrips(userId, page, Optional.empty(), yearFilter, waterEntitiesFilter);
         PaginationResult<DashboardLastTrip> result = latestTripsEntities.transform(trip -> toDashboardLastTrip(trip, allCatchsIndex));
         return result;
     }
@@ -249,13 +249,13 @@ public class DashboardDao  extends AbstractFisholaDao {
     /**
      * Calcule la moyenne mensuelle des tailles de poissons pour les espèces spécifiées
      */
-    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation,Optional<List<UUID>> lakesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation,Optional<List<UUID>> waterEntitiesFilter, List<UUID> mostCaughtSpecies, Multimap<Month, Catch> monthlyCatches) {
         Map<UUID, Month> catchesMonths = monthlyCatches.entries().stream().collect(Collectors.toMap(e -> e.getValue().getId(), Map.Entry::getKey));
-        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> result = computeMonthlySizes(useEditedInBoInformation, lakesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
+        Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> result = computeMonthlySizes(useEditedInBoInformation, waterEntitiesFilter, catchesMonths, mostCaughtSpecies, monthlyCatches.values());
         return result;
     }
 
-    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
+    protected  Map<UUID, Map<Month, Map<Maillage, Pair<Long, Double>>>> computeMonthlySizes(boolean useEditedInBoInformation, Optional<List<UUID>> waterEntitiesFilter, Map<UUID, Month> catchesMonths, List<UUID> mostCaughtSpecies, Collection<Catch> allCatches) {
         // On garde uniquement les captures avec une taille
         List<Catch> catchsWithSize = allCatches.stream()
                 .filter(c -> c.getSize() != null)
@@ -274,7 +274,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                     .toList();
             Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes = Maps.newEnumMap(Month.class);
             for (Month month : Month.values()) {
-                computeMonthlySizesForMonth(useEditedInBoInformation, lakesFilter, catchesMonths, month, catchs, speciesMonthlySizes);
+                computeMonthlySizesForMonth(useEditedInBoInformation, waterEntitiesFilter, catchesMonths, month, catchs, speciesMonthlySizes);
             }
             if (!speciesMonthlySizes.isEmpty()) {
                 builder.put(speciesId, speciesMonthlySizes);
@@ -284,15 +284,15 @@ public class DashboardDao  extends AbstractFisholaDao {
         return result;
     }
 
-    private static void computeMonthlySizesForMonth(boolean useEditedInBoInformation, Optional<List<UUID>> lakesFilter, Map<UUID, Month> catchesMonths, Month month, List<Catch> catchs, Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes) {
+    private static void computeMonthlySizesForMonth(boolean useEditedInBoInformation, Optional<List<UUID>> waterEntitiesFilter, Map<UUID, Month> catchesMonths, Month month, List<Catch> catchs, Map<Month, Map<Maillage, Pair<Long, Double>>> speciesMonthlySizes) {
         Map<Maillage, Pair<Long, Double>> averagePerMaillage = new HashMap<>();
         for(Maillage maillageType: Maillage.values()) {
             List<Catch> filteredCatch = catchs.stream()
                     .filter(c -> {
                                 if (month.equals(catchesMonths.get(c.getId()))) {
-                                    // If more than one lake selected, cannot make distrinction
-                                    // as maille size can be different from one lake to another
-                                    if (!lakesFilter.isPresent() || lakesFilter.get().size() > 1) {
+                                    // If more than one waterEntity selected, cannot make distrinction
+                                    // as maille size can be different from one waterEntity to another
+                                    if (!waterEntitiesFilter.isPresent() || waterEntitiesFilter.get().size() > 1) {
                                         return maillageType == Maillage.NON_DEFINI;
                                     } else {
                                         return c.getMaillee() == maillageType;

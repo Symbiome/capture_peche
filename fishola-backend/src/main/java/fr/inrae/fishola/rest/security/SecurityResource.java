@@ -595,13 +595,13 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     }
 
     @PUT
-    @Path("/favorite-lakes")
-    public Response modifyFavoriteLakes(Set<UUID> newFavoriteLakeUUIDs) {
+    @Path("/favorite-waterEntities")
+    public Response modifyFavoriteWaterEntities(Set<UUID> newFavoriteWaterEntityUUIDs) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         FisholaUser user = optional.orElseThrow(() -> {throw new NotAuthenticatedException(UNKNOWN_USER_ERR_MESSAGE);});
-        usersDao.updateFavoriteLakes(user.getId(), newFavoriteLakeUUIDs);
+        usersDao.updateFavoriteWaterEntities(user.getId(), newFavoriteWaterEntityUUIDs);
         Response response = noContent(userIdAndRenewal);
         return response;
     }

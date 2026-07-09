@@ -520,7 +520,7 @@
                     <!-- JDBC connection parameters -->
                     <jdbc>
                         <driver>org.testcontainers.jdbc.ContainerDatabaseDriver</driver>
-                        <url>jdbc:tc:postgresql:12:///fishola-build?TC_TMPFS=/testtmpfs:rw&amp;=TC_INITSCRIPT=file:${project.build.directory}/init-fishola-database.sql</url>
+                        <url>jdbc:tc:postgis:18-3.6-alpine:///fishola-build?TC_TMPFS=/testtmpfs:rw&amp;=TC_INITSCRIPT=file:${project.build.directory}/init-fishola-database.sql</url>
                         <user>whatever</user>
                         <password>whatever</password>
                     </jdbc>
@@ -534,6 +534,22 @@
                             <inputCatalog>public</inputCatalog>
                               -->
                             <inputSchema>public</inputSchema>
+                            <forcedTypes>
+                                <!-- PostGIS geometry columns: expose as WKT text at the Java level.
+                                     jOOQ binds String-typed fields via PreparedStatement.setString(),
+                                     which pgjdbc sends as varchar unless the connection is opened
+                                     with stringtype=unspecified (see datasource JDBC URLs); only
+                                     then does Postgres apply PostGIS's implicit text->geometry cast
+                                     on the bind parameter. DAO writes still go through explicit raw
+                                     SQL (ST_GeomFromText) rather than the typed setter, since a jOOQ
+                                     custom Binding can't be used here (this same module's compiled
+                                     class wouldn't exist yet when codegen runs in generate-sources,
+                                     before compile). -->
+                                <forcedType>
+                                    <name>VARCHAR</name>
+                                    <includeTypes>geometry</includeTypes>
+                                </forcedType>
+                            </forcedTypes>
                         </database>
                         <generate>
                             <!--              <pojos>true</pojos>-->

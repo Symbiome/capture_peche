@@ -32,7 +32,7 @@ export interface TripBean {
     mode: TripMode;
     type: TripType;
     name: string;
-    lakeId: string;
+    waterEntityId: string;
     speciesIds: string[];
     otherSpecies: string;
     date: Date;
@@ -54,7 +54,7 @@ export interface TripBean {
 export interface TripLight {
     id: string;
     name: string;
-    lakeId: string;
+    waterEntityId: string;
     date: Date;
     durationInSeconds: number;
     catchsCount: number;
@@ -71,15 +71,6 @@ export interface SpeciesWithAlias {
     authorizedSample: boolean;
     minSize: number;
     maxSize: number;
-}
-
-export interface Lake extends Serializable {
-    id: string;
-    name: string;
-    exportAs: string;
-    latitude: number;
-    longitude: number;
-    lakeCode: string;
 }
 
 export interface ReleasedFishState extends Serializable {
@@ -138,7 +129,7 @@ export interface NewsBean {
     dateNotificationSent: Date;
     miniatureId: string;
     isNational: boolean;
-    lakeIds: string[];
+    waterEntityIds: string[];
 }
 
 export interface UserSettings {
@@ -155,8 +146,8 @@ export interface KeyFigures {
     tripsCount: number;
     catchsCount: number;
     picturesCount: number;
-    lakes: Lake[];
-    catchsCountPerLakeId: { [index: string]: number };
+    waterEntities: WaterEntity[];
+    catchsCountPerWaterEntityId: { [index: string]: number };
     titleText: string;
     contributeText: string;
     computedOn: Date;
@@ -210,10 +201,6 @@ export interface GlobalDashboard {
     computedOn: Date;
 }
 
-export interface EvolutionMetricsForLake {
-    evolutionPerMonthAndSpecie: { [index: string]: EvolutionMetricForSpecieAndMonth[] };
-}
-
 export interface LicenceFromClientBean {
     name: string;
     expirationDate: Date;
@@ -235,7 +222,7 @@ export interface CatchMarker {
     tripId: string;
     tripName: string;
     specieName: string;
-    lakeName: string;
+    waterEntityName: string;
     latitude: number;
     longitude: number;
     size: number;
@@ -248,7 +235,7 @@ export interface TripSocial {
     id: string;
     tripName: string;
     userName: string;
-    lakeName: string;
+    waterEntityName: string;
     date: Date;
     durationInSeconds: number;
     socialReactions: TripSocialReaction[];
@@ -256,6 +243,20 @@ export interface TripSocial {
 }
 
 export interface Serializable {
+}
+
+export interface WaterEntity extends Serializable {
+    id: string;
+    name: string;
+    exportAs: string;
+    waterEntityCode: string;
+    kind: WaterEntityKind;
+    nature: string;
+    altitudeMoyenne: number;
+    bdtopoCleabs: string;
+    geom: string;
+    latitude: number;
+    longitude: number;
 }
 
 export interface DashboardLastTrip {
@@ -268,15 +269,8 @@ export interface PicturePerTripBean {
     tripDate: Date;
     tripId: string;
     tripName: string;
-    tripLakeName: string;
+    tripWaterEntityName: string;
     pictureURLs: string[];
-}
-
-export interface EvolutionMetricForSpecieAndMonth {
-    monthYear: string;
-    tripsCount: number;
-    keptCatchesCount: number;
-    totalCatchesCount: number;
 }
 
 export interface TripSocialReaction extends Serializable {
@@ -297,5 +291,7 @@ export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";
+
+export type WaterEntityKind = "STILL" | "FLOWING";
 
 export type SocialReaction = "LIKE" | "LOVE" | "LETS_MEET";

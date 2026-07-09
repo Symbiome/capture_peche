@@ -23,9 +23,9 @@ package fr.inrae.fishola.database;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminDao;
-import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaAdminWaterEntitiesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdminWaterEntities;
 import fr.inrae.fishola.entities.tables.records.FisholaAdminRecord;
 import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
@@ -42,7 +42,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN;
-import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_LAKES;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_WATER_ENTITIES;
 
 @Singleton
 public class AdminDao extends AbstractFisholaDao {
@@ -103,7 +103,7 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, UUID[] lakeIds) {
+    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, UUID[] waterEntityIds) {
         String email = rawEmail.toLowerCase();
         FisholaAdminRecord inserted = withContext(context -> context.insertInto(FISHOLA_ADMIN,
                         FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN)
@@ -111,16 +111,16 @@ public class AdminDao extends AbstractFisholaDao {
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne());
         UUID insertedAdminId = inserted.getId();
-        withDaoNoResult(FisholaAdminLakesDao.class, dao -> {
-            for (UUID lakeId: lakeIds) {
-                dao.insert(new FisholaAdminLakes(insertedAdminId, lakeId));
+        withDaoNoResult(FisholaAdminWaterEntitiesDao.class, dao -> {
+            for (UUID waterEntityId: waterEntityIds) {
+                dao.insert(new FisholaAdminWaterEntities(insertedAdminId, waterEntityId));
             }
         });
     }
 
 
-    public Set<UUID> getAllowedLakes(UUID adminID) {
-        return withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream().map(FisholaAdminLakes::getLakeId).collect(Collectors.toSet()));
+    public Set<UUID> getAllowedWaterEntities(UUID adminID) {
+        return withDao(FisholaAdminWaterEntitiesDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream().map(FisholaAdminWaterEntities::getWaterEntityId).collect(Collectors.toSet()));
     }
 
     public AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {
@@ -129,12 +129,12 @@ public class AdminDao extends AbstractFisholaDao {
                 .email(input.getEmail())
                 .canCreateAdmin(input.getCanCreateAdmin())
                 .isNationalAdmin(input.getIsNationalAdmin())
-                .lakeIds(this.getAllowedLakes(input.getId()))
+                .waterEntityIds(this.getAllowedWaterEntities(input.getId()))
                 .build();
         return result;
     }
 
-    public void updateAdmin(UUID adminId, Boolean canCreateAdmin, Set<UUID> lakeIds) {
+    public void updateAdmin(UUID adminId, Boolean canCreateAdmin, Set<UUID> waterEntityIds) {
         DSLContext context = newContext();
         context.update(FISHOLA_ADMIN)
                 .set(FISHOLA_ADMIN.CAN_CREATE_ADMIN, canCreateAdmin)
@@ -142,13 +142,13 @@ public class AdminDao extends AbstractFisholaDao {
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne();
 
-        context.deleteFrom(FISHOLA_ADMIN_LAKES)
-        .where(FISHOLA_ADMIN_LAKES.FISHOLA_ADMIN_ID.equal(adminId))
+        context.deleteFrom(FISHOLA_ADMIN_WATER_ENTITIES)
+        .where(FISHOLA_ADMIN_WATER_ENTITIES.FISHOLA_ADMIN_ID.equal(adminId))
         .execute();
 
-        withDaoNoResult(FisholaAdminLakesDao.class, dao -> {
-            for (UUID lakeId : lakeIds) {
-                dao.insert(new FisholaAdminLakes(adminId, lakeId));
+        withDaoNoResult(FisholaAdminWaterEntitiesDao.class, dao -> {
+            for (UUID waterEntityId : waterEntityIds) {
+                dao.insert(new FisholaAdminWaterEntities(adminId, waterEntityId));
             }
         });
     }

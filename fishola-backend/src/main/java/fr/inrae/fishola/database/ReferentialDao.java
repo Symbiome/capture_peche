@@ -28,20 +28,21 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.tables.daos.AuthorizedSampleDao;
-import fr.inrae.fishola.entities.tables.daos.LakeDao;
+import fr.inrae.fishola.entities.tables.daos.WaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.ReleasedFishStateDao;
-import fr.inrae.fishola.entities.tables.daos.SpeciesByLakeDao;
+import fr.inrae.fishola.entities.tables.daos.SpeciesByWaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
-import fr.inrae.fishola.entities.tables.pojos.SpeciesByLake;
+import fr.inrae.fishola.entities.tables.pojos.SpeciesByWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
+import fr.inrae.fishola.entities.tables.records.WaterEntityRecord;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
@@ -62,18 +63,35 @@ public class ReferentialDao extends AbstractFisholaDao {
     @Inject
     protected Logger log;
 
-    public List<Lake> listLakes() {
-        return withContext(context -> context.selectFrom(Tables.LAKE)
-                .orderBy(Tables.LAKE.NAME)
-                .fetchInto(Lake.class));
+    public List<WaterEntity> listWaterEntities() {
+        return withContext(context -> context.selectFrom(Tables.WATER_ENTITY)
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetchInto(WaterEntity.class));
     }
 
-    public void updateLake(Lake lake) {
-        withDaoNoResult(LakeDao.class, dao -> dao.update(lake));
+    // latitude/longitude are GENERATED ALWAYS AS ... STORED (derived from geom); a
+    // generic DAO insert/update marks every field as changed regardless of whether
+    // the POJO getter is null, so they must be excluded explicitly or Postgres
+    // rejects the statement outright.
+    private static void excludeGeneratedCoordinates(WaterEntityRecord record) {
+        record.changed(Tables.WATER_ENTITY.LATITUDE, false);
+        record.changed(Tables.WATER_ENTITY.LONGITUDE, false);
     }
 
-    public void createLake(Lake lake) {
-        withDaoNoResult(LakeDao.class, dao -> dao.insert(lake));
+    public void updateWaterEntity(WaterEntity waterEntity) {
+        withContextNoResult(context -> {
+            WaterEntityRecord record = context.newRecord(Tables.WATER_ENTITY, waterEntity);
+            excludeGeneratedCoordinates(record);
+            record.update();
+        });
+    }
+
+    public void createWaterEntity(WaterEntity waterEntity) {
+        withContextNoResult(context -> {
+            WaterEntityRecord record = context.newRecord(Tables.WATER_ENTITY, waterEntity);
+            excludeGeneratedCoordinates(record);
+            record.insert();
+        });
     }
 
     public void createSpecie(Species species) {
@@ -98,9 +116,9 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public void deleteSpecie(UUID specieId) {
-        // Delete all links between this specie and lakes
+        // Delete all links between this specie and waterEntities
         withContextNoResult(context -> {
-            context.deleteFrom(Tables.SPECIES_BY_LAKE).where(Tables.SPECIES_BY_LAKE.SPECIES_ID.eq(specieId)).execute();
+            context.deleteFrom(Tables.SPECIES_BY_WATER_ENTITY).where(Tables.SPECIES_BY_WATER_ENTITY.SPECIES_ID.eq(specieId)).execute();
             context.deleteFrom(Tables.AUTHORIZED_SAMPLE).where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId)).execute();
             withDaoNoResult(SpeciesDao.class, dao -> dao.deleteById(specieId));
         });
@@ -197,28 +215,28 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public List<SpeciesByLake> listSpeciesByLake() {
-        List<SpeciesByLake> result = withDao(SpeciesByLakeDao.class, SpeciesByLakeDao::findAll);
+    public List<SpeciesByWaterEntity> listSpeciesByWaterEntity() {
+        List<SpeciesByWaterEntity> result = withDao(SpeciesByWaterEntityDao.class, SpeciesByWaterEntityDao::findAll);
         return result;
     }
 
-    public List<SpeciesByLake> listSpeciesWithAliases() {
-        List<SpeciesByLake> result = listSpeciesByLake().stream()
+    public List<SpeciesByWaterEntity> listSpeciesWithAliases() {
+        List<SpeciesByWaterEntity> result = listSpeciesByWaterEntity().stream()
                 .filter(sbl -> StringUtils.isNotEmpty(sbl.getAlias()))
                 .collect(ImmutableList.toImmutableList());
         return result;
     }
 
-    public void createSpeciesByLake(SpeciesByLake sbl) {
-        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.insert(sbl));
+    public void createSpeciesByWaterEntity(SpeciesByWaterEntity sbl) {
+        withDaoNoResult(SpeciesByWaterEntityDao.class, dao -> dao.insert(sbl));
     }
 
-    public void updateSpeciesByLake(SpeciesByLake sbl) {
-        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.update(sbl));
+    public void updateSpeciesByWaterEntity(SpeciesByWaterEntity sbl) {
+        withDaoNoResult(SpeciesByWaterEntityDao.class, dao -> dao.update(sbl));
     }
 
-    public void deleteSpeciesByLake(SpeciesByLake sbl) {
-        withDaoNoResult(SpeciesByLakeDao.class, dao -> dao.delete(sbl));
+    public void deleteSpeciesByWaterEntity(SpeciesByWaterEntity sbl) {
+        withDaoNoResult(SpeciesByWaterEntityDao.class, dao -> dao.delete(sbl));
     }
 
     public List<ReleasedFishState> listReleasedFishStates() {
@@ -328,9 +346,9 @@ public class ReferentialDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Optional<Integer> getMinSize(UUID lakeId, UUID specieId) {
-        List<AuthorizedSample> authorizedLakeSamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByLakeId(lakeId));
-        List<Integer> minSize = authorizedLakeSamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).filter((Integer mS) -> mS >0 ).toList();
+    public Optional<Integer> getMinSize(UUID waterEntityId, UUID specieId) {
+        List<AuthorizedSample> authorizedWaterEntitySamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByWaterEntityId(waterEntityId));
+        List<Integer> minSize = authorizedWaterEntitySamples.stream().filter(authorizedSample ->  Objects.equals(authorizedSample.getSpeciesId(), specieId)).map(AuthorizedSample::getMinSize).filter((Integer mS) -> mS >0 ).toList();
         if (!minSize.isEmpty()) {
             return Optional.of(minSize.get(0));
         }
@@ -349,10 +367,10 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
     }
 
-    public List<Lake> fetchLakesById(Set<UUID> allowedAdminLakes) {
-        return withContext(context -> context.selectFrom(Tables.LAKE)
-                .where(Tables.LAKE.ID.in(allowedAdminLakes.toArray(UUID[]::new)))
-                .orderBy(Tables.LAKE.NAME)
-                .fetchInto(Lake.class));
+    public List<WaterEntity> fetchWaterEntitiesById(Set<UUID> allowedAdminWaterEntities) {
+        return withContext(context -> context.selectFrom(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.ID.in(allowedAdminWaterEntities.toArray(UUID[]::new)))
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetchInto(WaterEntity.class));
     }
 }

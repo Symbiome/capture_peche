@@ -35,7 +35,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
@@ -75,7 +75,7 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     @Inject
     protected Logger log;
 
-    protected List<Lake> lakes;
+    protected List<WaterEntity> waterEntities;
     protected List<Species> species;
     protected List<Technique> techniques;
     protected List<Weather> weathers;
@@ -85,7 +85,7 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     @BeforeEach
     @Transactional
     void loadReferentials() {
-        this.lakes = referentialDao.listLakes();
+        this.waterEntities = referentialDao.listWaterEntities();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
         this.weathers = referentialDao.listWeathers();
@@ -112,18 +112,18 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     @Test
     @Transactional
     void testDefaultPersonalDashboard() {
-        // Goal : Ensure that personal dashboards defaults to "all lakes" and "current year"
+        // Goal : Ensure that personal dashboards defaults to "all waterEntities" and "current year"
         Dashboard initialDashboard = this.getPersonalDashboard();
 
         // Add a trip for previous year
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
         // Should not impact default dashboard
         comparePersonalDashboards(initialDashboard, this.getPersonalDashboard(), 0);
 
 
         // add a trip for current year
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
         // Should impact default dahsboard
         comparePersonalDashboards(initialDashboard, this.getPersonalDashboard(), 1);
     }
@@ -137,8 +137,8 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
         // Add 2 trips for previous year
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
         // Should not impact currentYear dashboard but previousYear one
         comparePersonalDashboards(initialDashboardForCurrentYear, this.getPersonalDashboardForYear(LocalDateTime.now().getYear()), 0);
         comparePersonalDashboards(initialDashboardForLastYear, this.getPersonalDashboardForYear(LocalDateTime.now().getYear() - 1), 2);
@@ -146,8 +146,8 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
 
         // Add 2 trips for current year
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
         // Should impact currentYear dashboard but not previousYear one
         comparePersonalDashboards(initialDashboardForCurrentYear, this.getPersonalDashboardForYear(LocalDateTime.now().getYear()), 2);
         comparePersonalDashboards(initialDashboardForLastYear, this.getPersonalDashboardForYear(LocalDateTime.now().getYear() - 1), 0);
@@ -155,55 +155,55 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    void testPersonalDashboardForLake() {
-        // Goal : make sure that lake selections for personnal dashboard works as expected
-        UUID lakeId1 = this.lakes.get(1).getId();
-        UUID lakeId2 = this.lakes.get(2).getId();
-        Dashboard initialDashboardForLake1 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
-        Dashboard initialDashboardForLake2 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
-        Dashboard initialDashboardForAllLakes = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
-        Dashboard initialDashboardForLake1LastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
-        Dashboard initialDashboardForLake2LastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
-        Dashboard initialDashboardForAllLakesLastYear = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+    void testPersonalDashboardForWaterEntity() {
+        // Goal : make sure that waterEntity selections for personnal dashboard works as expected
+        UUID waterEntityId1 = this.waterEntities.get(1).getId();
+        UUID waterEntityId2 = this.waterEntities.get(2).getId();
+        Dashboard initialDashboardForWaterEntity1 = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
+        Dashboard initialDashboardForWaterEntity2 = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
+        Dashboard initialDashboardForAllWaterEntities = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
+        Dashboard initialDashboardForWaterEntity1LastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
+        Dashboard initialDashboardForWaterEntity2LastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
+        Dashboard initialDashboardForAllWaterEntitiesLastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
 
-        // Add 1 trip to lake 1
-        createTripWithCatch(lakeId1, LocalDateTime.now());
-        // Should not impact lake 2 dashboard but other ones
-        comparePersonalDashboards(initialDashboardForLake1, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 1);
-        comparePersonalDashboards(initialDashboardForAllLakes, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 1);
-        comparePersonalDashboards(initialDashboardForLake2, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
-        initialDashboardForLake1 = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
-        initialDashboardForAllLakes = this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+        // Add 1 trip to waterEntity 1
+        createTripWithCatch(waterEntityId1, LocalDateTime.now());
+        // Should not impact waterEntity 2 dashboard but other ones
+        comparePersonalDashboards(initialDashboardForWaterEntity1, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1), 1);
+        comparePersonalDashboards(initialDashboardForAllWaterEntities, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear()), 1);
+        comparePersonalDashboards(initialDashboardForWaterEntity2, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2), 0);
+        initialDashboardForWaterEntity1 = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
+        initialDashboardForAllWaterEntities = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
 
-        // Add 1 trips to lake 2 - last year
+        // Add 1 trips to waterEntity 2 - last year
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-        createTripWithCatch(lakeId2, oneYearAgo);
+        createTripWithCatch(waterEntityId2, oneYearAgo);
         // For current year : should not be impacted
-        comparePersonalDashboards(initialDashboardForLake1, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 0);
-        comparePersonalDashboards(initialDashboardForLake2, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
-        comparePersonalDashboards(initialDashboardForAllLakes, this.getPersonalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 0);
+        comparePersonalDashboards(initialDashboardForWaterEntity1, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1), 0);
+        comparePersonalDashboards(initialDashboardForWaterEntity2, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2), 0);
+        comparePersonalDashboards(initialDashboardForAllWaterEntities, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear()), 0);
 
-        // For last year : Should not impact lake 1 dashboard but other ones
-        comparePersonalDashboards(initialDashboardForLake1LastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1), 0);
-        comparePersonalDashboards(initialDashboardForLake2LastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2), 1);
-        comparePersonalDashboards(initialDashboardForAllLakesLastYear, this.getPersonalDashboardForLakeAndYear(oneYearAgo.getYear()), 1);
+        // For last year : Should not impact waterEntity 1 dashboard but other ones
+        comparePersonalDashboards(initialDashboardForWaterEntity1LastYear, this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId1), 0);
+        comparePersonalDashboards(initialDashboardForWaterEntity2LastYear, this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId2), 1);
+        comparePersonalDashboards(initialDashboardForAllWaterEntitiesLastYear, this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear()), 1);
     }
 
     @Test
     @Transactional
     void testDefaultGlobalDashboard() {
-        // Goal : Ensure that Global dashboards defaults to "all lakes" and "current year"
+        // Goal : Ensure that Global dashboards defaults to "all waterEntities" and "current year"
         GlobalDashboard initialDashboard = this.getGlobalDashboard();
 
         // Add a trip for previous year
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
         // Should not impact default dashboard
         compareGlobalDashboards(initialDashboard, this.getGlobalDashboard(), 0);
 
 
         // add a trip for current year
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
         // Should impact default dashboard
         compareGlobalDashboards(initialDashboard, this.getGlobalDashboard(), 1);
     }
@@ -217,8 +217,8 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
         // Add 2 trips for previous year
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
-        createTripWithCatch(this.lakes.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
+        createTripWithCatch(this.waterEntities.iterator().next().getId(), oneYearAgo);
         // Should not impact currentYear dashboard but previousYear one
         compareGlobalDashboards(initialDashboardForCurrentYear, this.getGlobalDashboardForYear(LocalDateTime.now().getYear()), 0);
         compareGlobalDashboards(initialDashboardForLastYear, this.getGlobalDashboardForYear(LocalDateTime.now().getYear() - 1), 2);
@@ -226,8 +226,8 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
 
         // Add 2 trips for current year
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
-        createTripWithCatch(this.lakes.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
+        createTripWithCatch(this.waterEntities.iterator().next().getId(),  LocalDateTime.now());
         // Should impact currentYear dashboard but not previousYear one
         compareGlobalDashboards(initialDashboardForCurrentYear, this.getGlobalDashboardForYear(LocalDateTime.now().getYear()), 2);
         compareGlobalDashboards(initialDashboardForLastYear, this.getGlobalDashboardForYear(LocalDateTime.now().getYear() - 1), 0);
@@ -235,40 +235,40 @@ class DashboardResourceTest  extends AbstractFisholaTest {
 
     @Test
     @Transactional
-    void testGlobalDashboardForLake() {
-        // Goal : make sure that lake selections for global dashboard works as expected
-        UUID lakeId1 = this.lakes.get(0).getId();
-        UUID lakeId2 = this.lakes.get(1).getId();
+    void testGlobalDashboardForWaterEntity() {
+        // Goal : make sure that waterEntity selections for global dashboard works as expected
+        UUID waterEntityId1 = this.waterEntities.get(0).getId();
+        UUID waterEntityId2 = this.waterEntities.get(1).getId();
         LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
 
-        GlobalDashboard initialDashboardForLake1 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
-        GlobalDashboard initialDashboardForLake2 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
-        GlobalDashboard initialDashboardForAllLakes = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear());
-        GlobalDashboard initialDashboardForLake1LastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1);
-        GlobalDashboard initialDashboardForLake2LastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2);
-        GlobalDashboard initialDashboardForAllLakesLastYear = this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear());
+        GlobalDashboard initialDashboardForWaterEntity1 = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
+        GlobalDashboard initialDashboardForWaterEntity2 = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
+        GlobalDashboard initialDashboardForAllWaterEntities = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
+        GlobalDashboard initialDashboardForWaterEntity1LastYear = this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId1);
+        GlobalDashboard initialDashboardForWaterEntity2LastYear = this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId2);
+        GlobalDashboard initialDashboardForAllWaterEntitiesLastYear = this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear());
 
-        // Add 1 trip to lake 1
-        createTripWithCatch(lakeId1, LocalDateTime.now());
-        // Should not impact lake 2 dashboard but other ones
-        compareGlobalDashboards(initialDashboardForLake2, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
-        compareGlobalDashboards(initialDashboardForLake1, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 1);
-        compareGlobalDashboards(initialDashboardForAllLakes, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 1);
-        initialDashboardForLake1 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1);
-        initialDashboardForLake2 = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2);
-        initialDashboardForAllLakes = this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear());
+        // Add 1 trip to waterEntity 1
+        createTripWithCatch(waterEntityId1, LocalDateTime.now());
+        // Should not impact waterEntity 2 dashboard but other ones
+        compareGlobalDashboards(initialDashboardForWaterEntity2, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2), 0);
+        compareGlobalDashboards(initialDashboardForWaterEntity1, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1), 1);
+        compareGlobalDashboards(initialDashboardForAllWaterEntities, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear()), 1);
+        initialDashboardForWaterEntity1 = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
+        initialDashboardForWaterEntity2 = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
+        initialDashboardForAllWaterEntities = this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
 
-        // Add 1 trips to lake 2 - last year
-        createTripWithCatch(lakeId2, oneYearAgo);
+        // Add 1 trips to waterEntity 2 - last year
+        createTripWithCatch(waterEntityId2, oneYearAgo);
         // For current year : should not be impacted
-        compareGlobalDashboards(initialDashboardForLake1, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId1), 0);
-        compareGlobalDashboards(initialDashboardForLake2, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear(), lakeId2), 0);
-        compareGlobalDashboards(initialDashboardForAllLakes, this.getGlobalDashboardForLakeAndYear(LocalDateTime.now().getYear()), 0);
+        compareGlobalDashboards(initialDashboardForWaterEntity1, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1), 0);
+        compareGlobalDashboards(initialDashboardForWaterEntity2, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2), 0);
+        compareGlobalDashboards(initialDashboardForAllWaterEntities, this.getGlobalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear()), 0);
 
-        // For last year : Should not impact lake 1 dashboard but other ones
-        compareGlobalDashboards(initialDashboardForLake1LastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId1), 0);
-        compareGlobalDashboards(initialDashboardForLake2LastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear(), lakeId2), 1);
-        compareGlobalDashboards(initialDashboardForAllLakesLastYear, this.getGlobalDashboardForLakeAndYear(oneYearAgo.getYear()), 1);
+        // For last year : Should not impact waterEntity 1 dashboard but other ones
+        compareGlobalDashboards(initialDashboardForWaterEntity1LastYear, this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId1), 0);
+        compareGlobalDashboards(initialDashboardForWaterEntity2LastYear, this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId2), 1);
+        compareGlobalDashboards(initialDashboardForAllWaterEntitiesLastYear, this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear()), 1);
     }
     /**
      * Compares the two given dashboards. Fails if the second one does not have expectedAdditionalCatches more that the first.
@@ -306,23 +306,21 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         }
     }
 
-    private void createTripWithCatch(UUID lakeId, LocalDateTime tripDate) {
+    private void createTripWithCatch(UUID waterEntityId, LocalDateTime tripDate) {
         Trip trip = new Trip();
         trip.setCreatedOn(tripDate);
         trip.setDay(tripDate.toLocalDate());
         trip.setStartTime(tripDate.toLocalTime().minusHours(4));
         trip.setEndTime(tripDate.toLocalTime());
-        trip.setLakeId(lakeId);
-        trip.setName("Trip for lake " + lakeId + " " + tripDate.toString());
+        trip.setWaterEntityId(waterEntityId);
+        trip.setName("Trip for waterEntity " + waterEntityId + " " + tripDate.toString());
         trip.setType(TripType.Craft);
         trip.setHidden(false);
         trip.setMode(TripMode.Live);
         trip.setOwnerId(this.userId);
         trip.setWeatherId(this.weathers.stream().limit(1).map(Weather::getId).collect(ImmutableSet.toImmutableSet()).iterator().next());
-        trip.setBeginLatitude(42d);
-        trip.setEndLatitude(42d);
-        trip.setBeginLongitude(42d);
-        trip.setEndLongitude(42d);
+        trip.setBeginPosition("POINT(42 42)");
+        trip.setEndPosition("POINT(42 42)");
         trip.setSource(DeviceType.web);
         trip.setFrontendVersion("1.0");
         UUID tripId = tripsDao.create(trip);
@@ -351,12 +349,12 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year), Optional.empty());
     }
 
-    private Dashboard getPersonalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
-        Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakeIds.length > 0) {
-            lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
+    private Dashboard getPersonalDashboardForWaterEntityAndYear(Integer year, UUID... waterEntityIds) {
+        Optional<List<UUID>> waterEntitiesFilter = Optional.empty();
+        if (waterEntityIds.length > 0) {
+            waterEntitiesFilter = Optional.of(Lists.newArrayList(waterEntityIds));
         }
-        return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year), lakesFilter);
+        return this.dashboardDao.getPersonalDashboard(this.userId, Optional.of(year), waterEntitiesFilter);
     }
 
     private GlobalDashboard getGlobalDashboard() {
@@ -370,11 +368,11 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         return this.dashboardDao.computeGlobalDashboard(Optional.of(year), Optional.empty());
     }
 
-    private GlobalDashboard getGlobalDashboardForLakeAndYear(Integer year, UUID... lakeIds) {
-        Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakeIds.length > 0) {
-            lakesFilter = Optional.of(Lists.newArrayList(lakeIds));
+    private GlobalDashboard getGlobalDashboardForWaterEntityAndYear(Integer year, UUID... waterEntityIds) {
+        Optional<List<UUID>> waterEntitiesFilter = Optional.empty();
+        if (waterEntityIds.length > 0) {
+            waterEntitiesFilter = Optional.of(Lists.newArrayList(waterEntityIds));
         }
-        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), lakesFilter);
+        return this.dashboardDao.computeGlobalDashboard(Optional.of(year), waterEntitiesFilter);
     }
 }

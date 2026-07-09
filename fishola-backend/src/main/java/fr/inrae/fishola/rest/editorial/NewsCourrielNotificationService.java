@@ -27,7 +27,7 @@ import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.Lists;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.mails.MailService;
@@ -150,11 +150,11 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
         if (!allNewsToNotify.isEmpty()) {
             for (FisholaUser user : usersDao.findAllUsersAllowingCourriel()) {
                 StringBuilder htmlContent = new StringBuilder();
-                List<UUID> favoriteLakes = usersDao.getFavoriteLakes(user.getId()).stream().map(Lake::getId).toList();
-                // Only keep national news and news related to user lake
+                List<UUID> favoriteWaterEntities = usersDao.getFavoriteWaterEntities(user.getId()).stream().map(WaterEntity::getId).toList();
+                // Only keep national news and news related to user waterEntity
                 List<News> newsToNotifyByMail = allNewsToNotify.stream().filter(n ->
                                 n.getIsNational()
-                                || dao.getLakeIds(n.getId()).stream().anyMatch(favoriteLakes::contains))
+                                || dao.getWaterEntityIds(n.getId()).stream().anyMatch(favoriteWaterEntities::contains))
                         .toList();
                 notifySingleUserByCourrielAboutNews(user, newsToNotifyByMail, htmlContent);
             }

@@ -62,17 +62,17 @@ public class SocialResource extends AbstractFisholaResource {
 
     @GET
     @Path("/")
-    public Response getTripsAroundMe(@QueryParam("lakeId") String lakeId,
+    public Response getTripsAroundMe(@QueryParam("waterEntityId") String waterEntityId,
                                      @QueryParam("pageNumber") int pageNumber,
                                      @QueryParam("pageSize") int pageSize) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
-        Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakeId != null && !lakeId.isEmpty()) {
-            lakesFilter = Optional.of(Arrays.asList(UUID.fromString(lakeId)));
+        Optional<List<UUID>> waterEntitiesFilter = Optional.empty();
+        if (waterEntityId != null && !waterEntityId.isEmpty()) {
+            waterEntitiesFilter = Optional.of(Arrays.asList(UUID.fromString(waterEntityId)));
         }
         PaginationParameter page = PaginationParameter.of(pageNumber, pageSize, "date", true);
-        PaginationResult<TripSocial> entities = tripsDao.socialTrips(userId, lakesFilter, page);
+        PaginationResult<TripSocial> entities = tripsDao.socialTrips(userId, waterEntitiesFilter, page);
         Response response = wrapEntity(entities, userIdAndRenewal);
         return response;
     }

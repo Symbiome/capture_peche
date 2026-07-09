@@ -24,10 +24,10 @@ package fr.inrae.fishola.rest.metrics;
 import java.util.List;
 
 public class MetricBean {
-    public List<CountPerlakeAndPerYear> activeUsersPerYear;
-    public List<CountPerlakeAndPerYear> userRegistrationsPerYear;
-    public List<CountPerlakeAndPerYear> tripsPerLake;
-    public List<CountPerlakeAndPerYear> catchesPerLake;
-    public List<CountPerlakeAndPerYear> automaticMeasuresPerLake;
+    public List<CountPerWaterEntityAndPerYear> activeUsersPerYear;
+    public List<CountPerWaterEntityAndPerYear> userRegistrationsPerYear;
+    public List<CountPerWaterEntityAndPerYear> tripsPerWaterEntity;
+    public List<CountPerWaterEntityAndPerYear> catchesPerWaterEntity;
+    public List<CountPerWaterEntityAndPerYear> automaticMeasuresPerWaterEntity;
 }
 

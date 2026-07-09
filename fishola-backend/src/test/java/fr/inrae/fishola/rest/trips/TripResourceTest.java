@@ -33,7 +33,7 @@ import fr.inrae.fishola.entities.enums.DeviceType;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
@@ -91,7 +91,7 @@ class TripResourceTest extends AbstractFisholaTest {
     @Inject
     protected JwtHelper jwtHelper;
 
-    protected List<Lake> lakes;
+    protected List<WaterEntity> waterEntities;
     protected List<Species> species;
     protected List<Technique> techniques;
     protected List<Weather> weathers;
@@ -100,7 +100,7 @@ class TripResourceTest extends AbstractFisholaTest {
     @BeforeEach
     @Transactional
     void loadReferentials() {
-        this.lakes = referentialDao.listLakes();
+        this.waterEntities = referentialDao.listWaterEntities();
         this.species = referentialDao.listBuiltInSpecies();
         this.techniques = referentialDao.listBuiltInTechniques();
         this.weathers = referentialDao.listWeathers();
@@ -139,7 +139,7 @@ class TripResourceTest extends AbstractFisholaTest {
         trip.date = LocalDate.now();
         trip.startedAt = "00:00";
         trip.finishedAt = "00:01";
-        trip.lakeId = this.lakes.iterator().next().getId();
+        trip.waterEntityId = this.waterEntities.iterator().next().getId();
         trip.name = "Whatever";
         trip.type = TripType.Craft;
         trip.mode = TripMode.Live;
@@ -264,7 +264,7 @@ class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(404);
 
-        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","lakeId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
+        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
@@ -273,7 +273,7 @@ class TripResourceTest extends AbstractFisholaTest {
                 .statusCode(200)
                 .body("id", equalTo(tripId))
                 .body("name", equalTo("Whatever"))
-                .body("lakeId", equalTo(trip.lakeId.toString()))
+                .body("waterEntityId", equalTo(trip.waterEntityId.toString()))
                 .body("speciesIds[0]", equalTo(trip.speciesIds.iterator().next().toString()))
                 .body("techniqueIds[0]", equalTo(trip.techniqueIds.iterator().next().toString()))
                 .body("weatherId", equalTo(trip.weatherId.get().toString()))
@@ -351,7 +351,7 @@ class TripResourceTest extends AbstractFisholaTest {
             .then()
                 .statusCode(200);
 
-        // {id='70d6bed0-72e4-49c4-8e1d-8c1278c94e17', createdOn=Optional[2021-11-03T19:08:34.338806], mode=Live, type=Craft, name='Whatever', lakeId=658c488f-b982-4f4c-8610-527a1684b3be, speciesIds=[d0176668-c2b5-4182-863c-f950b908d96a], otherSpecies='null', date=2021-11-03, startedAt=00:00, finishedAt=00:01, weatherId=Optional.empty, catchs=1, techniqueIds=[9929f857-ecc1-40a9-859f-91b897cdb12c], beginLatitude=Optional.empty, beginLongitude=Optional.empty, endLatitude=Optional.empty, endLongitude=Optional.empty, source=null, saveDelayMarker=Optional.empty, modifiableUntil=Optional[2021-11-10T19:08:34.338806]}
+        // {id='70d6bed0-72e4-49c4-8e1d-8c1278c94e17', createdOn=Optional[2021-11-03T19:08:34.338806], mode=Live, type=Craft, name='Whatever', waterEntityId=658c488f-b982-4f4c-8610-527a1684b3be, speciesIds=[d0176668-c2b5-4182-863c-f950b908d96a], otherSpecies='null', date=2021-11-03, startedAt=00:00, finishedAt=00:01, weatherId=Optional.empty, catchs=1, techniqueIds=[9929f857-ecc1-40a9-859f-91b897cdb12c], beginLatitude=Optional.empty, beginLongitude=Optional.empty, endLatitude=Optional.empty, endLongitude=Optional.empty, source=null, saveDelayMarker=Optional.empty, modifiableUntil=Optional[2021-11-10T19:08:34.338806]}
         given()
             .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
@@ -417,7 +417,7 @@ class TripResourceTest extends AbstractFisholaTest {
         int countAfter = countTrips();
         Assertions.assertEquals(countBefore + 1, countAfter);
 
-        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","lakeId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
+        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
@@ -637,7 +637,7 @@ class TripResourceTest extends AbstractFisholaTest {
         int countAfter = countTrips();
         Assertions.assertEquals(countBefore + 1, countAfter);
 
-        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","lakeId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
+        // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
                 .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
@@ -887,30 +887,30 @@ class TripResourceTest extends AbstractFisholaTest {
     @Transactional
     void testEditedInBoFields() {
 
-        // Warm up - create a new lake, and on it a trip and catch
+        // Warm up - create a new waterEntity, and on it a trip and catch
         String adminToken = loginAsAdmin();
-        Lake newLake = new Lake();
-        UUID newLakeId = UUID.randomUUID();
-        newLake.setId(newLakeId);
-        newLake.setName("New lake");
-        newLake.setExportAs("New lake");
-        newLake.setLatitude(42d);
-        newLake.setLongitude(1d);
+        WaterEntity newWaterEntity = new WaterEntity();
+        UUID newWaterEntityId = UUID.randomUUID();
+        newWaterEntity.setId(newWaterEntityId);
+        newWaterEntity.setName("New waterEntity");
+        newWaterEntity.setExportAs("New waterEntity");
+        newWaterEntity.setLatitude(42d);
+        newWaterEntity.setLongitude(1d);
         given()
                 .when()
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(newLake)
-                .post("/api/v1/referential/lakes")
+                .body(newWaterEntity)
+                .post("/api/v1/referential/waterEntities")
                 .then()
                 .statusCode(204);
-        Optional<List<UUID>> newLakeFilter = Optional.of(Lists.newArrayList(newLakeId));
+        Optional<List<UUID>> newWaterEntityFilter = Optional.of(Lists.newArrayList(newWaterEntityId));
         List<UUID> twoRandomSpecies = this.species.stream().limit(2).map(Species::getId).collect(ImmutableList.toImmutableList());
         int year = Year.now().getValue();
         Optional<Integer> yearFilter = Optional.of(year);
         UUID userId = jwtHelper.verifyToken(token);
         TripBean trip = buildValidTripBean();
-        trip.lakeId = newLakeId;
+        trip.waterEntityId = newWaterEntityId;
         Optional<Integer> initialSize = Optional.of(10);
         Optional<Integer> initialWeight = Optional.of(10);
         Optional<String> initialSpeciesId = Optional.of(twoRandomSpecies.get(0).toString());
@@ -938,8 +938,8 @@ class TripResourceTest extends AbstractFisholaTest {
 
 
         // Both personnal and global Dashboard should include this catch
-        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
-        checkGlobalDashboardInformation(true, initialSize, initialWeight, initialSpeciesId.get(), yearFilter, newLakeFilter);
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newWaterEntityFilter);
+        checkGlobalDashboardInformation(true, initialSize, initialWeight, initialSpeciesId.get(), yearFilter, newWaterEntityFilter);
 
 
         // List all catches as a regular user : should be a 401
@@ -972,10 +972,10 @@ class TripResourceTest extends AbstractFisholaTest {
                 .then().statusCode(200);
 
         // Global Dashboard should include the edited specie, size and weight (not original)
-        checkGlobalDashboardInformation(true, Optional.of(Math.round(editedSizeInBo.get() / 10)), editedWeightInBo, editedSpeciesId.toString(), yearFilter, newLakeFilter);
+        checkGlobalDashboardInformation(true, Optional.of(Math.round(editedSizeInBo.get() / 10)), editedWeightInBo, editedSpeciesId.toString(), yearFilter, newWaterEntityFilter);
 
         // Personal dashboard should include the original specie, size and weight (not edited)
-        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newWaterEntityFilter);
 
         // Exclude catch from export
         catchBean.excludeFromExport = true;
@@ -987,16 +987,16 @@ class TripResourceTest extends AbstractFisholaTest {
                 .then().statusCode(200);
 
         // Dashboard should not include this catch anymore
-        checkGlobalDashboardInformation(false, initialSize, initialWeight, initialSpeciesId.toString(), yearFilter, newLakeFilter);
+        checkGlobalDashboardInformation(false, initialSize, initialWeight, initialSpeciesId.toString(), yearFilter, newWaterEntityFilter);
 
         // Personal dashboard should still include this catch
-        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newLakeFilter);
+        checkPersonnalDashboardInformation(initialSize, initialWeight, initialSpeciesId, userId, yearFilter, newWaterEntityFilter);
 
 
     }
 
-    private void checkGlobalDashboardInformation(boolean expectedIsPresent, Optional<Integer> expectedSize, Optional<Integer> expectedWeight, String expectedSpeciesId, Optional<Integer> yearFilter, Optional<List<UUID>> newLakeFilter) {
-        GlobalDashboard globalDashboardForYear = this.dashboardDao.computeGlobalDashboard(yearFilter, newLakeFilter);
+    private void checkGlobalDashboardInformation(boolean expectedIsPresent, Optional<Integer> expectedSize, Optional<Integer> expectedWeight, String expectedSpeciesId, Optional<Integer> yearFilter, Optional<List<UUID>> newWaterEntityFilter) {
+        GlobalDashboard globalDashboardForYear = this.dashboardDao.computeGlobalDashboard(yearFilter, newWaterEntityFilter);
         if (expectedIsPresent) {
             Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesCount().size());
             Assertions.assertEquals(1, globalDashboardForYear.caughtSpeciesDistribution().size());
@@ -1018,8 +1018,8 @@ class TripResourceTest extends AbstractFisholaTest {
 
      }
 
-    private void checkPersonnalDashboardInformation(Optional<Integer> expectedSize, Optional<Integer> expectedWeight, Optional<String> expectedSpeciesId, UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> lakesFilter) {
-        Dashboard personalDashboardForYear = this.dashboardDao.getPersonalDashboard(userId,yearFilter, lakesFilter);
+    private void checkPersonnalDashboardInformation(Optional<Integer> expectedSize, Optional<Integer> expectedWeight, Optional<String> expectedSpeciesId, UUID userId, Optional<Integer> yearFilter, Optional<List<UUID>> waterEntitiesFilter) {
+        Dashboard personalDashboardForYear = this.dashboardDao.getPersonalDashboard(userId,yearFilter, waterEntitiesFilter);
         Assertions.assertEquals(1, personalDashboardForYear.caughtSpeciesCount().size());
         Assertions.assertEquals(1, personalDashboardForYear.caughtSpeciesDistribution().size());
         Assertions.assertEquals(1, personalDashboardForYear.latestTripsCatchs().iterator().next().catchsCount());

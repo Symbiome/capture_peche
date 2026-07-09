@@ -35,9 +35,9 @@ public class NewsBean {
     public LocalDateTime dateNotificationSent;
     public UUID miniatureId;
     public Boolean isNational;
-    public Set<UUID> lakeIds;
+    public Set<UUID> waterEntityIds;
 
-    public NewsBean(UUID id, String name, String content, LocalDateTime datePublicationDebut, LocalDateTime datePublicationFin, LocalDateTime dateNotificationSent, UUID miniatureId, Boolean isNational, Set<UUID> lakeIds) {
+    public NewsBean(UUID id, String name, String content, LocalDateTime datePublicationDebut, LocalDateTime datePublicationFin, LocalDateTime dateNotificationSent, UUID miniatureId, Boolean isNational, Set<UUID> waterEntityIds) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -46,6 +46,6 @@ public class NewsBean {
         this.dateNotificationSent = dateNotificationSent;
         this.miniatureId = miniatureId;
         this.isNational = isNational;
-        this.lakeIds = lakeIds;
+        this.waterEntityIds = waterEntityIds;
     }
 }

@@ -29,7 +29,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.Maillage;
-import fr.inrae.fishola.entities.tables.Lake;
+import fr.inrae.fishola.entities.tables.WaterEntity;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
 import fr.inrae.fishola.entities.tables.daos.CatchMeasurementPictureDao;
 import fr.inrae.fishola.entities.tables.daos.CatchPictureDao;
@@ -43,6 +43,7 @@ import jakarta.inject.Singleton;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -87,6 +88,12 @@ public class CatchsDao extends AbstractFisholaDao {
         }
         return withContext(context -> {
             CatchRecord record = context.newRecord(Tables.CATCH, c);
+            // latitude/longitude are GENERATED ALWAYS AS ... STORED (derived from
+            // position); newRecord() marks every field as changed regardless of
+            // whether the POJO getter is null, so they must be excluded explicitly
+            // or Postgres rejects the insert outright.
+            record.changed(Tables.CATCH.LATITUDE, false);
+            record.changed(Tables.CATCH.LONGITUDE, false);
             CatchRecord recordInserted = context.insertInto(Tables.CATCH)
                     .set(record)
                     .returning(Tables.CATCH.ID)
@@ -113,18 +120,18 @@ public class CatchsDao extends AbstractFisholaDao {
                         Tables.TRIP.ID.as("tripId"),
                         Tables.TRIP.NAME.as("tripName"),
                         Tables.TRIP.CREATED_ON.as("date"),
-                        Tables.LAKE.NAME.as("lakeName"),
-                        coalesce(Tables.CATCH.LONGITUDE, Tables.LAKE.LONGITUDE).as("longitude"),
-                        coalesce(Tables.CATCH.LATITUDE, Tables.LAKE.LATITUDE).as("latitude"),
-                        Tables.LAKE.LATITUDE.as("default_lake_latitude"),
-                        Tables.LAKE.LONGITUDE.as("default_lake_longitude"),
+                        Tables.WATER_ENTITY.NAME.as("waterEntityName"),
+                        coalesce(Tables.CATCH.LONGITUDE, Tables.WATER_ENTITY.LONGITUDE).as("longitude"),
+                        coalesce(Tables.CATCH.LATITUDE, Tables.WATER_ENTITY.LATITUDE).as("latitude"),
+                        Tables.WATER_ENTITY.LATITUDE.as("default_waterEntity_latitude"),
+                        Tables.WATER_ENTITY.LONGITUDE.as("default_waterEntity_longitude"),
                         coalesce(Tables.CATCH.SIZE, 0).as("size"),
                         coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
                         Tables.CATCH.MAILLEE.as("maillage")
                 )
                 .from(Tables.CATCH)
                 .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
-                .innerJoin(Tables.LAKE).on(Tables.TRIP.LAKE_ID.eq(Tables.LAKE.ID))
+                .innerJoin(Tables.WATER_ENTITY).on(Tables.TRIP.WATER_ENTITY_ID.eq(Tables.WATER_ENTITY.ID))
                 .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
                 .where(Tables.TRIP.OWNER_ID.eq(userId))
                 .fetch()
@@ -134,15 +141,15 @@ public class CatchsDao extends AbstractFisholaDao {
                         .tripName(markerRecord.get("tripName", String.class))
                         .specieName(markerRecord.get("specieName", String.class))
                         .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
-                        .lakeName(markerRecord.get("lakeName", String.class))
+                        .waterEntityName(markerRecord.get("waterEntityName", String.class))
                         .longitude(markerRecord.get("longitude", Double.class))
                         .latitude(markerRecord.get("latitude", Double.class))
                         .size(markerRecord.get("size", Double.class))
                         .weight(markerRecord.get("weight", Double.class))
                         .maillage(markerRecord.get("maillage", Maillage.class))
                         .hasValidCoordinates(
-                                markerRecord.get("default_lake_longitude") != null && !markerRecord.get("default_lake_longitude").equals(markerRecord.get("longitude")) ||
-                                markerRecord.get("default_lake_latitude") != null && !markerRecord.get("default_lake_latitude").equals(markerRecord.get("latitude"))
+                                markerRecord.get("default_waterEntity_longitude") != null && !markerRecord.get("default_waterEntity_longitude").equals(markerRecord.get("longitude")) ||
+                                markerRecord.get("default_waterEntity_latitude") != null && !markerRecord.get("default_waterEntity_latitude").equals(markerRecord.get("latitude"))
                         )
                         .build())
         );
@@ -163,7 +170,23 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public void update(Catch existingCatch) {
-        withDaoNoResult(CatchDao.class, dao -> dao.update(existingCatch));
+        withContextNoResult(context -> {
+            CatchRecord record = context.newRecord(Tables.CATCH, existingCatch);
+            // latitude/longitude are GENERATED ALWAYS AS ... STORED; see create().
+            record.changed(Tables.CATCH.LATITUDE, false);
+            record.changed(Tables.CATCH.LONGITUDE, false);
+            record.update();
+        });
+    }
+
+    /**
+     * position is a PostGIS geometry column; the generated DAO's typed setter can't
+     * bind a WKT string into it directly (no implicit cast on a JDBC bind parameter),
+     * so it's set explicitly via ST_GeomFromText instead.
+     */
+    public void updatePosition(UUID catchId, String wktPoint) {
+        withContextNoResult(context ->
+                context.execute("UPDATE catch SET position = ST_GeomFromText(?, 4326) WHERE id = ?", wktPoint, catchId));
     }
 
     public Catch getCatch(UUID catchId) {
@@ -267,7 +290,7 @@ public class CatchsDao extends AbstractFisholaDao {
                 .forEach(this::delete);
     }
 
-    protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
+    protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year, Optional<List<UUID>> waterEntitiesFilter) {
         Multimap<Month, Catch> result = withContext(context -> {
             SelectConditionStep<Record> selectStep = context
                     .select(Tables.TRIP.DAY)
@@ -293,8 +316,8 @@ public class CatchsDao extends AbstractFisholaDao {
                 LocalDate max = LocalDate.of(year.get(), Month.DECEMBER, 31);
                 selectStep = selectStep.and(Tables.TRIP.DAY.between(min, max));
             }
-            if (lakesFilter.isPresent()) {
-                selectStep = selectStep.and(Tables.TRIP.LAKE_ID.in(lakesFilter.get()));
+            if (waterEntitiesFilter.isPresent()) {
+                selectStep = selectStep.and(Tables.TRIP.WATER_ENTITY_ID.in(waterEntitiesFilter.get()));
             }
             Multimap<Month, Catch> multimap = selectStep
                     .stream()
@@ -307,13 +330,13 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Multimap<Month, Catch> findMonthlyByUserId(UUID userId, Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
-        Multimap<Month, Catch> result = findMonthly0(Optional.of(userId), year, lakesFilter);
+    public Multimap<Month, Catch> findMonthlyByUserId(UUID userId, Optional<Integer> year, Optional<List<UUID>> waterEntitiesFilter) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.of(userId), year, waterEntitiesFilter);
         return result;
     }
 
-    public Multimap<Month, Catch> findAll(Optional<Integer> year, Optional<List<UUID>> lakesFilter) {
-        Multimap<Month, Catch> result = findMonthly0(Optional.empty(), year, lakesFilter);
+    public Multimap<Month, Catch> findAll(Optional<Integer> year, Optional<List<UUID>> waterEntitiesFilter) {
+        Multimap<Month, Catch> result = findMonthly0(Optional.empty(), year, waterEntitiesFilter);
         return result;
     }
 
@@ -363,14 +386,14 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
-    public Map<UUID, Integer> countCatchsByLakeId() {
+    public Map<UUID, Integer> countCatchsByWaterEntityId() {
         Map<UUID, Integer> result = withContext(context -> {
             Result<Record2<UUID, Integer>> fetched =
-                    context.select(Lake.LAKE.ID, count())
+                    context.select(WaterEntity.WATER_ENTITY.ID, count())
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
-                    .innerJoin(Tables.LAKE).on(Tables.LAKE.ID.eq(Tables.TRIP.LAKE_ID))
-                    .groupBy(Lake.LAKE.ID)
+                    .innerJoin(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.TRIP.WATER_ENTITY_ID))
+                    .groupBy(WaterEntity.WATER_ENTITY.ID)
                     .fetch();
             ImmutableMap.Builder<UUID, Integer> builder = ImmutableMap.builder();
             fetched.forEach(tuple -> builder.put(tuple.value1(), tuple.value2()));

@@ -40,7 +40,7 @@ public class TripBean {
     public TripMode mode;
     public TripType type;
     public String name;
-    public UUID lakeId;
+    public UUID waterEntityId;
     public Set<UUID> speciesIds;
     public String otherSpecies;
     public LocalDate date;
@@ -76,7 +76,7 @@ public class TripBean {
                 ", mode=" + mode +
                 ", type=" + type +
                 ", name='" + name + '\'' +
-                ", lakeId=" + lakeId +
+                ", waterEntityId=" + waterEntityId +
                 ", speciesIds=" + speciesIds +
                 ", otherSpecies='" + otherSpecies + '\'' +
                 ", date=" + date +

@@ -22,15 +22,15 @@ package fr.inrae.fishola.database;
  */
 
 import fr.inrae.fishola.entities.Tables;
-import fr.inrae.fishola.entities.tables.daos.FisholaAdminLakesDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaAdminWaterEntitiesDao;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
-import fr.inrae.fishola.entities.tables.daos.NewsLakeDao;
+import fr.inrae.fishola.entities.tables.daos.NewsWaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
 import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdminLakes;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdminWaterEntities;
 import fr.inrae.fishola.entities.tables.pojos.News;
-import fr.inrae.fishola.entities.tables.pojos.NewsLake;
+import fr.inrae.fishola.entities.tables.pojos.NewsWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.entities.tables.pojos.NextScheduledCourrielNotificationCheck;
 import fr.inrae.fishola.entities.tables.records.NewsRecord;
@@ -63,11 +63,11 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             ).toList();
         }
         if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
-            // For local admin, only keep national and lake-related actus
-            UUID[] adminLakeIds = withDao(FisholaAdminLakesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminLakes::getLakeId)).toArray(UUID[]::new);
-            Set<UUID> newsOfReleventLakes =  withDao(NewsLakeDao.class, dao -> dao.fetchByLakeId(adminLakeIds).stream().map(NewsLake::getNewsId).collect(Collectors.toSet()));
+            // For local admin, only keep national and waterEntity-related actus
+            UUID[] adminWaterEntityIds = withDao(FisholaAdminWaterEntitiesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminWaterEntities::getWaterEntityId)).toArray(UUID[]::new);
+            Set<UUID> newsOfReleventWaterEntities =  withDao(NewsWaterEntityDao.class, dao -> dao.fetchByWaterEntityId(adminWaterEntityIds).stream().map(NewsWaterEntity::getNewsId).collect(Collectors.toSet()));
             allNews = allNews.stream().filter(news ->
-                    newsOfReleventLakes.contains(news.getId())
+                    newsOfReleventWaterEntities.contains(news.getId())
             ).toList();
         }
         allNews = allNews.stream().sorted(
@@ -76,16 +76,16 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         return allNews;
     }
 
-    public List<News> getPublishedNewsForLake(UUID lakeId) {
+    public List<News> getPublishedNewsForWaterEntity(UUID waterEntityId) {
         DSLContext context = newContext();
         LocalDateTime now = LocalDateTime.now();
         List<News> allNews = context
                 .select(Tables.NEWS.asterisk())
                 .from(Tables.NEWS)
-                .leftJoin(Tables.NEWS_LAKE).on(Tables.NEWS_LAKE.NEWS_ID.eq(Tables.NEWS.ID))
+                .leftJoin(Tables.NEWS_WATER_ENTITY).on(Tables.NEWS_WATER_ENTITY.NEWS_ID.eq(Tables.NEWS.ID))
                 .where(
                     Tables.NEWS.IS_NATIONAL.eq(true).or(
-                    Tables.NEWS_LAKE.LAKE_ID.eq(lakeId))
+                    Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID.eq(waterEntityId))
                 )
                 .and(Tables.NEWS.DATE_PUBLICATION_DEBUT.isNotNull())
                 .and(Tables.NEWS.DATE_PUBLICATION_FIN.isNotNull())
@@ -100,33 +100,33 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         // Delete pics associated to this news
         DSLContext context = newContext();
         context.deleteFrom(Tables.NEWS_PICTURE).where(Tables.NEWS_PICTURE.NEWS_ID.eq(newsId)).execute();
-        context.deleteFrom(Tables.NEWS_LAKE).where(Tables.NEWS_LAKE.NEWS_ID.eq(newsId)).execute();
+        context.deleteFrom(Tables.NEWS_WATER_ENTITY).where(Tables.NEWS_WATER_ENTITY.NEWS_ID.eq(newsId)).execute();
         // Delete news itself
         withDaoNoResult(NewsDao.class, dao -> dao.deleteById(newsId));
     }
 
-    public void update(News news, Set<UUID> newsLakeIds) {
-        withDaoNoResult(NewsLakeDao.class, dao -> {
-            List<NewsLake> oldNewsLake = dao.fetchByNewsId(news.getId());
-            Set<UUID> oldNewsLakeIds = oldNewsLake.stream()
-                    .map(NewsLake::getLakeId)
+    public void update(News news, Set<UUID> newsWaterEntityIds) {
+        withDaoNoResult(NewsWaterEntityDao.class, dao -> {
+            List<NewsWaterEntity> oldNewsWaterEntity = dao.fetchByNewsId(news.getId());
+            Set<UUID> oldNewsWaterEntityIds = oldNewsWaterEntity.stream()
+                    .map(NewsWaterEntity::getWaterEntityId)
                     .collect(Collectors.toSet());
 
-            // Delete removed lakes
-            oldNewsLake.stream()
-                    .filter(fav -> !newsLakeIds.contains(fav.getLakeId()))
+            // Delete removed waterEntities
+            oldNewsWaterEntity.stream()
+                    .filter(fav -> !newsWaterEntityIds.contains(fav.getWaterEntityId()))
                     .forEach(dao::delete);
 
-            // Add new lakes
-            newsLakeIds.stream()
-                    .filter(id -> !oldNewsLakeIds.contains(id))
-                    .map(id -> new NewsLake(news.getId(), id))
+            // Add new waterEntities
+            newsWaterEntityIds.stream()
+                    .filter(id -> !oldNewsWaterEntityIds.contains(id))
+                    .map(id -> new NewsWaterEntity(news.getId(), id))
                     .forEach(dao::insert);
         });
         withDaoNoResult(NewsDao.class, dao -> dao.update(news));
     }
 
-    public News insert(News news, Set<UUID> newLakeIds) {
+    public News insert(News news, Set<UUID> newWaterEntityIds) {
         DSLContext context = newContext();
         NewsRecord newRecord = context.newRecord(Tables.NEWS, news);
         News inserted = context.insertInto(Tables.NEWS)
@@ -134,9 +134,9 @@ public class NewsFisholaDao extends AbstractFisholaDao {
                 .returningResult(Tables.NEWS.ID)
                 .fetchOne()
                 .into(News.class);
-        withDaoNoResult(NewsLakeDao.class, dao -> {
-            newLakeIds.stream()
-                    .map(id -> new NewsLake(inserted.getId(), id))
+        withDaoNoResult(NewsWaterEntityDao.class, dao -> {
+            newWaterEntityIds.stream()
+                    .map(id -> new NewsWaterEntity(inserted.getId(), id))
                     .forEach(dao::insert);
         });
         return inserted;
@@ -240,8 +240,8 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         withDaoNoResult(NextScheduledCourrielNotificationCheckDao.class, dao -> dao.update(nextScheduledNotificationCheck));
     }
 
-    public Set<UUID> getLakeIds(UUID newsId) {
-        return withDao(NewsLakeDao.class, dao -> dao.fetchByNewsId(newsId).stream().map(NewsLake::getLakeId).collect(Collectors.toSet()));
+    public Set<UUID> getWaterEntityIds(UUID newsId) {
+        return withDao(NewsWaterEntityDao.class, dao -> dao.fetchByNewsId(newsId).stream().map(NewsWaterEntity::getWaterEntityId).collect(Collectors.toSet()));
     }
 
     public void notifySent(News news) {

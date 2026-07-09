@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.about;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,9 +40,9 @@ public interface KeyFigures {
 
     int picturesCount();
 
-    List<Lake> lakes();
+    List<WaterEntity> waterEntities();
 
-    Map<UUID, Integer> catchsCountPerLakeId();
+    Map<UUID, Integer> catchsCountPerWaterEntityId();
 
     String titleText();
 

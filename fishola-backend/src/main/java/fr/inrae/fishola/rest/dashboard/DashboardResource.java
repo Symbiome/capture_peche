@@ -72,7 +72,7 @@ public class DashboardResource extends AbstractFisholaResource {
 
     public Response getDefaultPersonalDashboard(
             @QueryParam("year") Integer year,
-            @QueryParam("lake") String lakeId
+            @QueryParam("waterEntity") String waterEntityId
     ) {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
@@ -80,11 +80,11 @@ public class DashboardResource extends AbstractFisholaResource {
         if (year != null) {
             yearFilter = Optional.of(year);
         }
-        Optional<List<UUID>> lakesFilter = Optional.empty();
-        if (lakeId != null && !lakeId.isEmpty()) {
-            lakesFilter = Optional.of(Arrays.asList(UUID.fromString(lakeId)));
+        Optional<List<UUID>> waterEntitiesFilter = Optional.empty();
+        if (waterEntityId != null && !waterEntityId.isEmpty()) {
+            waterEntitiesFilter = Optional.of(Arrays.asList(UUID.fromString(waterEntityId)));
         }
-        Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, lakesFilter);
+        Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, waterEntitiesFilter);
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
     }
@@ -93,15 +93,15 @@ public class DashboardResource extends AbstractFisholaResource {
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard(
         @QueryParam("year") Integer year,
-        @QueryParam("lake") UUID lakeId
+        @QueryParam("waterEntity") UUID waterEntityId
     ) {
-        if (year == null || lakeId == null) {
-            throw new IllegalArgumentException("Dashboard need a year and a lakeId to be computed, got " + year + " and " + lakeId);
+        if (year == null || waterEntityId == null) {
+            throw new IllegalArgumentException("Dashboard need a year and a waterEntityId to be computed, got " + year + " and " + waterEntityId);
         }
         Optional<Integer> yearFilter = Optional.of(year);
-        Optional<List<UUID>> lakesFilter = Optional.of(List.of(lakeId));
-        String cacheKey = year + "_" + lakeId;
-        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, lakesFilter));
+        Optional<List<UUID>> waterEntitiesFilter = Optional.of(List.of(waterEntityId));
+        String cacheKey = year + "_" + waterEntityId;
+        return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, waterEntitiesFilter));
     }
 
 

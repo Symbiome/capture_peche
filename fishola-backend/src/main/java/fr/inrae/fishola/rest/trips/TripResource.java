@@ -141,7 +141,7 @@ public class TripResource extends AbstractFisholaResource {
                 .catchsCount(catchsCount)
                 .date(date)
                 .id(tripId)
-                .lakeId(trip.getLakeId())
+                .waterEntityId(trip.getWaterEntityId())
                 .name(trip.getName())
                 .durationInSeconds(durationInSeconds);
 
@@ -199,7 +199,7 @@ public class TripResource extends AbstractFisholaResource {
         entity.setDay(trip.date);
         entity.setStartTime(LocalTime.parse(trip.startedAt));
         entity.setEndTime(LocalTime.parse(trip.finishedAt));
-        entity.setLakeId(trip.lakeId);
+        entity.setWaterEntityId(trip.waterEntityId);
         entity.setName(trip.name);
         entity.setType(trip.type);
         entity.setMode(trip.mode);
@@ -210,12 +210,16 @@ public class TripResource extends AbstractFisholaResource {
         entity.setFrontendVersion(trip.frontendVersion.orElse(null));
 
         trip.weatherId.ifPresent(entity::setWeatherId);
-        trip.beginLatitude.ifPresent(entity::setBeginLatitude);
-        trip.beginLongitude.ifPresent(entity::setBeginLongitude);
-        trip.endLatitude.ifPresent(entity::setEndLatitude);
-        trip.endLongitude.ifPresent(entity::setEndLongitude);
+
+        String beginWkt = (trip.beginLatitude.isPresent() && trip.beginLongitude.isPresent())
+                ? toWktPoint(trip.beginLongitude.get(), trip.beginLatitude.get()) : null;
+        String endWkt = (trip.endLatitude.isPresent() && trip.endLongitude.isPresent())
+                ? toWktPoint(trip.endLongitude.get(), trip.endLatitude.get()) : null;
 
         UUID tripId = tripsDao.create(entity);
+        if (beginWkt != null || endWkt != null) {
+            tripsDao.updatePositions(tripId, beginWkt, endWkt);
+        }
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
             log.debugf("Sortie en cours de création : %s -> %s", trip.id, tripId);
@@ -240,7 +244,7 @@ public class TripResource extends AbstractFisholaResource {
                 log.tracef("Détails de la capture : %s", aCatch);
             }
 
-            UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
+            UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
                 log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -299,7 +303,7 @@ public class TripResource extends AbstractFisholaResource {
         existingTrip.setDay(trip.date);
         existingTrip.setStartTime(LocalTime.parse(trip.startedAt));
         existingTrip.setEndTime(LocalTime.parse(trip.finishedAt));
-        existingTrip.setLakeId(trip.lakeId);
+        existingTrip.setWaterEntityId(trip.waterEntityId);
         existingTrip.setName(trip.name);
         existingTrip.setType(trip.type);
         existingTrip.setMode(trip.mode);
@@ -367,13 +371,13 @@ public class TripResource extends AbstractFisholaResource {
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
             if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
                 Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
-                updateCatch(trip.lakeId, existingCatch, aCatch);
+                updateCatch(trip.waterEntityId, existingCatch, aCatch);
                 updatedCatchsIds.add(parsedCatchId.get());
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture mise à jour : %s", parsedCatchId.get());
                 }
             } else {
-                UUID catchId = createCatch(trip.lakeId, tripId, aCatch);
+                UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch);
                 replacements.put(aCatch.id, catchId);
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -427,7 +431,7 @@ public class TripResource extends AbstractFisholaResource {
         }
     }
 
-    protected UUID createCatch(UUID lakeId, UUID tripId, CatchBean aCatch) {
+    protected UUID createCatch(UUID waterEntityId, UUID tripId, CatchBean aCatch) {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(LocalDateTime.now());
@@ -443,12 +447,12 @@ public class TripResource extends AbstractFisholaResource {
             aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
         }
         aCatch.description.ifPresent(catchPojo::setDescription);
-        aCatch.latitude.ifPresent(catchPojo::setLatitude);
-        aCatch.longitude.ifPresent(catchPojo::setLongitude);
+        String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
+                ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
         aCatch.sampleId.ifPresent(catchPojo::setSampleId);
 
         // Get min size to determine if catch is maillee or not
-        Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
+        Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
         if (minSize.isPresent() && minSize.get() > 0 && catchPojo.getSize() != null) {
             if (catchPojo.getSize() >= minSize.get()) {
                 catchPojo.setMaillee(Maillage.MAILLEE);
@@ -459,11 +463,14 @@ public class TripResource extends AbstractFisholaResource {
             catchPojo.setMaillee(Maillage.NON_DEFINI);
         }
         UUID catchId = catchsDao.create(catchPojo);
+        if (positionWkt != null) {
+            catchsDao.updatePosition(catchId, positionWkt);
+        }
 
         return catchId;
     }
 
-    protected void updateCatch(UUID lakeId, Catch existingCatch, CatchBean aCatch) {
+    protected void updateCatch(UUID waterEntityId, Catch existingCatch, CatchBean aCatch) {
 
         existingCatch.setCatchTime(aCatch.caughtAt.map(LocalTime::parse).orElse(null));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
@@ -473,14 +480,14 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setKept(aCatch.keep);
-        aCatch.latitude.ifPresent(existingCatch::setLatitude);
-        aCatch.longitude.ifPresent(existingCatch::setLongitude);
+        String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
+                ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
 
         // Get min size to determine if catch is maillee or not
-        Optional<Integer> minSize = this.referentialDao.getMinSize(lakeId, speciesId);
+        Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
         if (minSize.isPresent() && minSize.get() > 0) {
             if (existingCatch.getSize() >= minSize.get()) {
                 existingCatch.setMaillee(Maillage.MAILLEE);
@@ -491,6 +498,9 @@ public class TripResource extends AbstractFisholaResource {
             existingCatch.setMaillee(Maillage.NON_DEFINI);
         }
         catchsDao.update(existingCatch);
+        if (positionWkt != null) {
+            catchsDao.updatePosition(existingCatch.getId(), positionWkt);
+        }
 
     }
 
@@ -617,6 +627,10 @@ public class TripResource extends AbstractFisholaResource {
         return result;
     }
 
+    private static String toWktPoint(double longitude, double latitude) {
+        return "POINT(" + longitude + " " + latitude + ")";
+    }
+
     public static CatchBean toCatchBean(Catch aCatch,
                                         ListMultimap<UUID, Integer> catchsWithPictures,
                                         Set<UUID> catchsWithMeasurementPicture) {
@@ -654,7 +668,7 @@ public class TripResource extends AbstractFisholaResource {
         result.name = entity.getName();
         result.mode = entity.getMode();
         result.type = entity.getType();
-        result.lakeId = entity.getLakeId();
+        result.waterEntityId = entity.getWaterEntityId();
         result.date = entity.getDay();
         result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));

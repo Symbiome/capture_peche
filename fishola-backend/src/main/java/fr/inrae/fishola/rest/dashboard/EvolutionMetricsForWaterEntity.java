@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @ImmutableObject
-@JsonSerialize(as= ImmutableEvolutionMetricsForLake.class)
-public interface EvolutionMetricsForLake {
+@JsonSerialize(as= ImmutableEvolutionMetricsForWaterEntity.class)
+public interface EvolutionMetricsForWaterEntity {
     Map<UUID, List<EvolutionMetricForSpecieAndMonth>> evolutionPerMonthAndSpecie();
 }

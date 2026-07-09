@@ -35,7 +35,7 @@ public interface TripLight {
 
     String name();
 
-    UUID lakeId();
+    UUID waterEntityId();
 
     LocalDate date();
 

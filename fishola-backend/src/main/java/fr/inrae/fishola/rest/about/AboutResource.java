@@ -26,7 +26,7 @@ import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
 import jakarta.inject.Inject;
@@ -64,17 +64,17 @@ public class AboutResource extends AbstractFisholaResource {
         ImmutableKeyFigures.Builder builder = ImmutableKeyFigures.builder();
         int tripsCount = tripsDao.countTrips();
         int catchsCount = catchsDao.countCatchs();
-        Map<UUID, Integer> countCatchsByLakeId = catchsDao.countCatchsByLakeId();
+        Map<UUID, Integer> countCatchsByWaterEntityId = catchsDao.countCatchsByWaterEntityId();
         int picturesCount = catchsDao.countPictures();
-        List<Lake> lakes = referentialDao.listLakes();
+        List<WaterEntity> waterEntities = referentialDao.listWaterEntities();
         Optional<Editorial> title = editorialAndDocumentationDao.findEditorial("about_title");
         Optional<Editorial> contribute = editorialAndDocumentationDao.findEditorial("about_contribute");
 
         builder.tripsCount(tripsCount)
                 .catchsCount(catchsCount)
                 .picturesCount(picturesCount)
-                .lakes(lakes)
-                .catchsCountPerLakeId(countCatchsByLakeId)
+                .waterEntities(waterEntities)
+                .catchsCountPerWaterEntityId(countCatchsByWaterEntityId)
                 .titleText(title.map(Editorial::getContent).orElse("N/A"))
                 .contributeText(contribute.map(Editorial::getContent).orElse("N/A"))
                 .computedOn(LocalDateTime.now());

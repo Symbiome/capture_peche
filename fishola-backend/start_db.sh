@@ -2,14 +2,13 @@
 
 DBdir=/home/postgresql-18
 DB=fishola
-CONTAINER=postgres-12-${DB}
+CONTAINER=postgres-18-${DB}
 
 # Sur macOS, /home est réservé à l'automonteur : on utilise un volume Docker
 # nommé. Sur Linux, on conserve le bind mount historique.
 if [ "$(uname)" = "Darwin" ]; then
   DBvolume=fishola-pgdata
 else
-  DBdir=/home/postgresql-12
   DBvolume=${DBdir}/${DB}
 fi
 
@@ -26,9 +25,9 @@ if [ -n "$(docker ps -aq -f name=^/${CONTAINER}$)" ]; then
 fi
 
 docker run \
-  --name postgres-18-${DB} \
+  --name ${CONTAINER} \
   --restart always \
-  -v ${DBdir}/${DB}:/var/lib/postgresql \
+  -v ${DBvolume}:/var/lib/postgresql \
   -e POSTGRES_DB=${DB} \
   -e POSTGRES_PASSWORD=whatever \
   -p 15432:5432 \

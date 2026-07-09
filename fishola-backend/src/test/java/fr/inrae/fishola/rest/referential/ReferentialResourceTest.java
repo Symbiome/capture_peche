@@ -33,11 +33,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 class ReferentialResourceTest {
 
     @Test
-    void testGetLakes() {
+    void testGetWaterEntities() {
         // [{"id":"7440e0bd-9dab-4997-bb11-8062c0ec5ec1","name":"Léman","exportAs":"Léman","latitude":46.426,"longitude":6.5499},{"id":"75fd08fe-b377-4b58-982a-88640da8e33a","name":"Lac du Bourget","exportAs":"Bourget","latitude":45.7249,"longitude":5.8684},{"id":"5e9e93ff-f759-4ab8-a8ce-b2041d749bb1","name":"Lac d'Aiguebelette","exportAs":"Aiguebelette","latitude":45.5508,"longitude":5.8015},{"id":"c5b98dc6-3045-4aa8-86c0-18318159ef03","name":"Lac d'Annecy","exportAs":"Annecy","latitude":45.859756,"longitude":6.169396}]
         given()
                 .when()
-                    .get("/api/v1/referential/lakes")
+                    .get("/api/v1/referential/waterEntities")
                 .then()
                     .statusCode(200)
                     .body("size()", equalTo(481))

@@ -24,7 +24,7 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.database.ReferentialDao;
-import fr.inrae.fishola.entities.tables.pojos.Lake;
+import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
@@ -68,7 +68,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
         unpublishedNews.setName(this.token);
         unpublishedNews.setDatePublicationDebut(now.plusDays(10));
         unpublishedNews.setDatePublicationFin(now.plusDays(20));
-        this.newsDao.insert(unpublishedNews, referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet()));
+        this.newsDao.insert(unpublishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
 
         // Insert a published news
         News publishedNews = new News();
@@ -76,7 +76,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
         publishedNews.setName("published-" + token);
         publishedNews.setDatePublicationDebut(now.minusDays(1));
         publishedNews.setDatePublicationFin(now.plusDays(10));
-        this.newsDao.insert(publishedNews, referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet()));
+        this.newsDao.insert(publishedNews, referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet()));
     }
 
     @Test
@@ -107,7 +107,7 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
         news.isNational = true;
         news.datePublicationDebut = now.minusDays(1);
         news.datePublicationFin = now.plusDays(20);
-        news.lakeIds = referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet());
+        news.waterEntityIds = referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet());
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,8 +129,8 @@ class NewsResourceAsAdminTest extends AbstractFisholaTest {
     void testNewsPost() {
         int newsCountBefore = this.newsDao.getNews(false, Optional.empty()).size();
         LocalDateTime now = LocalDateTime.now();
-        Set<UUID>  lakeIds = referentialDao.listLakes().stream().map(Lake::getId).collect(Collectors.toSet());
-        NewsBean news = new NewsBean(UUID.randomUUID(),"published-newnews", "content", now.minusDays(1), now.plusDays(20), now, UUID.randomUUID(), false, lakeIds);
+        Set<UUID>  waterEntityIds = referentialDao.listWaterEntities().stream().map(WaterEntity::getId).collect(Collectors.toSet());
+        NewsBean news = new NewsBean(UUID.randomUUID(),"published-newnews", "content", now.minusDays(1), now.plusDays(20), now, UUID.randomUUID(), false, waterEntityIds);
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
