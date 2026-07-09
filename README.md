@@ -109,3 +109,7 @@ psql postgresql://postgres:whatever@localhost:15432/fishola
 #### Run les migrations
 
 mvn flyway:migrate
+
+
+insert into fishola_user (first_name, last_name, email, password) values
+    ('Arthur', 'Talpaert', 'arthur@symbiome.eu', 'hash_password');
