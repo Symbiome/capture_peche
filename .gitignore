@@ -40,6 +40,15 @@ stats.html
 # Fichier de conf local
 fishola-backend/.env
 
+# Données d'import locales (GeoPackages BD TOPO, etc.)
+/data/
+
+# Config/outillage local Claude Code — ne jamais pousser
+/.claude/
+
+# Backlog local des futures issues (à retranscrire sur GitHub après validation DC4)
+/ISSUES.local.md
+
 
 # Cypress screenshots
 fishola-mobile/cypress/screenshots
