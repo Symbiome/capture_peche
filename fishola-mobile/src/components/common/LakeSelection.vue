@@ -105,6 +105,7 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import MapLibreMap from "@/components/common/MapLibreMap.vue";
 import AttributionConfirmSheet from "@/components/common/AttributionConfirmSheet.vue";
 import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/services/Helpers';
 
 @Component({
   components: {
@@ -160,6 +161,13 @@ export default class LakeSelection extends Vue {
       this.suggestedFavorites = favoriteLakes;
 
       this.$emit('favoriteLakesChanged', favoriteLakes);
+
+      // Préremplir le champ avec le plan d'eau déjà sélectionné (ex. écran
+      // récapitulatif d'une sortie existante), sinon l'input paraît vide.
+      if (!this.search && this.selectedLakes && this.selectedLakes.length === 1) {
+        this.search = this.selectedLakes[0].name;
+        this.selectedLabel = this.selectedLakes[0].name;
+      }
   }
 
   @Watch("favoriteLakes")
@@ -326,7 +334,16 @@ export default class LakeSelection extends Vue {
         this.attributionResult = res;
         this.showAttributionSheet = true;
       })
-      .catch(() => { /* attribution indisponible : on n'ouvre pas la feuille */ });
+      .catch(() => {
+        // Attribution indisponible (hors ligne / erreur serveur) : on prévient
+        // l'utilisateur plutôt que de laisser un pin sans effet.
+        this.pendingPin = null;
+        Helpers.alert(
+          this.$modal,
+          "Le rattachement automatique n'est pas disponible (connexion indisponible). Sélectionnez le plan d'eau par son nom.",
+          "Rattachement indisponible"
+        );
+      });
   }
 
   onAttributionConfirm(entity: WaterEntityAttribution) {

@@ -30,14 +30,19 @@
           v-bind:error="nameError"
           v-bind:readonly="readonly"
         />
-        <FormSelect
+        <FormInput
+          v-if="readonly"
           name="lake"
           label="Plan d'eau"
-          v-bind:options="allLakes"
-          orderBy="name"
-          v-model="trip.lakeId"
+          v-bind:value="selectedLakeName"
+          v-bind:readonly="true"
+        />
+        <LakeSelection
+          v-else
+          v-bind:selectedLakes="selectedLakes"
+          v-bind:favoriteLakes="noFavorites"
           v-bind:error="lakeIdError"
-          v-bind:readonly="readonly"
+          v-on:updated="onLakeSelected"
         />
         <FormSelect
           class="hide-on-mobile"
@@ -131,6 +136,7 @@ import ReferentialService from "@/services/ReferentialService";
 import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormMultiValues from "@/components/common/FormMultiValues.vue";
+import LakeSelection from "@/components/common/LakeSelection.vue";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import moment from "moment";
@@ -140,6 +146,7 @@ import moment from "moment";
     FormInput,
     FormSelect,
     FormMultiValues,
+    LakeSelection,
   },
 })
 export default class SomeTripSummary extends Vue {
@@ -172,6 +179,29 @@ export default class SomeTripSummary extends Vue {
   allWeathers: Weather[] = [];
   allTripTypes: any[] = [];
   allTechniques: Technique[] = [];
+  noFavorites: Lake[] = [];
+
+  // Plan d'eau : autocomplete (recherche serveur, #7) au lieu d'un select de
+  // toutes les entités (inutilisable à l'échelle France). Le nom courant est
+  // résolu localement pour l'affichage/la pré-sélection.
+  get selectedLakes(): Lake[] {
+    if (!this.trip.lakeId) {
+      return [];
+    }
+    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
+    return found ? [found] : [];
+  }
+
+  get selectedLakeName(): string {
+    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
+    return found ? found.name : "";
+  }
+
+  onLakeSelected(lake: Lake) {
+    // Mutation directe du modèle (comme l'ancien v-model) — la sauvegarde est
+    // déclenchée par le parent au « Terminer », pas à la sélection.
+    this.trip.lakeId = lake ? lake.id : "";
+  }
 
   created() {
     ReferentialService.getLakesWeathersTripTypesSpeciesAndTechniques().then(

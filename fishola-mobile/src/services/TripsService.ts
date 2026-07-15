@@ -55,6 +55,9 @@ export default class TripsService extends AbstractFisholaService {
   // Plafond des sorties non synchronisées conservées localement (note Q14, #10).
   static readonly MAX_OFFLINE_TRIPS = 1000;
 
+  // Verrou anti-concurrence de la synchronisation (cf. syncTrips).
+  private static syncInProgress = false;
+
   constructor() {
     super();
   }
@@ -178,7 +181,8 @@ export default class TripsService extends AbstractFisholaService {
       mode: input.mode,
       type: input.type,
       name: input.name,
-      lakeId: input.lakeId,
+      // L'API renvoie waterEntityId (#3) ; le modèle mobile lit lakeId.
+      lakeId: input.lakeId ?? input.waterEntityId,
       weatherId: input.weatherId,
       date: realDate,
       speciesIds: input.speciesIds || [],
@@ -440,8 +444,12 @@ export default class TripsService extends AbstractFisholaService {
 
         GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
           (position) => {
-            trip.beginLatitude = position.coords.latitude;
-            trip.beginLongitude = position.coords.longitude;
+            // Ne pas écraser une position déjà choisie sur la carte (#9, pin +
+            // attribution) : le choix manuel prime sur le GPS en mode Live.
+            if (trip.beginLatitude == null || trip.beginLongitude == null) {
+              trip.beginLatitude = position.coords.latitude;
+              trip.beginLongitude = position.coords.longitude;
+            }
             console.info(
               `Coordonnées de début de sortie : ${trip.beginLatitude},${trip.beginLongitude}`
             );
@@ -507,8 +515,23 @@ export default class TripsService extends AbstractFisholaService {
   static doSendTripAndCancelCreations(trip: TripBean): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const db = this.getDatabase();
+
+      const finalize = () => {
+        // Sortie finalisée hors ligne, sans validation hydro : statut PENDING.
+        // Le serveur recalcule l'attribution (CONFIRMED/OVERRIDDEN) au push.
+        if (NetworkStatusService.isOffline() && !trip.hydroValidation) {
+          trip.hydroValidation = "PENDING";
+        }
+        this.sendTrip(trip).then((savedTripId) => {
+          this.cancelCreations();
+          resolve(savedTripId);
+        }, reject);
+      };
+
       // Plafond (#10) : on refuse une NOUVELLE sortie non synchronisée au-delà de
       // la limite (une sortie déjà en attente, re-sauvegardée, n'est pas comptée).
+      // Le plafond s'applique quel que soit l'état réseau (une sync en échec
+      // prolongé ne doit pas laisser gonfler la file indéfiniment).
       Promise.all([db.dirtyTrips.count(), db.dirtyTrips.get(trip.id)]).then(
         ([count, existing]) => {
           if (!existing && count >= TripsService.MAX_OFFLINE_TRIPS) {
@@ -518,17 +541,11 @@ export default class TripsService extends AbstractFisholaService {
             });
             return;
           }
-          // Sortie finalisée hors ligne, sans validation hydro : statut PENDING.
-          // Le serveur recalcule l'attribution (CONFIRMED/OVERRIDDEN) au push.
-          if (NetworkStatusService.isOffline() && !trip.hydroValidation) {
-            trip.hydroValidation = "PENDING";
-          }
-          this.sendTrip(trip).then((savedTripId) => {
-            this.cancelCreations();
-            resolve(savedTripId);
-          }, reject);
+          finalize();
         },
-        reject
+        // Fail-open : une erreur de lecture IndexedDB ne doit pas bloquer la
+        // finalisation d'une sortie (chemin critique) — on tente le save.
+        () => finalize()
       );
     });
   }
@@ -561,6 +578,16 @@ export default class TripsService extends AbstractFisholaService {
   }
 
   static syncTrips(): Promise<boolean> {
+    // Verrou anti-concurrence : la sync peut être déclenchée par plusieurs
+    // sources (poll 30 s, évènement de retour réseau #10, ask-for-sync-check).
+    // Sans ce garde, deux passes simultanées peuvent lire les mêmes dirtyTrips
+    // et POSTer deux fois la même sortie avant le premier delete.
+    if (TripsService.syncInProgress) {
+      console.debug("Synchronisation déjà en cours, déclenchement ignoré");
+      return Promise.resolve(false);
+    }
+    TripsService.syncInProgress = true;
+
     const result: Promise<boolean> = new Promise<boolean>((resolve, reject) => {
       this.getDatabase().dirtyTrips.toArray((dirtyTrips) => {
         if (dirtyTrips && dirtyTrips.length > 0) {
@@ -572,7 +599,16 @@ export default class TripsService extends AbstractFisholaService {
       });
     });
 
-    return result;
+    return result.then(
+      (someSaved) => {
+        TripsService.syncInProgress = false;
+        return someSaved;
+      },
+      (error) => {
+        TripsService.syncInProgress = false;
+        throw error;
+      }
+    );
   }
 
   static doSyncDirtyTrips(
@@ -627,10 +663,26 @@ export default class TripsService extends AbstractFisholaService {
   }
 
   static syncTrip(trip: TripBean): Promise<void> {
+    // Le modèle mobile porte `lakeId`, l'API attend `waterEntityId` (réalignement
+    // #3, non propagé au payload de création — bug de sync : water_entity_id NOT
+    // NULL violé côté serveur). Pont à l'envoi, sans renommer tout le modèle
+    // interne (hors scope). Idem pour les captures rattachées.
+    const payload: any = { ...trip };
+    if (payload.waterEntityId == null && payload.lakeId != null) {
+      payload.waterEntityId = payload.lakeId;
+    }
+    if (Array.isArray(payload.catchs)) {
+      payload.catchs = payload.catchs.map((c: any) =>
+        c && c.waterEntityId == null && c.lakeId != null
+          ? { ...c, waterEntityId: c.lakeId }
+          : c
+      );
+    }
+
     return new Promise((resolve, reject) => {
-      console.debug("On essaye de sauvegarder la sortie", trip);
+      console.debug("On essaye de sauvegarder la sortie", payload);
       if (trip.createdOn) {
-        this.backendPut(`/v1/trips/${trip.id}`, trip).then((r) => {
+        this.backendPut(`/v1/trips/${trip.id}`, payload).then((r) => {
           PicturesService.checkForPicturesToRename(r);
           if (this.hasOtherSpecies(trip)) {
             ReferentialService.clearSpeciesCustomCache();
@@ -638,7 +690,7 @@ export default class TripsService extends AbstractFisholaService {
           resolve();
         }, reject);
       } else {
-        this.backendPost("/v1/trips", trip).then((r) => {
+        this.backendPost("/v1/trips", payload).then((r) => {
           PicturesService.checkForPicturesToRename(r);
           if (this.hasOtherSpecies(trip)) {
             ReferentialService.clearSpeciesCustomCache();
