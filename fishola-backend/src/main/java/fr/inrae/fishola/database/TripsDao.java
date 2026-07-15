@@ -83,14 +83,16 @@ public class TripsDao extends AbstractFisholaDao {
     public UUID create(Trip trip) {
         return withContext(context -> {
             TripRecord newRecord = context.newRecord(Tables.TRIP, trip);
-            // begin/end_latitude/longitude are GENERATED ALWAYS AS ... STORED (derived
-            // from begin/end_position); newRecord() marks every field as changed
-            // regardless of whether the POJO getter is null, so they must be excluded
-            // explicitly or Postgres rejects the insert outright.
+            // begin/end/snapped_latitude/longitude are GENERATED ALWAYS AS ... STORED
+            // (derived from the matching _position); newRecord() marks every field as
+            // changed regardless of whether the POJO getter is null, so they must be
+            // excluded explicitly or Postgres rejects the insert outright.
             newRecord.changed(Tables.TRIP.BEGIN_LATITUDE, false);
             newRecord.changed(Tables.TRIP.BEGIN_LONGITUDE, false);
             newRecord.changed(Tables.TRIP.END_LATITUDE, false);
             newRecord.changed(Tables.TRIP.END_LONGITUDE, false);
+            newRecord.changed(Tables.TRIP.SNAPPED_LATITUDE, false);
+            newRecord.changed(Tables.TRIP.SNAPPED_LONGITUDE, false);
             TripRecord recordInserted = context.insertInto(Tables.TRIP)
                     .set(newRecord)
                     .returning(Tables.TRIP.ID)
@@ -114,6 +116,29 @@ public class TripsDao extends AbstractFisholaDao {
                 context.execute("UPDATE trip SET end_position = ST_GeomFromText(?, 4326) WHERE id = ?", endWktPoint, tripId);
             }
         });
+    }
+
+    /**
+     * Persists the server-recomputed hydrographic attribution of a trip (#9):
+     * projected point, closest river section and the CONFIRMED/OVERRIDDEN trace.
+     * Raw SQL like {@link #updatePositions} because snapped_position is a
+     * geometry. river_section_id may be null (still waters).
+     */
+    public void updateHydroAttribution(UUID tripId, String snappedWktPoint, UUID riverSectionId, String hydroValidation) {
+        withContextNoResult(context -> context.execute(
+                "UPDATE trip SET snapped_position = ST_GeomFromText(?, 4326), river_section_id = ?, hydro_validation = ? WHERE id = ?",
+                snappedWktPoint, riverSectionId, hydroValidation, tripId));
+    }
+
+    /**
+     * Clears the hydrographic attribution (#9): used when a trip is re-attached to
+     * an entity too far to snap onto, so stale snapped_position / river_section_id
+     * / hydro_validation are not left pointing at the previous entity.
+     */
+    public void clearHydroAttribution(UUID tripId) {
+        withContextNoResult(context -> context.execute(
+                "UPDATE trip SET snapped_position = NULL, river_section_id = NULL, hydro_validation = NULL WHERE id = ?",
+                tripId));
     }
 
     public int setSpecies(UUID tripId, Set<UUID> speciesIds) {
@@ -214,11 +239,13 @@ public class TripsDao extends AbstractFisholaDao {
     public void updateTrip(Trip existingTrip) {
         withContextNoResult(context -> {
             TripRecord record = context.newRecord(Tables.TRIP, existingTrip);
-            // begin/end_latitude/longitude are GENERATED ALWAYS AS ... STORED; see create().
+            // begin/end/snapped_latitude/longitude are GENERATED ALWAYS AS ... STORED; see create().
             record.changed(Tables.TRIP.BEGIN_LATITUDE, false);
             record.changed(Tables.TRIP.BEGIN_LONGITUDE, false);
             record.changed(Tables.TRIP.END_LATITUDE, false);
             record.changed(Tables.TRIP.END_LONGITUDE, false);
+            record.changed(Tables.TRIP.SNAPPED_LATITUDE, false);
+            record.changed(Tables.TRIP.SNAPPED_LONGITUDE, false);
             record.update();
         });
     }

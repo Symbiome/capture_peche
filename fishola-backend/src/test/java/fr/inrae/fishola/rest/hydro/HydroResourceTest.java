@@ -21,13 +21,18 @@ package fr.inrae.fishola.rest.hydro;
  * #L%
  */
 
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.UsersDao;
+import fr.inrae.fishola.entities.enums.TripMode;
+import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.trips.TripBean;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterAll;
@@ -36,12 +41,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -65,6 +79,9 @@ class HydroResourceTest extends AbstractFisholaTest {
 
     @Inject
     protected UsersDao usersDao;
+
+    @Inject
+    protected HydroSearchDao hydroSearchDao;
 
     protected String token;
 
@@ -351,6 +368,161 @@ class HydroResourceTest extends AbstractFisholaTest {
                 .then().statusCode(200)
                 .extract().body().asByteArray();
         assertEquals(0, body.length, "tuile vide attendue sous le zoom minimum");
+    }
+
+    // ----- Attribution (#9) -------------------------------------------------
+
+    private static final String ATTRIBUTION = "/api/v1/waterEntities/attribution";
+
+    @Test
+    void attributionProposesClosestWithSectionAndAlternatives() {
+        // AC1 : près du Fier (permanent), la proposition = Fier, avec le tronçon
+        // rattaché ; le Lac figure dans les alternatives (corriger sans re-chercher).
+        var response = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("lat", 45.9025)
+                .queryParam("lng", 6.1005)
+                .when().get(ATTRIBUTION)
+                .then().statusCode(200)
+                .extract().jsonPath();
+
+        assertEquals("IT Fier", response.getString("proposal.name"));
+        assertEquals("FLOWING", response.getString("proposal.kind"));
+        assertEquals(Boolean.TRUE, response.getBoolean("proposal.persistent"));
+        assertNotNull(response.getString("proposal.riverSectionId"),
+                "le tronçon le plus proche doit être renseigné pour un cours d'eau");
+        double dist = response.getDouble("proposal.distanceM");
+        assertTrue(dist < 100, "distance Fier attendue < 100 m, obtenue " + dist);
+
+        List<Map<String, Object>> alternatives = response.getList("alternatives");
+        assertTrue(indexOfName(alternatives, "IT Lac") >= 0,
+                "le Lac doit figurer parmi les alternatives");
+    }
+
+    @Test
+    void attributionWarnsNonPermanent() {
+        // AC3 : près du ruisseau intermittent, la proposition porte persistent=false
+        // (l'UI affiche l'avertissement, non bloquant).
+        var response = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("lat", 45.9025)
+                .queryParam("lng", 6.2995)
+                .when().get(ATTRIBUTION)
+                .then().statusCode(200)
+                .extract().jsonPath();
+
+        assertEquals("IT Ruisseau", response.getString("proposal.name"));
+        assertEquals(Boolean.FALSE, response.getBoolean("proposal.persistent"));
+    }
+
+    @Test
+    void attributionRequiresLatLng() {
+        given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("lat", 45.9025)
+                .when().get(ATTRIBUTION)
+                .then().statusCode(400);
+    }
+
+    @Test
+    @Transactional
+    void computeTripAttributionConfirmsWhenChosenIsClosest() {
+        // AC1 (logique serveur) : entité choisie = plus proche -> CONFIRMED, avec
+        // point projeté sur la géométrie et tronçon renseigné.
+        UUID fier = entityId("IT_FIER");
+        HydroSearchDao.TripAttribution attr =
+                hydroSearchDao.computeTripAttribution(45.9025, 6.1005, fier).orElseThrow();
+        assertEquals("CONFIRMED", attr.hydroValidation());
+        assertNotNull(attr.riverSectionId(), "tronçon attendu pour un cours d'eau");
+        assertTrue(Math.abs(attr.snappedLng() - 6.101) < 1e-3,
+                "point projeté attendu ~6.101, obtenu " + attr.snappedLng());
+    }
+
+    @Test
+    @Transactional
+    void computeTripAttributionOverriddenWhenChosenIsNotClosest() {
+        // AC2 (logique serveur) : près du Fier mais on choisit le Lac -> OVERRIDDEN ;
+        // snapped recalculé sur le Lac (surface -> pas de tronçon).
+        UUID lac = entityId("IT_LAC");
+        HydroSearchDao.TripAttribution attr =
+                hydroSearchDao.computeTripAttribution(45.9025, 6.1005, lac).orElseThrow();
+        assertEquals("OVERRIDDEN", attr.hydroValidation());
+        assertNull(attr.riverSectionId(), "pas de tronçon pour une surface");
+    }
+
+    @Test
+    void createTripPersistsAndReadsBackHydroAttribution() {
+        // #9 bout en bout via l'API. AC1 + AC5 : sortie saisie sur la carte (point
+        // près du Fier) -> CONFIRMED + point projeté + tronçon persistés et relus.
+        // AC4 : sortie sans position -> champs hydro NULL. Espèces/techniques vides
+        // pour rester indépendant du référentiel (seedé hors de ce test).
+        UUID fier = entityId("IT_FIER");
+
+        TripBean trip = new TripBean();
+        trip.id = "dontcare";
+        trip.date = LocalDate.now();
+        trip.startedAt = "00:00";
+        trip.finishedAt = "00:01";
+        trip.waterEntityId = fier;
+        trip.name = "IT Sortie carte";
+        trip.type = TripType.Craft;
+        trip.mode = TripMode.Live;
+        trip.speciesIds = Set.of();
+        trip.techniqueIds = Set.of();
+        trip.beginLatitude = Optional.of(45.9025);
+        trip.beginLongitude = Optional.of(6.1005);
+
+        List<String> created = new ArrayList<>();
+        try {
+            String withPos = given()
+                    .contentType("application/json")
+                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .body(trip)
+                    .when().post("/api/v1/trips")
+                    .then().statusCode(201)
+                    .extract().path("dontcare");
+            created.add(withPos);
+
+            given()
+                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .when().get("/api/v1/trips/" + withPos)
+                    .then().statusCode(200)
+                    .body("hydroValidation", equalTo("CONFIRMED"))
+                    .body("riverSectionId", notNullValue())
+                    .body("snappedLatitude", notNullValue())
+                    .body("snappedLongitude", notNullValue());
+
+            // Sans position (AC4) : comportement inchangé, champs hydro NULL.
+            trip.beginLatitude = Optional.empty();
+            trip.beginLongitude = Optional.empty();
+            trip.name = "IT Sortie sans carte";
+            String noPos = given()
+                    .contentType("application/json")
+                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .body(trip)
+                    .when().post("/api/v1/trips")
+                    .then().statusCode(201)
+                    .extract().path("dontcare");
+            created.add(noPos);
+
+            given()
+                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .when().get("/api/v1/trips/" + noPos)
+                    .then().statusCode(200)
+                    .body("hydroValidation", nullValue())
+                    .body("snappedLatitude", nullValue());
+        } finally {
+            // Sortie sans capture ni espèce/technique : suppression directe FK-safe.
+            var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+            created.forEach(id -> ctx.execute("DELETE FROM trip WHERE id = ?::uuid", id));
+        }
+    }
+
+    private UUID entityId(String code) {
+        Record record = DSL.using(dataSource, SQLDialect.POSTGRES)
+                .resultQuery("SELECT id FROM water_entity WHERE water_entity_code = ?", code)
+                .fetchOne();
+        return record == null ? null : record.get(0, UUID.class);
     }
 
     private static int lon2tileX(double lon, int z) {

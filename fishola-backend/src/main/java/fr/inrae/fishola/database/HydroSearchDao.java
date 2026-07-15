@@ -25,8 +25,10 @@ import fr.inrae.fishola.rest.commune.CommuneResult;
 import fr.inrae.fishola.rest.commune.ImmutableCommuneResult;
 import fr.inrae.fishola.rest.hydro.ImmutableGeoPoint;
 import fr.inrae.fishola.rest.hydro.ImmutableNearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.ImmutableWaterEntityAttribution;
 import fr.inrae.fishola.rest.hydro.ImmutableWaterEntitySearchResult;
 import fr.inrae.fishola.rest.hydro.NearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.WaterEntityAttribution;
 import fr.inrae.fishola.rest.hydro.WaterEntitySearchResult;
 import jakarta.inject.Singleton;
 import org.jooq.Record;
@@ -256,6 +258,134 @@ public class HydroSearchDao extends AbstractFisholaDao {
     }
 
     // Shared mapping of a nearby/by-commune result row to the DTO.
+    // ----- Trip hydrographic attribution (#9) -------------------------------
+
+    // Generous fixed radius for the attribution proposal: the angler's pin is
+    // expected close to the water, but GPS drift / bank distance warrant slack.
+    private static final double ATTRIBUTION_RADIUS_M = 5000.0;
+
+    // Same spatial logic as NEARBY_SQL but (a) carries the closest river_section
+    // id (to fill trip.river_section_id), (b) no kind filter, (c) fixed radius.
+    // Bind order: lng, lat, radius, radius, limit.
+    private static final String ATTRIBUTION_SQL = ""
+            + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
+            + "candidates AS ( "
+            + "  SELECT rs.water_entity_id AS weid, rs.id AS rsid, "
+            + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, pt.g) AS cp, "
+            + "         rs.persistent AS persistent "
+            + "  FROM river_section rs, pt "
+            + "  WHERE ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT ws.water_entity_id, NULL::uuid, "
+            + "         ST_Distance(ws.geom::geography, pt.g::geography), "
+            + "         ST_ClosestPoint(ws.geom, pt.g), "
+            + "         NULL::boolean "
+            + "  FROM water_surface ws, pt "
+            + "  WHERE ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + "), "
+            + "ranked AS ( "
+            + "  SELECT DISTINCT ON (weid) weid, rsid, dist, "
+            + "         ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, persistent "
+            + "  FROM candidates WHERE weid IS NOT NULL "
+            + "  ORDER BY weid, dist "
+            + ") "
+            + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
+            + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
+            + "       r.persistent AS persistent, r.rsid AS river_section_id "
+            + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            + "ORDER BY r.dist "
+            + "LIMIT ?";
+
+    // Snap a point onto a CHOSEN entity's geometry: closest point + closest river
+    // section (null for still waters). Bounded by the SAME radius as the proposal
+    // (a) so the ST_DWithin is index-accelerated by the geography GIST (no France-
+    // scale seq scan), and (b) so an entity too far to be proposed is not snapped
+    // onto with an aberrant projected point — beyond the radius the trip keeps NULL
+    // hydro fields, consistent with the CONFIRMED/OVERRIDDEN decision below.
+    // Bind: lng, lat, entityId, radius, entityId, radius.
+    private static final String SNAP_FOR_ENTITY_SQL = ""
+            + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
+            + "candidates AS ( "
+            + "  SELECT rs.id AS rsid, "
+            + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, pt.g) AS cp "
+            + "  FROM river_section rs, pt "
+            + "  WHERE rs.water_entity_id = ? AND ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT NULL::uuid, "
+            + "         ST_Distance(ws.geom::geography, pt.g::geography), "
+            + "         ST_ClosestPoint(ws.geom, pt.g) "
+            + "  FROM water_surface ws, pt "
+            + "  WHERE ws.water_entity_id = ? AND ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + ") "
+            + "SELECT rsid, ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, dist "
+            + "FROM candidates ORDER BY dist LIMIT 1";
+
+    /**
+     * Closest water entities to a point (proposal + alternatives), within
+     * {@link #ATTRIBUTION_RADIUS_M}, ordered by distance. The caller takes the
+     * first as the proposal and the rest as alternatives (#9).
+     */
+    public List<WaterEntityAttribution> attribution(double lat, double lng, int limit) {
+        return withContext(context -> context
+                .fetch(ATTRIBUTION_SQL, lng, lat, ATTRIBUTION_RADIUS_M, ATTRIBUTION_RADIUS_M, limit)
+                .map(HydroSearchDao::toAttribution));
+    }
+
+    /**
+     * Server-side recompute of a trip's hydrographic attribution (#9): snaps the
+     * saved point onto the chosen entity (projected point + river section), and
+     * marks the choice CONFIRMED when the chosen entity is also the closest one,
+     * OVERRIDDEN otherwise. Empty when the chosen entity has no geometry at all
+     * (nothing to snap onto) — the trip then keeps NULL hydro fields.
+     */
+    public Optional<TripAttribution> computeTripAttribution(double lat, double lng, UUID chosenEntityId) {
+        List<EntitySnap> snaps = withContext(context -> context
+                .fetch(SNAP_FOR_ENTITY_SQL, lng, lat,
+                        chosenEntityId, ATTRIBUTION_RADIUS_M, chosenEntityId, ATTRIBUTION_RADIUS_M)
+                .map(HydroSearchDao::toEntitySnap));
+        if (snaps.isEmpty()) {
+            return Optional.empty();
+        }
+        EntitySnap snap = snaps.get(0);
+        Optional<UUID> nearest = attribution(lat, lng, 1).stream()
+                .findFirst()
+                .map(WaterEntityAttribution::waterEntityId);
+        String validation = nearest.map(chosenEntityId::equals).orElse(false)
+                ? "CONFIRMED" : "OVERRIDDEN";
+        return Optional.of(new TripAttribution(snap.lat(), snap.lng(), snap.riverSectionId(), validation));
+    }
+
+    private static WaterEntityAttribution toAttribution(Record rec) {
+        return ImmutableWaterEntityAttribution.builder()
+                .waterEntityId(rec.get("water_entity_id", UUID.class))
+                .name(rec.get("name", String.class))
+                .kind(rec.get("kind", String.class))
+                .distanceM(rec.get("distance_m", Double.class))
+                .closestPoint(ImmutableGeoPoint.builder()
+                        .lat(rec.get("cp_lat", Double.class))
+                        .lng(rec.get("cp_lng", Double.class))
+                        .build())
+                .riverSectionId(Optional.ofNullable(rec.get("river_section_id", UUID.class)))
+                .persistent(Optional.ofNullable(rec.get("persistent", Boolean.class)))
+                .build();
+    }
+
+    private static EntitySnap toEntitySnap(Record rec) {
+        return new EntitySnap(
+                rec.get("cp_lat", Double.class),
+                rec.get("cp_lng", Double.class),
+                rec.get("rsid", UUID.class));
+    }
+
+    /** A point snapped onto a chosen entity ({@code riverSectionId} null for still waters). */
+    public record EntitySnap(double lat, double lng, UUID riverSectionId) {}
+
+    /** Result of the server-side trip attribution recompute (#9). */
+    public record TripAttribution(double snappedLat, double snappedLng,
+                                  UUID riverSectionId, String hydroValidation) {}
+
     private static NearbyWaterEntity toNearby(Record rec) {
         return ImmutableNearbyWaterEntity.builder()
                 .waterEntityId(rec.get("water_entity_id", UUID.class))

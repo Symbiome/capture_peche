@@ -55,6 +55,8 @@ public class HydroResource extends AbstractFisholaResource {
     // yield a negative OFFSET rejected by PostgreSQL → 500 instead of 400).
     private static final int MAX_PAGE_NUMBER = 10000;
     private static final int MAX_SEARCH_LIMIT = 50;
+    // Proposal + up to 3 alternatives for the trip attribution (#9).
+    private static final int ATTRIBUTION_LIMIT = 4;
 
     @Inject
     protected HydroSearchDao hydroSearchDao;
@@ -145,5 +147,33 @@ public class HydroResource extends AbstractFisholaResource {
         List<WaterEntitySearchResult> result =
                 hydroSearchDao.searchWaterEntities(q.trim(), kindFilter, limit);
         return wrapEntity(result, userIdAndRenewal);
+    }
+
+    /**
+     * Proposes the water entity to attach a fishing session to, from a point:
+     * the closest one plus a few alternatives the user can pick instead. Feeds
+     * the confirmation step of the trip hydrographic validation (#9).
+     * Authenticated.
+     */
+    @GET
+    @Path("/attribution")
+    public Response attribution(@QueryParam("lat") Double lat,
+                                @QueryParam("lng") Double lng) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+
+        Preconditions.checkArgument(lat != null && lng != null,
+                "Les paramètres lat et lng sont obligatoires.");
+        Preconditions.checkArgument(lat >= -90 && lat <= 90,
+                "lat doit être compris entre -90 et 90.");
+        Preconditions.checkArgument(lng >= -180 && lng <= 180,
+                "lng doit être compris entre -180 et 180.");
+
+        List<WaterEntityAttribution> candidates =
+                hydroSearchDao.attribution(lat, lng, ATTRIBUTION_LIMIT);
+        AttributionResponse response = ImmutableAttributionResponse.builder()
+                .proposal(candidates.stream().findFirst())
+                .alternatives(candidates.stream().skip(1).toList())
+                .build();
+        return wrapEntity(response, userIdAndRenewal);
     }
 }

@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
@@ -97,6 +98,9 @@ public class TripResource extends AbstractFisholaResource {
 
     @Inject
     protected CatchsDao catchsDao;
+
+    @Inject
+    protected HydroSearchDao hydroSearchDao;
 
     @GET
     @Path("/")
@@ -220,6 +224,17 @@ public class TripResource extends AbstractFisholaResource {
         if (beginWkt != null || endWkt != null) {
             tripsDao.updatePositions(tripId, beginWkt, endWkt);
         }
+        // Validation hydrographique (#9) : quand la sortie est saisie sur la carte
+        // (point de départ fourni), le serveur recalcule l'attribution pour
+        // l'entité choisie — point projeté, tronçon, CONFIRMED/OVERRIDDEN — sans
+        // faire confiance au client. Sortie sans position : champs hydro NULL.
+        if (beginWkt != null && trip.waterEntityId != null) {
+            hydroSearchDao.computeTripAttribution(
+                    trip.beginLatitude.get(), trip.beginLongitude.get(), trip.waterEntityId)
+                    .ifPresent(attr -> tripsDao.updateHydroAttribution(tripId,
+                            toWktPoint(attr.snappedLng(), attr.snappedLat()),
+                            attr.riverSectionId(), attr.hydroValidation()));
+        }
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
             log.debugf("Sortie en cours de création : %s -> %s", trip.id, tripId);
@@ -313,6 +328,21 @@ public class TripResource extends AbstractFisholaResource {
         // On ne met pas à jour les coordonnées de début/fin de sortie car ce n'est pas modifiable dans l'application
 
         tripsDao.updateTrip(existingTrip);
+
+        // Validation hydrographique (#9) : le point de départ ne change pas, mais
+        // l'entité rattachée peut être corrigée au PUT — on recalcule l'attribution
+        // pour ne pas laisser snapped_position / river_section_id / hydro_validation
+        // pointer sur l'ancienne entité (mise à NULL si trop loin pour un snap).
+        Double beginLat = existingTrip.getBeginLatitude();
+        Double beginLng = existingTrip.getBeginLongitude();
+        if (beginLat != null && beginLng != null && trip.waterEntityId != null) {
+            hydroSearchDao.computeTripAttribution(beginLat, beginLng, trip.waterEntityId)
+                    .ifPresentOrElse(
+                            attr -> tripsDao.updateHydroAttribution(tripId,
+                                    toWktPoint(attr.snappedLng(), attr.snappedLat()),
+                                    attr.riverSectionId(), attr.hydroValidation()),
+                            () -> tripsDao.clearHydroAttribution(tripId));
+        }
 
         if (log.isDebugEnabled()) {
             log.debugf("Sortie mise à jour : %s", tripId);
@@ -669,6 +699,11 @@ public class TripResource extends AbstractFisholaResource {
         result.mode = entity.getMode();
         result.type = entity.getType();
         result.waterEntityId = entity.getWaterEntityId();
+        // Attribution hydrographique (#9) — champs NULL pour les sorties sans position.
+        result.riverSectionId = Optional.ofNullable(entity.getRiverSectionId());
+        result.snappedLatitude = Optional.ofNullable(entity.getSnappedLatitude());
+        result.snappedLongitude = Optional.ofNullable(entity.getSnappedLongitude());
+        result.hydroValidation = Optional.ofNullable(entity.getHydroValidation());
         result.date = entity.getDay();
         result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
