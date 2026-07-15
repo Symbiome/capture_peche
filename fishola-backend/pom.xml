@@ -433,6 +433,7 @@
                         <class>fr.inrae.fishola.rest.social.TripSocial</class>
                         <class>fr.inrae.fishola.rest.hydro.NearbyWaterEntity</class>
                         <class>fr.inrae.fishola.rest.hydro.GeoPoint</class>
+                        <class>fr.inrae.fishola.rest.commune.CommuneResult</class>
                     </classes>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>

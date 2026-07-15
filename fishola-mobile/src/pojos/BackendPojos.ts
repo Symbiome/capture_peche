@@ -256,6 +256,12 @@ export interface GeoPoint {
     lng: number;
 }
 
+export interface CommuneResult {
+    insee: string;
+    name: string;
+    centroid: GeoPoint;
+}
+
 export interface Serializable {
 }
 

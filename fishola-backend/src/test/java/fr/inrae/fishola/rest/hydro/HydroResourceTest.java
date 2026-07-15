@@ -120,6 +120,12 @@ class HydroResourceTest extends AbstractFisholaTest {
                 + "SELECT id, false, ST_SetSRID(ST_GeomFromText('LINESTRING(6.300 45.900, 6.300 45.905)'), 4326) "
                 + "FROM water_entity WHERE water_entity_code = 'IT_RUIS' "
                 + "AND NOT EXISTS (SELECT 1 FROM river_section rs WHERE rs.water_entity_id = water_entity.id)");
+
+        // Commune (INSEE test 99999) enveloppant le Fier, pour byCommune / search.
+        ctx.execute("INSERT INTO commune (insee_com, name, geom) "
+                + "VALUES ('99999', 'Annecy', "
+                + "ST_SetSRID(ST_GeomFromText('MULTIPOLYGON(((6.098 45.898,6.106 45.898,6.106 45.907,6.098 45.907,6.098 45.898)))'), 4326)) "
+                + "ON CONFLICT DO NOTHING");
     }
 
     @AfterAll
@@ -131,6 +137,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         ctx.execute("DELETE FROM water_surface WHERE water_entity_id IN "
                 + "(SELECT id FROM water_entity WHERE water_entity_code LIKE 'IT\\_%')");
         ctx.execute("DELETE FROM water_entity WHERE water_entity_code LIKE 'IT\\_%'");
+        ctx.execute("DELETE FROM commune WHERE insee_com = '99999'");
     }
 
     @Test
@@ -228,6 +235,34 @@ class HydroResourceTest extends AbstractFisholaTest {
                 .queryParam("radiusM", 999999)
                 .when().get(NEARBY)
                 .then().statusCode(400);
+    }
+
+    @Test
+    void byCommuneReturnsIntersectingEntities() {
+        // AC1 + AC4: le Fier (traverse la commune) présent, le Ruisseau (loin) absent.
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("insee", "99999")
+                .when().get("/api/v1/waterEntities/byCommune")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        assertTrue(indexOfName(items, "IT Fier") >= 0, "le Fier (traversant la commune) doit être présent");
+        assertTrue(indexOfName(items, "IT Ruisseau") < 0, "le ruisseau lointain doit être absent");
+    }
+
+    @Test
+    void communeSearchIsTypoTolerant() {
+        // AC2: recherche trigram tolérante à la faute de frappe.
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "anneci")
+                .when().get("/api/v1/communes/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        assertTrue(items.size() >= 1, "au moins une commune attendue");
+        assertEquals("Annecy", items.get(0).get("name"));
     }
 
     private static int indexOfName(List<Map<String, Object>> items, String name) {

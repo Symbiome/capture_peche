@@ -97,4 +97,24 @@ public class HydroResource extends AbstractFisholaResource {
                 hydroSearchDao.nearby(lat, lng, radiusM, kindFilter, pageSize, offset);
         return wrapEntity(result, userIdAndRenewal);
     }
+
+    /**
+     * Water entities in (or within {@code bufferM} of) a commune, ordered by
+     * distance to the commune centroid. Authenticated.
+     */
+    @GET
+    @Path("/byCommune")
+    public Response byCommune(@QueryParam("insee") String insee,
+                             @QueryParam("bufferM") @DefaultValue("500") double bufferM) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+
+        Preconditions.checkArgument(insee != null && !insee.isBlank(),
+                "Le paramètre insee est obligatoire.");
+        Preconditions.checkArgument(bufferM >= 0 && bufferM <= MAX_RADIUS_M,
+                "bufferM doit être dans l'intervalle [0, " + (long) MAX_RADIUS_M + "].");
+
+        List<NearbyWaterEntity> result =
+                hydroSearchDao.findWaterEntitiesByCommune(insee.trim(), bufferM);
+        return wrapEntity(result, userIdAndRenewal);
+    }
 }
