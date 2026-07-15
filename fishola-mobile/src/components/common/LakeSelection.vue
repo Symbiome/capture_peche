@@ -117,9 +117,19 @@ export default class LakeSelection extends Vue {
   search: string = "";
   selectedLabel: string = "";
   selectedLakesId: string[] = [];
+  private searchSeq: number = 0;
+  private searchTimer: any = null;
 
   mounted() {
     this.loadLakes();
+  }
+
+  beforeDestroy() {
+    // Évite qu'un debounce en vol ne déclenche une requête et ne mute l'état
+    // d'un composant détruit.
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
   }
 
   async loadLakes() {
@@ -164,22 +174,43 @@ export default class LakeSelection extends Vue {
 
   @Watch("search")
   updateSuggestedLakes() {
-    this.suggestedLakes = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.suggestedLakes :
-      this.allLakesExecptFavorites.filter((lake) => {
-        return lake.name
-            .toString()
-            .toLowerCase()
-            .indexOf(this.search.toLowerCase()) >= 0;
-    });
-    this.suggestedFavorites = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.favoriteLakes :
-      this.favoriteLakes.filter((lake) => {
-        return lake.name
-            .toString()
-            .toLowerCase()
-            .indexOf(this.search.toLowerCase()) >= 0;
-    });
+    const term = this.search;
+    const isSelectedLabel = this.selectedLabel.toLowerCase() == term.toLowerCase();
+
+    // Pas de recherche active (champ vide ou = libellé déjà sélectionné) :
+    // comportement d'origine (favoris + suggestions = liste hors favoris).
+    if (term == "" || isSelectedLabel) {
+      this.suggestedLakes = this.allLakesExecptFavorites;
+      this.suggestedFavorites = this.favoriteLakes;
+      return;
+    }
+
+    // Favoris filtrés côté client (petite liste, pas d'appel serveur).
+    const lowered = term.toLowerCase();
+    this.suggestedFavorites = this.favoriteLakes.filter((lake) =>
+      lake.name.toString().toLowerCase().indexOf(lowered) >= 0);
+
+    // Moins de 2 caractères : on n'interroge pas le serveur.
+    if (term.trim().length < 2) {
+      this.suggestedLakes = [];
+      return;
+    }
+
+    // Recherche serveur (pg_trgm/unaccent, #7) debouncée 250 ms, avec garde
+    // anti-réponse obsolète : seule la réponse de la dernière frappe s'applique.
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
+    this.searchTimer = setTimeout(() => {
+      const seq = ++this.searchSeq;
+      ReferentialService.searchWaterEntities(term.trim())
+        .then((results) => {
+          if (seq === this.searchSeq) {
+            this.suggestedLakes = results;
+          }
+        })
+        .catch(() => { /* recherche en échec : on conserve l'état courant */ });
+    }, 250);
   }
 
   updateSearch(event: any) {

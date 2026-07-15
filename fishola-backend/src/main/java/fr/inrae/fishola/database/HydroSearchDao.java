@@ -25,7 +25,9 @@ import fr.inrae.fishola.rest.commune.CommuneResult;
 import fr.inrae.fishola.rest.commune.ImmutableCommuneResult;
 import fr.inrae.fishola.rest.hydro.ImmutableGeoPoint;
 import fr.inrae.fishola.rest.hydro.ImmutableNearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.ImmutableWaterEntitySearchResult;
 import fr.inrae.fishola.rest.hydro.NearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.WaterEntitySearchResult;
 import jakarta.inject.Singleton;
 import org.jooq.Record;
 
@@ -99,26 +101,67 @@ public class HydroSearchDao extends AbstractFisholaDao {
                 .map(HydroSearchDao::toNearby));
     }
 
-    // Communes whose name is trigram-similar to the query, best match first.
-    // The `%` operator uses the pg_trgm GIN index (V1.1.1) and tolerates typos.
-    // Bind order: query (WHERE), query (ORDER BY similarity), limit.
+    // Accent-insensitive, typo-tolerant name search: a substring match
+    // (ILIKE '%q%') OR a trigram-similar match (%), both on f_unaccent(name) so
+    // they use the functional GIN index (V1.1.2). Prefix matches rank first,
+    // then similarity. Bind order: q (ILIKE where), q (% where), q (prefix
+    // order), q (similarity order), limit.
     private static final String SEARCH_COMMUNES_SQL = ""
             + "SELECT insee_com, name, latitude, longitude "
             + "FROM commune "
-            + "WHERE name % ? "
-            + "ORDER BY similarity(name, ?) DESC, name "
+            + "WHERE f_unaccent(name) ILIKE '%' || f_unaccent(?) || '%' "
+            + "   OR f_unaccent(name) % f_unaccent(?) "
+            + "ORDER BY (f_unaccent(name) ILIKE f_unaccent(?) || '%') DESC, "
+            + "         similarity(f_unaccent(name), f_unaccent(?)) DESC, name "
             + "LIMIT ?";
 
     /**
-     * Communes matching the textual query, ordered by descending trigram
-     * similarity (typo-tolerant).
+     * Communes matching the textual query (accent-insensitive, typo-tolerant),
+     * prefix matches first then by descending trigram similarity.
      */
     public List<CommuneResult> searchCommunes(String query, int limit) {
+        String q = forSearch(query);
         return withContext(context -> context
-                .fetch(SEARCH_COMMUNES_SQL, query, query, limit)
+                .fetch(SEARCH_COMMUNES_SQL, q, q, q, q, limit)
                 .map(rec -> (CommuneResult) ImmutableCommuneResult.builder()
                         .insee(rec.get("insee_com", String.class))
                         .name(rec.get("name", String.class))
+                        .centroid(ImmutableGeoPoint.builder()
+                                .lat(rec.get("latitude", Double.class))
+                                .lng(rec.get("longitude", Double.class))
+                                .build())
+                        .build()));
+    }
+
+    // Water entity name search, accent-insensitive and typo-tolerant (same
+    // strategy as communes), with an optional kind filter and only entities that
+    // have a geometry (so a centroid is available). Bind order: q (ILIKE where),
+    // q (% where), kind, kind, q (prefix order), q (similarity order), limit.
+    private static final String SEARCH_ENTITIES_SQL = ""
+            + "SELECT id, name, kind::text AS kind, latitude, longitude "
+            + "FROM water_entity "
+            + "WHERE geom IS NOT NULL "
+            + "  AND (f_unaccent(name) ILIKE '%' || f_unaccent(?) || '%' "
+            + "       OR f_unaccent(name) % f_unaccent(?)) "
+            + "  AND (?::text IS NULL OR kind::text = ?) "
+            + "ORDER BY (f_unaccent(name) ILIKE f_unaccent(?) || '%') DESC, "
+            + "         similarity(f_unaccent(name), f_unaccent(?)) DESC, name "
+            + "LIMIT ?";
+
+    /**
+     * Water entities matching the textual query (accent-insensitive, typo-
+     * tolerant), optionally filtered by kind, prefix matches first then by
+     * descending trigram similarity.
+     */
+    public List<WaterEntitySearchResult> searchWaterEntities(String query, Optional<String> kind, int limit) {
+        String q = forSearch(query);
+        String kindFilter = kind.orElse(null);
+        return withContext(context -> context
+                .fetch(SEARCH_ENTITIES_SQL, q, q, kindFilter, kindFilter, q, q, limit)
+                .map(rec -> (WaterEntitySearchResult) ImmutableWaterEntitySearchResult.builder()
+                        .waterEntityId(rec.get("id", UUID.class))
+                        .name(rec.get("name", String.class))
+                        .kind(rec.get("kind", String.class))
                         .centroid(ImmutableGeoPoint.builder()
                                 .lat(rec.get("latitude", Double.class))
                                 .lng(rec.get("longitude", Double.class))
@@ -167,6 +210,12 @@ public class HydroSearchDao extends AbstractFisholaDao {
         return withContext(context -> context
                 .fetch(BY_COMMUNE_SQL, insee, bufferM, bufferM)
                 .map(HydroSearchDao::toNearby));
+    }
+
+    // Strips LIKE metacharacters (% _ \) from a user search term so it cannot
+    // inject ILIKE wildcards; entity / commune names never contain them.
+    private static String forSearch(String query) {
+        return query == null ? "" : query.replaceAll("[%_\\\\]", "");
     }
 
     // Shared mapping of a nearby/by-commune result row to the DTO.
