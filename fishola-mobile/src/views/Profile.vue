@@ -274,6 +274,16 @@ export default class ProfileView extends Vue {
   .rounded {
     padding-left: @margin-large;
     padding-right: @margin-large;
+    // Le conteneur scrollable (.pane-content) ne soustrait pas la hauteur du
+    // footer fixe : sans réserve, le dernier élément (« Supprimer mon compte »)
+    // reste sous le footer + le bouton flottant « Modifier », inaccessible au
+    // scroll. On dégage l'espace (mobile). Sur desktop le footer est masqué
+    // (`hide-on-desktop`) et la barre de boutons est dans le flux → pas besoin.
+    padding-bottom: calc(@footer-height + @margin-large);
+
+    @media screen and (min-width: @desktop-min-width) {
+      padding-bottom: @margin-large;
+    }
   }
 
   .safe-delete-button {
