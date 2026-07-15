@@ -78,7 +78,7 @@
         </span>
       </div>
 
-      <LakesMap
+      <MapLibreMap
         v-show="displayMap"
         :isVisible="displayMap"
         :lakes="allLakesExecptFavorites"
@@ -94,12 +94,12 @@
 
 import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import LakesMap from "@/components/common/LakesMap.vue";
+import MapLibreMap from "@/components/common/MapLibreMap.vue";
 import ReferentialService from '@/services/ReferentialService';
 
 @Component({
   components: {
-    LakesMap,
+    MapLibreMap,
   },
 })
 export default class LakeSelection extends Vue {
@@ -224,7 +224,9 @@ export default class LakeSelection extends Vue {
     let filteredItem = this.allLakes.filter((l) => {
       return l.id === id;
     });
-    if (filteredItem.length == 1 ? filteredItem[0].name : '') {
+    // Sélection valable dès qu'une entité correspond à l'id (tapé sur la carte
+    // ou choisi ailleurs) — on ne conditionne plus à un name non vide.
+    if (filteredItem.length === 1) {
       this.selectLake(filteredItem[0]);
       if (!this.allowMultipleSelection) {
         this.displayMap = false;

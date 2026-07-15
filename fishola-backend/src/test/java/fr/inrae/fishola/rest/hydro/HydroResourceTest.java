@@ -306,6 +306,63 @@ class HydroResourceTest extends AbstractFisholaTest {
                 .then().statusCode(400);
     }
 
+    @Test
+    void hydroTileContainsFeaturesOverFier() {
+        // La tuile couvrant le Fier doit être non vide (2 layers ST_AsMVT).
+        int z = 12;
+        int x = lon2tileX(6.101, z);
+        int y = lat2tileY(45.9025, z);
+        byte[] body = given()
+                .when().get("/api/v1/tiles/hydro/" + z + "/" + x + "/" + y + ".pbf")
+                .then().statusCode(200)
+                .extract().body().asByteArray();
+        assertTrue(body.length > 0, "tuile non vide attendue au-dessus du Fier");
+    }
+
+    @Test
+    void hydroTileEmptyFarFromFeatures() {
+        // Une tuile hors de toute géométrie renvoie 200 + corps vide.
+        byte[] body = given()
+                .when().get("/api/v1/tiles/hydro/12/0/0.pbf")
+                .then().statusCode(200)
+                .extract().body().asByteArray();
+        assertEquals(0, body.length, "tuile vide attendue hors emprise");
+    }
+
+    @Test
+    void hydroTileNotModifiedWithEtag() {
+        // AC5 : seconde requête avec l'ETag -> 304.
+        int z = 12;
+        int x = lon2tileX(6.101, z);
+        int y = lat2tileY(45.9025, z);
+        String path = "/api/v1/tiles/hydro/" + z + "/" + x + "/" + y + ".pbf";
+        String etag = given().when().get(path)
+                .then().statusCode(200).extract().header("ETag");
+        given().header("If-None-Match", etag)
+                .when().get(path)
+                .then().statusCode(304);
+    }
+
+    @Test
+    void hydroTileEmptyBelowMinZoom() {
+        // Sous le zoom minimum, tuile vide renvoyée sans requête (garde perf/DoS).
+        byte[] body = given()
+                .when().get("/api/v1/tiles/hydro/5/16/11.pbf")
+                .then().statusCode(200)
+                .extract().body().asByteArray();
+        assertEquals(0, body.length, "tuile vide attendue sous le zoom minimum");
+    }
+
+    private static int lon2tileX(double lon, int z) {
+        return (int) Math.floor((lon + 180.0) / 360.0 * (1 << z));
+    }
+
+    private static int lat2tileY(double lat, int z) {
+        double latRad = Math.toRadians(lat);
+        return (int) Math.floor(
+                (1.0 - Math.log(Math.tan(latRad) + 1.0 / Math.cos(latRad)) / Math.PI) / 2.0 * (1 << z));
+    }
+
     private static int indexOfName(List<Map<String, Object>> items, String name) {
         for (int i = 0; i < items.size(); i++) {
             if (name.equals(items.get(i).get("name"))) {

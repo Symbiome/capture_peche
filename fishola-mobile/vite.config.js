@@ -82,6 +82,9 @@ export default defineConfig( ({mode}) => {
             if (id.includes("leaflet")) {
               return "leaflet";
             }
+            if (id.includes("maplibre-gl")) {
+              return "maplibre";
+            }
             if (id.includes("canvas")) {
               return "canvas";
             }
