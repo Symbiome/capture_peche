@@ -140,15 +140,66 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // have a geometry (so a centroid is available). Bind order: q (ILIKE where),
     // q (% where), kind, kind, q (prefix order), q (similarity order), limit.
     private static final String SEARCH_ENTITIES_SQL = ""
-            + "SELECT id, name, kind::text AS kind, latitude, longitude "
-            + "FROM water_entity "
-            + "WHERE geom IS NOT NULL "
-            + "  AND (f_unaccent(name) ILIKE '%' || f_unaccent(?) || '%' "
-            + "       OR f_unaccent(name) % f_unaccent(?)) "
-            + "  AND (?::text IS NULL OR kind::text = ?) "
-            + "ORDER BY (f_unaccent(name) ILIKE f_unaccent(?) || '%') DESC, "
-            + "         similarity(f_unaccent(name), f_unaccent(?)) DESC, name "
+            + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "FROM water_entity we "
+            // Commune contenant le centroïde de l'entité (#6/#15, désambiguïsation
+            // des homonymes) ; NULL si le référentiel commune ne couvre pas la zone.
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT c.name, c.code_postal FROM commune c "
+            + "  WHERE ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
+            + "WHERE we.geom IS NOT NULL "
+            + "  AND (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
+            + "       OR f_unaccent(we.name) % f_unaccent(?)) "
+            + "  AND (?::text IS NULL OR we.kind::text = ?) "
+            + "ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(?) || '%') DESC, "
+            + "         similarity(f_unaccent(we.name), f_unaccent(?)) DESC, we.name "
             + "LIMIT ?";
+
+    // Résolution commune/CP d'une entité par son id (#15, « résolution
+    // universelle »). Même LATERAL join que la recherche, mais ciblé sur un id :
+    // sert à afficher la commune quand l'entité est choisie hors recherche
+    // (tap carte, mode liste). On exige lat/lng non nuls (centroïde requis par
+    // le bean, et une entité tapable/proche a toujours une géométrie).
+    private static final String FIND_BY_ID_SQL = ""
+            + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "FROM water_entity we "
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT c.name, c.code_postal FROM commune c "
+            + "  WHERE ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
+            + "WHERE we.id = ? "
+            + "  AND we.latitude IS NOT NULL AND we.longitude IS NOT NULL "
+            + "LIMIT 1";
+
+    /**
+     * Resolves a single water entity by id, enriched with its commune and postal
+     * code (#15). Empty if the id is unknown or the entity has no centroid.
+     */
+    public Optional<WaterEntitySearchResult> findById(UUID id) {
+        return withContext(context -> context
+                .fetch(FIND_BY_ID_SQL, id)
+                .map(HydroSearchDao::toSearchResult))
+                .stream().findFirst();
+    }
+
+    private static WaterEntitySearchResult toSearchResult(Record rec) {
+        return ImmutableWaterEntitySearchResult.builder()
+                .waterEntityId(rec.get("id", UUID.class))
+                .name(rec.get("name", String.class))
+                .kind(rec.get("kind", String.class))
+                .centroid(ImmutableGeoPoint.builder()
+                        .lat(rec.get("latitude", Double.class))
+                        .lng(rec.get("longitude", Double.class))
+                        .build())
+                .commune(Optional.ofNullable(rec.get("commune", String.class)))
+                .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
+                .build();
+    }
 
     /**
      * Water entities matching the textual query (accent-insensitive, typo-
@@ -168,6 +219,8 @@ public class HydroSearchDao extends AbstractFisholaDao {
                                 .lat(rec.get("latitude", Double.class))
                                 .lng(rec.get("longitude", Double.class))
                                 .build())
+                        .commune(Optional.ofNullable(rec.get("commune", String.class)))
+                        .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
                         .build()));
     }
 

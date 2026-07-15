@@ -46,21 +46,20 @@ export default class GeolocationService extends AbstractFisholaService {
   static canUsePosition(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       Device.getInfo().then((device: DeviceInfo) => {
-        const isNotSecured: boolean =
-          device.platform == "web" && window.location.protocol == "http:";
-        const isDesktopBrowser: boolean =
-          device.platform == "web" &&
-          device.operatingSystem != "android" &&
-          device.operatingSystem != "ios";
+        // L'API Geolocation du navigateur exige un contexte sécurisé : HTTPS,
+        // ou localhost/127.0.0.1 que les navigateurs traitent comme sûr.
+        // `window.isSecureContext` couvre exactement ces cas (#16). Sur natif
+        // (iOS/Android) la question ne se pose pas.
+        const isSecure: boolean =
+          device.platform != "web" ||
+          (typeof window !== "undefined" && window.isSecureContext);
 
-        console.info("isNotSecured", isNotSecured);
-        console.info("isDesktopBrowser", isDesktopBrowser);
-        console.info("device", device);
-
-        if (isNotSecured) {
+        // On ne bloque plus les navigateurs desktop (#16) : la géolocalisation
+        // y est disponible (moins précise — IP/Wi-Fi), et c'est à l'utilisateur
+        // d'autoriser via la permission navigateur. En cas de refus/échec, les
+        // appelants gèrent déjà le rejet (message dédié).
+        if (!isSecure) {
           reject("Pas de Geolocation hors contexte sécurisé");
-        } else if (isDesktopBrowser) {
-          reject("Pas de Geolocation sans smartphone");
         } else {
           resolve();
         }

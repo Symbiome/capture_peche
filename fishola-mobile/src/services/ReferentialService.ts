@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse} from '@/pojos/BackendPojos';
+import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export class LakesAndTripTypes {
@@ -83,6 +83,9 @@ export default class ReferentialService extends AbstractFisholaService {
         kind: r.kind,
         latitude: r.centroid ? r.centroid.lat : undefined,
         longitude: r.centroid ? r.centroid.lng : undefined,
+        // Commune + code postal (#6/#15) — désambiguïsation dans l'autocomplete.
+        commune: r.commune,
+        codePostal: r.codePostal,
         exportAs: r.name,
         waterEntityCode: "",
         nature: "",
@@ -92,9 +95,51 @@ export default class ReferentialService extends AbstractFisholaService {
       } as unknown as Lake)));
   }
 
+  // Entités hydro autour d'un point, triées par distance (#5). Alimente le mode
+  // liste « autour de moi » : géoloc/pin → tri par distance, filtre kind,
+  // pagination. Le tri est fait côté serveur (PostGIS ST_DWithin + ORDER BY dist).
+  static getNearby(
+    lat: number,
+    lng: number,
+    radiusM = 2000,
+    kind?: string,
+    pageNumber = 0,
+    pageSize = 20
+  ): Promise<NearbyWaterEntity[]> {
+    let url = `/v1/waterEntities/nearby?lat=${lat}&lng=${lng}`
+      + `&radiusM=${radiusM}&pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    if (kind) {
+      url += `&kind=${encodeURIComponent(kind)}`;
+    }
+    return this.backendGet(url).then((results: any[]) => results || []);
+  }
+
+  // Résout la commune + code postal d'une entité par son id (#15). Utilisé
+  // quand l'entité est choisie hors recherche (tap carte, mode liste) : les
+  // objets du référentiel complet ne portent pas la commune. Silencieux en cas
+  // de 404 / hors-ligne (on n'affiche simplement pas la commune).
+  static getWaterEntityCommune(
+    id: string
+  ): Promise<{ commune?: string; codePostal?: string } | null> {
+    return this.backendGet(`/v1/waterEntities/${encodeURIComponent(id)}`)
+      .then((r: any) => (r ? { commune: r.commune, codePostal: r.codePostal } : null))
+      .catch(() => null);
+  }
+
   // Recherche serveur des communes (référentiel ADMIN EXPRESS, #6).
   static searchCommunes(q: string): Promise<any[]> {
     return this.backendGet(`/v1/communes/search?q=${encodeURIComponent(q)}`);
+  }
+
+  // Entités hydro d'une commune (ou dans un buffer de sa limite), triées par
+  // distance au centroïde communal (#6). Alimente la recherche « par commune ».
+  static getWaterEntitiesByCommune(
+    insee: string,
+    bufferM = 500
+  ): Promise<NearbyWaterEntity[]> {
+    return this.backendGet(
+      `/v1/waterEntities/byCommune?insee=${encodeURIComponent(insee)}&bufferM=${bufferM}`
+    ).then((results: any[]) => results || []);
   }
 
   // Proposition d'attribution hydro d'un point (#9) : entité la plus proche +

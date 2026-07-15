@@ -29,6 +29,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -37,6 +38,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Spatial endpoints over the hydrographic network (water entities, river
@@ -175,5 +177,25 @@ public class HydroResource extends AbstractFisholaResource {
                 .alternatives(candidates.stream().skip(1).toList())
                 .build();
         return wrapEntity(response, userIdAndRenewal);
+    }
+
+    /**
+     * Resolves a single water entity by id, enriched with commune and postal
+     * code (#15). Lets the mobile show the commune/CP when the entity is chosen
+     * outside textual search (map tap, "around me" list), where the referential
+     * objects carry no commune. 404 if the id is unknown. Authenticated.
+     *
+     * <p>Declared last and with a UUID-typed path param so it never shadows the
+     * literal sub-paths above (/nearby, /search…).
+     */
+    @GET
+    @Path("/{id}")
+    public Response getById(@PathParam("id") UUID id) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+
+        Optional<WaterEntitySearchResult> entity = hydroSearchDao.findById(id);
+        return entity
+                .map(e -> wrapEntity(e, userIdAndRenewal))
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 }
