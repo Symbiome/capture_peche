@@ -54,6 +54,7 @@ public class HydroResource extends AbstractFisholaResource {
     // Bounds pageNumber so pageNumber * pageSize cannot overflow int (which would
     // yield a negative OFFSET rejected by PostgreSQL → 500 instead of 400).
     private static final int MAX_PAGE_NUMBER = 10000;
+    private static final int MAX_SEARCH_LIMIT = 50;
 
     @Inject
     protected HydroSearchDao hydroSearchDao;
@@ -115,6 +116,34 @@ public class HydroResource extends AbstractFisholaResource {
 
         List<NearbyWaterEntity> result =
                 hydroSearchDao.findWaterEntitiesByCommune(insee.trim(), bufferM);
+        return wrapEntity(result, userIdAndRenewal);
+    }
+
+    /**
+     * Water entities matching a textual query (accent-insensitive, typo-
+     * tolerant), for the mobile autocomplete. Authenticated.
+     */
+    @GET
+    @Path("/search")
+    public Response search(@QueryParam("q") String q,
+                           @QueryParam("kind") String kind,
+                           @QueryParam("limit") @DefaultValue("15") int limit) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+
+        Preconditions.checkArgument(q != null && q.trim().length() >= 2,
+                "Le paramètre q doit contenir au moins 2 caractères.");
+        Preconditions.checkArgument(limit > 0 && limit <= MAX_SEARCH_LIMIT,
+                "limit doit être dans l'intervalle [1, " + MAX_SEARCH_LIMIT + "].");
+
+        Optional<String> kindFilter = Optional.ofNullable(kind)
+                .map(k -> k.trim().toUpperCase(Locale.ROOT))
+                .filter(k -> !k.isEmpty());
+        kindFilter.ifPresent(k -> Preconditions.checkArgument(
+                k.equals("STILL") || k.equals("FLOWING"),
+                "kind doit valoir STILL ou FLOWING."));
+
+        List<WaterEntitySearchResult> result =
+                hydroSearchDao.searchWaterEntities(q.trim(), kindFilter, limit);
         return wrapEntity(result, userIdAndRenewal);
     }
 }

@@ -256,6 +256,13 @@ export interface GeoPoint {
     lng: number;
 }
 
+export interface WaterEntitySearchResult {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    centroid: GeoPoint;
+}
+
 export interface CommuneResult {
     insee: string;
     name: string;

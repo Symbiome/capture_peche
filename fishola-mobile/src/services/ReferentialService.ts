@@ -70,6 +70,33 @@ export default class ReferentialService extends AbstractFisholaService {
     });
   }
 
+  // Recherche serveur des entités hydro (insensible casse/accents, tolérante aux
+  // fautes) — remplace le filtrage en mémoire de la liste complète. Les résultats
+  // sont normalisés en Lake (= WaterEntity) pour rester compatibles avec les
+  // consommateurs existants ; seuls id/name/kind/latitude/longitude sont
+  // renseignés (le centroïde sert au centrage carte).
+  static searchWaterEntities(q: string): Promise<Lake[]> {
+    return this.backendGet(`/v1/waterEntities/search?q=${encodeURIComponent(q)}`)
+      .then((results: any[]) => (results || []).map((r) => ({
+        id: r.waterEntityId,
+        name: r.name,
+        kind: r.kind,
+        latitude: r.centroid ? r.centroid.lat : undefined,
+        longitude: r.centroid ? r.centroid.lng : undefined,
+        exportAs: r.name,
+        waterEntityCode: "",
+        nature: "",
+        altitudeMoyenne: 0,
+        bdtopoCleabs: "",
+        geom: "",
+      } as unknown as Lake)));
+  }
+
+  // Recherche serveur des communes (référentiel ADMIN EXPRESS, #6).
+  static searchCommunes(q: string): Promise<any[]> {
+    return this.backendGet(`/v1/communes/search?q=${encodeURIComponent(q)}`);
+  }
+
   static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {
     return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
       this.backendGet("/v1/referential/species-per-waterEntity").then((map) => {

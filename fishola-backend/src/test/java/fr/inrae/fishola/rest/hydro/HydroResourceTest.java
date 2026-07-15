@@ -126,6 +126,11 @@ class HydroResourceTest extends AbstractFisholaTest {
                 + "VALUES ('99999', 'Annecy', "
                 + "ST_SetSRID(ST_GeomFromText('MULTIPOLYGON(((6.098 45.898,6.106 45.898,6.106 45.907,6.098 45.907,6.098 45.898)))'), 4326)) "
                 + "ON CONFLICT DO NOTHING");
+
+        // Entité au nom accentué, pour la recherche insensible aux accents (#7).
+        ctx.execute("INSERT INTO water_entity (name, kind, geom, water_entity_code, export_as) "
+                + "VALUES ('IT Léman', 'STILL', ST_SetSRID(ST_GeomFromText('POINT(6.2 46.4)'), 4326), "
+                + "'IT_LEMAN', 'IT Léman') ON CONFLICT DO NOTHING");
     }
 
     @AfterAll
@@ -263,6 +268,42 @@ class HydroResourceTest extends AbstractFisholaTest {
 
         assertTrue(items.size() >= 1, "au moins une commune attendue");
         assertEquals("Annecy", items.get(0).get("name"));
+    }
+
+    @Test
+    void searchFindsEntityBySubstring() {
+        // AC1: recherche par sous-chaîne du nom.
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "fier")
+                .when().get("/api/v1/waterEntities/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        assertTrue(indexOfName(items, "IT Fier") >= 0, "IT Fier attendu pour q=fier");
+    }
+
+    @Test
+    void searchIsAccentInsensitive() {
+        // AC2: 'leman' (sans accent) doit retrouver 'IT Léman'.
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "leman")
+                .when().get("/api/v1/waterEntities/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        assertTrue(indexOfName(items, "IT Léman") >= 0, "IT Léman attendu pour q=leman (unaccent)");
+    }
+
+    @Test
+    void searchRejectsShortQuery() {
+        // AC3: q d'un seul caractère -> 400.
+        given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "a")
+                .when().get("/api/v1/waterEntities/search")
+                .then().statusCode(400);
     }
 
     private static int indexOfName(List<Map<String, Object>> items, String name) {
