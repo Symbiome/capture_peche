@@ -46,7 +46,7 @@ loadLakes();
 async function loadLakes() {
   const admin = await BackendService.backendGet("/v1/admin/check");
   canCreateAdmins.value = admin.isNationalAdmin || admin.canCreateAdmins;
-  const lakes = await BackendService.backendGet("/v1/referential/lakes");
+  const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
   const lakesOptions: any[] = [];
   lakes.forEach((l: any) => {
     lakesOptions.push({

@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState} from '@/pojos/BackendPojos';
+import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export class LakesAndTripTypes {
@@ -51,11 +51,11 @@ export default class ReferentialService extends AbstractFisholaService {
   }
 
   static getLakes(): Promise<Lake[]> {
-    return this.backendGetWithCache("/v1/referential/lakes");
+    return this.backendGetWithCache("/v1/referential/waterEntities");
   }
 
   static getFavoriteLakes(): Promise<Lake[]> {
-    return this.backendGetWithCache("/v1/referential/lakes/favorites");
+    return this.backendGetWithCache("/v1/referential/waterEntities/favorites");
   }
 
   static getLakesIndex(): Promise<Map<string, Lake>> {
@@ -72,7 +72,7 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {
     return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-      this.backendGet("/v1/referential/species-per-lake").then((map) => {
+      this.backendGet("/v1/referential/species-per-waterEntity").then((map) => {
         const someMap = new Map<string, SpeciesWithAlias[]>();
         const lakeIds: string[] = Object.keys(map);
         lakeIds.forEach((lakeId) => {
@@ -300,8 +300,8 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static prepareCaches(): Promise<void> {
     const allPromises: Promise<void>[] = [
-      this.prepareCache("/v1/referential/lakes"),
-      this.prepareCache("/v1/referential/species-per-lake"),
+      this.prepareCache("/v1/referential/waterEntities"),
+      this.prepareCache("/v1/referential/species-per-waterEntity"),
       this.prepareCache("/v1/referential/species"),
       this.prepareCache("/v1/referential/species-custom"),
       this.prepareCache("/v1/referential/weathers"),

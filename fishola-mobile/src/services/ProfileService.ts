@@ -21,7 +21,7 @@
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
-import { UserSettings, UpdatePasswordBean, Lake } from "@/pojos/BackendPojos";
+import { UserSettings, UpdatePasswordBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
 import ReferentialService from "./ReferentialService";
 

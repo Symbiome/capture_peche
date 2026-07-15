@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 

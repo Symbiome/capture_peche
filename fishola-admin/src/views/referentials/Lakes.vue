@@ -22,7 +22,7 @@
   <div class="lakes">
     <Referential
       name="Plans d'eau"
-      url="/v1/referential/lakes"
+      url="/v1/referential/waterEntities"
       :editable="isNationalAdmin"
       :columns="lakeColumns"
       :createElement=createLake

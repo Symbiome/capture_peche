@@ -156,7 +156,7 @@ const lakes: Ref<Lake[]> = ref([]);
 const Toast = useToast();
 
 onMounted(async () => {
-  lakes.value = await BackendService.backendGet("/v1/referential/lakes");
+  lakes.value = await BackendService.backendGet("/v1/referential/waterEntities");
 
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");

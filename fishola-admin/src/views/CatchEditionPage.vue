@@ -260,7 +260,7 @@ async function loadCatch() {
     techniques.forEach((technique: { id: string; name: string }) => {
       techniquesIdMap.set(technique.id, technique.name);
     });
-    const lakes = await BackendService.backendGet("/v1/referential/lakes");
+    const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
     lakes.forEach((lake: { id: string; name: string }) => {
       lakesIdMap.set(lake.id, lake.name);
     });

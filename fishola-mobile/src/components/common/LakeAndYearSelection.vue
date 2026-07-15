@@ -49,7 +49,7 @@
 
 <script lang="ts">
 
-import { Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 

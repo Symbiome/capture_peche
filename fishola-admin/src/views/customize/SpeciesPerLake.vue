@@ -116,9 +116,9 @@ const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = 5;
 
 Promise.all([
-  BackendService.backendGet("/v1/referential/lakes"),
+  BackendService.backendGet("/v1/referential/waterEntities"),
   BackendService.backendGet("/v1/referential/species"),
-  BackendService.backendGet("/v1/referential/species-per-lake"),
+  BackendService.backendGet("/v1/referential/species-per-waterEntity"),
 ]).then((data) => {
   lakes.value = data[0];
   species.value = data[1];
