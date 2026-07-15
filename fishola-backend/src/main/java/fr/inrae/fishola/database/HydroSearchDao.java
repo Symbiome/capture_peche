@@ -21,6 +21,8 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
+import fr.inrae.fishola.rest.commune.CommuneResult;
+import fr.inrae.fishola.rest.commune.ImmutableCommuneResult;
 import fr.inrae.fishola.rest.hydro.ImmutableGeoPoint;
 import fr.inrae.fishola.rest.hydro.ImmutableNearbyWaterEntity;
 import fr.inrae.fishola.rest.hydro.NearbyWaterEntity;
@@ -94,6 +96,76 @@ public class HydroSearchDao extends AbstractFisholaDao {
         String kindFilter = kind.orElse(null);
         return withContext(context -> context
                 .fetch(NEARBY_SQL, lng, lat, radiusM, radiusM, kindFilter, kindFilter, limit, offset)
+                .map(HydroSearchDao::toNearby));
+    }
+
+    // Communes whose name is trigram-similar to the query, best match first.
+    // The `%` operator uses the pg_trgm GIN index (V1.1.1) and tolerates typos.
+    // Bind order: query (WHERE), query (ORDER BY similarity), limit.
+    private static final String SEARCH_COMMUNES_SQL = ""
+            + "SELECT insee_com, name, latitude, longitude "
+            + "FROM commune "
+            + "WHERE name % ? "
+            + "ORDER BY similarity(name, ?) DESC, name "
+            + "LIMIT ?";
+
+    /**
+     * Communes matching the textual query, ordered by descending trigram
+     * similarity (typo-tolerant).
+     */
+    public List<CommuneResult> searchCommunes(String query, int limit) {
+        return withContext(context -> context
+                .fetch(SEARCH_COMMUNES_SQL, query, query, limit)
+                .map(rec -> (CommuneResult) ImmutableCommuneResult.builder()
+                        .insee(rec.get("insee_com", String.class))
+                        .name(rec.get("name", String.class))
+                        .centroid(ImmutableGeoPoint.builder()
+                                .lat(rec.get("latitude", Double.class))
+                                .lng(rec.get("longitude", Double.class))
+                                .build())
+                        .build()));
+    }
+
+    // Water entities intersecting a commune (or within `bufferM` of its boundary,
+    // for anglers near the commune edge), closest section/surface per entity,
+    // distance/closest point computed against the commune centroid for ordering.
+    // Bind order: insee, bufferM (river), bufferM (surface).
+    private static final String BY_COMMUNE_SQL = ""
+            + "WITH c AS (SELECT geom, ST_Centroid(geom) AS ctr FROM commune WHERE insee_com = ?), "
+            + "candidates AS ( "
+            + "  SELECT rs.water_entity_id AS weid, "
+            + "         ST_Distance(rs.geom::geography, c.ctr::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, c.ctr) AS cp, "
+            + "         rs.persistent AS persistent "
+            + "  FROM river_section rs, c "
+            + "  WHERE ST_DWithin(rs.geom::geography, c.geom::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT ws.water_entity_id, "
+            + "         ST_Distance(ws.geom::geography, c.ctr::geography), "
+            + "         ST_ClosestPoint(ws.geom, c.ctr), "
+            + "         NULL::boolean "
+            + "  FROM water_surface ws, c "
+            + "  WHERE ST_DWithin(ws.geom::geography, c.geom::geography, ?) "
+            + "), "
+            + "ranked AS ( "
+            + "  SELECT DISTINCT ON (weid) weid, dist, "
+            + "         ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, persistent "
+            + "  FROM candidates WHERE weid IS NOT NULL "
+            + "  ORDER BY weid, dist "
+            + ") "
+            + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
+            + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
+            + "       r.persistent AS persistent "
+            + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            + "ORDER BY r.dist";
+
+    /**
+     * Water entities located in (or within {@code bufferM} of) the commune
+     * identified by its INSEE code, ordered by distance to the commune centroid.
+     */
+    public List<NearbyWaterEntity> findWaterEntitiesByCommune(String insee, double bufferM) {
+        return withContext(context -> context
+                .fetch(BY_COMMUNE_SQL, insee, bufferM, bufferM)
                 .map(HydroSearchDao::toNearby));
     }
 
