@@ -27,8 +27,8 @@
           <h1 class="no-margin-pane">Communauté
             <LakeAndYearSelection 
                 :showYears="false"
-                @lake-and-year="selectedLakeUUID = $event.lake"
-                @lake="selectedLakeUUID = $event"
+                @lake-and-year="selectedLakeId = $event.lake"
+                @lake="selectedLakeId = $event"
               />
           </h1>
 
@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="padding-content">
-            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeUUID" />
+            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeId" />
             <NewsView :news="news" v-else />
           </div>
         </div>
@@ -90,7 +90,7 @@ export default class SocialAndNewsView extends Vue {
   unreadNewsCountForCurrentLake = 0;
   unreadNewsCountPerLake: Map<string, number> = new Map();
   hasRunningTrip = false;
-  selectedLakeUUID = "";
+  selectedLakeId = "";
   news: NewsBean[] = [];
 
   created() {
@@ -100,15 +100,15 @@ export default class SocialAndNewsView extends Vue {
   }
 
 
-  @Watch("selectedLakeUUID")
+  @Watch("selectedLakeId")
   async updateUnreadNewsCount() {
     try {
       this.unreadNewsCountForCurrentLake = 0;
-      this.news = await DocumentationService.getNews(this.selectedLakeUUID);
+      this.news = await DocumentationService.getNews(this.selectedLakeId);
 
       // Get last news seen date from local storage and profile
       let lastNewsSeenDateForLake = undefined;
-      const lastLocalStorageDateString = localStorage.getItem("last_news_seen_" + this.selectedLakeUUID);
+      const lastLocalStorageDateString = localStorage.getItem("last_news_seen_" + this.selectedLakeId);
       if (lastLocalStorageDateString) {
         lastNewsSeenDateForLake = new Date(lastLocalStorageDateString);
       }
@@ -137,7 +137,7 @@ export default class SocialAndNewsView extends Vue {
         }
         return (lastNewsSeenDateForLake ? newsDate > lastNewsSeenDateForLake : true);
       }).length;
-      this.unreadNewsCountPerLake.set(this.selectedLakeUUID, this.unreadNewsCountForCurrentLake);
+      this.unreadNewsCountPerLake.set(this.selectedLakeId, this.unreadNewsCountForCurrentLake);
       
     } catch (e) {
       // News section will be left empty
@@ -152,8 +152,8 @@ export default class SocialAndNewsView extends Vue {
 
   async showNewsTab() {
     this.changeVisualizationMode('news');
-    localStorage.setItem("last_news_seen_" + this.selectedLakeUUID, new Date().toISOString());
-    if (this.unreadNewsCountPerLake.get(this.selectedLakeUUID) ?? 0 > 0) {
+    localStorage.setItem("last_news_seen_" + this.selectedLakeId, new Date().toISOString());
+    if (this.unreadNewsCountPerLake.get(this.selectedLakeId) ?? 0 > 0) {
       try {
         let profile = await ProfileService.getProfile();
         profile.lastNewsSeenDate = new Date();

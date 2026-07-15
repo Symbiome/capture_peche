@@ -216,7 +216,7 @@ export default class TripSummaryView extends Vue {
         name: "galery",
         params: {
           selectedDefaultPic: "",
-          selectedLakeUUIDProp: this.lakeFilter,
+          selectedLakeIdProp: this.lakeFilter,
         },
       });
     } else {

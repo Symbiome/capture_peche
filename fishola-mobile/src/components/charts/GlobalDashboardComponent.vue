@@ -40,7 +40,7 @@
           <span class="hide-if-small">par espèce</span> (cm)
         </h2>
         <MaillageLegend
-          :selectedLakeUUID="selectedLakeUUID"
+          :selectedLakeId="selectedLakeId"
           :maillages="maillages"
         />
       </div>
@@ -100,7 +100,7 @@ export default class GlobalDashboardComponent extends Vue {
 
   @Prop() dashboardData: GlobalDashboardAndSpecies;
   @Prop({ default: false }) showUpdateHour: boolean;
-  @Prop() selectedLakeUUID: string;
+  @Prop() selectedLakeId: string;
 
   maillages: Maillage[] = [];
 

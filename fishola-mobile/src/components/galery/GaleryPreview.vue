@@ -58,14 +58,14 @@ export default class GaleryPreview extends Vue {
   @Prop() lakeName: string;
   @Prop() date: Date;
   @Prop() pictureSrc: string;
-  @Prop() selectedLakeUUID: string;
+  @Prop() selectedLakeId: string;
 
   openGallery(pictureSrc: string) {
     RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "galery",
       params: {
         selectedDefaultPic: pictureSrc,
-        selectedLakeUUIDProp: this.selectedLakeUUID,
+        selectedLakeIdProp: this.selectedLakeId,
       },
     });
   }

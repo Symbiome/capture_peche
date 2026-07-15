@@ -51,12 +51,12 @@
                 <select
                   class="lake-gallery-select"
                   placeholder="lake"
-                  v-model="selectedLakeUUID"
+                  v-model="selectedLakeId"
                 >
                   <option
                     v-for="lake in lakes"
                     :value="lake.id"
-                    :key="lake.uuid"
+                    :key="lake.id"
                   >
                     {{ lake.name }}
                   </option>
@@ -180,12 +180,12 @@ import PictureModal from "../trip/PictureModal.vue";
 })
 export default class GaleryFull extends Vue {
   @Prop() selectedDefaultPic: string;
-  @Prop({ default: "" }) selectedLakeUUIDProp: string;
+  @Prop({ default: "" }) selectedLakeIdProp: string;
   allPicsPerYear: Map<number, PicturePerTripBean> = new Map();
   years: string[] = [];
   lakes: Lake[] = [];
   tripPics = [];
-  selectedLakeUUID = "";
+  selectedLakeId = "";
   tripDate = "";
   tripLake = "";
   tripTitle = "";
@@ -201,7 +201,7 @@ export default class GaleryFull extends Vue {
   async reload(useSelectedDefaultPic: boolean) {
     this.loading = true;
     await this.loadLakes();
-    this.selectedLakeUUID = this.selectedLakeUUIDProp;
+    this.selectedLakeId = this.selectedLakeIdProp;
     await this.loadFullGaleryAndSelectCorrectPic();
     if (useSelectedDefaultPic && this.selectedDefaultPic) {
       this.selectedPic = this.selectedDefaultPic;
@@ -214,7 +214,7 @@ export default class GaleryFull extends Vue {
     }
   }
 
-  @Watch("selectedLakeUUID")
+  @Watch("selectedLakeId")
   selectedLakeChanged(): void {
     this.selectedPic = "";
     this.loadFullGaleryAndSelectCorrectPic();
@@ -265,7 +265,7 @@ export default class GaleryFull extends Vue {
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
     try {
       this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
-        this.selectedLakeUUID
+        this.selectedLakeId
       );
       this.years = Object.keys(this.allPicsPerYear).reverse();
       if (
@@ -324,7 +324,7 @@ export default class GaleryFull extends Vue {
       params: {
         id: tripId,
         fromGallery: "true",
-        lakeFilter: this.selectedLakeUUID,
+        lakeFilter: this.selectedLakeId,
       },
     });
   }

@@ -20,9 +20,9 @@
   -->
 <template>
     <div class="selects-holder">
-        <select placeholder="lake" v-model="selectedLakeUUID">
+        <select placeholder="lake" v-model="selectedLakeId">
             <optgroup label="Plans d'eau favoris" v-if="favoriteLakes.length">
-              <option v-for="lake in favoriteLakes" :value="lake.id" :key="lake.uuid">
+              <option v-for="lake in favoriteLakes" :value="lake.id" :key="lake.id">
                   {{ lake.name }}
               </option>
             </optgroup>
@@ -34,7 +34,7 @@
               v-if="displayAllOtherLakes"
               :label="favoriteLakes.length ? 'Plans d\'eau' : 'Autres plans d\'eau'"
             >
-              <option v-for="lake in lakes" :value="lake.id" :key="lake.uuid">
+              <option v-for="lake in lakes" :value="lake.id" :key="lake.id">
                   {{ lake.name }}
               </option>
             </optgroup>
@@ -62,7 +62,7 @@ export default class LakeAndYearSelection extends Vue {
   @Prop() showYears: boolean;
 
   selectedYear = 0;
-  selectedLakeUUID = "";
+  selectedLakeId = "";
   lakes: Lake[] = [];
   favoriteLakes: Lake[] = [];
   doneLoading = false;
@@ -97,23 +97,23 @@ export default class LakeAndYearSelection extends Vue {
     }
     const query = this.$route.query;
     if (query.lakeId) {
-      this.selectedLakeUUID = query.lakeId as string;
+      this.selectedLakeId = query.lakeId as string;
     } else {
       if (localStorage && localStorage.latestSelectedLakeUUID && localStorage.latestSelectedLakeUUID != "all") {
         if (this.lakes.concat(this.favoriteLakes).some(l => l.id === localStorage.latestSelectedLakeUUID)) {
-          this.selectedLakeUUID = localStorage.latestSelectedLakeUUID
+          this.selectedLakeId = localStorage.latestSelectedLakeUUID
         } else {
-          this.selectedLakeUUID = this.lakes[0].id;
+          this.selectedLakeId = this.lakes[0].id;
         }
       } else if (this.lakes && this.lakes.length > 0) {
-          this.selectedLakeUUID = this.lakes[0].id;
+          this.selectedLakeId = this.lakes[0].id;
       }
     }
     this.displayAllOtherLakes =
       this.favoriteLakes.length == 0
-      || !this.favoriteLakes.some(l => l.id ===this.selectedLakeUUID);
+      || !this.favoriteLakes.some(l => l.id ===this.selectedLakeId);
 
-    this.$emit("lake-and-year", {lake: this.selectedLakeUUID, year: this.selectedYear});
+    this.$emit("lake-and-year", {lake: this.selectedLakeId, year: this.selectedYear});
     this.doneLoading = true; 
   }
 
@@ -121,30 +121,30 @@ export default class LakeAndYearSelection extends Vue {
   routeUpdated() {
     const query = this.$route.query;
     if (query.lakeId) {
-      this.selectedLakeUUID = query.lakeId as string;
+      this.selectedLakeId = query.lakeId as string;
       if (query.lakeId && !this.favoriteLakes.some(l => l.id === query.lakeId)) {
         this.displayAllOtherLakes = true;
       }
     }
   }
 
-  @Watch("selectedLakeUUID")
-  selectedLakeUUIDChanged() {
-    if (this.selectedLakeUUID == 'all') {
+  @Watch("selectedLakeId")
+  selectedLakeIdChanged() {
+    if (this.selectedLakeId == 'all') {
       this.displayAllOtherLakes = true;
-      this.selectedLakeUUID = localStorage.latestSelectedLakeUUID;
+      this.selectedLakeId = localStorage.latestSelectedLakeUUID;
     } else {
-      localStorage.latestSelectedLakeUUID = this.selectedLakeUUID ? this.selectedLakeUUID : "all";
-      if (this.selectedLakeUUID !== this.$route.query.lakeId) {
+      localStorage.latestSelectedLakeUUID = this.selectedLakeId ? this.selectedLakeId : "all";
+      if (this.selectedLakeId !== this.$route.query.lakeId) {
         this.$router.replace({
           query: {
             ...this.$route.query,
-            lakeId: this.selectedLakeUUID,
+            lakeId: this.selectedLakeId,
           }
         });
       }
       if (this.doneLoading) {
-        this.$emit("lake", this.selectedLakeUUID);
+        this.$emit("lake", this.selectedLakeId);
       }
     }
   }

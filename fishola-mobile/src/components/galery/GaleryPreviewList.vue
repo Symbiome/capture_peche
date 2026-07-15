@@ -21,7 +21,7 @@
 <template>
   <div class="galery-preview-list">
     <GaleryPreview
-      :selectedLakeUUID="selectedLakeUUID"
+      :selectedLakeId="selectedLakeId"
       v-for="picURL in firstPictures"
       :key="picURL"
       :pictureSrc="getPicURL(picURL)"
@@ -53,7 +53,7 @@ import Constants from "../../services/Constants";
 export default class GaleryPreviewList extends Vue {
   @Prop() picturesPerTrip: PicturePerTripBean[];
   @Prop() year: number;
-  @Prop({ default: "" }) selectedLakeUUID: string;
+  @Prop({ default: "" }) selectedLakeId: string;
 
   firstPictures: string[] = [];
   
