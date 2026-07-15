@@ -90,6 +90,32 @@ export default class FisholaDatabase extends Dexie {
       lastMeasurementPic: "id",
     });
 
+    // v8 (#10, mode offline) : les stores ne changent pas, mais les sorties déjà
+    // en attente de synchronisation (créées avant #10) n'ont pas de statut hydro.
+    // On les marque PENDING pour qu'elles soient re-validées côté serveur au
+    // prochain push (le createTrip backend recalcule l'attribution). Un bump de
+    // version est requis même sans changement de schéma pour exécuter l'upgrade.
+    this.version(8)
+      .stores({
+        onCreationTrip: "id",
+        dirtyTrips: "id",
+        dirtyPictures: "id, order, catch",
+        toDeletePictures: "id, order, catch",
+        offlineStorage: "key",
+        offlineFeedbacks: "id",
+        lastMeasurementPic: "id",
+      })
+      .upgrade((tx) =>
+        tx
+          .table("dirtyTrips")
+          .toCollection()
+          .modify((trip: any) => {
+            if (!trip.hydroValidation) {
+              trip.hydroValidation = "PENDING";
+            }
+          })
+      );
+
     this.onCreationTrip = this.table("onCreationTrip");
     this.dirtyTrips = this.table("dirtyTrips");
     this.dirtyPictures = this.table("dirtyPictures");

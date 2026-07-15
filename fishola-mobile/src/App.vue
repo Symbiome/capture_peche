@@ -44,6 +44,7 @@ import ReferentialService from "./services/ReferentialService";
 import DocumentationService from "./services/DocumentationService";
 import ProfileService from "./services/ProfileService";
 import GeolocationService from "./services/GeolocationService";
+import NetworkStatusService from "./services/NetworkStatusService";
 import { StatusBar } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
@@ -55,6 +56,7 @@ import { App } from "@capacitor/app";
 })
 export default class AppView extends Vue {
   interval?: number;
+  unsubscribeNetwork?: () => void;
 
   created() {
     this.initApp();
@@ -142,11 +144,22 @@ export default class AppView extends Vue {
     this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
     this.$root.$on("ask-for-sync-check", this.checkOutOfSyncTrips);
+
+    // Sync immédiate au retour du réseau (#10), sans attendre le polling 30 s.
+    this.unsubscribeNetwork = NetworkStatusService.subscribe((online) => {
+      if (online) {
+        console.debug("Réseau rétabli → synchronisation des sorties");
+        this.checkOutOfSyncTrips();
+      }
+    });
   }
 
   beforeDestroy() {
     this.$root.$off("ask-for-sync-check");
     clearInterval(this.interval);
+    if (this.unsubscribeNetwork) {
+      this.unsubscribeNetwork();
+    }
     this.stopWatchingPosition();
   }
 

@@ -33,6 +33,13 @@
       <div class="item-row">
         <div class="name">{{ trip.name }}</div>
         <div class="right-part">
+          <span
+            v-if="trip.pending"
+            class="pending-badge"
+            title="Sortie non synchronisée avec le serveur"
+          >
+            <i class="icon-send" />Non synchronisée
+          </span>
           <i
             v-if="trip.modifiable"
             class="icon-edit warning"
@@ -55,7 +62,8 @@
 </template>
 
 <script lang="ts">
-import { TripLight, WaterEntity as Lake } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake } from "@/pojos/BackendPojos";
+import LocalTripLight from "@/pojos/LocalTripLight";
 
 import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";
@@ -66,7 +74,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 @Component
 export default class MyTripItem extends Vue {
-  @Prop() trip!: TripLight;
+  @Prop() trip!: LocalTripLight;
 
   selected: boolean = false;
   date: string = "";
@@ -176,6 +184,24 @@ export default class MyTripItem extends Vue {
 
         .warning {
           color: @terra-cotta;
+        }
+
+        .pending-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: @terra-cotta;
+          color: white;
+          border-radius: 12px;
+          padding: 2px 8px;
+          font-size: 0.7rem;
+          white-space: nowrap;
+
+          i {
+            margin-left: 0;
+            color: white;
+            font-size: 0.7rem;
+          }
         }
       }
     }

@@ -38,6 +38,7 @@ import Constants from "@/services/Constants";
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import PicturesService from "@/services/PicturesService";
 import ReferentialService from "@/services/ReferentialService";
+import NetworkStatusService from "@/services/NetworkStatusService";
 import ProfileService from "@/services/ProfileService";
 import GeolocationService from "@/services/GeolocationService";
 
@@ -50,6 +51,9 @@ export class TripsAndCount {
 
 export default class TripsService extends AbstractFisholaService {
   static instance?: TripsService;
+
+  // Plafond des sorties non synchronisées conservées localement (note Q14, #10).
+  static readonly MAX_OFFLINE_TRIPS = 1000;
 
   constructor() {
     super();
@@ -203,6 +207,9 @@ export default class TripsService extends AbstractFisholaService {
     result.modifiable = true;
     result.durationInSeconds = seconds;
     result.catchsCount = catchsCount;
+    // Sortie issue de dirtyTrips = non encore synchronisée (#10) : badge « En
+    // attente ». Les sorties serveur passent par backendTripToLight (pas de flag).
+    (result as any).pending = true;
 
     return result;
   }
@@ -499,10 +506,30 @@ export default class TripsService extends AbstractFisholaService {
 
   static doSendTripAndCancelCreations(trip: TripBean): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this.sendTrip(trip).then((savedTripId) => {
-        this.cancelCreations();
-        resolve(savedTripId);
-      }, reject);
+      const db = this.getDatabase();
+      // Plafond (#10) : on refuse une NOUVELLE sortie non synchronisée au-delà de
+      // la limite (une sortie déjà en attente, re-sauvegardée, n'est pas comptée).
+      Promise.all([db.dirtyTrips.count(), db.dirtyTrips.get(trip.id)]).then(
+        ([count, existing]) => {
+          if (!existing && count >= TripsService.MAX_OFFLINE_TRIPS) {
+            reject({
+              offlineLimitReached: true,
+              message: `Limite de ${TripsService.MAX_OFFLINE_TRIPS} sorties non synchronisées atteinte. Reconnectez-vous pour synchroniser vos sorties avant d'en créer de nouvelles.`,
+            });
+            return;
+          }
+          // Sortie finalisée hors ligne, sans validation hydro : statut PENDING.
+          // Le serveur recalcule l'attribution (CONFIRMED/OVERRIDDEN) au push.
+          if (NetworkStatusService.isOffline() && !trip.hydroValidation) {
+            trip.hydroValidation = "PENDING";
+          }
+          this.sendTrip(trip).then((savedTripId) => {
+            this.cancelCreations();
+            resolve(savedTripId);
+          }, reject);
+        },
+        reject
+      );
     });
   }
 
