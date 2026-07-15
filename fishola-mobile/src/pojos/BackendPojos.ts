@@ -242,6 +242,20 @@ export interface TripSocial {
     catchesCountPerMaillage: { [index: string]: { [P in Maillage]?: number } };
 }
 
+export interface NearbyWaterEntity {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    distanceM: number;
+    closestPoint: GeoPoint;
+    persistent?: boolean;
+}
+
+export interface GeoPoint {
+    lat: number;
+    lng: number;
+}
+
 export interface Serializable {
 }
 
