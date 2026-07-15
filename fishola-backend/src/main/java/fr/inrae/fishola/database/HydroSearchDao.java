@@ -218,6 +218,43 @@ public class HydroSearchDao extends AbstractFisholaDao {
         return query == null ? "" : query.replaceAll("[%_\\\\]", "");
     }
 
+    // Mapbox Vector Tile of the hydrographic network for a slippy-map tile
+    // (z/x/y). Two layers in one tile: river_section (lines: entity id, name,
+    // persistent) and water_surface (polygons: entity id, name). PostGIS builds
+    // each layer with ST_AsMVT and the two single-layer tiles are concatenated
+    // (valid per the MVT/protobuf repeated-Layer encoding). The bounding-box
+    // prefilter is expressed in 4326 (r.geom && ST_Transform(env,4326)) so it
+    // uses the existing GIST(geom) index; ST_AsMVTGeom then works in 3857.
+    // Bind order: z, x, y.
+    private static final String HYDRO_TILE_SQL = ""
+            + "WITH env AS (SELECT ST_TileEnvelope(?, ?, ?) AS g), "
+            + "rs AS ( "
+            + "  SELECT ST_AsMVTGeom(ST_Transform(r.geom, 3857), env.g, 4096, 64, true) AS geom, "
+            + "         r.water_entity_id::text AS water_entity_id, we.name AS name, r.persistent AS persistent "
+            + "  FROM river_section r JOIN water_entity we ON we.id = r.water_entity_id, env "
+            + "  WHERE r.geom && ST_Transform(env.g, 4326) "
+            + "), "
+            + "ws AS ( "
+            + "  SELECT ST_AsMVTGeom(ST_Transform(s.geom, 3857), env.g, 4096, 64, true) AS geom, "
+            + "         s.water_entity_id::text AS water_entity_id, we.name AS name "
+            + "  FROM water_surface s JOIN water_entity we ON we.id = s.water_entity_id, env "
+            + "  WHERE s.geom && ST_Transform(env.g, 4326) "
+            + ") "
+            + "SELECT coalesce((SELECT ST_AsMVT(rs.*, 'river_section') FROM rs WHERE geom IS NOT NULL), ''::bytea) "
+            + "    || coalesce((SELECT ST_AsMVT(ws.*, 'water_surface') FROM ws WHERE geom IS NOT NULL), ''::bytea) AS tile";
+
+    /**
+     * Mapbox Vector Tile (protobuf) of the hydro network for the given slippy-map
+     * tile. Empty (zero-length) when the tile covers no feature.
+     */
+    public byte[] getHydroTile(int z, int x, int y) {
+        return withContext(context -> {
+            Record rec = context.fetchOne(HYDRO_TILE_SQL, z, x, y);
+            byte[] tile = rec == null ? null : rec.get("tile", byte[].class);
+            return tile == null ? new byte[0] : tile;
+        });
+    }
+
     // Shared mapping of a nearby/by-commune result row to the DTO.
     private static NearbyWaterEntity toNearby(Record rec) {
         return ImmutableNearbyWaterEntity.builder()

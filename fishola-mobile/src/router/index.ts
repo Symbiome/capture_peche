@@ -55,6 +55,7 @@ import Credits from "@/views/Credits.vue";
 import GaleryFull from "@/components/galery/GaleryFull.vue";
 
 import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
+import MapLibreMapTest from "@/views/dev/MapLibreMapTest.vue";
 
 import Settings from "@/views/Settings.vue";
 import ProfileAndSettingsView from "@/views/ProfileAndSettings.vue";
@@ -268,6 +269,16 @@ const routes = [
       public: true,
     },
     component: OpenCVSizeComputation,
+  },
+  {
+    // Banc de test isolé de la carte MapLibre (#8), consommé par l'e2e Cypress.
+    path: "/map-test",
+    name: "map-test",
+    meta: {
+      public: true,
+      layout: "no-menu",
+    },
+    component: MapLibreMapTest,
   },
   // ,{
   //   path: '/about',
