@@ -155,7 +155,7 @@
 
 <script lang="ts">
 import GaleryPreview from "@/components/galery/GaleryPreview.vue";
-import { PicturePerTripBean, Lake } from "@/pojos/BackendPojos";
+import { PicturePerTripBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";

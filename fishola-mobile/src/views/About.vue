@@ -373,7 +373,7 @@ import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 

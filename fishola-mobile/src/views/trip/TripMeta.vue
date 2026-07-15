@@ -77,7 +77,7 @@
 <script lang="ts">
 import TripMeta from "@/pojos/TripMeta";
 
-import { Lake } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";

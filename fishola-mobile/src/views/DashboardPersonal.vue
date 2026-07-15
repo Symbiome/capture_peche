@@ -96,7 +96,7 @@ import {
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
-import { Lake } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 
 import ReferentialService from "../services/ReferentialService";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";

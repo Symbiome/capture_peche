@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { TripLight, Lake } from "@/pojos/BackendPojos";
+import { TripLight, WaterEntity as Lake } from "@/pojos/BackendPojos";
 
 import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";

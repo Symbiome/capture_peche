@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { Lake } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 import ReferentialService from "@/services/ReferentialService";
 

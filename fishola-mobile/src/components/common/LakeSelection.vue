@@ -92,7 +92,7 @@
 
 <script lang="ts">
 
-import { Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import LakesMap from "@/components/common/LakesMap.vue";
 import ReferentialService from '@/services/ReferentialService';

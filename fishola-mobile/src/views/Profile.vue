@@ -101,7 +101,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
 import BottomInducementView from "@/components/common/BottomInducement.vue";
-import { Lake } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 
 @Component({
   components: {
