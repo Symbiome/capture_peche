@@ -53,6 +53,12 @@ public class TripBean {
     public Optional<Double> beginLongitude = Optional.empty();
     public Optional<Double> endLatitude = Optional.empty();
     public Optional<Double> endLongitude = Optional.empty();
+    // Validation hydrographique (#9) : tronçon rattaché, point projeté sur
+    // l'entité, et trace de la validation (CONFIRMED / OVERRIDDEN / PENDING).
+    public Optional<UUID> riverSectionId = Optional.empty();
+    public Optional<Double> snappedLatitude = Optional.empty();
+    public Optional<Double> snappedLongitude = Optional.empty();
+    public Optional<String> hydroValidation = Optional.empty();
     public DeviceType source;
     public Optional<String> frontendVersion = Optional.empty();
 

@@ -38,6 +38,7 @@
                 :favoriteLakes="favoriteLakes"
                 v-bind:error="lakeIdError"
                 v-on:updated="selectLake"
+                @positionPicked="onPositionPicked"
                 @favoriteLakesChanged="favoriteLakesChanged" />
 
               <span v-if="hereIAmError" class="position-error">
@@ -298,6 +299,14 @@ export default class TripMetaView extends Vue {
       this.selectedLakes = [];
       delete this.trip.lakeId;
     }
+  }
+
+  // Point choisi sur la carte (#9) : devient la position de départ de la sortie.
+  // Le backend recalcule l'attribution (entité/tronçon/point projeté) à la
+  // création à partir de cette position.
+  onPositionPicked(coords: { lat: number; lng: number }) {
+    this.trip.beginLatitude = coords.lat;
+    this.trip.beginLongitude = coords.lng;
   }
 
   favoriteLakesChanged(newFavoriteLakes: Lake[]) {

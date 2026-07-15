@@ -45,6 +45,10 @@ export interface TripBean {
     beginLongitude?: number;
     endLatitude?: number;
     endLongitude?: number;
+    riverSectionId?: string;
+    snappedLatitude?: number;
+    snappedLongitude?: number;
+    hydroValidation?: string;
     source: DeviceType;
     frontendVersion?: string;
     saveDelayMarker?: Date;
@@ -261,6 +265,21 @@ export interface WaterEntitySearchResult {
     name: string;
     kind: string;
     centroid: GeoPoint;
+}
+
+export interface WaterEntityAttribution {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    distanceM: number;
+    closestPoint: GeoPoint;
+    riverSectionId?: string;
+    persistent?: boolean;
+}
+
+export interface AttributionResponse {
+    proposal?: WaterEntityAttribution;
+    alternatives: WaterEntityAttribution[];
 }
 
 export interface CommuneResult {

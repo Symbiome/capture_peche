@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState} from '@/pojos/BackendPojos';
+import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
 export class LakesAndTripTypes {
@@ -95,6 +95,12 @@ export default class ReferentialService extends AbstractFisholaService {
   // Recherche serveur des communes (référentiel ADMIN EXPRESS, #6).
   static searchCommunes(q: string): Promise<any[]> {
     return this.backendGet(`/v1/communes/search?q=${encodeURIComponent(q)}`);
+  }
+
+  // Proposition d'attribution hydro d'un point (#9) : entité la plus proche +
+  // alternatives, pour le flux « pin sur la carte → confirmation ».
+  static getAttribution(lat: number, lng: number): Promise<AttributionResponse> {
+    return this.backendGet(`/v1/waterEntities/attribution?lat=${lat}&lng=${lng}`);
   }
 
   static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {

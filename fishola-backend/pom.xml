@@ -434,6 +434,8 @@
                         <class>fr.inrae.fishola.rest.hydro.NearbyWaterEntity</class>
                         <class>fr.inrae.fishola.rest.hydro.GeoPoint</class>
                         <class>fr.inrae.fishola.rest.hydro.WaterEntitySearchResult</class>
+                        <class>fr.inrae.fishola.rest.hydro.WaterEntityAttribution</class>
+                        <class>fr.inrae.fishola.rest.hydro.AttributionResponse</class>
                         <class>fr.inrae.fishola.rest.commune.CommuneResult</class>
                     </classes>
                     <outputKind>module</outputKind>

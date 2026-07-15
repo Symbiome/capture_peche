@@ -85,21 +85,31 @@
         :favoriteLakes="favoriteLakes"
         :selectedLake="selectedLakes.length == 1 ? selectedLakes[0] : null"
         @selectLake="selectLakeById"
+        @map-click="onMapClick"
         v-on:close="toggleMapDisplay"
+      />
+
+      <AttributionConfirmSheet
+        :attribution="attributionResult"
+        :visible="showAttributionSheet"
+        @confirm="onAttributionConfirm"
+        @cancel="onAttributionCancel"
       />
     </div>
 </template>
 
 <script lang="ts">
 
-import { WaterEntity as Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake, AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import MapLibreMap from "@/components/common/MapLibreMap.vue";
+import AttributionConfirmSheet from "@/components/common/AttributionConfirmSheet.vue";
 import ReferentialService from '@/services/ReferentialService';
 
 @Component({
   components: {
     MapLibreMap,
+    AttributionConfirmSheet,
   },
 })
 export default class LakeSelection extends Vue {
@@ -119,6 +129,11 @@ export default class LakeSelection extends Vue {
   selectedLakesId: string[] = [];
   private searchSeq: number = 0;
   private searchTimer: any = null;
+
+  // Flux d'attribution hydro (#9) : pin sur la carte → proposition → confirmation.
+  attributionResult: AttributionResponse | null = null;
+  showAttributionSheet: boolean = false;
+  private pendingPin: { lat: number; lng: number } | null = null;
 
   mounted() {
     this.loadLakes();
@@ -299,6 +314,47 @@ export default class LakeSelection extends Vue {
         this.$emit("updated", null);
       }
     }
+  }
+
+  // Pin libre sur la carte : on interroge l'attribution hydro et on ouvre la
+  // feuille de confirmation (#9). Le tap direct sur une entité passe, lui, par
+  // `selectLakeById` (pas d'attribution nécessaire).
+  onMapClick(coords: { lng: number; lat: number }) {
+    this.pendingPin = { lat: coords.lat, lng: coords.lng };
+    ReferentialService.getAttribution(coords.lat, coords.lng)
+      .then((res) => {
+        this.attributionResult = res;
+        this.showAttributionSheet = true;
+      })
+      .catch(() => { /* attribution indisponible : on n'ouvre pas la feuille */ });
+  }
+
+  onAttributionConfirm(entity: WaterEntityAttribution) {
+    const lake = {
+      id: entity.waterEntityId,
+      name: entity.name,
+      kind: entity.kind,
+      latitude: entity.closestPoint ? entity.closestPoint.lat : undefined,
+      longitude: entity.closestPoint ? entity.closestPoint.lng : undefined,
+      exportAs: entity.name,
+      waterEntityCode: "",
+      nature: "",
+      altitudeMoyenne: 0,
+      bdtopoCleabs: "",
+      geom: "",
+    } as unknown as Lake;
+    this.selectLake(lake);
+    if (this.pendingPin) {
+      // Le point saisi devient la position de départ de la sortie ; le serveur
+      // recalcule l'entité/point projeté/validation à l'enregistrement (#9).
+      this.$emit("positionPicked", this.pendingPin);
+    }
+    this.showAttributionSheet = false;
+    this.displayMap = false;
+  }
+
+  onAttributionCancel() {
+    this.showAttributionSheet = false;
   }
 
   toggleSuggestionsDisplay() {
