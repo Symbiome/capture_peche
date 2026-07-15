@@ -39,6 +39,7 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -570,6 +571,7 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/export")
     @Produces("text/csv")
+    @Audited("trip.export")
     public Response getTripsCSV() {
         checkIsAdmin();
         String csv = tripsDao.getTripsCSV();
@@ -584,6 +586,7 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/export/{pageOffset}/{sortField}/{sortDirection}")
+    @Audited("trip.export")
     public PaginatedExportBean getExportPaginated(
             @PathParam("pageOffset") Integer pageOffset,
             @PathParam("sortField") String sortField,
@@ -613,6 +616,7 @@ public class TripResource extends AbstractFisholaResource {
     @Path("/catches/{catchId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
         checkIsAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
