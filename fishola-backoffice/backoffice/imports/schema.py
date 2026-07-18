@@ -1,0 +1,38 @@
+"""Constantes du format d'import CSV opérateur (#32, template officiel 28 colonnes)."""
+
+# En-tête attendu, dans l'ordre (séparateur « ; », UTF-8).
+EXPECTED_HEADER = [
+    "session_ref", "collection_method", "date", "heure_debut", "heure_fin",
+    "eau_nom", "commune", "mode_peche", "technique", "nb_lignes",
+    "espece_ciblee", "bredouille",
+    "enquete_age", "enquete_sexe", "enquete_commune", "enquete_experience_annees",
+    "enquete_importance", "enquete_membre_club", "enquete_sorties_par_an",
+    "capture_espece", "capture_longueur_cm", "capture_poids_g", "capture_conservation",
+    "capture_nombre", "capture_classe_taille", "capture_prelevement",
+    "capture_marque", "capture_pathologies",
+]
+
+COLLECTION_METHODS = {"saisie_pecheur", "enquete", "carnet_volontaire", "carnet_obligatoire"}
+
+# Liste ouverte au CdC ; figée ici pour la validation (enum fishing_mode = I-G, à venir).
+FISHING_MODES = {"bateau", "float tube", "kayak", "a pied", "belly boat", "du bord", "rive"}
+
+# Étages de validation.
+STRUCTUREL = "structurel"
+REFERENTIEL = "referentiel"
+METIER = "metier"
+
+# Codes d'erreur stables (repris dans import_row_error.code).
+STRUCT_HEADER = "STRUCT_HEADER"
+STRUCT_COLLECTION_METHOD = "STRUCT_COLLECTION_METHOD"
+STRUCT_DATE = "STRUCT_DATE"
+STRUCT_TIME = "STRUCT_TIME"
+STRUCT_TIME_ORDER = "STRUCT_TIME_ORDER"
+STRUCT_MODE = "STRUCT_MODE"
+STRUCT_BREDOUILLE = "STRUCT_BREDOUILLE"
+REF_SPECIES = "REF_SPECIES"
+REF_TECHNIQUE = "REF_TECHNIQUE"
+REF_WATER_ENTITY = "REF_WATER_ENTITY"
+METIER_QUANTITY = "METIER_QUANTITY"
+METIER_SIZE_ABERRANT = "METIER_SIZE_ABERRANT"
+METIER_BREDOUILLE = "METIER_BREDOUILLE"
