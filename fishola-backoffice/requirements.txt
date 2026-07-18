@@ -1,0 +1,7 @@
+# Backend « gestion interne » (capture_peche / Symbiome) — Phase 1 §3.1 + §3.3
+# Python 3.12, Django 5.2 LTS (support long, adapté marché public).
+Django>=5.2,<5.3
+django-import-export>=4.3,<5
+psycopg[binary]>=3.2,<4
+python-dotenv>=1.0
+gunicorn>=23
