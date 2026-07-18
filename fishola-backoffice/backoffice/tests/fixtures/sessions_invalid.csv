@@ -1,0 +1,7 @@
+session_ref;collection_method;date;heure_debut;heure_fin;eau_nom;commune;mode_peche;technique;nb_lignes;espece_ciblee;bredouille;enquete_age;enquete_sexe;enquete_commune;enquete_experience_annees;enquete_importance;enquete_membre_club;enquete_sorties_par_an;capture_espece;capture_longueur_cm;capture_poids_g;capture_conservation;capture_nombre;capture_classe_taille;capture_prelevement;capture_marque;capture_pathologies
+INV1;enquete;12/05/2026;08:00;11:30;Lac du Bourget;Le Bourget-du-Lac;bateau;Leurre;1;Brochet;non;45;Homme;Chambery;20;principale;oui;30;Requin blanc;62;1800;non;1;;non;;
+INV2;carnet_volontaire;03/06/2026;14:00;18:00;Lac Imaginaire;Nulleville;a pied;Vif;1;Sandre;non;;;;;;;;Sandre;48;900;oui;1;;non;;
+INV3;enquete;15/05/2026;07:00;12:00;Lac d'Annecy;Annecy;kayak;Leurre;1;Perche;non;33;Femme;Annecy;8;secondaire;non;12;Perche;250;140;oui;1;;non;;
+INV4;carnet_obligatoire;20/04/2026;11:00;09:00;Le Rhone;Lyon;float tube;Mouche;1;Truite fario;non;;;;;;;;Truite fario;28;300;oui;1;;non;;
+INV5;sms;18/06/2026;10:00;13:00;La Saone;Macon;a pied;Coup;1;Gardon;non;;;;;;;;Gardon;18;80;non;1;;non;;
+INV6;carnet_volontaire;18/06/2026;10:00;13:00;La Saone;Macon;a pied;Coup;1;Gardon;non;;;;;;;;Gardon;;;non;0;10-15;non;;

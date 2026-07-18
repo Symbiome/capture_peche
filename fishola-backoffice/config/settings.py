@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",  # lookup __unaccent (résolution du référentiel à l'import)
     "import_export",
     "backoffice",
 ]
