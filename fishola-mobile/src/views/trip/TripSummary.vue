@@ -165,11 +165,18 @@ export default class TripSummaryView extends Vue {
             this.isWaitingForPositionBeforeGoingToNextPage = true;
             TripsService.sendTripAndCancelCreations(trip).then(
               this.tripSaved,
-              (e) =>
-                console.error(
-                  "Unexpected error during sendTripAndCancelCreations",
-                  e
-                )
+              (e) => {
+                this.isWaitingForPositionBeforeGoingToNextPage = false;
+                // Plafond de sorties non synchronisées atteint (#10) : message clair.
+                if (e && e.offlineLimitReached) {
+                  Helpers.alert(this.$modal, e.message, "Limite atteinte");
+                } else {
+                  console.error(
+                    "Unexpected error during sendTripAndCancelCreations",
+                    e
+                  );
+                }
+              }
             );
           },
           () => {
