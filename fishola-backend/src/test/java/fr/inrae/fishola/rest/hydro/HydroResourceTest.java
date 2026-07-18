@@ -324,6 +324,31 @@ class HydroResourceTest extends AbstractFisholaTest {
     }
 
     @Test
+    void getByIdResolvesCommune() {
+        // #15 : résolution commune/CP par id (tap carte / mode liste). IT Fier
+        // est dans la commune test « Annecy » (99999).
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        UUID fierId = ctx.fetchOne("SELECT id FROM water_entity WHERE water_entity_code = 'IT_FIER'")
+                .get("id", UUID.class);
+
+        given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .when().get("/api/v1/waterEntities/" + fierId)
+                .then().statusCode(200)
+                .body("name", equalTo("IT Fier"))
+                .body("kind", equalTo("FLOWING"))
+                .body("commune", equalTo("Annecy"));
+    }
+
+    @Test
+    void getByIdUnknownReturns404() {
+        given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .when().get("/api/v1/waterEntities/" + UUID.randomUUID())
+                .then().statusCode(404);
+    }
+
+    @Test
     void hydroTileContainsFeaturesOverFier() {
         // La tuile couvrant le Fier doit être non vide (2 layers ST_AsMVT).
         int z = 12;

@@ -57,7 +57,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
 
-import maplibregl, { Map as MlMap, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, Marker, Popup, LngLatLike, LngLatBoundsLike, MapGeoJSONFeature, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 // Flux WMTS raster ouverts de la Géoplateforme IGN (sans clé pour les couches
@@ -93,6 +93,7 @@ export default class MapLibreMap extends Vue {
     private favoriteMarkers: Marker[] = [];
     private pinMarker: Marker | null = null;
     private userMarker: Marker | null = null;
+    private hoverPopup: Popup | null = null;
     baseLayer: BaseLayer = 'plan';
     mapIsLoading = true;
 
@@ -104,6 +105,8 @@ export default class MapLibreMap extends Vue {
 
     beforeDestroy() {
         this.destroyMarkers();
+        this.hoverPopup?.remove();
+        this.hoverPopup = null;
         if (this.map) {
             this.map.remove();
             this.map = null;
@@ -165,30 +168,107 @@ export default class MapLibreMap extends Vue {
             this.fitInitial();
         });
 
-        // Tap sur le réseau : on privilégie une entité hydro sous le doigt, sinon
-        // on pose un pin libre (consommé par la validation de trip, #9).
+        // Tap sur le réseau (avec tolérance, cf. queryHydroAt). On pose TOUJOURS
+        // un pin au point cliqué : il matérialise la position de départ de la
+        // sortie (retour recette « pas de pin au clic sur le segment »).
         map.on('click', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: ['hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent'],
-            });
-            if (features.length > 0) {
-                const props = features[0].properties || {};
-                const id = props.water_entity_id as string;
-                if (id) {
-                    this.$emit('selectLake', id);
-                    return;
-                }
-            }
+            const features = this.queryHydroAt(e.point);
+            const props = features.length > 0 ? (features[0].properties || {}) : {};
+            const id = props.water_entity_id as string;
             this.setPin(e.lngLat.lng, e.lngLat.lat);
+            if (id) {
+                // Tap direct sur une entité : sélection immédiate ET le point
+                // cliqué devient la position de départ (pas besoin du flux
+                // d'attribution/confirmation, l'entité est explicite). Le pin
+                // reste affiché (la carte n'est pas refermée automatiquement).
+                this.$emit('selectLake', id);
+                this.$emit('point-picked', { lng: e.lngLat.lng, lat: e.lngLat.lat });
+                return;
+            }
+            // Point libre : flux d'attribution (proposition + confirmation, #9).
             this.$emit('map-click', { lng: e.lngLat.lng, lat: e.lngLat.lat });
         });
 
-        // Curseur « pointer » au survol d'une entité cliquable.
-        const hoverLayers = ['hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent'];
-        hoverLayers.forEach((layer) => {
-            map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
+        // Survol d'une entité : curseur « pointer » + infobulle (nom + type).
+        // Requête map-level (pas par couche) pour appliquer une tolérance de
+        // ciblage : un trait de rivière fait 1–3 px, difficile à survoler pile
+        // dessus. queryHydroAt élargit la zone de détection.
+        map.on('mousemove', (e) => {
+            const features = this.queryHydroAt(e.point);
+            if (features.length > 0) {
+                const feature = features[0];
+                const name = (feature.properties && feature.properties.name) || 'Sans nom';
+                map.getCanvas().style.cursor = 'pointer';
+                this.showHoverPopup(e.lngLat, name as string, this.hydroTypeLabel(feature));
+            } else {
+                map.getCanvas().style.cursor = '';
+                this.hideHoverPopup();
+            }
         });
+    }
+
+    // Interroge les entités hydro autour d'un point écran, avec une tolérance de
+    // ciblage exprimée en pixels et ADAPTÉE AU ZOOM : dézoomé, les traits sont
+    // fins (1 px) → tolérance large ; zoomé, ils s'épaississent → tolérance
+    // resserrée pour rester précis. Une boîte (au lieu du point exact) rend le
+    // survol/clic des cours d'eau bien plus facile.
+    private queryHydroAt(point: { x: number; y: number }) {
+        if (!this.map) {
+            return [];
+        }
+        const zoom = this.map.getZoom();
+        const tol = zoom < 13 ? 10 : (zoom < 15 ? 7 : 5);
+        const box: [[number, number], [number, number]] = [
+            [point.x - tol, point.y - tol],
+            [point.x + tol, point.y + tol],
+        ];
+        return this.map.queryRenderedFeatures(box, {
+            layers: ['hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent'],
+        });
+    }
+
+    // Libellé de type à partir de la couche d'origine de la feature.
+    private hydroTypeLabel(feature: MapGeoJSONFeature): string {
+        const layer = feature.layer && feature.layer.id;
+        if (layer === 'hydro-surface') {
+            return "Plan d'eau";
+        }
+        if (layer === 'hydro-river-intermittent') {
+            return "Cours d'eau intermittent";
+        }
+        return "Cours d'eau";
+    }
+
+    // Infobulle de survol (desktop) : nom du lieu + type. `pointer-events: none`
+    // (porté par la CSS de .hydro-hover-popup) pour ne jamais intercepter le clic
+    // de sélection. Sans effet sur tactile (pas d'événement de survol).
+    private showHoverPopup(lngLat: LngLatLike, name: string, typeLabel: string) {
+        if (!this.map) {
+            return;
+        }
+        const html = `<div class="hydro-tip"><strong>${this.escapeHtml(name)}</strong>`
+            + `<span>${typeLabel}</span></div>`;
+        if (!this.hoverPopup) {
+            this.hoverPopup = new maplibregl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                offset: 12,
+                className: 'hydro-hover-popup',
+            });
+        }
+        this.hoverPopup.setLngLat(lngLat).setHTML(html).addTo(this.map);
+    }
+
+    private hideHoverPopup() {
+        this.hoverPopup?.remove();
+    }
+
+    // Les noms viennent de la base, mais on échappe par principe (infobulle en
+    // innerHTML).
+    private escapeHtml(value: string): string {
+        return value.replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+        ));
     }
 
     // Construit le style MapLibre de A à Z (aucune URL de style externe : plus
@@ -337,12 +417,19 @@ export default class MapLibreMap extends Vue {
         if (this.pinMarker) {
             this.pinMarker.setLngLat([lng, lat]);
         } else {
+            // Goutte terra cotta = point de départ CHOISI (distinct de la pastille
+            // « Ma position », #18).
             this.pinMarker = new maplibregl.Marker({ color: '#e2725b' })
                 .setLngLat([lng, lat])
                 .addTo(this.map);
+            this.pinMarker.getElement().setAttribute('title', 'Point de départ');
         }
     }
 
+    // Position de l'utilisateur (#18) : pastille ronde bleue pulsante — la
+    // convention « vous êtes ici » — DISTINCTE de la goutte terra cotta du point
+    // de départ posé sur la carte (`pinMarker`). On dissocie ainsi par la forme
+    // (dot = moi / goutte = point choisi), pas seulement par la couleur.
     private setUserMarker(lng: number, lat: number) {
         if (!this.map) {
             return;
@@ -350,7 +437,10 @@ export default class MapLibreMap extends Vue {
         if (this.userMarker) {
             this.userMarker.setLngLat([lng, lat]);
         } else {
-            this.userMarker = new maplibregl.Marker({ color: '#1e9bc4' })
+            const el = document.createElement('div');
+            el.className = 'user-position-marker';
+            el.title = 'Ma position';
+            this.userMarker = new maplibregl.Marker({ element: el })
                 .setLngLat([lng, lat])
                 .addTo(this.map);
         }
@@ -399,14 +489,38 @@ export default class MapLibreMap extends Vue {
         return DEFAULT_CENTER;
     }
 
-    // Cadrage à l'ouverture (ou à la réapparition) : sur l'entité sélectionnée si
-    // elle a un centroïde, sinon sur les favoris, sinon emprise par défaut.
+    // Cadrage à l'ouverture (ou à la réapparition), par ordre de priorité (#18) :
+    //   1. l'entité sélectionnée si elle a un centroïde ;
+    //   2. sinon la position de l'utilisateur si la géoloc est disponible ;
+    //   3. sinon les favoris, sinon l'emprise par défaut.
     private fitInitial() {
         if (!this.map) {
             return;
         }
         if (this.selectedHasCoords()) {
             this.map.flyTo({ center: this.selectedCenter(), zoom: 13 });
+            return;
+        }
+        // Pas de sélection : on tente la position utilisateur, puis on retombe
+        // sur les favoris / l'emprise par défaut si indisponible.
+        GeolocationService.checkWatchAndGetPositionUntilTimeout(3000).then(
+            (position) => {
+                // Une sélection a pu arriver entre-temps (ou la carte être
+                // fermée) → ne pas écraser le cadrage.
+                if (!this.map || this.selectedHasCoords()) {
+                    return;
+                }
+                const lng = position.coords.longitude;
+                const lat = position.coords.latitude;
+                this.setUserMarker(lng, lat);
+                this.map.flyTo({ center: [lng, lat], zoom: 13 });
+            },
+            () => { this.fitFavoritesOrDefault(); }
+        );
+    }
+
+    private fitFavoritesOrDefault() {
+        if (!this.map || this.selectedHasCoords()) {
             return;
         }
         const favs = (this.favoriteLakes || []).filter((l) => l.longitude != null && l.latitude != null);
@@ -421,6 +535,7 @@ export default class MapLibreMap extends Vue {
             ];
             this.map.fitBounds(bounds, { padding: 40, maxZoom: 11 });
         }
+        // sinon : on reste sur l'emprise par défaut (déjà posée à l'init).
     }
 
     // Recentre uniquement si l'entité sélectionnée a un centroïde ET qu'il est
@@ -552,5 +667,51 @@ export default class MapLibreMap extends Vue {
     height: 22px;
     background: url("/img/heart.svg") no-repeat center / contain;
     cursor: pointer;
+}
+
+/* « Ma position » (#18) : pastille ronde bleue pulsante (« vous êtes ici »),
+   volontairement différente de la goutte du point de départ. */
+.user-position-marker {
+    width: 16px;
+    height: 16px;
+    background: #1e9bc4;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5);
+    animation: user-position-pulse 2s infinite;
+    cursor: default;
+}
+
+@keyframes user-position-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(30, 155, 196, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0); }
+}
+
+/* Infobulle de survol des entités hydro (nom + type). Rendue par MapLibre hors
+   du DOM scopé du composant → styles globaux. `pointer-events: none` pour ne
+   jamais capter le clic de sélection sous le curseur. */
+.hydro-hover-popup {
+    pointer-events: none;
+
+    .maplibregl-popup-content {
+        padding: 6px 10px;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px #0003;
+    }
+    .hydro-tip {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+
+        strong {
+            color: @gunmetal;
+            font-size: 0.9rem;
+        }
+        span {
+            color: @pale-sky;
+            font-size: 0.75rem;
+        }
+    }
 }
 </style>

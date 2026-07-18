@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.hydro;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -44,4 +45,14 @@ public interface WaterEntitySearchResult {
 
     /** Centroid of the entity geometry. */
     GeoPoint centroid();
+
+    /**
+     * Name of the commune containing the entity centroid (#6), to disambiguate
+     * homonyms in the autocomplete. Empty if no commune matches (referential
+     * partiel).
+     */
+    Optional<String> commune();
+
+    /** Code postal principal de la commune (#15). Empty si non couvert. */
+    Optional<String> codePostal();
 }

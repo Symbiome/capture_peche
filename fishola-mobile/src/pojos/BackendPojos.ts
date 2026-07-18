@@ -265,6 +265,8 @@ export interface WaterEntitySearchResult {
     name: string;
     kind: string;
     centroid: GeoPoint;
+    commune?: string;
+    codePostal?: string;
 }
 
 export interface WaterEntityAttribution {
