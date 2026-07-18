@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.security.admin;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
+import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
@@ -91,6 +92,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @PUT
     @Path("/{adminId}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "admin.update", entityType = "fishola_admin", entityIdParam = "adminId")
     public Response updateAdmin(RegisterAdminBean bean, @PathParam("adminId") UUID adminId, @Context HttpServletRequest request) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
@@ -110,6 +112,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @POST
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "admin.create", entityType = "fishola_admin")
     public Response registerAdmin(RegisterAdminBean bean, @Context HttpServletRequest request) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
