@@ -9,7 +9,7 @@ framework de Django (auth, admin, sessions, contenttypes) sont gérées par Djan
 On ne mappe que les colonnes utiles aux modules admin (§3.1) et saisie opérateur
 (§3.3). Les colonnes géométriques (PostGIS) et générées sont volontairement omises
 (pas de dépendance GeoDjango/GDAL : l'import résout la localisation en
-`water_entity_id`).
+`water_entity_id`). Chaque champ porte un `verbose_name` FR (libellés de l'admin).
 """
 import uuid
 
@@ -21,10 +21,10 @@ from django.utils import timezone
 
 class Species(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.TextField()
-    export_as = models.TextField()
-    built_in = models.BooleanField(default=False)
-    mandatory_size = models.BooleanField(default=True)
+    name = models.TextField("Nom")
+    export_as = models.TextField("Libellé d'export")
+    built_in = models.BooleanField("Intégré au socle", default=False)
+    mandatory_size = models.BooleanField("Taille obligatoire", default=True)
 
     class Meta:
         managed = False
@@ -38,9 +38,9 @@ class Species(models.Model):
 
 class Technique(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.TextField()
-    export_as = models.TextField()
-    built_in = models.BooleanField(default=False)
+    name = models.TextField("Nom")
+    export_as = models.TextField("Libellé d'export")
+    built_in = models.BooleanField("Intégré au socle", default=False)
 
     class Meta:
         managed = False
@@ -54,11 +54,11 @@ class Technique(models.Model):
 
 class WaterEntity(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.TextField()
-    export_as = models.TextField()
-    water_entity_code = models.CharField(max_length=10, null=True, blank=True)
-    kind = models.CharField(max_length=16, default="STILL")
-    nature = models.TextField(null=True, blank=True)
+    name = models.TextField("Nom")
+    export_as = models.TextField("Libellé d'export")
+    water_entity_code = models.CharField("Code entité", max_length=10, null=True, blank=True)
+    kind = models.CharField("Type", max_length=16, default="STILL")
+    nature = models.TextField("Nature", null=True, blank=True)
 
     class Meta:
         managed = False
@@ -72,8 +72,8 @@ class WaterEntity(models.Model):
 
 class Commune(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    insee_com = models.CharField(max_length=5, unique=True)
-    name = models.TextField()
+    insee_com = models.CharField("Code INSEE", max_length=5, unique=True)
+    name = models.TextField("Nom")
 
     class Meta:
         managed = False
@@ -89,21 +89,22 @@ class Commune(models.Model):
 
 class Trip(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    created_on = models.DateTimeField(default=timezone.now)
-    owner_id = models.UUIDField(null=True, blank=True)
-    mode = models.CharField(max_length=32)
-    name = models.TextField()
-    day = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    type = models.CharField(max_length=32)
+    created_on = models.DateTimeField("Créée le", default=timezone.now)
+    owner_id = models.UUIDField("Propriétaire (id)", null=True, blank=True)
+    mode = models.CharField("Mode", max_length=32)
+    name = models.TextField("Nom")
+    day = models.DateField("Date")
+    start_time = models.TimeField("Heure de début")
+    end_time = models.TimeField("Heure de fin")
+    type = models.CharField("Type", max_length=32)
     water_entity = models.ForeignKey(
-        WaterEntity, on_delete=models.DO_NOTHING, db_column="water_entity_id"
+        WaterEntity, on_delete=models.DO_NOTHING, db_column="water_entity_id",
+        verbose_name="Entité hydrographique",
     )
-    source = models.CharField(max_length=32)
-    hidden = models.BooleanField(default=False)
+    source = models.CharField("Canal de saisie", max_length=32)
+    hidden = models.BooleanField("Masquée", default=False)
     # Méthode de collecte métier (import CSV #12), distincte du canal `source`.
-    collection_method = models.CharField(max_length=32, default="saisie_pecheur")
+    collection_method = models.CharField("Méthode de collecte", max_length=32, default="saisie_pecheur")
 
     class Meta:
         managed = False
@@ -117,20 +118,23 @@ class Trip(models.Model):
 
 class Catch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    created_on = models.DateTimeField(default=timezone.now)
+    created_on = models.DateTimeField("Créée le", default=timezone.now)
     trip = models.ForeignKey(
-        Trip, on_delete=models.DO_NOTHING, db_column="trip_id", related_name="catches"
+        Trip, on_delete=models.DO_NOTHING, db_column="trip_id", related_name="catches",
+        verbose_name="Sortie",
     )
-    catch_time = models.TimeField(null=True, blank=True)
-    species = models.ForeignKey(Species, on_delete=models.DO_NOTHING, db_column="species_id")
-    technique = models.ForeignKey(Technique, on_delete=models.DO_NOTHING, db_column="technique_id")
-    size = models.IntegerField(null=True, blank=True)
-    weight = models.IntegerField(null=True, blank=True)
-    kept = models.BooleanField()
+    catch_time = models.TimeField("Heure de capture", null=True, blank=True)
+    species = models.ForeignKey(Species, on_delete=models.DO_NOTHING, db_column="species_id",
+                                verbose_name="Espèce")
+    technique = models.ForeignKey(Technique, on_delete=models.DO_NOTHING, db_column="technique_id",
+                                  verbose_name="Technique")
+    size = models.IntegerField("Taille (cm)", null=True, blank=True)
+    weight = models.IntegerField("Poids (g)", null=True, blank=True)
+    kept = models.BooleanField("Conservée")
     # Lots (import #12) : nombre d'individus + classe de taille.
-    quantity = models.IntegerField(default=1)
-    size_class = models.CharField(max_length=32, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    quantity = models.IntegerField("Nombre (lot)", default=1)
+    size_class = models.CharField("Classe de taille", max_length=32, null=True, blank=True)
+    description = models.TextField("Description / pathologies", null=True, blank=True)
 
     class Meta:
         managed = False
@@ -143,10 +147,11 @@ class Catch(models.Model):
 
 class SpeciesSizeBounds(models.Model):
     species = models.OneToOneField(
-        Species, on_delete=models.DO_NOTHING, db_column="species_id", primary_key=True
+        Species, on_delete=models.DO_NOTHING, db_column="species_id", primary_key=True,
+        verbose_name="Espèce",
     )
-    min_size_cm = models.IntegerField(null=True, blank=True)
-    max_size_cm = models.IntegerField(null=True, blank=True)
+    min_size_cm = models.IntegerField("Taille min (cm)", null=True, blank=True)
+    max_size_cm = models.IntegerField("Taille max (cm)", null=True, blank=True)
 
     class Meta:
         managed = False
@@ -162,15 +167,15 @@ class SpeciesSizeBounds(models.Model):
 
 class ImportJob(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    file_name = models.TextField(null=True, blank=True)
-    file_hash = models.TextField(unique=True)
-    collection_method = models.CharField(max_length=32, null=True, blank=True)
-    status = models.TextField()
-    total = models.IntegerField(default=0)
-    inserted = models.IntegerField(default=0)
-    rejected = models.IntegerField(default=0)
-    created_by = models.UUIDField(null=True, blank=True)
-    created_on = models.DateTimeField(default=timezone.now)
+    file_name = models.TextField("Fichier", null=True, blank=True)
+    file_hash = models.TextField("Empreinte (SHA-256)", unique=True)
+    collection_method = models.CharField("Méthode de collecte", max_length=32, null=True, blank=True)
+    status = models.TextField("Statut")
+    total = models.IntegerField("Total", default=0)
+    inserted = models.IntegerField("Insérées", default=0)
+    rejected = models.IntegerField("Rejetées", default=0)
+    created_by = models.UUIDField("Lancé par (id)", null=True, blank=True)
+    created_on = models.DateTimeField("Lancé le", default=timezone.now)
 
     class Meta:
         managed = False
@@ -185,13 +190,14 @@ class ImportJob(models.Model):
 class ImportRowError(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     import_job = models.ForeignKey(
-        ImportJob, on_delete=models.DO_NOTHING, db_column="import_id", related_name="errors"
+        ImportJob, on_delete=models.DO_NOTHING, db_column="import_id", related_name="errors",
+        verbose_name="Import",
     )
-    line = models.IntegerField()
-    column_name = models.TextField(null=True, blank=True)
-    stage = models.TextField()
-    code = models.TextField()
-    message = models.TextField(null=True, blank=True)
+    line = models.IntegerField("Ligne")
+    column_name = models.TextField("Colonne", null=True, blank=True)
+    stage = models.TextField("Étage")
+    code = models.TextField("Code")
+    message = models.TextField("Message", null=True, blank=True)
 
     class Meta:
         managed = False
@@ -208,13 +214,13 @@ class AuditLog(models.Model):
     rôle précis va dans `details`). Fishola y écrit les actions pêcheur."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    actor_type = models.CharField(max_length=16)
-    actor_id = models.UUIDField(null=True, blank=True)
-    action = models.CharField(max_length=64)
-    entity_type = models.CharField(max_length=64, null=True, blank=True)
-    entity_id = models.UUIDField(null=True, blank=True)
-    at = models.DateTimeField(default=timezone.now)
-    details = models.JSONField(default=dict)
+    actor_type = models.CharField("Type d'acteur", max_length=16)
+    actor_id = models.UUIDField("Acteur (id)", null=True, blank=True)
+    action = models.CharField("Action", max_length=64)
+    entity_type = models.CharField("Type d'entité", max_length=64, null=True, blank=True)
+    entity_id = models.UUIDField("Entité (id)", null=True, blank=True)
+    at = models.DateTimeField("Horodatage", default=timezone.now)
+    details = models.JSONField("Détails", default=dict)
 
     class Meta:
         managed = False
