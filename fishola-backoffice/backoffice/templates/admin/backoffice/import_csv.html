@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="max-width:44rem">
+  <p style="margin-bottom:1.25rem;font-size:.9rem;line-height:1.5">
+    Importez un fichier CSV de sorties / captures opérateur (modèle officiel,
+    séparateur « ; », UTF-8). Chaque ligne est validée en 3 étapes
+    (structurel → référentiel → métier) ; un rapport d'import est produit avec le
+    détail des rejets.
+  </p>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <div style="margin-top:1.5rem;display:flex;gap:1rem;align-items:center">
+      <button type="submit"
+        style="background:#2563eb;color:#fff;padding:.55rem 1.1rem;border-radius:.4rem;font-weight:600;border:none;cursor:pointer">
+        Lancer l'import
+      </button>
+      <a href="{% url 'admin:backoffice_importjob_changelist' %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
