@@ -143,16 +143,23 @@ class ImportRowErrorInline(TabularInline):
 
 @admin.register(ImportJob)
 class ImportJobAdmin(ModelAdmin):
+    """Consultation seule : un import est produit par le processus d'import
+    (upload / commande `import_trips`), jamais saisi à la main."""
     list_display = ("file_name", "statut", "total", "inserted", "rejected", "created_on")
     list_filter = ("status", "collection_method")
     search_fields = ("file_name", "file_hash")
     date_hierarchy = "created_on"
     inlines = (ImportRowErrorInline,)
+    readonly_fields = ("file_name", "file_hash", "collection_method", "status",
+                       "total", "inserted", "rejected", "created_by", "created_on")
 
     @display(description="Statut", label={
         "DONE": "success", "DONE_WITH_ERRORS": "warning", "FAILED": "danger", "PENDING": "info"})
     def statut(self, obj):
         return obj.status
+
+    def has_add_permission(self, request):
+        return False
 
 
 # --- Historique (journal d'activité, lecture seule) -------------------------

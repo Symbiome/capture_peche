@@ -94,6 +94,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# L'admin est la seule interface : on y renvoie après connexion (pas de /accounts/profile/).
+LOGIN_REDIRECT_URL = "/admin/"
+
 LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Europe/Paris"
 USE_I18N = True
