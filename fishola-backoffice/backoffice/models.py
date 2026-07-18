@@ -6,8 +6,8 @@ est géré par Flyway côté Fishola. Elles sont donc mappées en **managed = Fa
 Django les lit et les écrit via l'ORM, mais ne les migre jamais. Seules les tables
 framework de Django (auth, admin, sessions, contenttypes) sont gérées par Django.
 
-On ne mappe que les colonnes utiles aux modules admin (§3.1) et saisie opérateur
-(§3.3). Les colonnes géométriques (PostGIS) et générées sont volontairement omises
+On ne mappe que les colonnes utiles à l'administration et à la saisie opérateur.
+Les colonnes géométriques (PostGIS) et générées sont volontairement omises
 (pas de dépendance GeoDjango/GDAL : l'import résout la localisation en
 `water_entity_id`). Chaque champ porte un `verbose_name` FR (libellés de l'admin).
 """
@@ -142,6 +142,10 @@ class Catch(models.Model):
         verbose_name = "Capture"
         verbose_name_plural = "Captures"
 
+    def __str__(self):
+        taille = f"{self.size} cm" if self.size else "taille n.c."
+        return f"{self.species} — {taille}"
+
 
 # --- Bornes de taille aberrante (stade métier de l'import) ------------------
 
@@ -206,7 +210,7 @@ class ImportRowError(models.Model):
         verbose_name_plural = "Erreurs d'import"
 
 
-# --- Journal d'activité PARTAGÉ (§3.1 « Historique ») -----------------------
+# --- Journal d'activité PARTAGÉ (« Historique ») ----------------------------
 
 class AuditLog(models.Model):
     """Journal partagé avec Fishola. Django y écrit les actions admin/opérateur

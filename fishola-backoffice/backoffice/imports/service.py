@@ -1,7 +1,7 @@
 """
-Service d'import CSV opérateur (#32, module §3.3).
+Service d'import CSV opérateur (#32).
 
-Pipeline en 3 étages (cadrage docs/04 §2) :
+Pipeline en 3 étages :
   1. structurel  — colonnes, types, cohérence intra-ligne (avant toute base) ;
   2. référentiel — résolution espèce / technique / entité hydro (nom + commune) ;
   3. métier      — bornes de taille aberrante, lots, bredouille.

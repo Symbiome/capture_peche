@@ -1,8 +1,8 @@
 """
 Django settings — backend « gestion interne » (capture_peche / Symbiome).
 
-Ce backend porte le module administrateur (Phase 1 §3.1) et le module de saisie
-opérateur (§3.3). Il partage la BDD applicative Fishola (PostgreSQL/PostGIS) :
+Ce backend porte l'administration et la saisie opérateur. Il partage la base
+applicative Fishola (PostgreSQL/PostGIS) :
 Flyway/Fishola reste l'autorité du schéma métier ; les modèles Django sur ces
 tables sont `managed = False`. Django ne gère que ses propres tables (auth, admin,
 sessions, contenttypes).
@@ -61,7 +61,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # Dossier projet cherché en premier : permet de surcharger l'accueil de
+        # l'admin (templates/admin/index.html) qui, sinon, serait pris chez unfold.
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -110,7 +112,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # --- Thème d'admin « AquaAdmin » (django-unfold) ----------------------------
-# Reprend la maquette du mémoire (§3.1) : en-tête AquaAdmin + navigation
+# En-tête AquaAdmin + navigation :
 # Tableau de bord / Utilisateurs / Profils & Droits / Historique + données de pêche.
 UNFOLD = {
     "SITE_TITLE": "AquaAdmin",
@@ -148,6 +150,8 @@ UNFOLD = {
             {
                 "title": "Données de pêche",
                 "items": [
+                    {"title": "Carte", "icon": "map",
+                     "link": reverse_lazy("carte")},
                     {"title": "Sorties", "icon": "sailing",
                      "link": reverse_lazy("admin:backoffice_trip_changelist")},
                     {"title": "Imports", "icon": "upload_file",

@@ -5,7 +5,7 @@ PYTHON := .venv/bin/python
 IMAGE  := symbiome/fishola-backoffice:demo
 
 .DEFAULT_GOAL := help
-.PHONY: help install check migrate groups superuser run bootstrap docker-build docker-run
+.PHONY: help install check migrate groups superuser seed run bootstrap docker-build docker-run
 
 help:  ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -26,6 +26,9 @@ groups:  ## Crée / met à jour les profils staff (operator, admin_regional, adm
 
 superuser:  ## Crée un compte administrateur
 	$(PYTHON) manage.py createsuperuser
+
+seed:  ## Charge un référentiel de démonstration (dev/recette, idempotent)
+	$(PYTHON) manage.py seed_referential_dev
 
 run:  ## Serveur de développement (NE PAS utiliser en production)
 	$(PYTHON) manage.py runserver

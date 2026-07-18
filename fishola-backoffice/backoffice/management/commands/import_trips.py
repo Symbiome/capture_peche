@@ -1,4 +1,4 @@
-"""Importe un fichier CSV de sorties/captures opérateur (#32, module §3.3).
+"""Importe un fichier CSV de sorties/captures opérateur (#32).
 
     python manage.py import_trips <fichier.csv> [--mode partial|all_or_nothing]
 """

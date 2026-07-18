@@ -1,5 +1,5 @@
 """
-Journal d'activité (§3.1 « Historique »).
+Journal d'activité (« Historique »).
 
 Écrit dans la table `audit_log` PARTAGÉE avec Fishola. Deux nuances liées au
 schéma existant (décisions d'intégration ouvertes, cf. README) :

@@ -1,7 +1,7 @@
 """
 Crée/met à jour les profils staff (Groups django-auth) et leurs droits.
 
-Matrice best-effort dérivée de `.claude/docs/03-analyse-3151-roles-audit.md` §3.
+Matrice de droits best-effort par profil (à affiner avec l'exploitant).
 À lancer APRÈS `migrate` (les permissions Django doivent exister).
 
     python manage.py setup_groups
