@@ -9,6 +9,10 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic import RedirectView
 
+# Pas de site public : on retire les liens « Voir le site » (menu admin) et
+# « Return to site » (page de connexion).
+admin.site.site_url = None
+
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="admin:index", permanent=False)),
     path("admin/", admin.site.urls),

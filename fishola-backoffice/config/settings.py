@@ -116,6 +116,7 @@ UNFOLD = {
     "SITE_HEADER": "AquaAdmin",
     "SITE_SUBHEADER": "Gestion des Données de Pêche",
     "SITE_SYMBOL": "phishing",  # icône Material Symbols (thème pêche)
+    "SITE_URL": None,  # pas de site public → masque « Voir le site » / « Return to site »
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": False,
     "COLORS": {
