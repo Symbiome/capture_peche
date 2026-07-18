@@ -14,6 +14,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
+from .permissions import GroupAdminForm
 from .models import (
     AuditLog,
     Catch,
@@ -69,7 +70,8 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 
 @admin.register(Group)
 class GroupAdmin(BaseGroupAdmin, ModelAdmin):
-    pass
+    form = GroupAdminForm
+    filter_horizontal = ()  # remplacé par la matrice de droits (PermissionMatrixWidget)
 
 
 # --- Référentiels -----------------------------------------------------------
