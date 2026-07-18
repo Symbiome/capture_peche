@@ -30,7 +30,7 @@
       ></div>
       <span v-if="maillage == 'MAILLEE'"> Poissons maillés </span>
       <span v-else-if="maillage == 'NON_MAILLEE'"> Poissons non maillés </span>
-      <span class="line-break-on-small-screen" v-else-if="!selectedLakeUUID">
+      <span class="line-break-on-small-screen" v-else-if="!selectedLakeId">
         Sans distrinction de maillage
         <i
           >(sélectionner un plan d'eau pour une meilleure visualisation du graphique)
@@ -48,7 +48,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class MaillageLegend extends Vue {
   @Prop() maillages: Maillage[];
-  @Prop() selectedLakeUUID: string;
+  @Prop() selectedLakeId: string;
 }
 </script>
 

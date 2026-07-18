@@ -28,7 +28,7 @@
         <GaleryPreviewList
           v-bind:picturesPerTrip="picturesPerTrip"
           :year="year"
-          :selectedLakeUUID="selectedLakeUUID"
+          :selectedLakeId="selectedLakeId"
           bottomMode="index"
         />
       </div>
@@ -77,7 +77,7 @@
           <span class="hide-if-small">par espèce</span> (cm)
         </h2>
         <MaillageLegend
-          :selectedLakeUUID="selectedLakeUUID"
+          :selectedLakeId="selectedLakeId"
           :maillages="maillages"
         />
       </div>
@@ -201,7 +201,7 @@ export class TopEntry {
 export default class PersonalDashboard extends Vue {
   @Prop() dashboardData: DashboardAndSpecies;
   @Prop() year: number;
-  @Prop() selectedLakeUUID: string;
+  @Prop() selectedLakeId: string;
 
   speciesIndex: { [index: string]: SpeciesWithAlias } = {};
 

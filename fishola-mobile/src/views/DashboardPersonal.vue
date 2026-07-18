@@ -63,11 +63,11 @@
           <PersonalDashboard
             v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
             :dashboardData="personalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"
+            :selectedLakeId="selectedLakeId"
           />
           <EvolutionMetrics
-            v-if="visualizationMode === 'evolution' && selectedLakeUUID"
-            :lakeId="selectedLakeUUID"
+            v-if="visualizationMode === 'evolution' && selectedLakeId"
+            :lakeId="selectedLakeId"
             :onlyShowUserStats="true"
             @loaded="ready = true"
             >
@@ -128,7 +128,7 @@ export default class DashboardPersonalView extends Vue {
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
-  selectedLakeUUID = "";
+  selectedLakeId = "";
   lakes: Lake[] = [];
   isFirstLoad = true;
 
@@ -167,13 +167,13 @@ export default class DashboardPersonalView extends Vue {
   }
 
   lakeChanged(selectedLake: string) {
-    this.selectedLakeUUID = selectedLake;
+    this.selectedLakeId = selectedLake;
     this.reloadDashboard();
   }
 
   yearAndLakeChangedChanged(event: any) {
     this.year = event.year;
-    this.selectedLakeUUID = event.lake;
+    this.selectedLakeId = event.lake;
     this.reloadDashboard();
   }
 
@@ -181,7 +181,7 @@ export default class DashboardPersonalView extends Vue {
     if (this.visualizationMode == 'dashboard') {
       DashboardService.loadDashboardOrTimeout(
         this.year,
-        this.selectedLakeUUID
+        this.selectedLakeId
       ).then(this.personalDashboardLoaded, this.cannotLoad);
     }
   }
