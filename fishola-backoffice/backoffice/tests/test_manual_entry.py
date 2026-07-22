@@ -9,7 +9,7 @@ aberrante Q8) — partagée avec l'import via `size_out_of_bounds`. La persistan
 from django.test import SimpleTestCase
 
 from backoffice.imports.service import size_out_of_bounds
-from backoffice.manual_entry import CaptureData, validate_manual
+from backoffice.manual_entry import CaptureData, ManualTripForm, validate_manual
 
 
 class FakeReferential:
@@ -81,3 +81,29 @@ class ValidateManualTest(SimpleTestCase):
         ]
         errs = validate_manual(self.ref, bredouille=False, captures=captures)
         self.assertEqual({(e.index, e.field) for e in errs}, {(1, "quantity"), (2, "size")})
+
+
+class ManualTripFormLockTest(SimpleTestCase):
+    """Verrouillage de la méthode de recueil par le profil opérateur (M-F)."""
+
+    def test_methode_verrouillee_restreint_et_desactive(self):
+        field = ManualTripForm(locked_method="enquete").fields["collection_method"]
+        self.assertTrue(field.disabled)
+        self.assertEqual([v for v, _ in field.choices], ["enquete"])
+        self.assertEqual(field.initial, "enquete")
+
+    def test_sans_verrou_liste_restreinte_complete(self):
+        field = ManualTripForm().fields["collection_method"]
+        self.assertFalse(field.disabled)
+        self.assertEqual({v for v, _ in field.choices},
+                         {"enquete", "carnet_volontaire", "carnet_obligatoire"})
+
+    def test_champ_desactive_ignore_la_valeur_soumise(self):
+        # `disabled=True` → Django retient l'initiale, quelle que soit la soumission.
+        form = ManualTripForm(
+            data={"collection_method": "carnet_obligatoire", "day": "2026-01-01",
+                  "start_time": "08:00", "end_time": "10:00", "eau_nom": "Lac",
+                  "technique": "", "bredouille": "on"},
+            locked_method="enquete")
+        form.is_valid()  # déclenche le nettoyage
+        self.assertEqual(form.cleaned_data.get("collection_method"), "enquete")

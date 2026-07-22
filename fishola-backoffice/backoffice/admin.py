@@ -36,6 +36,7 @@ from .models import (
     Commune,
     ImportJob,
     ImportRowError,
+    OperatorProfile,
     Species,
     SpeciesSizeBounds,
     Technique,
@@ -100,12 +101,22 @@ admin.site.unregister(User)
 admin.site.unregister(Group)
 
 
+class OperatorProfileInline(TabularInline):
+    """Profil opérateur (méthode de recueil par défaut, M-F) édité depuis la
+    fiche du compte."""
+    model = OperatorProfile
+    extra = 0
+    can_delete = True
+    verbose_name_plural = "Profil opérateur"
+
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ("username", "email", "profil", "statut", "last_login")
+    inlines = (OperatorProfileInline,)
 
     @display(description="Profil", label=_PROFIL_COLORS)
     def profil(self, obj):
@@ -222,8 +233,11 @@ class TripAdmin(ReadOnlyModelAdmin):
         contrôles que l'import (référentiel + métier). N'écrit jamais via l'admin
         brut de Trip (lecture seule) : passe par ManualEntryService."""
         service = ManualEntryService()
+        # M-F : méthode de recueil verrouillée si le profil opérateur en fixe une.
+        profile = OperatorProfile.objects.filter(user=request.user).first()
+        locked_method = profile.default_collection_method if profile else ""
         if request.method == "POST":
-            form = ManualTripForm(request.POST)
+            form = ManualTripForm(request.POST, locked_method=locked_method)
             formset = ManualCatchFormSet(request.POST)
             if form.is_valid() and formset.is_valid():
                 data = form.cleaned_data
@@ -262,7 +276,7 @@ class TripAdmin(ReadOnlyModelAdmin):
                         f"Sortie enregistrée — {result.captures} capture(s).")
                     return redirect(reverse("admin:backoffice_trip_change", args=[result.trip_id]))
         else:
-            form = ManualTripForm()
+            form = ManualTripForm(locked_method=locked_method)
             formset = ManualCatchFormSet()
 
         context = {

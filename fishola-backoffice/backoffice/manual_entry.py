@@ -207,6 +207,19 @@ class ManualTripForm(forms.Form):
     bredouille = forms.BooleanField(label="Bredouille (aucune capture)", required=False,
                                     widget=UnfoldBooleanSwitchWidget)
 
+    def __init__(self, *args, locked_method="", **kwargs):
+        """`locked_method` (issu du profil opérateur, M-F) verrouille la méthode
+        de recueil : la liste est réduite à cette seule valeur et le champ est
+        désactivé (Django ignore alors toute valeur soumise et retient l'initiale)."""
+        super().__init__(*args, **kwargs)
+        if locked_method:
+            label = dict(OPERATOR_COLLECTION_METHODS).get(locked_method, locked_method)
+            field = self.fields["collection_method"]
+            field.choices = [(locked_method, label)]
+            field.initial = locked_method
+            field.disabled = True
+            field.help_text = "Verrouillée par votre profil opérateur."
+
     def clean_day(self):
         day = self.cleaned_data["day"]
         if day > timezone.localdate():

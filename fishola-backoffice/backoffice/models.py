@@ -210,6 +210,42 @@ class ImportRowError(models.Model):
         verbose_name_plural = "Erreurs d'import"
 
 
+# --- Profil opérateur (compte staff, table PROPRE à Django) -----------------
+
+class OperatorProfile(models.Model):
+    """Profil d'un compte staff opérateur (#62, M-F, cadrage §3 option b).
+
+    Porte la **méthode de recueil par défaut** de l'opérateur : quand elle est
+    renseignée, elle est **verrouillée** à la saisie manuelle (l'opérateur ne
+    choisit plus) ; vide → choix libre dans la liste restreinte.
+
+    Table **gérée par Django** (`managed = True`, hors schéma Fishola partagé) :
+    c'est une extension du compte `auth_user`, pas une donnée métier."""
+
+    COLLECTION_METHOD_CHOICES = [
+        ("enquete", "Enquête"),
+        ("carnet_volontaire", "Carnet volontaire"),
+        ("carnet_obligatoire", "Carnet obligatoire"),
+    ]
+
+    user = models.OneToOneField(
+        "auth.User", on_delete=models.CASCADE, related_name="operator_profile",
+        verbose_name="Compte",
+    )
+    default_collection_method = models.CharField(
+        "Méthode de recueil par défaut", max_length=32, blank=True,
+        choices=COLLECTION_METHOD_CHOICES,
+        help_text="Verrouille la méthode à la saisie manuelle. Vide = choix libre (liste restreinte).",
+    )
+
+    class Meta:
+        verbose_name = "Profil opérateur"
+        verbose_name_plural = "Profils opérateur"
+
+    def __str__(self):
+        return f"{self.user} — {self.get_default_collection_method_display() or 'libre'}"
+
+
 # --- Journal d'activité PARTAGÉ (« Historique ») ----------------------------
 
 class AuditLog(models.Model):
