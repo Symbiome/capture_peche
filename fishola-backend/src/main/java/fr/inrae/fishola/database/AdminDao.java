@@ -56,6 +56,14 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
+    /** Met à jour le hash bcrypt du mot de passe d'un admin (rotation nominative, #55). */
+    public void updatePassword(UUID adminId, String passwordHashed) {
+        newContext().update(FISHOLA_ADMIN)
+                .set(FISHOLA_ADMIN.PASSWORD, passwordHashed)
+                .where(FISHOLA_ADMIN.ID.equal(adminId))
+                .execute();
+    }
+
     protected boolean verifyPassword(boolean isNationalAdmin, String plain, String hashed) {
         try {
             // Authentification NOMINATIVE d'abord : hash bcrypt propre au compte,

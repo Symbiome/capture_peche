@@ -90,6 +90,34 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     }
 
     @PUT
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "admin.password_change", entityType = "fishola_admin")
+    public Response changePassword(ChangePasswordBean bean, @Context HttpServletRequest request) {
+        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        if (bean == null || StringUtils.isEmpty(bean.oldPassword) || StringUtils.isEmpty(bean.newPassword)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        Map<String, String> validationErrors = new HashMap<>();
+
+        // Ancien mot de passe : réutilise l'auth (bcrypt du compte + repli partagé
+        // national) → un national encore sur le mot de passe partagé peut en poser un nominatif.
+        Optional<Boolean> oldOk = adminDao.authenticate(fisholaAdmin.getEmail(), bean.oldPassword);
+        if (oldOk.isEmpty() || !oldOk.get()) {
+            validationErrors.put("oldPassword", "Ancien mot de passe incorrect");
+        }
+        // Nouveau mot de passe : même politique que la création.
+        validatePassword(bean.newPassword).ifPresent(error -> validationErrors.put("newPassword", error));
+
+        if (!validationErrors.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(validationErrors).build();
+        }
+
+        adminDao.updatePassword(fisholaAdmin.getId(), adminDao.hashPassword(bean.newPassword));
+        return Response.noContent().build();
+    }
+
+    @PUT
     @Path("/{adminId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Audited(value = "admin.update", entityType = "fishola_admin", entityIdParam = "adminId")
