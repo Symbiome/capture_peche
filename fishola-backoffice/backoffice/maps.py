@@ -9,6 +9,7 @@ Le réseau hydrographique est produit **directement ici** en tuiles vectorielles
 MVT (ST_AsMVT) à partir de la base partagée — même logique que la carte pêcheur,
 sans dépendre du backend Fishola.
 """
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connection
@@ -35,31 +36,12 @@ _SESSIONS_SQL = """
 """
 
 
-# Tuile vectorielle (MVT) du réseau hydro pour une tuile slippy-map z/x/y : deux
-# couches (river_section : lignes ; water_surface : polygones), comme la carte
-# pêcheur (#8). Préfiltre bbox en 4326 (index GIST), ST_AsMVTGeom en 3857.
-_HYDRO_TILE_SQL = """
-    WITH env AS (SELECT ST_TileEnvelope(%s, %s, %s) AS g),
-    rs AS (
-      SELECT ST_AsMVTGeom(ST_Transform(r.geom, 3857), env.g, 4096, 64, true) AS geom,
-             r.water_entity_id::text AS water_entity_id, we.name AS name, r.persistent AS persistent
-      FROM river_section r JOIN water_entity we ON we.id = r.water_entity_id, env
-      WHERE r.geom && ST_Transform(env.g, 4326)
-    ),
-    ws AS (
-      SELECT ST_AsMVTGeom(ST_Transform(s.geom, 3857), env.g, 4096, 64, true) AS geom,
-             s.water_entity_id::text AS water_entity_id, we.name AS name
-      FROM water_surface s JOIN water_entity we ON we.id = s.water_entity_id, env
-      WHERE s.geom && ST_Transform(env.g, 4326)
-    )
-    SELECT coalesce((SELECT ST_AsMVT(rs.*, 'river_section') FROM rs WHERE geom IS NOT NULL), ''::bytea)
-        || coalesce((SELECT ST_AsMVT(ws.*, 'water_surface')  FROM ws WHERE geom IS NOT NULL), ''::bytea) AS tile
-"""
-
-
 def _hydro_tiles_url() -> str:
-    """URL-modèle (absolue) des tuiles hydro servies par ce back-office."""
-    return "/admin/carte/tiles/hydro/{z}/{x}/{y}.pbf"
+    """URL-modèle des tuiles hydro. **Source unique = l'endpoint MVT public de
+    Quarkus** (`/api/v1/tiles/hydro/...`) : le back-office ne duplique pas la
+    génération de tuiles. CORS Quarkus autorise déjà l'origine du back-office ;
+    la base est surchargeable via `FISHOLA_API_BASE_URL` (prod)."""
+    return f"{settings.FISHOLA_API_BASE_URL}/api/v1/tiles/hydro/{{z}}/{{x}}/{{y}}.pbf"
 
 
 @staff_member_required
@@ -114,11 +96,91 @@ def catch_photo(request, catch_id, index):
     return HttpResponse(data, content_type=content_type)
 
 
+# --- Recherches (parité mobile #6/#7) : nom d'entité, commune, byCommune -----
+# SQL porté de HydroSearchDao (Quarkus) : accent-insensible (f_unaccent) +
+# typo-tolérant (pg_trgm), tri préfixe → similarité → nom. Sert la sélection
+# de l'entité hydro sans dépendre du rendu des tuiles.
+
+def _for_search(q):
+    """Neutralise les métacaractères LIKE / trigramme (comme `forSearch` côté back)."""
+    return (q or "").translate({ord(c): None for c in "%_\\"}).strip()
+
+
+_SEARCH_ENTITIES_SQL = """
+    SELECT we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng
+    FROM water_entity we
+    WHERE we.geom IS NOT NULL
+      AND (f_unaccent(we.name) ILIKE '%%' || f_unaccent(%(q)s) || '%%'
+           OR f_unaccent(we.name) %% f_unaccent(%(q)s))
+    ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(%(q)s) || '%%') DESC,
+             similarity(f_unaccent(we.name), f_unaccent(%(q)s)) DESC, we.name
+    LIMIT 15
+"""
+
+_SEARCH_COMMUNES_SQL = """
+    SELECT c.insee_com AS insee, c.name, c.latitude AS lat, c.longitude AS lng
+    FROM commune c
+    WHERE f_unaccent(c.name) ILIKE '%%' || f_unaccent(%(q)s) || '%%'
+       OR f_unaccent(c.name) %% f_unaccent(%(q)s)
+    ORDER BY (f_unaccent(c.name) ILIKE f_unaccent(%(q)s) || '%%') DESC,
+             similarity(f_unaccent(c.name), f_unaccent(%(q)s)) DESC, c.name
+    LIMIT 10
+"""
+
+# Entités hydro d'une commune : celles à moins de `bufferM` de sa limite,
+# triées par distance au centroïde communal (geography-cast, index GIST geog).
+_BY_COMMUNE_SQL = """
+    SELECT DISTINCT ON (we.id)
+           we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng
+    FROM commune c
+    JOIN water_entity we
+      ON ST_DWithin(we.geom::geography, c.geom::geography, %(buffer)s)
+    WHERE c.insee_com = %(insee)s AND we.geom IS NOT NULL
+    ORDER BY we.id, ST_Distance(we.geom::geography, ST_Centroid(c.geom)::geography)
+    LIMIT 100
+"""
+
+
+def _rows_as_dicts(cursor):
+    cols = [c[0] for c in cursor.description]
+    return [dict(zip(cols, r)) for r in cursor.fetchall()]
+
+
 @staff_member_required
-def hydro_tile(request, z, x, y):
-    """Tuile vectorielle (MVT) du réseau hydro, produite depuis la base partagée."""
+def waterentity_search(request):
+    """Recherche d'entités hydro par nom (#7). `?q=` ≥ 2 caractères."""
+    q = _for_search(request.GET.get("q", ""))
+    if len(q) < 2:
+        return JsonResponse({"results": []})
     with connection.cursor() as cursor:
-        cursor.execute(_HYDRO_TILE_SQL, [z, x, y])
-        row = cursor.fetchone()
-    data = bytes(row[0]) if row and row[0] is not None else b""
-    return HttpResponse(data, content_type="application/x-protobuf")
+        cursor.execute(_SEARCH_ENTITIES_SQL, {"q": q})
+        results = _rows_as_dicts(cursor)
+    return JsonResponse({"results": results})
+
+
+@staff_member_required
+def commune_search(request):
+    """Recherche de communes par nom (#6). `?q=` ≥ 2 caractères."""
+    q = _for_search(request.GET.get("q", ""))
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+    with connection.cursor() as cursor:
+        cursor.execute(_SEARCH_COMMUNES_SQL, {"q": q})
+        results = _rows_as_dicts(cursor)
+    return JsonResponse({"results": results})
+
+
+@staff_member_required
+def waterentities_by_commune(request):
+    """Entités hydro d'une commune (#6). `?insee=` requis, `?bufferM=` (défaut 500)."""
+    insee = (request.GET.get("insee", "") or "").strip()
+    if not insee:
+        return JsonResponse({"results": []})
+    try:
+        buffer_m = min(max(int(request.GET.get("bufferM", 500)), 0), 20000)
+    except ValueError:
+        buffer_m = 500
+    with connection.cursor() as cursor:
+        cursor.execute(_BY_COMMUNE_SQL, {"insee": insee, "buffer": buffer_m})
+        results = _rows_as_dicts(cursor)
+    return JsonResponse({"results": results})

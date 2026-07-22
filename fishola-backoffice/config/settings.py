@@ -100,6 +100,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # L'admin est la seule interface : on y renvoie après connexion (pas de /accounts/profile/).
 LOGIN_REDIRECT_URL = "/admin/"
 
+# Base de l'API Fishola (Quarkus). Sert notamment de source UNIQUE des tuiles
+# hydro (endpoint MVT public `/api/v1/tiles/hydro/...`) : le back-office ne
+# génère pas ses propres tuiles. Surchargeable par déploiement.
+FISHOLA_API_BASE_URL = os.environ.get("FISHOLA_API_BASE_URL", "http://localhost:8080")
+
 LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Europe/Paris"
 USE_I18N = True

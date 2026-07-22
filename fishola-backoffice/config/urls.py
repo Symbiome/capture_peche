@@ -21,8 +21,12 @@ urlpatterns = [
     # session et le chrome de l'admin ; déclarée AVANT admin.site.urls.
     path("admin/carte/", maps.carte_view, name="carte"),
     path("admin/carte/sessions.geojson", maps.sessions_geojson, name="carte_sessions"),
-    path("admin/carte/tiles/hydro/<int:z>/<int:x>/<int:y>.pbf",
-         maps.hydro_tile, name="carte_hydro_tile"),
+    # Tuiles hydro : servies par l'endpoint MVT public de Quarkus (source unique) —
+    # pas d'endpoint de tuiles côté back-office (cf. maps._hydro_tiles_url).
+    # Recherches (parité mobile #6/#7) — servent la sélection de l'entité hydro.
+    path("admin/carte/search/entities", maps.waterentity_search, name="hydro_search_entities"),
+    path("admin/carte/search/communes", maps.commune_search, name="hydro_search_communes"),
+    path("admin/carte/search/by-commune", maps.waterentities_by_commune, name="hydro_by_commune"),
     path("admin/backoffice/catch/<uuid:catch_id>/photo/<int:index>/",
          maps.catch_photo, name="catch_photo"),
     path("admin/", admin.site.urls),

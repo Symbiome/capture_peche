@@ -212,6 +212,10 @@ class ManualTripForm(forms.Form):
         de recueil : la liste est réduite à cette seule valeur et le champ est
         désactivé (Django ignore alors toute valeur soumise et retient l'initiale)."""
         super().__init__(*args, **kwargs)
+        # Empêche l'autofill du navigateur de remplir les champs (ex. « Jérôme »
+        # injecté dans « Nombre »).
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("autocomplete", "off")
         if locked_method:
             label = dict(OPERATOR_COLLECTION_METHODS).get(locked_method, locked_method)
             field = self.fields["collection_method"]
@@ -252,6 +256,12 @@ class ManualCatchForm(forms.Form):
     kept = forms.BooleanField(label="Conservée", required=False, widget=UnfoldBooleanSwitchWidget)
     description = forms.CharField(label="Pathologies / description", required=False,
                                   widget=UnfoldAdminTextareaWidget)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Coupe l'autofill du navigateur (cf. ManualTripForm).
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("autocomplete", "off")
 
     def to_data(self):
         """Convertit le formulaire nettoyé en `CaptureData` (pour validation/persist)."""
