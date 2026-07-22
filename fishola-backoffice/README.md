@@ -1,7 +1,8 @@
 # Backend « gestion interne » (Django)
 
 Back-office du projet **capture_peche** : **administration** (comptes du personnel,
-profils & droits, journal d'activité) et **saisie opérateur** (import de masse CSV).
+profils & droits, journal d'activité) et **saisie opérateur** — import de masse CSV
+**et saisie manuelle** d'une sortie + ses captures.
 L'interface est un **Django Admin** personnalisé, thémé « AquaAdmin » (django-unfold).
 
 C'est le second backend du projet ; le premier, **Fishola/Quarkus**, porte l'application
@@ -24,9 +25,16 @@ pêcheur. Les deux partagent la même base de données.
   localisation en `water_entity_id`) → pas de dépendance GDAL.
 - **Vue « Carte » (consultation).** Une page carte (MapLibre + fonds IGN) affiche les
   sessions géolocalisées (marqueurs + regroupement) avec une liste latérale ; un clic
-  ouvre une fiche synthétique. Le **réseau hydro** est produit ici même en tuiles
-  vectorielles (MVT) depuis la base partagée (survol / clic → nom + type du cours d'eau),
-  sans dépendre du backend Fishola. Les données pêcheur ne sont **pas** éditables ici.
+  ouvre une fiche synthétique. Le **réseau hydro** provient des **tuiles vectorielles
+  (MVT) servies par Fishola/Quarkus** (endpoint public, **source unique** — le back-office
+  ne duplique plus la génération de tuiles) ; base surchargeable via `FISHOLA_API_BASE_URL`.
+  Les données pêcheur ne sont **pas** éditables ici.
+- **Saisie manuelle opérateur (#62).** Écran « Nouvelle saisie » (une sortie + ses
+  captures) avec les **mêmes contrôles que l'import** (référentiels, tailles aberrantes,
+  lots). Localisation par **recherche** (cours d'eau / commune) et **carte MapLibre**
+  (clic → entité, **commune auto-remplie**). La méthode de recueil peut être **verrouillée
+  par compte** via le **profil opérateur** (`OperatorProfile`). Chemin de création dédié :
+  l'admin brut des sorties reste en lecture seule.
 
 ## Stack
 

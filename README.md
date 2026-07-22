@@ -30,6 +30,33 @@ Ensuite il faut démarrer :
 * [le backend (avec sa base de données)](/fishola-backend/README.md)
 * [le front](/fishola-mobile/README.md)
 * [l'interface d'administration](/fishola-admin/README.md)
+* [le back-office « gestion interne » (Django)](/fishola-backoffice/README.md)
+
+#### Tout lancer / tout arrêter (raccourci)
+
+Deux scripts à la racine orchestrent l'ensemble de la stack en mode dev :
+
+```bash
+./start_all.sh   # PostgreSQL (Docker) + backend Quarkus + fronts pêcheur/admin
+                 # + back-office Django + maildev. Ctrl+C arrête les serveurs de
+                 # dev (les conteneurs Docker restent en place).
+
+./down_all.sh    # arrête TOUT : serveurs de dev (tués par port) + conteneurs
+                 # Docker (maildev supprimé, PostgreSQL stoppé — les données
+                 # restent dans le volume). Utile pour repartir propre.
+```
+
+| Service | URL |
+|---|---|
+| Backend (statut) | http://localhost:8080/api/v1/status |
+| Front pêcheur | http://localhost:8081 |
+| Front admin | http://localhost:8082 |
+| Back-office (admin Django) | http://localhost:8083/admin/ |
+| Maildev | http://localhost:41080 |
+
+> `start_all.sh` lance aussi les migrations Django du back-office (tables framework +
+> profil opérateur). Le premier démarrage installe l'environnement (`./setup.sh`) si `.venv`
+> est absent.
 
 
 ### Déploiement sur démo
