@@ -2,7 +2,8 @@
 
 Guide d'installation complet, depuis une machine Linux vierge (Ubuntu/Debian), pour faire tourner en local :
 - la base de données PostgreSQL
-- le backend Java/Quarkus (`fishola-backend`)
+- le backend Java/Quarkus (`fishola-backend`) — application pêcheur
+- le back-office Python/Django (`fishola-backoffice`) — gestion interne (admin & saisie opérateur)
 - le front pêcheur Vue.js (`fishola-mobile`)
 - le front admin Vue.js (`fishola-admin`)
 
@@ -133,17 +134,32 @@ npm run serve
 
 Application accessible sur [http://localhost:8082](http://localhost:8082).
 
-## 11. Vérification finale
+## 11. Démarrer le back-office Django (fishola-backoffice)
+
+Second backend (gestion interne : administration & saisie opérateur), qui partage la base PostgreSQL. Nécessite **Python 3.12** et **uv** — le setup détaillé est dans [fishola-backoffice/README.md](../fishola-backoffice/README.md).
+
+```bash
+cd outil_capture/fishola-backoffice
+./setup.sh --init-db          # env + dépendances + migrations Django + profils staff
+.venv/bin/python manage.py createsuperuser
+.venv/bin/python manage.py runserver 8083
+```
+
+Admin accessible sur [http://localhost:8083/admin/](http://localhost:8083/admin/).
+
+## 12. Vérification finale
 
 | Service | URL | Attendu |
 |---|---|---|
 | Backend (statut) | http://localhost:8080/api/v1/status | Réponse JSON OK |
 | Front pêcheur | http://localhost:8081 | Page d'accueil Fishola |
 | Front admin | http://localhost:8082 | Écran de connexion admin |
+| Back-office (admin Django) | http://localhost:8083/admin/ | Écran de connexion de l'admin Django (cf. [fishola-backoffice/README.md](../fishola-backoffice/README.md)) |
 | Mailcatcher (optionnel) | http://localhost:41080 | Interface de réception des mails |
 
 ## Notes
 
+- **Tout lancer / tout arrêter d'un coup** : depuis la racine, `./start_all.sh` démarre l'ensemble de la stack (base, backend, fronts, back-office :8083, maildev) ; `./down_all.sh` arrête tout (serveurs de dev + conteneurs Docker, données PostgreSQL conservées). Voir le [README racine](../README.md#tout-lancer--tout-arrêter-raccourci).
 - Si le port `8080` est déjà utilisé, changer `quarkus.http.port` dans `fishola-backend/src/main/resources/application.properties`, puis reporter ce nouveau port dans le `.env` du front (`VITE__API_DEFAULT_PORT`).
 - Les fichiers `.env`, `.env.web`, `.env.demo`, `.env.mobile` sont déjà présents dans `fishola-mobile/` et `fishola-admin/` avec des valeurs par défaut pour le mode dev — inutile de les recréer.
 - Les migrations Flyway (`fishola-backend/src/main/resources/db/migration/`) s'appliquent automatiquement au démarrage de Quarkus en mode dev.

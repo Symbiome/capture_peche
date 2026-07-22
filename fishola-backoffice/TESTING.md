@@ -34,7 +34,7 @@ Lit de vraies données Fishola via les modèles `managed=False` :
 
 ## 4. Lancer l'admin « AquaAdmin »
 
-⚠️ `migrate` crée les tables **framework Django** (`auth_*`, `django_*`, sessions) **dans la base partagée**. C'est **additif** (préfixe `auth_`/`django_`, ne touche pas les tables Fishola) et réversible (drop de ces tables). Décision d'intégration à acter (cf. README §Décisions ouvertes).
+⚠️ `migrate` crée les tables **framework Django** (`auth_*`, `django_*`, sessions) **dans la base partagée**. C'est **additif** (préfixe `auth_`/`django_`, ne touche pas les tables Fishola) et réversible (drop de ces tables). Décision d'intégration à acter (cf. README, « Décisions ouvertes »).
 
 ```bash
 .venv/bin/python manage.py migrate                 # crée les tables Django (auth/admin/sessions)

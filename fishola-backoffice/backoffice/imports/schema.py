@@ -14,7 +14,7 @@ EXPECTED_HEADER = [
 
 COLLECTION_METHODS = {"saisie_pecheur", "enquete", "carnet_volontaire", "carnet_obligatoire"}
 
-# Liste ouverte au CdC ; figée ici pour la validation (enum fishing_mode = I-G, à venir).
+# Liste (ouverte) figée ici pour la validation ; enum fishing_mode dédié à venir.
 FISHING_MODES = {"bateau", "float tube", "kayak", "a pied", "belly boat", "du bord", "rive"}
 
 # Étages de validation.

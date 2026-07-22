@@ -2,24 +2,87 @@
 {% load i18n %}
 
 {% block content %}
-<div style="max-width:44rem">
-  <p style="margin-bottom:1.25rem;font-size:.9rem;line-height:1.5">
-    Importez un fichier CSV de sorties / captures opérateur (modèle officiel,
-    séparateur « ; », UTF-8). Chaque ligne est validée en 3 étapes
-    (structurel → référentiel → métier) ; un rapport d'import est produit avec le
-    détail des rejets.
+<div class="flex flex-col gap-6 max-w-4xl">
+
+  {# Intro : ce que fait l'import et comment les lignes sont contrôlées. #}
+  <p class="text-sm leading-relaxed text-font-default-light dark:text-font-default-dark">
+    Importez un fichier CSV de sorties / captures. Chaque ligne est contrôlée en trois étapes —
+    <span class="font-medium text-font-important-light dark:text-font-important-dark">structurel</span> (colonnes, formats),
+    <span class="font-medium text-font-important-light dark:text-font-important-dark">référentiel</span> (espèces, techniques, plans d'eau) puis
+    <span class="font-medium text-font-important-light dark:text-font-important-dark">métier</span> (tailles aberrantes, lots).
+    Un rapport est produit avec le détail de chaque rejet ; en mode partiel, les sorties valides sont insérées et les rejets listés.
   </p>
 
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_div }}
-    <div style="margin-top:1.5rem;display:flex;gap:1rem;align-items:center">
-      <button type="submit"
-        style="background:#2563eb;color:#fff;padding:.55rem 1.1rem;border-radius:.4rem;font-weight:600;border:none;cursor:pointer">
-        Lancer l'import
-      </button>
-      <a href="{% url 'admin:backoffice_importjob_changelist' %}">Annuler</a>
+  {# Aide au format : rappel des colonnes + téléchargement du modèle officiel. #}
+  <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-base-200 dark:border-base-800">
+      <div>
+        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">
+          Format attendu — {{ nb_colonnes }} colonnes
+        </h2>
+        <p class="text-xs text-base-500">Séparateur «&nbsp;;&nbsp;», encodage UTF-8. En-tête obligatoire, dans l'ordre.</p>
+      </div>
+      <a href="{% url 'admin:backoffice_importjob_changelist' %}telecharger-modele/"
+         class="shrink-0 inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-medium text-white">
+        <span class="material-symbols-outlined text-sm">download</span>
+        Télécharger le modèle
+      </a>
     </div>
-  </form>
+
+    <div class="flex flex-col gap-4 px-4 py-3">
+      {% for titre, aide, cols in groupes_colonnes %}
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">{{ titre }}</span>
+          <span class="text-xs text-base-500">{{ aide }}</span>
+        </div>
+        <div class="mt-1 flex flex-wrap gap-1.5">
+          {% for col, hint, req in cols %}
+          <span title="{{ hint }}"
+                class="rounded-md px-2 py-1 text-xs font-medium {% if req %}bg-primary-50 text-primary-700 dark:bg-base-800 dark:text-primary-500{% else %}border border-base-200 dark:border-base-800 bg-base-50 text-base-600 dark:bg-base-800 dark:text-base-300{% endif %}">
+            {{ col }}{% if req %}&nbsp;*{% endif %}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      <p class="text-xs text-base-500">
+        <span class="text-primary-600 dark:text-primary-500">*</span> colonne obligatoire.
+        Les captures d'une même sortie partagent le même «&nbsp;session_ref&nbsp;».
+      </p>
+
+      {# Valeurs acceptées pour les colonnes codées (le format, pas dans la donnée). #}
+      <div class="mt-1 pt-3 border-t border-base-200 dark:border-base-800">
+        <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">Valeurs acceptées</span>
+        <div class="mt-1.5 flex flex-col gap-2">
+          {% for col, vals in valeurs_codees %}
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs text-base-500" style="min-width:9rem">{{ col }}</span>
+            {% for v in vals %}
+            <span class="rounded-md px-2 py-1 text-xs font-medium border border-base-200 dark:border-base-800 bg-base-50 text-base-600 dark:bg-base-800 dark:text-base-300">{{ v }}</span>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <span class="text-xs text-base-500">Dates au format JJ/MM/AAAA, heures HH:MM.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# Formulaire d'import (champs stylés via les widgets unfold). #}
+  <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm px-4 py-4">
+    <form method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
+      {% csrf_token %}
+      {{ form.as_div }}
+      <div class="flex items-center gap-3 pt-2">
+        <button type="submit"
+                class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white">
+          Lancer l'import
+        </button>
+        <a href="{% url 'admin:backoffice_importjob_changelist' %}" class="text-sm text-base-500">Annuler</a>
+      </div>
+    </form>
+  </section>
+
 </div>
 {% endblock %}
