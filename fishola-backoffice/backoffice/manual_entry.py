@@ -34,14 +34,18 @@ from django import forms
 from django.db import transaction
 from django.utils import timezone
 from unfold.widgets import (
+    BASE_INPUT_CLASSES,
     UnfoldAdminIntegerFieldWidget,
     UnfoldAdminSelectWidget,
-    UnfoldAdminSingleDateWidget,
-    UnfoldAdminSingleTimeWidget,
     UnfoldAdminTextareaWidget,
     UnfoldAdminTextInputWidget,
     UnfoldBooleanSwitchWidget,
 )
+
+# Classe d'input du thème unfold (bordure, focus primary, dark mode) appliquée aux
+# inputs natifs date/heure — pour que le NAVIGATEUR fournisse ses sélecteurs
+# (calendrier / heure) via type=date|time, tout en gardant le style unfold.
+_UNFOLD_INPUT = " ".join(BASE_INPUT_CLASSES)
 
 from .imports.schema import FISHING_MODES
 from .imports.service import Referential, size_out_of_bounds
@@ -54,6 +58,13 @@ OPERATOR_COLLECTION_METHODS = [
     ("carnet_volontaire", "Carnet volontaire"),
     ("carnet_obligatoire", "Carnet obligatoire"),
 ]
+
+def _style_controls(fields):
+    # Coupe l'autofill du navigateur. On NE touche PAS à la classe CSS : les
+    # widgets unfold portent déjà le style du thème (bordure, focus primary,
+    # dark mode). L'écraser cassait le focus (retour à l'outline bleu natif).
+    for field in fields.values():
+        field.widget.attrs.setdefault("autocomplete", "off")
 
 
 # --- Données parsées (indépendantes des formulaires, pour la validation/persist) --
@@ -99,6 +110,11 @@ def validate_manual(referential, *, bredouille, captures):
             errors.append(ManualError(None, "bredouille",
                                       "sortie déclarée bredouille mais des captures sont renseignées"))
         return errors  # une sortie bredouille n'a, par définition, pas de capture à valider
+
+    if not captures:
+        errors.append(ManualError(None, None,
+                                  "ajoutez au moins une capture, ou cochez « Bredouille »"))
+        return errors
 
     for idx, c in enumerate(captures):
         if c.quantity is None or c.quantity < 1:
@@ -183,16 +199,23 @@ class ManualTripForm(forms.Form):
         widget=UnfoldAdminSelectWidget,
         help_text="Réservé à l'opérateur — la saisie pêcheur passe par l'application mobile.",
     )
-    day = forms.DateField(label="Date", widget=UnfoldAdminSingleDateWidget)
-    start_time = forms.TimeField(label="Heure de début", widget=UnfoldAdminSingleTimeWidget)
-    end_time = forms.TimeField(label="Heure de fin", widget=UnfoldAdminSingleTimeWidget)
-    eau_nom = forms.CharField(
-        label="Entité hydrographique", widget=UnfoldAdminTextInputWidget,
-        help_text="Cliquez sur la carte pour sélectionner, ou saisissez le nom (résolu dans le référentiel).",
+    day = forms.DateField(
+        label="Date",
+        widget=forms.DateInput(attrs={"type": "date", "class": _UNFOLD_INPUT}, format="%Y-%m-%d"),
     )
-    commune = forms.CharField(label="Commune (désambiguïsation)", required=False,
-                              widget=UnfoldAdminTextInputWidget)
-    # Rempli par le clic-sur-carte (résolution exacte par id) ; vide = repli sur le nom.
+    start_time = forms.TimeField(
+        label="Heure de début",
+        widget=forms.TimeInput(attrs={"type": "time", "class": _UNFOLD_INPUT}, format="%H:%M"),
+    )
+    end_time = forms.TimeField(
+        label="Heure de fin",
+        widget=forms.TimeInput(attrs={"type": "time", "class": _UNFOLD_INPUT}, format="%H:%M"),
+    )
+    # Entité retenue : remplie par la recherche / le clic-carte (nom, commune, id).
+    # Champs CACHÉS — l'écran ne montre que la carte + la pastille de sélection
+    # (section condensée façon Fishola) ; la commune s'auto-remplit à la sélection.
+    eau_nom = forms.CharField(required=False, widget=forms.HiddenInput)
+    commune = forms.CharField(required=False, widget=forms.HiddenInput)
     water_entity_id = forms.CharField(required=False, widget=forms.HiddenInput)
     technique = forms.ModelChoiceField(
         label="Technique", queryset=Technique.objects.all().order_by("name"),
@@ -212,10 +235,11 @@ class ManualTripForm(forms.Form):
         de recueil : la liste est réduite à cette seule valeur et le champ est
         désactivé (Django ignore alors toute valeur soumise et retient l'initiale)."""
         super().__init__(*args, **kwargs)
-        # Empêche l'autofill du navigateur de remplir les champs (ex. « Jérôme »
-        # injecté dans « Nombre »).
-        for field in self.fields.values():
-            field.widget.attrs.setdefault("autocomplete", "off")
+        # Style uniforme + coupe l'autofill du navigateur (ex. « Jérôme » injecté
+        # dans « Nombre »).
+        _style_controls(self.fields)
+        # HTML5 : le calendrier bloque toute date future (backstop serveur = clean_day).
+        self.fields["day"].widget.attrs["max"] = timezone.localdate().isoformat()
         if locked_method:
             label = dict(OPERATOR_COLLECTION_METHODS).get(locked_method, locked_method)
             field = self.fields["collection_method"]
@@ -235,6 +259,9 @@ class ManualTripForm(forms.Form):
         start, end = cleaned.get("start_time"), cleaned.get("end_time")
         if start and end and end <= start:
             self.add_error("end_time", "l'heure de fin doit être postérieure à l'heure de début.")
+        # Une entité doit avoir été sélectionnée (carte ou recherche) — champs cachés.
+        if not cleaned.get("water_entity_id") and not cleaned.get("eau_nom"):
+            self.add_error(None, "Sélectionnez une entité hydrographique sur la carte ou par recherche.")
         return cleaned
 
 
@@ -247,9 +274,12 @@ class ManualCatchForm(forms.Form):
     )
     quantity = forms.IntegerField(label="Nombre (lot)", min_value=1, initial=1,
                                   widget=UnfoldAdminIntegerFieldWidget)
-    size = forms.IntegerField(label="Taille (cm)", required=False, min_value=0,
+    # Bornes larges = garde-fous anti-faute de frappe (la validation fine par
+    # espèce, Q8, est portée par SpeciesSizeBounds). min/max génèrent aussi les
+    # attributs HTML5 (validation navigateur en plus du serveur).
+    size = forms.IntegerField(label="Taille (cm)", required=False, min_value=0, max_value=300,
                               widget=UnfoldAdminIntegerFieldWidget)
-    weight = forms.IntegerField(label="Poids (g)", required=False, min_value=0,
+    weight = forms.IntegerField(label="Poids (g)", required=False, min_value=0, max_value=150000,
                                 widget=UnfoldAdminIntegerFieldWidget)
     size_class = forms.CharField(label="Classe de taille", required=False,
                                  widget=UnfoldAdminTextInputWidget)
@@ -259,9 +289,7 @@ class ManualCatchForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Coupe l'autofill du navigateur (cf. ManualTripForm).
-        for field in self.fields.values():
-            field.widget.attrs.setdefault("autocomplete", "off")
+        _style_controls(self.fields)  # style uniforme + anti-autofill (cf. ManualTripForm)
 
     def to_data(self):
         """Convertit le formulaire nettoyé en `CaptureData` (pour validation/persist)."""

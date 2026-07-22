@@ -27,6 +27,7 @@ urlpatterns = [
     path("admin/carte/search/entities", maps.waterentity_search, name="hydro_search_entities"),
     path("admin/carte/search/communes", maps.commune_search, name="hydro_search_communes"),
     path("admin/carte/search/by-commune", maps.waterentities_by_commune, name="hydro_by_commune"),
+    path("admin/carte/entity", maps.waterentity_detail, name="hydro_entity_detail"),
     path("admin/backoffice/catch/<uuid:catch_id>/photo/<int:index>/",
          maps.catch_photo, name="catch_photo"),
     path("admin/", admin.site.urls),

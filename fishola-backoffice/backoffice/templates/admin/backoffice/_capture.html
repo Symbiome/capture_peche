@@ -1,0 +1,27 @@
+{# Carte d'une capture (formset), rendue pour chaque cform et le gabarit empty_form (__prefix__ réécrit en JS). Comment mono-ligne obligatoire. #}
+<div class="capture-form rounded-md border border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-800 p-4">
+  <div class="flex justify-end -mt-1 mb-1">
+    <button type="button" class="remove-capture inline-flex items-center gap-1 text-xs font-medium text-base-500 hover:text-red-600 dark:hover:text-red-400"
+            title="Retirer cette capture">
+      <span class="material-symbols-outlined text-sm">close</span> Retirer
+    </button>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3">
+    {% include "admin/backoffice/_field.html" with field=cform.species %}
+    {% include "admin/backoffice/_field.html" with field=cform.quantity %}
+    <div>
+      <span class="block text-xs font-medium text-font-important-light dark:text-font-important-dark mb-1">Conservée</span>
+      <div class="flex items-center h-9">{{ cform.kept }}</div>
+    </div>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3 mt-4">
+    {% include "admin/backoffice/_field.html" with field=cform.size %}
+    {% include "admin/backoffice/_field.html" with field=cform.weight %}
+    {% include "admin/backoffice/_field.html" with field=cform.size_class %}
+  </div>
+  <div class="mt-4">
+    {% include "admin/backoffice/_field.html" with field=cform.description %}
+  </div>
+  {# DELETE gardé masqué (formset can_delete) mais non utilisé : le retrait se fait en JS. #}
+  <span class="hidden">{{ cform.DELETE }}</span>
+</div>

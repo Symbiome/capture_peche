@@ -73,6 +73,11 @@ class ValidateManualTest(SimpleTestCase):
     def test_bredouille_sans_capture_ok(self):
         self.assertEqual(validate_manual(self.ref, bredouille=True, captures=[]), [])
 
+    def test_non_bredouille_sans_capture_rejete(self):
+        # Une sortie non bredouille doit avoir au moins une capture.
+        errs = validate_manual(self.ref, bredouille=False, captures=[])
+        self.assertEqual([(e.index, e.field) for e in errs], [(None, None)])
+
     def test_plusieurs_captures_erreurs_indexees(self):
         captures = [
             CaptureData(species_id="perche", quantity=1, size=25),   # ok

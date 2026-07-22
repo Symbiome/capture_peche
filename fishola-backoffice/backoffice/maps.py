@@ -9,6 +9,8 @@ Le réseau hydrographique est produit **directement ici** en tuiles vectorielles
 MVT (ST_AsMVT) à partir de la base partagée — même logique que la carte pêcheur,
 sans dépendre du backend Fishola.
 """
+import uuid
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
@@ -106,15 +108,37 @@ def _for_search(q):
     return (q or "").translate({ord(c): None for c in "%_\\"}).strip()
 
 
+# LATERAL commune : commune contenant le centroïde de l'entité — sert au
+# remplissage AUTOMATIQUE de la commune à la sélection (parité mobile #15).
+_COMMUNE_LATERAL = """
+    LEFT JOIN LATERAL (
+        SELECT name AS commune, insee_com AS insee FROM commune
+        WHERE ST_Contains(commune.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326))
+        LIMIT 1
+    ) c ON true
+"""
+
 _SEARCH_ENTITIES_SQL = """
-    SELECT we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng
+    SELECT we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng,
+           c.commune, c.insee
     FROM water_entity we
+    """ + _COMMUNE_LATERAL + """
     WHERE we.geom IS NOT NULL
       AND (f_unaccent(we.name) ILIKE '%%' || f_unaccent(%(q)s) || '%%'
            OR f_unaccent(we.name) %% f_unaccent(%(q)s))
     ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(%(q)s) || '%%') DESC,
              similarity(f_unaccent(we.name), f_unaccent(%(q)s)) DESC, we.name
     LIMIT 15
+"""
+
+# Détail d'une entité par id (nom, type, commune, coords) : enrichit le clic-carte
+# (la tuile MVT ne porte pas la commune).
+_ENTITY_DETAIL_SQL = """
+    SELECT we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng,
+           c.commune, c.insee
+    FROM water_entity we
+    """ + _COMMUNE_LATERAL + """
+    WHERE we.id = %(id)s
 """
 
 _SEARCH_COMMUNES_SQL = """
@@ -131,7 +155,8 @@ _SEARCH_COMMUNES_SQL = """
 # triées par distance au centroïde communal (geography-cast, index GIST geog).
 _BY_COMMUNE_SQL = """
     SELECT DISTINCT ON (we.id)
-           we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng
+           we.id::text AS id, we.name, we.kind, we.latitude AS lat, we.longitude AS lng,
+           c.name AS commune, c.insee_com AS insee
     FROM commune c
     JOIN water_entity we
       ON ST_DWithin(we.geom::geography, c.geom::geography, %(buffer)s)
@@ -156,6 +181,21 @@ def waterentity_search(request):
         cursor.execute(_SEARCH_ENTITIES_SQL, {"q": q})
         results = _rows_as_dicts(cursor)
     return JsonResponse({"results": results})
+
+
+@staff_member_required
+def waterentity_detail(request):
+    """Détail d'une entité par `?id=` (nom, type, commune, coords). Enrichit le
+    clic-carte : la tuile ne porte que l'id + le nom, pas la commune."""
+    wid = (request.GET.get("id", "") or "").strip()
+    try:
+        uuid.UUID(wid)
+    except (ValueError, TypeError):
+        return JsonResponse({"result": None})
+    with connection.cursor() as cursor:
+        cursor.execute(_ENTITY_DETAIL_SQL, {"id": wid})
+        rows = _rows_as_dicts(cursor)
+    return JsonResponse({"result": rows[0] if rows else None})
 
 
 @staff_member_required

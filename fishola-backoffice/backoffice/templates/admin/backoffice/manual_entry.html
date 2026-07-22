@@ -13,6 +13,10 @@
     .hydro-tip strong { font-size:.85rem; } .hydro-tip span { font-size:.72rem; color:#64748b; }
   </style>
   {% endif %}
+  <style>
+    #confirm-modal { position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); }
+    #confirm-modal.open { display:flex; }
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -36,95 +40,131 @@
   <form method="post" autocomplete="off" class="flex flex-col gap-6">
     {% csrf_token %}
 
-    {# --- Localisation sur carte (clic-pour-sélectionner l'entité hydro) -- #}
-    {% if hydro_tiles_url %}
+    {# ── ① La sortie ─────────────────────────────────────────────────── #}
     <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
-      <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200 dark:border-base-800">
-        <div>
-          <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Localisation</h2>
-          <p class="text-xs text-base-500">Recherchez par cours d'eau ou par commune, ou cliquez sur la carte.</p>
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-base-200 dark:border-base-800">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold text-white">1</span>
+        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">La sortie</h2>
+      </div>
+      <div class="flex flex-col gap-5 px-5 py-5">
+        {% include "admin/backoffice/_field.html" with field=form.collection_method %}
+        <div class="grid gap-4 sm:grid-cols-3">
+          {% include "admin/backoffice/_field.html" with field=form.day %}
+          {% include "admin/backoffice/_field.html" with field=form.start_time %}
+          {% include "admin/backoffice/_field.html" with field=form.end_time %}
+        </div>
+        <div class="grid gap-4 sm:grid-cols-3">
+          {% include "admin/backoffice/_field.html" with field=form.technique %}
+          {% include "admin/backoffice/_field.html" with field=form.mode_peche %}
+          {% include "admin/backoffice/_field.html" with field=form.espece_ciblee %}
+        </div>
+        <div class="flex items-center gap-3 pt-1">
+          {{ form.bredouille }}
+          <label for="{{ form.bredouille.id_for_label }}"
+                 class="text-sm font-medium text-font-important-light dark:text-font-important-dark">Bredouille — aucune capture</label>
+        </div>
+      </div>
+    </section>
+
+    {# ── ② Localisation (recherche + carte + entité retenue) ──────────── #}
+    <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+      <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-base-200 dark:border-base-800">
+        <div class="flex items-center gap-3">
+          <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold text-white">2</span>
+          <div>
+            <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Localisation</h2>
+            <p class="text-xs text-base-500">Recherchez par cours d'eau ou par commune, ou cliquez sur la carte.</p>
+          </div>
         </div>
         <span id="manual-selected" class="text-xs font-medium text-primary-600 dark:text-primary-500"></span>
       </div>
 
+      {% if hydro_tiles_url %}
       {# Recherches (parité mobile) : cours d'eau (#7) et commune (#6). #}
-      <div class="grid gap-3 px-4 pt-4 sm:grid-cols-2">
+      <div class="grid gap-3 px-5 pt-5 sm:grid-cols-2">
         <div class="relative">
           <input id="search-entity" type="text" autocomplete="off" placeholder="Rechercher un cours d'eau / plan d'eau…"
-                 class="w-full rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-800 px-3 py-2 text-sm">
-          <div id="results-entity" class="absolute z-10 mt-1 hidden w-full max-h-56 overflow-y-auto rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-800 shadow-lg"></div>
+                 class="w-full rounded-default border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 px-3 py-2 text-sm font-medium shadow-xs placeholder-base-400 text-font-default-light dark:text-font-default-dark focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600">
+          <div id="results-entity" class="absolute z-10 mt-1 hidden w-full max-h-56 overflow-y-auto rounded-default border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-lg"></div>
         </div>
         <div class="relative">
           <input id="search-commune" type="text" autocomplete="off" placeholder="Rechercher une commune…"
-                 class="w-full rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-800 px-3 py-2 text-sm">
-          <div id="results-commune" class="absolute z-10 mt-1 hidden w-full max-h-56 overflow-y-auto rounded-md border border-base-200 dark:border-base-700 bg-white dark:bg-base-800 shadow-lg"></div>
+                 class="w-full rounded-default border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 px-3 py-2 text-sm font-medium shadow-xs placeholder-base-400 text-font-default-light dark:text-font-default-dark focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600">
+          <div id="results-commune" class="absolute z-10 mt-1 hidden w-full max-h-56 overflow-y-auto rounded-default border border-base-200 dark:border-base-700 bg-white dark:bg-base-900 shadow-lg"></div>
         </div>
       </div>
-
-      <div class="px-4 py-4">
+      <div class="px-5 py-5">
         <div id="manual-map"></div>
       </div>
-    </section>
-    {% endif %}
+      {% endif %}
 
-    {# --- Sortie --------------------------------------------------------- #}
-    <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
-      <div class="px-4 py-3 border-b border-base-200 dark:border-base-800">
-        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Sortie</h2>
-      </div>
-      <div class="px-4 py-4">
-        {{ form.as_div }}
-      </div>
+      {# Champs cachés remplis par la recherche / le clic-carte (sélection affichée dans la pastille). #}
+      {{ form.eau_nom }}{{ form.commune }}{{ form.water_entity_id }}
     </section>
 
-    {# --- Captures (formset répétable, masqué si bredouille) ------------- #}
-    <section id="captures-section"
-             class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-base-200 dark:border-base-800">
-        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Captures</h2>
+    {# ── ③ Captures (formset répétable, masqué si bredouille) ─────────── #}
+    <section id="captures-section" class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+      <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-base-200 dark:border-base-800">
+        <div class="flex items-center gap-3">
+          <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-xs font-semibold text-white">3</span>
+          <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Captures</h2>
+        </div>
         <button type="button" id="add-capture"
                 class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-medium text-white">
-          <span class="material-symbols-outlined text-sm">add</span>
-          Ajouter une capture
+          <span class="material-symbols-outlined text-sm">add</span> Ajouter une capture
         </button>
       </div>
 
       {{ formset.management_form }}
 
-      <div id="capture-forms" class="flex flex-col divide-y divide-base-200 dark:divide-base-800">
+      <div id="capture-forms" class="flex flex-col gap-4 px-5 py-5">
         {% for cform in formset %}
-        <div class="capture-form px-4 py-4">
-          {{ cform.as_div }}
-        </div>
+        {% include "admin/backoffice/_capture.html" with cform=cform %}
         {% endfor %}
       </div>
 
       {# Gabarit vide cloné en JS pour ajouter une capture. #}
       <template id="empty-capture-form">
-        <div class="capture-form px-4 py-4">
-          {{ formset.empty_form.as_div }}
-        </div>
+        {% include "admin/backoffice/_capture.html" with cform=formset.empty_form %}
       </template>
 
-      <p class="px-4 py-3 text-xs text-base-500 border-t border-base-200 dark:border-base-800">
+      <p class="px-5 py-3 text-xs text-base-500 border-t border-base-200 dark:border-base-800">
         Laissez cette section vide et cochez « Bredouille » si la sortie n'a produit aucune capture.
       </p>
     </section>
 
-    <div class="flex items-center gap-3">
-      <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white">
-        Enregistrer la saisie
+    <div class="flex items-center gap-4">
+      <button type="submit"
+              class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-5 py-2 text-sm font-semibold text-white shadow-sm">
+        <span class="material-symbols-outlined text-sm">save</span> Enregistrer la saisie
       </button>
-      <a href="{% url 'admin:backoffice_trip_changelist' %}" class="text-sm text-base-500">Annuler</a>
+      <a href="{% url 'admin:backoffice_trip_changelist' %}" class="text-sm text-base-500 hover:underline">Annuler</a>
     </div>
   </form>
+
+  {# Modale de confirmation (retrait d'une capture contenant des données). #}
+  <div id="confirm-modal">
+    <div class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-lg max-w-sm w-full mx-4">
+      <div class="px-5 py-4">
+        <h3 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Retirer cette capture ?</h3>
+        <p class="mt-2 text-sm text-base-500">Elle contient des données saisies. Ce retrait est définitif.</p>
+      </div>
+      <div class="flex justify-end gap-3 px-5 py-3 border-t border-base-200 dark:border-base-800">
+        <button type="button" id="confirm-cancel"
+                class="rounded-md border border-base-200 dark:border-base-700 px-4 py-2 text-sm font-medium text-font-default-light dark:text-font-default-dark">Annuler</button>
+        <button type="button" id="confirm-ok"
+                class="rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white">Retirer</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% if hydro_tiles_url %}
 <script id="manual-map-config" type="application/json">{"hydroTilesUrl": "{{ hydro_tiles_url|escapejs }}",
  "searchEntities": "/admin/carte/search/entities",
  "searchCommunes": "/admin/carte/search/communes",
- "byCommune": "/admin/carte/search/by-commune"}</script>
+ "byCommune": "/admin/carte/search/by-commune",
+ "entityDetail": "/admin/carte/entity"}</script>
 <script src="{% static 'backoffice/vendor/maplibre/maplibre-gl.js' %}"></script>
 <script>
 (function () {
@@ -194,6 +234,7 @@
   // --- Sélection (partagée entre clic-carte et recherche) --------------------
   const idField = document.getElementById('id_water_entity_id');
   const nameField = document.getElementById('id_eau_nom');
+  const communeField = document.getElementById('id_commune');
   const selected = document.getElementById('manual-selected');
   let pin = null;
 
@@ -202,21 +243,37 @@
     if (!pin) pin = new maplibregl.Marker({ color:'#e2725b' });
     pin.setLngLat([lng, lat]).addTo(map);
   }
-  // Cœur de la sélection : renseigne l'id (exact) + le nom, et recadre la carte.
+  // Cœur de la sélection : renseigne id + nom + commune (auto), et met à jour la
+  // pastille. Recadre la carte seulement si demandé (recherche), pas au clic-carte.
   function selectEntity(o) {
     if (idField) idField.value = o.id || '';
     if (nameField) nameField.value = o.name || '';
-    if (selected) selected.textContent = '✓ ' + (o.name || 'Sans nom') + (o.detail ? ' — ' + o.detail : '');
-    if (o.lng != null && o.lat != null) { map.flyTo({ center:[o.lng, o.lat], zoom:14 }); setPin(o.lng, o.lat); }
+    if (communeField) communeField.value = o.commune || '';
+    if (selected) {
+      var t = '✓ ' + (o.name || 'Sans nom');
+      if (o.detail) t += ' — ' + o.detail;
+      if (o.commune) t += ' · ' + o.commune;
+      selected.textContent = t;
+    }
+    if (o.recenter && o.lng != null && o.lat != null) { map.flyTo({ center:[o.lng, o.lat], zoom:14 }); setPin(o.lng, o.lat); }
   }
 
-  // Clic carte → sélection via la tuile (id exact).
+  // Clic carte → sélection via la tuile (id exact) + pin au point cliqué, puis
+  // enrichissement de la commune via l'endpoint détail (la tuile ne la porte pas).
   map.on('click', function (e) {
     const fs = queryHydro(e.point);
     if (!fs.length) return;
     const f = fs[0], p = f.properties || {};
-    selectEntity({ id:p.water_entity_id, name:p.name || 'Sans nom', detail:hydroType(f) });
-    setPin(e.lngLat.lng, e.lngLat.lat); // pin au point exact cliqué
+    setPin(e.lngLat.lng, e.lngLat.lat);
+    if (p.water_entity_id) {
+      fetchJson(cfg.entityDetail + '?id=' + encodeURIComponent(p.water_entity_id)).then(function (data) {
+        const d = (data && data.result) || {};
+        selectEntity({ id:p.water_entity_id, name:d.name || p.name || 'Sans nom',
+                       detail:d.kind ? kindLabel(d.kind) : hydroType(f), commune:d.commune });
+      });
+    } else {
+      selectEntity({ id:p.water_entity_id, name:p.name || 'Sans nom', detail:hydroType(f) });
+    }
   });
 
   // --- Recherches (parité mobile #6/#7) : autocomplete débounce 250 ms -------
@@ -261,7 +318,8 @@
     box.querySelectorAll('button').forEach(function (btn) {
       btn.addEventListener('click', function () {
         const r = results[parseInt(btn.dataset.i, 10)];
-        selectEntity({ id:r.id, name:r.name, detail:kindLabel(r.kind), lat:r.lat, lng:r.lng });
+        selectEntity({ id:r.id, name:r.name, detail:kindLabel(r.kind), commune:r.commune,
+                       lat:r.lat, lng:r.lng, recenter:true });
         hide(box);
       });
     });
@@ -311,6 +369,43 @@
     wrapper.innerHTML = html.trim();
     container.appendChild(wrapper.firstChild);
     total.value = index + 1;
+  });
+
+  // Retrait d'une capture (inverse de « Ajouter »). Confirmation si des données
+  // ont été saisies. Suppression du nœud : l'emplacement vide est ignoré par le
+  // formset (formulaire de création, captures neuves) ; TOTAL_FORMS reste inchangé.
+  function captureHasData(card) {
+    const sel = card.querySelector('select[name$="-species"]');
+    if (sel && sel.value) return true;
+    const filled = card.querySelectorAll(
+      'input[name$="-size"], input[name$="-weight"], input[name$="-size_class"], textarea[name$="-description"]');
+    for (let i = 0; i < filled.length; i++) {
+      if (filled[i].value && String(filled[i].value).trim() !== "") return true;
+    }
+    const kept = card.querySelector('input[name$="-kept"]');
+    return !!(kept && kept.checked);
+  }
+  // Modale de confirmation custom (remplace window.confirm).
+  const modal = document.getElementById("confirm-modal");
+  let pendingCard = null;
+  function closeModal() { modal.classList.remove("open"); pendingCard = null; }
+  document.getElementById("confirm-cancel").addEventListener("click", closeModal);
+  modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+  });
+  document.getElementById("confirm-ok").addEventListener("click", function () {
+    if (pendingCard) pendingCard.remove();
+    closeModal();
+  });
+
+  container.addEventListener("click", function (e) {
+    const btn = e.target.closest(".remove-capture");
+    if (!btn) return;
+    const card = btn.closest(".capture-form");
+    if (!card) return;
+    if (captureHasData(card)) { pendingCard = card; modal.classList.add("open"); }  // confirmation
+    else { card.remove(); }                                                          // vide → direct
   });
 
   // Masque la section captures quand « Bredouille » est coché.
