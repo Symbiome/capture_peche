@@ -58,6 +58,21 @@ Deux scripts à la racine orchestrent l'ensemble de la stack en mode dev :
 > profil opérateur). Le premier démarrage installe l'environnement (`./setup.sh`) si `.venv`
 > est absent.
 
+#### Lancer les tests
+
+Le script `run_tests.sh` (racine) exécute les suites de tests, avec un **scope** optionnel :
+
+```bash
+./run_tests.sh              # tout : backoffice (Django) + mobile (jest) + backend (Quarkus)
+./run_tests.sh backoffice   # Django, tests DB-free — rapide
+./run_tests.sh mobile       # front pêcheur — jest (unitaires)
+./run_tests.sh backend      # Quarkus — mvn (Testcontainers → Docker + JDK ≥ 25)
+./run_tests.sh e2e          # Cypress headless — nécessite la stack lancée (start_all.sh)
+```
+
+Il affiche un récapitulatif et sort en erreur si une suite échoue. (Le front admin n'a pas
+de tests ; les tests backoffice tournent sans base via un runner `unittest`.)
+
 
 ### Déploiement sur démo
 
