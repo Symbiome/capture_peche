@@ -1,0 +1,219 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrahead %}{{ block.super }}
+  {% if hydro_tiles_url %}
+  <link rel="stylesheet" href="{% static 'backoffice/vendor/maplibre/maplibre-gl.css' %}">
+  <style>
+    #manual-map { position:relative; height:22rem; border-radius:.5rem; overflow:hidden; }
+    #manual-map .maplibregl-canvas { outline:none; }
+    .hydro-hover-popup { pointer-events:none; }
+    .hydro-hover-popup .maplibregl-popup-content { padding:6px 10px; border-radius:6px; box-shadow:0 1px 4px #0003; }
+    .hydro-tip { display:flex; flex-direction:column; line-height:1.2; }
+    .hydro-tip strong { font-size:.85rem; } .hydro-tip span { font-size:.72rem; color:#64748b; }
+  </style>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6 max-w-4xl">
+
+  {# Intro : rôle de l'écran et rappel des contrôles (mêmes que l'import). #}
+  <p class="text-sm leading-relaxed text-font-default-light dark:text-font-default-dark">
+    Saisissez à la main une <span class="font-medium text-font-important-light dark:text-font-important-dark">sortie</span>
+    et ses <span class="font-medium text-font-important-light dark:text-font-important-dark">captures</span>.
+    Les mêmes contrôles que l'import s'appliquent — référentiel (espèce, technique, plan d'eau) et
+    métier (tailles aberrantes, lots). La méthode de recueil est restreinte aux relevés opérateur
+    (la saisie pêcheur passe par l'application mobile).
+  </p>
+
+  {% if form.non_field_errors or formset.non_form_errors %}
+  <div class="rounded-default border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-900 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+    {{ form.non_field_errors }}{{ formset.non_form_errors }}
+  </div>
+  {% endif %}
+
+  <form method="post" class="flex flex-col gap-6">
+    {% csrf_token %}
+
+    {# --- Localisation sur carte (clic-pour-sélectionner l'entité hydro) -- #}
+    {% if hydro_tiles_url %}
+    <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+      <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200 dark:border-base-800">
+        <div>
+          <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Localisation</h2>
+          <p class="text-xs text-base-500">Cliquez un cours d'eau / plan d'eau pour le sélectionner.</p>
+        </div>
+        <span id="manual-selected" class="text-xs font-medium text-primary-600 dark:text-primary-500"></span>
+      </div>
+      <div class="px-4 py-4">
+        <div id="manual-map"></div>
+      </div>
+    </section>
+    {% endif %}
+
+    {# --- Sortie --------------------------------------------------------- #}
+    <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+      <div class="px-4 py-3 border-b border-base-200 dark:border-base-800">
+        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Sortie</h2>
+      </div>
+      <div class="px-4 py-4">
+        {{ form.as_div }}
+      </div>
+    </section>
+
+    {# --- Captures (formset répétable, masqué si bredouille) ------------- #}
+    <section id="captures-section"
+             class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-base-200 dark:border-base-800">
+        <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Captures</h2>
+        <button type="button" id="add-capture"
+                class="inline-flex items-center gap-2 rounded-md bg-primary-600 px-3 py-2 text-sm font-medium text-white">
+          <span class="material-symbols-outlined text-sm">add</span>
+          Ajouter une capture
+        </button>
+      </div>
+
+      {{ formset.management_form }}
+
+      <div id="capture-forms" class="flex flex-col divide-y divide-base-200 dark:divide-base-800">
+        {% for cform in formset %}
+        <div class="capture-form px-4 py-4">
+          {{ cform.as_div }}
+        </div>
+        {% endfor %}
+      </div>
+
+      {# Gabarit vide cloné en JS pour ajouter une capture. #}
+      <template id="empty-capture-form">
+        <div class="capture-form px-4 py-4">
+          {{ formset.empty_form.as_div }}
+        </div>
+      </template>
+
+      <p class="px-4 py-3 text-xs text-base-500 border-t border-base-200 dark:border-base-800">
+        Laissez cette section vide et cochez « Bredouille » si la sortie n'a produit aucune capture.
+      </p>
+    </section>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white">
+        Enregistrer la saisie
+      </button>
+      <a href="{% url 'admin:backoffice_trip_changelist' %}" class="text-sm text-base-500">Annuler</a>
+    </div>
+  </form>
+</div>
+
+{% if hydro_tiles_url %}
+<script id="manual-map-config" type="application/json">{"hydroTilesUrl": "{{ hydro_tiles_url|escapejs }}"}</script>
+<script src="{% static 'backoffice/vendor/maplibre/maplibre-gl.js' %}"></script>
+<script>
+(function () {
+  // Carte de sélection de l'entité hydro (clic-pour-sélectionner, M-D). Réutilise
+  // les fonds IGN + les tuiles MVT hydro de la carte back-office ; un clic sur un
+  // tronçon / plan d'eau remplit l'id (résolution exacte) + le nom + pose un pin.
+  const cfg = JSON.parse(document.getElementById('manual-map-config').textContent);
+  const IGN_ATTR = '© <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a>';
+  const IGN_WMTS = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0'
+    + '&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
+  const IGN_PLAN = IGN_WMTS + '&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&FORMAT=image/png';
+  const HYDRO_LAYERS = ['hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent'];
+
+  const sources = {
+    'ign-plan': { type:'raster', tiles:[IGN_PLAN], tileSize:256, maxzoom:19, attribution:IGN_ATTR },
+    hydro: { type:'vector', tiles:[cfg.hydroTilesUrl], minzoom:10, maxzoom:16, attribution:IGN_ATTR },
+  };
+  const layers = [
+    { id:'ign-plan', type:'raster', source:'ign-plan' },
+    { id:'hydro-surface', type:'fill', source:'hydro', 'source-layer':'water_surface',
+      paint:{ 'fill-color':'#1e9bc4', 'fill-opacity':0.35, 'fill-outline-color':'#1478a0' } },
+    { id:'hydro-river-persistent', type:'line', source:'hydro', 'source-layer':'river_section',
+      filter:['==', ['to-boolean', ['get','persistent']], true],
+      paint:{ 'line-color':'#1e9bc4', 'line-width':['interpolate',['linear'],['zoom'],10,1,16,3] } },
+    { id:'hydro-river-intermittent', type:'line', source:'hydro', 'source-layer':'river_section',
+      filter:['!=', ['to-boolean', ['get','persistent']], true],
+      paint:{ 'line-color':'#1e9bc4', 'line-width':['interpolate',['linear'],['zoom'],10,1,16,2.5],
+              'line-dasharray':[2,2] } },
+  ];
+
+  const map = new maplibregl.Map({
+    container:'manual-map',
+    style:{ version:8, sources, layers },
+    center:[6.13, 45.9], zoom:10, attributionControl:{ compact:true },
+  });
+  map.addControl(new maplibregl.NavigationControl({ showCompass:false }), 'top-left');
+  function fix() { map.resize(); }
+  requestAnimationFrame(fix); setTimeout(fix, 300);
+  if (window.ResizeObserver) { new ResizeObserver(fix).observe(document.getElementById('manual-map')); }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function queryHydro(pt) {
+    const present = HYDRO_LAYERS.filter(function (l) { return map.getLayer(l); });
+    if (!present.length) return [];
+    const z = map.getZoom(), tol = z < 13 ? 10 : (z < 15 ? 7 : 5);
+    return map.queryRenderedFeatures([[pt.x-tol,pt.y-tol],[pt.x+tol,pt.y+tol]], { layers:present });
+  }
+  function hydroType(f) {
+    const l = f.layer && f.layer.id;
+    if (l === 'hydro-surface') return "Plan d'eau";
+    if (l === 'hydro-river-intermittent') return "Cours d'eau intermittent";
+    return "Cours d'eau";
+  }
+
+  // Survol → infobulle nom + type.
+  const hpop = new maplibregl.Popup({ closeButton:false, closeOnClick:false, offset:12, className:'hydro-hover-popup' });
+  map.on('mousemove', function (e) {
+    const fs = queryHydro(e.point);
+    if (fs.length) {
+      const f = fs[0], name = (f.properties && f.properties.name) || 'Sans nom';
+      map.getCanvas().style.cursor = 'pointer';
+      hpop.setLngLat(e.lngLat).setHTML('<div class="hydro-tip"><strong>'+esc(name)+'</strong><span>'+hydroType(f)+'</span></div>').addTo(map);
+    } else { map.getCanvas().style.cursor = ''; hpop.remove(); }
+  });
+
+  // Clic → sélection de l'entité (id + nom) + pin.
+  const idField = document.getElementById('id_water_entity_id');
+  const nameField = document.getElementById('id_eau_nom');
+  const selected = document.getElementById('manual-selected');
+  let pin = null;
+  map.on('click', function (e) {
+    const fs = queryHydro(e.point);
+    if (!fs.length) return;
+    const f = fs[0], p = f.properties || {};
+    const name = p.name || 'Sans nom';
+    if (idField) idField.value = p.water_entity_id || '';
+    if (nameField) nameField.value = name;
+    if (selected) selected.textContent = '✓ ' + name + ' — ' + hydroType(f);
+    if (!pin) pin = new maplibregl.Marker({ color:'#e2725b' });
+    pin.setLngLat(e.lngLat).addTo(map);
+  });
+})();
+</script>
+{% endif %}
+
+<script>
+(function () {
+  // Ajout dynamique de captures : clone du gabarit vide + incrément de TOTAL_FORMS.
+  const total = document.getElementById("id_form-TOTAL_FORMS");
+  const container = document.getElementById("capture-forms");
+  const tpl = document.getElementById("empty-capture-form").innerHTML;
+
+  document.getElementById("add-capture").addEventListener("click", function () {
+    const index = parseInt(total.value, 10);
+    const html = tpl.replace(/__prefix__/g, index);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+    container.appendChild(wrapper.firstChild);
+    total.value = index + 1;
+  });
+
+  // Masque la section captures quand « Bredouille » est coché.
+  const bredouille = document.getElementById("id_bredouille");
+  const section = document.getElementById("captures-section");
+  function sync() { if (bredouille) section.style.display = bredouille.checked ? "none" : ""; }
+  if (bredouille) { bredouille.addEventListener("change", sync); sync(); }
+})();
+</script>
+{% endblock %}

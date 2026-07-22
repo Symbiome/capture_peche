@@ -24,9 +24,11 @@ from unfold.decorators import action, display
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from unfold.widgets import UnfoldAdminFileFieldWidget, UnfoldAdminSelectWidget
 
+from . import maps
 from .activity import log_activity
 from .imports.schema import EXPECTED_HEADER
 from .imports.service import ImportService
+from .manual_entry import ManualCatchFormSet, ManualEntryService, ManualTripForm
 from .permissions import GroupAdminForm
 from .models import (
     AuditLog,
@@ -202,11 +204,78 @@ class CatchInline(TabularInline):
 
 @admin.register(Trip)
 class TripAdmin(ReadOnlyModelAdmin):
+    """Consultation des sorties + **saisie manuelle opérateur** (#62) via un
+    chemin de création dédié (bouton « Nouvelle saisie »). L'édition directe des
+    sorties reste interdite (données écrites par l'appli pêcheur / l'import)."""
+
     list_display = ("name", "day", "water_entity", "collection_method", "source")
     list_filter = ("collection_method", "type", "mode")
     search_fields = ("name",)
     date_hierarchy = "day"
     inlines = (CatchInline,)
+    actions_list = ("saisie_manuelle",)
+
+    @action(description="Nouvelle saisie", url_path="saisie-manuelle", icon="add_circle",
+            permissions=["backoffice.add_trip"])
+    def saisie_manuelle(self, request):
+        """Écran « Nouvelle saisie » : une sortie + ses captures, avec les mêmes
+        contrôles que l'import (référentiel + métier). N'écrit jamais via l'admin
+        brut de Trip (lecture seule) : passe par ManualEntryService."""
+        service = ManualEntryService()
+        if request.method == "POST":
+            form = ManualTripForm(request.POST)
+            formset = ManualCatchFormSet(request.POST)
+            if form.is_valid() and formset.is_valid():
+                data = form.cleaned_data
+                bredouille = data["bredouille"]
+                # `formset.captures` = uniquement les lignes réellement renseignées.
+                captures = formset.captures
+
+                # Référentiel : id posé par le clic-sur-carte (exact) sinon repli
+                # sur la résolution par nom (comme l'import).
+                water_entity_id = service.resolve_water_entity(
+                    water_entity_id=data.get("water_entity_id", ""),
+                    eau_nom=data["eau_nom"], commune=data.get("commune", ""))
+                if water_entity_id is None:
+                    form.add_error("eau_nom", "entité hydrographique non résolue dans le référentiel.")
+
+                # Métier : bredouille cohérente, lots ≥ 1, tailles aberrantes (Q8).
+                for err in service.validate(bredouille=bredouille, captures=captures):
+                    if err.index is None:
+                        form.add_error(err.field, err.message)
+                    else:
+                        formset.forms[err.index].add_error(err.field, err.message)
+
+                if form.is_valid() and formset.is_valid():
+                    result = service.create(
+                        collection_method=data["collection_method"],
+                        day=data["day"], start=data["start_time"], end=data["end_time"],
+                        water_entity_id=water_entity_id, technique_id=data["technique"].id,
+                        bredouille=bredouille, captures=captures,
+                        created_by=getattr(request.user, "pk", None),
+                    )
+                    log_activity(request.user, "trip.create", entity_type="trip",
+                                 entity_id=result.trip_id, captures=result.captures,
+                                 collection_method=data["collection_method"], source="saisie_manuelle")
+                    messages.success(
+                        request,
+                        f"Sortie enregistrée — {result.captures} capture(s).")
+                    return redirect(reverse("admin:backoffice_trip_change", args=[result.trip_id]))
+        else:
+            form = ManualTripForm()
+            formset = ManualCatchFormSet()
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Nouvelle saisie",
+            "form": form,
+            "formset": formset,
+            "opts": self.model._meta,
+            # Carte de sélection de l'entité hydro (mêmes tuiles MVT que la carte
+            # back-office) — clic-pour-sélectionner (M-D).
+            "hydro_tiles_url": maps._hydro_tiles_url(),
+        }
+        return TemplateResponse(request, "admin/backoffice/manual_entry.html", context)
 
 
 # --- Imports (saisie opérateur, rapport) ------------------------------------

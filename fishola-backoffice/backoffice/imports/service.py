@@ -30,6 +30,17 @@ from . import schema
 from .parsing import is_blank, parse_bool_ouinon, parse_date, parse_int, parse_time, read_rows
 
 
+def size_out_of_bounds(bounds, size):
+    """Règle métier Q8 PARTAGÉE (import CSV + saisie manuelle) : une taille est
+    aberrante si elle sort des bornes `(min, max)` de l'espèce. Une borne `None`
+    (non renseignée) ne contraint pas ce côté ; `bounds` ou `size` absents → pas
+    d'aberration. Un seul point de vérité pour les deux chemins de saisie."""
+    if bounds is None or size is None:
+        return False
+    lo, hi = bounds
+    return (lo is not None and size < lo) or (hi is not None and size > hi)
+
+
 @dataclass
 class RowError:
     line: int
@@ -179,12 +190,11 @@ class ImportService:
                                            schema.METIER_SIZE_ABERRANT, "longueur non numérique"))
             if longueur is not None:
                 bounds = self.ref.size_bounds(parsed["species_id"])
-                if bounds:
+                if size_out_of_bounds(bounds, longueur):
                     lo, hi = bounds
-                    if (lo is not None and longueur < lo) or (hi is not None and longueur > hi):
-                        errors.append(RowError(line, "capture_longueur_cm", schema.METIER,
-                                               schema.METIER_SIZE_ABERRANT,
-                                               f"taille {longueur} cm hors bornes [{lo}-{hi}] pour l'espèce"))
+                    errors.append(RowError(line, "capture_longueur_cm", schema.METIER,
+                                           schema.METIER_SIZE_ABERRANT,
+                                           f"taille {longueur} cm hors bornes [{lo}-{hi}] pour l'espèce"))
             parsed["longueur"] = longueur
 
             weight = None
