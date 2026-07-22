@@ -2,7 +2,8 @@
 
 Guide d'installation complet, depuis une machine Linux vierge (Ubuntu/Debian), pour faire tourner en local :
 - la base de données PostgreSQL
-- le backend Java/Quarkus (`fishola-backend`)
+- le backend Java/Quarkus (`fishola-backend`) — application pêcheur
+- le back-office Python/Django (`fishola-backoffice`) — gestion interne (admin & saisie opérateur)
 - le front pêcheur Vue.js (`fishola-mobile`)
 - le front admin Vue.js (`fishola-admin`)
 
@@ -133,7 +134,20 @@ npm run serve
 
 Application accessible sur [http://localhost:8082](http://localhost:8082).
 
-## 11. Vérification finale
+## 11. Démarrer le back-office Django (fishola-backoffice)
+
+Second backend (gestion interne : administration & saisie opérateur), qui partage la base PostgreSQL. Nécessite **Python 3.12** et **uv** — le setup détaillé est dans [fishola-backoffice/README.md](../fishola-backoffice/README.md).
+
+```bash
+cd outil_capture/fishola-backoffice
+./setup.sh --init-db          # env + dépendances + migrations Django + profils staff
+.venv/bin/python manage.py createsuperuser
+.venv/bin/python manage.py runserver 8083
+```
+
+Admin accessible sur [http://localhost:8083/admin/](http://localhost:8083/admin/).
+
+## 12. Vérification finale
 
 | Service | URL | Attendu |
 |---|---|---|
