@@ -58,6 +58,7 @@ import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue
 import MapLibreMapTest from "@/views/dev/MapLibreMapTest.vue";
 
 import Settings from "@/views/Settings.vue";
+import OfflineAreas from "@/views/OfflineAreas.vue";
 import ProfileAndSettingsView from "@/views/ProfileAndSettings.vue";
 import ProfilePassword from "@/views/ProfilePassword.vue";
 
@@ -214,6 +215,11 @@ const routes = [
     path: "/settings",
     name: "settings",
     component: Settings,
+  },
+  {
+    path: "/offline-areas",
+    name: "offline-areas",
+    component: OfflineAreas,
   },
   {
     path: "/community/:visualizationMode",

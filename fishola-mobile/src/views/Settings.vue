@@ -26,6 +26,12 @@
 
     <div class="offline" v-if="!loading && offline">
       <span>Les paramètres ne sont pas disponible sans connexion internet</span>
+      <div class="settings-row nav-row offline-nav" @click="goToOfflineAreas">
+        <span class="nav-label">
+          <span class="nav-title"><i class="icon-map" /> Zones hors-ligne</span>
+        </span>
+        <i class="icon-chevron" />
+      </div>
     </div>
 
     <div class="rounded" v-if="!loading && !offline">
@@ -37,6 +43,14 @@
       <div class="settings-row" v-if="settings">
         <span>Effectuer des prélèvements</span>
         <FormToggle v-model="settings.promptSamples" />
+      </div>
+
+      <div class="settings-row nav-row" @click="goToOfflineAreas">
+        <span class="nav-label">
+          <span class="nav-title"><i class="icon-map" /> Zones hors-ligne</span>
+          <small>Télécharger un département pour la carte sans connexion</small>
+        </span>
+        <i class="icon-chevron" />
       </div>
 
       <div class="settings-row" v-if="currentAppVersion">
@@ -171,6 +185,10 @@ export default class SettingsView extends Vue {
     }
   }
 
+  goToOfflineAreas() {
+    this.$router.push({ name: "offline-areas" });
+  }
+
   becomeScaleCollector() {
     this.$root.$emit("open-feedback", "scale");
   }
@@ -255,6 +273,48 @@ export default class SettingsView extends Vue {
       font-size: @fontsize-small-paragraph;
       line-height: calc(@fontsize-small-paragraph + @line-height-padding-medium);
       color: @gunmetal;
+    }
+  }
+
+  // Ligne de navigation (chevron) vers une sous-page (#54 : zones hors-ligne).
+  .nav-row {
+    cursor: pointer;
+
+    .nav-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .nav-title {
+        display: flex;
+        align-items: center;
+
+        i.icon-map {
+          color: @pelorous;
+          margin-right: 8px;
+        }
+      }
+
+      small {
+        color: @pale-sky;
+        font-size: @fontsize-info;
+        font-weight: 300;
+      }
+    }
+
+    i.icon-chevron {
+      color: @pale-sky;
+      transform: rotate(-90deg);
+    }
+
+    &:hover {
+      background: #0001;
+    }
+
+    &.offline-nav {
+      margin-top: @margin-large;
+      border-top: 1px solid @solitude;
+      align-self: stretch;
     }
   }
 
