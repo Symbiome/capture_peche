@@ -109,6 +109,11 @@
                 </span>
             </div>
           </b-dropdown-item>
+          <b-dropdown-item has-link>
+            <router-link :to="{ name: 'change-password' }">
+              <b-icon icon="lock-reset" size="is-small"></b-icon>&nbsp;Changer mon mot de passe
+            </router-link>
+          </b-dropdown-item>
           <b-dropdown-item>
             <div class="logout-item">
               <b-button

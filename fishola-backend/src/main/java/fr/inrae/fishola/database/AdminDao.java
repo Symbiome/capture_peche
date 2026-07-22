@@ -56,15 +56,32 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
+    /** Met à jour le hash bcrypt du mot de passe d'un admin (rotation nominative, #55). */
+    public void updatePassword(UUID adminId, String passwordHashed) {
+        newContext().update(FISHOLA_ADMIN)
+                .set(FISHOLA_ADMIN.PASSWORD, passwordHashed)
+                .where(FISHOLA_ADMIN.ID.equal(adminId))
+                .execute();
+    }
+
     protected boolean verifyPassword(boolean isNationalAdmin, String plain, String hashed) {
         try {
-            // For national admins, use password defined in application.properties
-            if (isNationalAdmin) {
-               return config.adminPassword().equals(plain);
-            } else {
+            // Authentification NOMINATIVE d'abord : hash bcrypt propre au compte,
+            // pour TOUS les rôles (national inclus) — imputabilité RGPD (#55).
+            if (hashed != null && !hashed.isBlank()) {
                 BCrypt.Result result = BCrypt.verifyer().verify(plain.toCharArray(), hashed);
-                return result.verified;
+                if (result.verified) {
+                    return true;
+                }
             }
+            // Repli DÉPRÉCIÉ, non-breaking : mot de passe national PARTAGÉ
+            // (application.properties). À retirer une fois tous les comptes nationaux
+            // provisionnés avec un mot de passe nominatif (#55).
+            if (isNationalAdmin && config.adminPassword() != null && config.adminPassword().equals(plain)) {
+                log.warn("Auth admin national via mot de passe PARTAGE (deprecie, #55) - provisionner un mot de passe nominatif.");
+                return true;
+            }
+            return false;
         } catch (Exception eee) {
             log.error(eee);
             return false;

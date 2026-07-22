@@ -41,6 +41,7 @@ import SpeciesPerLake from "@/views/customize/SpeciesPerLake.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Users from "@/views/Users.vue";
+import ChangePassword from "@/views/ChangePassword.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -52,6 +53,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/login",
     name: "login",
     component: Login
+  },
+  {
+    path: "/account/password",
+    name: "change-password",
+    component: ChangePassword
   },
   {
     path: "/home",
