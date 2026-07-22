@@ -1,4 +1,11 @@
-"""Constantes du format d'import CSV opérateur (#32, template officiel 28 colonnes)."""
+"""Constantes du format d'import CSV opérateur (#32, 28 colonnes).
+
+Template **proposé**, dérivé du CdC (Annexe I), du modèle backend (trip/catch/…)
+et de la note complémentaire Symbiome (Q3 lots, Q7 import, Q8 bornes de tailles).
+Ce n'est **pas** un format officiel fourni par le client : plusieurs choix restent
+à valider par Symbiome/UFBRMC (format, enum mode de pêche, bins de classes de
+taille, valeurs de bornes…). Cf. `.claude/docs/04-cadrage-3153-import-csv.md` §7.
+"""
 
 # En-tête attendu, dans l'ordre (séparateur « ; », UTF-8).
 EXPECTED_HEADER = [
