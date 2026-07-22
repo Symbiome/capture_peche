@@ -22,6 +22,7 @@ import Dexie from "dexie";
 import { TripBean, Feedback } from "@/pojos/BackendPojos";
 import StoredPicture from "@/pojos/StoredPicture";
 import OfflineEntry from "@/pojos/OfflineEntry";
+import OfflineArea from "@/pojos/OfflineArea";
 
 export default class FisholaDatabase extends Dexie {
   static instance: FisholaDatabase = new FisholaDatabase();
@@ -35,6 +36,8 @@ export default class FisholaDatabase extends Dexie {
   offlineStorage: Dexie.Table<OfflineEntry, string>;
   offlineFeedbacks: Dexie.Table<Feedback, string>;
   lastMeasurementPic: Dexie.Table<StoredPicture, string>;
+  // Packs hydro départementaux téléchargés (#54), clé = code département.
+  offlineAreas: Dexie.Table<OfflineArea, string>;
 
   constructor() {
     super("Fishola");
@@ -116,6 +119,20 @@ export default class FisholaDatabase extends Dexie {
           })
       );
 
+    // v9 (#54, packs hydro offline départementaux) : nouveau store `offlineAreas`
+    // (clé = code département). Aucun autre store n'évolue ; Dexie migre les
+    // stores inchangés automatiquement.
+    this.version(9).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+      lastMeasurementPic: "id",
+      offlineAreas: "code, downloadedAt",
+    });
+
     this.onCreationTrip = this.table("onCreationTrip");
     this.dirtyTrips = this.table("dirtyTrips");
     this.dirtyPictures = this.table("dirtyPictures");
@@ -123,6 +140,7 @@ export default class FisholaDatabase extends Dexie {
     this.offlineStorage = this.table("offlineStorage");
     this.offlineFeedbacks = this.table("offlineFeedbacks");
     this.lastMeasurementPic = this.table("lastMeasurementPic");
+    this.offlineAreas = this.table("offlineAreas");
 
     console.info("Base Fishola prête");
   }
