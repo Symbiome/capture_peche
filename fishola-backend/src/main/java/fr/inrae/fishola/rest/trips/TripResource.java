@@ -573,7 +573,7 @@ public class TripResource extends AbstractFisholaResource {
     @Produces("text/csv")
     @Audited("trip.export")
     public Response getTripsCSV() {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         String csv = tripsDao.getTripsCSV();
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
@@ -593,7 +593,7 @@ public class TripResource extends AbstractFisholaResource {
             @PathParam("sortDirection") String sortDirection,
             @Context UriInfo uriInfo
     ) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection, queryParameters);
         return result;
@@ -602,7 +602,7 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/catches/{catchId}")
     public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         Trip trip = tripsDao.getTrip(aCatch.getTripId());
@@ -618,7 +618,7 @@ public class TripResource extends AbstractFisholaResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         if (updatedCatch.editedSize.isPresent()) {

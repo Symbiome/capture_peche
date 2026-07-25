@@ -625,7 +625,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @GET
     @Path("/users")
     public List<UserProfileForAdmin> listUsers() {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         // TODO AThimel 07/07/2020 Pagination
         List<FisholaUser> users = usersDao.findAll();
         List<UserProfileForAdmin> result = users.stream()
@@ -637,7 +637,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @PUT
     @Path("/users/{userId}")
     public Response updateUser(@PathParam("userId") UUID userId, UserProfileForAdmin user) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Preconditions.checkArgument(userId.equals(user.id()), "L'identifiant ne correspond pas");
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
@@ -652,7 +652,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @DELETE
     @Path("/users/{userId}")
     public Response deleteUser(@PathParam("userId") UUID userId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
         FisholaUser existingUser = optional.get();

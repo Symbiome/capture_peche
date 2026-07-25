@@ -189,6 +189,23 @@ public abstract class AbstractFisholaResource {
         return admin;
     }
 
+    /**
+     * Administrateur NATIONAL uniquement. Réservé aux portées qui ne se cloisonnent pas
+     * par périmètre : référentiels nationaux, documentation/éditorial, comptes pêcheurs,
+     * consultation des sorties et journal d'audit. Sans cette garde, un administrateur
+     * régional atteindrait ces actions par l'API alors que son menu les masque.
+     *
+     * <p>Les écrans bornés au périmètre (paramétrage par plan d'eau, actualités
+     * régionales, chiffres clés) restent ouverts au régional via {@link #checkIsAdmin()}.
+     */
+    protected FisholaAdmin checkIsNationalAdmin() throws NotAuthenticatedException, AccessDeniedException {
+        FisholaAdmin admin = checkIsAdmin();
+        if (!Boolean.TRUE.equals(admin.getIsNationalAdmin())) {
+            AccessDeniedException.throwNew("Action réservée aux administrateurs nationaux");
+        }
+        return admin;
+    }
+
     protected Set<UUID> getAllowedAdminWaterEntities() {
         if (adminToken == null) {
             return Sets.newLinkedHashSet();
