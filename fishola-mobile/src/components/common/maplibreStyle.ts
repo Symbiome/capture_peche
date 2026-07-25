@@ -127,7 +127,9 @@ export function createFisholaMap(
  * @param color couleur de remplissage (code maillage : bleu maillée / orange sinon)
  */
 function buildCatchPinSvg(color: string): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46">
+    // Dessiné à 2× (96×130 px) pour rester net sur écran haute densité : associé à
+    // `pixelRatio: 2` à l'enregistrement, le pin s'affiche à 48×65 px sur la carte.
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="130" viewBox="0 0 34 46">
   <path d="M17 1C8.7 1 2 7.7 2 16c0 10.5 13 26.5 14.1 27.8a1.2 1.2 0 0 0 1.8 0C19 42.5 32 26.5 32 16 32 7.7 25.3 1 17 1z"
         fill="${color}" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
   <g fill="#ffffff">
@@ -148,7 +150,7 @@ export function addCatchPinIcon(map: MlMap, id: string, color: string): Promise<
             resolve();
             return;
         }
-        const img = new Image(34, 46);
+        const img = new Image(96, 130);
         img.onload = () => {
             if (!map.hasImage(id)) {
                 map.addImage(id, img, { pixelRatio: 2 });

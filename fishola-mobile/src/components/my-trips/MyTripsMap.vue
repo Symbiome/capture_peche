@@ -55,7 +55,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { addCatchPinIcon, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
+import { addCatchPinIcon, attachHydroHover, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
 
 // Serveur de glyphes public (compteurs de clusters). Sans lui, les nombres ne
 // s'affichent pas mais la carte reste fonctionnelle (dégradation silencieuse).
@@ -77,12 +77,15 @@ export default class MyTripsMapView extends Vue {
     private map: MlMap | null = null;
     // Résolue quand la source et les couches de sorties sont en place.
     private layersReady: Promise<void> | null = null;
+    private detachHydroHover: (() => void) | null = null;
 
     mounted() {
         this.computeMapIfVisible();
     }
 
     beforeDestroy() {
+        this.detachHydroHover?.();
+        this.detachHydroHover = null;
         this.map?.remove();
         this.map = null;
     }
@@ -165,6 +168,8 @@ export default class MyTripsMapView extends Vue {
             attributionControl: { compact: true },
         });
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+        // Informations du réseau hydro au survol, comme sur les autres cartes.
+        this.detachHydroHover = attachHydroHover(this.map);
         this.map.on('load', () => {
             this.layersReady = this.addCatchLayers();
             this.fitToMarkers();
@@ -177,9 +182,11 @@ export default class MyTripsMapView extends Vue {
             return;
         }
         // Les pins doivent être enregistrés avant la couche qui les référence.
+        // Bleu Fishola pour les deux : la nuance de maillage reste portée par
+        // l'infobulle au clic (un aplat orange ressortait trop sur le fond IGN).
         await Promise.all([
             addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4'),
-            addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#f0a020'),
+            addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#2b7fa8'),
         ]);
         if (!this.map) {
             return;
