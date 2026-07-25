@@ -2,21 +2,27 @@
   #%L
   Fishola :: Mobile
   %%
-  Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+  Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU Affero General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #L%
+  -->
+<!--
+  Carte des captures du pêcheur (#33) : migration Leaflet → MapLibre. Les captures
+  sont rendues via une source GeoJSON avec clustering natif MapLibre, au-dessus des
+  fonds IGN + réseau hydro (« nos layers »). Un point non regroupé est coloré selon
+  le maillage ; un clic ouvre une infobulle avec un accès à la sortie.
   -->
 <template>
     <div class="pane " v-if="visible">
@@ -30,49 +36,10 @@
             <i class="icon icon-plus close" @click="showPersonnalMapWarning = false"></i>
         </div>
         <div class="map" v-if="validMarkers.length > 0">
-            <l-map ref="map" @ready="mapReady" :options="{ zoomSnap: 0.5, }" style="height: 100%; width: 100%">
-                <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-                <v-marker-cluster>
-                    <l-marker v-for="c in validMarkers" v-bind:key="c.id" :lat-lng="toLatLng(c)"
-                        :icon="c.maillage == 'MAILLEE' ? icon1 : icon2">
-                        <!--<l-icon :icon-anchor="[16, 16]" :icon-size="[32, 37]">
-                            <div class="custom-icon">
-                                <div class="headline">
-                                    {{ c.specieName }}
-                                </div>
-                                <i class="icon-fish" />
-                            </div>
-                        </l-icon>-->
-                        <l-popup class="catch-marker">
-                            <p class="title">{{ c.tripName }}</p>
-
-                            <p>
-                                <i class="fish icon-fish" />
-                                {{ c.specieName }}
-                                {{ c.maillage === 'NON_DEFINI' ? ''
-                                : (c.maillage == 'MAILLEE' ?
-                                '(maillé)' : '(non maillé)')
-                                }}
-                            </p>
-
-                            <p class="infos">
-                                <span class="trip-date">{{ formattedDate(c.date) }}</span> - {{ c.lakeName }}
-                            </p>
-                            <button class="button" @click="showCatch(c)">Voir la sortie</button>
-                        </l-popup>
-                    </l-marker>
-                </v-marker-cluster>
-            </l-map>
+            <div ref="mapContainer" class="mtm-container" />
         </div>
         <div class="error-markers" v-if="invalidMarkers.length > 0">
             <b>{{ invalidMarkers.length }}</b> prises sans position renseignée
-            <!-- <ul>
-                <li v-for="c in invalidMarkers" :key="c.id">
-                    {{ formattedDate(c.date) }} - {{ c.specieName }} ({{ c.lakeName }} {{ c.tripName }})
-                </li>
-            </ul>-->
-
         </div>
         <div v-if="!mapIsLoading && validMarkers.length == 0 && invalidMarkers.length == 0">
             Aucune sortie enregistrée
@@ -81,129 +48,224 @@
 </template>
 
 <script lang="ts">
-
 import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
-
+import Helpers from '@/services/Helpers';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
-import L, { latLng, Icon, icon } from "leaflet";
-import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
+import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
 
-type D = Icon.Default & {
-    _getIconUrl?: string;
-};
+// Serveur de glyphes public (compteurs de clusters). Sans lui, les nombres ne
+// s'affichent pas mais la carte reste fonctionnelle (dégradation silencieuse).
+const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
 
-delete (Icon.Default.prototype as D)._getIconUrl;
-import "leaflet/dist/leaflet.css";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-Icon.Default.mergeOptions({
-    iconRetinaUrl: markerIcon2x,
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-});
-
-import { LMap, LTileLayer, LMarker, LPopup, LIcon } from "vue2-leaflet";
-import Helpers from '@/services/Helpers';
-
-@Component({
-    components: {
-        LMap,
-        LTileLayer,
-        LMarker,
-        LPopup,
-        LIcon,
-        "v-marker-cluster": Vue2LeafletMarkerCluster
-    }
-})
+@Component
 export default class MyTripsMapView extends Vue {
-    @Prop()
-    visible: boolean;
+    @Prop() visible: boolean;
+
     validMarkers: CatchMarker[] = [];
     invalidMarkers: CatchMarker[] = [];
-    center = latLng(46.071623, 5.890511);
     showPersonnalMapWarning = true;
-    icon1 = icon({
-        iconUrl: "/img/fish-blue.svg",
-        iconSize: [32, 37],
-        iconAnchor: [16, 37]
-    })
-    icon2 = icon({
-        iconUrl: "/img/fish-yellow.svg",
-        iconSize: [32, 37],
-        iconAnchor: [16, 37]
-    })
-    map: any;
     mapIsLoading = false;
+
+    private map: MlMap | null = null;
 
     mounted() {
         this.computeMapIfVisible();
     }
 
-    @Watch("visible")
+    beforeDestroy() {
+        this.map?.remove();
+        this.map = null;
+    }
+
+    @Watch('visible')
     computeMapIfVisible() {
-        if (this.visible && this.validMarkers.length == 0) {
+        if (this.visible && this.validMarkers.length === 0) {
             this.mapIsLoading = true;
             TripsService.catchMarkers().then(
                 (markers) => {
-                    this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates)
-                    this.invalidMarkers = markers.filter((m: CatchMarker) => !m.hasValidCoordinates)
-                    this.zoomToVisibleMarkers();
+                    this.validMarkers = markers.filter((m: CatchMarker) => m.hasValidCoordinates);
+                    this.invalidMarkers = markers.filter((m: CatchMarker) => !m.hasValidCoordinates);
+                    this.$nextTick(() => this.initOrUpdateMap());
                 },
-                (error: Error) => { console.error(error) }
+                (error: Error) => {
+                    console.error(error);
+                    this.mapIsLoading = false;
+                },
             );
+        } else if (this.visible) {
+            this.$nextTick(() => {
+                this.map?.resize();
+                this.fitToMarkers();
+            });
         }
     }
 
-    toLatLng(marker: CatchMarker) {
-        return latLng(marker.latitude, marker.longitude);
+    private buildGeoJson(): any {
+        return {
+            type: 'FeatureCollection',
+            features: this.validMarkers.map((c) => ({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [c.longitude, c.latitude] },
+                properties: {
+                    id: c.id,
+                    tripId: c.tripId,
+                    tripName: c.tripName,
+                    specieName: c.specieName,
+                    maillage: c.maillage,
+                    lakeName: c.lakeName,
+                    dateLabel: this.formattedDate(c.date),
+                },
+            })),
+        };
+    }
+
+    private initOrUpdateMap() {
+        if (this.validMarkers.length === 0) {
+            this.mapIsLoading = false;
+            return;
+        }
+        if (this.map) {
+            const source = this.map.getSource('catches') as GeoJSONSource | undefined;
+            source?.setData(this.buildGeoJson());
+            this.fitToMarkers();
+            this.mapIsLoading = false;
+            return;
+        }
+        const container = this.$refs.mapContainer as HTMLElement;
+        if (!container) {
+            this.mapIsLoading = false;
+            return;
+        }
+        const style = buildFisholaStyle('plan');
+        style.glyphs = GLYPHS_URL;
+        this.map = new maplibregl.Map({
+            container,
+            style,
+            center: DEFAULT_CENTER,
+            zoom: DEFAULT_ZOOM,
+            attributionControl: { compact: true },
+        });
+        this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+        this.map.on('load', () => {
+            this.addCatchLayers();
+            this.fitToMarkers();
+            this.mapIsLoading = false;
+        });
+    }
+
+    private addCatchLayers() {
+        if (!this.map) {
+            return;
+        }
+        this.map.addSource('catches', {
+            type: 'geojson',
+            data: this.buildGeoJson(),
+            cluster: true,
+            clusterRadius: 50,
+            clusterMaxZoom: 14,
+        });
+        this.map.addLayer({
+            id: 'catch-clusters', type: 'circle', source: 'catches', filter: ['has', 'point_count'],
+            paint: {
+                'circle-color': '#1e9bc4',
+                'circle-opacity': 0.85,
+                'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
+            },
+        });
+        this.map.addLayer({
+            id: 'catch-cluster-count', type: 'symbol', source: 'catches', filter: ['has', 'point_count'],
+            layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 13, 'text-font': ['Open Sans Regular'] },
+            paint: { 'text-color': '#ffffff' },
+        });
+        this.map.addLayer({
+            id: 'catch-unclustered', type: 'circle', source: 'catches', filter: ['!', ['has', 'point_count']],
+            paint: {
+                'circle-radius': 7,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff',
+                'circle-color': ['match', ['get', 'maillage'], 'MAILLEE', '#1e9bc4', '#f0a020'],
+            },
+        });
+
+        this.map.on('click', 'catch-clusters', (e) => this.onClusterClick(e.point));
+        this.map.on('click', 'catch-unclustered', (e) => this.onPointClick(e.features && e.features[0]));
+        ['catch-clusters', 'catch-unclustered'].forEach((layer) => {
+            this.map!.on('mouseenter', layer, () => { this.map!.getCanvas().style.cursor = 'pointer'; });
+            this.map!.on('mouseleave', layer, () => { this.map!.getCanvas().style.cursor = ''; });
+        });
+    }
+
+    private onClusterClick(point: { x: number; y: number }) {
+        if (!this.map) {
+            return;
+        }
+        const feature = this.map.queryRenderedFeatures(point, { layers: ['catch-clusters'] })[0];
+        if (!feature) {
+            return;
+        }
+        const clusterId = feature.properties!.cluster_id;
+        const source = this.map.getSource('catches') as GeoJSONSource;
+        source.getClusterExpansionZoom(clusterId).then((zoom) => {
+            const coords = (feature.geometry as any).coordinates as [number, number];
+            this.map?.easeTo({ center: coords, zoom });
+        });
+    }
+
+    private onPointClick(feature?: MapGeoJSONFeature) {
+        if (!this.map || !feature) {
+            return;
+        }
+        const p = feature.properties || {};
+        const coords = (feature.geometry as any).coordinates as [number, number];
+        const maillageLabel = p.maillage === 'NON_DEFINI' ? ''
+            : (p.maillage === 'MAILLEE' ? ' (maillé)' : ' (non maillé)');
+        const html = `<div class="catch-marker">`
+            + `<p class="title">${this.escapeHtml(p.tripName)}</p>`
+            + `<p><i class="fish icon-fish"></i> ${this.escapeHtml(p.specieName)}${maillageLabel}</p>`
+            + `<p class="infos"><span class="trip-date">${this.escapeHtml(p.dateLabel)}</span> - ${this.escapeHtml(p.lakeName)}</p>`
+            + `<button type="button" class="button">Voir la sortie</button>`
+            + `</div>`;
+        const popup = new maplibregl.Popup({ offset: 16 }).setLngLat(coords).setHTML(html).addTo(this.map);
+        const btn = popup.getElement().querySelector('button');
+        btn?.addEventListener('click', () => {
+            popup.remove();
+            this.showCatch(p.tripId as string, p.id as string);
+        });
+    }
+
+    private fitToMarkers() {
+        if (!this.map || this.validMarkers.length === 0) {
+            return;
+        }
+        if (this.validMarkers.length === 1) {
+            const m = this.validMarkers[0];
+            this.map.flyTo({ center: [m.longitude, m.latitude], zoom: 13 });
+            return;
+        }
+        const bounds = new maplibregl.LngLatBounds();
+        this.validMarkers.forEach((m) => bounds.extend([m.longitude, m.latitude] as [number, number]));
+        this.map.fitBounds(bounds, { padding: 50, maxZoom: 13 });
+    }
+
+    private escapeHtml(value: string): string {
+        return (value || '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+        ));
     }
 
     formattedDate(tripDate: Date): string {
-        const dayOptions: Intl.DateTimeFormatOptions = {
-            month: "numeric",
-            day: "numeric",
-            year: "numeric",
-        };
+        const dayOptions: Intl.DateTimeFormatOptions = { month: 'numeric', day: 'numeric', year: 'numeric' };
         // @ts-ignore
         const date = Helpers.parseLocalDate(tripDate);
-        const dateString = date.toLocaleDateString("fr-FR", dayOptions);
-        return dateString;
+        return date.toLocaleDateString('fr-FR', dayOptions);
     }
 
-    zoomToVisibleMarkers() {
-        if (this.map && this.validMarkers.length > 0) {
-            const visibleLayerGroup = new L.FeatureGroup();
-
-            this.map.eachLayer(function (layer: L.Layer) {
-                if (layer instanceof L.Marker)
-                    visibleLayerGroup.addLayer(layer);
-            });
-
-            const bounds = visibleLayerGroup.getBounds();
-            this.map.fitBounds(bounds);
-        }
-        this.mapIsLoading = false;
-    }
-
-    mapReady() {
-        // @ts-ignore
-        this.map = this.$refs.map.mapObject;
-        this.zoomToVisibleMarkers();
-    }
-
-    showCatch(c: CatchMarker) {
-        this.$router.push({
-            name: 'catch',
-            params: {
-                'tripId': c.tripId,
-                'catchId': c.id
-            }
-        });
+    showCatch(tripId: string, catchId: string) {
+        this.$router.push({ name: 'catch', params: { tripId, catchId } });
     }
 }
 </script>
@@ -234,48 +296,11 @@ export default class MyTripsMapView extends Vue {
 .map {
     height: 80vh;
     z-index: 995;
+}
 
-    .catch-marker {
-        .title {
-            font-size: 18px;
-            color: @pelorous;
-        }
-
-        .trip-date {
-            font-weight: bolder;
-        }
-
-        .fish {
-            color: @pelorous;
-        }
-
-        .infos {
-            padding-bottom: 10px;
-        }
-
-        .button {
-            height: 50px;
-            border-radius: 50px;
-
-            font-style: normal;
-            font-weight: bold;
-            font-size: @fontsize-button;
-            line-height: calc(@fontsize-button + @line-height-padding-x-large);
-
-            border: 0px;
-            padding-left: @margin-medium;
-            padding-right: @margin-medium;
-
-            background-color: @terra-cotta;
-            color: @white;
-
-            &:hover {
-                background-color: @white;
-                color: @terra-cotta;
-                border: 2px solid @terra-cotta;
-            }
-        }
-    }
+.mtm-container {
+    width: 100%;
+    height: 100%;
 }
 
 .error-markers {
@@ -285,23 +310,51 @@ export default class MyTripsMapView extends Vue {
     margin-top: @margin-small;
 }
 
-.custom-icon {
-    background-color: @cyprus;
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 20px 20px 20px 20px;
-    text-align: center;
-
-    .icon-fish {
-        color: @pelorous;
-    }
-}
-
 .is-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 30px;
     margin: 70px;
+}
+</style>
+
+<!-- Infobulle de capture : rendue par MapLibre hors du DOM scopé → styles globaux. -->
+<style lang="less">
+.catch-marker {
+    .title {
+        font-size: 18px;
+        color: @pelorous;
+    }
+
+    .trip-date {
+        font-weight: bolder;
+    }
+
+    .fish {
+        color: @pelorous;
+    }
+
+    .infos {
+        padding-bottom: 10px;
+    }
+
+    .button {
+        height: 44px;
+        border-radius: 44px;
+        font-weight: bold;
+        border: 0;
+        padding-left: @margin-medium;
+        padding-right: @margin-medium;
+        background-color: @terra-cotta;
+        color: @white;
+        cursor: pointer;
+
+        &:hover {
+            background-color: @white;
+            color: @terra-cotta;
+            border: 2px solid @terra-cotta;
+        }
+    }
 }
 </style>
