@@ -77,7 +77,9 @@ public abstract class AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("amorel@codelutin.com", config.adminPassword()))
+                // amorel est provisionné par la fixture de test (R__test_fixture.sql) avec le
+                // hash bcrypt de « whatever » : l'auth admin passe donc par le chemin nominatif.
+                .body(new LoginBean("amorel@codelutin.com", "whatever"))
                 .post("/api/v1/admin/login")
                 .then()
                 .statusCode(204)

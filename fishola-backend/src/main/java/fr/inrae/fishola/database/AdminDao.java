@@ -56,17 +56,11 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    protected boolean verifyPassword(boolean isNationalAdmin, String plain, String hashed) {
-        // Nominatif (#55) : on vérifie d'abord le hash bcrypt propre au compte, pour TOUS les rôles.
-        if (verifyBcrypt(plain, hashed)) {
-            return true;
-        }
-        // Repli DÉPRÉCIÉ : mot de passe national partagé (application.properties). À retirer
-        // (#55, étape 4) une fois tous les comptes nationaux provisionnés en nominatif.
-        if (isNationalAdmin) {
-            return verifySharedNationalPassword(plain);
-        }
-        return false;
+    protected boolean verifyPassword(String plain, String hashed) {
+        // Authentification nominative uniquement (#55) : on vérifie le hash bcrypt propre
+        // au compte, pour tous les rôles. Le repli « mot de passe national partagé »
+        // (application.properties) a été retiré : plus aucune imputabilité partagée.
+        return verifyBcrypt(plain, hashed);
     }
 
     private boolean verifyBcrypt(String plain, String hashed) {
@@ -79,18 +73,6 @@ public class AdminDao extends AbstractFisholaDao {
             // Hash absent ou non-bcrypt (ex. placeholder d'un compte national non encore provisionné).
             return false;
         }
-    }
-
-    @Deprecated
-    private boolean verifySharedNationalPassword(String plain) {
-        String shared = config.adminPassword();
-        boolean matches = shared != null && shared.equals(plain);
-        if (matches) {
-            // Trace d'exploitation (#55) : permet de repérer les comptes nationaux non encore
-            // provisionnés en nominatif avant de retirer le repli partagé (cf. runbook).
-            log.warn("Auth admin national via mot de passe PARTAGE (deprecie, #55) : compte a provisionner en nominatif");
-        }
-        return matches;
     }
 
     public void updatePassword(UUID adminId, String passwordHashed) {
@@ -106,7 +88,7 @@ public class AdminDao extends AbstractFisholaDao {
         Optional<FisholaAdmin> user = findByEmail(email);
         Optional<Boolean> result = user
                 .map(FisholaAdmin::getPassword)
-                .map(userPassword -> verifyPassword(user.get().getIsNationalAdmin(), password, userPassword));
+                .map(userPassword -> verifyPassword(password, userPassword));
         return result;
     }
 
