@@ -40,7 +40,7 @@
           Techniques de pêche
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-dropdown label="Paramétrage">
+      <b-navbar-dropdown label="Paramétrage" v-if="!loggedAdmin.isOperator">
         <b-navbar-item tag="router-link" :to="{ name: 'species-per-lake' }">
           Espèces par plan d'eau
         </b-navbar-item>
@@ -59,10 +59,10 @@
           Communications
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
+      <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else-if="!loggedAdmin.isOperator">
         Communications
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'metrics' }" v-if="!loggedAdmin.isOperator">
         Chiffres Clés
       </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
@@ -73,6 +73,15 @@
       </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
         Administrateurs
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Opérateurs
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-import' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Import CSV
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Nouvelle saisie
       </b-navbar-item>
     </template>
 
@@ -108,6 +117,12 @@
                   </p>
                 </span>
             </div>
+          </b-dropdown-item>
+          <b-dropdown-item has-link>
+            <router-link :to="{ name: 'change-password' }">
+              <b-icon icon="lock-reset" size="is-small"></b-icon>
+              Changer mon mot de passe
+            </router-link>
           </b-dropdown-item>
           <b-dropdown-item>
             <div class="logout-item">
