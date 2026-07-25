@@ -31,7 +31,6 @@ import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 @ConfigMapping(prefix = "fishola")
 public interface FisholaConfiguration {
 
@@ -154,9 +153,6 @@ public interface FisholaConfiguration {
 
     @WithDefault("false")
     boolean autoVerifyAccounts();
-
-    @ConfigProperty
-    String adminPassword();
 
     @WithDefault("24")
     long keyFiguresTimeoutHours();
