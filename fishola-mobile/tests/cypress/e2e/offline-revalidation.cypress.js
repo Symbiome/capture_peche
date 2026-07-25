@@ -24,10 +24,10 @@
  * device-only (cache de tuiles en WebView, géoloc Capacitor en mode avion) sont
  * validées en recette manuelle.
  *
- * PRÉREQUIS (recette) : stack lancée (start_all.sh) + utilisateur de test seedé,
- * et une session authentifiée. Le helper `login()` est à brancher sur le flux
- * d'auth réel (non disponible ici) — d'où le `describe.skip` par défaut : à
- * activer une fois le stack + le login e2e en place.
+ * PRÉREQUIS (recette) : stack lancée (start_all.sh) + utilisateur de test seedé.
+ * La session est ouverte par `cy.loginAngler()` (login programmatique). Ces scénarios
+ * sont gardés derrière `Cypress.env('liveBackend')` : ignorés par défaut (pas de backend),
+ * activés avec `--env liveBackend=true` une fois le seed pêcheur (#67) en place.
  *
  * Scénarios (AC spec-10) :
  *  - AC1 : création hors ligne → sortie locale, badge « Non synchronisée », PENDING.
@@ -35,7 +35,7 @@
  *  - AC4 : 1000 sorties locales → création refusée avec message.
  *  - AC5 : sorties offline créées avant #10 (schéma v7) → préservées + marquées PENDING (upgrade v8).
  */
-describe.skip("Mode offline & re-validation (#10)", () => {
+describe("Mode offline & re-validation (#10)", () => {
   // Injecte une sortie directement dans Dexie (dirtyTrips) pour tester le badge
   // sans rejouer tout le parcours de création.
   function seedDirtyTrip(id, name) {
@@ -61,8 +61,12 @@ describe.skip("Mode offline & re-validation (#10)", () => {
     });
   }
 
-  beforeEach(() => {
-    // login(); // À brancher : session authentifiée sur le backend de recette.
+  beforeEach(function () {
+    // E2e nécessitant un backend seedé : ignorés tant que liveBackend n'est pas activé.
+    if (!Cypress.env("liveBackend")) {
+      this.skip();
+    }
+    cy.loginAngler(); // session pêcheur (cookie) sur le backend de recette.
   });
 
   it("AC1 — une sortie locale porte le badge « Non synchronisée »", () => {
