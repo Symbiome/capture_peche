@@ -84,7 +84,13 @@ public class AdminDao extends AbstractFisholaDao {
     @Deprecated
     private boolean verifySharedNationalPassword(String plain) {
         String shared = config.adminPassword();
-        return shared != null && shared.equals(plain);
+        boolean matches = shared != null && shared.equals(plain);
+        if (matches) {
+            // Trace d'exploitation (#55) : permet de repérer les comptes nationaux non encore
+            // provisionnés en nominatif avant de retirer le repli partagé (cf. runbook).
+            log.warn("Auth admin national via mot de passe PARTAGE (deprecie, #55) : compte a provisionner en nominatif");
+        }
+        return matches;
     }
 
     public void updatePassword(UUID adminId, String passwordHashed) {
