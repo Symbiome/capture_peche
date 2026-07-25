@@ -178,14 +178,8 @@
                   <button v-if="modifiable" class="button" @click="initMarkerPosition">Renseigner une position</button>
                 </div>
                 <div class="map" v-if="gpsLocation">
-                  <l-map :zoom="11" :center="gpsLocation" :options="{
-                    zoomSnap: 0.5,
-                  }" style="height: 100%; width: 100%">
-                    <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-
-                    <l-marker :lat-lng="gpsLocation" :draggable="modifiable" @dragend="markerDrag"></l-marker>
-                  </l-map>
+                  <MapLibrePositionMap :lat="gpsLocation.lat" :lng="gpsLocation.lng"
+                    :editable="modifiable" :zoom="11" @dragend="markerDrag" />
                 </div>
               </div>
 
@@ -271,24 +265,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
-import { latLng, LatLng, Icon, DragEndEvent } from "leaflet";
-
-type D = Icon.Default & {
-  _getIconUrl?: string;
-};
-
-delete (Icon.Default.prototype as D)._getIconUrl;
-import "leaflet/dist/leaflet.css";
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
@@ -303,9 +280,7 @@ import { DetectedShape } from "@/services/opencv/DetectedShape";
     FormSelect,
     FormToggle,
     PicturePreview,
-    LMap,
-    LTileLayer,
-    LMarker,
+    MapLibrePositionMap,
     MeasurementPicturePopup,
     PictureSourceChoice,
     FisholaFooter,
@@ -368,7 +343,7 @@ export default class EditCatchView extends Vue {
   sampleIdReady: boolean = false;
   authorizedSampleSpeciesIds: string[] = [];
 
-  gpsLocation: LatLng | null = null;
+  gpsLocation: { lat: number; lng: number } | null = null;
 
   displayMeasurementPicturePopup = false;
   requestNewPicture = false;
@@ -447,7 +422,7 @@ export default class EditCatchView extends Vue {
       GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
         (position) => {
           this.watchingGPS = true;
-          this.gpsLocation = latLng(position.coords.latitude, position.coords.longitude);
+          this.gpsLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
           console.info(
             `Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`
           );
@@ -477,7 +452,7 @@ export default class EditCatchView extends Vue {
     }
 
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
-      this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
+      this.gpsLocation = { lat: this.aCatch.latitude, lng: this.aCatch.longitude };
     }
 
     // Get pictures stored locally (not yet synchronized)
@@ -1113,13 +1088,12 @@ export default class EditCatchView extends Vue {
   async initMarkerPosition() {
     const lake = (await ReferentialService.getLakes()).filter(l => l.id = this.lakeId)
     if (lake.length > 0) {
-      this.gpsLocation = latLng(lake[0].latitude, lake[0].longitude)
+      this.gpsLocation = { lat: lake[0].latitude, lng: lake[0].longitude }
     }
   }
 
-  markerDrag(e: DragEndEvent) {
-    // @ts-ignore
-    this.gpsLocation = e.target.getLatLng();
+  markerDrag(pos: { lat: number; lng: number }) {
+    this.gpsLocation = pos;
   }
 }
 </script>

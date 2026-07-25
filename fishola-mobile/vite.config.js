@@ -79,9 +79,6 @@ export default defineConfig( ({mode}) => {
             if (id.includes("node_modules/vue-pdf-app")) {
               return "pdf-lib";
             }
-            if (id.includes("leaflet")) {
-              return "leaflet";
-            }
             if (id.includes("maplibre-gl")) {
               return "maplibre";
             }
