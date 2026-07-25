@@ -65,6 +65,7 @@ import java.util.stream.Stream;
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource extends AbstractSecurityFisholaResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
+    protected static final String CLAIM_IS_OPERATOR = "isOperator";
     protected static final String CLAIM_WATER_ENTITY_IDS = "waterEntityIds";
 
     @POST
@@ -101,6 +102,11 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        // Cloisonnement : un modificateur non national ne peut affecter que des plans d'eau de son périmètre.
+        if (!fisholaAdmin.getIsNationalAdmin() && bean.waterEntityIds != null
+                && !adminDao.getAllowedWaterEntities(fisholaAdmin.getId()).containsAll(bean.waterEntityIds)) {
+            throw new ForbiddenException("Un ou plusieurs plans d'eau sont hors de votre périmètre");
+        }
         adminDao.updateAdmin(
                 adminId,
                 bean.canCreateAdmin,
@@ -120,6 +126,11 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        // Cloisonnement : un créateur non national ne peut affecter que des plans d'eau de son périmètre.
+        if (!fisholaAdmin.getIsNationalAdmin() && bean.waterEntityIds != null
+                && !adminDao.getAllowedWaterEntities(fisholaAdmin.getId()).containsAll(bean.waterEntityIds)) {
+            throw new ForbiddenException("Un ou plusieurs plans d'eau sont hors de votre périmètre");
         }
         Map<String, String> validationErrors = new HashMap<>();
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
@@ -149,11 +160,16 @@ public class AdminResource extends AbstractSecurityFisholaResource {
 
         String passwordHashed = adminDao.hashPassword(bean.password);
 
+        // Modèle par rôle : un opérateur n'est pas administrateur (jamais can_create_admin).
+        boolean isOperator = Boolean.TRUE.equals(bean.isOperator);
+        boolean canCreateAdmin = !isOperator && Boolean.TRUE.equals(bean.canCreateAdmin);
+
         Map<String, String> claims = new HashMap<>();
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
         claims.put(CLAIM_WATER_ENTITY_IDS, bean.waterEntityIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
-        claims.put(CLAIM_CAN_CREATE_ADMIN, bean.canCreateAdmin.toString());
+        claims.put(CLAIM_CAN_CREATE_ADMIN, Boolean.toString(canCreateAdmin));
+        claims.put(CLAIM_IS_OPERATOR, Boolean.toString(isOperator));
 
         String token = jwtHelper.createCustomToken("register-admin", 1, claims);
 
@@ -195,16 +211,43 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         return result;
     }
 
+    @PUT
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "admin.password.change", entityType = "fishola_admin")
+    public Response changePassword(ChangeAdminPasswordBean bean) {
+        // Tout compte staff (admin OU opérateur) peut changer SON propre mot de passe (#55).
+        FisholaAdmin admin = checkIsStaff();
+        if (bean == null || StringUtils.isBlank(bean.oldPassword) || StringUtils.isBlank(bean.newPassword)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        // Ré-authentifie avec l'ancien mot de passe (bcrypt nominatif ou repli national partagé).
+        Optional<Boolean> authenticated = adminDao.authenticate(admin.getEmail(), bean.oldPassword);
+        if (authenticated.isEmpty() || !authenticated.get()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("oldPassword", "Mot de passe actuel incorrect")).build();
+        }
+        Optional<String> passwordError = validatePassword(bean.newPassword);
+        if (passwordError.isPresent()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("newPassword", passwordError.get())).build();
+        }
+        adminDao.updatePassword(admin.getId(), adminDao.hashPassword(bean.newPassword));
+        return Response.noContent().build();
+    }
+
 
     @GET
     @Path("/check")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response adminCheck() throws ResourceNotFoundException {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        // Profil du staff connecté (admin OU opérateur) — sert au menu du back-office.
+        FisholaAdmin fisholaAdmin = checkIsStaff();
         LoggedAdminBean loggedAdmin = new LoggedAdminBean(
                 fisholaAdmin.getEmail(),
                 fisholaAdmin.getIsNationalAdmin(),
-                fisholaAdmin.getCanCreateAdmin()
+                fisholaAdmin.getCanCreateAdmin(),
+                fisholaAdmin.getIsOperator()
         );
         return Response.ok(loggedAdmin).build();
     }
@@ -230,21 +273,68 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @GET
     @Path("/")
     public List<AdminProfileForAdmin> listAdmins() {
+        // Écran « Administrateurs » : uniquement les comptes admin (opérateurs exclus).
+        return listStaff(false);
+    }
+
+    @GET
+    @Path("/operators")
+    public List<AdminProfileForAdmin> listOperators() {
+        // Écran « Opérateurs » : uniquement les comptes opérateur.
+        return listStaff(true);
+    }
+
+    /**
+     * Liste les comptes staff visibles par l'appelant, filtrés par rôle et par périmètre.
+     * @param operators true => opérateurs uniquement ; false => administrateurs uniquement.
+     */
+    private List<AdminProfileForAdmin> listStaff(boolean operators) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        List<FisholaAdmin> admins = adminDao.findAll();
+        List<FisholaAdmin> staff = adminDao.findAll();
         Set<UUID> allowedWaterEntities = getAllowedAdminWaterEntities();
-        List<AdminProfileForAdmin> result = admins.stream()
+        return staff.stream()
+            .filter(admin -> Boolean.TRUE.equals(admin.getIsOperator()) == operators)
             .filter(admin -> {
                 if (fisholaAdmin.getIsNationalAdmin()) {
                     return true;
                 }
-                // Local admins can only see admin of their waterEntities
+                // Local admins can only see staff of their waterEntities
                 Set<UUID> adminWaterEntities = adminDao.getAllowedWaterEntities(admin.getId());
                 return !Collections.disjoint(allowedWaterEntities, adminWaterEntities);
             })
             .map(this.adminDao::toUserProfileForAdmin)
             .toList();
-        return result;
+    }
+
+    /**
+     * Création d'un opérateur : même flux que {@link #registerAdmin} mais le rôle est imposé
+     * par l'endpoint (isOperator = true, jamais can_create_admin).
+     */
+    @POST
+    @Path("/operators")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "operator.create", entityType = "fishola_admin")
+    public Response registerOperator(RegisterAdminBean bean, @Context HttpServletRequest request) {
+        if (bean != null) {
+            bean.isOperator = Boolean.TRUE;
+            bean.canCreateAdmin = Boolean.FALSE;
+        }
+        return registerAdmin(bean, request);
+    }
+
+    /**
+     * Mise à jour d'un opérateur (périmètre) : délègue à {@link #updateAdmin} en garantissant
+     * qu'un opérateur ne reçoit jamais le droit de gestion des administrateurs.
+     */
+    @PUT
+    @Path("/operators/{operatorId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "operator.update", entityType = "fishola_admin", entityIdParam = "operatorId")
+    public Response updateOperator(RegisterAdminBean bean, @PathParam("operatorId") UUID operatorId, @Context HttpServletRequest request) {
+        if (bean != null) {
+            bean.canCreateAdmin = Boolean.FALSE;
+        }
+        return updateAdmin(bean, operatorId, request);
     }
 
     private boolean doVerifyAfterRegistration(@Context HttpServletRequest request, @QueryParam("t") String token) {
@@ -271,6 +361,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_CAN_CREATE_ADMIN)),
                     false,
+                    Boolean.parseBoolean(claims.getOrDefault(CLAIM_IS_OPERATOR, "false")),
                     waterEntityIds
             );
 

@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
@@ -93,6 +94,7 @@ public class NewsResource extends AbstractFisholaResource {
 
     @DELETE
     @Path("/news-all/{newsId}")
+    @Audited(value = "news.delete", entityType = "news", entityIdParam = "newsId")
     public Response deleteNews(@PathParam("newsId") UUID newsId) {
         checkIsAdmin();
         dao.deleteById(newsId);
@@ -101,6 +103,7 @@ public class NewsResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/news-all/{newsId}")
+    @Audited(value = "news.update", entityType = "news", entityIdParam = "newsId")
     public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
@@ -123,6 +126,7 @@ public class NewsResource extends AbstractFisholaResource {
 
     @POST
     @Path("/news-all")
+    @Audited(value = "news.create", entityType = "news")
     public Response createNews(NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();

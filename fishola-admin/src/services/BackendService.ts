@@ -206,6 +206,30 @@ export default abstract class BackendService {
     });
   }
 
+  static backendPostBinary(uri: string, data: ArrayBuffer | Blob): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      const apiUrl = Constants.apiUrl(uri);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", apiUrl, true);
+      xhr.withCredentials = true;
+      xhr.onload = function() {
+        // 409 = fichier déjà importé (idempotence) : réponse métier normale, pas une erreur.
+        if (this.status == 200 || this.status == 201 || this.status == 409) {
+          const responseText = this["responseText"];
+          try {
+            resolve(JSON.parse(responseText));
+          } catch (syntaxError) {
+            resolve(responseText);
+          }
+        } else {
+          reject(BackendService.wrapResponseReject(this));
+        }
+      };
+      xhr.setRequestHeader("Content-Type", "application/octet-stream");
+      xhr.send(data);
+    });
+  }
+
   static backendPutPlain(uri: string, data: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const apiUrl = Constants.apiUrl(uri);
