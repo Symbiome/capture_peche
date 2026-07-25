@@ -29,6 +29,7 @@ import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.FisholaCache;
+import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.DELETE;
@@ -74,6 +75,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @DELETE
     @Path("/documentations/{documentId}")
+    @Audited(value = "documentation.delete", entityType = "documentation", entityIdParam = "documentId")
     public Response deleteDocumentation(@PathParam("documentId") UUID documentId) {
         checkIsAdmin();
         dao.deleteDocumentation(documentId);
@@ -110,6 +112,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/documentations/{docId}")
+    @Audited(value = "documentation.update", entityType = "documentation", entityIdParam = "docId")
     public Response updateDocumentation(@PathParam("docId") UUID docId, DocumentationWithBase64ContentBean documentationBase64Content) {
         checkIsAdmin();
         Preconditions.checkArgument(docId != null, "Identifiant de document obligatoire");
@@ -127,6 +130,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @POST
     @Path("/documentations")
+    @Audited(value = "documentation.create", entityType = "documentation")
     public Response createDocumentation(DocumentationWithBase64ContentBean documentationBase64Content) {
         checkIsAdmin();
         try {
@@ -206,6 +210,7 @@ public class DocumentationResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/editorial/{editorialId}")
+    @Audited(value = "editorial.update", entityType = "editorial", entityIdParam = "editorialId")
     public Response updateEditorial(@PathParam("editorialId") UUID editorialId, Editorial editorial) {
         Preconditions.checkArgument(editorialId != null, "Identifiant de page éditoriale obligatoire");
         Preconditions.checkArgument(editorialId.equals(editorial.getId()), "L'identifiant ne correspond pas");
