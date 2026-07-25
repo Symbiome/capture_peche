@@ -75,8 +75,6 @@ export default class MyTripsMapView extends Vue {
     mapIsLoading = false;
 
     private map: MlMap | null = null;
-    // Résolue quand la source et les couches de sorties sont en place.
-    private layersReady: Promise<void> | null = null;
     private detachHydroHover: (() => void) | null = null;
 
     mounted() {
@@ -138,19 +136,10 @@ export default class MyTripsMapView extends Vue {
             return;
         }
         if (this.map) {
-            // Les couches sont ajoutées de façon asynchrone (chargement des pins) :
-            // on attend qu'elles existent avant de pousser de nouvelles données.
-            const applyData = () => {
-                const source = this.map?.getSource('catches') as GeoJSONSource | undefined;
-                source?.setData(this.buildGeoJson());
-                this.fitToMarkers();
-                this.mapIsLoading = false;
-            };
-            if (this.layersReady) {
-                this.layersReady.then(applyData);
-            } else {
-                applyData();
-            }
+            const source = this.map.getSource('catches') as GeoJSONSource | undefined;
+            source?.setData(this.buildGeoJson());
+            this.fitToMarkers();
+            this.mapIsLoading = false;
             return;
         }
         const container = this.$refs.mapContainer as HTMLElement;
@@ -170,24 +159,27 @@ export default class MyTripsMapView extends Vue {
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
         // Informations du réseau hydro au survol, comme sur les autres cartes.
         this.detachHydroHover = attachHydroHover(this.map);
+        // Les pins sont fournis à la demande : les couches restent ainsi ajoutées
+        // de façon SYNCHRONE dans « load » (une création différée de la source
+        // empêchait le regroupement en clusters de se mettre en place).
+        this.map.on('styleimagemissing', (e: any) => {
+            if (!this.map) {
+                return;
+            }
+            if (e.id === CATCH_PIN_MAILLEE) {
+                addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4');
+            } else if (e.id === CATCH_PIN_AUTRE) {
+                addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#2b7fa8');
+            }
+        });
         this.map.on('load', () => {
-            this.layersReady = this.addCatchLayers();
+            this.addCatchLayers();
             this.fitToMarkers();
             this.mapIsLoading = false;
         });
     }
 
-    private async addCatchLayers() {
-        if (!this.map) {
-            return;
-        }
-        // Les pins doivent être enregistrés avant la couche qui les référence.
-        // Bleu Fishola pour les deux : la nuance de maillage reste portée par
-        // l'infobulle au clic (un aplat orange ressortait trop sur le fond IGN).
-        await Promise.all([
-            addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4'),
-            addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#2b7fa8'),
-        ]);
+    private addCatchLayers() {
         if (!this.map) {
             return;
         }
