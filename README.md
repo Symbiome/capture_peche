@@ -127,8 +127,7 @@ L'application FISHOLA est sous licence [GNU Affero General Public License v3](/L
 
 ### Schéma de données
 
-Le DDL généré à partir des migrations est disponibe ici:
-```fishola-backend/target/init-fishola-database.sql```
+Le DDL généré à partir des migrations est disponible ici : `fishola-backend/target/init-fishola-database.sql`.
 
 
 ### Data
@@ -146,19 +145,30 @@ Dans le geopackage téléchargé, les attributs pertinents sont:
 
 #### Connexion à la base de dev locale
 
+```bash
 psql postgresql://postgres:whatever@localhost:15432/fishola
+```
 
-#### Run les migrations
+#### Lancer les migrations
 
-mvn flyway:migrate
+```bash
+cd fishola-backend && mvn flyway:migrate
+```
 
+#### Créer un utilisateur de test
 
-insert into fishola_user (first_name, last_name, email, password) values
-    ('Arthur', 'Talpaert', 'arthur@symbiome.eu', 'hash_password');
+Le mot de passe doit être un hash **bcrypt** (pas un mot de passe en clair), et `created_on`
+est obligatoire :
+
+```sql
+INSERT INTO fishola_user (first_name, last_name, email, password, created_on, pseudo)
+VALUES ('Arthur', 'Talpaert', 'arthur@symbiome.eu', '$2a$10$...bcrypt...', now(), 'arthur');
+```
 
 #### Lancer l'app mobile Fishola en mode dev
 
-Editer le fichier .env et décommenter:
-```
+Éditer le fichier `.env` et décommenter :
+
+```bash
 VITE__FORCED_DEVICE_TYPE=application
 ```
