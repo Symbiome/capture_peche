@@ -71,6 +71,9 @@
       <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
         Utilisateurs
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'audit-log' }" v-if="loggedAdmin.isNationalAdmin">
+        Journal d'audit
+      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
         Administrateurs
       </b-navbar-item>
