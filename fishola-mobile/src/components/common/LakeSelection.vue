@@ -341,9 +341,17 @@ export default class LakeSelection extends Vue {
     this.$emit("updated", lake);
   }
 
+  // Échappe les métacaractères d'expression régulière du terme saisi. `RegExp.escape`
+  // ferait l'affaire mais n'existe qu'à partir de Chrome 136 / Safari 18.4 : sur une
+  // WebView plus ancienne l'appel lève, le rendu de la liste échoue et AUCUNE
+  // suggestion ne s'affiche (le champ reste en état « recherche en cours »).
+  private escapeForRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   highlightMatchingText(text) {
     if (this.search != this.selectedLabel) {
-      const regexp = new RegExp(RegExp.escape(this.search), 'ig');
+      const regexp = new RegExp(this.escapeForRegExp(this.search), 'ig');
       return text.replace(regexp, `<span class="highlight">${this.search}</span>`)
     }
     return text;
