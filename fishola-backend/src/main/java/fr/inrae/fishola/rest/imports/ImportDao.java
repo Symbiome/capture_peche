@@ -29,6 +29,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import jakarta.inject.Singleton;
 import org.jooq.Condition;
+import jakarta.transaction.Transactional;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -150,54 +151,53 @@ public class ImportDao extends AbstractFisholaDao {
      * Persiste en une transaction : le job, ses erreurs, et (si {@code doInsert}) une sortie
      * par {@code session_ref} avec ses captures. Renvoie l'id du job et le nombre de sorties créées.
      */
+    @Transactional
     public Persisted persist(String fileName, String fileHash, String status, int total, int rejected,
                              UUID createdBy, List<ImportError> errors, boolean doInsert,
                              Map<String, List<ParsedRow>> sessions) {
         int insertedCount = doInsert ? sessions.size() : 0;
-        UUID[] jobIdHolder = new UUID[1];
+        // Atomicité portée par JTA (@Transactional), comme dans les autres DAO : ouvrir en plus
+        // une transaction jOOQ sur une connexion déjà enrôlée fait échouer le commit — l'import
+        // était alors annulé en silence.
+        DSLContext ctx = newContext();
 
-        newContext().transaction(cfg -> {
-            var ctx = DSL.using(cfg);
+        UUID jobId = ctx.insertInto(IMPORT_JOB,
+                        IMPORT_JOB.FILE_NAME, IMPORT_JOB.FILE_HASH, IMPORT_JOB.STATUS,
+                        IMPORT_JOB.TOTAL, IMPORT_JOB.REJECTED, IMPORT_JOB.INSERTED, IMPORT_JOB.CREATED_BY)
+                .values(fileName, fileHash, status, total, rejected, insertedCount, createdBy)
+                .returning(IMPORT_JOB.ID)
+                .fetchOne()
+                .getId();
 
-            UUID jobId = ctx.insertInto(IMPORT_JOB,
-                            IMPORT_JOB.FILE_NAME, IMPORT_JOB.FILE_HASH, IMPORT_JOB.STATUS,
-                            IMPORT_JOB.TOTAL, IMPORT_JOB.REJECTED, IMPORT_JOB.INSERTED, IMPORT_JOB.CREATED_BY)
-                    .values(fileName, fileHash, status, total, rejected, insertedCount, createdBy)
-                    .returning(IMPORT_JOB.ID)
-                    .fetchOne()
-                    .getId();
-            jobIdHolder[0] = jobId;
+        for (ImportError e : errors) {
+            ctx.insertInto(IMPORT_ROW_ERROR,
+                            IMPORT_ROW_ERROR.IMPORT_ID, IMPORT_ROW_ERROR.LINE, IMPORT_ROW_ERROR.COLUMN_NAME,
+                            IMPORT_ROW_ERROR.STAGE, IMPORT_ROW_ERROR.CODE, IMPORT_ROW_ERROR.MESSAGE)
+                    .values(jobId, e.line(), e.column(), e.stage(), e.code(), e.message())
+                    .execute();
+        }
 
-            for (ImportError e : errors) {
-                ctx.insertInto(IMPORT_ROW_ERROR,
-                                IMPORT_ROW_ERROR.IMPORT_ID, IMPORT_ROW_ERROR.LINE, IMPORT_ROW_ERROR.COLUMN_NAME,
-                                IMPORT_ROW_ERROR.STAGE, IMPORT_ROW_ERROR.CODE, IMPORT_ROW_ERROR.MESSAGE)
-                        .values(jobId, e.line(), e.column(), e.stage(), e.code(), e.message())
-                        .execute();
-            }
+        if (doInsert) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Map.Entry<String, List<ParsedRow>> entry : sessions.entrySet()) {
+                String sref = entry.getKey();
+                List<ParsedRow> rows = entry.getValue();
+                ParsedRow s = rows.get(0);
+                String name = "Import " + sref + " " + s.day.format(DAY_FMT);
 
-            if (doInsert) {
-                LocalDateTime now = LocalDateTime.now();
-                for (Map.Entry<String, List<ParsedRow>> entry : sessions.entrySet()) {
-                    String sref = entry.getKey();
-                    List<ParsedRow> rows = entry.getValue();
-                    ParsedRow s = rows.get(0);
-                    String name = "Import " + sref + " " + s.day.format(DAY_FMT);
+                UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, s.end, s.waterEntityId, name, now);
 
-                    UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, s.end, s.waterEntityId, name, now);
-
-                    for (ParsedRow p : rows) {
-                        if (!p.hasCapture) {
-                            continue;
-                        }
-                        insertCatch(ctx, tripId, p.speciesId, s.techniqueId, p.longueur, p.weight, p.kept,
-                                p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now);
+                for (ParsedRow p : rows) {
+                    if (!p.hasCapture) {
+                        continue;
                     }
+                    insertCatch(ctx, tripId, p.speciesId, s.techniqueId, p.longueur, p.weight, p.kept,
+                            p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now);
                 }
             }
-        });
+        }
 
-        return new Persisted(jobIdHolder[0], insertedCount);
+        return new Persisted(jobId, insertedCount);
     }
 
     // --- Saisie manuelle (#72) : réutilise la même persistance trip + catch --
@@ -221,21 +221,19 @@ public class ImportDao extends AbstractFisholaDao {
      * Persiste une saisie manuelle (une sortie + ses captures) en une transaction.
      * La technique d'une capture retombe sur celle de la sortie si absente.
      */
+    @Transactional
     public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
                                 UUID waterEntityId, String name, UUID tripTechniqueId, List<ManualCatch> catches) {
-        UUID[] tripIdHolder = new UUID[1];
-        newContext().transaction(cfg -> {
-            var ctx = DSL.using(cfg);
-            LocalDateTime now = LocalDateTime.now();
-            UUID tripId = insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now);
-            tripIdHolder[0] = tripId;
-            for (ManualCatch c : catches) {
-                UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
-                insertCatch(ctx, tripId, c.speciesId(), technique, c.size(), c.weight(), c.kept(),
-                        c.quantity() == null ? 1 : c.quantity(), c.sizeClass(), c.description(), now);
-            }
-        });
-        return tripIdHolder[0];
+        // Atomicité JTA (cf. remarque sur persist()).
+        DSLContext ctx = newContext();
+        LocalDateTime now = LocalDateTime.now();
+        UUID tripId = insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now);
+        for (ManualCatch c : catches) {
+            UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
+            insertCatch(ctx, tripId, c.speciesId(), technique, c.size(), c.weight(), c.kept(),
+                    c.quantity() == null ? 1 : c.quantity(), c.sizeClass(), c.description(), now);
+        }
+        return tripId;
     }
 
     // --- Inserts partagés import / saisie manuelle ---------------------------
