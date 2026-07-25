@@ -37,7 +37,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import maplibregl, { Map as MlMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
+import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
 @Component
 export default class MapLibrePositionMap extends Vue {
@@ -50,6 +50,7 @@ export default class MapLibrePositionMap extends Vue {
 
     private map: MlMap | null = null;
     private marker: Marker | null = null;
+    private detachHydroHover: (() => void) | null = null;
     baseLayer: BaseLayer = 'plan';
 
     mounted() {
@@ -60,6 +61,8 @@ export default class MapLibrePositionMap extends Vue {
     beforeDestroy() {
         this.marker?.remove();
         this.marker = null;
+        this.detachHydroHover?.();
+        this.detachHydroHover = null;
         this.map?.remove();
         this.map = null;
     }
@@ -78,6 +81,8 @@ export default class MapLibrePositionMap extends Vue {
             : undefined;
         this.map = createFisholaMap(container, { center, zoom: this.zoom, baseLayer: this.baseLayer });
         this.map.on('load', () => this.map?.resize());
+        // Informations du réseau hydro au survol, comme à la saisie.
+        this.detachHydroHover = attachHydroHover(this.map);
         if (this.hasCoords()) {
             this.setMarker(this.lng as number, this.lat as number);
         }

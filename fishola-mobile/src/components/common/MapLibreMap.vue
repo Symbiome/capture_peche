@@ -62,8 +62,10 @@ import GeolocationService from '@/services/GeolocationService';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
 
-import maplibregl, { Map as MlMap, Marker, Popup, LngLatLike, LngLatBoundsLike, MapGeoJSONFeature, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// Ciblage et infobulle des entités hydro : logique mutualisée entre toutes les cartes.
+import { attachHydroHover, queryHydroAt } from './maplibreStyle';
 
 // Flux WMTS raster ouverts de la Géoplateforme IGN (sans clé pour les couches
 // essentielles). TileMatrixSet PM = Web Mercator, aligné sur la projection par
@@ -98,7 +100,8 @@ export default class MapLibreMap extends Vue {
     private favoriteMarkers: Marker[] = [];
     private pinMarker: Marker | null = null;
     private userMarker: Marker | null = null;
-    private hoverPopup: Popup | null = null;
+    // Détache l'infobulle de survol hydro (logique mutualisée, cf. maplibreStyle).
+    private detachHydroHover: (() => void) | null = null;
     baseLayer: BaseLayer = 'plan';
     mapIsLoading = true;
 
@@ -119,8 +122,8 @@ export default class MapLibreMap extends Vue {
 
     beforeDestroy() {
         this.destroyMarkers();
-        this.hoverPopup?.remove();
-        this.hoverPopup = null;
+        this.detachHydroHover?.();
+        this.detachHydroHover = null;
         if (this.map) {
             this.map.remove();
             this.map = null;
@@ -205,7 +208,7 @@ export default class MapLibreMap extends Vue {
         // un pin au point cliqué : il matérialise la position de départ de la
         // sortie (retour recette « pas de pin au clic sur le segment »).
         map.on('click', (e) => {
-            const features = this.queryHydroAt(e.point);
+            const features = queryHydroAt(map, e.point);
             const props = features.length > 0 ? (features[0].properties || {}) : {};
             const id = props.water_entity_id as string;
             this.setPin(e.lngLat.lng, e.lngLat.lat);
@@ -223,97 +226,10 @@ export default class MapLibreMap extends Vue {
         });
 
         // Survol d'une entité : curseur « pointer » + infobulle (nom + type).
-        // Requête map-level (pas par couche) pour appliquer une tolérance de
-        // ciblage : un trait de rivière fait 1–3 px, difficile à survoler pile
-        // dessus. queryHydroAt élargit la zone de détection.
-        map.on('mousemove', (e) => {
-            const features = this.queryHydroAt(e.point);
-            if (features.length > 0) {
-                const feature = features[0];
-                const name = (feature.properties && feature.properties.name) || 'Sans nom';
-                map.getCanvas().style.cursor = 'pointer';
-                this.showHoverPopup(e.lngLat, name as string, this.hydroTypeLabel(feature));
-            } else {
-                map.getCanvas().style.cursor = '';
-                this.hideHoverPopup();
-            }
-        });
+        // Comportement mutualisé avec les autres cartes (cf. maplibreStyle).
+        this.detachHydroHover = attachHydroHover(map);
     }
 
-    // Interroge les entités hydro autour d'un point écran, avec une tolérance de
-    // ciblage exprimée en pixels et ADAPTÉE AU ZOOM : dézoomé, les traits sont
-    // fins (1 px) → tolérance large ; zoomé, ils s'épaississent → tolérance
-    // resserrée pour rester précis. Une boîte (au lieu du point exact) rend le
-    // survol/clic des cours d'eau bien plus facile.
-    private queryHydroAt(point: { x: number; y: number }) {
-        if (!this.map) {
-            return [];
-        }
-        const zoom = this.map.getZoom();
-        const tol = zoom < 13 ? 10 : (zoom < 15 ? 7 : 5);
-        const box: [[number, number], [number, number]] = [
-            [point.x - tol, point.y - tol],
-            [point.x + tol, point.y + tol],
-        ];
-        // On interroge les couches présentes (les couches hors-ligne n'existent
-        // que si un pack est chargé, les couches tuiles qu'en ligne).
-        const candidates = [
-            'hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent',
-            'hydro-offline-fill', 'hydro-offline-line',
-        ];
-        const layers = candidates.filter((l) => this.map!.getLayer(l));
-        return this.map.queryRenderedFeatures(box, { layers });
-    }
-
-    // Libellé de type à partir de la couche d'origine de la feature.
-    private hydroTypeLabel(feature: MapGeoJSONFeature): string {
-        const layer = feature.layer && feature.layer.id;
-        // Hors-ligne, la couche ne distingue pas plan d'eau/cours d'eau : on
-        // s'appuie sur la propriété `kind` portée par le pack.
-        if (layer === 'hydro-offline-fill' || layer === 'hydro-offline-line') {
-            const kind = feature.properties && feature.properties.kind;
-            return kind === 'STILL' ? "Plan d'eau" : "Cours d'eau";
-        }
-        if (layer === 'hydro-surface') {
-            return "Plan d'eau";
-        }
-        if (layer === 'hydro-river-intermittent') {
-            return "Cours d'eau intermittent";
-        }
-        return "Cours d'eau";
-    }
-
-    // Infobulle de survol (desktop) : nom du lieu + type. `pointer-events: none`
-    // (porté par la CSS de .hydro-hover-popup) pour ne jamais intercepter le clic
-    // de sélection. Sans effet sur tactile (pas d'événement de survol).
-    private showHoverPopup(lngLat: LngLatLike, name: string, typeLabel: string) {
-        if (!this.map) {
-            return;
-        }
-        const html = `<div class="hydro-tip"><strong>${this.escapeHtml(name)}</strong>`
-            + `<span>${typeLabel}</span></div>`;
-        if (!this.hoverPopup) {
-            this.hoverPopup = new maplibregl.Popup({
-                closeButton: false,
-                closeOnClick: false,
-                offset: 12,
-                className: 'hydro-hover-popup',
-            });
-        }
-        this.hoverPopup.setLngLat(lngLat).setHTML(html).addTo(this.map);
-    }
-
-    private hideHoverPopup() {
-        this.hoverPopup?.remove();
-    }
-
-    // Les noms viennent de la base, mais on échappe par principe (infobulle en
-    // innerHTML).
-    private escapeHtml(value: string): string {
-        return value.replace(/[&<>"']/g, (c) => (
-            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
-        ));
-    }
 
     // Construit le style MapLibre de A à Z (aucune URL de style externe : plus
     // simple à figer et compatible avec le mode hors-ligne #54).
@@ -822,30 +738,6 @@ export default class MapLibreMap extends Vue {
     100% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0); }
 }
 
-/* Infobulle de survol des entités hydro (nom + type). Rendue par MapLibre hors
-   du DOM scopé du composant → styles globaux. `pointer-events: none` pour ne
-   jamais capter le clic de sélection sous le curseur. */
-.hydro-hover-popup {
-    pointer-events: none;
-
-    .maplibregl-popup-content {
-        padding: 6px 10px;
-        border-radius: 6px;
-        box-shadow: 0 1px 4px #0003;
-    }
-    .hydro-tip {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-
-        strong {
-            color: @gunmetal;
-            font-size: 0.9rem;
-        }
-        span {
-            color: @pale-sky;
-            font-size: 0.75rem;
-        }
-    }
-}
+/* L'infobulle de survol des entités hydro (.hydro-hover-popup) est désormais
+   stylée dans less/main.less : elle est partagée par toutes les cartes. */
 </style>

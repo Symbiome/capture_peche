@@ -247,7 +247,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                 fisholaAdmin.getEmail(),
                 fisholaAdmin.getIsNationalAdmin(),
                 fisholaAdmin.getCanCreateAdmin(),
-                fisholaAdmin.getIsOperator()
+                fisholaAdmin.getIsOperator(),
+                adminDao.getAllowedWaterEntities(fisholaAdmin.getId())
         );
         return Response.ok(loggedAdmin).build();
     }

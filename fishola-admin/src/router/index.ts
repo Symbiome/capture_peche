@@ -45,6 +45,7 @@ import OperatorImport from "@/views/operator/Import.vue";
 import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
 import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
+import AuditLog from "@/views/AuditLog.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -112,6 +113,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/users",
     name: "users",
     component: Users
+  },
+  {
+    path: "/audit-log",
+    name: "audit-log",
+    component: AuditLog
   },
   {
     path: "/admins",

@@ -297,3 +297,30 @@ body {
 #_capacitor-camera-input {
   display: none;
 }
+/* Infobulle de survol des entités hydro (nom + type), partagée par toutes les
+   cartes MapLibre. Rendue par MapLibre hors du DOM scopé des composants → doit
+   être globale. `pointer-events: none` pour ne jamais capter le clic sous le
+   curseur. Comportement branché par attachHydroHover (components/common/maplibreStyle). */
+.hydro-hover-popup {
+  pointer-events: none;
+
+  .maplibregl-popup-content {
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px #0003;
+  }
+  .hydro-tip {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+
+    strong {
+      color: @gunmetal;
+      font-size: 0.9rem;
+    }
+    span {
+      color: @pale-sky;
+      font-size: 0.75rem;
+    }
+  }
+}
