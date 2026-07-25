@@ -60,7 +60,7 @@ public class AuditResource extends AbstractFisholaResource {
                          @QueryParam("pageNumber") @DefaultValue("0") int pageNumber,
                          @QueryParam("pageSize") @DefaultValue("50") int pageSize) {
         // Réservé aux admins (matrice §3 : « Consulter le journal global »).
-        checkIsAdmin();
+        checkIsNationalAdmin();
 
         Preconditions.checkArgument(pageNumber >= 0 && pageNumber <= MAX_PAGE_NUMBER,
                 "pageNumber doit être dans l'intervalle [0, " + MAX_PAGE_NUMBER + "].");
