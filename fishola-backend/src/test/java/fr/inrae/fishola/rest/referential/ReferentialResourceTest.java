@@ -28,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
 @QuarkusTest
 class ReferentialResourceTest {
@@ -40,7 +41,9 @@ class ReferentialResourceTest {
                     .get("/api/v1/referential/waterEntities")
                 .then()
                     .statusCode(200)
-                    .body("size()", equalTo(481))
+                    // La fixture de test (#67) amorce les entités hydro nommées ci-dessous ;
+                    // d'autres tests peuvent en créer, d'où un minorant plutôt qu'un compte exact.
+                    .body("size()", greaterThanOrEqualTo(5))
                     .body("name", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
                     .body("exportAs", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
                     .body("[0].id", notNullValue())
