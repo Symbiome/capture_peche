@@ -326,10 +326,29 @@ public class ImportService {
      * un doublon et on la relaie.
      */
     private ImportResultBean concurrentDuplicate(String fileHash, DataAccessException original) {
+        // On ne conclut au doublon QUE sur une violation de contrainte d'unicité (SQLState 23505).
+        // Toute autre erreur de persistance doit remonter : sinon un échec d'insertion serait
+        // présenté à l'opérateur comme « fichier déjà importé », alors que rien n'a été écrit.
+        if (!isUniqueViolation(original)) {
+            throw original;
+        }
         return importDao.findByHash(fileHash)
                 .map(j -> new ImportResultBean(j.id(), j.status(), j.total(), j.inserted(), j.rejected(),
                         true, List.of()))
                 .orElseThrow(() -> original);
+    }
+
+    /** SQLState 23505 = unique_violation (PostgreSQL), y compris à travers les causes chaînées. */
+    private boolean isUniqueViolation(Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof java.sql.SQLException sql && "23505".equals(sql.getSQLState())) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**
