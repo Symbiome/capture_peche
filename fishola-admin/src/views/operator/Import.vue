@@ -33,6 +33,60 @@
       </b-button>
     </header>
 
+    <!-- Aide au format : les 28 colonnes ne se devinent pas. Repliée par défaut
+         pour ne pas noyer l'action principale (déposer un fichier). -->
+    <b-collapse class="card format-help" animation="slide" :open="false">
+      <template #trigger="props">
+        <div class="card-header" role="button">
+          <p class="card-header-title">Format attendu — {{ EXPECTED_HEADER.length }} colonnes</p>
+          <a class="card-header-icon">
+            <b-icon :icon="props.open ? 'menu-up' : 'menu-down'"></b-icon>
+          </a>
+        </div>
+      </template>
+
+      <div class="card-content">
+        <p class="help-intro">
+          Chaque ligne est contrôlée en trois étapes —
+          <b-tag type="is-danger">Format</b-tag> (colonnes, dates, heures),
+          <b-tag type="is-warning">Référentiel</b-tag> (espèces, techniques, plans d'eau, périmètre) puis
+          <b-tag type="is-info">Règle métier</b-tag> (tailles aberrantes, cohérence des lots).
+          Les lignes valides sont importées, les autres listées dans le rapport.
+        </p>
+
+        <div v-for="g in COLUMN_GROUPS" :key="g.titre" class="col-group">
+          <div class="col-group-head">
+            <strong>{{ g.titre }}</strong>
+            <span class="col-group-hint">{{ g.aide }}</span>
+          </div>
+          <div class="col-tags">
+            <b-tag
+              v-for="c in g.colonnes"
+              :key="c.nom"
+              :type="c.requis ? 'is-primary' : 'is-light'"
+              :title="c.aide"
+            >
+              {{ c.nom }}<span v-if="c.requis"> *</span>
+            </b-tag>
+          </div>
+        </div>
+
+        <p class="help-note">
+          <span class="req">*</span> colonne obligatoire.
+          Les captures d'une même sortie partagent le même <code>session_ref</code>.
+          Dates au format <code>JJ/MM/AAAA</code>, heures <code>HH:MM</code>.
+        </p>
+
+        <div class="coded-values">
+          <strong>Valeurs acceptées</strong>
+          <div v-for="v in CODED_VALUES" :key="v.colonne" class="coded-line">
+            <span class="coded-col">{{ v.colonne }}</span>
+            <b-tag v-for="val in v.valeurs" :key="val" type="is-light">{{ val }}</b-tag>
+          </div>
+        </div>
+      </div>
+    </b-collapse>
+
     <div class="box">
       <b-field>
         <b-upload v-model="file" drag-drop expanded accept=".csv,text/csv">
@@ -133,6 +187,64 @@ const EXPECTED_HEADER = [
   "capture_marque", "capture_pathologies",
 ];
 
+// Aide au format, groupée comme dans l'ancien back-office. Les libellés d'aide
+// décrivent ce que le backend accepte réellement (cf. ImportSchema / CsvSupport).
+const COLUMN_GROUPS = [
+  {
+    titre: "Sortie",
+    aide: "Une ligne par capture ; les captures d'une même sortie partagent le même « session_ref ».",
+    colonnes: [
+      { nom: "session_ref", aide: "Identifiant de la sortie (regroupe ses captures)", requis: true },
+      { nom: "collection_method", aide: "Origine du recueil", requis: true },
+      { nom: "date", aide: "JJ/MM/AAAA", requis: true },
+      { nom: "heure_debut", aide: "HH:MM", requis: true },
+      { nom: "heure_fin", aide: "HH:MM, postérieure à l'heure de début", requis: true },
+      { nom: "eau_nom", aide: "Nom du plan ou cours d'eau (référentiel, dans votre périmètre)", requis: true },
+      { nom: "commune", aide: "Commune — lève l'ambiguïté entre homonymes", requis: false },
+      { nom: "mode_peche", aide: "bateau, du bord, float tube…", requis: false },
+      { nom: "technique", aide: "Technique de pêche (référentiel)", requis: false },
+      { nom: "nb_lignes", aide: "Nombre de lignes en action", requis: false },
+      { nom: "espece_ciblee", aide: "Espèce visée (référentiel)", requis: false },
+      { nom: "bredouille", aide: "oui / non — si oui, aucune capture attendue", requis: false },
+    ],
+  },
+  {
+    titre: "Enquêté",
+    aide: "Profil anonyme (enquêtes / carnets). Colonnes acceptées mais pas encore enregistrées.",
+    colonnes: [
+      { nom: "enquete_age", aide: "", requis: false },
+      { nom: "enquete_sexe", aide: "", requis: false },
+      { nom: "enquete_commune", aide: "", requis: false },
+      { nom: "enquete_experience_annees", aide: "", requis: false },
+      { nom: "enquete_importance", aide: "principale / secondaire", requis: false },
+      { nom: "enquete_membre_club", aide: "oui / non", requis: false },
+      { nom: "enquete_sorties_par_an", aide: "", requis: false },
+    ],
+  },
+  {
+    titre: "Capture",
+    aide: "Une ligne par poisson (ou par lot). À laisser vide si la sortie est bredouille.",
+    colonnes: [
+      { nom: "capture_espece", aide: "Espèce (référentiel)", requis: true },
+      { nom: "capture_longueur_cm", aide: "Longueur en cm — contrôle des tailles aberrantes", requis: false },
+      { nom: "capture_poids_g", aide: "Poids en grammes", requis: false },
+      { nom: "capture_conservation", aide: "oui / non — poisson conservé", requis: false },
+      { nom: "capture_nombre", aide: "Nombre d'individus pour un lot (défaut 1)", requis: false },
+      { nom: "capture_classe_taille", aide: "Classe de taille d'un lot (ex. 10-15)", requis: false },
+      { nom: "capture_prelevement", aide: "oui / non", requis: false },
+      { nom: "capture_marque", aide: "écaille, génétique…", requis: false },
+      { nom: "capture_pathologies", aide: "Observations libres", requis: false },
+    ],
+  },
+];
+
+const CODED_VALUES = [
+  { colonne: "collection_method", valeurs: ["enquete", "carnet_volontaire", "carnet_obligatoire"] },
+  { colonne: "mode_peche", valeurs: ["bateau", "float tube", "kayak", "a pied", "belly boat", "du bord", "rive"] },
+  { colonne: "enquete_importance", valeurs: ["principale", "secondaire"] },
+  { colonne: "colonnes oui/non", valeurs: ["oui", "non"] },
+];
+
 const notificationType = computed(() => {
   if (!result.value) return "is-info";
   if (result.value.duplicate) return "is-warning";
@@ -172,7 +284,8 @@ function stageTagType(stage: string): string {
 /** Gabarit CSV : en-tête officiel + une ligne d'exemple commentée. */
 function downloadTemplate() {
   const example = [
-    "S001", "carnet_volontaire", "2026-07-01", "08:00", "10:00",
+    // Dates au format JJ/MM/AAAA et heures HH:MM : c'est ce qu'attend le backend.
+    "S001", "carnet_volontaire", "01/07/2026", "08:00", "10:00",
     "Lac du Bourget", "", "du bord", "Pêche au coup", "1",
     "", "false",
     "", "", "", "", "", "", "",
@@ -234,6 +347,66 @@ async function doImport() {
   .subtitle {
     color: #6b7780;
     max-width: 60ch;
+  }
+}
+
+.format-help {
+  margin-bottom: 1.5rem;
+  box-shadow: none;
+  border: 1px solid #e2e8ec;
+
+  .card-header {
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .help-intro {
+    margin-bottom: 1.2rem;
+    line-height: 1.7;
+  }
+  .col-group {
+    margin-bottom: 1rem;
+  }
+  .col-group-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .col-group-hint {
+    color: #8a949c;
+    font-size: 0.85rem;
+  }
+  .col-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .help-note {
+    color: #6b7780;
+    font-size: 0.85rem;
+    margin: 0.75rem 0 1.25rem;
+
+    .req {
+      color: #1fb6a8;
+      font-weight: 700;
+    }
+  }
+  .coded-values {
+    border-top: 1px solid #e2e8ec;
+    padding-top: 0.9rem;
+  }
+  .coded-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+  .coded-col {
+    color: #6b7780;
+    font-size: 0.85rem;
+    min-width: 11rem;
   }
 }
 
