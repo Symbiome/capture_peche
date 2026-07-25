@@ -211,16 +211,43 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         return result;
     }
 
+    @PUT
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Audited(value = "admin.password.change", entityType = "fishola_admin")
+    public Response changePassword(ChangeAdminPasswordBean bean) {
+        // Tout compte staff (admin OU opérateur) peut changer SON propre mot de passe (#55).
+        FisholaAdmin admin = checkIsStaff();
+        if (bean == null || StringUtils.isBlank(bean.oldPassword) || StringUtils.isBlank(bean.newPassword)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        // Ré-authentifie avec l'ancien mot de passe (bcrypt nominatif ou repli national partagé).
+        Optional<Boolean> authenticated = adminDao.authenticate(admin.getEmail(), bean.oldPassword);
+        if (authenticated.isEmpty() || !authenticated.get()) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("oldPassword", "Mot de passe actuel incorrect")).build();
+        }
+        Optional<String> passwordError = validatePassword(bean.newPassword);
+        if (passwordError.isPresent()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("newPassword", passwordError.get())).build();
+        }
+        adminDao.updatePassword(admin.getId(), adminDao.hashPassword(bean.newPassword));
+        return Response.noContent().build();
+    }
+
 
     @GET
     @Path("/check")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response adminCheck() throws ResourceNotFoundException {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        // Profil du staff connecté (admin OU opérateur) — sert au menu du back-office.
+        FisholaAdmin fisholaAdmin = checkIsStaff();
         LoggedAdminBean loggedAdmin = new LoggedAdminBean(
                 fisholaAdmin.getEmail(),
                 fisholaAdmin.getIsNationalAdmin(),
-                fisholaAdmin.getCanCreateAdmin()
+                fisholaAdmin.getCanCreateAdmin(),
+                fisholaAdmin.getIsOperator()
         );
         return Response.ok(loggedAdmin).build();
     }
