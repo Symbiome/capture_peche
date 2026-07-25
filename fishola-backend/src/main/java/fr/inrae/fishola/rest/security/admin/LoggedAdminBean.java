@@ -25,10 +25,12 @@ public class LoggedAdminBean {
     public String email;
     public Boolean isNationalAdmin;
     public final Boolean canCreateAdmins;
+    public final Boolean isOperator;
 
-    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins) {
+    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins, Boolean isOperator) {
         this.email = email;
         this.isNationalAdmin = isNationalAdmin;
         this.canCreateAdmins = canCreateAdmins;
+        this.isOperator = isOperator;
     }
 }

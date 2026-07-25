@@ -75,7 +75,8 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (adminToken == null) {
             return referentialDao.listWaterEntities();
         }
-        FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre.
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
         if (fisholaAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntities();
         } else {

@@ -160,7 +160,8 @@ public abstract class AbstractFisholaResource {
         }
     }
 
-    protected FisholaAdmin checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+    /** Tout compte staff authentifié (administrateur OU opérateur). */
+    protected FisholaAdmin checkIsStaff() throws NotAuthenticatedException, AccessDeniedException {
         if (adminToken == null) {
             throw new NotAuthenticatedException("Il faut d'abord s'authentifier");
         }
@@ -174,13 +175,27 @@ public abstract class AbstractFisholaResource {
         return byId.get();
     }
 
+    /**
+     * Administrateur uniquement : rejette les opérateurs (default-deny). Tous les endpoints
+     * d'administration (référentiels, éditorial, métriques, journal, utilisateurs…) passent
+     * par ici, ce qui cantonne le rôle opérateur à la saisie/import ; les endpoints ouverts
+     * à l'opérateur utilisent explicitement {@link #checkIsStaff()}.
+     */
+    protected FisholaAdmin checkIsAdmin() throws NotAuthenticatedException, AccessDeniedException {
+        FisholaAdmin admin = checkIsStaff();
+        if (Boolean.TRUE.equals(admin.getIsOperator())) {
+            AccessDeniedException.throwNew("Action réservée aux administrateurs");
+        }
+        return admin;
+    }
+
     protected Set<UUID> getAllowedAdminWaterEntities() {
         if (adminToken == null) {
             return Sets.newLinkedHashSet();
         }
-        // For admins : only list alllowed waterEntities
+        // Périmètre du staff (admin régional OU opérateur) ; vide = national (pas de filtre).
         try {
-            FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+            FisholaAdmin fisholaAdmin = this.checkIsStaff();
             return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedWaterEntities(fisholaAdmin.getId());
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();

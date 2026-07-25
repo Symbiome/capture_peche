@@ -103,11 +103,11 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, UUID[] waterEntityIds) {
+    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, boolean isOperator, UUID[] waterEntityIds) {
         String email = rawEmail.toLowerCase();
         FisholaAdminRecord inserted = withContext(context -> context.insertInto(FISHOLA_ADMIN,
-                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN)
-                .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin)
+                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN, FISHOLA_ADMIN.IS_OPERATOR)
+                .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin, isOperator)
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne());
         UUID insertedAdminId = inserted.getId();
@@ -129,6 +129,7 @@ public class AdminDao extends AbstractFisholaDao {
                 .email(input.getEmail())
                 .canCreateAdmin(input.getCanCreateAdmin())
                 .isNationalAdmin(input.getIsNationalAdmin())
+                .isOperator(input.getIsOperator())
                 .waterEntityIds(this.getAllowedWaterEntities(input.getId()))
                 .build();
         return result;

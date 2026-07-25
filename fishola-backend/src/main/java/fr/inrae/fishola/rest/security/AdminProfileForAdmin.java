@@ -39,6 +39,8 @@ public interface AdminProfileForAdmin {
 
     boolean isNationalAdmin();
 
+    boolean isOperator();
+
     List<UUID> waterEntityIds();
 
 }

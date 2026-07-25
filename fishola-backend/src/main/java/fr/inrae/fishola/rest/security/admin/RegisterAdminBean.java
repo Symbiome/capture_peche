@@ -29,4 +29,5 @@ public class RegisterAdminBean {
     public String password;
     public Set<UUID> waterEntityIds;
     public Boolean canCreateAdmin;
+    public Boolean isOperator;
 }
