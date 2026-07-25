@@ -116,6 +116,51 @@ export function createFisholaMap(
     return map;
 }
 
+// ─── Marqueur « sortie » (pin poisson) ───────────────────────────────────────
+
+/**
+ * Pin en forme de goutte portant une silhouette de poisson, dessiné en SVG et
+ * enregistré comme image MapLibre (`icon-image`). Un simple cercle ne disait pas
+ * de quoi il s'agissait ; la goutte donne en plus un point d'ancrage précis
+ * (la pointe est posée sur la coordonnée, cf. `icon-anchor: 'bottom'`).
+ *
+ * @param color couleur de remplissage (code maillage : bleu maillée / orange sinon)
+ */
+function buildCatchPinSvg(color: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46">
+  <path d="M17 1C8.7 1 2 7.7 2 16c0 10.5 13 26.5 14.1 27.8a1.2 1.2 0 0 0 1.8 0C19 42.5 32 26.5 32 16 32 7.7 25.3 1 17 1z"
+        fill="${color}" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="#ffffff">
+    <path d="M20.8 15.9c0 2.6-2.7 4.7-6 4.7-2.3 0-4.4-1-5.4-2.6-.2-.3-.2-.7 0-1 1-1.6 3.1-2.6 5.4-2.6 3.3 0 6 2.1 6 4.7z"/>
+    <path d="M21.2 13.6c.5-.3 1.1 0 1.1.6v3.4c0 .6-.6.9-1.1.6l-2.4-1.4c-.4-.3-.4-.9 0-1.2l2.4-2z"/>
+    <circle cx="13.2" cy="14.9" r="0.9" fill="${color}"/>
+  </g>
+</svg>`;
+}
+
+/**
+ * Charge le pin « sortie » dans la carte sous l'identifiant `id`.
+ * À appeler avant d'ajouter la couche `symbol` qui l'utilise.
+ */
+export function addCatchPinIcon(map: MlMap, id: string, color: string): Promise<void> {
+    return new Promise((resolve) => {
+        if (map.hasImage(id)) {
+            resolve();
+            return;
+        }
+        const img = new Image(34, 46);
+        img.onload = () => {
+            if (!map.hasImage(id)) {
+                map.addImage(id, img, { pixelRatio: 2 });
+            }
+            resolve();
+        };
+        // En cas d'échec on n'empêche pas l'affichage de la carte.
+        img.onerror = () => resolve();
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(buildCatchPinSvg(color));
+    });
+}
+
 // ─── Entités hydro : ciblage et infobulle de survol ──────────────────────────
 // Mutualisé entre toutes les cartes (sélection d'entité, position, marqueurs)
 // pour que le réseau hydro donne partout les mêmes informations.

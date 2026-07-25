@@ -55,11 +55,15 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
+import { addCatchPinIcon, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
 
 // Serveur de glyphes public (compteurs de clusters). Sans lui, les nombres ne
 // s'affichent pas mais la carte reste fonctionnelle (dégradation silencieuse).
 const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
+
+// Identifiants des pins « sortie » enregistrés dans la carte (cf. addCatchPinIcon).
+const CATCH_PIN_MAILLEE = 'catch-pin-maillee';
+const CATCH_PIN_AUTRE = 'catch-pin-autre';
 
 @Component
 export default class MyTripsMapView extends Vue {
@@ -71,6 +75,8 @@ export default class MyTripsMapView extends Vue {
     mapIsLoading = false;
 
     private map: MlMap | null = null;
+    // Résolue quand la source et les couches de sorties sont en place.
+    private layersReady: Promise<void> | null = null;
 
     mounted() {
         this.computeMapIfVisible();
@@ -129,10 +135,19 @@ export default class MyTripsMapView extends Vue {
             return;
         }
         if (this.map) {
-            const source = this.map.getSource('catches') as GeoJSONSource | undefined;
-            source?.setData(this.buildGeoJson());
-            this.fitToMarkers();
-            this.mapIsLoading = false;
+            // Les couches sont ajoutées de façon asynchrone (chargement des pins) :
+            // on attend qu'elles existent avant de pousser de nouvelles données.
+            const applyData = () => {
+                const source = this.map?.getSource('catches') as GeoJSONSource | undefined;
+                source?.setData(this.buildGeoJson());
+                this.fitToMarkers();
+                this.mapIsLoading = false;
+            };
+            if (this.layersReady) {
+                this.layersReady.then(applyData);
+            } else {
+                applyData();
+            }
             return;
         }
         const container = this.$refs.mapContainer as HTMLElement;
@@ -151,13 +166,21 @@ export default class MyTripsMapView extends Vue {
         });
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
         this.map.on('load', () => {
-            this.addCatchLayers();
+            this.layersReady = this.addCatchLayers();
             this.fitToMarkers();
             this.mapIsLoading = false;
         });
     }
 
-    private addCatchLayers() {
+    private async addCatchLayers() {
+        if (!this.map) {
+            return;
+        }
+        // Les pins doivent être enregistrés avant la couche qui les référence.
+        await Promise.all([
+            addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4'),
+            addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#f0a020'),
+        ]);
         if (!this.map) {
             return;
         }
@@ -181,13 +204,16 @@ export default class MyTripsMapView extends Vue {
             layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 13, 'text-font': ['Open Sans Regular'] },
             paint: { 'text-color': '#ffffff' },
         });
+        // Sortie isolée : pin « poisson » plutôt qu'une pastille, plus explicite et
+        // ancré par sa pointe sur la position exacte. La couleur reste le code
+        // maillage (bleu maillée / orange non maillée).
         this.map.addLayer({
-            id: 'catch-unclustered', type: 'circle', source: 'catches', filter: ['!', ['has', 'point_count']],
-            paint: {
-                'circle-radius': 7,
-                'circle-stroke-width': 2,
-                'circle-stroke-color': '#ffffff',
-                'circle-color': ['match', ['get', 'maillage'], 'MAILLEE', '#1e9bc4', '#f0a020'],
+            id: 'catch-unclustered', type: 'symbol', source: 'catches', filter: ['!', ['has', 'point_count']],
+            layout: {
+                'icon-image': ['match', ['get', 'maillage'], 'MAILLEE', CATCH_PIN_MAILLEE, CATCH_PIN_AUTRE],
+                'icon-size': 1,
+                'icon-anchor': 'bottom',
+                'icon-allow-overlap': true,
             },
         });
 
