@@ -178,10 +178,10 @@ button:active {
   100%{transform: rotate(1turn)}
 }
 
-/*========= Leaflet css classes override ============ */
-.leaflet-popup {
-  max-width: 80vw;
-  .leaflet-popup-content {
+/*========= MapLibre popup override ============ */
+.maplibregl-popup {
+  max-width: 80vw !important;
+  .maplibregl-popup-content {
     max-width: calc(100% - 44px);
     button {
       width: auto;
