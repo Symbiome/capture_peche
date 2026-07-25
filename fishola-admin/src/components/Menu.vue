@@ -106,19 +106,13 @@
           </template>
 
           <!-- Items -->
-          <b-dropdown-item>
-            <div class="logout-item">
-
-              <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
-              <b v-else-if="lakes.length == 1">
-                Admnistateur du {{ lakes[0].name }}
-              </b>
-              <span v-else>
-                  <b>Administrateur  des plans d'eau : </b><br/>
-                  <p v-for="l in lakes" :id="l.id">
-                    - {{ l.name }}
-                  </p>
-                </span>
+          <b-dropdown-item custom>
+            <div class="role-info">
+              <b>{{ roleLabel }}</b>
+              <div v-if="!loggedAdmin.isNationalAdmin && perimeterNames.length" class="perimeter">
+                <span class="perimeter-label">Plans d'eau :</span>
+                {{ perimeterNames.join(', ') }}
+              </div>
             </div>
           </b-dropdown-item>
           <b-dropdown-item has-link>
@@ -166,10 +160,23 @@ import router from "@/router";
 
 import BackendService from "@/services/BackendService";
 import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNavbarItem, useToast} from "buefy";
-import {onMounted, ref, Ref} from "vue";
+import {computed, onMounted, ref, Ref} from "vue";
 
 const loggedAdmin: Ref<Admin> = ref({ email: "" });
 const lakes: Ref<Lake[]> = ref([]);
+
+const roleLabel = computed(() => {
+  const a = loggedAdmin.value as any;
+  if (a.isNationalAdmin) return "Administrateur national";
+  if (a.isOperator) return "Opérateur";
+  return "Administrateur régional";
+});
+
+const perimeterNames = computed(() => {
+  const ids: string[] = (loggedAdmin.value as any).waterEntityIds ?? [];
+  const byId = new Map(lakes.value.map((l: any) => [l.id, l.name]));
+  return ids.map((id) => byId.get(id)).filter((n): n is string => !!n);
+});
 
 const Toast = useToast();
 
