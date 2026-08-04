@@ -38,7 +38,10 @@ PIDS+=($!)
 echo "==> Starting mobile front (Vue) on :8081..."
 (
   cd fishola-mobile
-  [ -d node_modules ] || npm install
+  # Toujours lancé (pas juste si node_modules absent) : sinon un node_modules
+  # existant mais périmé (nouvelle dépendance ajoutée par un collègue) passe
+  # inaperçu. npm install est rapide et sans effet si rien n'a changé.
+  npm install
   npm run serve
 ) &
 PIDS+=($!)
@@ -46,7 +49,7 @@ PIDS+=($!)
 echo "==> Starting admin front (Vue) on :8082..."
 (
   cd fishola-admin
-  [ -d node_modules ] || npm install
+  npm install
   npm run serve
 ) &
 PIDS+=($!)
@@ -54,20 +57,31 @@ PIDS+=($!)
 echo "==> Starting backoffice (Django « gestion interne ») on :8083..."
 (
   cd fishola-backoffice
-  # Environnement virtuel + dépendances (sans toucher la base) si absent.
-  [ -d .venv ] || ./setup.sh
+  [ -d .venv ] || uv venv --python 3.12 .venv
+  # Toujours lancé (même raison que npm install côté front) : un .venv existant
+  # mais incomplet (dépendance ajoutée par un collègue, ou installée par erreur
+  # hors du venv via `uv run pip install` sans --python) passe sinon inaperçu.
+  uv pip install --python .venv -r requirements.txt
+  [ -f .env ] || cp .env.example .env
   # Migrations Django (tables framework + OperatorProfile) — additif & idempotent,
   # sur la base PARTAGÉE déjà prête ; cohérent avec Flyway côté Quarkus.
-  .venv/bin/python manage.py migrate --noinput
+  # --skip-checks : sur une base neuve, auth_permission n'existe pas encore, or
+  # les checks admin de django-unfold interrogent cette table AVANT que migrate
+  # n'ait pu la créer (poule/œuf). Une fois migré, runserver n'a pas besoin de
+  # ce flag (la table existe alors).
+  .venv/bin/python manage.py migrate --noinput --skip-checks
   .venv/bin/python manage.py runserver 8083
 ) &
 PIDS+=($!)
 
 echo "==> Starting maildev (Docker) on :41080..."
-(
+if [ -n "$(docker ps -q -f name=^/maildev$)" ]; then
+  echo "    already running."
+elif [ -n "$(docker ps -aq -f name=^/maildev$)" ]; then
+  docker start maildev
+else
   docker run -p 41080:80 -p 41025:25 -d --name maildev --rm djfarrelly/maildev
-) &
-PIDS+=($!)
+fi
 
 echo ""
 echo "All services starting (Ctrl+C stops everything). Logs are interleaved below."

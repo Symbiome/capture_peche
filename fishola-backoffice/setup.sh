@@ -23,12 +23,16 @@ if [ ! -f .env ]; then
     echo "==> .env créé depuis .env.example (ajuster la connexion à la BDD si besoin)"
 fi
 
-echo "==> Vérification Django (sans base)"
-.venv/bin/python manage.py check
+echo "==> Vérification Django"
+# --skip-checks : sur une base neuve (auth_permission pas encore créée), les
+# checks admin de django-unfold interrogent cette table et échouent avant même
+# que migrate n'ait pu la créer (poule/œuf). Une fois la base initialisée,
+# runserver n'a plus besoin de ce flag.
+.venv/bin/python manage.py check --skip-checks
 
 if [ "${1:-}" = "--init-db" ]; then
     echo "==> Initialisation de la base PARTAGÉE (ajoute les tables Django auth_*/django_*)"
-    .venv/bin/python manage.py migrate
+    .venv/bin/python manage.py migrate --skip-checks
     .venv/bin/python manage.py setup_groups
     echo "==> Créez un compte admin :  .venv/bin/python manage.py createsuperuser"
 fi
