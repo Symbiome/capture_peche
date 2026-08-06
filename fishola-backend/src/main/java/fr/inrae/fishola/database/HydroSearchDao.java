@@ -280,19 +280,27 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // (valid per the MVT/protobuf repeated-Layer encoding). The bounding-box
     // prefilter is expressed in 4326 (r.geom && ST_Transform(env,4326)) so it
     // uses the existing GIST(geom) index; ST_AsMVTGeom then works in 3857.
+    // LEFT JOIN water_entity (not INNER): most of the imported BD TOPO network
+    // has no resolved water_entity_id yet (referential linking is a separate,
+    // incomplete step), and an INNER JOIN silently dropped that majority from
+    // the tile entirely — rendering it invisible and untappable on the map.
+    // Unlinked features carry a NULL water_entity_id/name (ST_AsMVT omits NULL
+    // properties, so the client sees them as absent); the click handler already
+    // treats a missing id as a free point and routes it through the attribution
+    // flow, and the hover tooltip already falls back to "Sans nom".
     // Bind order: z, x, y.
     private static final String HYDRO_TILE_SQL = ""
             + "WITH env AS (SELECT ST_TileEnvelope(?, ?, ?) AS g), "
             + "rs AS ( "
             + "  SELECT ST_AsMVTGeom(ST_Transform(r.geom, 3857), env.g, 4096, 64, true) AS geom, "
             + "         r.water_entity_id::text AS water_entity_id, we.name AS name, r.persistent AS persistent "
-            + "  FROM river_section r JOIN water_entity we ON we.id = r.water_entity_id, env "
+            + "  FROM river_section r LEFT JOIN water_entity we ON we.id = r.water_entity_id, env "
             + "  WHERE r.geom && ST_Transform(env.g, 4326) "
             + "), "
             + "ws AS ( "
             + "  SELECT ST_AsMVTGeom(ST_Transform(s.geom, 3857), env.g, 4096, 64, true) AS geom, "
             + "         s.water_entity_id::text AS water_entity_id, we.name AS name "
-            + "  FROM water_surface s JOIN water_entity we ON we.id = s.water_entity_id, env "
+            + "  FROM water_surface s LEFT JOIN water_entity we ON we.id = s.water_entity_id, env "
             + "  WHERE s.geom && ST_Transform(env.g, 4326) "
             + ") "
             + "SELECT coalesce((SELECT ST_AsMVT(rs.*, 'river_section') FROM rs WHERE geom IS NOT NULL), ''::bytea) "
@@ -350,12 +358,21 @@ public class HydroSearchDao extends AbstractFisholaDao {
             + "ORDER BY r.dist "
             + "LIMIT ?";
 
-    // Snap a point onto a CHOSEN entity's geometry: closest point + closest river
-    // section (null for still waters). Bounded by the SAME radius as the proposal
-    // (a) so the ST_DWithin is index-accelerated by the geography GIST (no France-
-    // scale seq scan), and (b) so an entity too far to be proposed is not snapped
-    // onto with an aberrant projected point — beyond the radius the trip keeps NULL
-    // hydro fields, consistent with the CONFIRMED/OVERRIDDEN decision below.
+    // Snap a point onto the CHOSEN entity's geometry: closest point + closest
+    // river section (null for still waters). Candidates are rows explicitly
+    // linked to the chosen entity, PLUS unlinked rows (water_entity_id IS NULL):
+    // referential linking only resolved a minority of the imported BD TOPO
+    // network (~35% of river_sections, ~6% of water_surfaces), so the segment
+    // actually under the user's tap is very often unlinked even though it is
+    // the same physical watercourse as the chosen (named) entity. Excluding a
+    // DIFFERENT entity's own linked rows keeps this safe for the OVERRIDDEN
+    // case (the user's explicit alternative choice is never overridden back
+    // onto the algorithm's top pick). Bounded by the SAME radius as the
+    // proposal (a) so the ST_DWithin is index-accelerated by the geography
+    // GIST (no France-scale seq scan), and (b) so an entity too far to be
+    // proposed is not snapped onto with an aberrant projected point — beyond
+    // the radius the trip keeps NULL hydro fields, consistent with the
+    // CONFIRMED/OVERRIDDEN decision below.
     // Bind: lng, lat, entityId, radius, entityId, radius.
     private static final String SNAP_FOR_ENTITY_SQL = ""
             + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
@@ -364,13 +381,15 @@ public class HydroSearchDao extends AbstractFisholaDao {
             + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
             + "         ST_ClosestPoint(rs.geom, pt.g) AS cp "
             + "  FROM river_section rs, pt "
-            + "  WHERE rs.water_entity_id = ? AND ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  WHERE (rs.water_entity_id = ? OR rs.water_entity_id IS NULL) "
+            + "    AND ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
             + "  UNION ALL "
             + "  SELECT NULL::uuid, "
             + "         ST_Distance(ws.geom::geography, pt.g::geography), "
             + "         ST_ClosestPoint(ws.geom, pt.g) "
             + "  FROM water_surface ws, pt "
-            + "  WHERE ws.water_entity_id = ? AND ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + "  WHERE (ws.water_entity_id = ? OR ws.water_entity_id IS NULL) "
+            + "    AND ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
             + ") "
             + "SELECT rsid, ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, dist "
             + "FROM candidates ORDER BY dist LIMIT 1";

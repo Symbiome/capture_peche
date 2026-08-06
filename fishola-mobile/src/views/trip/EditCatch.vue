@@ -1086,7 +1086,7 @@ export default class EditCatchView extends Vue {
   }
 
   async initMarkerPosition() {
-    const lake = (await ReferentialService.getLakes()).filter(l => l.id = this.lakeId)
+    const lake = (await ReferentialService.getLakes()).filter(l => l.id === this.lakeId)
     if (lake.length > 0) {
       this.gpsLocation = { lat: lake[0].latitude, lng: lake[0].longitude }
     }

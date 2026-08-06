@@ -26,22 +26,26 @@ import fr.inrae.fishola.ImmutableObject;
 import fr.inrae.fishola.entities.enums.Maillage;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @ImmutableObject
 @JsonSerialize(as = ImmutableCatchMarker.class)
 public interface CatchMarker {
 
-    UUID id();
+    // Vide quand le marqueur représente une sortie sans capture (#33 : toutes
+    // les sorties doivent apparaître sur la carte, pas seulement celles ayant
+    // au moins une capture).
+    Optional<UUID> id();
     LocalDate date();
     UUID tripId();
     String tripName();
-    String specieName();
+    Optional<String> specieName();
     String waterEntityName();
     Double latitude();
     Double longitude();
     Double size();
     Double weight();
-    Maillage maillage();
+    Optional<Maillage> maillage();
     boolean hasValidCoordinates();
 }

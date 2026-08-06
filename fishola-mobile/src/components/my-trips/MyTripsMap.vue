@@ -64,6 +64,8 @@ const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'
 // Identifiants des pins « sortie » enregistrés dans la carte (cf. addCatchPinIcon).
 const CATCH_PIN_MAILLEE = 'catch-pin-maillee';
 const CATCH_PIN_AUTRE = 'catch-pin-autre';
+// Sortie sans capture enregistrée : pin neutre, distinct des pins de capture (#33).
+const CATCH_PIN_SORTIE = 'catch-pin-sortie';
 
 @Component
 export default class MyTripsMapView extends Vue {
@@ -118,12 +120,13 @@ export default class MyTripsMapView extends Vue {
                 type: 'Feature',
                 geometry: { type: 'Point', coordinates: [c.longitude, c.latitude] },
                 properties: {
-                    id: c.id,
+                    id: c.id || null,
                     tripId: c.tripId,
                     tripName: c.tripName,
-                    specieName: c.specieName,
-                    maillage: c.maillage,
-                    lakeName: c.lakeName,
+                    hasCatch: !!c.id,
+                    specieName: c.specieName || null,
+                    maillage: c.maillage || null,
+                    lakeName: c.waterEntityName,
                     dateLabel: this.formattedDate(c.date),
                 },
             })),
@@ -170,6 +173,8 @@ export default class MyTripsMapView extends Vue {
                 addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4');
             } else if (e.id === CATCH_PIN_AUTRE) {
                 addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#2b7fa8');
+            } else if (e.id === CATCH_PIN_SORTIE) {
+                addCatchPinIcon(this.map, CATCH_PIN_SORTIE, '#8a8f98');
             }
         });
         this.map.on('load', () => {
@@ -209,7 +214,10 @@ export default class MyTripsMapView extends Vue {
         this.map.addLayer({
             id: 'catch-unclustered', type: 'symbol', source: 'catches', filter: ['!', ['has', 'point_count']],
             layout: {
-                'icon-image': ['match', ['get', 'maillage'], 'MAILLEE', CATCH_PIN_MAILLEE, CATCH_PIN_AUTRE],
+                'icon-image': ['case',
+                    ['!', ['get', 'hasCatch']], CATCH_PIN_SORTIE,
+                    ['==', ['get', 'maillage'], 'MAILLEE'], CATCH_PIN_MAILLEE,
+                    CATCH_PIN_AUTRE],
                 'icon-size': 1,
                 'icon-anchor': 'bottom',
                 'icon-allow-overlap': true,
@@ -246,11 +254,15 @@ export default class MyTripsMapView extends Vue {
         }
         const p = feature.properties || {};
         const coords = (feature.geometry as any).coordinates as [number, number];
-        const maillageLabel = p.maillage === 'NON_DEFINI' ? ''
-            : (p.maillage === 'MAILLEE' ? ' (maillé)' : ' (non maillé)');
+        const hasCatch = !!p.hasCatch;
+        const maillageLabel = p.maillage === 'MAILLEE' ? ' (maillé)'
+            : (p.maillage && p.maillage !== 'NON_DEFINI' ? ' (non maillé)' : '');
+        const speciesLine = hasCatch
+            ? `<p><i class="fish icon-fish"></i> ${this.escapeHtml(p.specieName)}${maillageLabel}</p>`
+            : `<p><i class="fish icon-fish"></i> Aucune capture enregistrée</p>`;
         const html = `<div class="catch-marker">`
             + `<p class="title">${this.escapeHtml(p.tripName)}</p>`
-            + `<p><i class="fish icon-fish"></i> ${this.escapeHtml(p.specieName)}${maillageLabel}</p>`
+            + speciesLine
             + `<p class="infos"><span class="trip-date">${this.escapeHtml(p.dateLabel)}</span> - ${this.escapeHtml(p.lakeName)}</p>`
             + `<button type="button" class="button">Voir la sortie</button>`
             + `</div>`;
@@ -258,7 +270,11 @@ export default class MyTripsMapView extends Vue {
         const btn = popup.getElement().querySelector('button');
         btn?.addEventListener('click', () => {
             popup.remove();
-            this.showCatch(p.tripId as string, p.id as string);
+            if (hasCatch) {
+                this.showCatch(p.tripId as string, p.id as string);
+            } else {
+                this.showTrip(p.tripId as string);
+            }
         });
     }
 
@@ -291,6 +307,10 @@ export default class MyTripsMapView extends Vue {
 
     showCatch(tripId: string, catchId: string) {
         this.$router.push({ name: 'catch', params: { tripId, catchId } });
+    }
+
+    showTrip(tripId: string) {
+        this.$router.push({ name: 'trip', params: { id: tripId } });
     }
 }
 </script>

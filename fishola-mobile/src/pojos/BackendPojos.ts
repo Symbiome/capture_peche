@@ -221,17 +221,17 @@ export interface LicenceResponseBean {
 }
 
 export interface CatchMarker {
-    id: string;
+    id?: string;
     date: Date;
     tripId: string;
     tripName: string;
-    specieName: string;
+    specieName?: string;
     waterEntityName: string;
     latitude: number;
     longitude: number;
     size: number;
     weight: number;
-    maillage: Maillage;
+    maillage?: Maillage;
     hasValidCoordinates: boolean;
 }
 

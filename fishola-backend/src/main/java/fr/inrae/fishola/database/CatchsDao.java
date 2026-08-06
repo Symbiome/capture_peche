@@ -114,6 +114,9 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public List<CatchMarker> catchMarkersForUser(UUID userId) {
+        // FROM trip (et non catch) + left join : une sortie sans capture doit tout
+        // de même produire un marqueur (repli sur la position de son water_entity),
+        // sinon elle n'apparaît jamais sur la carte (#33).
         List<CatchMarker> result = withContext(context -> context
                 .select(Tables.CATCH.ID,
                         Tables.SPECIES.NAME.as("specieName"),
@@ -129,29 +132,33 @@ public class CatchsDao extends AbstractFisholaDao {
                         coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
                         Tables.CATCH.MAILLEE.as("maillage")
                 )
-                .from(Tables.CATCH)
-                .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                .from(Tables.TRIP)
+                .leftJoin(Tables.CATCH).on(Tables.CATCH.TRIP_ID.eq(Tables.TRIP.ID))
+                .leftJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
                 .innerJoin(Tables.WATER_ENTITY).on(Tables.TRIP.WATER_ENTITY_ID.eq(Tables.WATER_ENTITY.ID))
-                .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
                 .where(Tables.TRIP.OWNER_ID.eq(userId))
                 .fetch()
-                .map(markerRecord -> ImmutableCatchMarker.builder()
-                        .id(markerRecord.get(Tables.CATCH.ID))
+                .map(markerRecord -> {
+                    boolean hasCatch = markerRecord.get(Tables.CATCH.ID) != null;
+                    return ImmutableCatchMarker.builder()
+                        .id(Optional.ofNullable(markerRecord.get(Tables.CATCH.ID)))
                         .tripId(markerRecord.get("tripId", UUID.class))
                         .tripName(markerRecord.get("tripName", String.class))
-                        .specieName(markerRecord.get("specieName", String.class))
+                        .specieName(Optional.ofNullable(markerRecord.get("specieName", String.class)))
                         .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
                         .waterEntityName(markerRecord.get("waterEntityName", String.class))
                         .longitude(markerRecord.get("longitude", Double.class))
                         .latitude(markerRecord.get("latitude", Double.class))
                         .size(markerRecord.get("size", Double.class))
                         .weight(markerRecord.get("weight", Double.class))
-                        .maillage(markerRecord.get("maillage", Maillage.class))
+                        .maillage(Optional.ofNullable(markerRecord.get("maillage", Maillage.class)))
                         .hasValidCoordinates(
+                                !hasCatch ||
                                 markerRecord.get("default_waterEntity_longitude") != null && !markerRecord.get("default_waterEntity_longitude").equals(markerRecord.get("longitude")) ||
                                 markerRecord.get("default_waterEntity_latitude") != null && !markerRecord.get("default_waterEntity_latitude").equals(markerRecord.get("latitude"))
                         )
-                        .build())
+                        .build();
+                })
         );
         return result;
     }
