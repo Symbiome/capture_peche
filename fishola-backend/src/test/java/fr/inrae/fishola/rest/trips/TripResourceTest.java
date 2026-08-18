@@ -896,8 +896,11 @@ class TripResourceTest extends AbstractFisholaTest {
         newWaterEntity.setExportAs("New waterEntity");
         newWaterEntity.setLatitude(42d);
         newWaterEntity.setLongitude(1d);
-        // Créé directement via le DAO : l'endpoint REST de création est retiré (#88).
-        referentialDao.createWaterEntity(newWaterEntity);
+        // Créé directement via le DAO dans sa propre transaction, déjà validée (commit) avant
+        // de poursuivre : l'endpoint REST de création est retiré (#88), et cette méthode de
+        // test est elle-même @Transactional, donc un simple appel DAO resterait non-committé
+        // et invisible aux appels REST suivants (thread/transaction séparés).
+        io.quarkus.narayana.jta.QuarkusTransaction.requiringNew().run(() -> referentialDao.createWaterEntity(newWaterEntity));
         Optional<List<UUID>> newWaterEntityFilter = Optional.of(Lists.newArrayList(newWaterEntityId));
         List<UUID> twoRandomSpecies = this.species.stream().limit(2).map(Species::getId).collect(ImmutableList.toImmutableList());
         int year = Year.now().getValue();
