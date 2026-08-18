@@ -896,14 +896,8 @@ class TripResourceTest extends AbstractFisholaTest {
         newWaterEntity.setExportAs("New waterEntity");
         newWaterEntity.setLatitude(42d);
         newWaterEntity.setLongitude(1d);
-        given()
-                .when()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(newWaterEntity)
-                .post("/api/v1/referential/waterEntities")
-                .then()
-                .statusCode(204);
+        // Créé directement via le DAO : l'endpoint REST de création est retiré (#88).
+        referentialDao.createWaterEntity(newWaterEntity);
         Optional<List<UUID>> newWaterEntityFilter = Optional.of(Lists.newArrayList(newWaterEntityId));
         List<UUID> twoRandomSpecies = this.species.stream().limit(2).map(Species::getId).collect(ImmutableList.toImmutableList());
         int year = Year.now().getValue();

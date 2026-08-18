@@ -86,6 +86,16 @@ public class ReferentialDao extends AbstractFisholaDao {
         });
     }
 
+    // Plus exposé en REST (#88, les plans d'eau viennent de la BD TOPO IGN) : ne
+    // reste que pour l'alimentation interne (jeux de test, imports).
+    public void createWaterEntity(WaterEntity waterEntity) {
+        withContextNoResult(context -> {
+            WaterEntityRecord record = context.newRecord(Tables.WATER_ENTITY, waterEntity);
+            excludeGeneratedCoordinates(record);
+            record.insert();
+        });
+    }
+
     public void createSpecie(Species species) {
         withDaoNoResult(SpeciesDao.class, dao -> dao.insert(species));
     }
