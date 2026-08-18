@@ -41,9 +41,6 @@
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Paramétrage" v-if="!loggedAdmin.isOperator">
-        <b-navbar-item tag="router-link" :to="{ name: 'species-per-lake' }">
-          Espèces par plan d'eau
-        </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
           Maillages et tailles maximales
         </b-navbar-item>

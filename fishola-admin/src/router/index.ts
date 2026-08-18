@@ -37,7 +37,6 @@ import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
 import Metrics from "@/views/Metrics.vue";
 
-import SpeciesPerLake from "@/views/customize/SpeciesPerLake.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
@@ -87,11 +86,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/referentials/species",
     name: "species",
     component: Species
-  },
-  {
-    path: "/customize/species-per-lake",
-    name: "species-per-lake",
-    component: SpeciesPerLake
   },
   {
     path: "/customize/authorized-samples",
