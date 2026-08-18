@@ -87,21 +87,7 @@
               ></b-icon></td>
           </tr>
           <tr>
-            <th rowspan="2">Paramétrage</th>
-            <th>Espèces par plan d'eau</th>
-            <td>
-              <b-icon
-                icon="check"
-                size="is-medium"
-              ></b-icon>
-              (restreint aux lacs de l'administrateur)
-            </td>
-            <td><b-icon
-                icon="check"
-                size="is-medium"
-              ></b-icon></td>
-          </tr>
-          <tr>
+            <th>Paramétrage</th>
             <th>Maillages et tailles maximales</th>
             <td>
               <b-icon
@@ -243,45 +229,6 @@
         />
       </p>
 
-      <h2>Paramétrer les espèces par plan d'eau <span class="regionalAdmin">Administrateurs régionaux</span> <span
-          class="nationalAdmin"
-        >Administrateurs nationaux</span></h2>
-      <p>
-        L'ajout d'une espèce se fait dans un écran dédié, accessible à partir du menu principal :
-        <b-navbar-dropdown
-          label="Paramétrage"
-          :active="true"
-        >
-          <b-navbar-item
-            tag="router-link"
-            :to="{ name: 'species-per-lake' }"
-            :active="true"
-          >
-            Espèces par plan d'eau
-          </b-navbar-item>
-          <b-navbar-item
-            tag="router-link"
-            :to="{ name: 'authorized-samples' }"
-          >
-            Maillages et tailles maximales
-          </b-navbar-item>
-        </b-navbar-dropdown>
-
-        Cet écran propose d'abord de sélectionner les plans d'eau à afficher pour pouvoir les paramétrer. Le champ de
-        recherche permet d'en sélectionner plusieurs.<br /><br />
-
-        Les plans d'eau sélectionnés se retrouvent en colonnes du tableau proposé ensuite, avec une ligne par
-        espèce.<br />
-        Pour chacune d'entre elles, il est possible de la décocher pour spécifier qu'elle n'est pas présente sur le
-        plean d'eau.<br />
-        Les espèces présentes peuvent être renommée afin d'utiliser l'appelation utilisée localement.
-
-        <img
-          class="screen-capture"
-          src="/img/help/config-species-per-lake.png"
-          alt="Écran de paramétrage des espèces par plan d'eau"
-        />
-      </p>
     </div>
   </div>
 </template>
