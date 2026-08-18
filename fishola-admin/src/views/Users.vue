@@ -84,6 +84,12 @@ const userColumns: any[] = [
     readOnly: true
   },
   {
+    field: "postalCode",
+    label: "Code postal",
+    visible: false,
+    readOnly: true
+  },
+  {
     field: "excludeFromExports",
     label: "Exclu des exports",
     isABoolean: true
