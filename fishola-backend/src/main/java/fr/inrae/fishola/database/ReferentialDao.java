@@ -86,14 +86,6 @@ public class ReferentialDao extends AbstractFisholaDao {
         });
     }
 
-    public void createWaterEntity(WaterEntity waterEntity) {
-        withContextNoResult(context -> {
-            WaterEntityRecord record = context.newRecord(Tables.WATER_ENTITY, waterEntity);
-            excludeGeneratedCoordinates(record);
-            record.insert();
-        });
-    }
-
     public void createSpecie(Species species) {
         withDaoNoResult(SpeciesDao.class, dao -> dao.insert(species));
     }

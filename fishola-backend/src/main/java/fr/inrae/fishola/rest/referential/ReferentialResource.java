@@ -104,13 +104,11 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    // Retiré : les plans d'eau sont désormais gérés via la BD TOPO IGN, plus de création manuelle (#88).
     @POST
     @Path("/waterEntities")
-    @Audited(value = "waterEntity.create", entityType = "water_entity")
-    public Response createWaterEntity(WaterEntity waterEntity) {
-        checkIsNationalAdmin();
-        referentialDao.createWaterEntity(waterEntity);
-        return Response.noContent().build();
+    public Response createWaterEntity() {
+        return Response.status(Response.Status.GONE).build();
     }
 
     @GET
