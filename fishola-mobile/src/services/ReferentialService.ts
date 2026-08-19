@@ -150,7 +150,11 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {
     return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-      this.backendGet("/v1/referential/species-per-waterEntity").then((map) => {
+      // Repli hors ligne obligatoire : ce référentiel est consulté pendant la
+      // validation d'une capture (contrôle de la taille maximale). Avec un
+      // simple `backendGet`, la promesse rejetait sans réseau et la validation
+      // était abandonnée en silence — capture impossible à saisir hors ligne.
+      this.backendGetOrOfflineStorage("/v1/referential/species-per-waterEntity").then((map) => {
         const someMap = new Map<string, SpeciesWithAlias[]>();
         const lakeIds: string[] = Object.keys(map);
         lakeIds.forEach((lakeId) => {
