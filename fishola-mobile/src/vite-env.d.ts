@@ -33,6 +33,9 @@ interface ImportMetaEnv {
   readonly VITE__ENV_NAME: string;
   readonly VITE__API_URL: string;
   readonly VITE__API_DEFAULT_PORT: string;
+  // Uniquement renseignée par les builds web et mobile (.env.web, .env.mobile) :
+  // en dev et en démo, Constants.baseDeeplinkSafeApiUrl() retombe sur baseApiUrl().
+  readonly VITE__DEEPLINK_SAFE_API_URL: string | undefined;
 }
 
 interface ImportMeta {
