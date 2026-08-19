@@ -731,6 +731,11 @@ public class TripResource extends AbstractFisholaResource {
         result.mode = entity.getMode();
         result.type = entity.getType();
         result.waterEntityId = entity.getWaterEntityId();
+        // Points GPS de début/fin de sortie (#86) — champs NULL pour les sorties sans position.
+        result.beginLatitude = Optional.ofNullable(entity.getBeginLatitude());
+        result.beginLongitude = Optional.ofNullable(entity.getBeginLongitude());
+        result.endLatitude = Optional.ofNullable(entity.getEndLatitude());
+        result.endLongitude = Optional.ofNullable(entity.getEndLongitude());
         // Attribution hydrographique (#9) — champs NULL pour les sorties sans position.
         result.riverSectionId = Optional.ofNullable(entity.getRiverSectionId());
         result.snappedLatitude = Optional.ofNullable(entity.getSnappedLatitude());
