@@ -76,7 +76,12 @@ export default abstract class AbstractFisholaService {
     }
 
     return new Promise<any>((resolve, reject) => {
-      this.backendGetAndStoreToOfflineStorage(uri).then((content: any) => {
+      // Repli hors ligne : le cache mémoire est vide au (re)démarrage de
+      // l'app. Sans repli sur le stockage local, tous les référentiels servis
+      // par cette méthode (météos, techniques, espèces…) rejetaient sans
+      // réseau, ce qui faisait échouer les `Promise.all` des formulaires de
+      // saisie — plus aucun plan d'eau ni espèce proposé hors ligne.
+      this.backendGetOrOfflineStorage(uri).then((content: any) => {
         const newEntry: CacheEntry = new CacheEntry(
           new Date().getTime(),
           content
@@ -324,7 +329,16 @@ export default abstract class AbstractFisholaService {
           resolve(result);
         },
         (error) => {
-          if (error && error.timeoutReached) {
+          // Repli sur le cache local dès qu'on n'a PAS pu joindre le serveur :
+          // timeout (réseau lent) mais aussi échec de transport (réseau absent,
+          // hôte injoignable) — `backendGet` rejette alors avec un message, pas
+          // avec un statut. Sans ce second cas, une coupure franche ne
+          // déclenchait jamais le repli et déconnectait l'utilisateur.
+          // Une réponse HTTP en erreur (rejet = statut numérique : 401, 403,
+          // 5xx) reste propagée : le serveur a répondu, le cache ne doit pas
+          // masquer une session expirée.
+          const serverAnswered = typeof error === "number";
+          if (!serverAnswered) {
             console.error(
               `Unable to load from the backend for '${uri}'`,
               JSON.stringify(error)
