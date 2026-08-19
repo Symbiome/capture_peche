@@ -26,18 +26,20 @@
       <label v-bind:for="'field-' + name">
         {{ label }}
       </label>
-      <input v-bind:name="name" v-bind:id="'field-' + name" v-bind:type="dynamicType" v-bind:placeholder="placeholder"
-        v-bind:value="value" v-bind:min="min" v-on:input="$emit('input', $event.target.value)"
-        v-bind:class="error ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
+      <input v-bind:name="name" v-bind:id="'field-' + name" v-bind:type="inputType"
+        v-bind:inputmode="type == 'time' ? 'numeric' : null" v-bind:maxlength="type == 'time' ? 5 : null"
+        v-bind:placeholder="effectivePlaceholder" v-bind:value="value" v-bind:min="min"
+        v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
+        v-bind:class="displayError ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
       <i v-if="type == 'password'" @click="togglePasswordVisibility()" class="show-password-icon"
         alt="Afficher le mot de passe" :class="{
       'white-background': hasWhiteBackground,
       'icon-eye': dynamicType == 'password',
       'icon-eye-slash': dynamicType != 'password'
     }" />
-      <div v-bind:class="error ? 'field-error' : ''">
-        <span v-if="error">
-          {{ error }}
+      <div v-bind:class="displayError ? 'field-error' : ''">
+        <span v-if="displayError">
+          {{ displayError }}
         </span>
       </div>
     </div>
@@ -63,6 +65,9 @@ Si modification, on émet un message au parent qui l'intercepte et met à jour s
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
+import Helpers from '@/services/Helpers';
+
+const TIME_FORMAT_ERROR = 'Heure invalide (format 24h HH:mm, ex. 13:45)';
 
 @Component({
   components: {
@@ -82,12 +87,51 @@ export default class FormInput extends Vue {
   dynamicType: string;
 
   readonlyValues: string[] = [];
+  timeError: string = '';
 
   created() {
     if (this.value) {
       this.readonlyValues.push(this.value);
     }
     this.dynamicType = this.type;
+  }
+
+  // Les <input type="time"> natifs affichent AM/PM selon la locale de
+  // l'appareil (notamment iOS Safari), et non selon la langue de l'app :
+  // on saisit donc les heures via un champ texte masqué HH:mm, garanti
+  // 24h quel que soit l'appareil.
+  get inputType(): string {
+    return this.type == 'time' ? 'text' : this.dynamicType;
+  }
+
+  get effectivePlaceholder(): string | undefined {
+    return this.type == 'time' ? (this.placeholder || 'HH:mm') : this.placeholder;
+  }
+
+  get displayError(): string {
+    return this.error || this.timeError;
+  }
+
+  onInput(rawValue: string) {
+    if (this.type != 'time') {
+      this.$emit('input', rawValue);
+      return;
+    }
+
+    const masked = Helpers.maskTimeInput(rawValue);
+    if (!masked || Helpers.isValidTimeString(masked)) {
+      this.timeError = '';
+    } else if (masked.length == 5) {
+      this.timeError = TIME_FORMAT_ERROR;
+    }
+    this.$emit('input', masked);
+  }
+
+  onBlur() {
+    if (this.type != 'time' || !this.value) {
+      return;
+    }
+    this.timeError = Helpers.isValidTimeString(this.value) ? '' : TIME_FORMAT_ERROR;
   }
 
   togglePasswordVisibility() {
