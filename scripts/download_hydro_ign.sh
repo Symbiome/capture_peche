@@ -161,8 +161,16 @@ if [ -n "${EXPECTED_SIZE}" ] && [ "$(local_size "${ARCHIVE}")" = "${EXPECTED_SIZ
   echo "--> Archive déjà complète (${ARCHIVE}) — téléchargement sauté."
 else
   echo "--> Téléchargement de ${ARCHIVE_URL}"
+  # Barre de progression seulement en interactif : redirigée vers un fichier
+  # (cas de import_hydro_france.sh, qui journalise), elle noierait le journal
+  # sous des milliers de retours chariot.
+  if [ -t 2 ]; then
+    CURL_PROGRESS=(--progress-bar)
+  else
+    CURL_PROGRESS=(--no-progress-meter)
+  fi
   # -C - reprend un téléchargement interrompu ; l'archive est immuable côté IGN.
-  curl -fL --retry 5 --retry-delay 3 -C - --progress-bar \
+  curl -fL --retry 5 --retry-delay 3 -C - "${CURL_PROGRESS[@]}" \
     -o "${ARCHIVE}" "${ARCHIVE_URL}"
 fi
 

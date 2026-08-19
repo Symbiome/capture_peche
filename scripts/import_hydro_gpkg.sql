@@ -15,21 +15,38 @@
 
 WITH ranked AS (
     SELECT *,
+           coalesce(nullif(toponyme, ''), cleabs) AS base_name,
            row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn
     FROM bdtopo_raw.plan_d_eau
+), named AS (
+    -- Le nom nu n'est retenu que s'il est réellement libre : premier de son groupe
+    -- DANS le lot, et pas déjà porté en base par une AUTRE entité. Sans cette
+    -- seconde condition, ajouter un département dont un toponyme existe déjà
+    -- (« Lac Blanc » en Savoie et en Haute-Savoie, « Lac Vert », « Lac Cornu »...)
+    -- violait la contrainte UNIQUE sur name / export_as : la déduplication ne
+    -- portait que sur le lot courant. On compare aussi export_as, car des lignes
+    -- hors BD TOPO peuvent porter un nom sans bdtopo_cleabs.
+    SELECT ranked.*,
+           CASE WHEN rn = 1 AND NOT EXISTS (
+                    SELECT 1
+                    FROM water_entity w
+                    WHERE (w.name = ranked.base_name OR w.export_as = ranked.base_name)
+                      AND w.bdtopo_cleabs IS DISTINCT FROM ranked.cleabs
+                ) THEN ranked.base_name
+                ELSE ranked.base_name || '_' || ranked.cleabs
+           END AS final_name
+    FROM ranked
 )
 INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, geom)
 SELECT
-    CASE WHEN rn = 1 THEN coalesce(nullif(toponyme, ''), cleabs)
-         ELSE coalesce(nullif(toponyme, ''), cleabs) || '_' || cleabs END,
-    CASE WHEN rn = 1 THEN coalesce(nullif(toponyme, ''), cleabs)
-         ELSE coalesce(nullif(toponyme, ''), cleabs) || '_' || cleabs END,
+    final_name,
+    final_name,
     'STILL'::water_entity_kind,
     nature,
     altitude_moyenne,
     cleabs,
     ST_Force2D(geom)
-FROM ranked
+FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     name = EXCLUDED.name,
     export_as = EXCLUDED.export_as,
@@ -43,19 +60,36 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
 
 WITH ranked AS (
     SELECT *,
+           coalesce(nullif(toponyme, ''), cleabs) AS base_name,
            row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn
     FROM bdtopo_raw.cours_d_eau
+), named AS (
+    -- Le nom nu n'est retenu que s'il est réellement libre : premier de son groupe
+    -- DANS le lot, et pas déjà porté en base par une AUTRE entité. Sans cette
+    -- seconde condition, ajouter un département dont un toponyme existe déjà
+    -- (« Lac Blanc » en Savoie et en Haute-Savoie, « Lac Vert », « Lac Cornu »...)
+    -- violait la contrainte UNIQUE sur name / export_as : la déduplication ne
+    -- portait que sur le lot courant. On compare aussi export_as, car des lignes
+    -- hors BD TOPO peuvent porter un nom sans bdtopo_cleabs.
+    SELECT ranked.*,
+           CASE WHEN rn = 1 AND NOT EXISTS (
+                    SELECT 1
+                    FROM water_entity w
+                    WHERE (w.name = ranked.base_name OR w.export_as = ranked.base_name)
+                      AND w.bdtopo_cleabs IS DISTINCT FROM ranked.cleabs
+                ) THEN ranked.base_name
+                ELSE ranked.base_name || '_' || ranked.cleabs
+           END AS final_name
+    FROM ranked
 )
 INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, geom)
 SELECT
-    CASE WHEN rn = 1 THEN coalesce(nullif(toponyme, ''), cleabs)
-         ELSE coalesce(nullif(toponyme, ''), cleabs) || '_' || cleabs END,
-    CASE WHEN rn = 1 THEN coalesce(nullif(toponyme, ''), cleabs)
-         ELSE coalesce(nullif(toponyme, ''), cleabs) || '_' || cleabs END,
+    final_name,
+    final_name,
     'FLOWING'::water_entity_kind,
     cleabs,
     ST_Force2D(geom)
-FROM ranked
+FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     name = EXCLUDED.name,
     export_as = EXCLUDED.export_as,
