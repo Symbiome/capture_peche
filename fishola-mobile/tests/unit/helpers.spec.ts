@@ -96,3 +96,36 @@ describe("Helpers — dates", () => {
     expect(Helpers.formatToLongDate(new Date(2026, 0, 5))).toBe("lundi 5 janvier 2026");
   });
 });
+
+// Masque de saisie HH:mm utilisé par FormInput pour les champs "time" :
+// le rendu natif du navigateur (24h ou AM/PM) dépend de la locale de
+// l'appareil et non de la langue de l'app, on ne peut donc pas s'y fier.
+describe("Helpers — masque de saisie horaire 24h", () => {
+  it("insère le séparateur après les deux premiers chiffres", () => {
+    expect(Helpers.maskTimeInput("1")).toBe("1");
+    expect(Helpers.maskTimeInput("13")).toBe("13");
+    expect(Helpers.maskTimeInput("130")).toBe("13:0");
+    expect(Helpers.maskTimeInput("1300")).toBe("13:00");
+  });
+
+  it("ignore tout caractère non numérique (AM/PM, lettres, séparateurs déjà présents)", () => {
+    expect(Helpers.maskTimeInput("13:00")).toBe("13:00");
+    expect(Helpers.maskTimeInput("1a3b0c0")).toBe("13:00");
+    expect(Helpers.maskTimeInput("01:00 PM")).toBe("01:00");
+  });
+
+  it("tronque au-delà de 4 chiffres (HH:mm)", () => {
+    expect(Helpers.maskTimeInput("235959")).toBe("23:59");
+  });
+
+  it("valide uniquement les heures au format 24h complet", () => {
+    expect(Helpers.isValidTimeString("00:00")).toBe(true);
+    expect(Helpers.isValidTimeString("23:59")).toBe(true);
+    expect(Helpers.isValidTimeString("13:45")).toBe(true);
+    expect(Helpers.isValidTimeString("24:00")).toBe(false);
+    expect(Helpers.isValidTimeString("13:60")).toBe(false);
+    expect(Helpers.isValidTimeString("13:0")).toBe(false);
+    expect(Helpers.isValidTimeString("1:00 PM")).toBe(false);
+    expect(Helpers.isValidTimeString("")).toBe(false);
+  });
+});
