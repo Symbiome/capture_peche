@@ -3,13 +3,13 @@
 #
 #   ./run_tests.sh              # tout : backoffice + mobile (unit) + backend
 #   ./run_tests.sh backoffice   # Django — tests DB-free, rapide (défaut de dev)
-#   ./run_tests.sh mobile       # front pêcheur — jest (unitaires)
+#   ./run_tests.sh mobile       # front pêcheur — vitest (unitaires)
 #   ./run_tests.sh backend      # Quarkus — mvn (Testcontainers → Docker + JDK >= 25)
 #   ./run_tests.sh e2e          # Cypress headless — NÉCESSITE la stack lancée (start_all.sh)
 #
 # Notes :
-# - Le front admin n'a pas de tests. Le script npm « tests » du mobile
-#   (`vite test:unit`) est cassé → on lance jest directement (jest.config.js).
+# - Le front admin n'a pas de tests. Les tests unitaires du mobile tournent
+#   sous vitest (vitest.config.js, qui réutilise vite.config.js) via `npm run tests`.
 # - Les tests backoffice tournent SANS base (SimpleTestCase) via un runner
 #   unittest, car `manage.py test` amorcerait une base de test.
 set -uo pipefail
@@ -43,13 +43,13 @@ sys.exit(0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() el
 
 run_mobile() {
   echo ""
-  echo "==> Mobile — front pêcheur (jest, unitaires)"
+  echo "==> Mobile — front pêcheur (vitest, unitaires)"
   (
     cd fishola-mobile
     [ -d node_modules ] || npm install
-    npx jest
+    npm run tests
   )
-  record "Mobile (jest)" $?
+  record "Mobile (vitest)" $?
 }
 
 run_backend() {

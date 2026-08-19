@@ -14,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env", "jest"
+      "vitest/globals"
     ],
     "paths": {
       "@/*": [

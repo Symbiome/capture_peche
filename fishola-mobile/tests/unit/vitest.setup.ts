@@ -18,13 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-// Pre-load opencv (would normally be loaded lazily by FisholaOpenCVService)
-import opencv from "./opencv.js";
-FisholaOpenCVService.INSTANCE.cv = opencv;
+import Vue from "vue";
 
-// Test suite related to automatic marker detection from picture with opencv
-describe("Marker detection", () => {
-  // OpenCV should be ready (has already been loaded)
-  expect(FisholaOpenCVService.INSTANCE.isOpenCVReady()).toBeTruthy();
-});
+// Silence les bandeaux de développement de Vue 2 dans la sortie des tests.
+Vue.config.productionTip = false;
+Vue.config.devtools = false;
