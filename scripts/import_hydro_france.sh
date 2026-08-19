@@ -21,11 +21,12 @@
 #   - surface_hydrographique.gpkg
 # (mêmes fichiers que ceux consommés par import_hydro_gpkg.sh).
 #
-# Libellés des plans d'eau : charger au préalable les communes des départements
-# visés (scripts/import_communes_geoapi.sh <dept>) permet de départager les
-# homonymes par un nom lisible — « Lac Blanc (Valloire) » au lieu d'un suffixe
-# technique. Facultatif : sans référentiel commune, l'import réussit et retombe
-# sur l'identifiant BD TOPO.
+# Libellés des plans d'eau : les communes du département sont chargées
+# automatiquement avant l'import si elles manquent, afin de départager les
+# homonymes par un nom lisible — « Lac Blanc (Valloire) » plutôt qu'un suffixe
+# technique. Sans elles l'import réussit quand même, mais les homonymes gardent
+# leur identifiant BD TOPO et seul un réimport complet les corrige : d'où la
+# vérification en amont, l'erreur ne se voyant qu'une fois le run terminé.
 #
 # Attention volumétrie : BD TOPO 3.x n'étant plus livrée par thème, chaque
 # département implique une archive « tous thèmes » (~300 Mo) et un GeoPackage
@@ -46,6 +47,8 @@
 #     --download=force  retélécharge la dernière édition et réimporte, même si
 #                       le département était déjà marqué importé
 #     --keep-archives   conserve les .7z téléchargés (sinon supprimés)
+#     --communes=auto   (défaut) charge les communes manquantes avant l'import
+#     --communes=never  n'appelle pas geo.api.gouv.fr ; prévient si elles manquent
 #
 #   Exemples :
 #     ./import_hydro_france.sh ../data 74 73 01
@@ -62,29 +65,33 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UNIT_SCRIPT="${SCRIPT_DIR}/import_hydro_gpkg.sh"
 DOWNLOAD_SCRIPT="${SCRIPT_DIR}/download_hydro_ign.sh"
+COMMUNES_SCRIPT="${SCRIPT_DIR}/import_communes_geoapi.sh"
 
 # Couches attendues par la brique unitaire (sert au test de complétude).
 THEMES=(plan_d_eau cours_d_eau troncon_hydrographique surface_hydrographique)
 
 DOWNLOAD_MODE=auto
+COMMUNES_MODE=auto
 KEEP_ARCHIVES=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --download=auto|--download=never|--download=force)
       DOWNLOAD_MODE="${1#--download=}"; shift ;;
+    --communes=auto|--communes=never)
+      COMMUNES_MODE="${1#--communes=}"; shift ;;
     --keep-archives) KEEP_ARCHIVES=1; shift ;;
     --) shift; break ;;
     -*)
       echo "Option inconnue : $1" >&2
-      echo "Usage : $0 [--download=auto|never|force] [--keep-archives] <racine_data> [dept...]" >&2
+      echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
       exit 2 ;;
     *) break ;;
   esac
 done
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage : $0 [--download=auto|never|force] [--keep-archives] <racine_data> [dept...]" >&2
+  echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
   exit 2
 fi
 
@@ -118,6 +125,63 @@ log() {
   # Horodatage journal + écho console.
   local msg="$1"
   echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" | tee -a "${LOG_FILE}"
+}
+
+# Préfixe INSEE d'un département : 1 -> 01, 74 -> 74, 2a -> 2A, 971 -> 971.
+# Rejette tout code hors forme attendue : il est interpolé dans une requête SQL,
+# et un argument de ligne de commande n'est pas une source de confiance.
+insee_prefix() {
+  local d
+  d="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
+  case "${d}" in
+    [0-9]) d="0${d}" ;;
+  esac
+  case "${d}" in
+    [0-9][0-9]|[0-9][0-9][0-9]|2A|2B) printf '%s' "${d}" ;;
+    *) return 1 ;;
+  esac
+}
+
+# Nombre de communes chargées pour un département. Renvoie une chaîne vide si la
+# question ne peut pas être tranchée (table absente, base injoignable) : on ne
+# bloque pas un import hydro pour un souci de référentiel.
+commune_coverage() {
+  local prefix
+  prefix="$(insee_prefix "$1")" || { printf ''; return 0; }
+  docker exec -e PGPASSWORD="${PGPASSWORD}" "${PG_CONTAINER}" \
+    psql -qtA "host=127.0.0.1 port=5432 dbname=${PGDATABASE} user=${PGUSER} password=${PGPASSWORD}" \
+    -c "SELECT count(*) FROM commune WHERE insee_com LIKE '${prefix}%';" 2>/dev/null | tr -dc '0-9'
+}
+
+# S'assure que les communes du département sont chargées AVANT l'import hydro.
+# L'enjeu n'est pas cosmétique : sans référentiel, les plans d'eau homonymes
+# retombent sur l'identifiant BD TOPO, et seul un réimport complet les corrige —
+# plusieurs heures à l'échelle nationale, pour un défaut qui ne se voit qu'à la
+# fin. Le chargement des communes, lui, coûte quelques secondes et est idempotent.
+ensure_communes() {
+  local dept="$1" n
+  n="$(commune_coverage "${dept}")"
+  if [ -n "${n}" ] && [ "${n}" -gt 0 ]; then
+    return 0
+  fi
+  if [ -z "${n}" ]; then
+    log "?? Département ${dept} : couverture commune indéterminable — libellés éventuellement dégradés."
+    return 0
+  fi
+  if [ "${COMMUNES_MODE}" = "never" ]; then
+    log "!! Département ${dept} : aucune commune chargée. Les plans d'eau homonymes"
+    log "   porteront un identifiant BD TOPO. Corriger avec ${COMMUNES_SCRIPT} ${dept}"
+    log "   puis relancer l'import de ce département (--download=force)."
+    return 0
+  fi
+  log ">> Département ${dept} : chargement du référentiel commune..."
+  if [ -x "${COMMUNES_SCRIPT}" ] && "${COMMUNES_SCRIPT}" "${dept}" >>"${LOG_FILE}" 2>&1; then
+    log "<< Département ${dept} : communes chargées ($(commune_coverage "${dept}"))."
+  else
+    # Échec non bloquant : l'import hydro reste valide, seuls les libellés pâtissent.
+    log "!! Département ${dept} : chargement des communes en échec (voir ${LOG_FILE})."
+    log "   L'import continue ; les homonymes porteront un identifiant BD TOPO."
+  fi
 }
 
 # Vrai si les 4 couches attendues sont présentes dans le dossier départemental.
@@ -201,6 +265,8 @@ for dept in "${DEPTS[@]}"; do
     log "!! Département ${dept} : couches toujours incomplètes dans ${dept_dir} — ignoré."
     continue
   fi
+
+  ensure_communes "${dept}"
 
   log ">> Département ${dept} : import depuis ${dept_dir}..."
   if "${UNIT_SCRIPT}" "${dept_dir}" >>"${LOG_FILE}" 2>&1; then
