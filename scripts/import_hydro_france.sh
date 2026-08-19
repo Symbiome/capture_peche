@@ -21,6 +21,12 @@
 #   - surface_hydrographique.gpkg
 # (mêmes fichiers que ceux consommés par import_hydro_gpkg.sh).
 #
+# Libellés des plans d'eau : charger au préalable les communes des départements
+# visés (scripts/import_communes_geoapi.sh <dept>) permet de départager les
+# homonymes par un nom lisible — « Lac Blanc (Valloire) » au lieu d'un suffixe
+# technique. Facultatif : sans référentiel commune, l'import réussit et retombe
+# sur l'identifiant BD TOPO.
+#
 # Attention volumétrie : BD TOPO 3.x n'étant plus livrée par thème, chaque
 # département implique une archive « tous thèmes » (~300 Mo) et un GeoPackage
 # intermédiaire (~1,7 Go), tous deux supprimés après extraction. Prévoir ~2,5 Go
