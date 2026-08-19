@@ -90,6 +90,14 @@ describe("Reprise de la synchronisation après échec réseau", () => {
 
     // 2e passe : le réseau est revenu. Sans relâchement du verrou `syncInProgress`,
     // aucune requête ne repart et ce `cy.wait` échoue en timeout.
+    //
+    // Portée de ce test : il couvre le cas où le push est REJETÉ. Il ne couvre
+    // PAS celui où la requête ne se règle jamais — `forceNetworkError` produit
+    // ici une promesse rompue, alors qu'un vrai échec de transport dans la
+    // WebView déclenche `onerror`, sans gestionnaire duquel la promesse restait
+    // en attente indéfiniment. Cet invariant-là est verrouillé par
+    // tests/unit/backend-transport-failure.spec.ts, qui pilote l'évènement XHR
+    // directement plutôt que de dépendre de la fidélité d'un bouchon.
     cy.intercept("POST", "**/v1/trips", { statusCode: 201, body: { id: "t-sync-recovery" } }).as("pushOK");
     cy.window().then((win) => win.dispatchEvent(new Event("online")));
     cy.wait("@pushOK").its("response.statusCode").should("eq", 201);
