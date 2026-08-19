@@ -1,2 +1,37 @@
-> 1%
-last 2 versions
+# Parc navigateur visé — un PLANCHER, pas une cible glissante.
+#
+# Ce fichier ne sert pas qu'à la documentation : il pilote l'outil de préfixage
+# (autoprefixer, cf. postcss.config.js) et détermine donc la feuille de style
+# PRODUITE. Le modifier change le CSS livré ; toute évolution demande une
+# relecture visuelle des écrans principaux, un build vert ne suffit pas.
+#
+# Pourquoi un plancher et pas « > 1% / last 2 versions » (l'ancienne valeur) :
+# une part d'usage mondiale ne décrit pas le parc d'une application de pêche
+# française embarquée en WebView. Elle traînait en pratique ie 10/11, bb 7,
+# op_mini all et kaios 2.5 — des moteurs que l'application ne verra jamais —
+# tout en dépendant d'une base caniuse-lite qu'on ne met pas à jour.
+#
+# Le plancher retenu décrit ce qui est DÉJÀ vrai, à savoir les planchers natifs
+# déclarés par le projet :
+#   - iOS      : IPHONEOS_DEPLOYMENT_TARGET = 15.0 (ios/App/App.xcodeproj)
+#   - Android  : minSdkVersion = 24 (android/variables.gradle.kts)
+#
+# Le cas Android mérite d'être explicite : minSdk 24 fixe la version du système,
+# pas celle de la WebView, qui se met à jour par le Play Store indépendamment.
+# On suppose donc une WebView À JOUR au moins jusqu'à Chromium 87 (nov. 2020).
+# Une WebView figée sous ce niveau est HORS PÉRIMÈTRE — c'est une décision, pas
+# un oubli : la couvrir coûterait un bundle plus lourd pour un parc dont rien
+# n'atteste l'existence.
+#
+# La couverture Chromium (WebView Android incluse) est portée par `chrome` :
+# browserslist n'a pas de clé WebView, et ses clés `and_chr` / `android` ne
+# résolvent jamais que vers la dernière version publiée.
+#
+# Doit rester cohérent avec `build.target` dans vite.config.js.
+
+chrome >= 87
+edge >= 87
+firefox >= 78
+safari >= 15
+ios_saf >= 15
+samsung >= 14
