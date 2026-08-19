@@ -43,6 +43,15 @@ export default class Helpers {
     return Helpers.TIME_24H_REGEX.test(value);
   }
 
+  // Recherche insensible à la casse et aux accents (#92, recherche d'espèce
+  // par nom usuel ou nom scientifique).
+  static unaccent(value: string): string {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
   static renderDuration(startedAt: string, finishedAt?: string): string {
     const duration = this.computeDuration(startedAt, finishedAt);
     const result = this.formatDuration(duration, true);

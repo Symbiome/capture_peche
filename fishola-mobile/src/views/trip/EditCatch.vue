@@ -92,7 +92,9 @@
               <div :class="{
                 'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
               }">
-                <FormSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
+                <FormInput name="speciesSearch" label="Rechercher une espèce" type="text"
+                  placeholder="Nom usuel ou nom scientifique" v-model="speciesSearch" v-if="modifiable" />
+                <FormSelect name="species" label="Espèce" v-bind:options="filteredSpeciesOptions()"
                   v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
                 <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
@@ -336,6 +338,7 @@ export default class EditCatchView extends Vue {
 
   allSpeciesWithAliases: SpeciesWithAlias[] = [];
   allTechniques: Technique[] = [];
+  speciesSearch: string = "";
   // allReleasedFishStates:ReleasedFishState[] = [];
 
   withSample: boolean = false;
@@ -1043,6 +1046,21 @@ export default class EditCatchView extends Vue {
       );
     }
     this.$forceUpdate();
+  }
+
+  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique.
+  filteredSpeciesOptions(): SpeciesWithAlias[] {
+    if (!this.speciesSearch.trim()) {
+      return this.allSpeciesWithAliases;
+    }
+    const needle = Helpers.unaccent(this.speciesSearch.trim());
+    return this.allSpeciesWithAliases.filter((s) => {
+      return (
+        Helpers.unaccent(s.name).includes(needle) ||
+        (s.alias && Helpers.unaccent(s.alias).includes(needle)) ||
+        (s.scientificName && Helpers.unaccent(s.scientificName).includes(needle))
+      );
+    });
   }
 
   checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {
