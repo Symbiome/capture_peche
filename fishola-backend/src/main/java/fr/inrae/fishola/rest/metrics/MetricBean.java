@@ -27,7 +27,6 @@ public class MetricBean {
     public List<CountPerWaterEntityAndPerYear> activeUsersPerYear;
     public List<CountPerWaterEntityAndPerYear> userRegistrationsPerYear;
     public List<CountPerWaterEntityAndPerYear> tripsPerWaterEntity;
-    public List<CountPerWaterEntityAndPerYear> catchesPerWaterEntity;
     public List<CountPerWaterEntityAndPerYear> automaticMeasuresPerWaterEntity;
 }
 

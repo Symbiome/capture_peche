@@ -25,7 +25,8 @@ pour le réglage de la vision par ordinateur et produisent un rapport dédié (v
 tests/cypress/
 ├── e2e/
 │   ├── offline-revalidation.cypress.js   # mode offline & re-validation (#10)
-│   └── maplibre-map.cypress.js           # smoke carte MapLibre (#33)
+│   ├── maplibre-map.cypress.js           # smoke carte MapLibre (#33)
+│   └── lake-autocomplete.cypress.js      # autocomplétion « Plan d'eau » (#98)
 ├── bench/
 │   ├── fish-detection.cypress.js         # banc mesure poisson
 │   ├── marker-detection.cypress.js       # banc détection marqueur
@@ -99,8 +100,10 @@ Exemples :
 - mobile `offline-revalidation` : les AC sont **skippés** tant que `liveBackend` est faux ;
   activés, ils ouvrent une session via `cy.loginAngler()` puis jouent la synchro offline.
 
-> `maplibre-map` ne dépend pas d'un backend seedé : il vérifie le rendu de la carte et
-> tourne dès que le **serveur front** (`npm run serve`) est lancé.
+> `maplibre-map` et `lake-autocomplete` ne dépendent pas d'un backend seedé : ils
+> vérifient un rendu et tournent dès que le **serveur front** (`npm run serve`) est lancé.
+> `lake-autocomplete` stubbe le profil, le référentiel et la recherche d'entités, puis
+> joue le vrai parcours « Nouvelle sortie » → écran de saisie.
 
 ## Variables d'environnement (`env`)
 
@@ -125,6 +128,9 @@ npm run cypress:run    # e2e headless (dossier e2e/ uniquement)
 npm run cypress:bench  # bancs CV/perf (dossier bench/)
 npm run cypress-report # bancs + rapport HTML mochawesome (tests/cypress/reports/)
 ```
+
+Depuis la racine du dépôt, `./run_tests.sh e2e` enveloppe `npm run cypress:run` : c'est
+le point d'entrée de la suite fonctionnelle (les bancs gardent leurs scripts dédiés).
 
 ### Admin
 

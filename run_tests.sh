@@ -3,13 +3,16 @@
 #
 #   ./run_tests.sh              # tout : backoffice + mobile (unit) + backend
 #   ./run_tests.sh backoffice   # Django — tests DB-free, rapide (défaut de dev)
-#   ./run_tests.sh mobile       # front pêcheur — jest (unitaires)
+#   ./run_tests.sh mobile       # front pêcheur — contrôle de types (tsc) + vitest
 #   ./run_tests.sh backend      # Quarkus — mvn (Testcontainers → Docker + JDK >= 25)
 #   ./run_tests.sh e2e          # Cypress headless — NÉCESSITE la stack lancée (start_all.sh)
 #
 # Notes :
-# - Le front admin n'a pas de tests. Le script npm « tests » du mobile
-#   (`vite test:unit`) est cassé → on lance jest directement (jest.config.js).
+# - Le front admin n'a pas de tests. Les tests unitaires du mobile tournent
+#   sous vitest (vitest.config.js, qui réutilise vite.config.js) via `npm run tests`.
+# - Le scope mobile lance aussi `npm run type-check` (tsc --noEmit) : le build Vite
+#   passe par esbuild, qui retire les annotations de type sans les vérifier, donc
+#   sans cette étape les erreurs de typage ne sont vues nulle part.
 # - Les tests backoffice tournent SANS base (SimpleTestCase) via un runner
 #   unittest, car `manage.py test` amorcerait une base de test.
 set -uo pipefail
@@ -43,13 +46,18 @@ sys.exit(0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() el
 
 run_mobile() {
   echo ""
-  echo "==> Mobile — front pêcheur (jest, unitaires)"
+  echo "==> Mobile — front pêcheur (contrôle de types puis vitest)"
   (
     cd fishola-mobile
     [ -d node_modules ] || npm install
-    npx jest
   )
-  record "Mobile (jest)" $?
+  # Deux étapes enregistrées séparément : enchaînées dans un même sous-shell,
+  # un tsc rouge serait masqué par des tests verts (le code retour d'un
+  # sous-shell est celui de sa dernière commande).
+  ( cd fishola-mobile && npm run type-check )
+  record "Mobile (contrôle de types)" $?
+  ( cd fishola-mobile && npm run tests )
+  record "Mobile (vitest)" $?
 }
 
 run_backend() {
@@ -65,11 +73,15 @@ run_backend() {
 run_e2e() {
   echo ""
   echo "==> E2E — Cypress (front pêcheur, headless)"
-  echo "    /!\\ nécessite la stack lancée (./start_all.sh) — sinon échec attendu."
+  echo "    /!\\ nécessite au moins le front lancé sur le port 8081 (npm run serve)."
+  echo "        Les scénarios gardés par liveBackend=true demandent la stack complète"
+  echo "        (./start_all.sh) ; sans elle ils sont ignorés, pas en échec."
   (
     cd fishola-mobile
     [ -d node_modules ] || npm install
-    npm run cypress-report
+    # cypress:run => specPattern tests/cypress/e2e/** (parcours fonctionnels).
+    # Les bancs CV/perf ont leur propre script (cypress:bench / cypress-report).
+    npm run cypress:run
   )
   record "E2E (Cypress)" $?
 }

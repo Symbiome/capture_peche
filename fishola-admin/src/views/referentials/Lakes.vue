@@ -25,7 +25,6 @@
       url="/v1/referential/waterEntities"
       :editable="isNationalAdmin"
       :columns="lakeColumns"
-      :createElement=createLake
     ></Referential>
   </div>
 </template>
@@ -72,16 +71,6 @@ onMounted(async () => {
   const admin = await BackendService.backendGet("/v1/admin/check");
   isNationalAdmin.value = admin.isNationalAdmin;
 });
-
-function createLake(): any {
-  return {
-    'lakeCode': '',
-    'name': 'Nouveau Plan d\'eau',
-    'exportAs': 'NouveauLac',
-    'latitude': 45.5,
-    'longitude': 5.8
-  };
-}
 
 </script>
 

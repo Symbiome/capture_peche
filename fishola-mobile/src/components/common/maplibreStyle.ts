@@ -25,7 +25,7 @@
 // (#33) — la carte de sélection d'entité (MapLibreMap) garde son propre style
 // (couches de sélection en plus).
 
-import maplibregl, { Map as MlMap, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
 import Constants from '@/services/Constants';
 
 export const IGN_ATTRIBUTION =

@@ -59,11 +59,6 @@ public class MetricsDao extends AbstractFisholaDao {
         result.tripsPerWaterEntity = tripsPerWaterEntity;
         result.tripsPerWaterEntity.add(getTotalRow(tripsPerWaterEntity));
 
-        String catchesPerWaterEntitySQL = "select water_entity.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join water_entity on " + onlyAllowedWaterEntitiesJoinCondition + " water_entity.id = t.water_entity_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false group by water_entity.name, extract(year from c.created_on) order by water_entity.name;";
-        List<CountPerWaterEntityAndPerYear> catchesPerWaterEntity = withContext(context -> context.fetch(catchesPerWaterEntitySQL).into(CountPerWaterEntityAndPerYear.class));
-        result.catchesPerWaterEntity = catchesPerWaterEntity;
-        result.catchesPerWaterEntity.add(getTotalRow(catchesPerWaterEntity));
-
         String automaticMeasuresPerWaterEntitySQL = "select water_entity.name as lac, extract(year from c.created_on)::INTEGER as annee, count(*) as total from catch c join trip t on c.trip_id = t.id join water_entity on " + onlyAllowedWaterEntitiesJoinCondition + " water_entity.id = t.water_entity_id join fishola_user u on u.id = t.owner_id where u.exclude_from_exports = false and automatic_measure > 0 group by water_entity.name, extract(year from c.created_on) order by water_entity.name;";
         List<CountPerWaterEntityAndPerYear> automaticMeasuresPerWaterEntity = withContext(context -> context.fetch(automaticMeasuresPerWaterEntitySQL).into(CountPerWaterEntityAndPerYear.class));
         result.automaticMeasuresPerWaterEntity = automaticMeasuresPerWaterEntity;

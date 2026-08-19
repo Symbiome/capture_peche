@@ -33,6 +33,10 @@
           v-bind:error="validationErrors['pseudo']" />
         <FormInput name="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="bean.email"
           v-bind:error="validationErrors['email']" />
+        <FormInput name="postalCode" label="Code postal" placeholder="Renseignez votre code postal"
+          v-model="bean.postalCode" v-bind:error="validationErrors['postalCode']" />
+        <FormInput name="birthYear" type="number" label="Année de naissance" placeholder="Renseignez votre année de naissance"
+          v-model="bean.birthYear" v-bind:error="validationErrors['birthYear']" />
         <FormInput name="password" type="password" label="Mot de passe" placeholder="Choisissez un mot de passe"
           v-model="bean.password" v-bind:error="validationErrors['password']" />
         <FormInput name="passwordConfirm" type="password" label="Confirmation du mot de passe"

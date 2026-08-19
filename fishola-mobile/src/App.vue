@@ -328,6 +328,9 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
+  // Repli pour les moteurs sans `dvh` (< Safari 15.4 / Chrome 108) : sans lui la
+  // déclaration entière est ignorée et le conteneur principal perd sa hauteur.
+  height: calc(100vh - @header-height - @secondary-header-height - @footer-height - 10px);
   height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
 
   &.keyboardShowing {
@@ -399,6 +402,7 @@ html {
 
   .pane-content {
     overflow: auto;
+    height: calc(100vh - @header-height - @vertical-margin-medium); // repli si dvh non supporté
     height: calc(100dvh - @header-height - @vertical-margin-medium);
     display: flex;
     flex-direction: column;

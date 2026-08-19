@@ -25,7 +25,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 import org.jooq.exception.DataAccessException;
 
@@ -35,27 +34,27 @@ import java.util.Map;
 @Provider
 public class DataAccessExceptionMapper implements ExceptionMapper<DataAccessException> {
 
+    /**
+     * Message unique renvoyé au client. Le détail d'une erreur de base de données
+     * (requête, noms de colonnes, contraintes, extrait du SQL fautif) renseigne un
+     * attaquant sur le schéma et sur ce que sa charge a effectivement atteint : il
+     * reste dans les journaux du serveur, il ne sort pas dans la réponse HTTP.
+     */
+    protected static final String GENERIC_MESSAGE = "Erreur d'accès aux données";
+
     @Inject
     protected Logger log;
 
     @Override
     public Response toResponse(DataAccessException exception) {
-        Response.ResponseBuilder responseBuilder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        log.error("DataAccessException thrown", exception);
+
         Map<String, String> entity = new LinkedHashMap<>();
-        if (StringUtils.isNotEmpty(exception.getMessage())) {
-            entity.put("error", exception.getMessage());
-        }
-        Throwable cause = exception.getCause();
-        if (cause != null) {
-            entity.put("cause", cause.getClass().getName() + ": " + cause.getMessage());
-        }
-        if (!entity.isEmpty()) {
-            responseBuilder.entity(entity);
-        }
+        entity.put("error", GENERIC_MESSAGE);
 
-        log.warnf("%s thrown: %s", exception.getClass().getName(), entity);
-
-        Response result = responseBuilder.build();
+        Response result = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(entity)
+                .build();
         return result;
     }
 

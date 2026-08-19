@@ -42,8 +42,10 @@ import fr.inrae.fishola.rest.AbstractFisholaTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
+import fr.inrae.fishola.rest.imports.ImportDao;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ResponseBodyExtractionOptions;
+import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
@@ -61,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Year;
 import java.util.Base64;
 import java.util.Collections;
@@ -86,6 +89,8 @@ class TripResourceTest extends AbstractFisholaTest {
     protected DashboardDao dashboardDao;
     @Inject
     protected UsersDao usersDao;
+    @Inject
+    protected ImportDao importDao;
     @Inject
     protected Logger log;
     @Inject
@@ -896,14 +901,11 @@ class TripResourceTest extends AbstractFisholaTest {
         newWaterEntity.setExportAs("New waterEntity");
         newWaterEntity.setLatitude(42d);
         newWaterEntity.setLongitude(1d);
-        given()
-                .when()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(newWaterEntity)
-                .post("/api/v1/referential/waterEntities")
-                .then()
-                .statusCode(204);
+        // Créé directement via le DAO dans sa propre transaction, déjà validée (commit) avant
+        // de poursuivre : l'endpoint REST de création est retiré (#88), et cette méthode de
+        // test est elle-même @Transactional, donc un simple appel DAO resterait non-committé
+        // et invisible aux appels REST suivants (thread/transaction séparés).
+        io.quarkus.narayana.jta.QuarkusTransaction.requiringNew().run(() -> referentialDao.createWaterEntity(newWaterEntity));
         Optional<List<UUID>> newWaterEntityFilter = Optional.of(Lists.newArrayList(newWaterEntityId));
         List<UUID> twoRandomSpecies = this.species.stream().limit(2).map(Species::getId).collect(ImmutableList.toImmutableList());
         int year = Year.now().getValue();
@@ -1030,6 +1032,95 @@ class TripResourceTest extends AbstractFisholaTest {
         Assertions.assertEquals(expectedSize.get().doubleValue(),personalDashboardForYear.monthlySizesPerMaillage().values().iterator().next().values().iterator().next().values().iterator().next().getRight());
         Assertions.assertEquals(expectedSize, personalDashboardForYear.topBySize().values().iterator().next().iterator().next().size);
         Assertions.assertEquals(expectedWeight,personalDashboardForYear.topByWeight().values().iterator().next().iterator().next().weight);
+    }
+
+    /**
+     * Non-régression #82 — injection SQL dans l'export des sorties.
+     *
+     * `getExportPaginated` concaténait le champ de tri ET les filtres (clé comme
+     * valeur) dans le SQL. En recette, un filtre tautologique renvoyait TOUTES les
+     * lignes d'un filtre censé n'en matcher aucune, et une charge malformée remontait
+     * un 500 portant le message SQL au client.
+     *
+     * On sème une sortie visible dans la vue d'export — une saisie manuelle
+     * « enquete », donc sans propriétaire et hors de l'embargo de 168 h qui masque une
+     * saisie pêcheur fraîchement créée. Sans elle la vue serait vide, et l'assertion
+     * « la tautologie renvoie 0 » passerait aussi bien sur le code vulnérable : c'est
+     * la présence de lignes à faire fuir qui donne son sens au test.
+     */
+    @Test
+    void testExportPaginatedIsNotSqlInjectable() {
+        String adminToken = loginAsAdmin();
+        UUID waterEntityId = this.waterEntities.iterator().next().getId();
+        UUID seededTripId = importDao.saveManualEntry("enquete", LocalDate.now(),
+                LocalTime.of(8, 0), LocalTime.of(10, 0), waterEntityId,
+                "Sortie de recette #82", null, Collections.emptyList());
+        try {
+            int totalSansFiltre = exportTotal(adminToken, "date_de_la_sortie", "desc", null, null);
+            Assertions.assertTrue(totalSansFiltre >= 1, "la vue d'export doit contenir la sortie semée");
+
+            // Le filtre fonctionne toujours : « fishola » est la valeur littérale que la
+            // vue donne à nom_du_projet sur chacune de ses lignes.
+            Assertions.assertEquals(totalSansFiltre,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "fishola"));
+
+            // Filtre sans correspondance possible : aucune ligne.
+            Assertions.assertEquals(0,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "zzzz-aucune-correspondance"));
+
+            // Tautologie : la valeur est traitée comme une VALEUR, pas comme un prédicat.
+            // Le code vulnérable renvoyait ici totalSansFiltre.
+            Assertions.assertEquals(0,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "' OR ''='"));
+
+            // Charge malformée : 200 avec 0 résultat, là où le code vulnérable produisait
+            // du SQL invalide, donc un 500 accompagné du message de la base.
+            Assertions.assertEquals(0,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "zzzz' OR 1=1 --"));
+
+            // Colonne de tri hors de la vue d'export : refus explicite.
+            exportRequest(adminToken, null, null)
+                    .when().get("/api/v1/trips/export/0/colonne_inexistante/desc")
+                    .then().statusCode(400);
+
+            // Tri positionnel : « 1 » n'est pas une colonne, c'est un ordinal ORDER BY.
+            exportRequest(adminToken, null, null)
+                    .when().get("/api/v1/trips/export/0/1/desc")
+                    .then().statusCode(400);
+
+            // Sens de tri hors liste blanche : refus, plutôt que repli silencieux sur desc.
+            exportRequest(adminToken, null, null)
+                    .when().get("/api/v1/trips/export/0/date_de_la_sortie/ascendant")
+                    .then().statusCode(400);
+
+            // Clé de filtre hors de la vue d'export : refus.
+            exportRequest(adminToken, "colonne_inexistante", "x")
+                    .when().get("/api/v1/trips/export/0/date_de_la_sortie/desc")
+                    .then().statusCode(400);
+        } finally {
+            io.quarkus.narayana.jta.QuarkusTransaction.requiringNew().run(() -> tripsDao.delete(seededTripId));
+        }
+    }
+
+    private RequestSpecification exportRequest(String adminToken, String filterKey, String filterValue) {
+        RequestSpecification result = given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken);
+        if (filterKey != null) {
+            result = result.queryParam(filterKey, filterValue);
+        }
+        return result;
+    }
+
+    private int exportTotal(String adminToken, String sortField, String direction, String filterKey, String filterValue) {
+        int result = exportRequest(adminToken, filterKey, filterValue)
+                .when()
+                .get("/api/v1/trips/export/0/" + sortField + "/" + direction)
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getInt("total");
+        return result;
     }
 
     protected float computeRatio(BufferedImage image) {
