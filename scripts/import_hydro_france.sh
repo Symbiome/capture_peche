@@ -84,14 +84,14 @@ while [ "$#" -gt 0 ]; do
     --) shift; break ;;
     -*)
       echo "Option inconnue : $1" >&2
-      echo "Usage : $0 [--download=auto|never|force] [--keep-archives] <racine_data> [dept...]" >&2
+      echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
       exit 2 ;;
     *) break ;;
   esac
 done
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage : $0 [--download=auto|never|force] [--keep-archives] <racine_data> [dept...]" >&2
+  echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
   exit 2
 fi
 
