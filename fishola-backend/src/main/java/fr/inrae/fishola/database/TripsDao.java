@@ -48,6 +48,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.MultivaluedMap;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
@@ -63,6 +65,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -290,25 +293,76 @@ public class TripsDao extends AbstractFisholaDao {
     }
 
     /**
+     * Colonnes réellement exposées par la vue d'export, servant de liste blanche aux
+     * noms de colonnes reçus du client (champ de tri, clés de filtre).
+     *
+     * Un nom de colonne n'est pas une valeur : il ne peut pas être lié en paramètre,
+     * il doit donc être validé AVANT d'entrer dans la requête. La liste est dérivée
+     * de la vue elle-même plutôt que recopiée à la main, car une liste figée
+     * dériverait au fil des migrations et finirait par rejeter des filtres légitimes.
+     *
+     * Chargée à la première demande puis mémorisée : la vue ne change pas en cours
+     * d'exécution.
+     */
+    private volatile Set<String> exportColumns;
+
+    protected Set<String> getExportColumns(DSLContext context) {
+        Set<String> result = exportColumns;
+        if (result == null) {
+            // LIMIT 0 : on ne veut que les métadonnées de colonnes, pas les lignes.
+            Field<?>[] fields = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
+                    .limit(0)
+                    .fetch()
+                    .fields();
+            result = Arrays.stream(fields)
+                    .map(Field::getName)
+                    .collect(Collectors.toUnmodifiableSet());
+            exportColumns = result;
+        }
+        return result;
+    }
+
+    /**
+     * Rend la colonne de la vue d'export portant ce nom, ou rejette la demande.
+     * L'identifiant est rendu échappé ({@link DSL#name}), jamais concaténé en SQL brut.
+     */
+    protected Field<Object> checkedExportColumn(DSLContext context, String label, String columnName) {
+        if (columnName == null || !getExportColumns(context).contains(columnName)) {
+            throw new IllegalArgumentException(label + " inconnu(e) : " + columnName);
+        }
+        return DSL.field(DSL.name(columnName));
+    }
+
+    /**
      * Paginated view of catchs_openadom_export.
      */
     public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction, MultivaluedMap<String, String> filters) {
         int catchesPerPage = 15;
+        if (offset == null || offset < 0) {
+            throw new IllegalArgumentException("Numéro de page invalide : " + offset);
+        }
         return withContext(context -> {
             PaginatedExportBean pcb = new PaginatedExportBean();
-            // Compute sorting
+            // Compute sorting — nom de colonne et sens de tri sont des fragments de
+            // requête, pas des valeurs : liste blanche stricte des deux côtés.
+            Field<Object> sortColumn = checkedExportColumn(context, "Colonne de tri", orderBy);
             SortField<Object> orderByField;
             if ("asc".equals(direction)) {
-                orderByField = DSL.field(orderBy).asc();
+                orderByField = sortColumn.asc();
+            } else if ("desc".equals(direction)) {
+                orderByField = sortColumn.desc();
             } else {
-                orderByField =  DSL.field(orderBy).desc();
+                throw new IllegalArgumentException("Sens de tri inconnu : " + direction);
             }
 
-            // Compute filters
+            // Compute filters — la CLÉ est un nom de colonne (liste blanche), la VALEUR
+            // est liée en paramètre. Rien n'est concaténé dans le SQL.
             List<Condition> conditions = new ArrayList<>();
             for (Map.Entry<String, List<String>> filter: filters.entrySet()) {
-                String condition =filter.getKey() + "::varchar(255) LIKE '%" + filter.getValue().get(0) + "%'";
-                conditions.add(DSL.condition(condition));
+                Field<Object> filterColumn = checkedExportColumn(context, "Colonne de filtre", filter.getKey());
+                List<String> values = filter.getValue();
+                String value = values == null || values.isEmpty() ? "" : values.get(0);
+                conditions.add(DSL.condition("{0}::varchar(255) ILIKE {1}", filterColumn, DSL.val("%" + value + "%")));
             }
 
             // Execute paginated query
