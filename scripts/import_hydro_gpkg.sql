@@ -190,11 +190,33 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
 -- ---------------------------------------------------------------------------
 -- 3. troncon_hydrographique -> river_section (water_entity_id resolved via
 --    liens_vers_cours_d_eau -> water_entity.bdtopo_cleabs)
+--
+-- liens_vers_cours_d_eau est MULTI-VALUÉ : BD TOPO y liste, séparés par des
+-- barres obliques, tous les cours d'eau dont le tronçon fait partie (typiquement
+-- un tronçon couvert à la fois par un affluent nommé et par le cours d'eau qui
+-- le reçoit). Une égalité stricte sur la chaîne entière ne matche jamais ces
+-- lignes : elles perdaient leur rattachement (~6 à 13 % des tronçons liés selon
+-- le département).
+--
+-- RÈGLE DE RATTACHEMENT : parmi les cours d'eau référencés, on retient LE PLUS
+-- ÉTENDU (le plus long), départagé par cleabs pour rester déterministe.
+--   - L'ordre des éléments dans la chaîne n'est PAS sémantique (il suit le
+--     cleabs croissant), d'où un critère explicite plutôt qu'un [1].
+--   - Sur les données observées, le cours d'eau le plus court est presque
+--     toujours géométriquement inclus dans le plus long : le tronçon est donc
+--     rattaché au cours d'eau qui porte tout son cours -- celui que
+--     l'utilisateur recherche par son nom -- plutôt qu'à un sous-segment.
+--   - La règle inverse (le plus spécifique) laisserait sans aucun tronçon des
+--     rivières entières et bien réelles, ce que celle-ci évite.
+--
+-- Le LATERAL ... LIMIT 1 garantit UNE seule ligne de sortie par tronçon : une
+-- jointure sur = ANY(...) dupliquerait les lignes et le ON CONFLICT ci-dessous
+-- refuserait de traiter deux fois la même clé.
 -- ---------------------------------------------------------------------------
 
 INSERT INTO river_section (water_entity_id, bdtopo_cleabs, persistent, width_class, flow_direction, geom)
 SELECT
-    we.id,
+    parent.id,
     t.cleabs,
     CASE t.persistance
         WHEN 'Permanent' THEN true
@@ -205,7 +227,13 @@ SELECT
     t.sens_de_l_ecoulement,
     ST_Force2D(t.geom)
 FROM bdtopo_raw.troncon_hydrographique t
-LEFT JOIN water_entity we ON we.bdtopo_cleabs = t.liens_vers_cours_d_eau
+LEFT JOIN LATERAL (
+    SELECT we.id
+    FROM unnest(string_to_array(t.liens_vers_cours_d_eau, '/')) AS lien(cleabs)
+    JOIN water_entity we ON we.bdtopo_cleabs = lien.cleabs
+    ORDER BY ST_Length(we.geom::geography) DESC, we.bdtopo_cleabs
+    LIMIT 1
+) parent ON true
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     water_entity_id = EXCLUDED.water_entity_id,
     persistent = EXCLUDED.persistent,
@@ -216,17 +244,36 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
 -- ---------------------------------------------------------------------------
 -- 4. surface_hydrographique -> water_surface (water_entity_id resolved via
 --    liens_vers_plan_d_eau or liens_vers_cours_d_eau -> water_entity.bdtopo_cleabs)
+--
+-- Mêmes liens multi-valués qu'en section 3, et même règle : on retient l'entité
+-- la plus étendue -- aire pour un plan d'eau, longueur pour un cours d'eau.
+-- La priorité « plan d'eau avant cours d'eau » de la version précédente est
+-- conservée via la colonne priorite.
 -- ---------------------------------------------------------------------------
 
 INSERT INTO water_surface (water_entity_id, bdtopo_cleabs, nature, geom)
 SELECT
-    we.id,
+    parent.id,
     s.cleabs,
     s.nature,
     ST_Multi(ST_Force2D(s.geom))
 FROM bdtopo_raw.surface_hydrographique s
-LEFT JOIN water_entity we
-    ON we.bdtopo_cleabs = coalesce(nullif(s.liens_vers_plan_d_eau, ''), nullif(s.liens_vers_cours_d_eau, ''))
+LEFT JOIN LATERAL (
+    SELECT we.id
+    FROM (
+        SELECT 1 AS priorite, lien AS cleabs
+        FROM unnest(string_to_array(s.liens_vers_plan_d_eau, '/')) AS lien
+        UNION ALL
+        SELECT 2 AS priorite, lien AS cleabs
+        FROM unnest(string_to_array(s.liens_vers_cours_d_eau, '/')) AS lien
+    ) cand
+    JOIN water_entity we ON we.bdtopo_cleabs = cand.cleabs
+    ORDER BY cand.priorite,
+             CASE WHEN we.kind = 'STILL' THEN ST_Area(we.geom::geography)
+                  ELSE ST_Length(we.geom::geography) END DESC,
+             we.bdtopo_cleabs
+    LIMIT 1
+) parent ON true
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     water_entity_id = EXCLUDED.water_entity_id,
     nature = EXCLUDED.nature,
