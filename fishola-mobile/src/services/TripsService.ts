@@ -626,8 +626,13 @@ export default class TripsService extends AbstractFisholaService {
           dirtyTrip.id
         );
       } else {
-        const promise = this.syncTrip(dirtyTrip);
-        promise.then(
+        // On agrège la promesse DÉJÀ traitée (succès comme échec), pas la
+        // promesse brute : sinon une seule sortie non synchronisable (brouillon
+        // incomplet rejeté en 500, par exemple) faisait rejeter le
+        // `Promise.all` ci-dessous, `resolve(someTripsSaved)` n'était jamais
+        // appelé et l'évènement « trips-saved » jamais émis — les sorties
+        // pourtant bien remontées restaient affichées « Non synchronisée ».
+        const settled = this.syncTrip(dirtyTrip).then(
           () => {
             this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
             someTripsSaved = true;
@@ -637,7 +642,7 @@ export default class TripsService extends AbstractFisholaService {
             console.error("Unable to sync trip ", error);
           }
         );
-        allPromises.push(promise);
+        allPromises.push(settled);
       }
     });
 
