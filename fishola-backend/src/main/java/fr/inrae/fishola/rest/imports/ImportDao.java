@@ -240,11 +240,16 @@ public class ImportDao extends AbstractFisholaDao {
 
     private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
                             UUID waterEntityId, String name, LocalDateTime now) {
+        LocalDateTime beginTimestamp = LocalDateTime.of(day, start);
+        LocalDateTime endTimestamp = LocalDateTime.of(day, end);
+        if (endTimestamp.isBefore(beginTimestamp)) {
+            endTimestamp = endTimestamp.plusDays(1);
+        }
         return ctx.insertInto(TRIP,
-                        TRIP.COLLECTION_METHOD, TRIP.DAY, TRIP.START_TIME, TRIP.END_TIME,
+                        TRIP.COLLECTION_METHOD, TRIP.BEGIN_TIMESTAMP, TRIP.END_TIMESTAMP,
                         TRIP.WATER_ENTITY_ID, TRIP.NAME, TRIP.TYPE, TRIP.MODE, TRIP.SOURCE,
                         TRIP.HIDDEN, TRIP.CREATED_ON)
-                .values(CollectionMethod.valueOf(collectionMethod), day, start, end,
+                .values(CollectionMethod.valueOf(collectionMethod), beginTimestamp, endTimestamp,
                         waterEntityId, name, TripType.Border, TripMode.Afterwards, DeviceType.web,
                         false, now)
                 .returning(TRIP.ID)

@@ -22,7 +22,8 @@
   Carte des captures du pêcheur (#33) : migration Leaflet → MapLibre. Les captures
   sont rendues via une source GeoJSON avec clustering natif MapLibre, au-dessus des
   fonds IGN + réseau hydro (« nos layers »). Un point non regroupé est coloré selon
-  le maillage ; un clic ouvre une infobulle avec un accès à la sortie.
+  si sa sortie a au moins une capture enregistrée ; un clic ouvre une infobulle avec
+  un accès à la sortie.
   -->
 <template>
     <div class="pane " v-if="visible">
@@ -37,6 +38,25 @@
         </div>
         <div class="map" v-if="validMarkers.length > 0">
             <div ref="mapContainer" class="mtm-container" />
+        </div>
+        <div class="legend" v-if="validMarkers.length > 0">
+            <div class="legend-item">
+                <svg class="legend-swatch" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                    <circle cx="10" cy="10" r="9" fill="#1e9bc4" />
+                    <path d="M13.3 9.9c0 1.5-1.6 2.8-3.5 2.8-1.4 0-2.6-.6-3.2-1.5-.1-.2-.1-.4 0-.6.6-.9 1.8-1.5 3.2-1.5 1.9 0 3.5 1.3 3.5 2.8z" fill="#fff" />
+                    <path d="M13.5 8.5c.3-.2.6 0 .6.3v2c0 .3-.3.5-.6.3l-1.4-.8c-.2-.2-.2-.5 0-.7l1.4-1.1z" fill="#fff" />
+                </svg>
+                Sortie avec capture(s)
+            </div>
+            <div class="legend-item">
+                <svg class="legend-swatch" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                    <circle cx="10" cy="10" r="9" fill="#8a8f98" />
+                    <path d="M6 14 L14 6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" />
+                    <path d="M12.8 7.2 Q10 10.5 9.5 13.5" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                    <circle cx="9.5" cy="14" r="0.9" fill="#fff" />
+                </svg>
+                Sortie sans capture enregistrée
+            </div>
         </div>
         <div class="error-markers" v-if="invalidMarkers.length > 0">
             <b>{{ invalidMarkers.length }}</b> prises sans position renseignée
@@ -62,10 +82,10 @@ import { addCatchPinIcon, attachHydroHover, buildFisholaStyle, DEFAULT_CENTER, D
 const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
 
 // Identifiants des pins « sortie » enregistrés dans la carte (cf. addCatchPinIcon).
-const CATCH_PIN_MAILLEE = 'catch-pin-maillee';
-const CATCH_PIN_AUTRE = 'catch-pin-autre';
-// Sortie sans capture enregistrée : pin neutre, distinct des pins de capture (#33).
-const CATCH_PIN_SORTIE = 'catch-pin-sortie';
+// Couleur du pin = la sortie a au moins une capture enregistrée, ou aucune (#33).
+// Doit rester synchronisé avec les couleurs `.legend-swatch` du template.
+const CATCH_PIN_AVEC_CAPTURE = 'catch-pin-avec-capture';
+const CATCH_PIN_SANS_CAPTURE = 'catch-pin-sans-capture';
 
 @Component
 export default class MyTripsMapView extends Vue {
@@ -169,12 +189,10 @@ export default class MyTripsMapView extends Vue {
             if (!this.map) {
                 return;
             }
-            if (e.id === CATCH_PIN_MAILLEE) {
-                addCatchPinIcon(this.map, CATCH_PIN_MAILLEE, '#1e9bc4');
-            } else if (e.id === CATCH_PIN_AUTRE) {
-                addCatchPinIcon(this.map, CATCH_PIN_AUTRE, '#2b7fa8');
-            } else if (e.id === CATCH_PIN_SORTIE) {
-                addCatchPinIcon(this.map, CATCH_PIN_SORTIE, '#8a8f98');
+            if (e.id === CATCH_PIN_AVEC_CAPTURE) {
+                addCatchPinIcon(this.map, CATCH_PIN_AVEC_CAPTURE, '#1e9bc4', 'fish');
+            } else if (e.id === CATCH_PIN_SANS_CAPTURE) {
+                addCatchPinIcon(this.map, CATCH_PIN_SANS_CAPTURE, '#8a8f98', 'rod');
             }
         });
         this.map.on('load', () => {
@@ -208,16 +226,13 @@ export default class MyTripsMapView extends Vue {
             layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 13, 'text-font': ['Open Sans Regular'] },
             paint: { 'text-color': '#ffffff' },
         });
-        // Sortie isolée : pin « poisson » plutôt qu'une pastille, plus explicite et
-        // ancré par sa pointe sur la position exacte. La couleur reste le code
-        // maillage (bleu maillée / orange non maillée).
+        // Sortie isolée : pin « poisson » (capture) ou « canne à pêche » (sortie
+        // sans capture) plutôt qu'une pastille, plus explicite et ancré par sa
+        // pointe sur la position exacte (cf. légende sous la carte).
         this.map.addLayer({
             id: 'catch-unclustered', type: 'symbol', source: 'catches', filter: ['!', ['has', 'point_count']],
             layout: {
-                'icon-image': ['case',
-                    ['!', ['get', 'hasCatch']], CATCH_PIN_SORTIE,
-                    ['==', ['get', 'maillage'], 'MAILLEE'], CATCH_PIN_MAILLEE,
-                    CATCH_PIN_AUTRE],
+                'icon-image': ['case', ['get', 'hasCatch'], CATCH_PIN_AVEC_CAPTURE, CATCH_PIN_SANS_CAPTURE],
                 'icon-size': 1,
                 'icon-anchor': 'bottom',
                 'icon-allow-overlap': true,
@@ -346,6 +361,24 @@ export default class MyTripsMapView extends Vue {
 .mtm-container {
     width: 100%;
     height: 100%;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: @margin-medium;
+    margin-top: @margin-small;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.legend-swatch {
+    flex-shrink: 0;
 }
 
 .error-markers {

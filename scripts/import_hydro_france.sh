@@ -8,39 +8,90 @@
 # même les entités partagées entre départements limitrophes, donc le rejeu est
 # sûr par construction.
 #
-# ── Où récupérer les données ────────────────────────────────────────────────
-# BD TOPO® IGN, thème « Hydrographie », téléchargement par département au format
-# GeoPackage : https://geoservices.ign.fr/bdtopo
-# Pour chaque département, placer dans <racine_data>/hydro_<dept>/ les 4 couches
-# attendues, renommées ainsi :
+# ── Récupération des données ────────────────────────────────────────────────
+# Par défaut, les données manquantes sont téléchargées automatiquement depuis la
+# Géoplateforme IGN via download_hydro_ign.sh (URLs de téléchargement direct,
+# sans authentification) : rien à récupérer à la main.
+#
+# Le mode manuel reste possible avec --download=never : placer alors dans
+# <racine_data>/hydro_<dept>/ les 4 couches attendues, renommées ainsi :
 #   - plan_d_eau.gpkg
 #   - cours_d_eau.gpkg
 #   - troncon_hydrographique.gpkg
 #   - surface_hydrographique.gpkg
 # (mêmes fichiers que ceux consommés par import_hydro_gpkg.sh).
 #
+# Libellés des plans d'eau : les communes du département sont chargées
+# automatiquement avant l'import si elles manquent, afin de départager les
+# homonymes par un nom lisible — « Lac Blanc (Valloire) » plutôt qu'un suffixe
+# technique. Sans elles l'import réussit quand même, mais les homonymes gardent
+# leur identifiant BD TOPO et seul un réimport complet les corrige : d'où la
+# vérification en amont, l'erreur ne se voyant qu'une fois le run terminé.
+#
+# Attention volumétrie : BD TOPO 3.x n'étant plus livrée par thème, chaque
+# département implique une archive « tous thèmes » (~300 Mo) et un GeoPackage
+# intermédiaire (~1,7 Go), tous deux supprimés après extraction. Prévoir ~2,5 Go
+# de disque transitoire, mais pas de cumul d'un département à l'autre.
+#
 # ── Usage ───────────────────────────────────────────────────────────────────
-#   ./import_hydro_france.sh <racine_data> [dept...]
+#   ./import_hydro_france.sh [options] <racine_data> [dept...]
 #     racine_data : dossier contenant les sous-dossiers hydro_<dept>/
 #     dept...     : liste de départements à importer (ex. 74 73 01 2A) ;
 #                   si omis, tous les sous-dossiers hydro_* de <racine_data>
-#                   sont découverts et importés.
+#                   sont découverts et importés (aucun téléchargement : on ne
+#                   peut pas deviner les départements souhaités).
+#
+#   Options :
+#     --download=auto   (défaut) télécharge ce qui manque, garde l'existant
+#     --download=never  n'appelle jamais l'IGN ; échoue si des fichiers manquent
+#     --download=force  retélécharge la dernière édition et réimporte, même si
+#                       le département était déjà marqué importé
+#     --keep-archives   conserve les .7z téléchargés (sinon supprimés)
+#     --communes=auto   (défaut) charge les communes manquantes avant l'import
+#     --communes=never  n'appelle pas geo.api.gouv.fr ; prévient si elles manquent
 #
 #   Exemples :
 #     ./import_hydro_france.sh ../data 74 73 01
-#     ./import_hydro_france.sh ../data                 # tout hydro_* trouvé
+#     ./import_hydro_france.sh --download=never ../data      # tout hydro_* trouvé
+#     ./import_hydro_france.sh --download=force ../data 74   # rafraîchit le 74
 #
-# ── Variables d'environnement (héritées par import_hydro_gpkg.sh) ────────────
+# ── Variables d'environnement ───────────────────────────────────────────────
 #   PG_CONTAINER (défaut postgres-18-fishola), GDAL_IMAGE, PGDATABASE, PGUSER,
 #   PGPASSWORD — voir import_hydro_gpkg.sh.
+#   IGN_EDITION — fige une livraison BD TOPO précise, voir download_hydro_ign.sh.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UNIT_SCRIPT="${SCRIPT_DIR}/import_hydro_gpkg.sh"
+DOWNLOAD_SCRIPT="${SCRIPT_DIR}/download_hydro_ign.sh"
+COMMUNES_SCRIPT="${SCRIPT_DIR}/import_communes_geoapi.sh"
+
+# Couches attendues par la brique unitaire (sert au test de complétude).
+THEMES=(plan_d_eau cours_d_eau troncon_hydrographique surface_hydrographique)
+
+DOWNLOAD_MODE=auto
+COMMUNES_MODE=auto
+KEEP_ARCHIVES=0
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --download=auto|--download=never|--download=force)
+      DOWNLOAD_MODE="${1#--download=}"; shift ;;
+    --communes=auto|--communes=never)
+      COMMUNES_MODE="${1#--communes=}"; shift ;;
+    --keep-archives) KEEP_ARCHIVES=1; shift ;;
+    --) shift; break ;;
+    -*)
+      echo "Option inconnue : $1" >&2
+      echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
+      exit 2 ;;
+    *) break ;;
+  esac
+done
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage : $0 <racine_data> [dept...]" >&2
+  echo "Usage : $0 [--download=auto|never|force] [--communes=auto|never] [--keep-archives] <racine_data> [dept...]" >&2
   exit 2
 fi
 
@@ -52,10 +103,16 @@ PGDATABASE=${PGDATABASE:-fishola}
 PGUSER=${PGUSER:-postgres}
 PGPASSWORD=${PGPASSWORD:-whatever}
 
-# Le conteneur PostgreSQL doit tourner (fail-fast avant toute itération).
+# Le conteneur PostgreSQL doit tourner (fail-fast avant toute itération) : inutile
+# de télécharger des gigaoctets si la base n'est pas joignable.
 if [ -z "$(docker ps -q -f name=^/${PG_CONTAINER}$)" ]; then
   echo "Conteneur ${PG_CONTAINER} introuvable ou arrêté." >&2
   echo "Démarrez d'abord la base : fishola-backend/start_db.sh" >&2
+  exit 1
+fi
+
+if [ "${DOWNLOAD_MODE}" != "never" ] && [ ! -x "${DOWNLOAD_SCRIPT}" ]; then
+  echo "Brique de téléchargement introuvable ou non exécutable : ${DOWNLOAD_SCRIPT}" >&2
   exit 1
 fi
 
@@ -70,11 +127,80 @@ log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" | tee -a "${LOG_FILE}"
 }
 
+# Préfixe INSEE d'un département : 1 -> 01, 74 -> 74, 2a -> 2A, 971 -> 971.
+# Rejette tout code hors forme attendue : il est interpolé dans une requête SQL,
+# et un argument de ligne de commande n'est pas une source de confiance.
+insee_prefix() {
+  local d
+  d="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
+  case "${d}" in
+    [0-9]) d="0${d}" ;;
+  esac
+  case "${d}" in
+    [0-9][0-9]|[0-9][0-9][0-9]|2A|2B) printf '%s' "${d}" ;;
+    *) return 1 ;;
+  esac
+}
+
+# Nombre de communes chargées pour un département. Renvoie une chaîne vide si la
+# question ne peut pas être tranchée (table absente, base injoignable) : on ne
+# bloque pas un import hydro pour un souci de référentiel.
+commune_coverage() {
+  local prefix
+  prefix="$(insee_prefix "$1")" || { printf ''; return 0; }
+  docker exec -e PGPASSWORD="${PGPASSWORD}" "${PG_CONTAINER}" \
+    psql -qtA "host=127.0.0.1 port=5432 dbname=${PGDATABASE} user=${PGUSER} password=${PGPASSWORD}" \
+    -c "SELECT count(*) FROM commune WHERE insee_com LIKE '${prefix}%';" 2>/dev/null | tr -dc '0-9'
+}
+
+# S'assure que les communes du département sont chargées AVANT l'import hydro.
+# L'enjeu n'est pas cosmétique : sans référentiel, les plans d'eau homonymes
+# retombent sur l'identifiant BD TOPO, et seul un réimport complet les corrige —
+# plusieurs heures à l'échelle nationale, pour un défaut qui ne se voit qu'à la
+# fin. Le chargement des communes, lui, coûte quelques secondes et est idempotent.
+ensure_communes() {
+  local dept="$1" n
+  n="$(commune_coverage "${dept}")"
+  if [ -n "${n}" ] && [ "${n}" -gt 0 ]; then
+    return 0
+  fi
+  if [ -z "${n}" ]; then
+    log "?? Département ${dept} : couverture commune indéterminable — libellés éventuellement dégradés."
+    return 0
+  fi
+  if [ "${COMMUNES_MODE}" = "never" ]; then
+    log "!! Département ${dept} : aucune commune chargée. Les plans d'eau homonymes"
+    log "   porteront un identifiant BD TOPO. Corriger avec ${COMMUNES_SCRIPT} ${dept}"
+    log "   puis relancer l'import de ce département (--download=force)."
+    return 0
+  fi
+  log ">> Département ${dept} : chargement du référentiel commune..."
+  if [ -x "${COMMUNES_SCRIPT}" ] && "${COMMUNES_SCRIPT}" "${dept}" >>"${LOG_FILE}" 2>&1; then
+    log "<< Département ${dept} : communes chargées ($(commune_coverage "${dept}"))."
+  else
+    # Échec non bloquant : l'import hydro reste valide, seuls les libellés pâtissent.
+    log "!! Département ${dept} : chargement des communes en échec (voir ${LOG_FILE})."
+    log "   L'import continue ; les homonymes porteront un identifiant BD TOPO."
+  fi
+}
+
+# Vrai si les 4 couches attendues sont présentes dans le dossier départemental.
+dept_data_complete() {
+  local dir="$1" theme
+  [ -d "${dir}" ] || return 1
+  for theme in "${THEMES[@]}"; do
+    [ -f "${dir}/${theme}.gpkg" ] || return 1
+  done
+  return 0
+}
+
 # Liste des départements : arguments explicites, sinon découverte des hydro_*.
 DEPTS=()
+DEPTS_EXPLICIT=1
 if [ "$#" -gt 0 ]; then
   DEPTS=("$@")
 else
+  DEPTS_EXPLICIT=0
   for d in "${DATA_ROOT}"/hydro_*/; do
     [ -d "$d" ] || continue
     local_name="$(basename "$d")"
@@ -83,28 +209,64 @@ else
 fi
 
 if [ "${#DEPTS[@]}" -eq 0 ]; then
-  echo "Aucun dossier hydro_<dept> trouvé sous ${DATA_ROOT}." >&2
+  echo "Aucun département demandé et aucun dossier hydro_<dept> sous ${DATA_ROOT}." >&2
+  echo "Passez les départements en arguments, ex. : $0 ${DATA_ROOT} 74 73 01" >&2
   exit 1
 fi
 
-log "=== Import hydro France : ${#DEPTS[@]} département(s) : ${DEPTS[*]} ==="
+log "=== Import hydro France : ${#DEPTS[@]} département(s) : ${DEPTS[*]} (téléchargement : ${DOWNLOAD_MODE}) ==="
 
 imported=0
 skipped=0
+downloaded=0
 for dept in "${DEPTS[@]}"; do
   dept_dir="${DATA_ROOT}/hydro_${dept}"
   done_marker="${STATE_DIR}/${dept}.done"
 
-  if [ ! -d "${dept_dir}" ]; then
-    log "!! Département ${dept} : dossier introuvable (${dept_dir}) — ignoré."
-    continue
-  fi
-
-  if [ -f "${done_marker}" ]; then
-    log "-- Département ${dept} : déjà importé (${done_marker}) — sauté."
+  # Déjà importé : on ne retélécharge ni ne recharge, sauf --download=force.
+  if [ -f "${done_marker}" ] && [ "${DOWNLOAD_MODE}" != "force" ]; then
+    log "-- Département ${dept} : déjà importé (${done_marker}) — rien à faire."
     skipped=$((skipped + 1))
     continue
   fi
+
+  # Récupération des données si nécessaire.
+  need_download=0
+  if [ "${DOWNLOAD_MODE}" = "force" ]; then
+    need_download=1
+  elif ! dept_data_complete "${dept_dir}"; then
+    need_download=1
+  fi
+
+  if [ "${need_download}" -eq 1 ]; then
+    if [ "${DOWNLOAD_MODE}" = "never" ]; then
+      log "!! Département ${dept} : couches manquantes dans ${dept_dir} et --download=never — ignoré."
+      continue
+    fi
+    if [ "${DEPTS_EXPLICIT}" -eq 0 ]; then
+      # En mode découverte, un dossier incomplet est une anomalie locale : on ne
+      # déclenche pas un téléchargement que l'utilisateur n'a pas demandé.
+      log "!! Département ${dept} : dossier incomplet (${dept_dir}) — ignoré (mode découverte)."
+      continue
+    fi
+    log ">> Département ${dept} : téléchargement IGN vers ${dept_dir}..."
+    if KEEP_ARCHIVE="${KEEP_ARCHIVES}" "${DOWNLOAD_SCRIPT}" "${dept}" "${dept_dir}" >>"${LOG_FILE}" 2>&1; then
+      log "<< Département ${dept} : téléchargement OK."
+      downloaded=$((downloaded + 1))
+      # Données rafraîchies : le marqueur ne vaut plus rien, l'import doit rejouer.
+      rm -f "${done_marker}"
+    else
+      log "!! Département ${dept} : ÉCHEC du téléchargement (voir ${LOG_FILE})."
+      exit 1
+    fi
+  fi
+
+  if ! dept_data_complete "${dept_dir}"; then
+    log "!! Département ${dept} : couches toujours incomplètes dans ${dept_dir} — ignoré."
+    continue
+  fi
+
+  ensure_communes "${dept}"
 
   log ">> Département ${dept} : import depuis ${dept_dir}..."
   if "${UNIT_SCRIPT}" "${dept_dir}" >>"${LOG_FILE}" 2>&1; then
@@ -136,4 +298,4 @@ docker exec -e PGPASSWORD="${PGPASSWORD}" "${PG_CONTAINER}" \
   -c "SELECT count(*) AS water_surfaces FROM water_surface;" \
   -c "SELECT pg_size_pretty(pg_database_size('${PGDATABASE}')) AS db_size;" | tee -a "${LOG_FILE}"
 
-log "=== Terminé : ${imported} importé(s), ${skipped} sauté(s). ==="
+log "=== Terminé : ${downloaded} téléchargé(s), ${imported} importé(s), ${skipped} déjà à jour. ==="

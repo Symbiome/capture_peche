@@ -171,17 +171,17 @@ public class TripsDao extends AbstractFisholaDao {
                     .map(Tables.TRIP.NAME::likeIgnoreCase)
                     .ifPresent(conditions::add);
             yearFilter.ifPresent(year -> {
-                LocalDate min = LocalDate.of(year, Month.JANUARY, 1);
-                LocalDate max = LocalDate.of(year, Month.DECEMBER, 31);
-                conditions.add(Tables.TRIP.DAY.between(min, max));
+                LocalDateTime min = LocalDate.of(year, Month.JANUARY, 1).atStartOfDay();
+                LocalDateTime max = LocalDate.of(year, Month.DECEMBER, 31).atTime(23, 59, 59);
+                conditions.add(Tables.TRIP.BEGIN_TIMESTAMP.between(min, max));
             });
             waterEntitiesFilter.ifPresent(waterEntitiesIds -> conditions.add(Tables.TRIP.WATER_ENTITY_ID.in(waterEntitiesFilter.get())));
             SelectConditionStep<TripRecord> builder = context.selectFrom(Tables.TRIP)
                     .where(conditions);
-            SelectSeekStep2<TripRecord, LocalDate, LocalDateTime> tripRecords =
+            SelectSeekStep2<TripRecord, LocalDateTime, LocalDateTime> tripRecords =
                     orderDesc
-                            ? builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc())
-                            : builder.orderBy(Tables.TRIP.DAY.asc(), Tables.TRIP.CREATED_ON.asc());
+                            ? builder.orderBy(Tables.TRIP.BEGIN_TIMESTAMP.desc(), Tables.TRIP.CREATED_ON.desc())
+                            : builder.orderBy(Tables.TRIP.BEGIN_TIMESTAMP.asc(), Tables.TRIP.CREATED_ON.asc());
             List<Trip> trips = tripRecords
                     .fetch()
                     .into(Trip.class);
@@ -421,7 +421,7 @@ public class TripsDao extends AbstractFisholaDao {
             Set<UUID> catchIds = catchsDao.listCatchIds(trip.getId());
             PicturePerTripBean picturesForTrip = new PicturePerTripBean();
             picturesForTrip.pictureURLs = new ArrayList<>();
-            picturesForTrip.tripDate = trip.getDay();
+            picturesForTrip.tripDate = trip.getBeginTimestamp().toLocalDate();
             picturesForTrip.tripId = trip.getId();
             picturesForTrip.tripName = trip.getName();
             withDaoNoResult(WaterEntityDao.class, waterEntityDao -> picturesForTrip.tripWaterEntityName = waterEntityDao.findById(trip.getWaterEntityId()).getName());
@@ -457,8 +457,8 @@ public class TripsDao extends AbstractFisholaDao {
                         .join(Tables.FISHOLA_USER)
                         .on(Tables.TRIP.OWNER_ID.eq(Tables.FISHOLA_USER.ID))
                         .where(conditions);
-                SelectSeekStep2<Record, LocalDate, LocalDateTime> tripRecords =
-                        builder.orderBy(Tables.TRIP.DAY.desc(), Tables.TRIP.CREATED_ON.desc());
+                SelectSeekStep2<Record, LocalDateTime, LocalDateTime> tripRecords =
+                        builder.orderBy(Tables.TRIP.BEGIN_TIMESTAMP.desc(), Tables.TRIP.CREATED_ON.desc());
                 List<Trip> tripsWithoutSocial = tripRecords
                         .limit(page.getPageSize()).offset(page.getPageNumber())
                         .fetch()
@@ -471,7 +471,7 @@ public class TripsDao extends AbstractFisholaDao {
                     FisholaUser user = withDao(FisholaUserDao.class, fisholaUserDao -> fisholaUserDao.findById(t.getOwnerId()));
                     String userName = user.getPseudo();
                     String waterEntityName = withDao(WaterEntityDao.class, waterEntityDao -> waterEntityDao.fetchById(t.getWaterEntityId()).getFirst().getName());
-                    long durationInSeconds = Duration.between(t.getStartTime(), t.getEndTime()).toSeconds();
+                    long durationInSeconds = Duration.between(t.getBeginTimestamp(), t.getEndTimestamp()).toSeconds();
                     List<TripSocialReaction> socialReactions = withDao(TripSocialReactionDao.class, dao -> dao.fetchByTripId(t.getId()));
                     Map<String, ? extends Map<Maillage, Integer>> catchesCountPerMaillage = withDao(CatchDao.class, dao ->
                         dao.fetchByTripId(t.getId()).stream()
@@ -495,7 +495,7 @@ public class TripsDao extends AbstractFisholaDao {
                            .tripName(t.getName())
                            .waterEntityName(waterEntityName)
                            .durationInSeconds(durationInSeconds)
-                           .date(t.getDay())
+                           .date(t.getBeginTimestamp().toLocalDate())
                            .socialReactions(socialReactions)
                            .catchesCountPerMaillage(catchesCountPerMaillage)
                            .build();

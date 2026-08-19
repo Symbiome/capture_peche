@@ -309,9 +309,8 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     private void createTripWithCatch(UUID waterEntityId, LocalDateTime tripDate) {
         Trip trip = new Trip();
         trip.setCreatedOn(tripDate);
-        trip.setDay(tripDate.toLocalDate());
-        trip.setStartTime(tripDate.toLocalTime().minusHours(4));
-        trip.setEndTime(tripDate.toLocalTime());
+        trip.setBeginTimestamp(tripDate.minusHours(4));
+        trip.setEndTimestamp(tripDate);
         trip.setWaterEntityId(waterEntityId);
         trip.setName("Trip for waterEntity " + waterEntityId + " " + tripDate.toString());
         trip.setType(TripType.Craft);
@@ -328,7 +327,7 @@ class DashboardResourceTest  extends AbstractFisholaTest {
         Catch aCatch = new Catch();
         aCatch.setTripId(tripId);
         aCatch.setCreatedOn(tripDate);
-        aCatch.setCatchTime(tripDate.toLocalTime());
+        aCatch.setCatchTimestamp(tripDate);
         aCatch.setSpeciesId(this.species.stream().limit(1).map(Species::getId).collect(ImmutableSet.toImmutableSet()).iterator().next());
         aCatch.setTechniqueId(this.techniques.stream().limit(1).map(Technique::getId).collect(ImmutableSet.toImmutableSet()).iterator().next());
         aCatch.setSize((int)System.currentTimeMillis());

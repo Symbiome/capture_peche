@@ -32,11 +32,14 @@
       <b-field label="Date" class="column is-2">
         <input type="date" class="input" v-model="trip.day" :max="todayIso" />
       </b-field>
-      <b-field label="Heure de début" class="column is-2">
-        <input type="time" class="input" v-model="trip.startTime" />
+      <b-field label="Heure de début" class="column is-2" :type="startTimeError ? 'is-danger' : ''"
+        :message="startTimeError">
+        <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.startTime"
+          @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
-      <b-field label="Heure de fin" class="column is-2">
-        <input type="time" class="input" v-model="trip.endTime" />
+      <b-field label="Heure de fin" class="column is-2" :type="endTimeError ? 'is-danger' : ''" :message="endTimeError">
+        <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.endTime"
+          @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
 
       <b-field label="Entité hydrographique" class="column is-6">
@@ -114,7 +117,10 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { ref, computed } from "vue";
+
+const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 
 const collectionMethods = [
   { value: "enquete", label: "Enquête" },
@@ -141,7 +147,29 @@ const loading = ref(false);
 const success = ref<any>(null);
 const errors = ref<any[]>([]);
 
+const startTimeError = ref("");
+const endTimeError = ref("");
+
 const todayIso = computed(() => new Date().toISOString().slice(0, 10));
+
+function onTimeInput(event: Event, field: "startTime" | "endTime") {
+  const raw = (event.target as HTMLInputElement).value;
+  const masked = maskTimeInput(raw);
+  trip.value[field] = masked;
+
+  const errorRef = field === "startTime" ? startTimeError : endTimeError;
+  if (!masked || isValidTimeString(masked)) {
+    errorRef.value = "";
+  } else if (masked.length === 5) {
+    errorRef.value = TIME_FORMAT_ERROR;
+  }
+}
+
+function onTimeBlur(field: "startTime" | "endTime") {
+  const value = trip.value[field];
+  const errorRef = field === "startTime" ? startTimeError : endTimeError;
+  errorRef.value = !value || isValidTimeString(value) ? "" : TIME_FORMAT_ERROR;
+}
 
 loadReferentials();
 
@@ -224,5 +252,7 @@ function resetForm() {
     bredouille: false
   };
   captures.value = [newCapture()];
+  startTimeError.value = "";
+  endTimeError.value = "";
 }
 </script>

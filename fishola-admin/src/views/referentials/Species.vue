@@ -63,6 +63,22 @@ const specieColumns: any[] = [
     field: "mandatorySize",
     label: "Taille obligatoire ?",
     isABoolean: true
+  },
+  {
+    field: "scientificName",
+    label: "Nom scientifique",
+  },
+  {
+    field: "codeEspece",
+    label: "Code espèce SANDRE",
+  },
+  {
+    field: "codeTaxonSandre",
+    label: "Code taxon SANDRE",
+  },
+  {
+    field: "codeTaxref",
+    label: "Code TAXREF",
   }
 ];
 

@@ -39,6 +39,7 @@
             <div class="item-description" v-on:click="toggle(s)">
               {{ s.alias ? s.alias : s.name }}
               <span v-if="s.alias" class="real-name">({{ s.name }})</span>
+              <span v-if="s.scientificName" class="real-name scientific-name">{{ s.scientificName }}</span>
             </div>
           </div>
           <div class="species-item">
@@ -385,6 +386,11 @@ export default class TripSpeciesView extends Vue {
         font-style: italic;
         color: @pale-sky;
         margin-left: @margin-x-small;
+      }
+
+      .scientific-name {
+        display: block;
+        margin-left: 0;
       }
     }
 

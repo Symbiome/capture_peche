@@ -241,7 +241,7 @@ public class DashboardDao  extends AbstractFisholaDao {
         DashboardLastTrip result = ImmutableDashboardLastTrip.builder()
                 .tripId(trip.getId())
                 .catchsCount(allCatchsIndex.get(trip.getId()).size())
-                .day(trip.getDay())
+                .day(trip.getBeginTimestamp().toLocalDate())
                 .build();
         return result;
     }

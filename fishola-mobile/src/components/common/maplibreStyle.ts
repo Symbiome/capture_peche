@@ -25,7 +25,7 @@
 // (#33) — la carte de sélection d'entité (MapLibreMap) garde son propre style
 // (couches de sélection en plus).
 
-import maplibregl, { Map as MlMap, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
 import Constants from '@/services/Constants';
 
 export const IGN_ATTRIBUTION =
@@ -116,27 +116,45 @@ export function createFisholaMap(
     return map;
 }
 
-// ─── Marqueur « sortie » (pin poisson) ───────────────────────────────────────
+// ─── Marqueur « sortie » (pin poisson / canne à pêche) ───────────────────────
+
+export type PinShape = 'fish' | 'rod';
+
+/** Silhouette de poisson : une capture précise (#33). */
+function fishGlyph(color: string): string {
+    return `<g fill="#ffffff">
+    <path d="M20.8 15.9c0 2.6-2.7 4.7-6 4.7-2.3 0-4.4-1-5.4-2.6-.2-.3-.2-.7 0-1 1-1.6 3.1-2.6 5.4-2.6 3.3 0 6 2.1 6 4.7z"/>
+    <path d="M21.2 13.6c.5-.3 1.1 0 1.1.6v3.4c0 .6-.6.9-1.1.6l-2.4-1.4c-.4-.3-.4-.9 0-1.2l2.4-2z"/>
+    <circle cx="13.2" cy="14.9" r="0.9" fill="${color}"/>
+  </g>`;
+}
+
+/** Canne à pêche : la sortie elle-même, sans capture rattachée (#33). */
+function rodGlyph(): string {
+    return `<g fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 25 L25 9"/>
+    <path d="M23 11 Q18 17 17 23"/>
+    <circle cx="17" cy="24" r="1.3" fill="#ffffff" stroke="none"/>
+  </g>`;
+}
 
 /**
- * Pin en forme de goutte portant une silhouette de poisson, dessiné en SVG et
- * enregistré comme image MapLibre (`icon-image`). Un simple cercle ne disait pas
- * de quoi il s'agissait ; la goutte donne en plus un point d'ancrage précis
- * (la pointe est posée sur la coordonnée, cf. `icon-anchor: 'bottom'`).
+ * Pin en forme de goutte portant une silhouette de poisson ou de canne à pêche,
+ * dessiné en SVG et enregistré comme image MapLibre (`icon-image`). Un simple
+ * cercle ne disait pas de quoi il s'agissait ; la goutte donne en plus un point
+ * d'ancrage précis (la pointe est posée sur la coordonnée, cf. `icon-anchor:
+ * 'bottom'`).
  *
- * @param color couleur de remplissage (code maillage : bleu maillée / orange sinon)
+ * @param color couleur de remplissage (a une capture enregistrée ou non)
+ * @param shape poisson pour une capture, canne à pêche pour la sortie seule
  */
-function buildCatchPinSvg(color: string): string {
+function buildPinSvg(color: string, shape: PinShape): string {
     // Dessiné à 2× (68×92 px) pour rester net sur écran haute densité : associé à
     // `pixelRatio: 2` à l'enregistrement, le pin s'affiche à 34×46 px sur la carte.
     return `<svg xmlns="http://www.w3.org/2000/svg" width="68" height="92" viewBox="0 0 34 46">
   <path d="M17 1C8.7 1 2 7.7 2 16c0 10.5 13 26.5 14.1 27.8a1.2 1.2 0 0 0 1.8 0C19 42.5 32 26.5 32 16 32 7.7 25.3 1 17 1z"
         fill="${color}" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
-  <g fill="#ffffff">
-    <path d="M20.8 15.9c0 2.6-2.7 4.7-6 4.7-2.3 0-4.4-1-5.4-2.6-.2-.3-.2-.7 0-1 1-1.6 3.1-2.6 5.4-2.6 3.3 0 6 2.1 6 4.7z"/>
-    <path d="M21.2 13.6c.5-.3 1.1 0 1.1.6v3.4c0 .6-.6.9-1.1.6l-2.4-1.4c-.4-.3-.4-.9 0-1.2l2.4-2z"/>
-    <circle cx="13.2" cy="14.9" r="0.9" fill="${color}"/>
-  </g>
+  ${shape === 'rod' ? rodGlyph() : fishGlyph(color)}
 </svg>`;
 }
 
@@ -144,7 +162,7 @@ function buildCatchPinSvg(color: string): string {
  * Charge le pin « sortie » dans la carte sous l'identifiant `id`.
  * À appeler avant d'ajouter la couche `symbol` qui l'utilise.
  */
-export function addCatchPinIcon(map: MlMap, id: string, color: string): Promise<void> {
+export function addCatchPinIcon(map: MlMap, id: string, color: string, shape: PinShape = 'fish'): Promise<void> {
     return new Promise((resolve) => {
         if (map.hasImage(id)) {
             resolve();
@@ -159,7 +177,7 @@ export function addCatchPinIcon(map: MlMap, id: string, color: string): Promise<
         };
         // En cas d'échec on n'empêche pas l'affichage de la carte.
         img.onerror = () => resolve();
-        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(buildCatchPinSvg(color));
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(buildPinSvg(color, shape));
     });
 }
 

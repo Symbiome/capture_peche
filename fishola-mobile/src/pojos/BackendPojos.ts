@@ -70,6 +70,7 @@ export interface SpeciesWithAlias {
     name: string;
     builtIn: boolean;
     mandatorySize: boolean;
+    scientificName?: string;
     alias?: string;
     present: boolean;
     authorizedSample: boolean;
@@ -89,6 +90,10 @@ export interface Species extends Serializable {
     exportAs: string;
     builtIn: boolean;
     mandatorySize: boolean;
+    codeEspece: string;
+    codeTaxonSandre: number;
+    codeTaxref: number;
+    scientificName: string;
 }
 
 export interface Technique extends Serializable {

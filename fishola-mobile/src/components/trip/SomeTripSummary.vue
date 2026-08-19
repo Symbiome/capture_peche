@@ -117,6 +117,12 @@
         v-on:clicked="$emit('goEditTechniques')"
       />
     </div>
+    <TripPositionsMap
+      v-bind:beginLatitude="trip.beginLatitude"
+      v-bind:beginLongitude="trip.beginLongitude"
+      v-bind:endLatitude="trip.endLatitude"
+      v-bind:endLongitude="trip.endLongitude"
+    />
   </div>
 </template>
 
@@ -137,6 +143,7 @@ import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import FormMultiValues from "@/components/common/FormMultiValues.vue";
 import LakeSelection from "@/components/common/LakeSelection.vue";
+import TripPositionsMap from "@/components/trip/TripPositionsMap.vue";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import moment from "moment";
@@ -147,6 +154,7 @@ import moment from "moment";
     FormSelect,
     FormMultiValues,
     LakeSelection,
+    TripPositionsMap,
   },
 })
 export default class SomeTripSummary extends Vue {

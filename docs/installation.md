@@ -163,3 +163,4 @@ Admin accessible sur [http://localhost:8083/admin/](http://localhost:8083/admin/
 - Si le port `8080` est déjà utilisé, changer `quarkus.http.port` dans `fishola-backend/src/main/resources/application.properties`, puis reporter ce nouveau port dans le `.env` du front (`VITE__API_DEFAULT_PORT`).
 - Les fichiers `.env`, `.env.web`, `.env.demo`, `.env.mobile` sont déjà présents dans `fishola-mobile/` et `fishola-admin/` avec des valeurs par défaut pour le mode dev — inutile de les recréer.
 - Les migrations Flyway (`fishola-backend/src/main/resources/db/migration/`) s'appliquent automatiquement au démarrage de Quarkus en mode dev.
+- **Charger les données hydrographiques** (plans d'eau et cours d'eau, source BD TOPO IGN) : voir [import-donnees-hydro.md](import-donnees-hydro.md). Une base fraîche démarre sans référentiel hydro, les écrans carto sont donc vides tant qu'aucun département n'a été importé.

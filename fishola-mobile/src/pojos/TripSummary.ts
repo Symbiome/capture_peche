@@ -35,5 +35,9 @@ export default interface TripSummary {
     otherSpecies: string;
     weatherId?: string;
     techniqueIds: string[];
+    beginLatitude?: number;
+    beginLongitude?: number;
+    endLatitude?: number;
+    endLongitude?: number;
 
 }
