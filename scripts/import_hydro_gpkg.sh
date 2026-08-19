@@ -17,6 +17,10 @@
 #                               troncon_hydrographique.gpkg et
 #                               surface_hydrographique.gpkg
 #                               (par défaut : ../data/hydro_74)
+#
+# Ces 4 fichiers peuvent être produits automatiquement depuis la Géoplateforme
+# IGN par download_hydro_ign.sh <zone> <dossier_data> — c'est ce que fait
+# import_hydro_france.sh pour chaque département demandé.
 
 set -euo pipefail
 
