@@ -308,7 +308,12 @@ export default class TripsService extends AbstractFisholaService {
           resolve(tripsAndCount);
         },
         (error) => {
-          if (error && error.timeoutReached) {
+          // Serveur injoignable : soit le wrapper de 5 s a expiré, soit la
+          // requête a échoué au niveau transport — `backendGetWithArgs`
+          // remonte désormais ce cas immédiatement au lieu de rester en
+          // attente. Dans les deux cas on affiche la liste locale avec le
+          // marqueur hors ligne plutôt qu'une erreur.
+          if (error && (error.timeoutReached || error.networkError)) {
             console.error("Erreur pendant le chargement des sorties", error);
             const tripsAndCount = new TripsAndCount(
               result,
