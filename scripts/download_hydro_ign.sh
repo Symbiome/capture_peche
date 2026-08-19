@@ -158,7 +158,7 @@ echo "    taille annoncée : ${EXPECTED_SIZE:-inconnue} octets — MD5 : ${EXPEC
 local_size() { [ -f "$1" ] && wc -c <"$1" | tr -d ' ' || echo 0; }
 
 if [ -n "${EXPECTED_SIZE}" ] && [ "$(local_size "${ARCHIVE}")" = "${EXPECTED_SIZE}" ]; then
-  echo "--> Archive déjà complète (${ARCHIVE}) — téléchargement sauté."
+  echo "--> Archive déjà complète (${ARCHIVE}) — réutilisée."
 else
   echo "--> Téléchargement de ${ARCHIVE_URL}"
   # Barre de progression seulement en interactif : redirigée vers un fichier
@@ -227,7 +227,7 @@ echo "    ${INNER}"
 FULL_GPKG_NAME="${EDITION}_full.gpkg"
 FULL_GPKG="${WORK_DIR}/${FULL_GPKG_NAME}"
 if [ -f "${FULL_GPKG}" ]; then
-  echo "--> GeoPackage déjà extrait (${FULL_GPKG}) — extraction sautée."
+  echo "--> GeoPackage déjà extrait (${FULL_GPKG}) — réutilisé."
 else
   echo "--> Extraction (plusieurs Go, quelques minutes)..."
   gdal_run gdal vsi copy "${VSI_ARCHIVE}/${INNER}" "/work/${FULL_GPKG_NAME}.part"

@@ -155,7 +155,7 @@ for dept in "${DEPTS[@]}"; do
 
   # Déjà importé : on ne retélécharge ni ne recharge, sauf --download=force.
   if [ -f "${done_marker}" ] && [ "${DOWNLOAD_MODE}" != "force" ]; then
-    log "-- Département ${dept} : déjà importé (${done_marker}) — sauté."
+    log "-- Département ${dept} : déjà importé (${done_marker}) — rien à faire."
     skipped=$((skipped + 1))
     continue
   fi
@@ -226,4 +226,4 @@ docker exec -e PGPASSWORD="${PGPASSWORD}" "${PG_CONTAINER}" \
   -c "SELECT count(*) AS water_surfaces FROM water_surface;" \
   -c "SELECT pg_size_pretty(pg_database_size('${PGDATABASE}')) AS db_size;" | tee -a "${LOG_FILE}"
 
-log "=== Terminé : ${downloaded} téléchargé(s), ${imported} importé(s), ${skipped} sauté(s). ==="
+log "=== Terminé : ${downloaded} téléchargé(s), ${imported} importé(s), ${skipped} déjà à jour. ==="
