@@ -65,11 +65,15 @@ run_backend() {
 run_e2e() {
   echo ""
   echo "==> E2E — Cypress (front pêcheur, headless)"
-  echo "    /!\\ nécessite la stack lancée (./start_all.sh) — sinon échec attendu."
+  echo "    /!\\ nécessite au moins le front lancé sur le port 8081 (npm run serve)."
+  echo "        Les scénarios gardés par liveBackend=true demandent la stack complète"
+  echo "        (./start_all.sh) ; sans elle ils sont ignorés, pas en échec."
   (
     cd fishola-mobile
     [ -d node_modules ] || npm install
-    npm run cypress-report
+    # cypress:run => specPattern tests/cypress/e2e/** (parcours fonctionnels).
+    # Les bancs CV/perf ont leur propre script (cypress:bench / cypress-report).
+    npm run cypress:run
   )
   record "E2E (Cypress)" $?
 }
