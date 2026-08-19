@@ -8,6 +8,7 @@
     "build:demo": "vite build --mode demo",
     "build:mobile": "vite build --mode mobile",
     "build:web": "vite build --mode web",
+    "type-check": "tsc --noEmit",
     "tests": "vitest run",
     "tests:watch": "vitest",
     "cypress": "npx cypress open",
@@ -73,7 +74,7 @@
     "less": "^3.13.1",
     "less-loader": "^6.2.0",
     "rollup-plugin-visualizer": "^5.14.0",
-    "typescript": "^4.4.4",
+    "typescript": "5.9.3",
     "vite": "^6.3.1",
     "vitest": "^3.2.7"
   }

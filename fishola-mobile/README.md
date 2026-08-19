@@ -10,6 +10,21 @@ npm run serve
 
 L'application tourne sur le port `8081` : [http://localhost:8081](http://localhost:8081).
 
+## Contrôle de types
+
+Le build Vite passe par esbuild, qui retire les annotations de type **sans les
+vérifier** : une erreur de typage ne se voit donc ni au `npm run serve`, ni au
+`npm run build:*`. Elle n'apparaît qu'en lançant explicitement le compilateur :
+
+```bash
+npm run type-check
+```
+
+Cette commande (`tsc --noEmit`) ne produit aucun fichier, elle ne fait que
+vérifier. Elle est aussi jouée par `./run_tests.sh mobile` à la racine du dépôt,
+avant les tests unitaires, pour qu'une régression de typage ne puisse pas passer
+inaperçue.
+
 ## Lancer les tests
 
 Il existe deux types de tests pour Fishola : 
