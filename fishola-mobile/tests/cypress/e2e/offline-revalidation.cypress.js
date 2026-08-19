@@ -48,6 +48,9 @@ describe("Mode offline & re-validation (#10)", () => {
           tx.objectStore("dirtyTrips").put({
             id,
             name,
+            // `lakeId` obligatoire : une sortie sans plan d'eau est un brouillon
+            // de création abandonné, désormais ni affiché ni poussé au serveur.
+            lakeId: "lac-1",
             date: new Date().toISOString(),
             startedAt: "08:00",
             finishedAt: "10:00",
