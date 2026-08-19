@@ -175,7 +175,7 @@ Mesures relevées sur sept départements (01, 38, 42, 59, 62, 73, 74) :
 | | Valeur |
 |---|---|
 | Durée par département | ~2 min (téléchargement compris) |
-| Base après 7 départements | ~730 Mo |
+| Base après 7 départements | ~740 Mo |
 | Plans d'eau / cours d'eau | 3 376 / 12 302 |
 | Tronçons / surfaces | 244 830 / 82 655 |
 
