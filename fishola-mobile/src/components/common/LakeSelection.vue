@@ -184,7 +184,16 @@ export default class LakeSelection extends Vue {
   }
 
   async loadLakes() {
-      let favoriteLakes = await ReferentialService.getFavoriteLakes();
+      // Les favoris sont un confort : hors ligne et sans entrée en cache, leur
+      // échec ne doit pas emporter tout le sélecteur. On repli sur une liste
+      // vide plutôt que d'interrompre `loadLakes`, sinon plus aucun plan d'eau
+      // n'était proposé.
+      let favoriteLakes: Lake[] = [];
+      try {
+        favoriteLakes = await ReferentialService.getFavoriteLakes();
+      } catch (e) {
+        console.error("Favoris indisponibles, sélecteur sans favoris", e);
+      }
       const fetchedLakes = await ReferentialService.getLakes();
       this.allLakes = fetchedLakes;
       this.allLakesExecptFavorites = fetchedLakes.filter(el => {
