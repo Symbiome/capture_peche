@@ -26,6 +26,23 @@ import moment from "moment";
 import 'moment/dist/locale/fr';
 
 export default class Helpers {
+  static readonly TIME_24H_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+  // Masque de saisie HH:mm indépendant de la locale du navigateur/OS : les
+  // champs <input type="time"> natifs affichent AM/PM selon la locale de
+  // l'appareil (notamment iOS Safari), pas selon la langue de l'app.
+  static maskTimeInput(raw: string): string {
+    const digits = (raw || "").replace(/\D/g, "").slice(0, 4);
+    if (digits.length <= 2) {
+      return digits;
+    }
+    return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+  }
+
+  static isValidTimeString(value: string): boolean {
+    return Helpers.TIME_24H_REGEX.test(value);
+  }
+
   static renderDuration(startedAt: string, finishedAt?: string): string {
     const duration = this.computeDuration(startedAt, finishedAt);
     const result = this.formatDuration(duration, true);
