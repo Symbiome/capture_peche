@@ -664,7 +664,20 @@ export default class EditCatchView extends Vue {
 
   async getMaxSize(lakeId: string, speciesId?: string): Promise<number> {
     let result = 1000;
-    const speciesPerLake = await ReferentialService.getSpeciesPerLake();
+    // Contrôle non bloquant : hors ligne et sans référentiel en cache, on
+    // conserve la borne permissive par défaut plutôt que de laisser rejeter
+    // la promesse — sinon `validateClicked` s'interrompait et la capture ne
+    // pouvait plus être enregistrée, sans aucun message pour l'utilisateur.
+    let speciesPerLake: Map<string, SpeciesWithAlias[]>;
+    try {
+      speciesPerLake = await ReferentialService.getSpeciesPerLake();
+    } catch (e) {
+      console.error(
+        "Référentiel espèces/plan d'eau indisponible, contrôle de taille maximale ignoré",
+        e
+      );
+      return result;
+    }
     if (speciesPerLake.get(lakeId)) {
       const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
       speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {

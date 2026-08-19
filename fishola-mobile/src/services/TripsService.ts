@@ -274,6 +274,10 @@ export default class TripsService extends AbstractFisholaService {
 
       this.getDatabase().dirtyTrips.toArray((trips) => {
         trips.forEach((trip) => {
+          if (!TripsService.isSyncable(trip)) {
+            // Brouillon de création abandonné : ce n'est pas une sortie.
+            return;
+          }
           const tripLight: TripLight = TripsService.storedTripToLight(trip);
           dirtyTripsIds.push(tripLight.id);
           if (pageIndex === 0) {
@@ -304,7 +308,12 @@ export default class TripsService extends AbstractFisholaService {
           resolve(tripsAndCount);
         },
         (error) => {
-          if (error && error.timeoutReached) {
+          // Serveur injoignable : soit le wrapper de 5 s a expiré, soit la
+          // requête a échoué au niveau transport — `backendGetWithArgs`
+          // remonte désormais ce cas immédiatement au lieu de rester en
+          // attente. Dans les deux cas on affiche la liste locale avec le
+          // marqueur hors ligne plutôt qu'une erreur.
+          if (error && (error.timeoutReached || error.networkError)) {
             console.error("Erreur pendant le chargement des sorties", error);
             const tripsAndCount = new TripsAndCount(
               result,
@@ -479,6 +488,26 @@ export default class TripsService extends AbstractFisholaService {
   }
 
   /**
+   * Une sortie n'est poussable au serveur que si elle porte les champs
+   * obligatoires du modèle serveur (`day` et `water_entity_id` sont NOT NULL).
+   *
+   * `saveTrip0` bascule une sortie de `onCreationTrip` vers `dirtyTrips` dès
+   * qu'elle a un identifiant, donc AVANT que la saisie soit complète. Une
+   * création abandonnée en cours de route laisse ainsi dans la file un
+   * brouillon sans date ni plan d'eau : il échouait à chaque passe de synchro
+   * (500 côté serveur, date vide non parsable) et s'affichait indéfiniment
+   * comme une ligne vide « Non synchronisée » que l'utilisateur ne pouvait pas
+   * résoudre. On ne le pousse plus et on ne le présente plus comme une sortie.
+   */
+  static isSyncable(someObject: TripBean): boolean {
+    const hasDate = !!(someObject as any).date;
+    const hasWaterEntity = !!(
+      (someObject as any).lakeId || (someObject as any).waterEntityId
+    );
+    return hasDate && hasWaterEntity;
+  }
+
+  /**
    * Indique si la sauvegarde de la sortie doit être différée ou non
    */
   static shouldDelaySave(someObject: TripBean): boolean {
@@ -589,14 +618,26 @@ export default class TripsService extends AbstractFisholaService {
     TripsService.syncInProgress = true;
 
     const result: Promise<boolean> = new Promise<boolean>((resolve, reject) => {
-      this.getDatabase().dirtyTrips.toArray((dirtyTrips) => {
-        if (dirtyTrips && dirtyTrips.length > 0) {
-          TripsService.doSyncDirtyTrips(dirtyTrips, resolve, reject);
-        } else {
-          console.info("Aucune sortie à synchroniser");
-          resolve(false);
-        }
-      });
+      // Durcissement : on chaîne la promesse de `toArray()` (et non sa seule
+      // callback) et on protège le corps par un try/catch. Sans cela, un échec
+      // de lecture IndexedDB ou une exception synchrone levée pendant la passe
+      // laisserait cette promesse ne jamais se régler ; `syncInProgress`
+      // resterait à `true` et toutes les synchronisations suivantes seraient
+      // ignorées jusqu'au redémarrage de l'application.
+      this.getDatabase()
+        .dirtyTrips.toArray()
+        .then((dirtyTrips) => {
+          try {
+            if (dirtyTrips && dirtyTrips.length > 0) {
+              TripsService.doSyncDirtyTrips(dirtyTrips, resolve, reject);
+            } else {
+              console.info("Aucune sortie à synchroniser");
+              resolve(false);
+            }
+          } catch (e) {
+            reject(e);
+          }
+        }, reject);
     });
 
     return result.then(
@@ -625,9 +666,19 @@ export default class TripsService extends AbstractFisholaService {
           `On ignore la sortie qui est peut-être encore en cours de modif`,
           dirtyTrip.id
         );
+      } else if (!this.isSyncable(dirtyTrip)) {
+        console.warn(
+          `Brouillon incomplet (ni date ni plan d'eau), non poussé au serveur`,
+          dirtyTrip.id
+        );
       } else {
-        const promise = this.syncTrip(dirtyTrip);
-        promise.then(
+        // On agrège la promesse DÉJÀ traitée (succès comme échec), pas la
+        // promesse brute : sinon une seule sortie non synchronisable (brouillon
+        // incomplet rejeté en 500, par exemple) faisait rejeter le
+        // `Promise.all` ci-dessous, `resolve(someTripsSaved)` n'était jamais
+        // appelé et l'évènement « trips-saved » jamais émis — les sorties
+        // pourtant bien remontées restaient affichées « Non synchronisée ».
+        const settled = this.syncTrip(dirtyTrip).then(
           () => {
             this.getDatabase().dirtyTrips.delete(dirtyTrip.id!);
             someTripsSaved = true;
@@ -637,7 +688,7 @@ export default class TripsService extends AbstractFisholaService {
             console.error("Unable to sync trip ", error);
           }
         );
-        allPromises.push(promise);
+        allPromises.push(settled);
       }
     });
 

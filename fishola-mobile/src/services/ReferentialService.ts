@@ -150,7 +150,11 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {
     return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-      this.backendGet("/v1/referential/species-per-waterEntity").then((map) => {
+      // Repli hors ligne obligatoire : ce référentiel est consulté pendant la
+      // validation d'une capture (contrôle de la taille maximale). Avec un
+      // simple `backendGet`, la promesse rejetait sans réseau et la validation
+      // était abandonnée en silence — capture impossible à saisir hors ligne.
+      this.backendGetOrOfflineStorage("/v1/referential/species-per-waterEntity").then((map) => {
         const someMap = new Map<string, SpeciesWithAlias[]>();
         const lakeIds: string[] = Object.keys(map);
         lakeIds.forEach((lakeId) => {
@@ -379,6 +383,10 @@ export default class ReferentialService extends AbstractFisholaService {
   static prepareCaches(): Promise<void> {
     const allPromises: Promise<void>[] = [
       this.prepareCache("/v1/referential/waterEntities"),
+      // Les favoris sont lus par le sélecteur de plan d'eau : sans cette mise
+      // en cache, un appareil qui n'a jamais ouvert l'écran en ligne n'a aucune
+      // entrée locale et le sélecteur restait vide hors ligne.
+      this.prepareCache("/v1/referential/waterEntities/favorites"),
       this.prepareCache("/v1/referential/species-per-waterEntity"),
       this.prepareCache("/v1/referential/species"),
       this.prepareCache("/v1/referential/species-custom"),

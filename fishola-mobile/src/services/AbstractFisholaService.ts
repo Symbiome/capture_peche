@@ -44,6 +44,41 @@ export default abstract class AbstractFisholaService {
     this.caches.set(uri, newEntry);
   }
 
+  /**
+   * Une requête XHR qui échoue au niveau transport (réseau absent, hôte
+   * injoignable, requête interrompue) ne déclenche PAS `onload`. Sans
+   * gestionnaire d'erreur, la promesse correspondante ne se règle donc
+   * JAMAIS — ni tenue, ni rompue.
+   *
+   * C'est ce qui bloquait la synchronisation : le push d'une sortie sans
+   * réseau laissait le `Promise.all` de `doSyncDirtyTrips` en attente,
+   * `syncTrips` ne se terminait pas, et son verrou `syncInProgress`
+   * restait armé pour toute la durée de vie de l'application. Plus aucune
+   * sortie ne repartait ensuite, même le réseau revenu, jusqu'au
+   * redémarrage — la sortie restait affichée « Non synchronisée ».
+   *
+   * Le rejet est volontairement non numérique : `backendGetOrOfflineStorage`
+   * distingue l'échec de transport (repli sur le cache local) d'une réponse
+   * HTTP en erreur (statut numérique, propagé pour ne pas masquer une
+   * session expirée).
+   */
+  static rejectOnTransportFailure(
+    xhr: XMLHttpRequest,
+    uri: string,
+    reject: (cause: any) => void
+  ) {
+    const fail = (cause: string) => () => {
+      console.error(`Échec de transport (${cause}) pour '${uri}'`);
+      reject({
+        networkError: true,
+        message: "Impossible de contacter le serveur",
+      });
+    };
+    xhr.onerror = fail("erreur réseau");
+    xhr.onabort = fail("requête interrompue");
+    xhr.ontimeout = fail("délai dépassé");
+  }
+
   static backendGet(uri: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const apiUrl = Constants.apiUrl(uri);
@@ -61,10 +96,7 @@ export default abstract class AbstractFisholaService {
           reject(this.status);
         }
       };
-      xhr.onerror = function (e) {
-        console.error(e);
-        reject("Impossible de contacter le serveur");
-      };
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.send();
     });
   }
@@ -76,7 +108,12 @@ export default abstract class AbstractFisholaService {
     }
 
     return new Promise<any>((resolve, reject) => {
-      this.backendGetAndStoreToOfflineStorage(uri).then((content: any) => {
+      // Repli hors ligne : le cache mémoire est vide au (re)démarrage de
+      // l'app. Sans repli sur le stockage local, tous les référentiels servis
+      // par cette méthode (météos, techniques, espèces…) rejetaient sans
+      // réseau, ce qui faisait échouer les `Promise.all` des formulaires de
+      // saisie — plus aucun plan d'eau ni espèce proposé hors ligne.
+      this.backendGetOrOfflineStorage(uri).then((content: any) => {
         const newEntry: CacheEntry = new CacheEntry(
           new Date().getTime(),
           content
@@ -99,6 +136,7 @@ export default abstract class AbstractFisholaService {
 
       xhr.open("GET", apiUrl, true);
       xhr.withCredentials = true;
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -142,6 +180,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", apiUrl, true);
       xhr.withCredentials = true;
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -177,6 +216,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("DELETE", apiUrl, true);
       xhr.withCredentials = true;
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 204) {
           resolve(undefined);
@@ -200,6 +240,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", apiUrl, true);
       xhr.withCredentials = true;
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -235,6 +276,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", apiUrl, true);
       xhr.withCredentials = true;
+      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200) {
           const responseText = this["responseText"];
@@ -324,7 +366,16 @@ export default abstract class AbstractFisholaService {
           resolve(result);
         },
         (error) => {
-          if (error && error.timeoutReached) {
+          // Repli sur le cache local dès qu'on n'a PAS pu joindre le serveur :
+          // timeout (réseau lent) mais aussi échec de transport (réseau absent,
+          // hôte injoignable) — `backendGet` rejette alors avec un message, pas
+          // avec un statut. Sans ce second cas, une coupure franche ne
+          // déclenchait jamais le repli et déconnectait l'utilisateur.
+          // Une réponse HTTP en erreur (rejet = statut numérique : 401, 403,
+          // 5xx) reste propagée : le serveur a répondu, le cache ne doit pas
+          // masquer une session expirée.
+          const serverAnswered = typeof error === "number";
+          if (!serverAnswered) {
             console.error(
               `Unable to load from the backend for '${uri}'`,
               JSON.stringify(error)
