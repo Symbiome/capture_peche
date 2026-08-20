@@ -86,6 +86,18 @@ public class ReferentialResource extends AbstractFisholaResource {
         }
     }
 
+    // Listing léger (sans géométrie) pour les formulaires de saisie (plan d'eau,
+    // sortie) : getAllWaterEntities() sérialise la géométrie complète, ~1,2 Go
+    // pour le réseau France entière, largement au-delà du timeout du client
+    // mobile (5 s côté AbstractFisholaService.timeout). Même périmètre public
+    // que getAllWaterEntities() côté pêcheur (pas de scoping admin ici, ce
+    // listing n'est pas consommé par le back-office).
+    @GET
+    @Path("/waterEntities/summary")
+    public List<WaterEntitySummary> getAllWaterEntitiesSummary() {
+        return referentialDao.listWaterEntitiesSummary();
+    }
+
     @GET
     @Path("/waterEntities/favorites")
     public List<WaterEntity> getFavoriteWaterEntities() {

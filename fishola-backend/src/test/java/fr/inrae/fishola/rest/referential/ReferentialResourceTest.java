@@ -60,4 +60,23 @@ class ReferentialResourceTest {
                     .body("[3].longitude", notNullValue());
     }
 
+    @Test
+    void testGetWaterEntitiesSummary() {
+        // Listing léger sans géométrie (payload ~1,2 Go pour le réseau France
+        // entière sur /waterEntities, au-delà du timeout client mobile) : mêmes
+        // entités, seulement id/name/exportAs/kind/latitude/longitude.
+        given()
+                .when()
+                    .get("/api/v1/referential/waterEntities/summary")
+                .then()
+                    .statusCode(200)
+                    .body("size()", greaterThanOrEqualTo(5))
+                    .body("name", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
+                    .body("exportAs", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
+                    .body("[0].id", notNullValue())
+                    .body("[0].kind", notNullValue())
+                    .body("[0].latitude", notNullValue())
+                    .body("[0].longitude", notNullValue());
+    }
+
 }

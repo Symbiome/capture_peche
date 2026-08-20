@@ -50,8 +50,14 @@ export default class ReferentialService extends AbstractFisholaService {
     super();
   }
 
+  // Listing léger (sans géométrie) : le référentiel complet sérialise la
+  // géométrie de chaque entité, ~1,2 Go pour le réseau France entière — bien
+  // au-delà du timeout de 5 s de backendGetWithCache, ce qui faisait échouer
+  // ce chargement (et en cascade les formulaires de saisie qui en dépendent :
+  // plan d'eau, type de pêche). Ce formulaire n'a besoin que de
+  // nom/type/centroïde ; la géométrie fine reste servie par les tuiles MVT.
   static getLakes(): Promise<Lake[]> {
-    return this.backendGetWithCache("/v1/referential/waterEntities");
+    return this.backendGetWithCache("/v1/referential/waterEntities/summary");
   }
 
   static getFavoriteLakes(): Promise<Lake[]> {
