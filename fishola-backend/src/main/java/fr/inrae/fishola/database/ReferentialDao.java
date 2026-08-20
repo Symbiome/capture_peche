@@ -43,6 +43,8 @@ import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
 import fr.inrae.fishola.entities.tables.records.WaterEntityRecord;
+import fr.inrae.fishola.rest.referential.ImmutableWaterEntitySummary;
+import fr.inrae.fishola.rest.referential.WaterEntitySummary;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
@@ -67,6 +69,27 @@ public class ReferentialDao extends AbstractFisholaDao {
         return withContext(context -> context.selectFrom(Tables.WATER_ENTITY)
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetchInto(WaterEntity.class));
+    }
+
+    // Listing léger sans géométrie : le réseau France entière fait dépasser 1 Go
+    // sur listWaterEntities() (geom inclus), largement au-delà du timeout client
+    // mobile (5 s). Utilisé par les formulaires de saisie (plan d'eau, sortie),
+    // qui n'ont besoin que du nom/type/centroïde.
+    public List<WaterEntitySummary> listWaterEntitiesSummary() {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME, Tables.WATER_ENTITY.EXPORT_AS,
+                        Tables.WATER_ENTITY.KIND.cast(String.class).as("kind"),
+                        Tables.WATER_ENTITY.LATITUDE, Tables.WATER_ENTITY.LONGITUDE)
+                .from(Tables.WATER_ENTITY)
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(rec -> (WaterEntitySummary) ImmutableWaterEntitySummary.builder()
+                        .id(rec.get(Tables.WATER_ENTITY.ID))
+                        .name(rec.get(Tables.WATER_ENTITY.NAME))
+                        .exportAs(rec.get(Tables.WATER_ENTITY.EXPORT_AS))
+                        .kind(rec.get("kind", String.class))
+                        .latitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LATITUDE)))
+                        .longitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LONGITUDE)))
+                        .build()));
     }
 
     // latitude/longitude are GENERATED ALWAYS AS ... STORED (derived from geom); a
