@@ -45,6 +45,10 @@ export interface TripBean {
     beginLongitude?: number;
     endLatitude?: number;
     endLongitude?: number;
+    riverSectionId?: string;
+    snappedLatitude?: number;
+    snappedLongitude?: number;
+    hydroValidation?: string;
     source: DeviceType;
     frontendVersion?: string;
     saveDelayMarker?: Date;
@@ -66,6 +70,7 @@ export interface SpeciesWithAlias {
     name: string;
     builtIn: boolean;
     mandatorySize: boolean;
+    scientificName?: string;
     alias?: string;
     present: boolean;
     authorizedSample: boolean;
@@ -85,6 +90,10 @@ export interface Species extends Serializable {
     exportAs: string;
     builtIn: boolean;
     mandatorySize: boolean;
+    codeEspece: string;
+    codeTaxonSandre: number;
+    codeTaxref: number;
+    scientificName: string;
 }
 
 export interface Technique extends Serializable {
@@ -217,17 +226,17 @@ export interface LicenceResponseBean {
 }
 
 export interface CatchMarker {
-    id: string;
+    id?: string;
     date: Date;
     tripId: string;
     tripName: string;
-    specieName: string;
+    specieName?: string;
     waterEntityName: string;
     latitude: number;
     longitude: number;
     size: number;
     weight: number;
-    maillage: Maillage;
+    maillage?: Maillage;
     hasValidCoordinates: boolean;
 }
 
@@ -240,6 +249,50 @@ export interface TripSocial {
     durationInSeconds: number;
     socialReactions: TripSocialReaction[];
     catchesCountPerMaillage: { [index: string]: { [P in Maillage]?: number } };
+}
+
+export interface NearbyWaterEntity {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    distanceM: number;
+    closestPoint: GeoPoint;
+    persistent?: boolean;
+}
+
+export interface GeoPoint {
+    lat: number;
+    lng: number;
+}
+
+export interface WaterEntitySearchResult {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    centroid: GeoPoint;
+    commune?: string;
+    codePostal?: string;
+}
+
+export interface WaterEntityAttribution {
+    waterEntityId: string;
+    name: string;
+    kind: string;
+    distanceM: number;
+    closestPoint: GeoPoint;
+    riverSectionId?: string;
+    persistent?: boolean;
+}
+
+export interface AttributionResponse {
+    proposal?: WaterEntityAttribution;
+    alternatives: WaterEntityAttribution[];
+}
+
+export interface CommuneResult {
+    insee: string;
+    name: string;
+    centroid: GeoPoint;
 }
 
 export interface Serializable {

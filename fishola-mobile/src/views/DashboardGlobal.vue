@@ -64,11 +64,11 @@
 
           <GlobalDashboardComponent v-if="visualizationMode !== 'evolution' && globalDashboard"
             :showUpdateHour="year == new Date().getFullYear()" :dashboardData="globalDashboard"
-            :selectedLakeUUID="selectedLakeUUID"></GlobalDashboardComponent>
+            :selectedLakeId="selectedLakeId"></GlobalDashboardComponent>
 
           <EvolutionMetrics 
-            v-if="visualizationMode === 'evolution' && selectedLakeUUID"
-            :lakeId="selectedLakeUUID"
+            v-if="visualizationMode === 'evolution' && selectedLakeId"
+            :lakeId="selectedLakeId"
             @loaded="ready = true"
             >
           </EvolutionMetrics>
@@ -126,7 +126,7 @@ export default class DashboardGlobalView extends Vue {
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
-  selectedLakeUUID = "";
+  selectedLakeId = "";
   isFirstLoad = true;
 
   changeVisualizationMode(newMode: string) {
@@ -139,7 +139,7 @@ export default class DashboardGlobalView extends Vue {
     TripsService.hasRunningTrip().then(
       (result: boolean) => (this.hasRunningTrip = result)
     );
-    if (this.year && this.selectedLakeUUID && this.visualizationMode !== 'evolution') {
+    if (this.year && this.selectedLakeId && this.visualizationMode !== 'evolution') {
       this.reloadDashboard();
     }
     this.exportUrl = DashboardService.getExportUrl();
@@ -163,13 +163,13 @@ export default class DashboardGlobalView extends Vue {
   }
 
   lakeChanged(selectedLake: string) {
-    this.selectedLakeUUID = selectedLake;
+    this.selectedLakeId = selectedLake;
     this.reloadDashboard();
   }
 
   yearAndLakeChangedChanged(event: any) {
     this.year = event.year;
-    this.selectedLakeUUID = event.lake;
+    this.selectedLakeId = event.lake;
     this.reloadDashboard();
   }
 
@@ -177,7 +177,7 @@ export default class DashboardGlobalView extends Vue {
     if (this.visualizationMode === 'dashboard') {
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
-        this.selectedLakeUUID
+        this.selectedLakeId
       ).then(this.globalDashboardLoaded, this.cannotLoad);
     }
   }
@@ -208,7 +208,7 @@ export default class DashboardGlobalView extends Vue {
       this.ready = false;
       DashboardService.loadGlobalDashboardOrTimeout(
         this.year,
-        this.selectedLakeUUID
+        this.selectedLakeId
       ).then(this.globalDashboardLoaded, this.cannotLoad);
     }
   }

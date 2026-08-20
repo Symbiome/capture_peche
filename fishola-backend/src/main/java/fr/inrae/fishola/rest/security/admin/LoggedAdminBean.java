@@ -21,14 +21,22 @@ package fr.inrae.fishola.rest.security.admin;
  * #L%
  */
 
+import java.util.Set;
+import java.util.UUID;
+
 public class LoggedAdminBean {
     public String email;
     public Boolean isNationalAdmin;
     public final Boolean canCreateAdmins;
+    public final Boolean isOperator;
+    /** Périmètre du staff (plans d'eau) ; vide pour un administrateur national. */
+    public final Set<UUID> waterEntityIds;
 
-    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins) {
+    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins, Boolean isOperator, Set<UUID> waterEntityIds) {
         this.email = email;
         this.isNationalAdmin = isNationalAdmin;
         this.canCreateAdmins = canCreateAdmins;
+        this.isOperator = isOperator;
+        this.waterEntityIds = waterEntityIds;
     }
 }

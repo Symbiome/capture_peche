@@ -56,19 +56,31 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    protected boolean verifyPassword(boolean isNationalAdmin, String plain, String hashed) {
-        try {
-            // For national admins, use password defined in application.properties
-            if (isNationalAdmin) {
-               return config.adminPassword().equals(plain);
-            } else {
-                BCrypt.Result result = BCrypt.verifyer().verify(plain.toCharArray(), hashed);
-                return result.verified;
-            }
-        } catch (Exception eee) {
-            log.error(eee);
+    protected boolean verifyPassword(String plain, String hashed) {
+        // Authentification nominative uniquement (#55) : on vérifie le hash bcrypt propre
+        // au compte, pour tous les rôles. Le repli « mot de passe national partagé »
+        // (application.properties) a été retiré : plus aucune imputabilité partagée.
+        return verifyBcrypt(plain, hashed);
+    }
+
+    private boolean verifyBcrypt(String plain, String hashed) {
+        if (plain == null || hashed == null || hashed.isBlank()) {
             return false;
         }
+        try {
+            return BCrypt.verifyer().verify(plain.toCharArray(), hashed).verified;
+        } catch (Exception eee) {
+            // Hash absent ou non-bcrypt (ex. placeholder d'un compte national non encore provisionné).
+            return false;
+        }
+    }
+
+    public void updatePassword(UUID adminId, String passwordHashed) {
+        DSLContext context = newContext();
+        context.update(FISHOLA_ADMIN)
+                .set(FISHOLA_ADMIN.PASSWORD, passwordHashed)
+                .where(FISHOLA_ADMIN.ID.equal(adminId))
+                .execute();
     }
 
     public Optional<Boolean> authenticate(String rawEmail, String password) {
@@ -76,7 +88,7 @@ public class AdminDao extends AbstractFisholaDao {
         Optional<FisholaAdmin> user = findByEmail(email);
         Optional<Boolean> result = user
                 .map(FisholaAdmin::getPassword)
-                .map(userPassword -> verifyPassword(user.get().getIsNationalAdmin(), password, userPassword));
+                .map(userPassword -> verifyPassword(password, userPassword));
         return result;
     }
 
@@ -103,11 +115,11 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, UUID[] waterEntityIds) {
+    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, boolean isOperator, UUID[] waterEntityIds) {
         String email = rawEmail.toLowerCase();
         FisholaAdminRecord inserted = withContext(context -> context.insertInto(FISHOLA_ADMIN,
-                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN)
-                .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin)
+                        FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN, FISHOLA_ADMIN.IS_OPERATOR)
+                .values(email, passwordHashed, LocalDateTime.now(), canCreateAdmin, isNationalAdmin, isOperator)
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne());
         UUID insertedAdminId = inserted.getId();
@@ -129,6 +141,7 @@ public class AdminDao extends AbstractFisholaDao {
                 .email(input.getEmail())
                 .canCreateAdmin(input.getCanCreateAdmin())
                 .isNationalAdmin(input.getIsNationalAdmin())
+                .isOperator(input.getIsOperator())
                 .waterEntityIds(this.getAllowedWaterEntities(input.getId()))
                 .build();
         return result;

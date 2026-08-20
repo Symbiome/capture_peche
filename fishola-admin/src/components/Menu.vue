@@ -40,10 +40,7 @@
           Techniques de pêche
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-dropdown label="Paramétrage">
-        <b-navbar-item tag="router-link" :to="{ name: 'species-per-lake' }">
-          Espèces par plan d'eau
-        </b-navbar-item>
+      <b-navbar-dropdown label="Paramétrage" v-if="!loggedAdmin.isOperator">
         <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
           Maillages et tailles maximales
         </b-navbar-item>
@@ -59,10 +56,10 @@
           Communications
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else>
+      <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else-if="!loggedAdmin.isOperator">
         Communications
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'metrics' }">
+      <b-navbar-item tag="router-link" :to="{ name: 'metrics' }" v-if="!loggedAdmin.isOperator">
         Chiffres Clés
       </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
@@ -71,8 +68,20 @@
       <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
         Utilisateurs
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'audit-log' }" v-if="loggedAdmin.isNationalAdmin">
+        Journal d'audit
+      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
         Administrateurs
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Opérateurs
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-import' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Import CSV
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Nouvelle saisie
       </b-navbar-item>
     </template>
 
@@ -94,20 +103,20 @@
           </template>
 
           <!-- Items -->
-          <b-dropdown-item>
-            <div class="logout-item">
-
-              <b v-if="loggedAdmin.isNationalAdmin">Admninistrateur National</b>
-              <b v-else-if="lakes.length == 1">
-                Admnistateur du {{ lakes[0].name }}
-              </b>
-              <span v-else>
-                  <b>Administrateur  des plans d'eau : </b><br/>
-                  <p v-for="l in lakes" :id="l.id">
-                    - {{ l.name }}
-                  </p>
-                </span>
+          <b-dropdown-item custom>
+            <div class="role-info">
+              <b>{{ roleLabel }}</b>
+              <div v-if="!loggedAdmin.isNationalAdmin && perimeterNames.length" class="perimeter">
+                <span class="perimeter-label">Plans d'eau :</span>
+                {{ perimeterNames.join(', ') }}
+              </div>
             </div>
+          </b-dropdown-item>
+          <b-dropdown-item has-link>
+            <router-link :to="{ name: 'change-password' }">
+              <b-icon icon="lock-reset" size="is-small"></b-icon>
+              Changer mon mot de passe
+            </router-link>
           </b-dropdown-item>
           <b-dropdown-item>
             <div class="logout-item">
@@ -148,15 +157,28 @@ import router from "@/router";
 
 import BackendService from "@/services/BackendService";
 import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNavbarItem, useToast} from "buefy";
-import {onMounted, ref, Ref} from "vue";
+import {computed, onMounted, ref, Ref} from "vue";
 
 const loggedAdmin: Ref<Admin> = ref({ email: "" });
 const lakes: Ref<Lake[]> = ref([]);
 
+const roleLabel = computed(() => {
+  const a = loggedAdmin.value as any;
+  if (a.isNationalAdmin) return "Administrateur national";
+  if (a.isOperator) return "Opérateur";
+  return "Administrateur régional";
+});
+
+const perimeterNames = computed(() => {
+  const ids: string[] = (loggedAdmin.value as any).waterEntityIds ?? [];
+  const byId = new Map(lakes.value.map((l: any) => [l.id, l.name]));
+  return ids.map((id) => byId.get(id)).filter((n): n is string => !!n);
+});
+
 const Toast = useToast();
 
 onMounted(async () => {
-  lakes.value = await BackendService.backendGet("/v1/referential/lakes");
+  lakes.value = await BackendService.backendGet("/v1/referential/waterEntities");
 
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");

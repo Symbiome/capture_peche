@@ -26,8 +26,8 @@ declare global {
     interface Element extends VNode {}
     // tslint:disable no-empty-interface
     interface ElementClass extends Vue {}
-    interface IntrinsicElements {
-      [elem: string]: any
-    }
+    // `IntrinsicElements`, et sa signature d'index « élément quelconque », est
+    // déjà déclarée globalement par vue/types/jsx.d.ts depuis Vue 2.7. La
+    // redéclarer ici produisait une signature d'index dupliquée (TS2374).
   }
 }

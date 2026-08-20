@@ -37,10 +37,14 @@ import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
 import Metrics from "@/views/Metrics.vue";
 
-import SpeciesPerLake from "@/views/customize/SpeciesPerLake.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
+import Operators from "@/views/Operators.vue";
+import OperatorImport from "@/views/operator/Import.vue";
+import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
+import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
+import AuditLog from "@/views/AuditLog.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -84,11 +88,6 @@ const routes: Array<RouteRecordRaw> = [
     component: Species
   },
   {
-    path: "/customize/species-per-lake",
-    name: "species-per-lake",
-    component: SpeciesPerLake
-  },
-  {
     path: "/customize/authorized-samples",
     name: "authorized-samples",
     component: AuthorizedSamples
@@ -110,9 +109,34 @@ const routes: Array<RouteRecordRaw> = [
     component: Users
   },
   {
+    path: "/audit-log",
+    name: "audit-log",
+    component: AuditLog
+  },
+  {
     path: "/admins",
     name: "admins",
     component: Admins
+  },
+  {
+    path: "/operators",
+    name: "operators",
+    component: Operators
+  },
+  {
+    path: "/operator/import",
+    name: "operator-import",
+    component: OperatorImport
+  },
+  {
+    path: "/operator/manual-entry",
+    name: "operator-manual-entry",
+    component: OperatorManualEntry
+  },
+  {
+    path: "/account/password",
+    name: "change-password",
+    component: ChangePassword
   },
   {
     path: "/editorial-pages",

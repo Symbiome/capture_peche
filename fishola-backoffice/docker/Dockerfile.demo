@@ -1,0 +1,37 @@
+####
+# Image du backend « gestion interne » (Django) — profil demo.
+#
+# Build (depuis fishola-backoffice/) :
+#   docker build -f docker/Dockerfile.demo -t symbiome/fishola-backoffice:demo .
+#
+# Run (la BDD Fishola partagée est fournie par variables d'environnement) :
+#   docker run -i --rm -p 8000:8000 --env-file .env \
+#       --name fishola-backoffice symbiome/fishola-backoffice:demo
+####
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=config.settings
+
+WORKDIR /app
+
+# Dépendances Python d'abord (cache de couche). psycopg[binary] embarque libpq :
+# aucune dépendance système supplémentaire nécessaire.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Code applicatif
+COPY . .
+
+# Fichiers statiques de l'admin (SECRET_KEY factice suffit pour collectstatic).
+RUN DJANGO_SECRET_KEY=build-only python manage.py collectstatic --noinput
+
+# Exécution en utilisateur non-root (cf. convention backend Fishola : USER 1001).
+RUN useradd --uid 1001 --create-home appuser && chown -R appuser /app
+USER 1001
+
+EXPOSE 8000
+
+# Serveur WSGI de production — surtout PAS `runserver`.
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]

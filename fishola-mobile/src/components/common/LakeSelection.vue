@@ -47,24 +47,36 @@
         />
         <span class="input-actions">
           <i class="icon-chevron" @click="toggleSuggestionsDisplay" title="Voir les suggestions" />
+          <i class="icon-magnifying-glass" @click="toggleCommuneSearchDisplay" title="Rechercher par commune" />
+          <i class="icon-fishing" @click="toggleNearbyDisplay" title="Plans d'eau autour de moi" />
           <i class="icon-map" @click="toggleMapDisplay" title="Voir les suggestions sur une carte"/>
         </span>
         <ul class="suggestions" v-show="displaySuggestions">
           <li
             v-for="lake in suggestedFavorites"
+            :key="'fav-' + lake.id"
             class="favorite"
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
-            v-html="highlightMatchingText(lake.name)"
-          />
+          >
+            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
+          </li>
           <li
             v-for="lake in suggestedLakes"
+            :key="lake.id"
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
-            v-html="highlightMatchingText(lake.name)"
-          />
+          >
+            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
+          </li>
         </ul>
       </span>
+
+      <div v-if="!allowMultipleSelection && selectedCommuneLabel" class="selected-commune">
+        <i class="icon-lake" />{{ selectedCommuneLabel }}
+      </div>
 
       <div class="input-error" :class="error ? 'field-error' : ''">
         <span v-if="error">
@@ -73,33 +85,63 @@
       </div>
 
       <div v-if="allowMultipleSelection" class="selectedLakes">
-        <span v-for="l in selectedLakes">
+        <span v-for="l in selectedLakes" :key="l.id">
           {{ l.name }} <i class="icon-error" @click="toggleLake(l)" />
         </span>
       </div>
 
-      <LakesMap
+      <MapLibreMap
         v-show="displayMap"
         :isVisible="displayMap"
         :lakes="allLakesExecptFavorites"
         :favoriteLakes="favoriteLakes"
         :selectedLake="selectedLakes.length == 1 ? selectedLakes[0] : null"
         @selectLake="selectLakeById"
+        @point-picked="onMapPointPicked"
+        @map-click="onMapClick"
         v-on:close="toggleMapDisplay"
+      />
+
+      <NearbyList
+        v-if="displayNearby"
+        :isVisible="displayNearby"
+        @select="onNearbySelected"
+        v-on:close="toggleNearbyDisplay"
+      />
+
+      <CommuneSearch
+        v-if="displayCommuneSearch"
+        :isVisible="displayCommuneSearch"
+        @select="onNearbySelected"
+        v-on:close="toggleCommuneSearchDisplay"
+      />
+
+      <AttributionConfirmSheet
+        :attribution="attributionResult"
+        :visible="showAttributionSheet"
+        @confirm="onAttributionConfirm"
+        @cancel="onAttributionCancel"
       />
     </div>
 </template>
 
 <script lang="ts">
 
-import { Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake, AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
-import LakesMap from "@/components/common/LakesMap.vue";
+import MapLibreMap from "@/components/common/MapLibreMap.vue";
+import NearbyList from "@/components/common/NearbyList.vue";
+import CommuneSearch from "@/components/common/CommuneSearch.vue";
+import AttributionConfirmSheet from "@/components/common/AttributionConfirmSheet.vue";
 import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/services/Helpers';
 
 @Component({
   components: {
-    LakesMap,
+    MapLibreMap,
+    NearbyList,
+    CommuneSearch,
+    AttributionConfirmSheet,
   },
 })
 export default class LakeSelection extends Vue {
@@ -109,6 +151,8 @@ export default class LakeSelection extends Vue {
   @Prop({default : false}) allowMultipleSelection: boolean;
 
   displayMap: boolean = false;
+  displayNearby: boolean = false;
+  displayCommuneSearch: boolean = false;
   displaySuggestions: boolean = false;
   allLakes: Lake[] = [];
   allLakesExecptFavorites: Lake[] = [];
@@ -116,14 +160,40 @@ export default class LakeSelection extends Vue {
   suggestedFavorites: Lake[] = [];
   search: string = "";
   selectedLabel: string = "";
+  selectedCommuneLabel: string = "";
   selectedLakesId: string[] = [];
+  private searchSeq: number = 0;
+  private communeSeq: number = 0;
+  private searchTimer: any = null;
+
+  // Flux d'attribution hydro (#9) : pin sur la carte → proposition → confirmation.
+  attributionResult: AttributionResponse | null = null;
+  showAttributionSheet: boolean = false;
+  private pendingPin: { lat: number; lng: number } | null = null;
 
   mounted() {
     this.loadLakes();
   }
 
+  beforeDestroy() {
+    // Évite qu'un debounce en vol ne déclenche une requête et ne mute l'état
+    // d'un composant détruit.
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
+  }
+
   async loadLakes() {
-      let favoriteLakes = await ReferentialService.getFavoriteLakes();
+      // Les favoris sont un confort : hors ligne et sans entrée en cache, leur
+      // échec ne doit pas emporter tout le sélecteur. On repli sur une liste
+      // vide plutôt que d'interrompre `loadLakes`, sinon plus aucun plan d'eau
+      // n'était proposé.
+      let favoriteLakes: Lake[] = [];
+      try {
+        favoriteLakes = await ReferentialService.getFavoriteLakes();
+      } catch (e) {
+        console.error("Favoris indisponibles, sélecteur sans favoris", e);
+      }
       const fetchedLakes = await ReferentialService.getLakes();
       this.allLakes = fetchedLakes;
       this.allLakesExecptFavorites = fetchedLakes.filter(el => {
@@ -135,6 +205,14 @@ export default class LakeSelection extends Vue {
       this.suggestedFavorites = favoriteLakes;
 
       this.$emit('favoriteLakesChanged', favoriteLakes);
+
+      // Préremplir le champ avec le plan d'eau déjà sélectionné (ex. écran
+      // récapitulatif d'une sortie existante), sinon l'input paraît vide.
+      if (!this.search && this.selectedLakes && this.selectedLakes.length === 1) {
+        this.search = this.selectedLakes[0].name;
+        this.selectedLabel = this.selectedLakes[0].name;
+        this.selectedCommuneLabel = this.formatCommune(this.selectedLakes[0]);
+      }
   }
 
   @Watch("favoriteLakes")
@@ -164,22 +242,43 @@ export default class LakeSelection extends Vue {
 
   @Watch("search")
   updateSuggestedLakes() {
-    this.suggestedLakes = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.suggestedLakes :
-      this.allLakesExecptFavorites.filter((lake) => {
-        return lake.name
-            .toString()
-            .toLowerCase()
-            .indexOf(this.search.toLowerCase()) >= 0;
-    });
-    this.suggestedFavorites = this.search == "" || this.selectedLabel.toLowerCase() == this.search.toLowerCase() ?
-      this.favoriteLakes :
-      this.favoriteLakes.filter((lake) => {
-        return lake.name
-            .toString()
-            .toLowerCase()
-            .indexOf(this.search.toLowerCase()) >= 0;
-    });
+    const term = this.search;
+    const isSelectedLabel = this.selectedLabel.toLowerCase() == term.toLowerCase();
+
+    // Pas de recherche active (champ vide ou = libellé déjà sélectionné) :
+    // comportement d'origine (favoris + suggestions = liste hors favoris).
+    if (term == "" || isSelectedLabel) {
+      this.suggestedLakes = this.allLakesExecptFavorites;
+      this.suggestedFavorites = this.favoriteLakes;
+      return;
+    }
+
+    // Favoris filtrés côté client (petite liste, pas d'appel serveur).
+    const lowered = term.toLowerCase();
+    this.suggestedFavorites = this.favoriteLakes.filter((lake) =>
+      lake.name.toString().toLowerCase().indexOf(lowered) >= 0);
+
+    // Moins de 2 caractères : on n'interroge pas le serveur.
+    if (term.trim().length < 2) {
+      this.suggestedLakes = [];
+      return;
+    }
+
+    // Recherche serveur (pg_trgm/unaccent, #7) debouncée 250 ms, avec garde
+    // anti-réponse obsolète : seule la réponse de la dernière frappe s'applique.
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
+    this.searchTimer = setTimeout(() => {
+      const seq = ++this.searchSeq;
+      ReferentialService.searchWaterEntities(term.trim())
+        .then((results) => {
+          if (seq === this.searchSeq) {
+            this.suggestedLakes = results;
+          }
+        })
+        .catch(() => { /* recherche en échec : on conserve l'état courant */ });
+    }, 250);
   }
 
   updateSearch(event: any) {
@@ -193,17 +292,40 @@ export default class LakeSelection extends Vue {
     let filteredItem = this.allLakes.filter((l) => {
       return l.id === id;
     });
-    if (filteredItem.length == 1 ? filteredItem[0].name : '') {
+    // Sélection valable dès qu'une entité correspond à l'id (tapé sur la carte
+    // ou choisi ailleurs) — on ne conditionne plus à un name non vide. On NE
+    // ferme PLUS la carte automatiquement : le pin posé au point cliqué doit
+    // rester visible (position de départ) ; l'utilisateur ferme via la croix.
+    if (filteredItem.length === 1) {
       this.selectLake(filteredItem[0]);
-      if (!this.allowMultipleSelection) {
-        this.displayMap = false;
-      }
     }
   }
 
+  // Tap direct sur une entité de la carte (#9/#13) : le point cliqué (déjà
+  // matérialisé par un pin sur la carte) devient la position de départ de la
+  // sortie. On propage au parent (TripMeta) comme le flux d'attribution.
+  onMapPointPicked(coords: { lat: number; lng: number }) {
+    this.$emit('positionPicked', coords);
+  }
+
   selectLake(selected: Lake) {
+    const seq = ++this.communeSeq;
     if (!this.allowMultipleSelection) {
       this.search = selected.name;
+      this.selectedCommuneLabel = this.formatCommune(selected);
+      // Entité choisie hors recherche (tap carte, mode liste, attribution) : les
+      // objets du référentiel ne portent pas la commune → on la résout par id
+      // (#15). Garde anti-obsolescence : une sélection plus récente l'emporte.
+      if (!this.selectedCommuneLabel && selected && selected.id) {
+        ReferentialService.getWaterEntityCommune(selected.id).then((res) => {
+          if (seq === this.communeSeq && res) {
+            const label = this.formatCommune(res);
+            if (label) {
+              this.selectedCommuneLabel = label;
+            }
+          }
+        });
+      }
     } else {
       this.clearSelection()
     }
@@ -212,17 +334,33 @@ export default class LakeSelection extends Vue {
   }
 
   clearSelection() {
+    this.communeSeq++;
     this.search = "";
+    this.selectedCommuneLabel = "";
     this.$emit("updated", null);
+  }
+
+  // « 74000 Annecy » (CP + commune), le cas échéant (#6/#15). Champs portés par
+  // les résultats de recherche serveur ; absents des entités du référentiel complet.
+  formatCommune(lake: any): string {
+    return [lake && lake.codePostal, lake && lake.commune].filter(Boolean).join(" ");
   }
 
   toggleLake(lake: Lake) {
     this.$emit("updated", lake);
   }
 
+  // Échappe les métacaractères d'expression régulière du terme saisi. `RegExp.escape`
+  // ferait l'affaire mais n'existe qu'à partir de Chrome 136 / Safari 18.4 : sur une
+  // WebView plus ancienne l'appel lève, le rendu de la liste échoue et AUCUNE
+  // suggestion ne s'affiche (le champ reste en état « recherche en cours »).
+  private escapeForRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   highlightMatchingText(text) {
     if (this.search != this.selectedLabel) {
-      const regexp = new RegExp(RegExp.escape(this.search), 'ig');
+      const regexp = new RegExp(this.escapeForRegExp(this.search), 'ig');
       return text.replace(regexp, `<span class="highlight">${this.search}</span>`)
     }
     return text;
@@ -268,13 +406,102 @@ export default class LakeSelection extends Vue {
     }
   }
 
+  // Pin libre sur la carte : on interroge l'attribution hydro et on ouvre la
+  // feuille de confirmation (#9). Le tap direct sur une entité passe, lui, par
+  // `selectLakeById` (pas d'attribution nécessaire).
+  onMapClick(coords: { lng: number; lat: number }) {
+    this.pendingPin = { lat: coords.lat, lng: coords.lng };
+    ReferentialService.getAttribution(coords.lat, coords.lng)
+      .then((res) => {
+        this.attributionResult = res;
+        this.showAttributionSheet = true;
+      })
+      .catch(() => {
+        // Attribution indisponible (hors ligne / erreur serveur) : on prévient
+        // l'utilisateur plutôt que de laisser un pin sans effet.
+        this.pendingPin = null;
+        Helpers.alert(
+          this.$modal,
+          "Le rattachement automatique n'est pas disponible (connexion indisponible). Sélectionnez le plan d'eau par son nom.",
+          "Rattachement indisponible"
+        );
+      });
+  }
+
+  onAttributionConfirm(entity: WaterEntityAttribution) {
+    const lake = {
+      id: entity.waterEntityId,
+      name: entity.name,
+      kind: entity.kind,
+      latitude: entity.closestPoint ? entity.closestPoint.lat : undefined,
+      longitude: entity.closestPoint ? entity.closestPoint.lng : undefined,
+      exportAs: entity.name,
+      waterEntityCode: "",
+      nature: "",
+      altitudeMoyenne: 0,
+      bdtopoCleabs: "",
+      geom: "",
+    } as unknown as Lake;
+    this.selectLake(lake);
+    if (this.pendingPin) {
+      // Le point saisi devient la position de départ de la sortie ; le serveur
+      // recalcule l'entité/point projeté/validation à l'enregistrement (#9).
+      this.$emit("positionPicked", this.pendingPin);
+    }
+    this.showAttributionSheet = false;
+    this.displayMap = false;
+  }
+
+  onAttributionCancel() {
+    this.showAttributionSheet = false;
+  }
+
+  // Sélection depuis le mode liste « autour de moi » (#5) ou la recherche par
+  // commune (#6) : l'item porte le point projeté le plus proche → Lake minimal
+  // (même schéma que la sélection carte/attribution), puis on referme les
+  // panneaux de découverte.
+  onNearbySelected(item: any) {
+    const lake = {
+      id: item.waterEntityId,
+      name: item.name,
+      kind: item.kind,
+      latitude: item.closestPoint ? item.closestPoint.lat : undefined,
+      longitude: item.closestPoint ? item.closestPoint.lng : undefined,
+      exportAs: item.name,
+      waterEntityCode: "",
+      nature: "",
+      altitudeMoyenne: 0,
+      bdtopoCleabs: "",
+      geom: "",
+    } as unknown as Lake;
+    this.selectLake(lake);
+    this.displayNearby = false;
+    this.displayCommuneSearch = false;
+  }
+
   toggleSuggestionsDisplay() {
     this.displayMap = false;
+    this.displayNearby = false;
+    this.displayCommuneSearch = false;
     this.displaySuggestions = !this.displaySuggestions;
   }
   toggleMapDisplay() {
     this.displaySuggestions = false;
+    this.displayNearby = false;
+    this.displayCommuneSearch = false;
     this.displayMap = !this.displayMap;
+  }
+  toggleNearbyDisplay() {
+    this.displaySuggestions = false;
+    this.displayMap = false;
+    this.displayCommuneSearch = false;
+    this.displayNearby = !this.displayNearby;
+  }
+  toggleCommuneSearchDisplay() {
+    this.displaySuggestions = false;
+    this.displayMap = false;
+    this.displayNearby = false;
+    this.displayCommuneSearch = !this.displayCommuneSearch;
   }
 }
 </script>
@@ -312,7 +539,7 @@ export default class LakeSelection extends Vue {
     background: #eee;
     border-radius: 0 4px 4px 0;
     border: 1px solid @pale-sky;
-    width: 70px;
+    width: 130px;
     height: 38px;
     padding: 0 10px;
     gap: 10px;
@@ -331,7 +558,7 @@ export default class LakeSelection extends Vue {
   .input-delete {
     position: absolute;
     top:  calc(@vertical-margin-xx-small + 1px);
-    right: 80px;
+    right: 140px;
     height: 38px;
     display: flex;
     align-items: center;
@@ -343,7 +570,7 @@ export default class LakeSelection extends Vue {
 
   input {
     padding-left: @margin-small;
-    padding-right: 70px;
+    padding-right: 130px;
     margin-top: @vertical-margin-xx-small;
     width: 100%;
     height: 38px;
@@ -383,6 +610,17 @@ export default class LakeSelection extends Vue {
 
     & > li {
       padding: 6px 10px 6px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+
+      .suggestion-commune {
+        color: @pale-sky;
+        font-size: 0.85em;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
 
       &.favorite:before {
         font-family: "Fishola-Icons";
@@ -423,6 +661,19 @@ export default class LakeSelection extends Vue {
           opacity: 0.5;
         }
       }
+    }
+  }
+
+  .selected-commune {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: @vertical-margin-xx-small;
+    color: @pale-sky;
+    font-size: 0.85rem;
+
+    i {
+      font-size: 0.85rem;
     }
   }
 

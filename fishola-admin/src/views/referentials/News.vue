@@ -154,7 +154,7 @@ function parseLocalDateTime(someLocalDateTime: number[]): Date {
 async function refreshNextPlannifiedDate(): Promise<void> {
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");
-    const lakes = await BackendService.backendGet("/v1/referential/lakes");
+    const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
     lakes.forEach((lake: { id: string; name: string }) => {
       lakesIdToNameMap.set(lake.id, lake.name);
     });

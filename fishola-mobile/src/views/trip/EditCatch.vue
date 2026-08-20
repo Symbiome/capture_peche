@@ -92,7 +92,9 @@
               <div :class="{
                 'two-columns-row-on-desktop': aCatch.speciesId == '__other__',
               }">
-                <FormSelect name="species" label="Espèce" v-bind:options="allSpeciesWithAliases"
+                <FormInput name="speciesSearch" label="Rechercher une espèce" type="text"
+                  placeholder="Nom usuel ou nom scientifique" v-model="speciesSearch" v-if="modifiable" />
+                <FormSelect name="species" label="Espèce" v-bind:options="filteredSpeciesOptions()"
                   v-model="aCatch.speciesId" v-bind:error="speciesIdError" v-bind:readonly="!modifiable" />
                 <FormInput name="otherSpecies" label="Si autre" type="text" placeholder="Renseigner l’espèce"
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
@@ -178,14 +180,8 @@
                   <button v-if="modifiable" class="button" @click="initMarkerPosition">Renseigner une position</button>
                 </div>
                 <div class="map" v-if="gpsLocation">
-                  <l-map :zoom="11" :center="gpsLocation" :options="{
-                    zoomSnap: 0.5,
-                  }" style="height: 100%; width: 100%">
-                    <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-
-                    <l-marker :lat-lng="gpsLocation" :draggable="modifiable" @dragend="markerDrag"></l-marker>
-                  </l-map>
+                  <MapLibrePositionMap :lat="gpsLocation.lat" :lng="gpsLocation.lng"
+                    :editable="modifiable" :zoom="11" @dragend="markerDrag" />
                 </div>
               </div>
 
@@ -271,24 +267,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
-import { latLng, LatLng, Icon, DragEndEvent } from "leaflet";
-
-type D = Icon.Default & {
-  _getIconUrl?: string;
-};
-
-delete (Icon.Default.prototype as D)._getIconUrl;
-import "leaflet/dist/leaflet.css";
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
+import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
 import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
 import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
 import { DetectedShape } from "@/services/opencv/DetectedShape";
@@ -303,9 +282,7 @@ import { DetectedShape } from "@/services/opencv/DetectedShape";
     FormSelect,
     FormToggle,
     PicturePreview,
-    LMap,
-    LTileLayer,
-    LMarker,
+    MapLibrePositionMap,
     MeasurementPicturePopup,
     PictureSourceChoice,
     FisholaFooter,
@@ -361,6 +338,7 @@ export default class EditCatchView extends Vue {
 
   allSpeciesWithAliases: SpeciesWithAlias[] = [];
   allTechniques: Technique[] = [];
+  speciesSearch: string = "";
   // allReleasedFishStates:ReleasedFishState[] = [];
 
   withSample: boolean = false;
@@ -368,7 +346,7 @@ export default class EditCatchView extends Vue {
   sampleIdReady: boolean = false;
   authorizedSampleSpeciesIds: string[] = [];
 
-  gpsLocation: LatLng | null = null;
+  gpsLocation: { lat: number; lng: number } | null = null;
 
   displayMeasurementPicturePopup = false;
   requestNewPicture = false;
@@ -447,7 +425,7 @@ export default class EditCatchView extends Vue {
       GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
         (position) => {
           this.watchingGPS = true;
-          this.gpsLocation = latLng(position.coords.latitude, position.coords.longitude);
+          this.gpsLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
           console.info(
             `Coordonnées de capture : ${this.aCatch.latitude},${this.aCatch.longitude}`
           );
@@ -477,7 +455,7 @@ export default class EditCatchView extends Vue {
     }
 
     if (!this.inCreation && this.aCatch.latitude && this.aCatch.longitude) {
-      this.gpsLocation = latLng(this.aCatch.latitude, this.aCatch.longitude);
+      this.gpsLocation = { lat: this.aCatch.latitude, lng: this.aCatch.longitude };
     }
 
     // Get pictures stored locally (not yet synchronized)
@@ -686,7 +664,20 @@ export default class EditCatchView extends Vue {
 
   async getMaxSize(lakeId: string, speciesId?: string): Promise<number> {
     let result = 1000;
-    const speciesPerLake = await ReferentialService.getSpeciesPerLake();
+    // Contrôle non bloquant : hors ligne et sans référentiel en cache, on
+    // conserve la borne permissive par défaut plutôt que de laisser rejeter
+    // la promesse — sinon `validateClicked` s'interrompait et la capture ne
+    // pouvait plus être enregistrée, sans aucun message pour l'utilisateur.
+    let speciesPerLake: Map<string, SpeciesWithAlias[]>;
+    try {
+      speciesPerLake = await ReferentialService.getSpeciesPerLake();
+    } catch (e) {
+      console.error(
+        "Référentiel espèces/plan d'eau indisponible, contrôle de taille maximale ignoré",
+        e
+      );
+      return result;
+    }
     if (speciesPerLake.get(lakeId)) {
       const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
       speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {
@@ -1070,6 +1061,21 @@ export default class EditCatchView extends Vue {
     this.$forceUpdate();
   }
 
+  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique.
+  filteredSpeciesOptions(): SpeciesWithAlias[] {
+    if (!this.speciesSearch.trim()) {
+      return this.allSpeciesWithAliases;
+    }
+    const needle = Helpers.unaccent(this.speciesSearch.trim());
+    return this.allSpeciesWithAliases.filter((s) => {
+      return (
+        Helpers.unaccent(s.name).includes(needle) ||
+        (s.alias && Helpers.unaccent(s.alias).includes(needle)) ||
+        (s.scientificName && Helpers.unaccent(s.scientificName).includes(needle))
+      );
+    });
+  }
+
   checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {
     if (this.aCatch.speciesId == "__other__") {
       // Search through existing species to see if the entered custom specie would match one of them
@@ -1111,15 +1117,14 @@ export default class EditCatchView extends Vue {
   }
 
   async initMarkerPosition() {
-    const lake = (await ReferentialService.getLakes()).filter(l => l.id = this.lakeId)
+    const lake = (await ReferentialService.getLakes()).filter(l => l.id === this.lakeId)
     if (lake.length > 0) {
-      this.gpsLocation = latLng(lake[0].latitude, lake[0].longitude)
+      this.gpsLocation = { lat: lake[0].latitude, lng: lake[0].longitude }
     }
   }
 
-  markerDrag(e: DragEndEvent) {
-    // @ts-ignore
-    this.gpsLocation = e.target.getLatLng();
+  markerDrag(pos: { lat: number; lng: number }) {
+    this.gpsLocation = pos;
   }
 }
 </script>

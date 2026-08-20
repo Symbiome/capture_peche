@@ -209,9 +209,9 @@ const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = ref(5);
 
 Promise.all([
-  BackendService.backendGet("/v1/referential/lakes"),
+  BackendService.backendGet("/v1/referential/waterEntities"),
   BackendService.backendGet("/v1/referential/species"),
-  BackendService.backendGet("/v1/referential/species-per-lake"),
+  BackendService.backendGet("/v1/referential/species-per-waterEntity"),
   BackendService.backendGet("/v1/admin/check")
 ]).then(data => {
   lakes.value = data[0];
@@ -224,7 +224,7 @@ Promise.all([
 
 async function reloadData() {
   speciesPerLake.value = await BackendService.backendGet(
-    "/v1/referential/species-per-lake"
+    "/v1/referential/species-per-waterEntity"
   );
   referentialLoaded();
 }

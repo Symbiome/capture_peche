@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+
+  {# Onboarding : présentation du back-office + premiers pas. #}
+  <section class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-font-important-light dark:text-font-important-dark">
+      Bienvenue dans la gestion interne
+    </h2>
+    <p class="mt-1 mb-4 text-sm text-base-500">
+      Cet espace sert à gérer les comptes du personnel et leurs droits, à importer des données de pêche
+      et à suivre l'activité. Voici par où commencer.
+    </p>
+
+    <div class="flex flex-col lg:flex-row gap-4">
+      <a href="{% url 'admin:auth_user_changelist' %}"
+         class="grow min-w-0 flex flex-col gap-2 p-4 rounded-md border border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800 hover:border-base-300 transition">
+        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-primary-100 dark:bg-base-800 text-primary-600 dark:text-primary-500">
+          <span class="material-symbols-outlined text-sm">person</span>
+        </span>
+        <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">1. Comptes</span>
+        <span class="text-xs text-base-500">Créez les comptes du personnel (opérateurs, administrateurs).</span>
+      </a>
+
+      <a href="{% url 'admin:auth_group_changelist' %}"
+         class="grow min-w-0 flex flex-col gap-2 p-4 rounded-md border border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800 hover:border-base-300 transition">
+        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-primary-100 dark:bg-base-800 text-primary-600 dark:text-primary-500">
+          <span class="material-symbols-outlined text-sm">shield_person</span>
+        </span>
+        <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">2. Profils &amp; droits</span>
+        <span class="text-xs text-base-500">Attribuez un profil à chaque compte (opérateur, admin régional / national).</span>
+      </a>
+
+      <a href="{% url 'admin:backoffice_importjob_changelist' %}"
+         class="grow min-w-0 flex flex-col gap-2 p-4 rounded-md border border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800 hover:border-base-300 transition">
+        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-primary-100 dark:bg-base-800 text-primary-600 dark:text-primary-500">
+          <span class="material-symbols-outlined text-sm">upload_file</span>
+        </span>
+        <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">3. Import de données</span>
+        <span class="text-xs text-base-500">Importez un fichier CSV de sorties / captures et consultez le rapport.</span>
+      </a>
+
+      <a href="{% url 'admin:backoffice_auditlog_changelist' %}"
+         class="grow min-w-0 flex flex-col gap-2 p-4 rounded-md border border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800 hover:border-base-300 transition">
+        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-primary-100 dark:bg-base-800 text-primary-600 dark:text-primary-500">
+          <span class="material-symbols-outlined text-sm">history</span>
+        </span>
+        <span class="text-sm font-medium text-font-important-light dark:text-font-important-dark">4. Journal d'activité</span>
+        <span class="text-xs text-base-500">Suivez les actions (imports, exports, modifications) dans l'historique.</span>
+      </a>
+    </div>
+  </section>
+
+  {# Liste des applications + historique (comportement unfold par défaut). #}
+  <div class="flex flex-col lg:flex-row lg:gap-8">
+    <div class="grow">
+      {% include "unfold/helpers/app_list_default.html" %}
+    </div>
+
+    {% include "unfold/helpers/history.html" %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,289 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrahead %}{{ block.super }}
+  <link rel="stylesheet" href="{% static 'backoffice/vendor/maplibre/maplibre-gl.css' %}">
+  <style>
+    #carte-wrap { display:flex; gap:1rem; height:calc(100vh - 9rem); min-height:32rem; }
+    #carte-liste { width:19rem; flex:none; overflow-y:auto; }
+    #carte-map { position:relative; flex:1 1 auto; min-width:0; border-radius:.5rem; overflow:hidden; }
+    #carte-map .maplibregl-canvas { outline:none; }
+    #carte-liste .item { cursor:pointer; }
+    /* Pastilles de regroupement + tooltip hydro (rendus hors du DOM scopé). */
+    .hydro-hover-popup { pointer-events:none; }
+    .hydro-hover-popup .maplibregl-popup-content { padding:6px 10px; border-radius:6px; box-shadow:0 1px 4px #0003; }
+    .hydro-tip { display:flex; flex-direction:column; line-height:1.2; }
+    .hydro-tip strong { font-size:.85rem; } .hydro-tip span { font-size:.72rem; color:#64748b; }
+    /* Pastilles de regroupement (marqueurs HTML, sans dépendance de police). */
+    .cluster-pill { display:flex; align-items:center; justify-content:center; border-radius:9999px;
+      background:#e2725b; color:#fff; font-weight:700; border:2px solid #fff; cursor:pointer;
+      box-shadow:0 1px 3px #0004; font-size:.8rem; }
+    .session-dot { width:16px; height:16px; border-radius:9999px; background:#e2725b; border:2px solid #fff;
+      box-shadow:0 1px 3px #0004; cursor:pointer; }
+    /* Modale session (superposition plein écran, au-dessus de la carte). */
+    #carte-modal { position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; background:#0007; }
+    #carte-modal.open { display:flex; }
+    @media (max-width: 900px) {
+      #carte-wrap { flex-direction:column; height:auto; }
+      #carte-liste { width:auto; max-height:14rem; } #carte-map { height:30rem; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div id="carte-wrap">
+  <aside id="carte-liste" class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm">
+    <div class="px-4 py-3 border-b border-base-200 dark:border-base-800">
+      <h2 class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Sessions</h2>
+      <p class="text-xs text-base-500"><span id="carte-count">0</span> session(s) géolocalisée(s). Cliquez pour la localiser.</p>
+    </div>
+    <div id="carte-items"></div>
+  </aside>
+
+  <div id="carte-map">
+    <!-- Modale d'une session (au clic d'un marqueur) -->
+    <div id="carte-modal">
+      <div class="rounded-default border border-base-200 dark:border-base-800 bg-white dark:bg-base-900 shadow-sm"
+           style="width:22rem;max-width:90%;">
+        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200 dark:border-base-800">
+          <h3 id="modal-title" class="text-sm font-semibold text-font-important-light dark:text-font-important-dark">Session</h3>
+          <button type="button" id="modal-close" class="text-base-500" style="border:none;background:none;cursor:pointer;font-size:1.1rem;">✕</button>
+        </div>
+        <div id="modal-body" class="px-4 py-3 flex flex-col gap-1 text-sm text-font-default-light dark:text-font-default-dark"></div>
+        <div class="px-4 py-3 border-t border-base-200 dark:border-base-800">
+          <a id="modal-link" href="#" class="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-2 text-sm font-medium text-white">
+            <span class="material-symbols-outlined text-sm">open_in_new</span> Ouvrir la fiche
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="carte-config" type="application/json">
+  {"hydroTilesUrl": "{{ hydro_tiles_url|escapejs }}",
+   "sessionsUrl": "{% url 'carte_sessions' %}",
+   "tripBase": "/admin/backoffice/trip/"}
+</script>
+<script src="{% static 'backoffice/vendor/maplibre/maplibre-gl.js' %}"></script>
+<script>
+(function () {
+  const cfg = JSON.parse(document.getElementById('carte-config').textContent);
+  const IGN_ATTR = '© <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a>';
+  const IGN_WMTS = 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0'
+    + '&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}';
+  const IGN_PLAN = IGN_WMTS + '&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&FORMAT=image/png';
+  const IGN_ORTHO = IGN_WMTS + '&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&FORMAT=image/jpeg';
+  const DEFAULT_CENTER = [6.13, 45.9]; // Haute-Savoie (base de recette)
+  const HYDRO_LAYERS = ['hydro-surface', 'hydro-river-persistent', 'hydro-river-intermittent'];
+
+  // --- Style (fonds IGN + réseau hydro), repris de la carte pêcheur ----------
+  const sources = {
+    'ign-plan':  { type:'raster', tiles:[IGN_PLAN],  tileSize:256, maxzoom:19, attribution:IGN_ATTR },
+    'ign-ortho': { type:'raster', tiles:[IGN_ORTHO], tileSize:256, maxzoom:19, attribution:IGN_ATTR },
+  };
+  const layers = [
+    { id:'ign-plan',  type:'raster', source:'ign-plan',  layout:{ visibility:'visible' } },
+    { id:'ign-ortho', type:'raster', source:'ign-ortho', layout:{ visibility:'none' } },
+  ];
+  if (cfg.hydroTilesUrl) {
+    sources.hydro = { type:'vector', tiles:[cfg.hydroTilesUrl], minzoom:10, maxzoom:16, attribution:IGN_ATTR };
+    layers.push(
+      { id:'hydro-surface', type:'fill', source:'hydro', 'source-layer':'water_surface',
+        paint:{ 'fill-color':'#1e9bc4', 'fill-opacity':0.35, 'fill-outline-color':'#1478a0' } },
+      { id:'hydro-river-persistent', type:'line', source:'hydro', 'source-layer':'river_section',
+        filter:['==', ['to-boolean', ['get','persistent']], true],
+        paint:{ 'line-color':'#1e9bc4', 'line-width':['interpolate',['linear'],['zoom'],10,1,16,3] } },
+      { id:'hydro-river-intermittent', type:'line', source:'hydro', 'source-layer':'river_section',
+        filter:['!=', ['to-boolean', ['get','persistent']], true],
+        paint:{ 'line-color':'#1e9bc4', 'line-width':['interpolate',['linear'],['zoom'],10,1,16,2.5],
+                'line-dasharray':[2,2] } }
+    );
+  }
+
+  const map = new maplibregl.Map({
+    container:'carte-map',
+    // Glyphs (police) nécessaires pour afficher le nombre dans les pastilles de
+    // regroupement. Best-effort : si indisponible, les cercles s'affichent quand même.
+    style:{ version:8, glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf', sources, layers },
+    center:DEFAULT_CENTER, zoom:9,
+    attributionControl:{ compact:true },
+  });
+  map.addControl(new maplibregl.NavigationControl({ showCompass:false }), 'top-left');
+
+  // La carte est un enfant flex : forcer le recalcul de taille une fois la mise
+  // en page résolue (sinon rendu à une taille par défaut, « carte trop petite »).
+  function fix() { map.resize(); }
+  requestAnimationFrame(fix); setTimeout(fix, 300);
+  if (window.ResizeObserver) { new ResizeObserver(fix).observe(document.getElementById('carte-map')); }
+  window.addEventListener('resize', fix);
+
+  // Bascule Plan / Satellite.
+  const toggle = document.createElement('button');
+  toggle.type = 'button'; toggle.textContent = 'Satellite';
+  toggle.className = 'rounded-md bg-primary-600 px-3 py-1 text-xs font-medium text-white';
+  toggle.style.cssText = 'position:absolute;top:.6rem;right:.6rem;z-index:2;cursor:pointer;border:none;';
+  let plan = true;
+  toggle.addEventListener('click', function () {
+    plan = !plan;
+    map.setLayoutProperty('ign-plan', 'visibility', plan ? 'visible' : 'none');
+    map.setLayoutProperty('ign-ortho', 'visibility', plan ? 'none' : 'visible');
+    toggle.textContent = plan ? 'Satellite' : 'Plan';
+  });
+  document.getElementById('carte-map').appendChild(toggle);
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function tripUrl(id) { return cfg.tripBase + encodeURIComponent(id) + '/change/'; }
+  function methodLabel(m) {
+    return ({ saisie_pecheur:'Saisie pêcheur', enquete:'Enquête',
+              carnet_volontaire:'Carnet volontaire', carnet_obligatoire:'Carnet obligatoire' }[m]) || (m || '—'); }
+
+  // --- Modale session --------------------------------------------------------
+  const modal = document.getElementById('carte-modal');
+  function openModal(p) {
+    document.getElementById('modal-title').textContent = p.name || 'Session';
+    const rows = [
+      ["Plan d'eau", p.water_entity || '—'],
+      ['Date', p.day || '—'],
+      ['Origine', methodLabel(p.collection_method)],
+      ['Captures', String(p.catch_count) + ' prise(s)'],
+    ];
+    document.getElementById('modal-body').innerHTML = rows.map(function (r) {
+      return '<div class="flex justify-between gap-3"><span class="text-base-500">' + esc(r[0])
+        + '</span><span class="font-medium text-font-important-light dark:text-font-important-dark">' + esc(r[1]) + '</span></div>';
+    }).join('');
+    document.getElementById('modal-link').href = tripUrl(p.id);
+    modal.classList.add('open');
+  }
+  document.getElementById('modal-close').addEventListener('click', function () { modal.classList.remove('open'); });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
+
+  // --- Sessions : chargées indépendamment de la carte ------------------------
+  fetch(cfg.sessionsUrl, { credentials:'same-origin' })
+    .then(function (r) { return r.json(); })
+    .then(function (fc) {
+      renderList(fc);
+      if (map.isStyleLoaded()) { addSessions(fc); }
+      else { map.on('load', function () { addSessions(fc); }); }
+    })
+    .catch(function () { /* endpoint indisponible : carte seule */ });
+
+  function renderList(fc) {
+    const feats = (fc && fc.features) || [];
+    document.getElementById('carte-count').textContent = feats.length;
+    const box = document.getElementById('carte-items');
+    if (!feats.length) {
+      box.innerHTML = '<p class="px-4 py-3 text-xs text-base-500">Aucune session géolocalisée.</p>';
+      return;
+    }
+    box.innerHTML = feats.map(function (f) {
+      const p = f.properties, c = f.geometry.coordinates;
+      return '<div class="item block px-4 py-3 border-b border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800"'
+        + ' data-id="' + esc(p.id) + '" data-lng="' + c[0] + '" data-lat="' + c[1] + '">'
+        + '<span class="block text-sm font-medium text-font-important-light dark:text-font-important-dark">' + esc(p.name) + '</span>'
+        + '<span class="block text-xs text-base-500">' + esc(p.water_entity || '—')
+        + (p.day ? ' · ' + esc(p.day) : '') + '</span>'
+        + '<span class="block text-xs text-base-500">' + esc(methodLabel(p.collection_method))
+        + ' · ' + p.catch_count + ' prise(s)</span></div>';
+    }).join('');
+    box.querySelectorAll('.item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (map.isStyleLoaded()) map.flyTo({ center:[parseFloat(el.dataset.lng), parseFloat(el.dataset.lat)], zoom:13 });
+      });
+    });
+  }
+
+  function addSessions(fc) {
+    const feats = (fc && fc.features) || [];
+    // Source regroupée + rendu en COUCHES natives MapLibre (fiables, toujours
+    // affichées — plus de marqueurs HTML dépendant du timing).
+    map.addSource('sessions', { type:'geojson', data:fc, cluster:true, clusterRadius:50, clusterMaxZoom:13 });
+
+    map.addLayer({ id:'clusters', type:'circle', source:'sessions', filter:['has','point_count'],
+      paint:{ 'circle-color':'#e2725b',
+              'circle-radius':['step',['get','point_count'],18,10,24,50,30],
+              'circle-stroke-width':2, 'circle-stroke-color':'#ffffff' } });
+    map.addLayer({ id:'cluster-count', type:'symbol', source:'sessions', filter:['has','point_count'],
+      layout:{ 'text-field':['get','point_count_abbreviated'], 'text-font':['Open Sans Bold'], 'text-size':13 },
+      paint:{ 'text-color':'#ffffff' } });
+    // Point de session : pastille bleue avec un poisson (icône SVG embarquée).
+    const ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42">'
+      + '<circle cx="21" cy="21" r="15" fill="#2563eb" stroke="#ffffff" stroke-width="3"/>'
+      + '<path fill="#ffffff" d="M13 21c0-3.3 3.4-6 7.5-6 2.6 0 4.9 1.1 6.2 2.7l3.3-3.1v12.8'
+      + 'l-3.3-3.1C25.4 24 23.1 25 20.5 25 16.4 25 13 22.3 13 21z"/>'
+      + '<circle cx="17.5" cy="20" r="1.3" fill="#2563eb"/></svg>');
+    const iconImg = new Image(42, 42);
+    iconImg.onload = function () {
+      if (!map.hasImage('session-fish')) map.addImage('session-fish', iconImg);
+      if (!map.getLayer('sessions-pts')) {
+        map.addLayer({ id:'sessions-pts', type:'symbol', source:'sessions',
+          filter:['!', ['has', 'point_count']],
+          layout:{ 'icon-image':'session-fish', 'icon-size':0.8, 'icon-allow-overlap':true } });
+      }
+    };
+    iconImg.src = ICON;
+
+    // Clic pastille → zoom sur le groupe.
+    map.on('click', 'clusters', function (e) {
+      const f = map.queryRenderedFeatures(e.point, { layers:['clusters'] })[0];
+      map.getSource('sessions').getClusterExpansionZoom(f.properties.cluster_id).then(function (z) {
+        map.easeTo({ center:f.geometry.coordinates, zoom:z });
+      });
+    });
+    // Clic session → modale.
+    map.on('click', 'sessions-pts', function (e) { openModal(e.features[0].properties); });
+    const spop = new maplibregl.Popup({ closeButton:false, offset:12 });
+    map.on('mouseenter', 'sessions-pts', function (e) {
+      map.getCanvas().style.cursor = 'pointer';
+      spop.setLngLat(e.features[0].geometry.coordinates).setHTML('<strong>'+esc(e.features[0].properties.name)+'</strong>').addTo(map);
+    });
+    map.on('mouseleave', 'sessions-pts', function () { map.getCanvas().style.cursor = ''; spop.remove(); });
+    map.on('mouseenter', 'clusters', function () { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'clusters', function () { map.getCanvas().style.cursor = ''; });
+
+    // Survol du réseau hydro → infobulle (nom + type), comme côté pêcheur.
+    if (cfg.hydroTilesUrl) {
+      const hpop = new maplibregl.Popup({ closeButton:false, closeOnClick:false, offset:12, className:'hydro-hover-popup' });
+      map.on('mousemove', function (e) {
+        const fs = queryHydro(e.point);
+        if (fs.length) {
+          const f = fs[0], name = (f.properties && f.properties.name) || 'Sans nom';
+          map.getCanvas().style.cursor = 'pointer';
+          hpop.setLngLat(e.lngLat).setHTML('<div class="hydro-tip"><strong>'+esc(name)+'</strong><span>'+hydroType(f)+'</span></div>').addTo(map);
+        } else { hpop.remove(); }
+      });
+      // Clic sur un cours d'eau / plan d'eau → infobulle persistante (nom + type).
+      map.on('click', function (e) {
+        const fs = queryHydro(e.point);
+        if (!fs.length) return;
+        const f = fs[0], name = (f.properties && f.properties.name) || 'Sans nom';
+        new maplibregl.Popup({ offset:12, className:'hydro-hover-popup' }).setLngLat(e.lngLat)
+          .setHTML('<div class="hydro-tip"><strong>'+esc(name)+'</strong><span>'+hydroType(f)+'</span></div>').addTo(map);
+      });
+    }
+
+    if (feats.length) {
+      const b = new maplibregl.LngLatBounds();
+      feats.forEach(function (f) { b.extend(f.geometry.coordinates); });
+      map.fitBounds(b, { padding:60, maxZoom:12 });
+    }
+  }
+
+  // Requête hydro avec tolérance px adaptée au zoom (traits fins), reprise du front.
+  function queryHydro(pt) {
+    const present = HYDRO_LAYERS.filter(function (l) { return map.getLayer(l); });
+    if (!present.length) return [];
+    const z = map.getZoom(), tol = z < 13 ? 10 : (z < 15 ? 7 : 5);
+    return map.queryRenderedFeatures([[pt.x-tol,pt.y-tol],[pt.x+tol,pt.y+tol]], { layers:present });
+  }
+  function hydroType(f) {
+    const l = f.layer && f.layer.id;
+    if (l === 'hydro-surface') return "Plan d'eau";
+    if (l === 'hydro-river-intermittent') return "Cours d'eau intermittent";
+    return "Cours d'eau";
+  }
+})();
+</script>
+{% endblock %}

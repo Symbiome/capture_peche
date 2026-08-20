@@ -45,6 +45,8 @@ public interface UserProfileForAdmin {
 
     Optional<Integer> birthYear();
 
+    Optional<String> postalCode();
+
     boolean excludeFromExports();
 
     LocalDateTime createdOn();

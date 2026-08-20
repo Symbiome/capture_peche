@@ -153,23 +153,7 @@
               </div>
             </div>
             <div class="map">
-              <l-map :zoom="9" :center="center" :options="{
-                zoomSnap: 0.5,
-              }" style="height: 100%; width: 100%">
-                <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-
-                <l-marker v-for="l in lakes" v-bind:key="l.id" :lat-lng="asLatLng(l)">
-                  <l-popup>
-                    <div>
-                      {{ l.name }}
-                      <span v-if="catchsCountPerLakeId[l.id]">
-                        : {{ catchsCountPerLakeId[l.id] }} captures
-                      </span>
-                    </div>
-                  </l-popup>
-                </l-marker>
-              </l-map>
+              <MapLibreMarkersMap :markers="mapMarkers" :center="center" :zoom="9" />
             </div>
             <!-- // End Tab Side // -->
           </div>
@@ -352,44 +336,24 @@ import AboutService from "@/services/AboutService";
 import FeedbackService from "@/services/FeedbackService";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { latLng, LatLng, Icon } from "leaflet";
-
-type D = Icon.Default & {
-  _getIconUrl?: string;
-};
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-delete (Icon.Default.prototype as D)._getIconUrl;
-
-Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
-import "leaflet/dist/leaflet.css";
+import MapLibreMarkersMap, { MapMarker } from "@/components/common/MapLibreMarkersMap.vue";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
+import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
 
 @Component({
   components: {
-    LMap,
-    LTileLayer,
-    LMarker,
-    LPopup,
+    MapLibreMarkersMap,
     Counter,
     CommunicationsOnAboutPage,
   },
 })
 export default class AboutView extends Vue {
   @Prop({ default: false }) wrappedInTab: boolean;
-  center = latLng(46.071623, 5.890511);
+  // Centre par défaut [lng, lat] (recadré sur les marqueurs s'il y en a).
+  center: [number, number] = [5.890511, 46.071623];
 
   titleText: string =
     "est l'application smartphone pour une gestion durable de la pêche sur les plans d'eau français.";
@@ -408,7 +372,7 @@ export default class AboutView extends Vue {
   contactEmail: string = "";
   contactMessage: string = "";
 
-  projectVersion: string = import.meta.env.VITE__APP_VERSION;
+  projectVersion: string = import.meta.env.VITE__PACKAGE_JSON_VERSION;
   gitRevision: string = import.meta.env.VITE__GIT_REVISION;
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
@@ -466,9 +430,21 @@ export default class AboutView extends Vue {
     });
   }
 
-  asLatLng(lake: Lake): LatLng {
-    let result = latLng(lake.latitude, lake.longitude);
-    return result;
+  get mapMarkers(): MapMarker[] {
+    return (this.lakes || [])
+      .filter((l) => l.latitude != null && l.longitude != null)
+      .map((l) => {
+        const name = this.escapeHtml(l.name);
+        const count = this.catchsCountPerLakeId[l.id];
+        const html = count ? `<div>${name} : ${count} captures</div>` : `<div>${name}</div>`;
+        return { lat: l.latitude, lng: l.longitude, popupHtml: html, title: l.name };
+      });
+  }
+
+  escapeHtml(value: string): string {
+    return (value || "").replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
+    ));
   }
 
   sendContact() {

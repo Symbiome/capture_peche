@@ -36,6 +36,7 @@ import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -75,7 +76,8 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (adminToken == null) {
             return referentialDao.listWaterEntities();
         }
-        FisholaAdmin fisholaAdmin = this.checkIsAdmin();
+        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre.
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
         if (fisholaAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntities();
         } else {
@@ -93,20 +95,20 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/waterEntities/{waterEntityId}")
+    @Audited(value = "waterEntity.update", entityType = "water_entity", entityIdParam = "waterEntityId")
     public Response updateWaterEntity(@PathParam("waterEntityId") UUID waterEntityId, WaterEntity waterEntity) {
         Preconditions.checkArgument(waterEntityId != null, "Identifiant de plan d'eau obligatoire");
         Preconditions.checkArgument(waterEntityId.equals(waterEntity.getId()), NO_MATCHING_ID);
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.updateWaterEntity(waterEntity);
         return Response.noContent().build();
     }
 
+    // Retiré : les plans d'eau sont désormais gérés via la BD TOPO IGN, plus de création manuelle (#88).
     @POST
     @Path("/waterEntities")
-    public Response createWaterEntity(WaterEntity waterEntity) {
-        checkIsAdmin();
-        referentialDao.createWaterEntity(waterEntity);
-        return Response.noContent().build();
+    public Response createWaterEntity() {
+        return Response.status(Response.Status.GONE).build();
     }
 
     @GET
@@ -118,18 +120,20 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/techniques/{techniqueId}")
+    @Audited(value = "technique.update", entityType = "technique", entityIdParam = "techniqueId")
     public Response updateTechnique(@PathParam("techniqueId") UUID techniqueId, Technique technique) {
         Preconditions.checkArgument(techniqueId != null, "Identifiant de technique obligatoire");
         Preconditions.checkArgument(techniqueId.equals(technique.getId()), NO_MATCHING_ID);
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.updateTechnique(technique);
         return Response.noContent().build();
     }
 
     @POST
     @Path("/techniques")
+    @Audited(value = "technique.create", entityType = "technique")
     public Response createTechnique(Technique technique) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.createTechnique(technique);
         return Response.noContent().build();
     }
@@ -143,8 +147,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @DELETE
     @Path("/techniques/{techniqueId}")
+    @Audited(value = "technique.delete", entityType = "technique", entityIdParam = "techniqueId")
     public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.deleteTechnique(techniqueId);
         return Response.noContent().build();
     }
@@ -158,18 +163,20 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/raw-species/{speciesId}")
+    @Audited(value = "species.update", entityType = "species", entityIdParam = "speciesId")
     public Response updateSpecie(@PathParam("speciesId") UUID speciesId, Species species) {
         Preconditions.checkArgument(speciesId != null, "Identifiant d'espèce obligatoire");
         Preconditions.checkArgument(speciesId.equals(species.getId()), NO_MATCHING_ID);
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.updateSpecies(species);
         return Response.noContent().build();
     }
 
     @POST
     @Path("/raw-species")
+    @Audited(value = "species.create", entityType = "species")
     public Response createSpecie( Species species) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.createSpecie(species);
         return Response.noContent().build();
     }
@@ -183,8 +190,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @DELETE
     @Path("/raw-species/{speciesId}")
+    @Audited(value = "species.delete", entityType = "species", entityIdParam = "speciesId")
     public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.deleteSpecie(speciesId);
         return Response.noContent().build();
     }
@@ -268,6 +276,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/species-aliases-per-waterEntity")
+    @Audited(value = "speciesAliases.save", entityType = "species_aliases_per_water_entity")
     public Response saveSpeciesAliasesPerWaterEntity(SpeciesAliasesPerWaterEntityBean salp) {
         checkIsAdmin();
 
@@ -351,6 +360,7 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/authorized-samples")
+    @Audited(value = "authorizedSamples.save", entityType = "authorized_samples")
     public Response saveAuthorizedSamples(AuthorizedSamplesModificationBean authorizedSamples) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
@@ -459,8 +469,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @PUT
     @Path("/weathers/{weatherId}")
+    @Audited(value = "weather.update", entityType = "weather", entityIdParam = "weatherId")
     public Response updateWeather(@PathParam("weatherId") UUID weatherId, Weather weather) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Preconditions.checkArgument(weather != null, "Identifiant de météo obligatoire");
         Preconditions.checkArgument(weatherId.equals(weather.getId()), NO_MATCHING_ID);
         referentialDao.updateWeather(weather);
@@ -469,16 +480,18 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @POST
     @Path("/weathers")
+    @Audited(value = "weather.create", entityType = "weather")
     public Response createWeather(Weather weather) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.createWeather(weather);
         return Response.noContent().build();
     }
 
     @DELETE
     @Path("/weathers/{weatherId}")
+    @Audited(value = "weather.delete", entityType = "weather", entityIdParam = "weatherId")
     public Response deleteWeather(@PathParam("weatherId") UUID weatherId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         referentialDao.deleteWeather(weatherId);
         return Response.noContent().build();
     }

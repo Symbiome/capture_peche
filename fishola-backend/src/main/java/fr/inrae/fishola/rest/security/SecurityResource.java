@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jooq.exception.DataAccessException;
 
 import java.net.URI;
+import java.time.Year;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +59,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
@@ -70,6 +72,9 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     private static final String CLAIM_PSEUDO = "pseudo";
     private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
     private static final String CLAIM_SHARE_TRIPS = "share_trips";
+    private static final String CLAIM_POSTAL_CODE = "postalCode";
+    private static final String CLAIM_BIRTH_YEAR = "birthYear";
+    private static final Pattern POSTAL_CODE_PATTERN = Pattern.compile("^\\d{5}$");
 
     @Inject
     protected TripsDao tripsDao;
@@ -111,6 +116,16 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         Optional<String> passwordError = validatePassword(bean.password);
         passwordError.ifPresent(error -> validationErrors.put("password", error));
 
+        if (StringUtils.isEmpty(bean.postalCode) || !POSTAL_CODE_PATTERN.matcher(bean.postalCode).matches()) {
+            validationErrors.put(CLAIM_POSTAL_CODE, "Le code postal est obligatoire et doit comporter 5 chiffres");
+        }
+
+        int minBirthYear = 1900;
+        int maxBirthYear = Year.now().getValue() - 6;
+        if (bean.birthYear == null || bean.birthYear < minBirthYear || bean.birthYear > maxBirthYear) {
+            validationErrors.put(CLAIM_BIRTH_YEAR, "L'année de naissance est obligatoire et doit être comprise entre %d et %d".formatted(minBirthYear, maxBirthYear));
+        }
+
         if (!validationErrors.isEmpty()) {
             Response response = Response
                     .status(Response.Status.BAD_REQUEST)
@@ -129,6 +144,8 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         claims.put(CLAIM_RECEIVE_MAIL_NOTIFICATIONS, ""+ bean.acceptsMailNotifications);
         claims.put(CLAIM_SHARE_TRIPS, ""+ bean.acceptsShareTrips);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
+        claims.put(CLAIM_POSTAL_CODE, bean.postalCode);
+        claims.put(CLAIM_BIRTH_YEAR, ""+ bean.birthYear);
 
         String token = jwtHelper.createCustomToken("register", 1, claims);
 
@@ -218,7 +235,9 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS)),
-                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_SHARE_TRIPS))
+                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_SHARE_TRIPS)),
+                    getClaimOrFail.apply(CLAIM_POSTAL_CODE),
+                    Integer.parseInt(getClaimOrFail.apply(CLAIM_BIRTH_YEAR))
             );
 
             return true;
@@ -613,6 +632,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                 .firstName(input.getFirstName())
                 .lastName(Optional.ofNullable(input.getLastName()))
                 .birthYear(Optional.ofNullable(input.getBirthYear()))
+                .postalCode(Optional.ofNullable(input.getPostalCode()))
                 .gender(Optional.ofNullable(input.getGender()))
                 .excludeFromExports(input.getExcludeFromExports())
                 .createdOn(input.getCreatedOn())
@@ -625,7 +645,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @GET
     @Path("/users")
     public List<UserProfileForAdmin> listUsers() {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         // TODO AThimel 07/07/2020 Pagination
         List<FisholaUser> users = usersDao.findAll();
         List<UserProfileForAdmin> result = users.stream()
@@ -637,7 +657,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @PUT
     @Path("/users/{userId}")
     public Response updateUser(@PathParam("userId") UUID userId, UserProfileForAdmin user) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Preconditions.checkArgument(userId.equals(user.id()), "L'identifiant ne correspond pas");
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
@@ -652,7 +672,7 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @DELETE
     @Path("/users/{userId}")
     public Response deleteUser(@PathParam("userId") UUID userId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Optional<FisholaUser> optional = usersDao.findById(userId);
         NotFoundException.check(optional.isPresent(), "L'utilisateur n'existe pas : " + userId);
         FisholaUser existingUser = optional.get();

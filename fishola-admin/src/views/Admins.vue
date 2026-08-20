@@ -46,7 +46,7 @@ loadLakes();
 async function loadLakes() {
   const admin = await BackendService.backendGet("/v1/admin/check");
   canCreateAdmins.value = admin.isNationalAdmin || admin.canCreateAdmins;
-  const lakes = await BackendService.backendGet("/v1/referential/lakes");
+  const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
   const lakesOptions: any[] = [];
   lakes.forEach((l: any) => {
     lakesOptions.push({
@@ -85,13 +85,14 @@ async function loadLakes() {
       },
     },
     {
-      field: "lakeIds",
+      // Le backend (RegisterAdminBean / AdminProfileForAdmin) lit et renvoie « waterEntityIds ».
+      field: "waterEntityIds",
       label: "Plans d'eau",
       isArray: true,
       visible: false,
       arrayOptions: lakesOptions,
       possibleValuesForItemFunction: (admin) => {
-        return admin.lakeIds ?? [];
+        return admin.waterEntityIds ?? [];
       },
     },
     {
@@ -122,7 +123,7 @@ function computeLakeNames(admins: any[]) {
   admins.forEach(admin => {
     admin.lakeNames = admin.isNationalAdmin ?
       "National" :
-      admin.lakeIds.map((lakeId: string) => lakesIdToNameMap.value.get(lakeId)).join(", ");
+      (admin.waterEntityIds ?? []).map((waterEntityId: string) => lakesIdToNameMap.value.get(waterEntityId)).join(", ");
   });
 }
 
@@ -132,7 +133,7 @@ function createAdmin(): any {
     email: "",
     password: "",
     isNationalAdmin: false,
-    lakeIds: []
+    waterEntityIds: []
   };
 }
 </script>

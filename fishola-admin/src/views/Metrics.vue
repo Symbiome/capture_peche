@@ -87,24 +87,6 @@
           :default-sort="['lac', 'asc']"
         />
 
-        <h2 class="metrics-title">
-          Nombre de captures par plan d'eau et par an
-          <b-button
-            type="is-primary"
-            @click="
-              exportAsCSV(
-                'captures',
-                catchesPerLakeColumns,
-                metrics.catchesPerLake
-              )
-              "
-          >Exporter en csv</b-button>
-        </h2>
-        <b-table
-          :data="metrics.catchesPerLake"
-          :columns="catchesPerLakeColumns"
-          :default-sort="['lac', 'asc']"
-        />
         <h2
           class="metrics-title"
           v-if="loggedAdmin.isNationalAdmin"
@@ -148,7 +130,6 @@ const metrics = ref({
   activeUsersPerYear: [],
   userRegistrationsPerYear: [],
   tripsPerLake: [],
-  catchesPerLake: [],
   automaticMeasuresPerLake: []
 });
 const activeUsersColumns = [
@@ -164,11 +145,6 @@ const tripsPerLakeColumns = [
   { field: "annee", label: "Année", sortable: true, searchable: true },
   { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
   { field: "total", label: "Nombre de sorties", sortable: true }
-];
-const catchesPerLakeColumns = [
-  { field: "annee", label: "Année", sortable: true, searchable: true },
-  { field: "lac", label: "Plan d'eau", sortable: true, searchable: true },
-  { field: "total", label: "Nombres de prises", sortable: true }
 ];
 const automaticMeasuresPerLakeColumns = [
   { field: "annee", label: "Année", sortable: true, searchable: true },
@@ -218,11 +194,6 @@ function exportAllAsCSV() {
     columns,
     metrics.value.tripsPerLake,
     "Nombre de sorties par plan d'eau et par an"
-  );
-  csvContent += getCSVRows(
-    columns,
-    metrics.value.catchesPerLake,
-    "Nombre de captures par plan d'eau et par an "
   );
   if (loggedAdmin.value.isNationalAdmin) {
     csvContent += getCSVRows(

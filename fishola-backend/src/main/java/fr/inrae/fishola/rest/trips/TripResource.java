@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import fr.inrae.fishola.database.CatchsDao;
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
@@ -38,6 +39,7 @@ import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -98,6 +100,9 @@ public class TripResource extends AbstractFisholaResource {
     @Inject
     protected CatchsDao catchsDao;
 
+    @Inject
+    protected HydroSearchDao hydroSearchDao;
+
     @GET
     @Path("/")
     public Response getMyTrips(@QueryParam("pageNumber") int pageNumber,
@@ -129,17 +134,13 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = trip.getId();
         int catchsCount = catchsDao.countCatchs(tripId);
 
-        LocalDate date = trip.getDay();
-        LocalDateTime startTime = LocalDateTime.of(date, trip.getStartTime());
-        LocalDateTime endTime = LocalDateTime.of(date, trip.getEndTime());
-        if (endTime.isBefore(startTime)) {
-            endTime = endTime.plusDays(1);
-        }
-        long durationInSeconds = Duration.between(startTime, endTime).toSeconds();
+        LocalDateTime beginTimestamp = trip.getBeginTimestamp();
+        LocalDateTime endTimestamp = trip.getEndTimestamp();
+        long durationInSeconds = Duration.between(beginTimestamp, endTimestamp).toSeconds();
 
         ImmutableTripLight.Builder builder = ImmutableTripLight.builder()
                 .catchsCount(catchsCount)
-                .date(date)
+                .date(beginTimestamp.toLocalDate())
                 .id(tripId)
                 .waterEntityId(trip.getWaterEntityId())
                 .name(trip.getName())
@@ -196,9 +197,13 @@ public class TripResource extends AbstractFisholaResource {
 
         Trip entity = new Trip();
         entity.setCreatedOn(LocalDateTime.now());
-        entity.setDay(trip.date);
-        entity.setStartTime(LocalTime.parse(trip.startedAt));
-        entity.setEndTime(LocalTime.parse(trip.finishedAt));
+        LocalDateTime beginTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.startedAt));
+        LocalDateTime endTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.finishedAt));
+        if (endTimestamp.isBefore(beginTimestamp)) {
+            endTimestamp = endTimestamp.plusDays(1);
+        }
+        entity.setBeginTimestamp(beginTimestamp);
+        entity.setEndTimestamp(endTimestamp);
         entity.setWaterEntityId(trip.waterEntityId);
         entity.setName(trip.name);
         entity.setType(trip.type);
@@ -219,6 +224,17 @@ public class TripResource extends AbstractFisholaResource {
         UUID tripId = tripsDao.create(entity);
         if (beginWkt != null || endWkt != null) {
             tripsDao.updatePositions(tripId, beginWkt, endWkt);
+        }
+        // Validation hydrographique (#9) : quand la sortie est saisie sur la carte
+        // (point de départ fourni), le serveur recalcule l'attribution pour
+        // l'entité choisie — point projeté, tronçon, CONFIRMED/OVERRIDDEN — sans
+        // faire confiance au client. Sortie sans position : champs hydro NULL.
+        if (beginWkt != null && trip.waterEntityId != null) {
+            hydroSearchDao.computeTripAttribution(
+                    trip.beginLatitude.get(), trip.beginLongitude.get(), trip.waterEntityId)
+                    .ifPresent(attr -> tripsDao.updateHydroAttribution(tripId,
+                            toWktPoint(attr.snappedLng(), attr.snappedLat()),
+                            attr.riverSectionId(), attr.hydroValidation()));
         }
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
@@ -244,7 +260,7 @@ public class TripResource extends AbstractFisholaResource {
                 log.tracef("Détails de la capture : %s", aCatch);
             }
 
-            UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch);
+            UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch, beginTimestamp, endTimestamp);
             replacements.put(aCatch.id, catchId);
             if (log.isDebugEnabled()) {
                 log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -300,9 +316,13 @@ public class TripResource extends AbstractFisholaResource {
         }
         AccessDeniedException.check(stillModifiable, "Il n'est plus possible de modifier la sortie");
 
-        existingTrip.setDay(trip.date);
-        existingTrip.setStartTime(LocalTime.parse(trip.startedAt));
-        existingTrip.setEndTime(LocalTime.parse(trip.finishedAt));
+        LocalDateTime beginTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.startedAt));
+        LocalDateTime endTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.finishedAt));
+        if (endTimestamp.isBefore(beginTimestamp)) {
+            endTimestamp = endTimestamp.plusDays(1);
+        }
+        existingTrip.setBeginTimestamp(beginTimestamp);
+        existingTrip.setEndTimestamp(endTimestamp);
         existingTrip.setWaterEntityId(trip.waterEntityId);
         existingTrip.setName(trip.name);
         existingTrip.setType(trip.type);
@@ -313,6 +333,21 @@ public class TripResource extends AbstractFisholaResource {
         // On ne met pas à jour les coordonnées de début/fin de sortie car ce n'est pas modifiable dans l'application
 
         tripsDao.updateTrip(existingTrip);
+
+        // Validation hydrographique (#9) : le point de départ ne change pas, mais
+        // l'entité rattachée peut être corrigée au PUT — on recalcule l'attribution
+        // pour ne pas laisser snapped_position / river_section_id / hydro_validation
+        // pointer sur l'ancienne entité (mise à NULL si trop loin pour un snap).
+        Double beginLat = existingTrip.getBeginLatitude();
+        Double beginLng = existingTrip.getBeginLongitude();
+        if (beginLat != null && beginLng != null && trip.waterEntityId != null) {
+            hydroSearchDao.computeTripAttribution(beginLat, beginLng, trip.waterEntityId)
+                    .ifPresentOrElse(
+                            attr -> tripsDao.updateHydroAttribution(tripId,
+                                    toWktPoint(attr.snappedLng(), attr.snappedLat()),
+                                    attr.riverSectionId(), attr.hydroValidation()),
+                            () -> tripsDao.clearHydroAttribution(tripId));
+        }
 
         if (log.isDebugEnabled()) {
             log.debugf("Sortie mise à jour : %s", tripId);
@@ -334,7 +369,8 @@ public class TripResource extends AbstractFisholaResource {
 
         Set<UUID> updatedCatchsIds = new LinkedHashSet<>();
         Collection<CatchBean> incomingCatchBeans = CollectionUtils.emptyIfNull(trip.catchs);
-        updateAndCreateFromIncomingCatchBeans(tripId, trip, incomingCatchBeans, existingCatchsIndex, updatedCatchsIds, replacements);
+        updateAndCreateFromIncomingCatchBeans(tripId, trip, incomingCatchBeans, existingCatchsIndex, updatedCatchsIds,
+                replacements, beginTimestamp, endTimestamp);
 
         Sets.SetView<UUID> toDeleteCatchsIds = Sets.difference(existingCatchsIndex.keySet(), updatedCatchsIds);
         toDeleteCatchsIds.forEach(catchId -> {
@@ -361,7 +397,7 @@ public class TripResource extends AbstractFisholaResource {
         return response;
     }
 
-    private void updateAndCreateFromIncomingCatchBeans(UUID tripId, TripBean trip, Collection<CatchBean> incomingCatchBeans, ImmutableMap<UUID, Catch> existingCatchsIndex, Set<UUID> updatedCatchsIds, Map<String, UUID> replacements) {
+    private void updateAndCreateFromIncomingCatchBeans(UUID tripId, TripBean trip, Collection<CatchBean> incomingCatchBeans, ImmutableMap<UUID, Catch> existingCatchsIndex, Set<UUID> updatedCatchsIds, Map<String, UUID> replacements, LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
         for (CatchBean aCatch : incomingCatchBeans) {
 
             if (log.isTraceEnabled()) {
@@ -371,13 +407,13 @@ public class TripResource extends AbstractFisholaResource {
             Optional<UUID> parsedCatchId = tryToParseUUID(aCatch.id);
             if (parsedCatchId.isPresent() && existingCatchsIndex.containsKey(parsedCatchId.get())) {
                 Catch existingCatch = existingCatchsIndex.get(parsedCatchId.get());
-                updateCatch(trip.waterEntityId, existingCatch, aCatch);
+                updateCatch(trip.waterEntityId, existingCatch, aCatch, tripBeginTimestamp, tripEndTimestamp);
                 updatedCatchsIds.add(parsedCatchId.get());
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture mise à jour : %s", parsedCatchId.get());
                 }
             } else {
-                UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch);
+                UUID catchId = createCatch(trip.waterEntityId, tripId, aCatch, tripBeginTimestamp, tripEndTimestamp);
                 replacements.put(aCatch.id, catchId);
                 if (log.isDebugEnabled()) {
                     log.debugf("Capture créée : %s -> %s", aCatch.id, catchId);
@@ -431,11 +467,13 @@ public class TripResource extends AbstractFisholaResource {
         }
     }
 
-    protected UUID createCatch(UUID waterEntityId, UUID tripId, CatchBean aCatch) {
+    protected UUID createCatch(UUID waterEntityId, UUID tripId, CatchBean aCatch,
+                               LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(LocalDateTime.now());
-        aCatch.caughtAt.map(LocalTime::parse).ifPresent(catchPojo::setCatchTime);
+        LocalTime catchTime = aCatch.caughtAt.map(LocalTime::parse).orElse(null);
+        catchPojo.setCatchTimestamp(resolveCatchTimestamp(catchTime, tripBeginTimestamp, tripEndTimestamp));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
@@ -470,9 +508,11 @@ public class TripResource extends AbstractFisholaResource {
         return catchId;
     }
 
-    protected void updateCatch(UUID waterEntityId, Catch existingCatch, CatchBean aCatch) {
+    protected void updateCatch(UUID waterEntityId, Catch existingCatch, CatchBean aCatch,
+                               LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
 
-        existingCatch.setCatchTime(aCatch.caughtAt.map(LocalTime::parse).orElse(null));
+        LocalTime catchTime = aCatch.caughtAt.map(LocalTime::parse).orElse(null);
+        existingCatch.setCatchTimestamp(resolveCatchTimestamp(catchTime, tripBeginTimestamp, tripEndTimestamp));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
@@ -540,8 +580,9 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/export")
     @Produces("text/csv")
+    @Audited("trip.export")
     public Response getTripsCSV() {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         String csv = tripsDao.getTripsCSV();
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
@@ -554,13 +595,14 @@ public class TripResource extends AbstractFisholaResource {
 
     @GET
     @Path("/export/{pageOffset}/{sortField}/{sortDirection}")
+    @Audited("trip.export")
     public PaginatedExportBean getExportPaginated(
             @PathParam("pageOffset") Integer pageOffset,
             @PathParam("sortField") String sortField,
             @PathParam("sortDirection") String sortDirection,
             @Context UriInfo uriInfo
     ) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection, queryParameters);
         return result;
@@ -569,7 +611,7 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/catches/{catchId}")
     public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         Trip trip = tripsDao.getTrip(aCatch.getTripId());
@@ -583,8 +625,9 @@ public class TripResource extends AbstractFisholaResource {
     @Path("/catches/{catchId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
-        checkIsAdmin();
+        checkIsNationalAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         if (updatedCatch.editedSize.isPresent()) {
@@ -631,6 +674,25 @@ public class TripResource extends AbstractFisholaResource {
         return "POINT(" + longitude + " " + latitude + ")";
     }
 
+    // Une capture ne porte qu'une heure, jamais un jour : on la rattache au jour
+    // de début de la sortie, ou au lendemain si c'est la seule façon de la faire
+    // tomber dans la fenêtre [début, fin] de la sortie (capture après minuit sur
+    // une sortie à cheval sur minuit). Même règle que le backfill de V1.5.0.
+    private static LocalDateTime resolveCatchTimestamp(LocalTime catchTime, LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
+        if (catchTime == null) {
+            return null;
+        }
+        LocalDateTime sameDay = LocalDateTime.of(tripBeginTimestamp.toLocalDate(), catchTime);
+        if (!sameDay.isBefore(tripBeginTimestamp) && !sameDay.isAfter(tripEndTimestamp)) {
+            return sameDay;
+        }
+        LocalDateTime nextDay = sameDay.plusDays(1);
+        if (!nextDay.isBefore(tripBeginTimestamp) && !nextDay.isAfter(tripEndTimestamp)) {
+            return nextDay;
+        }
+        return sameDay;
+    }
+
     public static CatchBean toCatchBean(Catch aCatch,
                                         ListMultimap<UUID, Integer> catchsWithPictures,
                                         Set<UUID> catchsWithMeasurementPicture) {
@@ -646,7 +708,7 @@ public class TripResource extends AbstractFisholaResource {
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
-        result.caughtAt = Optional.ofNullable(aCatch.getCatchTime()).map(t -> t.format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES)));
+        result.caughtAt = Optional.ofNullable(aCatch.getCatchTimestamp()).map(t -> t.toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES)));
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
         List<Integer> pictureIndexes = catchsWithPictures != null ? catchsWithPictures.get(catchId) : new ArrayList<>();
@@ -669,9 +731,19 @@ public class TripResource extends AbstractFisholaResource {
         result.mode = entity.getMode();
         result.type = entity.getType();
         result.waterEntityId = entity.getWaterEntityId();
-        result.date = entity.getDay();
-        result.startedAt = entity.getStartTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
-        result.finishedAt = entity.getEndTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
+        // Points GPS de début/fin de sortie (#86) — champs NULL pour les sorties sans position.
+        result.beginLatitude = Optional.ofNullable(entity.getBeginLatitude());
+        result.beginLongitude = Optional.ofNullable(entity.getBeginLongitude());
+        result.endLatitude = Optional.ofNullable(entity.getEndLatitude());
+        result.endLongitude = Optional.ofNullable(entity.getEndLongitude());
+        // Attribution hydrographique (#9) — champs NULL pour les sorties sans position.
+        result.riverSectionId = Optional.ofNullable(entity.getRiverSectionId());
+        result.snappedLatitude = Optional.ofNullable(entity.getSnappedLatitude());
+        result.snappedLongitude = Optional.ofNullable(entity.getSnappedLongitude());
+        result.hydroValidation = Optional.ofNullable(entity.getHydroValidation());
+        result.date = entity.getBeginTimestamp().toLocalDate();
+        result.startedAt = entity.getBeginTimestamp().toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
+        result.finishedAt = entity.getEndTimestamp().toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.weatherId = Optional.ofNullable(entity.getWeatherId());
 
         result.speciesIds = tripsDao.getTripSpecies(tripId);

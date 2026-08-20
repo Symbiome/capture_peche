@@ -1,0 +1,474 @@
+package fr.inrae.fishola.database;
+
+/*-
+ * #%L
+ * Fishola :: Backend
+ * %%
+ * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
+import fr.inrae.fishola.rest.commune.CommuneResult;
+import fr.inrae.fishola.rest.commune.ImmutableCommuneResult;
+import fr.inrae.fishola.rest.hydro.ImmutableGeoPoint;
+import fr.inrae.fishola.rest.hydro.ImmutableNearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.ImmutableWaterEntityAttribution;
+import fr.inrae.fishola.rest.hydro.ImmutableWaterEntitySearchResult;
+import fr.inrae.fishola.rest.hydro.NearbyWaterEntity;
+import fr.inrae.fishola.rest.hydro.WaterEntityAttribution;
+import fr.inrae.fishola.rest.hydro.WaterEntitySearchResult;
+import jakarta.inject.Singleton;
+import org.jooq.Record;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Spatial searches over the hydrographic network. Queries the fine geometries
+ * ({@code river_section} lines, {@code water_surface} polygons) rather than the
+ * water entity centroid, since a river centroid is often kilometres away from
+ * the angler.
+ */
+@Singleton
+public class HydroSearchDao extends AbstractFisholaDao {
+
+    // Nearby search: candidate river sections and water surfaces within the
+    // metric radius, aggregated to the closest one per water entity (DISTINCT ON
+    // ... ORDER BY dist), joined to water_entity for name/kind, ordered by
+    // distance, paged. The ST_DWithin(geom::geography, ...) filters are index-
+    // accelerated by the functional geography GIST indexes added in V1.1.0, and
+    // exact in metres (no latitude approximation). Bind order: lng, lat,
+    // radiusM, radiusM, kind, kind, limit, offset.
+    private static final String NEARBY_SQL = ""
+            + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
+            + "candidates AS ( "
+            + "  SELECT rs.water_entity_id AS weid, "
+            + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, pt.g) AS cp, "
+            + "         rs.persistent AS persistent "
+            + "  FROM river_section rs, pt "
+            + "  WHERE ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT ws.water_entity_id, "
+            + "         ST_Distance(ws.geom::geography, pt.g::geography), "
+            + "         ST_ClosestPoint(ws.geom, pt.g), "
+            + "         NULL::boolean "
+            + "  FROM water_surface ws, pt "
+            + "  WHERE ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + "), "
+            + "ranked AS ( "
+            + "  SELECT DISTINCT ON (weid) weid, dist, "
+            + "         ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, persistent "
+            + "  FROM candidates WHERE weid IS NOT NULL "
+            + "  ORDER BY weid, dist "
+            + ") "
+            + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
+            + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
+            + "       r.persistent AS persistent "
+            + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            + "WHERE (?::text IS NULL OR we.kind::text = ?) "
+            + "ORDER BY r.dist "
+            + "LIMIT ? OFFSET ?";
+
+    /**
+     * Water entities whose fine geometry lies within {@code radiusM} metres of
+     * the point, ordered by ascending distance.
+     *
+     * @param lat     latitude of the queried point (WGS 84)
+     * @param lng     longitude of the queried point (WGS 84)
+     * @param radiusM search radius in metres
+     * @param kind    optional filter on the entity kind (STILL / FLOWING)
+     * @param limit   page size
+     * @param offset  page offset (rows to skip)
+     */
+    public List<NearbyWaterEntity> nearby(double lat, double lng, double radiusM,
+                                          Optional<String> kind, int limit, int offset) {
+        String kindFilter = kind.orElse(null);
+        return withContext(context -> context
+                .fetch(NEARBY_SQL, lng, lat, radiusM, radiusM, kindFilter, kindFilter, limit, offset)
+                .map(HydroSearchDao::toNearby));
+    }
+
+    // Accent-insensitive, typo-tolerant name search: a substring match
+    // (ILIKE '%q%') OR a trigram-similar match (%), both on f_unaccent(name) so
+    // they use the functional GIN index (V1.1.2). Prefix matches rank first,
+    // then similarity. Bind order: q (ILIKE where), q (% where), q (prefix
+    // order), q (similarity order), limit.
+    private static final String SEARCH_COMMUNES_SQL = ""
+            + "SELECT insee_com, name, latitude, longitude "
+            + "FROM commune "
+            + "WHERE f_unaccent(name) ILIKE '%' || f_unaccent(?) || '%' "
+            + "   OR f_unaccent(name) % f_unaccent(?) "
+            + "ORDER BY (f_unaccent(name) ILIKE f_unaccent(?) || '%') DESC, "
+            + "         similarity(f_unaccent(name), f_unaccent(?)) DESC, name "
+            + "LIMIT ?";
+
+    /**
+     * Communes matching the textual query (accent-insensitive, typo-tolerant),
+     * prefix matches first then by descending trigram similarity.
+     */
+    public List<CommuneResult> searchCommunes(String query, int limit) {
+        String q = forSearch(query);
+        return withContext(context -> context
+                .fetch(SEARCH_COMMUNES_SQL, q, q, q, q, limit)
+                .map(rec -> (CommuneResult) ImmutableCommuneResult.builder()
+                        .insee(rec.get("insee_com", String.class))
+                        .name(rec.get("name", String.class))
+                        .centroid(ImmutableGeoPoint.builder()
+                                .lat(rec.get("latitude", Double.class))
+                                .lng(rec.get("longitude", Double.class))
+                                .build())
+                        .build()));
+    }
+
+    // Water entity name search, accent-insensitive and typo-tolerant (same
+    // strategy as communes), with an optional kind filter and only entities that
+    // have a geometry (so a centroid is available). Bind order: q (ILIKE where),
+    // q (% where), kind, kind, q (prefix order), q (similarity order), limit.
+    private static final String SEARCH_ENTITIES_SQL = ""
+            + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "FROM water_entity we "
+            // Commune contenant le centroïde de l'entité (#6/#15, désambiguïsation
+            // des homonymes) ; NULL si le référentiel commune ne couvre pas la zone.
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT c.name, c.code_postal FROM commune c "
+            + "  WHERE ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
+            + "WHERE we.geom IS NOT NULL "
+            + "  AND (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
+            + "       OR f_unaccent(we.name) % f_unaccent(?)) "
+            + "  AND (?::text IS NULL OR we.kind::text = ?) "
+            + "ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(?) || '%') DESC, "
+            + "         similarity(f_unaccent(we.name), f_unaccent(?)) DESC, we.name "
+            + "LIMIT ?";
+
+    // Résolution commune/CP d'une entité par son id (#15, « résolution
+    // universelle »). Même LATERAL join que la recherche, mais ciblé sur un id :
+    // sert à afficher la commune quand l'entité est choisie hors recherche
+    // (tap carte, mode liste). On exige lat/lng non nuls (centroïde requis par
+    // le bean, et une entité tapable/proche a toujours une géométrie).
+    private static final String FIND_BY_ID_SQL = ""
+            + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "FROM water_entity we "
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT c.name, c.code_postal FROM commune c "
+            + "  WHERE ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
+            + "WHERE we.id = ? "
+            + "  AND we.latitude IS NOT NULL AND we.longitude IS NOT NULL "
+            + "LIMIT 1";
+
+    /**
+     * Resolves a single water entity by id, enriched with its commune and postal
+     * code (#15). Empty if the id is unknown or the entity has no centroid.
+     */
+    public Optional<WaterEntitySearchResult> findById(UUID id) {
+        return withContext(context -> context
+                .fetch(FIND_BY_ID_SQL, id)
+                .map(HydroSearchDao::toSearchResult))
+                .stream().findFirst();
+    }
+
+    private static WaterEntitySearchResult toSearchResult(Record rec) {
+        return ImmutableWaterEntitySearchResult.builder()
+                .waterEntityId(rec.get("id", UUID.class))
+                .name(rec.get("name", String.class))
+                .kind(rec.get("kind", String.class))
+                .centroid(ImmutableGeoPoint.builder()
+                        .lat(rec.get("latitude", Double.class))
+                        .lng(rec.get("longitude", Double.class))
+                        .build())
+                .commune(Optional.ofNullable(rec.get("commune", String.class)))
+                .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
+                .build();
+    }
+
+    /**
+     * Water entities matching the textual query (accent-insensitive, typo-
+     * tolerant), optionally filtered by kind, prefix matches first then by
+     * descending trigram similarity.
+     */
+    public List<WaterEntitySearchResult> searchWaterEntities(String query, Optional<String> kind, int limit) {
+        String q = forSearch(query);
+        String kindFilter = kind.orElse(null);
+        return withContext(context -> context
+                .fetch(SEARCH_ENTITIES_SQL, q, q, kindFilter, kindFilter, q, q, limit)
+                .map(rec -> (WaterEntitySearchResult) ImmutableWaterEntitySearchResult.builder()
+                        .waterEntityId(rec.get("id", UUID.class))
+                        .name(rec.get("name", String.class))
+                        .kind(rec.get("kind", String.class))
+                        .centroid(ImmutableGeoPoint.builder()
+                                .lat(rec.get("latitude", Double.class))
+                                .lng(rec.get("longitude", Double.class))
+                                .build())
+                        .commune(Optional.ofNullable(rec.get("commune", String.class)))
+                        .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
+                        .build()));
+    }
+
+    // Water entities intersecting a commune (or within `bufferM` of its boundary,
+    // for anglers near the commune edge), closest section/surface per entity,
+    // distance/closest point computed against the commune centroid for ordering.
+    // Bind order: insee, bufferM (river), bufferM (surface).
+    private static final String BY_COMMUNE_SQL = ""
+            + "WITH c AS (SELECT geom, ST_Centroid(geom) AS ctr FROM commune WHERE insee_com = ?), "
+            + "candidates AS ( "
+            + "  SELECT rs.water_entity_id AS weid, "
+            + "         ST_Distance(rs.geom::geography, c.ctr::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, c.ctr) AS cp, "
+            + "         rs.persistent AS persistent "
+            + "  FROM river_section rs, c "
+            + "  WHERE ST_DWithin(rs.geom::geography, c.geom::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT ws.water_entity_id, "
+            + "         ST_Distance(ws.geom::geography, c.ctr::geography), "
+            + "         ST_ClosestPoint(ws.geom, c.ctr), "
+            + "         NULL::boolean "
+            + "  FROM water_surface ws, c "
+            + "  WHERE ST_DWithin(ws.geom::geography, c.geom::geography, ?) "
+            + "), "
+            + "ranked AS ( "
+            + "  SELECT DISTINCT ON (weid) weid, dist, "
+            + "         ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, persistent "
+            + "  FROM candidates WHERE weid IS NOT NULL "
+            + "  ORDER BY weid, dist "
+            + ") "
+            + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
+            + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
+            + "       r.persistent AS persistent "
+            + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            + "ORDER BY r.dist";
+
+    /**
+     * Water entities located in (or within {@code bufferM} of) the commune
+     * identified by its INSEE code, ordered by distance to the commune centroid.
+     */
+    public List<NearbyWaterEntity> findWaterEntitiesByCommune(String insee, double bufferM) {
+        return withContext(context -> context
+                .fetch(BY_COMMUNE_SQL, insee, bufferM, bufferM)
+                .map(HydroSearchDao::toNearby));
+    }
+
+    // Strips LIKE metacharacters (% _ \) from a user search term so it cannot
+    // inject ILIKE wildcards; entity / commune names never contain them.
+    private static String forSearch(String query) {
+        return query == null ? "" : query.replaceAll("[%_\\\\]", "");
+    }
+
+    // Mapbox Vector Tile of the hydrographic network for a slippy-map tile
+    // (z/x/y). Two layers in one tile: river_section (lines: entity id, name,
+    // persistent) and water_surface (polygons: entity id, name). PostGIS builds
+    // each layer with ST_AsMVT and the two single-layer tiles are concatenated
+    // (valid per the MVT/protobuf repeated-Layer encoding). The bounding-box
+    // prefilter is expressed in 4326 (r.geom && ST_Transform(env,4326)) so it
+    // uses the existing GIST(geom) index; ST_AsMVTGeom then works in 3857.
+    // LEFT JOIN water_entity (not INNER): most of the imported BD TOPO network
+    // has no resolved water_entity_id yet (referential linking is a separate,
+    // incomplete step), and an INNER JOIN silently dropped that majority from
+    // the tile entirely — rendering it invisible and untappable on the map.
+    // Unlinked features carry a NULL water_entity_id/name (ST_AsMVT omits NULL
+    // properties, so the client sees them as absent); the click handler already
+    // treats a missing id as a free point and routes it through the attribution
+    // flow, and the hover tooltip already falls back to "Sans nom".
+    // Bind order: z, x, y.
+    private static final String HYDRO_TILE_SQL = ""
+            + "WITH env AS (SELECT ST_TileEnvelope(?, ?, ?) AS g), "
+            + "rs AS ( "
+            + "  SELECT ST_AsMVTGeom(ST_Transform(r.geom, 3857), env.g, 4096, 64, true) AS geom, "
+            + "         r.water_entity_id::text AS water_entity_id, we.name AS name, r.persistent AS persistent "
+            + "  FROM river_section r LEFT JOIN water_entity we ON we.id = r.water_entity_id, env "
+            + "  WHERE r.geom && ST_Transform(env.g, 4326) "
+            + "), "
+            + "ws AS ( "
+            + "  SELECT ST_AsMVTGeom(ST_Transform(s.geom, 3857), env.g, 4096, 64, true) AS geom, "
+            + "         s.water_entity_id::text AS water_entity_id, we.name AS name "
+            + "  FROM water_surface s LEFT JOIN water_entity we ON we.id = s.water_entity_id, env "
+            + "  WHERE s.geom && ST_Transform(env.g, 4326) "
+            + ") "
+            + "SELECT coalesce((SELECT ST_AsMVT(rs.*, 'river_section') FROM rs WHERE geom IS NOT NULL), ''::bytea) "
+            + "    || coalesce((SELECT ST_AsMVT(ws.*, 'water_surface') FROM ws WHERE geom IS NOT NULL), ''::bytea) AS tile";
+
+    /**
+     * Mapbox Vector Tile (protobuf) of the hydro network for the given slippy-map
+     * tile. Empty (zero-length) when the tile covers no feature.
+     */
+    public byte[] getHydroTile(int z, int x, int y) {
+        return withContext(context -> {
+            Record rec = context.fetchOne(HYDRO_TILE_SQL, z, x, y);
+            byte[] tile = rec == null ? null : rec.get("tile", byte[].class);
+            return tile == null ? new byte[0] : tile;
+        });
+    }
+
+    // Shared mapping of a nearby/by-commune result row to the DTO.
+    // ----- Trip hydrographic attribution (#9) -------------------------------
+
+    // Generous fixed radius for the attribution proposal: the angler's pin is
+    // expected close to the water, but GPS drift / bank distance warrant slack.
+    private static final double ATTRIBUTION_RADIUS_M = 5000.0;
+
+    // Same spatial logic as NEARBY_SQL but (a) carries the closest river_section
+    // id (to fill trip.river_section_id), (b) no kind filter, (c) fixed radius.
+    // Bind order: lng, lat, radius, radius, limit.
+    private static final String ATTRIBUTION_SQL = ""
+            + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
+            + "candidates AS ( "
+            + "  SELECT rs.water_entity_id AS weid, rs.id AS rsid, "
+            + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, pt.g) AS cp, "
+            + "         rs.persistent AS persistent "
+            + "  FROM river_section rs, pt "
+            + "  WHERE ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT ws.water_entity_id, NULL::uuid, "
+            + "         ST_Distance(ws.geom::geography, pt.g::geography), "
+            + "         ST_ClosestPoint(ws.geom, pt.g), "
+            + "         NULL::boolean "
+            + "  FROM water_surface ws, pt "
+            + "  WHERE ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + "), "
+            + "ranked AS ( "
+            + "  SELECT DISTINCT ON (weid) weid, rsid, dist, "
+            + "         ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, persistent "
+            + "  FROM candidates WHERE weid IS NOT NULL "
+            + "  ORDER BY weid, dist "
+            + ") "
+            + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
+            + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
+            + "       r.persistent AS persistent, r.rsid AS river_section_id "
+            + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            + "ORDER BY r.dist "
+            + "LIMIT ?";
+
+    // Snap a point onto the CHOSEN entity's geometry: closest point + closest
+    // river section (null for still waters). Candidates are rows explicitly
+    // linked to the chosen entity, PLUS unlinked rows (water_entity_id IS NULL):
+    // referential linking only resolved a minority of the imported BD TOPO
+    // network (~35% of river_sections, ~6% of water_surfaces), so the segment
+    // actually under the user's tap is very often unlinked even though it is
+    // the same physical watercourse as the chosen (named) entity. Excluding a
+    // DIFFERENT entity's own linked rows keeps this safe for the OVERRIDDEN
+    // case (the user's explicit alternative choice is never overridden back
+    // onto the algorithm's top pick). Bounded by the SAME radius as the
+    // proposal (a) so the ST_DWithin is index-accelerated by the geography
+    // GIST (no France-scale seq scan), and (b) so an entity too far to be
+    // proposed is not snapped onto with an aberrant projected point — beyond
+    // the radius the trip keeps NULL hydro fields, consistent with the
+    // CONFIRMED/OVERRIDDEN decision below.
+    // Bind: lng, lat, entityId, radius, entityId, radius.
+    private static final String SNAP_FOR_ENTITY_SQL = ""
+            + "WITH pt AS (SELECT ST_SetSRID(ST_MakePoint(?, ?), 4326) AS g), "
+            + "candidates AS ( "
+            + "  SELECT rs.id AS rsid, "
+            + "         ST_Distance(rs.geom::geography, pt.g::geography) AS dist, "
+            + "         ST_ClosestPoint(rs.geom, pt.g) AS cp "
+            + "  FROM river_section rs, pt "
+            + "  WHERE (rs.water_entity_id = ? OR rs.water_entity_id IS NULL) "
+            + "    AND ST_DWithin(rs.geom::geography, pt.g::geography, ?) "
+            + "  UNION ALL "
+            + "  SELECT NULL::uuid, "
+            + "         ST_Distance(ws.geom::geography, pt.g::geography), "
+            + "         ST_ClosestPoint(ws.geom, pt.g) "
+            + "  FROM water_surface ws, pt "
+            + "  WHERE (ws.water_entity_id = ? OR ws.water_entity_id IS NULL) "
+            + "    AND ST_DWithin(ws.geom::geography, pt.g::geography, ?) "
+            + ") "
+            + "SELECT rsid, ST_Y(cp) AS cp_lat, ST_X(cp) AS cp_lng, dist "
+            + "FROM candidates ORDER BY dist LIMIT 1";
+
+    /**
+     * Closest water entities to a point (proposal + alternatives), within
+     * {@link #ATTRIBUTION_RADIUS_M}, ordered by distance. The caller takes the
+     * first as the proposal and the rest as alternatives (#9).
+     */
+    public List<WaterEntityAttribution> attribution(double lat, double lng, int limit) {
+        return withContext(context -> context
+                .fetch(ATTRIBUTION_SQL, lng, lat, ATTRIBUTION_RADIUS_M, ATTRIBUTION_RADIUS_M, limit)
+                .map(HydroSearchDao::toAttribution));
+    }
+
+    /**
+     * Server-side recompute of a trip's hydrographic attribution (#9): snaps the
+     * saved point onto the chosen entity (projected point + river section), and
+     * marks the choice CONFIRMED when the chosen entity is also the closest one,
+     * OVERRIDDEN otherwise. Empty when the chosen entity has no geometry at all
+     * (nothing to snap onto) — the trip then keeps NULL hydro fields.
+     */
+    public Optional<TripAttribution> computeTripAttribution(double lat, double lng, UUID chosenEntityId) {
+        List<EntitySnap> snaps = withContext(context -> context
+                .fetch(SNAP_FOR_ENTITY_SQL, lng, lat,
+                        chosenEntityId, ATTRIBUTION_RADIUS_M, chosenEntityId, ATTRIBUTION_RADIUS_M)
+                .map(HydroSearchDao::toEntitySnap));
+        if (snaps.isEmpty()) {
+            return Optional.empty();
+        }
+        EntitySnap snap = snaps.get(0);
+        Optional<UUID> nearest = attribution(lat, lng, 1).stream()
+                .findFirst()
+                .map(WaterEntityAttribution::waterEntityId);
+        String validation = nearest.map(chosenEntityId::equals).orElse(false)
+                ? "CONFIRMED" : "OVERRIDDEN";
+        return Optional.of(new TripAttribution(snap.lat(), snap.lng(), snap.riverSectionId(), validation));
+    }
+
+    private static WaterEntityAttribution toAttribution(Record rec) {
+        return ImmutableWaterEntityAttribution.builder()
+                .waterEntityId(rec.get("water_entity_id", UUID.class))
+                .name(rec.get("name", String.class))
+                .kind(rec.get("kind", String.class))
+                .distanceM(rec.get("distance_m", Double.class))
+                .closestPoint(ImmutableGeoPoint.builder()
+                        .lat(rec.get("cp_lat", Double.class))
+                        .lng(rec.get("cp_lng", Double.class))
+                        .build())
+                .riverSectionId(Optional.ofNullable(rec.get("river_section_id", UUID.class)))
+                .persistent(Optional.ofNullable(rec.get("persistent", Boolean.class)))
+                .build();
+    }
+
+    private static EntitySnap toEntitySnap(Record rec) {
+        return new EntitySnap(
+                rec.get("cp_lat", Double.class),
+                rec.get("cp_lng", Double.class),
+                rec.get("rsid", UUID.class));
+    }
+
+    /** A point snapped onto a chosen entity ({@code riverSectionId} null for still waters). */
+    public record EntitySnap(double lat, double lng, UUID riverSectionId) {}
+
+    /** Result of the server-side trip attribution recompute (#9). */
+    public record TripAttribution(double snappedLat, double snappedLng,
+                                  UUID riverSectionId, String hydroValidation) {}
+
+    private static NearbyWaterEntity toNearby(Record rec) {
+        return ImmutableNearbyWaterEntity.builder()
+                .waterEntityId(rec.get("water_entity_id", UUID.class))
+                .name(rec.get("name", String.class))
+                .kind(rec.get("kind", String.class))
+                .distanceM(rec.get("distance_m", Double.class))
+                .closestPoint(ImmutableGeoPoint.builder()
+                        .lat(rec.get("cp_lat", Double.class))
+                        .lng(rec.get("cp_lng", Double.class))
+                        .build())
+                .persistent(Optional.ofNullable(rec.get("persistent", Boolean.class)))
+                .build();
+    }
+}

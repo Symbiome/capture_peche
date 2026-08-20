@@ -72,6 +72,20 @@ export default defineConfig( ({mode}) => {
       },
     },
     build: {
+      // Cible de compilation explicite, tenue à la main avec .browserslistrc :
+      // esbuild ne lit PAS browserslist, les deux se règlent séparément et
+      // divergeraient sans cette note. Les versions ci-dessous sont le plancher
+      // du parc visé (cf. l'en-tête de .browserslistrc pour le raisonnement).
+      //
+      // On liste des navigateurs plutôt qu'un millésime `esNNNN` : esbuild prend
+      // l'intersection de la liste, donc « safari15 » dit exactement ce qu'on
+      // supporte, là où « es2020 » forcerait une transpilation plus basse que
+      // nécessaire sans dire pour qui.
+      //
+      // Ne répare rien : la chaîne de build transpile la SYNTAXE, elle ne
+      // polyfille jamais les méthodes natives (`RegExp.escape`, `Array.at`…).
+      // Ces appels-là restent à vérifier à la main.
+      target: ["chrome87", "edge87", "firefox78", "safari15", "ios15"],
       outDir: "target/dist-" + mode,
       rollupOptions: {
         output: {
@@ -79,8 +93,8 @@ export default defineConfig( ({mode}) => {
             if (id.includes("node_modules/vue-pdf-app")) {
               return "pdf-lib";
             }
-            if (id.includes("leaflet")) {
-              return "leaflet";
+            if (id.includes("maplibre-gl")) {
+              return "maplibre";
             }
             if (id.includes("canvas")) {
               return "canvas";

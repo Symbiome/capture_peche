@@ -8,7 +8,9 @@
     "build:demo": "vite build --mode demo",
     "build:mobile": "vite build --mode mobile",
     "build:production": "vite build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "cypress:open": "cypress open --e2e",
+    "cypress:run": "cypress run --e2e"
   },
   "dependencies": {
     "@js-joda/core": "^6.0.1",
@@ -29,6 +31,7 @@
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-standard": "^9.0.1",
     "@vue/eslint-config-typescript": "^14.7.0",
+    "cypress": "^13.6.1",
     "esbuild": "^0.28.0",
     "eslint": "^9.39.4",
     "eslint-plugin-import": "^2.32.0",

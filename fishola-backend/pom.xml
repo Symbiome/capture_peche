@@ -431,6 +431,12 @@
                         <class>fr.inrae.fishola.rest.licences.LicenceResponseBean</class>
                         <class>fr.inrae.fishola.rest.trips.CatchMarker</class>
                         <class>fr.inrae.fishola.rest.social.TripSocial</class>
+                        <class>fr.inrae.fishola.rest.hydro.NearbyWaterEntity</class>
+                        <class>fr.inrae.fishola.rest.hydro.GeoPoint</class>
+                        <class>fr.inrae.fishola.rest.hydro.WaterEntitySearchResult</class>
+                        <class>fr.inrae.fishola.rest.hydro.WaterEntityAttribution</class>
+                        <class>fr.inrae.fishola.rest.hydro.AttributionResponse</class>
+                        <class>fr.inrae.fishola.rest.commune.CommuneResult</class>
                     </classes>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>

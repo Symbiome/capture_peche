@@ -59,7 +59,6 @@ class MetricsResourceTest extends AbstractFisholaTest {
                 .body("activeUsersPerYear", notNullValue())
                 .body("userRegistrationsPerYear",  notNullValue())
                 .body("tripsPerWaterEntity",  notNullValue())
-                .body("catchesPerWaterEntity", notNullValue())
                 .body("automaticMeasuresPerWaterEntity",  notNullValue());
 
     }

@@ -44,6 +44,7 @@ import ReferentialService from "./services/ReferentialService";
 import DocumentationService from "./services/DocumentationService";
 import ProfileService from "./services/ProfileService";
 import GeolocationService from "./services/GeolocationService";
+import NetworkStatusService from "./services/NetworkStatusService";
 import { StatusBar } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
@@ -55,6 +56,7 @@ import { App } from "@capacitor/app";
 })
 export default class AppView extends Vue {
   interval?: number;
+  unsubscribeNetwork?: () => void;
 
   created() {
     this.initApp();
@@ -142,11 +144,22 @@ export default class AppView extends Vue {
     this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
     this.$root.$on("ask-for-sync-check", this.checkOutOfSyncTrips);
+
+    // Sync immédiate au retour du réseau (#10), sans attendre le polling 30 s.
+    this.unsubscribeNetwork = NetworkStatusService.subscribe((online) => {
+      if (online) {
+        console.debug("Réseau rétabli → synchronisation des sorties");
+        this.checkOutOfSyncTrips();
+      }
+    });
   }
 
   beforeDestroy() {
     this.$root.$off("ask-for-sync-check");
     clearInterval(this.interval);
+    if (this.unsubscribeNetwork) {
+      this.unsubscribeNetwork();
+    }
     this.stopWatchingPosition();
   }
 
@@ -315,6 +328,9 @@ html {
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
+  // Repli pour les moteurs sans `dvh` (< Safari 15.4 / Chrome 108) : sans lui la
+  // déclaration entière est ignorée et le conteneur principal perd sa hauteur.
+  height: calc(100vh - @header-height - @secondary-header-height - @footer-height - 10px);
   height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
 
   &.keyboardShowing {
@@ -386,6 +402,7 @@ html {
 
   .pane-content {
     overflow: auto;
+    height: calc(100vh - @header-height - @vertical-margin-medium); // repli si dvh non supporté
     height: calc(100dvh - @header-height - @vertical-margin-medium);
     display: flex;
     flex-direction: column;

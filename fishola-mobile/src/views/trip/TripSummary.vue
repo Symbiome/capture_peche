@@ -32,6 +32,22 @@
           <SomeTripSummary ref="summary" v-if="trip.lakeId" v-bind:trip="trip" v-on:trip-modified="onUpdatedTrip"
             v-on:goEditSpecies="goEditSpecies" v-on:goEditTechniques="goEditTechniques" />
 
+          <div class="end-position-capture">
+            <button
+              type="button"
+              class="end-position-capture-button"
+              v-on:click="captureEndPosition"
+              v-bind:disabled="capturingEndPosition"
+            >
+              <i class="icon-map" />
+              {{ endPositionCaptured ? "Position de fin enregistrée" : "Enregistrer ma position de fin" }}
+            </button>
+            <span v-if="endPositionError" class="position-error">
+              <i class="icon-warning" />
+              {{ endPositionError }}
+            </span>
+          </div>
+
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary">
               <button v-on:click="startSave">
@@ -60,6 +76,7 @@ import TripSummary from "@/pojos/TripSummary";
 import { Technique } from "@/pojos/BackendPojos";
 
 import TripsService from "@/services/TripsService";
+import GeolocationService from "@/services/GeolocationService";
 
 import Helpers from "@/services/Helpers";
 
@@ -107,6 +124,10 @@ export default class TripSummaryView extends Vue {
 
   isWaitingForPositionBeforeGoingToNextPage = false;
 
+  capturingEndPosition = false;
+  endPositionCaptured = false;
+  endPositionError = "";
+
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
     ReferentialService.getTechniquesIndex().then(
@@ -116,6 +137,37 @@ export default class TripSummaryView extends Vue {
 
   tripLoaded(someTrip: TripSummary) {
     this.trip = someTrip;
+    this.endPositionCaptured = !!(someTrip.endLatitude && someTrip.endLongitude);
+  }
+
+  // Position de fin optionnelle (#86) : capture manuelle, même mécanique que la
+  // capture GPS automatique (finishTripBootstrap / sendTripAndCancelCreations),
+  // mais explicite et non bloquante — utile notamment en mode "Afterwards", où
+  // aucune capture automatique n'a lieu.
+  captureEndPosition() {
+    this.capturingEndPosition = true;
+    this.endPositionError = "";
+    GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
+      (position) => {
+        this.capturingEndPosition = false;
+        this.endPositionCaptured = true;
+        this.trip!.endLatitude = position.coords.latitude;
+        this.trip!.endLongitude = position.coords.longitude;
+      },
+      (e) => {
+        this.capturingEndPosition = false;
+        console.error("Pas de coordonnées GPS pour la position de fin", e);
+        if (JSON.stringify(e).indexOf("location unavailable") != -1) {
+          this.endPositionError =
+            "La position n'est pas activée, impossible d'enregistrer la position de fin";
+        } else if (JSON.stringify(e).indexOf("User denied") != -1) {
+          this.endPositionError =
+            "Partage de position refusé, impossible d'enregistrer la position de fin";
+        } else {
+          this.endPositionError = "Position indisponible pour le moment";
+        }
+      }
+    );
   }
 
   startSave() {
@@ -165,11 +217,18 @@ export default class TripSummaryView extends Vue {
             this.isWaitingForPositionBeforeGoingToNextPage = true;
             TripsService.sendTripAndCancelCreations(trip).then(
               this.tripSaved,
-              (e) =>
-                console.error(
-                  "Unexpected error during sendTripAndCancelCreations",
-                  e
-                )
+              (e) => {
+                this.isWaitingForPositionBeforeGoingToNextPage = false;
+                // Plafond de sorties non synchronisées atteint (#10) : message clair.
+                if (e && e.offlineLimitReached) {
+                  Helpers.alert(this.$modal, e.message, "Limite atteinte");
+                } else {
+                  console.error(
+                    "Unexpected error during sendTripAndCancelCreations",
+                    e
+                  );
+                }
+              }
             );
           },
           () => {
@@ -216,7 +275,7 @@ export default class TripSummaryView extends Vue {
         name: "galery",
         params: {
           selectedDefaultPic: "",
-          selectedLakeUUIDProp: this.lakeFilter,
+          selectedLakeIdProp: this.lakeFilter,
         },
       });
     } else {
@@ -227,6 +286,40 @@ export default class TripSummaryView extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
+.end-position-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: @vertical-margin-medium;
 
+  .end-position-capture-button {
+    height: 45px;
+    border-radius: 38px;
+    padding-left: @margin-medium;
+    padding-right: @margin-medium;
+
+    background-color: transparent;
+    color: @pelorous;
+    border: 1px solid @pelorous;
+
+    font-weight: bold;
+    font-size: @fontsize-button;
+
+    i {
+      margin-right: @margin-x-small;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.position-error {
+  margin-top: @vertical-margin-x-small;
+  font-size: 14px;
+  color: @carrot-orange;
+  font-style: italic;
+}
 </style>

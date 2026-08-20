@@ -229,7 +229,7 @@ export default class EditTripView extends Vue {
         name: "galery",
         params: {
           selectedDefaultPic: "",
-          selectedLakeUUIDProp: this.lakeFilter,
+          selectedLakeIdProp: this.lakeFilter,
         },
       });
     } else {

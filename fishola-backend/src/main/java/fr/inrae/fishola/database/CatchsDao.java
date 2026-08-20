@@ -114,6 +114,14 @@ public class CatchsDao extends AbstractFisholaDao {
     }
 
     public List<CatchMarker> catchMarkersForUser(UUID userId) {
+        // FROM trip (et non catch) + left join : une sortie sans capture doit tout
+        // de même produire un marqueur, sinon elle n'apparaît jamais sur la carte (#33).
+        //
+        // Position de chaque marqueur, du plus précis au plus générique : la capture
+        // se déplace le long de l'eau au fil de la sortie, donc sa propre position
+        // prime ; à défaut on retombe sur le point de départ de la sortie (plus
+        // pertinent que le centroïde de tout le water_entity, qui peut être un long
+        // cours d'eau), puis le point de fin, puis enfin le water_entity lui-même.
         List<CatchMarker> result = withContext(context -> context
                 .select(Tables.CATCH.ID,
                         Tables.SPECIES.NAME.as("specieName"),
@@ -121,36 +129,31 @@ public class CatchsDao extends AbstractFisholaDao {
                         Tables.TRIP.NAME.as("tripName"),
                         Tables.TRIP.CREATED_ON.as("date"),
                         Tables.WATER_ENTITY.NAME.as("waterEntityName"),
-                        coalesce(Tables.CATCH.LONGITUDE, Tables.WATER_ENTITY.LONGITUDE).as("longitude"),
-                        coalesce(Tables.CATCH.LATITUDE, Tables.WATER_ENTITY.LATITUDE).as("latitude"),
-                        Tables.WATER_ENTITY.LATITUDE.as("default_waterEntity_latitude"),
-                        Tables.WATER_ENTITY.LONGITUDE.as("default_waterEntity_longitude"),
+                        coalesce(Tables.CATCH.LONGITUDE, Tables.TRIP.BEGIN_LONGITUDE, Tables.TRIP.END_LONGITUDE, Tables.WATER_ENTITY.LONGITUDE).as("longitude"),
+                        coalesce(Tables.CATCH.LATITUDE, Tables.TRIP.BEGIN_LATITUDE, Tables.TRIP.END_LATITUDE, Tables.WATER_ENTITY.LATITUDE).as("latitude"),
                         coalesce(Tables.CATCH.SIZE, 0).as("size"),
                         coalesce(Tables.CATCH.WEIGHT, 0).as("weight"),
                         Tables.CATCH.MAILLEE.as("maillage")
                 )
-                .from(Tables.CATCH)
-                .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
+                .from(Tables.TRIP)
+                .leftJoin(Tables.CATCH).on(Tables.CATCH.TRIP_ID.eq(Tables.TRIP.ID))
+                .leftJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
                 .innerJoin(Tables.WATER_ENTITY).on(Tables.TRIP.WATER_ENTITY_ID.eq(Tables.WATER_ENTITY.ID))
-                .innerJoin(Tables.SPECIES).on(Tables.CATCH.SPECIES_ID.eq(Tables.SPECIES.ID))
                 .where(Tables.TRIP.OWNER_ID.eq(userId))
                 .fetch()
                 .map(markerRecord -> ImmutableCatchMarker.builder()
-                        .id(markerRecord.get(Tables.CATCH.ID))
+                        .id(Optional.ofNullable(markerRecord.get(Tables.CATCH.ID)))
                         .tripId(markerRecord.get("tripId", UUID.class))
                         .tripName(markerRecord.get("tripName", String.class))
-                        .specieName(markerRecord.get("specieName", String.class))
+                        .specieName(Optional.ofNullable(markerRecord.get("specieName", String.class)))
                         .date(markerRecord.get("date", LocalDateTime.class).toLocalDate())
                         .waterEntityName(markerRecord.get("waterEntityName", String.class))
                         .longitude(markerRecord.get("longitude", Double.class))
                         .latitude(markerRecord.get("latitude", Double.class))
                         .size(markerRecord.get("size", Double.class))
                         .weight(markerRecord.get("weight", Double.class))
-                        .maillage(markerRecord.get("maillage", Maillage.class))
-                        .hasValidCoordinates(
-                                markerRecord.get("default_waterEntity_longitude") != null && !markerRecord.get("default_waterEntity_longitude").equals(markerRecord.get("longitude")) ||
-                                markerRecord.get("default_waterEntity_latitude") != null && !markerRecord.get("default_waterEntity_latitude").equals(markerRecord.get("latitude"))
-                        )
+                        .maillage(Optional.ofNullable(markerRecord.get("maillage", Maillage.class)))
+                        .hasValidCoordinates(markerRecord.get("longitude") != null && markerRecord.get("latitude") != null)
                         .build())
         );
         return result;
@@ -293,7 +296,7 @@ public class CatchsDao extends AbstractFisholaDao {
     protected Multimap<Month, Catch> findMonthly0(Optional<UUID> userId, Optional<Integer> year, Optional<List<UUID>> waterEntitiesFilter) {
         Multimap<Month, Catch> result = withContext(context -> {
             SelectConditionStep<Record> selectStep = context
-                    .select(Tables.TRIP.DAY)
+                    .select(Tables.TRIP.BEGIN_TIMESTAMP)
                     .select(Tables.CATCH.fields())
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
@@ -312,9 +315,9 @@ public class CatchsDao extends AbstractFisholaDao {
                 selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));
             }
             if (year.isPresent()) {
-                LocalDate min = LocalDate.of(year.get(), Month.JANUARY, 1);
-                LocalDate max = LocalDate.of(year.get(), Month.DECEMBER, 31);
-                selectStep = selectStep.and(Tables.TRIP.DAY.between(min, max));
+                LocalDateTime min = LocalDate.of(year.get(), Month.JANUARY, 1).atStartOfDay();
+                LocalDateTime max = LocalDate.of(year.get(), Month.DECEMBER, 31).atTime(23, 59, 59);
+                selectStep = selectStep.and(Tables.TRIP.BEGIN_TIMESTAMP.between(min, max));
             }
             if (waterEntitiesFilter.isPresent()) {
                 selectStep = selectStep.and(Tables.TRIP.WATER_ENTITY_ID.in(waterEntitiesFilter.get()));
@@ -322,7 +325,7 @@ public class CatchsDao extends AbstractFisholaDao {
             Multimap<Month, Catch> multimap = selectStep
                     .stream()
                     .collect(Multimaps.toMultimap(
-                            r -> r.into(Tables.TRIP.DAY).component1().getMonth(),
+                            r -> r.into(Tables.TRIP.BEGIN_TIMESTAMP).component1().getMonth(),
                             r -> r.into(Tables.CATCH).into(Catch.class),
                             ArrayListMultimap::create));
             return multimap;

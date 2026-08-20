@@ -1,0 +1,12 @@
+{# Champ stylé (label + astérisque si requis, aide, widget, erreurs) — remplace form.as_div. Comment mono-ligne obligatoire. #}
+<div>
+  <label for="{{ field.id_for_label }}"
+         class="block text-xs font-medium text-font-important-light dark:text-font-important-dark mb-1">
+    {{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}
+  </label>
+  {% if field.help_text %}<p class="mb-1 text-xs text-base-500">{{ field.help_text|safe }}</p>{% endif %}
+  {{ field }}
+  {% for error in field.errors %}
+  <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ error }}</p>
+  {% endfor %}
+</div>
