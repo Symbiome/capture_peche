@@ -65,7 +65,7 @@ import OfflineAreasService from '@/services/OfflineAreasService';
 import maplibregl, { Map as MlMap, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Ciblage et infobulle des entités hydro : logique mutualisée entre toutes les cartes.
-import { attachHydroHover, queryHydroAt } from './maplibreStyle';
+import { attachHydroHover } from './maplibreStyle';
 
 // Flux WMTS raster ouverts de la Géoplateforme IGN (sans clé pour les couches
 // essentielles). TileMatrixSet PM = Web Mercator, aligné sur la projection par
@@ -204,24 +204,15 @@ export default class MapLibreMap extends Vue {
             this.fitInitial();
         });
 
-        // Tap sur le réseau (avec tolérance, cf. queryHydroAt). On pose TOUJOURS
-        // un pin au point cliqué : il matérialise la position de départ de la
-        // sortie (retour recette « pas de pin au clic sur le segment »).
+        // Tap sur le réseau. On pose TOUJOURS un pin au point cliqué : il
+        // matérialise la position visée et reste affiché sous la carte de
+        // confirmation (retour recette #86 : aucun repère visible au clic →
+        // l'utilisateur n'a pas confirmation de sa saisie). Tap direct sur une
+        // entité ou point libre passent tous deux par le flux d'attribution/
+        // confirmation (#9) : seule la proposition diffère (l'entité tapée
+        // elle-même vs. la plus proche).
         map.on('click', (e) => {
-            const features = queryHydroAt(map, e.point);
-            const props = features.length > 0 ? (features[0].properties || {}) : {};
-            const id = props.water_entity_id as string;
             this.setPin(e.lngLat.lng, e.lngLat.lat);
-            if (id) {
-                // Tap direct sur une entité : sélection immédiate ET le point
-                // cliqué devient la position de départ (pas besoin du flux
-                // d'attribution/confirmation, l'entité est explicite). Le pin
-                // reste affiché (la carte n'est pas refermée automatiquement).
-                this.$emit('selectLake', id);
-                this.$emit('point-picked', { lng: e.lngLat.lng, lat: e.lngLat.lat });
-                return;
-            }
-            // Point libre : flux d'attribution (proposition + confirmation, #9).
             this.$emit('map-click', { lng: e.lngLat.lng, lat: e.lngLat.lat });
         });
 
