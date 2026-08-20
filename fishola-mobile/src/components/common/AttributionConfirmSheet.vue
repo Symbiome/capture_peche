@@ -142,7 +142,10 @@ export default class AttributionConfirmSheet extends Vue {
     position: fixed;
     inset: 0;
     z-index: 2000;
-    background: @black-alpha-90;
+    // Backdrop volontairement translucide (comme les autres modales de l'app,
+    // cf. .v--modal-overlay) : la carte reste visible en transparence, avec le
+    // pin posé au point cliqué, pour confirmer visuellement la saisie (#86).
+    background: @black-alpha-50;
     display: flex;
     align-items: flex-end;
     justify-content: center;

@@ -97,7 +97,6 @@
         :favoriteLakes="favoriteLakes"
         :selectedLake="selectedLakes.length == 1 ? selectedLakes[0] : null"
         @selectLake="selectLakeById"
-        @point-picked="onMapPointPicked"
         @map-click="onMapClick"
         v-on:close="toggleMapDisplay"
       />
@@ -301,13 +300,6 @@ export default class LakeSelection extends Vue {
     }
   }
 
-  // Tap direct sur une entité de la carte (#9/#13) : le point cliqué (déjà
-  // matérialisé par un pin sur la carte) devient la position de départ de la
-  // sortie. On propage au parent (TripMeta) comme le flux d'attribution.
-  onMapPointPicked(coords: { lat: number; lng: number }) {
-    this.$emit('positionPicked', coords);
-  }
-
   selectLake(selected: Lake) {
     const seq = ++this.communeSeq;
     if (!this.allowMultipleSelection) {
@@ -406,9 +398,10 @@ export default class LakeSelection extends Vue {
     }
   }
 
-  // Pin libre sur la carte : on interroge l'attribution hydro et on ouvre la
-  // feuille de confirmation (#9). Le tap direct sur une entité passe, lui, par
-  // `selectLakeById` (pas d'attribution nécessaire).
+  // Tout clic sur la carte (entité tapée ou point libre, #86) : on interroge
+  // l'attribution hydro et on ouvre la feuille de confirmation (#9). Le pin
+  // posé par MapLibreMap reste visible sous la feuille (backdrop non opaque),
+  // pour que l'utilisateur voie sa saisie confirmée avant de valider.
   onMapClick(coords: { lng: number; lat: number }) {
     this.pendingPin = { lat: coords.lat, lng: coords.lng };
     ReferentialService.getAttribution(coords.lat, coords.lng)
