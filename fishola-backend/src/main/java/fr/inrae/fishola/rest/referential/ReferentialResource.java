@@ -45,6 +45,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -521,5 +522,14 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
+    // #131 : équivalent de la taille min déjà utilisée par TripResource pour le
+    // flag "maillée" (referentialDao.getMinSize), scopé à un seul plan d'eau.
+    // Remplace le passage par l'ensemble de la map species-per-waterEntity
+    // (tout le bassin RM&C) pour le seul contrôle de plausibilité côté saisie.
+    @GET
+    @Path("/authorized-samples/max-size")
+    public Integer getMaxSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
+        return referentialDao.getMaxSize(waterEntityId, speciesId);
+    }
 
 }

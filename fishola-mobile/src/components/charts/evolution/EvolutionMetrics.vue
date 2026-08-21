@@ -84,7 +84,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 export default class EvolutionMetricsView extends Vue {
   @Prop() lakeId: string;
   @Prop({default: false}) onlyShowUserStats: boolean;
-  speciesNameForLake: SpeciesWithAlias[] = [];
+  speciesNames: SpeciesWithAlias[] = [];
   allSpecies: string[];
 
   displayMode = 'tripsCount';
@@ -112,7 +112,9 @@ export default class EvolutionMetricsView extends Vue {
   async loadEvolutionData() {
     if (this.lakeId) {
     this.loading = true;
-        this.speciesNameForLake = await ReferentialService.getSpeciesPlusCustom(this.lakeId);
+        // #131 : la résolution des noms/alias d'espèces ne dépend plus du plan
+        // d'eau (cf. #130), la liste vient directement de la table species.
+        this.speciesNames = await ReferentialService.getAllSpecies();
         if (this.onlyShowUserStats) {
             this.evolutionMetrics = await DashboardService.loadUserEvolutionOrTimeout(this.lakeId);
         } else {
@@ -186,7 +188,7 @@ export default class EvolutionMetricsView extends Vue {
   }
 
   getSpecieNameForLake(specieId: string) {
-    const specie = this.speciesNameForLake.find(s => {
+    const specie = this.speciesNames.find(s => {
         return s.id == specieId;
     });
     return specie ? (specie.alias ?? specie.name) : specieId;

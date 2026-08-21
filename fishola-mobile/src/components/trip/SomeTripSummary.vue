@@ -182,7 +182,7 @@ export default class SomeTripSummary extends Vue {
   techniquesLabel: string = "Technique utilisée";
   types: string[] = [];
 
-  allSpecies: Map<string, SpeciesWithAlias[]> = new Map();
+  allSpecies: SpeciesWithAlias[] = [];
   allWeathers: Weather[] = [];
   allTripTypes: any[] = [];
   allTechniques: Technique[] = [];
@@ -254,9 +254,8 @@ export default class SomeTripSummary extends Vue {
       this.finishedAt = Helpers.truncateTimeToMinutes(someTrip.finishedAt);
     }
 
-    const speciesPerLake = this.allSpecies.get(someTrip.lakeId);
     someTrip.speciesIds.forEach((speciesId: string) => {
-      speciesPerLake!.forEach((s) => {
+      this.allSpecies.forEach((s) => {
         if (s.id == speciesId) {
           const speciesDisplayValue = s.alias
             ? `${s.alias} (${s.name})`

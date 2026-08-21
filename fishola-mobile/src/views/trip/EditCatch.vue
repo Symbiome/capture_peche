@@ -417,7 +417,7 @@ export default class EditCatchView extends Vue {
       this.withSample = true;
     }
 
-    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(
+    ReferentialService.getSpeciesAndTechniques().then(
       this.referentialLoaded
     );
 
@@ -664,27 +664,20 @@ export default class EditCatchView extends Vue {
 
   async getMaxSize(lakeId: string, speciesId?: string): Promise<number> {
     let result = 1000;
+    if (!speciesId) {
+      return result;
+    }
     // Contrôle non bloquant : hors ligne et sans référentiel en cache, on
     // conserve la borne permissive par défaut plutôt que de laisser rejeter
     // la promesse — sinon `validateClicked` s'interrompait et la capture ne
     // pouvait plus être enregistrée, sans aucun message pour l'utilisateur.
-    let speciesPerLake: Map<string, SpeciesWithAlias[]>;
     try {
-      speciesPerLake = await ReferentialService.getSpeciesPerLake();
+      result = await ReferentialService.getAuthorizedSampleMaxSize(lakeId, speciesId);
     } catch (e) {
       console.error(
-        "Référentiel espèces/plan d'eau indisponible, contrôle de taille maximale ignoré",
+        "Taille maximale autorisée indisponible, contrôle de taille maximale ignoré",
         e
       );
-      return result;
-    }
-    if (speciesPerLake.get(lakeId)) {
-      const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
-      speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {
-        if (s.id == speciesId) {
-          result = s.maxSize;
-        }
-      });
     }
     return result;
   }

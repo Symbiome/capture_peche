@@ -40,7 +40,6 @@ describe("Reprise de la synchronisation après échec réseau", () => {
     cy.intercept("GET", "**/v1/trips/markers", { statusCode: 200, body: [] });
     cy.intercept("GET", "**/v1/trips?*", { statusCode: 200, body: { elements: [], count: 0 } });
     cy.intercept("GET", "**/v1/documentations", { statusCode: 200, body: [] });
-    cy.intercept("GET", "**/v1/referential/species-per-waterEntity", { statusCode: 200, body: {} });
     cy.intercept("GET", "**/v1/referential/waterEntities", { statusCode: 200, body: [] });
     cy.intercept("GET", "**/v1/referential/waterEntities/favorites", { statusCode: 200, body: [] });
     cy.intercept("GET", "**/v1/referential/species", { statusCode: 200, body: [] });
