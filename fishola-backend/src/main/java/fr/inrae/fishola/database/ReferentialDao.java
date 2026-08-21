@@ -380,6 +380,19 @@ public class ReferentialDao extends AbstractFisholaDao {
         return Optional.empty();
     }
 
+    // #131 : miroir de getMinSize, scopé à un seul plan d'eau (fetchByWaterEntityId
+    // est indexé) — évite de recharger authorized_sample pour tout le bassin RM&C
+    // juste pour contrôler la taille max d'une capture.
+    public Integer getMaxSize(UUID waterEntityId, UUID specieId) {
+        List<AuthorizedSample> authorizedWaterEntitySamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByWaterEntityId(waterEntityId));
+        return authorizedWaterEntitySamples.stream()
+                .filter(authorizedSample -> Objects.equals(authorizedSample.getSpeciesId(), specieId))
+                .map(AuthorizedSample::getMaxSize)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(1000);
+    }
+
     public void createAuthorizedSample(AuthorizedSample entity) {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.insert(entity));
     }

@@ -103,7 +103,7 @@ export default class CatchPreview extends Vue {
       this.caughtAtLabel = this.aCatch.caughtAt;
     }
 
-    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(
+    ReferentialService.getSpeciesAndTechniques().then(
       this.referentialLoaded
     );
 

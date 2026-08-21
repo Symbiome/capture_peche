@@ -117,7 +117,7 @@ export default class TripSpeciesView extends Vue {
   hasOtherSpecies: boolean = false;
 
   species: SpeciesWithAlias[] = [];
-  speciesIndex: Map<string, SpeciesWithAlias[]> = new Map();
+  allSpecies: SpeciesWithAlias[] = [];
 
   buttonLabel: string;
 
@@ -126,7 +126,10 @@ export default class TripSpeciesView extends Vue {
   created() {
     this.buttonLabel =
       this.id == Constants.NEW_TRIP_ID ? "Commencer" : "Enregistrer";
-    ReferentialService.getSpeciesPerLakePlusCustom().then(this.speciesLoaded);
+    // #130 : la liste ne dépend plus du plan d'eau (le référentiel
+    // species-per-waterEntity échouait à l'échelle du bassin RM&C) — on
+    // charge simplement toutes les espèces de la table species.
+    ReferentialService.getAllSpecies().then(this.speciesLoaded);
   }
 
   sortedSpecies(): SpeciesWithAlias[] {
@@ -134,17 +137,16 @@ export default class TripSpeciesView extends Vue {
     return Vue.lodash.orderBy(this.species, "name").filter(s => s.present || manualSpecies.indexOf(s.id) > -1);
   }
 
-  speciesLoaded(map: Map<string, SpeciesWithAlias[]>) {
-    this.speciesIndex = map;
+  speciesLoaded(species: SpeciesWithAlias[]) {
+    this.allSpecies = species;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
   tripLoaded(someTrip: TripSpecies) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
-    const lakeAndCustomSpecies = this.speciesIndex.get(this.trip.lakeId)!;
     this.species = [];
-    lakeAndCustomSpecies.forEach((s) => {
+    this.allSpecies.forEach((s) => {
       if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
         this.species.push(s);
       }
