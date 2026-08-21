@@ -21,13 +21,6 @@
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
-export class LakesAndTripTypes {
-    constructor (
-        public lakes:Lake[],
-        public tripTypes:any[]) {
-    }
-}
-
 export class SpeciesWithAliasAndTechnique {
     constructor (
         public species:SpeciesWithAlias[],
@@ -35,9 +28,8 @@ export class SpeciesWithAliasAndTechnique {
     }
 }
 
-export class LakesWeathersTripTypesSpeciesAndTechniques {
+export class WeathersTripTypesSpeciesAndTechniques {
     constructor (
-        public lakes:Lake[],
         public weathers:Weather[],
         public tripTypes:any[],
         public species:Map<string, SpeciesWithAlias[]>,
@@ -64,15 +56,22 @@ export default class ReferentialService extends AbstractFisholaService {
     return this.backendGetWithCache("/v1/referential/waterEntities/favorites");
   }
 
+  // Mémoïsé sur la référence du tableau source (~181k entités, cf. #128) :
+  // sans ça, chaque appelant (une carte de sortie par élément de liste, ex.
+  // MyTripsItem) reconstruisait sa propre Map nationale rien que pour
+  // résoudre un seul nom de lac par id.
+  private static lakesIndexCache: { source: Lake[]; index: Map<string, Lake> } | null = null;
+
   static getLakesIndex(): Promise<Map<string, Lake>> {
-    return new Promise<Map<string, Lake>>((resolve, reject) => {
-      ReferentialService.getLakes().then((lakes: Lake[]) => {
-        const result = new Map<string, Lake>();
-        lakes.forEach((lake: Lake) => {
-          result.set(lake.id, lake);
-        });
-        resolve(result);
-      }, reject);
+    return ReferentialService.getLakes().then((lakes: Lake[]) => {
+      const cache = ReferentialService.lakesIndexCache;
+      if (cache && cache.source === lakes) {
+        return cache.index;
+      }
+      const index = new Map<string, Lake>();
+      lakes.forEach((lake: Lake) => index.set(lake.id, lake));
+      ReferentialService.lakesIndexCache = { source: lakes, index };
+      return index;
     });
   }
 
@@ -318,11 +317,15 @@ export default class ReferentialService extends AbstractFisholaService {
     return Promise.resolve(types);
   }
 
-  static getLakesWeathersTripTypesSpeciesAndTechniques(): Promise<LakesWeathersTripTypesSpeciesAndTechniques> {
-    return new Promise<LakesWeathersTripTypesSpeciesAndTechniques>(
+  // Ne charge PLUS le référentiel national des lacs (cf. #128) : le plan
+  // d'eau se sélectionne exclusivement via l'autocomplete serveur
+  // (searchWaterEntities) dans LakeSelection, qui n'a pas besoin de cette
+  // liste. Le lac déjà associé à une sortie existante se résout séparément
+  // via getLakesIndex() (mémoïsée).
+  static getWeathersTripTypesSpeciesAndTechniques(): Promise<WeathersTripTypesSpeciesAndTechniques> {
+    return new Promise<WeathersTripTypesSpeciesAndTechniques>(
       (resolve, reject) => {
         Promise.all([
-          ReferentialService.getLakes(),
           ReferentialService.getWeathers(),
           ReferentialService.getTripTypes(),
           ReferentialService.getSpeciesPerLakePlusCustom(),
@@ -330,20 +333,18 @@ export default class ReferentialService extends AbstractFisholaService {
         ]).then(
           (
             data: [
-              Lake[],
               Weather[],
               any[],
               Map<string, SpeciesWithAlias[]>,
               Technique[]
             ]
           ) => {
-            const result: LakesWeathersTripTypesSpeciesAndTechniques =
-              new LakesWeathersTripTypesSpeciesAndTechniques(
+            const result: WeathersTripTypesSpeciesAndTechniques =
+              new WeathersTripTypesSpeciesAndTechniques(
                 data[0],
                 data[1],
                 data[2],
-                data[3],
-                data[4]
+                data[3]
               );
             resolve(result);
           },
@@ -351,21 +352,6 @@ export default class ReferentialService extends AbstractFisholaService {
         );
       }
     );
-  }
-
-  static getLakesAndTripTypes(): Promise<LakesAndTripTypes> {
-    return new Promise<LakesAndTripTypes>((resolve, reject) => {
-      Promise.all([
-        ReferentialService.getLakes(),
-        ReferentialService.getTripTypes(),
-      ]).then((data: [Lake[], any[]]) => {
-        const result: LakesAndTripTypes = new LakesAndTripTypes(
-          data[0],
-          data[1]
-        );
-        resolve(result);
-      }, reject);
-    });
   }
 
   static getSpeciesAndTechniques(

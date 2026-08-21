@@ -93,7 +93,6 @@
       <MapLibreMap
         v-show="displayMap"
         :isVisible="displayMap"
-        :lakes="allLakesExecptFavorites"
         :favoriteLakes="favoriteLakes"
         :selectedLake="selectedLakes.length == 1 ? selectedLakes[0] : null"
         @selectLake="selectLakeById"
@@ -153,8 +152,6 @@ export default class LakeSelection extends Vue {
   displayNearby: boolean = false;
   displayCommuneSearch: boolean = false;
   displaySuggestions: boolean = false;
-  allLakes: Lake[] = [];
-  allLakesExecptFavorites: Lake[] = [];
   suggestedLakes: Lake[] = [];
   suggestedFavorites: Lake[] = [];
   search: string = "";
@@ -193,14 +190,10 @@ export default class LakeSelection extends Vue {
       } catch (e) {
         console.error("Favoris indisponibles, sélecteur sans favoris", e);
       }
-      const fetchedLakes = await ReferentialService.getLakes();
-      this.allLakes = fetchedLakes;
-      this.allLakesExecptFavorites = fetchedLakes.filter(el => {
-            return !favoriteLakes.find(el2 => {
-                return el.id === el2.id
-            })
-        });
-      this.suggestedLakes = this.allLakesExecptFavorites;
+      // Le référentiel national complet (~181k entités, cf. #126/#128) n'est
+      // JAMAIS chargé ici : les suggestions passent exclusivement par la
+      // recherche serveur (updateSuggestedLakes -> searchWaterEntities).
+      this.suggestedLakes = [];
       this.suggestedFavorites = favoriteLakes;
 
       this.$emit('favoriteLakesChanged', favoriteLakes);
@@ -216,25 +209,15 @@ export default class LakeSelection extends Vue {
 
   @Watch("favoriteLakes")
   favoriteLakesChanged() {
-    let favorites = this.favoriteLakes;
-    this.allLakesExecptFavorites = this.allLakes.filter(lake => {
-        return !favorites.find(other => {
-            return lake.id === other.id
-        })
-    });
-    this.suggestedLakes = this.allLakesExecptFavorites;
+    this.suggestedLakes = [];
     this.updateSuggestedLakes();
   }
 
   @Watch("selectedLakes")
   updateSelectedLakeLabel() {
     this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
-    if (this.selectedLakesId.length == 1 && this.allLakesExecptFavorites) {
-      const selectedLake = this.selectedLakesId[0];
-      let filteredItem = this.allLakes.filter((l) => {
-        return l.id === selectedLake;
-      });
-      this.selectedLabel = filteredItem.length == 1 ? filteredItem[0].name : '';
+    if (this.selectedLakesId.length == 1) {
+      this.selectedLabel = this.selectedLakes[0].name || '';
       this.updateSuggestedLakes();
     }
   }
@@ -244,10 +227,13 @@ export default class LakeSelection extends Vue {
     const term = this.search;
     const isSelectedLabel = this.selectedLabel.toLowerCase() == term.toLowerCase();
 
-    // Pas de recherche active (champ vide ou = libellé déjà sélectionné) :
-    // comportement d'origine (favoris + suggestions = liste hors favoris).
+    // Pas de recherche active (champ vide ou = libellé déjà sélectionné) : on
+    // ne propose que les favoris. La liste nationale complète (~181k
+    // entités, cf. #126) ne doit jamais être rendue en une fois dans le
+    // <li v-for>, sous peine de RangeError (pile de rendu Vue dépassée) ;
+    // la recherche serveur (ci-dessous) prend le relais dès 2 caractères.
     if (term == "" || isSelectedLabel) {
-      this.suggestedLakes = this.allLakesExecptFavorites;
+      this.suggestedLakes = [];
       this.suggestedFavorites = this.favoriteLakes;
       return;
     }
@@ -287,16 +273,16 @@ export default class LakeSelection extends Vue {
     }
   }
 
+  // Seuls les marqueurs favoris sont cliquables sur la carte (le réseau hydro
+  // se sélectionne via le flux d'attribution, onMapClick) : l'id reçu ici
+  // désigne donc toujours un favori, jamais une entité du référentiel
+  // national complet. On NE ferme PLUS la carte automatiquement : le pin
+  // posé au point cliqué doit rester visible (position de départ) ;
+  // l'utilisateur ferme via la croix.
   selectLakeById(id : string) {
-    let filteredItem = this.allLakes.filter((l) => {
-      return l.id === id;
-    });
-    // Sélection valable dès qu'une entité correspond à l'id (tapé sur la carte
-    // ou choisi ailleurs) — on ne conditionne plus à un name non vide. On NE
-    // ferme PLUS la carte automatiquement : le pin posé au point cliqué doit
-    // rester visible (position de départ) ; l'utilisateur ferme via la croix.
-    if (filteredItem.length === 1) {
-      this.selectLake(filteredItem[0]);
+    const match = (this.favoriteLakes || []).find((l) => l.id === id);
+    if (match) {
+      this.selectLake(match);
     }
   }
 

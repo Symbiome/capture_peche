@@ -136,7 +136,7 @@ import {
 } from "@/pojos/BackendPojos";
 
 import Helpers from "@/services/Helpers";
-import { LakesWeathersTripTypesSpeciesAndTechniques } from "@/services/ReferentialService";
+import { WeathersTripTypesSpeciesAndTechniques } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 
 import FormInput from "@/components/common/FormInput.vue";
@@ -182,7 +182,6 @@ export default class SomeTripSummary extends Vue {
   techniquesLabel: string = "Technique utilisée";
   types: string[] = [];
 
-  allLakes: Lake[] = [];
   allSpecies: Map<string, SpeciesWithAlias[]> = new Map();
   allWeathers: Weather[] = [];
   allTripTypes: any[] = [];
@@ -190,35 +189,40 @@ export default class SomeTripSummary extends Vue {
   noFavorites: Lake[] = [];
 
   // Plan d'eau : autocomplete (recherche serveur, #7) au lieu d'un select de
-  // toutes les entités (inutilisable à l'échelle France). Le nom courant est
-  // résolu localement pour l'affichage/la pré-sélection.
+  // toutes les entités (inutilisable à l'échelle France). Le lac déjà associé
+  // à la sortie est résolu séparément (currentLake, cf. loadCurrentLake) au
+  // lieu de charger le référentiel national complet pour un seul id (#128).
+  currentLake: Lake | null = null;
+
   get selectedLakes(): Lake[] {
-    if (!this.trip.lakeId) {
-      return [];
-    }
-    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
-    return found ? [found] : [];
+    return this.currentLake ? [this.currentLake] : [];
   }
 
   get selectedLakeName(): string {
-    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
-    return found ? found.name : "";
+    return this.currentLake ? this.currentLake.name : "";
   }
 
   onLakeSelected(lake: Lake) {
     // Mutation directe du modèle (comme l'ancien v-model) — la sauvegarde est
     // déclenchée par le parent au « Terminer », pas à la sélection.
     this.trip.lakeId = lake ? lake.id : "";
+    this.currentLake = lake || null;
   }
 
   created() {
-    ReferentialService.getLakesWeathersTripTypesSpeciesAndTechniques().then(
-      this.referentialsLoaded
-    );
+    const currentLakePromise = this.trip.lakeId
+      ? ReferentialService.getLakesIndex().then((index) => index.get(this.trip.lakeId) || null)
+      : Promise.resolve(null);
+    Promise.all([
+      ReferentialService.getWeathersTripTypesSpeciesAndTechniques(),
+      currentLakePromise,
+    ]).then(([data, currentLake]) => {
+      this.currentLake = currentLake;
+      this.referentialsLoaded(data);
+    });
   }
 
-  referentialsLoaded(data: LakesWeathersTripTypesSpeciesAndTechniques) {
-    data.lakes.forEach((lake) => this.allLakes.push(lake));
+  referentialsLoaded(data: WeathersTripTypesSpeciesAndTechniques) {
     this.allWeathers.push({
       id: "__none__",
       name: "",

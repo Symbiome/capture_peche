@@ -91,7 +91,6 @@ type BaseLayer = 'plan' | 'satellite';
 
 @Component
 export default class MapLibreMap extends Vue {
-    @Prop() lakes: Lake[];
     @Prop() favoriteLakes: Lake[];
     @Prop() selectedLake: Lake;
     @Prop() isVisible: boolean;

@@ -29,7 +29,6 @@
         <div class="map-test-frame">
             <MapLibreMap
                 :isVisible="true"
-                :lakes="[]"
                 :favoriteLakes="[]"
                 :selectedLake="null"
                 @selectLake="onSelect"
