@@ -213,12 +213,35 @@ export default class SomeTripSummary extends Vue {
     this.currentLake = lake || null;
   }
 
-  // Point de fin placé par l'utilisateur sur la carte (#86) : mutation directe
-  // du modèle, comme les autres champs du récapitulatif. La sauvegarde est
-  // déclenchée par le parent au « Terminer ».
+  // Point de fin placé par l'utilisateur sur la carte (#86). On le rattache
+  // ensuite à l'entité hydro de la sortie en le projetant sur sa géométrie
+  // (point le plus proche), comme pour le point de début. Mutation directe du
+  // modèle ; la sauvegarde est déclenchée par le parent au « Terminer ».
   onEndPositionPicked(coords: { lat: number; lng: number }) {
     this.$set(this.trip, "endLatitude", coords.lat);
     this.$set(this.trip, "endLongitude", coords.lng);
+    this.snapEndPositionToWaterEntity(coords);
+  }
+
+  private snapEndPositionToWaterEntity(coords: { lat: number; lng: number }) {
+    ReferentialService.getAttribution(coords.lat, coords.lng)
+      .then((res) => {
+        const candidates = [res.proposal, ...(res.alternatives || [])].filter(
+          Boolean
+        ) as { waterEntityId: string; closestPoint?: { lat: number; lng: number } }[];
+        // On projette sur l'entité de la sortie, pas sur l'entité la plus
+        // proche : une sortie se déroule sur un seul plan d'eau / cours d'eau.
+        const match = candidates.find(
+          (c) => c.waterEntityId === this.trip.lakeId
+        );
+        if (match && match.closestPoint) {
+          this.$set(this.trip, "endLatitude", match.closestPoint.lat);
+          this.$set(this.trip, "endLongitude", match.closestPoint.lng);
+        }
+      })
+      // Hors ligne / erreur serveur : on conserve le point brut posé par
+      // l'utilisateur (le point de fin reste optionnel et non bloquant).
+      .catch(() => undefined);
   }
 
   created() {
