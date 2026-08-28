@@ -20,10 +20,10 @@
   -->
 <!--
   Carte des captures du pêcheur (#33) : migration Leaflet → MapLibre. Les captures
-  sont rendues via une source GeoJSON avec clustering natif MapLibre, au-dessus des
-  fonds IGN + réseau hydro (« nos layers »). Un point non regroupé est coloré selon
-  si sa sortie a au moins une capture enregistrée ; un clic ouvre une infobulle avec
-  un accès à la sortie.
+  sont rendues via une source GeoJSON au-dessus des fonds IGN + réseau hydro
+  (« nos layers »), un pin par lieu de pêche visible à tous les zooms (#136, pas
+  de clustering). Le pin est coloré selon si la sortie a au moins une capture
+  enregistrée ; un clic ouvre une infobulle avec un accès à la sortie.
   -->
 <template>
     <div class="pane " v-if="visible">
@@ -85,16 +85,10 @@ import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'mapl
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { addCatchPinIcon, attachHydroHover, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
 
-// Serveur de glyphes public (compteurs de clusters). Sans lui, les nombres ne
-// s'affichent pas mais la carte reste fonctionnelle (dégradation silencieuse).
-const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
-
 // Zoom minimal de la carte « Mes sorties » (#136). Cohérent avec une emprise
-// nationale : à ce niveau la France entière tient à l'écran, les sorties se
-// regroupent en clusters visibles et le fond IGN reste lisible. Rester dans
-// l'intervalle indexé par supercluster ([0, clusterMaxZoom]) garantit qu'un
-// cluster existe toujours à ce zoom. Empêche aussi de dézoomer jusqu'à une
-// carte quasi vide où les marqueurs sortaient du cadre.
+// nationale : à ce niveau la France entière tient à l'écran et le fond IGN
+// reste lisible. Empêche de dézoomer jusqu'à une carte quasi vide où les
+// marqueurs sortaient du cadre sans moyen d'y revenir.
 const MAP_MIN_ZOOM = 4;
 
 // Identifiants des pins « sortie » enregistrés dans la carte (cf. addCatchPinIcon).
@@ -187,7 +181,6 @@ export default class MyTripsMapView extends Vue {
             return;
         }
         const style = buildFisholaStyle('plan');
-        style.glyphs = GLYPHS_URL;
         this.map = new maplibregl.Map({
             container,
             style,
@@ -202,9 +195,8 @@ export default class MyTripsMapView extends Vue {
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
         // Informations du réseau hydro au survol, comme sur les autres cartes.
         this.detachHydroHover = attachHydroHover(this.map);
-        // Les pins sont fournis à la demande : les couches restent ainsi ajoutées
-        // de façon SYNCHRONE dans « load » (une création différée de la source
-        // empêchait le regroupement en clusters de se mettre en place).
+        // Les pins « sortie » sont enregistrés à la demande quand une couche les
+        // réclame (couleur selon présence d'une capture enregistrée).
         this.map.on('styleimagemissing', (e: any) => {
             if (!this.map) {
                 return;
@@ -226,31 +218,20 @@ export default class MyTripsMapView extends Vue {
         if (!this.map) {
             return;
         }
+        // Pas de clustering (#136) : le pêcheur veut voir chacun de ses lieux de
+        // pêche comme un pin distinct à TOUS les niveaux de zoom, y compris carte
+        // complètement dézoomée — un regroupement en amas les masquait tant qu'on
+        // n'avait pas zoomé très localement.
         this.map.addSource('catches', {
             type: 'geojson',
             data: this.buildGeoJson(),
-            cluster: true,
-            clusterRadius: 50,
-            clusterMaxZoom: 14,
         });
+        // Pin « poisson » (sortie avec capture) ou « canne à pêche » (sortie sans
+        // capture enregistrée), ancré par sa pointe sur la position exacte
+        // (cf. légende sous la carte). `icon-allow-overlap` : les pins qui se
+        // chevauchent aux bas zooms restent tous rendus.
         this.map.addLayer({
-            id: 'catch-clusters', type: 'circle', source: 'catches', filter: ['has', 'point_count'],
-            paint: {
-                'circle-color': '#1e9bc4',
-                'circle-opacity': 0.85,
-                'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 30],
-            },
-        });
-        this.map.addLayer({
-            id: 'catch-cluster-count', type: 'symbol', source: 'catches', filter: ['has', 'point_count'],
-            layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 13, 'text-font': ['Open Sans Regular'] },
-            paint: { 'text-color': '#ffffff' },
-        });
-        // Sortie isolée : pin « poisson » (capture) ou « canne à pêche » (sortie
-        // sans capture) plutôt qu'une pastille, plus explicite et ancré par sa
-        // pointe sur la position exacte (cf. légende sous la carte).
-        this.map.addLayer({
-            id: 'catch-unclustered', type: 'symbol', source: 'catches', filter: ['!', ['has', 'point_count']],
+            id: 'catch-points', type: 'symbol', source: 'catches',
             layout: {
                 'icon-image': ['case', ['get', 'hasCatch'], CATCH_PIN_AVEC_CAPTURE, CATCH_PIN_SANS_CAPTURE],
                 'icon-size': 1,
@@ -259,28 +240,9 @@ export default class MyTripsMapView extends Vue {
             },
         });
 
-        this.map.on('click', 'catch-clusters', (e) => this.onClusterClick(e.point));
-        this.map.on('click', 'catch-unclustered', (e) => this.onPointClick(e.features && e.features[0]));
-        ['catch-clusters', 'catch-unclustered'].forEach((layer) => {
-            this.map!.on('mouseenter', layer, () => { this.map!.getCanvas().style.cursor = 'pointer'; });
-            this.map!.on('mouseleave', layer, () => { this.map!.getCanvas().style.cursor = ''; });
-        });
-    }
-
-    private onClusterClick(point: { x: number; y: number }) {
-        if (!this.map) {
-            return;
-        }
-        const feature = this.map.queryRenderedFeatures(point, { layers: ['catch-clusters'] })[0];
-        if (!feature) {
-            return;
-        }
-        const clusterId = feature.properties!.cluster_id;
-        const source = this.map.getSource('catches') as GeoJSONSource;
-        source.getClusterExpansionZoom(clusterId).then((zoom) => {
-            const coords = (feature.geometry as any).coordinates as [number, number];
-            this.map?.easeTo({ center: coords, zoom });
-        });
+        this.map.on('click', 'catch-points', (e) => this.onPointClick(e.features && e.features[0]));
+        this.map.on('mouseenter', 'catch-points', () => { this.map!.getCanvas().style.cursor = 'pointer'; });
+        this.map.on('mouseleave', 'catch-points', () => { this.map!.getCanvas().style.cursor = ''; });
     }
 
     private onPointClick(feature?: MapGeoJSONFeature) {
