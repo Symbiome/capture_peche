@@ -122,6 +122,10 @@
       v-bind:beginLongitude="trip.beginLongitude"
       v-bind:endLatitude="trip.endLatitude"
       v-bind:endLongitude="trip.endLongitude"
+      v-bind:editable="!readonly"
+      v-bind:centerLat="currentLake ? currentLake.latitude : undefined"
+      v-bind:centerLng="currentLake ? currentLake.longitude : undefined"
+      v-on:end-position-picked="onEndPositionPicked"
     />
   </div>
 </template>
@@ -207,6 +211,14 @@ export default class SomeTripSummary extends Vue {
     // déclenchée par le parent au « Terminer », pas à la sélection.
     this.trip.lakeId = lake ? lake.id : "";
     this.currentLake = lake || null;
+  }
+
+  // Point de fin placé par l'utilisateur sur la carte (#86) : mutation directe
+  // du modèle, comme les autres champs du récapitulatif. La sauvegarde est
+  // déclenchée par le parent au « Terminer ».
+  onEndPositionPicked(coords: { lat: number; lng: number }) {
+    this.$set(this.trip, "endLatitude", coords.lat);
+    this.$set(this.trip, "endLongitude", coords.lng);
   }
 
   created() {
