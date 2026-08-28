@@ -213,30 +213,25 @@ export default class SomeTripSummary extends Vue {
     this.currentLake = lake || null;
   }
 
-  // Point de fin placé par l'utilisateur sur la carte (#86). On le rattache
-  // ensuite à l'entité hydro de la sortie en le projetant sur sa géométrie
-  // (point le plus proche), comme pour le point de début. Mutation directe du
-  // modèle ; la sauvegarde est déclenchée par le parent au « Terminer ».
+  // Point de fin placé par l'utilisateur sur la carte (#86). On le projette
+  // ensuite sur l'entité hydro la plus proche (point le plus proche de sa
+  // géométrie), comme pour le point de début. On ne le contraint PAS à
+  // l'entité de la sortie : le pêcheur a pu terminer sur une autre rivière /
+  // mare / étang. Mutation directe du modèle ; la sauvegarde est déclenchée
+  // par le parent au « Terminer ».
   onEndPositionPicked(coords: { lat: number; lng: number }) {
     this.$set(this.trip, "endLatitude", coords.lat);
     this.$set(this.trip, "endLongitude", coords.lng);
-    this.snapEndPositionToWaterEntity(coords);
+    this.snapEndPositionToNearestWaterEntity(coords);
   }
 
-  private snapEndPositionToWaterEntity(coords: { lat: number; lng: number }) {
+  private snapEndPositionToNearestWaterEntity(coords: { lat: number; lng: number }) {
     ReferentialService.getAttribution(coords.lat, coords.lng)
       .then((res) => {
-        const candidates = [res.proposal, ...(res.alternatives || [])].filter(
-          Boolean
-        ) as { waterEntityId: string; closestPoint?: { lat: number; lng: number } }[];
-        // On projette sur l'entité de la sortie, pas sur l'entité la plus
-        // proche : une sortie se déroule sur un seul plan d'eau / cours d'eau.
-        const match = candidates.find(
-          (c) => c.waterEntityId === this.trip.lakeId
-        );
-        if (match && match.closestPoint) {
-          this.$set(this.trip, "endLatitude", match.closestPoint.lat);
-          this.$set(this.trip, "endLongitude", match.closestPoint.lng);
+        const snapped = res && res.proposal ? res.proposal.closestPoint : null;
+        if (snapped) {
+          this.$set(this.trip, "endLatitude", snapped.lat);
+          this.$set(this.trip, "endLongitude", snapped.lng);
         }
       })
       // Hors ligne / erreur serveur : on conserve le point brut posé par
