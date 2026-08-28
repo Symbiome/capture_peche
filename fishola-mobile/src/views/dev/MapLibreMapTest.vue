@@ -35,10 +35,22 @@
                 @map-click="onMapClick"
                 @close="noop"
             />
+            <!-- Feuille de confirmation d'attribution (#9) branchée sur le tap,
+                 avec assez d'alternatives pour la faire défiler : l'e2e #138
+                 vérifie que la ligne Annuler/Confirmer reste dans le viewport. -->
+            <AttributionConfirmSheet
+                :attribution="attribution"
+                :visible="sheetVisible"
+                @confirm="onSheetConfirm"
+                @cancel="sheetVisible = false"
+            />
         </div>
         <div class="map-test-readout">
             <span data-cy="selected-entity">{{ selectedEntityId }}</span>
             <span data-cy="last-click">{{ lastClick }}</span>
+            <button type="button" data-cy="simulate-tap" @click="onMapClick({ lng: 6.13, lat: 45.9 })">
+                simuler un tap
+            </button>
         </div>
     </div>
 </template>
@@ -46,13 +58,17 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import MapLibreMap from '@/components/common/MapLibreMap.vue';
+import AttributionConfirmSheet from '@/components/common/AttributionConfirmSheet.vue';
+import { AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';
 
 @Component({
-    components: { MapLibreMap },
+    components: { MapLibreMap, AttributionConfirmSheet },
 })
 export default class MapLibreMapTest extends Vue {
     selectedEntityId: string = '';
     lastClick: string = '';
+    attribution: AttributionResponse | null = null;
+    sheetVisible = false;
 
     onSelect(id: string) {
         this.selectedEntityId = id;
@@ -60,6 +76,23 @@ export default class MapLibreMapTest extends Vue {
 
     onMapClick(coords: { lng: number; lat: number }) {
         this.lastClick = `${coords.lng.toFixed(5)},${coords.lat.toFixed(5)}`;
+        const at = { lat: coords.lat, lng: coords.lng };
+        this.attribution = {
+            proposal: {
+                waterEntityId: 'demo-1', name: 'Lac de démonstration',
+                kind: 'STILL', distanceM: 12, closestPoint: at,
+            } as WaterEntityAttribution,
+            alternatives: Array.from({ length: 8 }, (_v, i) => ({
+                waterEntityId: `alt-${i}`, name: `Entité alternative ${i + 1}`,
+                kind: 'FLOWING', distanceM: 100 * (i + 1), closestPoint: at,
+            })) as WaterEntityAttribution[],
+        };
+        this.sheetVisible = true;
+    }
+
+    onSheetConfirm(entity: WaterEntityAttribution) {
+        this.selectedEntityId = entity.waterEntityId;
+        this.sheetVisible = false;
     }
 
     noop() {

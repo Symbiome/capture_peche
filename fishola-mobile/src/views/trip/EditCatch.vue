@@ -1309,6 +1309,11 @@ export default class EditCatchView extends Vue {
     .map {
       width: 100%;
       height: 200px;
+      // Petit écran : on borne la carte pour ne pas repousser le bouton
+      // d'enregistrement (barre d'action) hors de la vue (#138). `svh` suit les
+      // barres dynamiques du navigateur mobile, comme le reste des cartes (#97).
+      max-height: 45vh;
+      max-height: 45svh;
     }
   }
 
