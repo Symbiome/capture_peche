@@ -122,6 +122,10 @@
       v-bind:beginLongitude="trip.beginLongitude"
       v-bind:endLatitude="trip.endLatitude"
       v-bind:endLongitude="trip.endLongitude"
+      v-bind:editable="!readonly"
+      v-bind:centerLat="currentLake ? currentLake.latitude : undefined"
+      v-bind:centerLng="currentLake ? currentLake.longitude : undefined"
+      v-on:end-position-picked="onEndPositionPicked"
     />
   </div>
 </template>
@@ -207,6 +211,32 @@ export default class SomeTripSummary extends Vue {
     // déclenchée par le parent au « Terminer », pas à la sélection.
     this.trip.lakeId = lake ? lake.id : "";
     this.currentLake = lake || null;
+  }
+
+  // Point de fin placé par l'utilisateur sur la carte (#86). On le projette
+  // ensuite sur l'entité hydro la plus proche (point le plus proche de sa
+  // géométrie), comme pour le point de début. On ne le contraint PAS à
+  // l'entité de la sortie : le pêcheur a pu terminer sur une autre rivière /
+  // mare / étang. Mutation directe du modèle ; la sauvegarde est déclenchée
+  // par le parent au « Terminer ».
+  onEndPositionPicked(coords: { lat: number; lng: number }) {
+    this.$set(this.trip, "endLatitude", coords.lat);
+    this.$set(this.trip, "endLongitude", coords.lng);
+    this.snapEndPositionToNearestWaterEntity(coords);
+  }
+
+  private snapEndPositionToNearestWaterEntity(coords: { lat: number; lng: number }) {
+    ReferentialService.getAttribution(coords.lat, coords.lng)
+      .then((res) => {
+        const snapped = res && res.proposal ? res.proposal.closestPoint : null;
+        if (snapped) {
+          this.$set(this.trip, "endLatitude", snapped.lat);
+          this.$set(this.trip, "endLongitude", snapped.lng);
+        }
+      })
+      // Hors ligne / erreur serveur : on conserve le point brut posé par
+      // l'utilisateur (le point de fin reste optionnel et non bloquant).
+      .catch(() => undefined);
   }
 
   created() {
