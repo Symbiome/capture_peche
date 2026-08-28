@@ -38,6 +38,14 @@
         </div>
         <div class="map" v-if="validMarkers.length > 0">
             <div ref="mapContainer" class="mtm-container" />
+            <button
+                type="button"
+                class="mtm-recenter-btn"
+                @click="recenterOnMarkers"
+                title="Recadrer la vue sur toutes mes sorties"
+            >
+                <i class="icon-fishing" /> Mes sorties
+            </button>
         </div>
         <div class="legend" v-if="validMarkers.length > 0">
             <div class="legend-item">
@@ -80,6 +88,14 @@ import { addCatchPinIcon, attachHydroHover, buildFisholaStyle, DEFAULT_CENTER, D
 // Serveur de glyphes public (compteurs de clusters). Sans lui, les nombres ne
 // s'affichent pas mais la carte reste fonctionnelle (dégradation silencieuse).
 const GLYPHS_URL = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
+
+// Zoom minimal de la carte « Mes sorties » (#136). Cohérent avec une emprise
+// nationale : à ce niveau la France entière tient à l'écran, les sorties se
+// regroupent en clusters visibles et le fond IGN reste lisible. Rester dans
+// l'intervalle indexé par supercluster ([0, clusterMaxZoom]) garantit qu'un
+// cluster existe toujours à ce zoom. Empêche aussi de dézoomer jusqu'à une
+// carte quasi vide où les marqueurs sortaient du cadre.
+const MAP_MIN_ZOOM = 4;
 
 // Identifiants des pins « sortie » enregistrés dans la carte (cf. addCatchPinIcon).
 // Couleur du pin = la sortie a au moins une capture enregistrée, ou aucune (#33).
@@ -177,6 +193,10 @@ export default class MyTripsMapView extends Vue {
             style,
             center: DEFAULT_CENTER,
             zoom: DEFAULT_ZOOM,
+            minZoom: MAP_MIN_ZOOM,
+            // Une seule Terre : aux bas zooms, les copies du monde projetaient
+            // les marqueurs hors de la bande visible sur les écrans étroits (#136).
+            renderWorldCopies: false,
             attributionControl: { compact: true },
         });
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
@@ -293,6 +313,12 @@ export default class MyTripsMapView extends Vue {
         });
     }
 
+    // Bouton « Mes sorties » sur la carte (#136) : ramène la vue sur l'emprise
+    // de tous les marqueurs, comme le cadrage à l'ouverture de l'onglet.
+    recenterOnMarkers() {
+        this.fitToMarkers();
+    }
+
     private fitToMarkers() {
         if (!this.map || this.validMarkers.length === 0) {
             return;
@@ -354,6 +380,7 @@ export default class MyTripsMapView extends Vue {
 }
 
 .map {
+    position: relative;
     height: 80vh;
     z-index: 995;
 }
@@ -361,6 +388,29 @@ export default class MyTripsMapView extends Vue {
 .mtm-container {
     width: 100%;
     height: 100%;
+}
+
+.mtm-recenter-btn {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    z-index: 996;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: @pelorous;
+    color: @white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 3px #0003;
+
+    &:hover {
+        background-color: @terra-cotta;
+    }
 }
 
 .legend {
