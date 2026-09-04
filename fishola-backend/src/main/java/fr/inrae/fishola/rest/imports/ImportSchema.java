@@ -26,7 +26,6 @@ import java.util.Set;
 
 /**
  * Constantes du format d'import CSV opérateur (#71, template officiel 28 colonnes).
- * Portage fidèle de {@code fishola-backoffice/backoffice/imports/schema.py}.
  */
 public final class ImportSchema {
 

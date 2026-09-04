@@ -43,8 +43,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Pipeline d'import CSV opérateur (#71), portage fidèle de
- * {@code fishola-backoffice/backoffice/imports/service.py}.
+ * Pipeline d'import CSV opérateur (#71).
  *
  * Trois étages : structurel (colonnes/types/cohérence), référentiel (résolution
  * espèce/technique/entité hydro), métier (bornes de taille, lots, bredouille). Les
