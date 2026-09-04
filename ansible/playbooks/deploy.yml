@@ -69,22 +69,6 @@
         chdir: "{{ project_dir }}"
       changed_when: true
 
-    - name: Attendre que PostgreSQL soit prêt
-      ansible.builtin.command:
-        cmd: docker compose exec -T docker_pg pg_isready -U postgres
-        chdir: "{{ project_dir }}"
-      register: _pg_ready
-      until: _pg_ready.rc == 0
-      retries: 20
-      delay: 3
-      changed_when: false
-
-    - name: Appliquer les migrations Django du back-office
-      ansible.builtin.command:
-        cmd: docker compose exec -T fishola-backoffice python manage.py migrate --noinput
-        chdir: "{{ project_dir }}"
-      changed_when: true
-
     - name: Récapitulatif du déploiement
       ansible.builtin.debug:
         msg:
@@ -92,8 +76,5 @@
           - "Front pêcheur : {{ app_domain }} (port local {{ mobile_port }})"
           - "Front admin   : {{ admin_domain }} (port local {{ admin_port }})"
           - "API backend   : {{ api_domain }}/api/v1/status (port local {{ backend_port }})"
-          - "Back-office   : {{ backoffice_domain }}/admin/ (port local {{ backoffice_port }})"
           - "Vérifier que ce mapping domaine -> port correspond bien au reverse proxy Adventiel."
-          - "Prochaines étapes :"
-          - "  1. docker compose exec fishola-backoffice python manage.py createsuperuser"
-          - "  2. ./health_check.sh --local puis ./health_check.sh"
+          - "Prochaine étape : ./health_check.sh --local puis ./health_check.sh"

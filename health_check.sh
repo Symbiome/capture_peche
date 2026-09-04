@@ -43,7 +43,6 @@ status=0
 check "Backend"       "${API_DOMAIN}"        "${BACKEND_PORT:-8080}"    "/api/v1/status" || status=1
 check "Front pêcheur" "${APP_DOMAIN}"        "${MOBILE_PORT:-8081}"     "/"              || status=1
 check "Front admin"   "${ADMIN_DOMAIN}"      "${ADMIN_PORT:-8082}"      "/"              || status=1
-check "Back-office"   "${BACKOFFICE_DOMAIN}" "${BACKOFFICE_PORT:-8083}" "/admin/login/"  || status=1
 
 # Maildev n'est pas exposé derrière le reverse proxy (outil dev interne uniquement) :
 # on ne peut le vérifier qu'en local, directement sur le port du conteneur.
