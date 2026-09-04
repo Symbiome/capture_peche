@@ -322,6 +322,39 @@ export default class Helpers {
     });
   }
 
+  /**
+   * Alerte affichée après l'enregistrement d'une capture d'une espèce soumise à
+   * déclaration obligatoire (#91). Avec un lien, propose de l'ouvrir dans un nouvel
+   * onglet ; sans lien, invite à contacter sa fédération.
+   */
+  static declareCatchAlert(modal: any, reportLink?: string): Promise<void> {
+    return new Promise<void>((resolve, _reject) => {
+      const text = reportLink
+        ? "Cette espèce nécessite une déclaration obligatoire."
+        : "Cette espèce nécessite une déclaration obligatoire. Contactez votre fédération pour connaître la procédure à suivre.";
+      const buttons: any[] = [
+        {
+          title: reportLink ? "Plus tard" : "J'ai compris",
+          handler: () => {
+            modal.hide("dialog");
+            resolve();
+          },
+        },
+      ];
+      if (reportLink) {
+        buttons.push({
+          title: "Déclarer",
+          handler: () => {
+            window.open(reportLink, "_blank");
+            modal.hide("dialog");
+            resolve();
+          },
+        });
+      }
+      modal.show("dialog", { title: "Déclaration obligatoire", text, buttons });
+    });
+  }
+
   static getDeviceType(): Promise<DeviceType> {
     if (import.meta.env.VITE__FORCED_DEVICE_TYPE) {
       return Promise.resolve(import.meta.env.VITE__FORCED_DEVICE_TYPE);

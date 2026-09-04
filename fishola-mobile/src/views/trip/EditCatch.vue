@@ -588,6 +588,8 @@ export default class EditCatchView extends Vue {
       name: s.alias ? `${s.alias} (${s.name})` : s.name,
       builtIn: s.builtIn,
       mandatorySize: s.mandatorySize,
+      mandatoryReport: s.mandatoryReport,
+      reportLink: s.reportLink,
       authorizedSample: s.authorizedSample,
       minSize: 0,
       maxSize: 1000
@@ -619,6 +621,7 @@ export default class EditCatchView extends Vue {
           name: name,
           builtIn: false,
           mandatorySize: false,
+          mandatoryReport: false,
           authorizedSample: false,
           minSize: 0,
           maxSize: 1000,
@@ -635,6 +638,7 @@ export default class EditCatchView extends Vue {
       name: "Autre ...",
       builtIn: false,
       mandatorySize: false,
+      mandatoryReport: false,
       authorizedSample: false,
       minSize: 0,
       maxSize: 1000
@@ -982,7 +986,19 @@ export default class EditCatchView extends Vue {
         pictureToDelete.order
       );
     }
+    await this.alertIfMandatoryReport();
     this.leavePage();
+  }
+
+  // #91 : après l'enregistrement, alerte si l'espèce saisie est soumise à
+  // déclaration obligatoire (avec lien vers le formulaire officiel s'il existe).
+  async alertIfMandatoryReport() {
+    const species = this.allSpeciesWithAliases.find(
+      (s) => s.id === this.aCatch.speciesId
+    );
+    if (species && species.mandatoryReport) {
+      await Helpers.declareCatchAlert(this.$modal, species.reportLink);
+    }
   }
 
   deleteCatch() {

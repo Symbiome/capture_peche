@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -77,6 +78,20 @@ class ReferentialResourceTest {
                     .body("[0].kind", notNullValue())
                     .body("[0].latitude", notNullValue())
                     .body("[0].longitude", notNullValue());
+    }
+
+    @Test
+    void testGetSpeciesExposesMandatoryReport() {
+        // Déclaration obligatoire (#91) : le champ doit être exposé par l'API
+        // consommée par l'app pêcheur, avec une valeur par défaut à false pour
+        // les espèces de la fixture (aucune n'est marquée soumise à déclaration).
+        given()
+                .when()
+                    .get("/api/v1/referential/species")
+                .then()
+                    .statusCode(200)
+                    .body("size()", greaterThanOrEqualTo(1))
+                    .body("mandatoryReport", everyItem(equalTo(false)));
     }
 
 }
