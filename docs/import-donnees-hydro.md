@@ -113,32 +113,43 @@ aussi ce qui rend un réimport de la même édition sans effet.
 ## Nommage des plans d'eau
 
 Les toponymes de la BD TOPO ne sont pas uniques : « Lac Blanc » désigne 17 plans
-d'eau distincts sur sept départements, « Étang Neuf » 41. Or les colonnes `name`
-et `export_as` portent une contrainte d'unicité.
+d'eau distincts sur sept départements, « Étang Neuf » 41.
 
-Les homonymes sont donc départagés par leur commune :
+Depuis #134, `name` (le nom affiché au pêcheur) et `export_as` (le libellé
+technique, utilisé pour les exports Darwin Core) ont des rôles distincts :
 
-```
-Lac Blanc (Courchevel)
-Lac Blanc (Valloire)
-Lac Blanc (Bonneval-sur-Arc)
-```
+- **`name` vaut toujours le toponyme brut de la BD TOPO**, jamais suffixé —
+  seule colonne montrée au pêcheur. Les homonymes s'affichent donc avec le
+  même nom ; l'app les distingue par la commune affichée à côté (#6/#15), pas
+  en modifiant le nom lui-même.
+- **`export_as` seul porte la contrainte d'unicité** et garde l'escalier de
+  désambiguïsation, sur le même toponyme :
 
-C'est pour cela que les communes sont chargées automatiquement avant l'import. Si
-le référentiel manque, l'import réussit quand même, mais les homonymes portent
-alors leur identifiant technique — `Lac Blanc_PLANDEAU0000002000776820` — et
-**seul un réimport complet du département corrige ces libellés**. D'où la
-vérification en amont : à l'échelle nationale, l'erreur ne se constaterait
-qu'après plusieurs heures de traitement.
+  ```
+  Lac Blanc (Courchevel)
+  Lac Blanc (Valloire)
+  Lac Blanc (Bonneval-sur-Arc)
+  ```
 
-Deux limites assumées :
+C'est pour cela que les communes sont chargées automatiquement avant l'import :
+elles n'influencent plus le nom affiché, mais un `export_as` plus lisible. Si
+le référentiel manque, l'import réussit quand même, mais les homonymes ont un
+`export_as` réduit à leur identifiant technique —
+`Lac Blanc_PLANDEAU0000002000776820` (`name` reste « Lac Blanc » dans tous les
+cas) — et **seul un réimport complet du département corrige ce libellé
+d'export**. D'où la vérification en amont : à l'échelle nationale, l'erreur ne
+se constaterait qu'après plusieurs heures de traitement.
+
+Deux limites assumées, qui ne concernent que `export_as` (`name` reste
+toujours le toponyme brut) :
 
 - **Les cours d'eau restent sur l'identifiant.** Une entité `cours_d_eau` porte
   le cours entier — l'Arve traverse 26 communes de la seule Haute-Savoie — et un
   qualificatif communal y serait faux autant qu'inutile.
 - **Certains plans d'eau partagent toponyme *et* commune** : les darses du port
   de Dunkerque, les étangs de la Dombes, les chapelets de lacs de montagne.
-  Aucune commune ne peut les départager, ils conservent leur identifiant.
+  Aucune commune ne peut les départager, leur `export_as` retombe sur
+  l'identifiant.
 
 ## Communes seules
 
@@ -160,9 +171,10 @@ La base n'est pas démarrée : `fishola-backend/start_db.sh`.
 **Un département est systématiquement sauté.** Son marqueur existe dans
 `.hydro_import_state/`. Le supprimer, ou passer `--download=force`.
 
-**Les plans d'eau portent des identifiants au lieu de noms de communes.**
-Le référentiel commune ne couvrait pas la zone au moment de l'import. Charger les
-communes puis réimporter le département avec `--download=force`.
+**Le `export_as` des plans d'eau porte un identifiant au lieu d'un nom de
+commune** (`name`, affiché au pêcheur, n'est jamais concerné). Le référentiel
+commune ne couvrait pas la zone au moment de l'import. Charger les communes
+puis réimporter le département avec `--download=force`.
 
 **Le téléchargement échoue ou s'interrompt.** Les archives sont reprises là où
 elles s'étaient arrêtées, et leur empreinte MD5 est vérifiée : relancer la même

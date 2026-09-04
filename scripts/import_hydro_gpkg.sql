@@ -9,18 +9,23 @@
 -- river_section / water_surface puissent résoudre leur water_entity_id directement
 -- à l'insertion (jointure sur bdtopo_cleabs), sans passe de backfill séparée.
 --
--- Nommage des plans d'eau : les toponymes BD TOPO ne sont pas uniques (« Lac
--- Blanc » désigne 17 plans d'eau distincts), alors que water_entity.name et
--- export_as portent une contrainte UNIQUE. Les homonymes sont donc départagés par
--- leur commune quand le référentiel `commune` la couvre — « Lac Blanc (Valloire) »
--- plutôt qu'un identifiant technique. Charger les communes des départements
--- concernés AVANT l'import améliore donc les libellés (scripts/import_communes_geoapi.sh
--- ou import_admin_gpkg.sh) ; sans elles, l'import réussit quand même et retombe
--- sur le suffixe cleabs.
+-- Nommage des plans d'eau (#134) : les toponymes BD TOPO ne sont pas uniques
+-- (« Lac Blanc » désigne 17 plans d'eau distincts), alors que
+-- water_entity.export_as porte une contrainte UNIQUE (water_entity.name n'en
+-- porte plus, cf. #134). `name` (nom affiché au pêcheur) vaut donc TOUJOURS le
+-- toponyme brut, jamais suffixé. Seul `export_as` (jamais montré au pêcheur,
+-- utilisé pour les exports Darwin Core) suit un escalier de désambiguïsation
+-- pour rester unique : toponyme nu → « toponyme (commune) », quand le
+-- référentiel `commune` la couvre, → « toponyme_cleabs » sinon. Charger les
+-- communes des départements concernés AVANT l'import améliore donc les
+-- libellés d'export (scripts/import_communes_geoapi.sh ou import_admin_gpkg.sh) ;
+-- sans elles, l'import réussit quand même et export_as retombe sur le suffixe
+-- cleabs (name reste le toponyme brut dans tous les cas).
 --
--- Les cours d'eau restent volontairement sur le suffixe cleabs : une entité
--- cours_d_eau porte le cours entier (l'Arve traverse 26 communes du seul 74),
--- un qualificatif communal y serait faux autant qu'inutile.
+-- Les cours d'eau n'utilisent volontairement pas la commune pour leur
+-- export_as : une entité cours_d_eau porte le cours entier (l'Arve traverse
+-- 26 communes du seul 74), un qualificatif communal y serait faux autant
+-- qu'inutile — seul le suffixe cleabs les désambiguïsent au besoin.
 
 -- ---------------------------------------------------------------------------
 -- 1. plan_d_eau -> water_entity (kind = STILL)
@@ -131,7 +136,9 @@ WITH staged AS (
 )
 INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, geom)
 SELECT
-    final_name,
+    -- name (#134) : toponyme brut, jamais l'escalier — c'est export_as qui
+    -- porte la désambiguïsation, name n'a plus de contrainte d'unicité à tenir.
+    base_name,
     final_name,
     'STILL'::water_entity_kind,
     nature,
@@ -176,7 +183,8 @@ WITH ranked AS (
 )
 INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, geom)
 SELECT
-    final_name,
+    -- name (#134) : toponyme brut, jamais l'escalier (cf. section 1).
+    base_name,
     final_name,
     'FLOWING'::water_entity_kind,
     cleabs,
