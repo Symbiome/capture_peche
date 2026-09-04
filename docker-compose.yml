@@ -1,9 +1,10 @@
 # Stack Fishola / capture_peche — serveur dev/recette.
 #
-# Reconstruit les 4 images applicatives à partir des Dockerfile.demo déjà
+# Reconstruit les 3 images applicatives à partir des Dockerfile.demo déjà
 # utilisés par la CI GitLab (mêmes artefacts, juste construits ici plutôt que
-# poussés vers un registry). Déploiement complet (build Maven/npm inclus)
-# orchestré par ansible/playbooks/deploy.yml — voir DEPLOYMENT.md.
+# poussés vers un registry). Le back-office Django n'est pas déployé ici.
+# Déploiement complet (build Maven/npm inclus) orchestré par
+# ansible/playbooks/deploy.yml — voir DEPLOYMENT.md.
 #
 # Toujours précédé d'un `mvn clean package` à la racine (produit
 # fishola-backend/target/quarkus-app, fishola-mobile/target/dist-demo et
@@ -50,7 +51,7 @@ services:
       QUARKUS_MAILER_SSL: "false"
       # Le profil %demo hérite sinon des origines localhost:808x du profil %dev :
       # sans ça, le navigateur bloque les appels API en CORS depuis les vrais domaines.
-      QUARKUS_HTTP_CORS_ORIGINS: https://${APP_DOMAIN},https://${ADMIN_DOMAIN},https://${BACKOFFICE_DOMAIN}
+      QUARKUS_HTTP_CORS_ORIGINS: https://${APP_DOMAIN},https://${ADMIN_DOMAIN}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     networks: [fishola]
@@ -73,29 +74,6 @@ services:
     depends_on: [fishola-backend]
     ports:
       - "127.0.0.1:${ADMIN_PORT:-8082}:80"
-    networks: [fishola]
-
-  fishola-backoffice:
-    build:
-      context: ./fishola-backoffice
-      dockerfile: docker/Dockerfile.demo
-    restart: unless-stopped
-    depends_on:
-      docker_pg:
-        condition: service_healthy
-    environment:
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY manquant dans .env}
-      DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${BACKOFFICE_DOMAIN}
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${BACKOFFICE_DOMAIN}
-      DB_NAME: ${POSTGRES_DB:-fishola}
-      DB_USER: postgres
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
-      DB_HOST: docker_pg
-      DB_PORT: "5432"
-      FISHOLA_API_BASE_URL: https://${API_DOMAIN}
-    ports:
-      - "127.0.0.1:${BACKOFFICE_PORT:-8083}:8000"
     networks: [fishola]
 
   maildev:

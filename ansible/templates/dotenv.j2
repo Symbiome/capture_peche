@@ -4,7 +4,6 @@
 APP_DOMAIN={{ app_domain }}
 API_DOMAIN={{ api_domain }}
 ADMIN_DOMAIN={{ admin_domain }}
-BACKOFFICE_DOMAIN={{ backoffice_domain }}
 
 POSTGRES_DB={{ postgres_db }}
 POSTGRES_PASSWORD={{ vault_postgres_password }}
@@ -12,13 +11,11 @@ POSTGRES_IMAGE={{ postgres_image }}
 
 FISHOLA_JWT_SECRET={{ vault_fishola_jwt_secret }}
 FISHOLA_ADMIN_PASSWORD={{ vault_fishola_admin_password }}
-DJANGO_SECRET_KEY={{ vault_django_secret_key }}
 
-SMTP_HOST={{ smtp_host }}
-SMTP_PORT={{ smtp_port }}
+SMTP_HOST={{ smtp_host | default('maildev') }}
+SMTP_PORT={{ smtp_port | default(1025) }}
 
 BACKEND_PORT={{ backend_port }}
 MOBILE_PORT={{ mobile_port }}
 ADMIN_PORT={{ admin_port }}
-BACKOFFICE_PORT={{ backoffice_port }}
-MAILDEV_PORT={{ maildev_port }}
+MAILDEV_PORT={{ maildev_port | default(41080) }}
