@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.enums.CollectionMethod;
 import fr.inrae.fishola.entities.enums.DeviceType;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
+import fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireParsedRow;
 import jakarta.inject.Singleton;
 import org.jooq.Condition;
 import jakarta.transaction.Transactional;
@@ -145,6 +146,16 @@ public class ImportDao extends AbstractFisholaDao {
         return r == null ? null : new Bounds(r.get(SPECIES_SIZE_BOUNDS.MIN_SIZE_CM), r.get(SPECIES_SIZE_BOUNDS.MAX_SIZE_CM));
     }
 
+    /** {@code species.mandatory_size} (#143) : la taille est-elle obligatoire pour cette espèce ? */
+    public boolean isSizeMandatory(UUID speciesId) {
+        if (speciesId == null) {
+            return false;
+        }
+        Boolean mandatory = withContext(ctx -> ctx.select(SPECIES.MANDATORY_SIZE).from(SPECIES)
+                .where(SPECIES.ID.eq(speciesId)).fetchOne(SPECIES.MANDATORY_SIZE));
+        return mandatory != null && mandatory;
+    }
+
     // --- Persistance ---------------------------------------------------------
 
     /**
@@ -193,6 +204,64 @@ public class ImportDao extends AbstractFisholaDao {
                     }
                     insertCatch(ctx, tripId, p.speciesId, s.techniqueId, p.longueur, p.weight, p.kept,
                             p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now);
+                }
+            }
+        }
+
+        return new Persisted(jobId, insertedCount);
+    }
+
+    /**
+     * Variante de {@link #persist} pour le pipeline dédié « carnet volontaire » (#143) :
+     * même mécanique (job, erreurs, sorties + captures par {@code session_ref}), sur des
+     * {@link CarnetVolontaireParsedRow}. Une capture en lot (quantité > 1) synthétise
+     * {@code catch.size_class} depuis les bornes du lot ({@code "min-max"}) faute de colonnes
+     * dédiées (cf. #145) ; une capture individuelle utilise {@code catch.size} normalement.
+     */
+    @Transactional
+    public Persisted persistCarnetVolontaire(String fileName, String fileHash, String status, int total,
+                                             int rejected, UUID createdBy, List<ImportError> errors,
+                                             boolean doInsert, Map<String, List<CarnetVolontaireParsedRow>> sessions) {
+        int insertedCount = doInsert ? sessions.size() : 0;
+        DSLContext ctx = newContext();
+
+        UUID jobId = ctx.insertInto(IMPORT_JOB,
+                        IMPORT_JOB.FILE_NAME, IMPORT_JOB.FILE_HASH, IMPORT_JOB.STATUS,
+                        IMPORT_JOB.TOTAL, IMPORT_JOB.REJECTED, IMPORT_JOB.INSERTED, IMPORT_JOB.CREATED_BY,
+                        IMPORT_JOB.COLLECTION_METHOD)
+                .values(fileName, fileHash, status, total, rejected, insertedCount, createdBy,
+                        CollectionMethod.carnet_volontaire)
+                .returning(IMPORT_JOB.ID)
+                .fetchOne()
+                .getId();
+
+        for (ImportError e : errors) {
+            ctx.insertInto(IMPORT_ROW_ERROR,
+                            IMPORT_ROW_ERROR.IMPORT_ID, IMPORT_ROW_ERROR.LINE, IMPORT_ROW_ERROR.COLUMN_NAME,
+                            IMPORT_ROW_ERROR.STAGE, IMPORT_ROW_ERROR.CODE, IMPORT_ROW_ERROR.MESSAGE)
+                    .values(jobId, e.line(), e.column(), e.stage(), e.code(), e.message())
+                    .execute();
+        }
+
+        if (doInsert) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Map.Entry<String, List<CarnetVolontaireParsedRow>> entry : sessions.entrySet()) {
+                String sref = entry.getKey();
+                List<CarnetVolontaireParsedRow> rows = entry.getValue();
+                CarnetVolontaireParsedRow s = rows.get(0);
+                String name = "Carnet volontaire " + sref + " " + s.day.format(DAY_FMT);
+
+                UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.end, s.waterEntityId, name, now);
+
+                for (CarnetVolontaireParsedRow p : rows) {
+                    if (!p.hasCapture) {
+                        continue;
+                    }
+                    String sizeClass = (p.lotMinSize != null && p.lotMaxSize != null)
+                            ? (p.lotMinSize + "-" + p.lotMaxSize)
+                            : null;
+                    insertCatch(ctx, tripId, p.speciesId, p.captureTechniqueId, p.size, p.weight, p.kept,
+                            p.quantity == null ? 1 : p.quantity, sizeClass, null, now);
                 }
             }
         }

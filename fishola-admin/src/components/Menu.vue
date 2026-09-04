@@ -83,6 +83,12 @@
       <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
         Nouvelle saisie
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-import-carnet-volontaire' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Import carnet volontaire
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-carnet-volontaire' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Saisie carnet volontaire
+      </b-navbar-item>
     </template>
 
     <template v-slot:end>

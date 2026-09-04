@@ -42,6 +42,8 @@ import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
 import OperatorImport from "@/views/operator/Import.vue";
 import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
+import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
+import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
 import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
 import AuditLog from "@/views/AuditLog.vue";
@@ -132,6 +134,16 @@ const routes: Array<RouteRecordRaw> = [
     path: "/operator/manual-entry",
     name: "operator-manual-entry",
     component: OperatorManualEntry
+  },
+  {
+    path: "/operator/import/carnet-volontaire",
+    name: "operator-import-carnet-volontaire",
+    component: OperatorCarnetVolontaireImport
+  },
+  {
+    path: "/operator/manual-entry/carnet-volontaire",
+    name: "operator-manual-entry-carnet-volontaire",
+    component: OperatorCarnetVolontaireManualEntry
   },
   {
     path: "/account/password",
