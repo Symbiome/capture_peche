@@ -65,9 +65,15 @@
       # Le socket hôte (rootless ou non) est toujours monté sur le même
       # chemin interne fixe, et DOCKER_HOST pointé dessus explicitement : la
       # détection ci-dessus reste la seule chose à connaître de l'hôte.
+      #
+      # --network host : Testcontainers (Ryuk + le Postgres éphémère de jOOQ)
+      # tourne en frère de ce conteneur de build, publié sur l'hôte à une
+      # adresse de bridge (172.17.0.1:<port>) — pas forcément joignable depuis
+      # ce conteneur selon la conf réseau. En partageant le netns de l'hôte,
+      # cette adresse devient localhost:<port>, toujours joignable.
       ansible.builtin.command:
         cmd: >-
-          docker run --rm
+          docker run --rm --network host
           -v {{ project_dir }}:/workspace -w /workspace
           -v fishola_maven_repo:/root/.m2
           -v {{ _docker_host.stdout | regex_replace('^unix://', '') }}:/var/run/docker.sock
