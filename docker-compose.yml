@@ -2,7 +2,7 @@
 #
 # Reconstruit les 3 images applicatives à partir des Dockerfile.demo déjà
 # utilisés par la CI GitLab (mêmes artefacts, juste construits ici plutôt que
-# poussés vers un registry). Le back-office Django n'est pas déployé ici.
+# poussés vers un registry).
 # Déploiement complet (build Maven/npm inclus) orchestré par
 # ansible/playbooks/deploy.yml — voir DEPLOYMENT.md.
 #

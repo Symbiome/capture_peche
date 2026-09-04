@@ -32,8 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Saisie manuelle opérateur (#72), portage de
- * {@code fishola-backoffice/backoffice/manual_entry.py}.
+ * Saisie manuelle opérateur (#72).
  *
  * Un seul jeu de règles avec l'import : la résolution d'entité hydro, les bornes de
  * taille (Q8, {@link ImportService#sizeOutOfBounds}) et la persistance {@code Trip}+

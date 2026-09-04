@@ -30,7 +30,6 @@ Ensuite il faut démarrer :
 * [le backend (avec sa base de données)](/fishola-backend/README.md)
 * [le front](/fishola-mobile/README.md)
 * [l'interface d'administration](/fishola-admin/README.md)
-* [le back-office « gestion interne » (Django)](/fishola-backoffice/README.md)
 
 #### Tout lancer / tout arrêter (raccourci)
 
@@ -38,8 +37,8 @@ Deux scripts à la racine orchestrent l'ensemble de la stack en mode dev :
 
 ```bash
 ./start_all.sh   # PostgreSQL (Docker) + backend Quarkus + fronts pêcheur/admin
-                 # + back-office Django + maildev. Ctrl+C arrête les serveurs de
-                 # dev (les conteneurs Docker restent en place).
+                 # + maildev. Ctrl+C arrête les serveurs de dev (les conteneurs
+                 # Docker restent en place).
 
 ./down_all.sh    # arrête TOUT : serveurs de dev (tués par port) + conteneurs
                  # Docker (maildev supprimé, PostgreSQL stoppé — les données
@@ -51,27 +50,21 @@ Deux scripts à la racine orchestrent l'ensemble de la stack en mode dev :
 | Backend (statut) | http://localhost:8080/api/v1/status |
 | Front pêcheur | http://localhost:8081 |
 | Front admin | http://localhost:8082 |
-| Back-office (admin Django) | http://localhost:8083/admin/ |
 | Maildev | http://localhost:41080 |
-
-> `start_all.sh` lance aussi les migrations Django du back-office (tables framework +
-> profil opérateur). Le premier démarrage installe l'environnement (`./setup.sh`) si `.venv`
-> est absent.
 
 #### Lancer les tests
 
 Le script `run_tests.sh` (racine) exécute les suites de tests, avec un **scope** optionnel :
 
 ```bash
-./run_tests.sh              # tout : backoffice (Django) + mobile (vitest) + backend (Quarkus)
-./run_tests.sh backoffice   # Django, tests DB-free — rapide
+./run_tests.sh              # tout : mobile (vitest) + backend (Quarkus)
 ./run_tests.sh mobile       # front pêcheur — vitest (unitaires)
 ./run_tests.sh backend      # Quarkus — mvn (Testcontainers → Docker + JDK ≥ 25)
 ./run_tests.sh e2e          # Cypress headless — nécessite la stack lancée (start_all.sh)
 ```
 
 Il affiche un récapitulatif et sort en erreur si une suite échoue. (Le front admin n'a pas
-de tests ; les tests backoffice tournent sans base via un runner `unittest`.)
+de tests.)
 
 
 ### Déploiement sur démo
