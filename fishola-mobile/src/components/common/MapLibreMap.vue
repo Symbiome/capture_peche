@@ -213,6 +213,10 @@ export default class MapLibreMap extends Vue {
         map.on('click', (e) => {
             this.setPin(e.lngLat.lng, e.lngLat.lat);
             this.$emit('map-click', { lng: e.lngLat.lng, lat: e.lngLat.lat });
+            // La feuille de confirmation (#9) va couvrir le bas de la carte :
+            // sur mobile, on remonte la vue pour que le pin posé reste visible
+            // dans la bande au-dessus d'elle (#138).
+            this.easePinAboveSheet(e.lngLat.lng, e.lngLat.lat);
         });
 
         // Survol d'une entité : curseur « pointer » + infobulle (nom + type).
@@ -424,6 +428,23 @@ export default class MapLibreMap extends Vue {
         } catch (err) {
             console.warn('Position indisponible', err);
         }
+    }
+
+    // Remonte la vue pour amener le point cliqué près du haut de la carte
+    // (~12 % de la hauteur), au-dessus de la feuille de confirmation
+    // d'attribution qui recouvre le bas sur mobile (#138) — sa hauteur est
+    // bornée à ~50svh, ce qui laisse cette bande visible. `offset` (décalage
+    // écran ponctuel, non persistant) plutôt que `padding` pour ne pas perturber
+    // les recadrages suivants. Sans effet sur desktop (feuille modale centrée).
+    private easePinAboveSheet(lng: number, lat: number) {
+        if (!this.map || !window.matchMedia('(max-width: 768px)').matches) {
+            return;
+        }
+        const height = this.map.getContainer().clientHeight;
+        if (!height) {
+            return;
+        }
+        this.map.easeTo({ center: [lng, lat], offset: [0, -height * 0.38], duration: 300 });
     }
 
     private setPin(lng: number, lat: number) {

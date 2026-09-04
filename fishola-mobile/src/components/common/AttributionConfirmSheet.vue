@@ -29,33 +29,37 @@
     <div v-if="visible" class="attribution-sheet-overlay" @click.self="cancel">
         <div class="attribution-sheet">
             <template v-if="proposal">
-                <h3>Votre session sera rattachée à :</h3>
+                <!-- Corps défilant : la ligne d'actions ci-dessous n'en fait pas
+                     partie, elle reste toujours visible en bas (#138). -->
+                <div class="attribution-sheet-body">
+                    <h3>Votre session sera rattachée à :</h3>
 
-                <div
-                    class="candidate proposal"
-                    :class="{ selected: isSelected(proposal) }"
-                    @click="select(proposal)"
-                >
-                    <span class="candidate-name">{{ proposal.name }}</span>
-                    <span class="candidate-dist">{{ formatDistance(proposal.distanceM) }}</span>
-                </div>
-
-                <div v-if="showIntermittentWarning" class="warning">
-                    <i class="icon-warning" />
-                    Cours d'eau non permanent — vérifiez le rattachement.
-                </div>
-
-                <div v-if="alternatives.length" class="alternatives">
-                    <p class="alternatives-label">Ou choisissez :</p>
                     <div
-                        v-for="alt in alternatives"
-                        :key="alt.waterEntityId"
-                        class="candidate"
-                        :class="{ selected: isSelected(alt) }"
-                        @click="select(alt)"
+                        class="candidate proposal"
+                        :class="{ selected: isSelected(proposal) }"
+                        @click="select(proposal)"
                     >
-                        <span class="candidate-name">{{ alt.name }}</span>
-                        <span class="candidate-dist">{{ formatDistance(alt.distanceM) }}</span>
+                        <span class="candidate-name">{{ proposal.name }}</span>
+                        <span class="candidate-dist">{{ formatDistance(proposal.distanceM) }}</span>
+                    </div>
+
+                    <div v-if="showIntermittentWarning" class="warning">
+                        <i class="icon-warning" />
+                        Cours d'eau non permanent — vérifiez le rattachement.
+                    </div>
+
+                    <div v-if="alternatives.length" class="alternatives">
+                        <p class="alternatives-label">Ou choisissez :</p>
+                        <div
+                            v-for="alt in alternatives"
+                            :key="alt.waterEntityId"
+                            class="candidate"
+                            :class="{ selected: isSelected(alt) }"
+                            @click="select(alt)"
+                        >
+                            <span class="candidate-name">{{ alt.name }}</span>
+                            <span class="candidate-dist">{{ formatDistance(alt.distanceM) }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -68,8 +72,10 @@
             </template>
 
             <template v-else>
-                <h3>Aucun plan/cours d'eau à proximité</h3>
-                <p class="empty">Aucune entité hydrographique n'a été trouvée près de ce point.</p>
+                <div class="attribution-sheet-body">
+                    <h3>Aucun plan/cours d'eau à proximité</h3>
+                    <p class="empty">Aucune entité hydrographique n'a été trouvée près de ce point.</p>
+                </div>
                 <div class="actions">
                     <button type="button" class="btn-cancel" @click="cancel">Fermer</button>
                 </div>
@@ -158,16 +164,27 @@ export default class AttributionConfirmSheet extends Vue {
 .attribution-sheet {
     width: 100%;
     max-width: 520px;
-    max-height: 80vh;
-    overflow-y: auto;
+    // Mobile : la feuille s'arrête au-dessus de la barre de navigation de l'app
+    // — sinon sa ligne d'actions Annuler/Confirmer passe derrière (#138).
+    // Le backdrop, lui, couvre toujours `inset: 0` (taps interceptés).
+    margin-bottom: @footer-height;
+    // `vh` ignore les barres dynamiques du navigateur mobile (#97/#138) : la
+    // feuille dépassait la zone réellement visible. Unités dynamiques, repli `vh`.
+    max-height: 60vh;
+    max-height: min(50svh, calc(100dvh - @footer-height));
     background: white;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    padding: 20px;
     box-shadow: 0 -2px 12px #0003;
+    // Colonne : corps défilant + ligne d'actions non défilante toujours visible.
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 
     @media screen and (min-width: @desktop-min-width) {
         border-radius: 12px;
+        margin-bottom: 0;
+        max-height: 80vh;
     }
 
     h3 {
@@ -175,6 +192,11 @@ export default class AttributionConfirmSheet extends Vue {
         font-size: 1.1rem;
         color: @gunmetal;
     }
+}
+
+.attribution-sheet-body {
+    overflow-y: auto;
+    padding: 20px;
 }
 
 .candidate {
@@ -225,7 +247,13 @@ export default class AttributionConfirmSheet extends Vue {
 .actions {
     display: flex;
     gap: 12px;
-    margin-top: 16px;
+    // Hors du corps défilant : toujours visible et atteignable, quelle que soit
+    // la hauteur de la liste d'alternatives (#138). La zone sûre iOS/Android est
+    // déjà dégagée par `margin-bottom: @footer-height` sur la feuille.
+    flex-shrink: 0;
+    padding: 14px 20px;
+    background: white;
+    border-top: 1px solid @gainsboro;
 
     button {
         flex: 1;
