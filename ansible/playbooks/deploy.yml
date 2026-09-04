@@ -47,18 +47,31 @@
         dest: "{{ project_dir }}/fishola-admin/.env.demo.local"
         mode: "0644"
 
+    - name: Déterminer le socket Docker de l'hôte (rootless ou non)
+      # DOCKER_HOST, quand il est exporté (typique d'une install rootless :
+      # /run/user/<uid>/docker.sock), prime sur le socket par défaut — même
+      # résolution que celle utilisée par le CLI docker lui-même.
+      ansible.builtin.command:
+        cmd: /bin/sh -c 'echo "${DOCKER_HOST:-unix:///var/run/docker.sock}"'
+      register: _docker_host
+      changed_when: false
+
     - name: Construire le backend et les fronts (mvn clean package, profil demo)
       # jooq-codegen-maven (génération des classes jOOQ) lance un Postgres
       # éphémère via Testcontainers pour introspecter le schéma — une vraie
       # étape de build (generate-sources), pas un test, donc -DskipTests ne la
       # saute pas. Sans le socket Docker monté ici, Testcontainers ne trouve
       # aucun environnement Docker et le module fishola-backend échoue direct.
+      # Le socket hôte (rootless ou non) est toujours monté sur le même
+      # chemin interne fixe, et DOCKER_HOST pointé dessus explicitement : la
+      # détection ci-dessus reste la seule chose à connaître de l'hôte.
       ansible.builtin.command:
         cmd: >-
           docker run --rm
           -v {{ project_dir }}:/workspace -w /workspace
           -v fishola_maven_repo:/root/.m2
-          -v /var/run/docker.sock:/var/run/docker.sock
+          -v {{ _docker_host.stdout | regex_replace('^unix://', '') }}:/var/run/docker.sock
+          -e DOCKER_HOST=unix:///var/run/docker.sock
           {{ maven_image }}
           mvn -B -DskipTests {{ '-U' if force_rebuild | default(false) else '' }} clean package
       changed_when: true
