@@ -8,6 +8,7 @@ export interface CatchBean {
     size?: number;
     automaticMeasure?: number;
     weight?: number;
+    quantity: number;
     keep: boolean;
     releasedStateId?: string;
     techniqueId: string;

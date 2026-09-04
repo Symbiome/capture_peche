@@ -50,6 +50,7 @@ import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -62,7 +63,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.jooq.impl.DSL.coalesce;
-import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.or;
 import static org.jooq.impl.DSL.trueCondition;
 
@@ -103,9 +103,17 @@ public class CatchsDao extends AbstractFisholaDao {
         });
     }
 
+    /**
+     * Nombre de poissons de la sortie (somme de {@code quantity}, pas nombre de lignes
+     * `catch` : une ligne peut représenter un lot de plusieurs poissons de taille homogène).
+     */
     public int countCatchs(UUID tripId) {
-        int result = withContext(context -> context.fetchCount(Tables.CATCH, Tables.CATCH.TRIP_ID.eq(tripId)));
-        return result;
+        BigDecimal total = withContext(context -> context
+                .select(coalesce(DSL.sum(Tables.CATCH.QUANTITY), BigDecimal.ZERO))
+                .from(Tables.CATCH)
+                .where(Tables.CATCH.TRIP_ID.eq(tripId))
+                .fetchOne(0, BigDecimal.class));
+        return total.intValue();
     }
 
     public List<Catch> listCatchs(UUID tripId) {
@@ -343,24 +351,30 @@ public class CatchsDao extends AbstractFisholaDao {
         return result;
     }
 
+    /**
+     * Nombre total de poissons capturés sur la plateforme (somme de {@code quantity},
+     * pas nombre de lignes `catch`).
+     */
     public int countCatchs() {
         int result = withContext(context -> {
             // On compte les sorties des utilisateurs non exclus
-            SelectConditionStep<Record1<UUID>> selectNonExcludedUsers = context.select(Tables.CATCH.ID)
+            BigDecimal totalFromNonExcludedUsers = context
+                    .select(coalesce(DSL.sum(Tables.CATCH.QUANTITY), BigDecimal.ZERO))
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .innerJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
-                    .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false));
-            int countFromNonExcludedUsers = context.fetchCount(selectNonExcludedUsers);
+                    .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false))
+                    .fetchOne(0, BigDecimal.class);
 
             // On compte aussi les sorties dont l'utilisateur a été supprimé
-            SelectConditionStep<Record1<UUID>> selectNoUser = context.select(Tables.CATCH.ID)
+            BigDecimal totalNoUser = context
+                    .select(coalesce(DSL.sum(Tables.CATCH.QUANTITY), BigDecimal.ZERO))
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
-                    .where(Tables.TRIP.OWNER_ID.isNull());
-            int countNoUser = context.fetchCount(selectNoUser);
+                    .where(Tables.TRIP.OWNER_ID.isNull())
+                    .fetchOne(0, BigDecimal.class);
 
-            return countFromNonExcludedUsers + countNoUser;
+            return totalFromNonExcludedUsers.add(totalNoUser).intValue();
         });
         return result;
     }
@@ -391,15 +405,15 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public Map<UUID, Integer> countCatchsByWaterEntityId() {
         Map<UUID, Integer> result = withContext(context -> {
-            Result<Record2<UUID, Integer>> fetched =
-                    context.select(WaterEntity.WATER_ENTITY.ID, count())
+            Result<Record2<UUID, BigDecimal>> fetched =
+                    context.select(WaterEntity.WATER_ENTITY.ID, DSL.sum(Tables.CATCH.QUANTITY))
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .innerJoin(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.TRIP.WATER_ENTITY_ID))
                     .groupBy(WaterEntity.WATER_ENTITY.ID)
                     .fetch();
             ImmutableMap.Builder<UUID, Integer> builder = ImmutableMap.builder();
-            fetched.forEach(tuple -> builder.put(tuple.value1(), tuple.value2()));
+            fetched.forEach(tuple -> builder.put(tuple.value1(), tuple.value2().intValue()));
             ImmutableMap<UUID, Integer> map = builder.build();
             return map;
         });

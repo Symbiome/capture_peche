@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
@@ -85,6 +86,8 @@ class TripResourceTest extends AbstractFisholaTest {
     protected ReferentialDao referentialDao;
     @Inject
     protected TripsDao tripsDao;
+    @Inject
+    protected CatchsDao catchsDao;
     @Inject
     protected DashboardDao dashboardDao;
     @Inject
@@ -384,6 +387,71 @@ class TripResourceTest extends AbstractFisholaTest {
                 .body("id", equalTo(tripId))
                 .body("catchs[0].hasPicture", equalTo(false));
 
+    }
+
+    /**
+     * #148 : une capture peut représenter un lot de plusieurs poissons de taille homogène
+     * (ex. 15 perches de 10 cm) plutôt qu'un seul. `quantity` doit être par défaut à 1 quand
+     * non renseigné (rétrocompatibilité), et se répercuter sur le nombre de poissons de la
+     * sortie (`catchsCount`), pas juste sur le nombre de lignes `catch`.
+     */
+    @Test
+    void testCatchQuantity() {
+        TripBean trip = buildValidTripBean();
+
+        CatchBean defaultQuantityCatch = new CatchBean();
+        defaultQuantityCatch.id = "default-quantity";
+        defaultQuantityCatch.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        defaultQuantityCatch.techniqueId = trip.techniqueIds.iterator().next();
+        defaultQuantityCatch.keep = true;
+        defaultQuantityCatch.size = Optional.of(10);
+
+        CatchBean lotCatch = new CatchBean();
+        lotCatch.id = "lot-of-fifteen";
+        lotCatch.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        lotCatch.techniqueId = trip.techniqueIds.iterator().next();
+        lotCatch.keep = true;
+        lotCatch.size = Optional.of(10);
+        lotCatch.quantity = 15;
+
+        trip.catchs = List.of(defaultQuantityCatch, lotCatch);
+
+        ResponseBodyExtractionOptions body = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+                .body(trip.id, notNullValue())
+                .body(defaultQuantityCatch.id, notNullValue())
+                .body(lotCatch.id, notNullValue())
+            .extract()
+                .body();
+
+        String tripId = body.path(trip.id);
+
+        // La capture sans quantité explicite reste à 1 (rétrocompatibilité), celle du lot
+        // conserve les 15 poissons annoncés.
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("catchs.find { it.size == 10 && it.quantity == 1 }", notNullValue())
+                .body("catchs.find { it.quantity == 15 }", notNullValue());
+
+        // Le nombre de poissons de la sortie est la somme des quantités (1 + 15 = 16), pas
+        // le nombre de lignes `catch` (2).
+        int catchsCount = countCatchs(UUID.fromString(tripId));
+        Assertions.assertEquals(16, catchsCount);
+    }
+
+    @Transactional
+    protected int countCatchs(UUID tripId) {
+        return catchsDao.countCatchs(tripId);
     }
 
     @Test

@@ -50,6 +50,7 @@
       <div class="bottom-left" v-if="bottom == 'species'">
         <i class="icon-fish" />
         {{ speciesLabel }}
+        <span v-if="aCatch.quantity && aCatch.quantity > 1"> × {{ aCatch.quantity }}</span>
       </div>
       <div class="bottom-left" v-if="bottom != 'species'">
         <Top v-bind:n="top" />
