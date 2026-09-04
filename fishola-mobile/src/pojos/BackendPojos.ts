@@ -71,6 +71,8 @@ export interface SpeciesWithAlias {
     builtIn: boolean;
     mandatorySize: boolean;
     scientificName?: string;
+    mandatoryReport: boolean;
+    reportLink?: string;
     alias?: string;
     present: boolean;
     authorizedSample: boolean;
@@ -94,6 +96,8 @@ export interface Species extends Serializable {
     codeTaxonSandre: number;
     codeTaxref: number;
     scientificName: string;
+    mandatoryReport: boolean;
+    reportLink: string;
 }
 
 export interface Technique extends Serializable {

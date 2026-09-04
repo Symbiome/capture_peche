@@ -40,6 +40,11 @@ public interface SpeciesWithAlias {
     // Nom scientifique SANDRE (référentiel UFBRMC, #92), affiché en secondaire
     // sous le nom usuel côté application pêcheur.
     Optional<String> scientificName();
+    // Déclaration obligatoire (#91) : si true, l'app pêcheur alerte après la
+    // validation d'une prise de cette espèce, avec un lien vers reportLink
+    // (ou un message générique si absent).
+    boolean mandatoryReport();
+    Optional<String> reportLink();
 
     // Informations dépendante du lac
     Optional<String> alias();
@@ -62,6 +67,8 @@ public interface SpeciesWithAlias {
                 .mandatorySize(source.getMandatorySize())
                 .alias(alias)
                 .scientificName(Optional.ofNullable(source.getScientificName()))
+                .mandatoryReport(source.getMandatoryReport())
+                .reportLink(Optional.ofNullable(source.getReportLink()))
                 .minSize(minSize)
                 .maxSize(maxSize)
                 .authorizedSample(authorizedSample)
