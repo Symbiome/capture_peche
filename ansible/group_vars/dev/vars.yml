@@ -1,0 +1,36 @@
+---
+# Variables non secrètes du déploiement dev. Les secrets vont dans vault.yml
+# (chiffré), jamais ici — ce fichier est en clair dans git.
+#
+# Surchargeable en ligne de commande, ex. :
+#   ansible-playbook playbooks/deploy.yml --extra-vars "force_rebuild=true"
+force_rebuild: false
+
+# --- Domaines --------------------------------------------------------------
+# Adventiel gère le reverse proxy et le mapping domaine -> port host : ces
+# valeurs doivent correspondre exactement à ce mapping (à leur demander avant
+# le premier déploiement). Rien ici n'installe ni ne configure de proxy.
+app_domain: peche-rmc.adventiel.net
+api_domain: api.peche-rmc.adventiel.net
+admin_domain: admin.peche-rmc.adventiel.net
+dashboard_domain: dashboard.peche-rmc.adventiel.net
+# mail_dev_domain: maildev.peche-rmc.adventiel.net
+
+# --- Ports hôte --------------------------------------------------------------
+# Doivent matcher le mapping port -> domaine côté reverse proxy Adventiel.
+backend_port: 8080
+mobile_port: 80
+admin_port: 8000
+dashboard_port: 8088
+etl_port: 3000
+# maildev_port: 1080
+
+# --- Base de données ---------------------------------------------------------
+postgres_db: fishola
+# Variante arm64 (Apple Silicon / ARM) si besoin : imresamu/postgis:18-3.6-alpine
+# (cf. fishola-backend/start_db.sh, même logique de choix d'image)
+postgres_image: postgis/postgis:18-3.6
+
+# # --- Mail (dev : capturé par le Maildev embarqué, aucun vrai SMTP requis) ----
+# smtp_host: maildev
+# smtp_port: 1025

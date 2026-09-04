@@ -1,0 +1,99 @@
+---
+# Déploiement Fishola / capture_peche sur le serveur dev.
+#
+# Prérequis (voir DEPLOYMENT.md) : être déjà connecté en SSH sur le serveur
+# cible, Docker + docker compose déjà installés. Le reverse proxy et le
+# mapping domaine -> port sont gérés par Adventiel : ce playbook ne touche à
+# aucun proxy, il se contente de builder les images et démarrer la stack sur
+# les ports attendus (group_vars/dev/vars.yml).
+#
+# Secrets dans group_vars/dev/vault.yml (chiffré, voir DEPLOYMENT.md) — jamais
+# dans un .env à copier à la main : ce playbook génère lui-même le .env
+# consommé par docker compose.
+#
+# Rejouable sans risque (idempotent) : `mvn clean package` et
+# `docker compose build/up` ne refont que ce qui a changé, sauf
+# --extra-vars "force_rebuild=true".
+#
+# Usage :
+#   cd ansible && ansible-playbook playbooks/deploy.yml
+
+- name: Déployer Fishola (dev)
+  hosts: dev
+  connection: local
+  gather_facts: false
+
+  vars:
+    project_dir: "{{ playbook_dir }}/../.."
+    maven_image: maven:3.9-eclipse-temurin-25
+
+  tasks:
+    - name: Générer le fichier .env consommé par docker compose
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/dotenv.j2"
+        dest: "{{ project_dir }}/.env"
+        mode: "0600"
+      no_log: true
+
+    - name: Générer l'override Vite du front pêcheur (URL API publique)
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/mobile-env-demo.local.j2"
+        dest: "{{ project_dir }}/fishola-mobile/.env.demo.local"
+        mode: "0644"
+
+    - name: Générer l'override Vite du front admin (URL API publique)
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/admin-env-demo.local.j2"
+        dest: "{{ project_dir }}/fishola-admin/.env.demo.local"
+        mode: "0644"
+
+    - name: Construire le backend et les fronts (mvn clean package, profil demo)
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm
+          -v {{ project_dir }}:/workspace -w /workspace
+          -v fishola_maven_repo:/root/.m2
+          {{ maven_image }}
+          mvn -B -DskipTests {{ '-U' if force_rebuild | default(false) else '' }} clean package
+      changed_when: true
+
+    - name: Construire les images Docker applicatives
+      ansible.builtin.command:
+        cmd: "docker compose build {{ '--no-cache' if force_rebuild | default(false) else '' }}"
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Démarrer la stack
+      ansible.builtin.command:
+        cmd: docker compose up -d --remove-orphans
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Attendre que PostgreSQL soit prêt
+      ansible.builtin.command:
+        cmd: docker compose exec -T docker_pg pg_isready -U postgres
+        chdir: "{{ project_dir }}"
+      register: _pg_ready
+      until: _pg_ready.rc == 0
+      retries: 20
+      delay: 3
+      changed_when: false
+
+    - name: Appliquer les migrations Django du back-office
+      ansible.builtin.command:
+        cmd: docker compose exec -T fishola-backoffice python manage.py migrate --noinput
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Récapitulatif du déploiement
+      ansible.builtin.debug:
+        msg:
+          - "Déploiement terminé."
+          - "Front pêcheur : {{ app_domain }} (port local {{ mobile_port }})"
+          - "Front admin   : {{ admin_domain }} (port local {{ admin_port }})"
+          - "API backend   : {{ api_domain }}/api/v1/status (port local {{ backend_port }})"
+          - "Back-office   : {{ backoffice_domain }}/admin/ (port local {{ backoffice_port }})"
+          - "Vérifier que ce mapping domaine -> port correspond bien au reverse proxy Adventiel."
+          - "Prochaines étapes :"
+          - "  1. docker compose exec fishola-backoffice python manage.py createsuperuser"
+          - "  2. ./health_check.sh --local puis ./health_check.sh"

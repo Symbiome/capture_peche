@@ -29,6 +29,18 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# Reverse proxy Nginx en TLS devant l'app (déploiement dev/prod, cf.
+# DEPLOYMENT.md) : sans ça Django voit une requête HTTP (le proxy termine le
+# TLS) et rejette les POST admin avec « CSRF verification failed. Origin
+# checking failed ». Vide par défaut : aucun changement de comportement en
+# local (manage.py runserver).
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 INSTALLED_APPS = [
     # django-unfold (thème d'admin « AquaAdmin ») : doit précéder django.contrib.admin.
     "unfold",
