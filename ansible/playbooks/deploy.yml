@@ -48,11 +48,17 @@
         mode: "0644"
 
     - name: Construire le backend et les fronts (mvn clean package, profil demo)
+      # jooq-codegen-maven (génération des classes jOOQ) lance un Postgres
+      # éphémère via Testcontainers pour introspecter le schéma — une vraie
+      # étape de build (generate-sources), pas un test, donc -DskipTests ne la
+      # saute pas. Sans le socket Docker monté ici, Testcontainers ne trouve
+      # aucun environnement Docker et le module fishola-backend échoue direct.
       ansible.builtin.command:
         cmd: >-
           docker run --rm
           -v {{ project_dir }}:/workspace -w /workspace
           -v fishola_maven_repo:/root/.m2
+          -v /var/run/docker.sock:/var/run/docker.sock
           {{ maven_image }}
           mvn -B -DskipTests {{ '-U' if force_rebuild | default(false) else '' }} clean package
       changed_when: true
