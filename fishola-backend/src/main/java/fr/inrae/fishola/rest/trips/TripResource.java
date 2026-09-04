@@ -480,6 +480,7 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.size.ifPresent(catchPojo::setSize);
         aCatch.automaticMeasure.ifPresent(catchPojo::setAutomaticMeasure);
         aCatch.weight.ifPresent(catchPojo::setWeight);
+        catchPojo.setQuantity(Math.max(1, aCatch.quantity));
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
             aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
@@ -519,6 +520,7 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setSize(aCatch.size.orElse(null));
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
+        existingCatch.setQuantity(Math.max(1, aCatch.quantity));
         existingCatch.setKept(aCatch.keep);
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
@@ -704,6 +706,8 @@ public class TripResource extends AbstractFisholaResource {
         result.size = Optional.ofNullable(aCatch.getSize());
         result.automaticMeasure = Optional.ofNullable(aCatch.getAutomaticMeasure());
         result.weight = Optional.ofNullable(aCatch.getWeight());
+        // Colonne NOT NULL DEFAULT 1 : jamais nulle en base, comme getKept() ci-dessous.
+        result.quantity = aCatch.getQuantity();
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();

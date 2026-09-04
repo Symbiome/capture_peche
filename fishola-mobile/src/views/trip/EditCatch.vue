@@ -115,6 +115,12 @@
                   v-bind:readonly="!modifiable" />
               </div>
 
+              <div>
+                <FormInput name="quantity" label="Nombre de prises" type="number" :min="1"
+                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError"
+                  v-bind:readonly="!modifiable" />
+              </div>
+
               <div class="two-columns-row-on-desktop">
                 <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
                   <i class="icon-info" />
@@ -326,6 +332,7 @@ export default class EditCatchView extends Vue {
   otherSpeciesError: string = "";
   sizeError: string = "";
   weightError: string = "";
+  quantityError: string = "";
   keepError: string = "";
   releasedStateIdError: string = "";
   techniqueIdError: string = "";
@@ -395,6 +402,10 @@ export default class EditCatchView extends Vue {
     this.modifiable = this.inTripCreation || !!someTrip.modifiableUntil;
     this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
+
+    if (!this.aCatch.quantity) {
+      this.aCatch.quantity = 1;
+    }
 
     if (this.aCatch.automaticMeasure && !this.aCatch.size) {
       this.aCatch.size = this.aCatch.automaticMeasure;
@@ -903,6 +914,17 @@ export default class EditCatchView extends Vue {
         hasError = true;
         this.weightError = "Le poids n'est pas cohérent avec la taille";
       }
+    }
+
+    if (!this.aCatch.quantity || this.aCatch.quantity < 1) {
+      this.aCatch.quantity = 1;
+    }
+    if (this.aCatch.quantity != Math.floor(this.aCatch.quantity)) {
+      hasError = true;
+      this.quantityError = "Le nombre de prises doit être un nombre entier";
+    } else {
+      this.aCatch.quantity = Math.floor(this.aCatch.quantity);
+      this.quantityError = "";
     }
 
     if (this.aCatch.keep === true || this.aCatch.keep === false) {
