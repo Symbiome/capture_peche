@@ -262,6 +262,8 @@ export interface NearbyWaterEntity {
     kind: string;
     distanceM: number;
     closestPoint: GeoPoint;
+    commune?: string;
+    codePostal?: string;
     persistent?: boolean;
 }
 

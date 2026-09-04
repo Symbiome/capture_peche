@@ -75,6 +75,7 @@
             >
                 <span class="item-main">
                     <span class="item-name">{{ item.name }}</span>
+                    <span v-if="formatCommune(item)" class="item-commune">{{ formatCommune(item) }}</span>
                     <span class="item-kind">{{ kindLabel(item.kind) }}</span>
                 </span>
                 <span class="item-distance">{{ formatDistance(item.distanceM) }}</span>
@@ -212,6 +213,12 @@ export default class NearbyList extends Vue {
 
     kindLabel(kind: string): string {
         return kind === 'FLOWING' ? "Cours d'eau" : "Plan d'eau";
+    }
+
+    // « 74000 Annecy » (CP + commune) sous le nom, pour distinguer les
+    // homonymes (#6/#15/#134) : le nom n'est plus jamais suffixé.
+    formatCommune(item: NearbyWaterEntity): string {
+        return [item.codePostal, item.commune].filter(Boolean).join(' ');
     }
 
     // « 820 m » sous le kilomètre, « 1,2 km » au-delà (séparateur décimal FR).
@@ -379,6 +386,10 @@ export default class NearbyList extends Vue {
     .item-name {
         color: @gunmetal;
         font-weight: 400;
+    }
+    .item-commune {
+        font-size: 0.8rem;
+        color: @pale-sky;
     }
     .item-kind {
         font-size: 0.8rem;

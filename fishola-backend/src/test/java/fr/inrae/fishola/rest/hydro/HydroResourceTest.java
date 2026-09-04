@@ -178,6 +178,9 @@ class HydroResourceTest extends AbstractFisholaTest {
         assertEquals("IT Fier", items.get(0).get("name"));
         assertEquals("FLOWING", items.get(0).get("kind"));
         assertEquals(Boolean.TRUE, items.get(0).get("persistent"));
+        // #134 : /nearby expose désormais la commune (désambiguïsation des
+        // homonymes dans NearbyList), comme /search et /waterEntities/{id}.
+        assertEquals("Annecy", items.get(0).get("commune"));
         double fierDist = ((Number) items.get(0).get("distanceM")).doubleValue();
         assertTrue(fierDist < 100, "distance Fier attendue < 100 m, obtenue " + fierDist);
 
@@ -271,6 +274,10 @@ class HydroResourceTest extends AbstractFisholaTest {
 
         assertTrue(indexOfName(items, "IT Fier") >= 0, "le Fier (traversant la commune) doit être présent");
         assertTrue(indexOfName(items, "IT Ruisseau") < 0, "le ruisseau lointain doit être absent");
+        // #134 : commune de CHAQUE entité (celle de son propre centroïde, pas
+        // forcément celle recherchée) exposée ici aussi.
+        Map<String, Object> fier = items.get(indexOfName(items, "IT Fier"));
+        assertEquals("Annecy", fier.get("commune"));
     }
 
     @Test
