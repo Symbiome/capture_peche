@@ -133,21 +133,6 @@
               ></b-icon></td>
           </tr>
           <tr>
-            <th>Chiffres clés</th>
-            <th></th>
-            <td>
-              <b-icon
-                icon="check"
-                size="is-medium"
-              ></b-icon>
-              (restreint aux lacs de l'administrateur)
-            </td>
-            <td><b-icon
-                icon="check"
-                size="is-medium"
-              ></b-icon></td>
-          </tr>
-          <tr>
             <th>Sorties</th>
             <th></th>
             <td></td>

@@ -35,7 +35,6 @@ import CatchEditionPage from "@/views/CatchEditionPage.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
-import Metrics from "@/views/Metrics.vue";
 
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
@@ -164,11 +163,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/news",
     name: "news",
     component: NewsVue
-  },
-  {
-    path: "/metrics",
-    name: "metrics",
-    component: Metrics
   }
 ];
 

@@ -59,9 +59,6 @@
       <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else-if="!loggedAdmin.isOperator">
         Communications
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'metrics' }" v-if="!loggedAdmin.isOperator">
-        Chiffres Clés
-      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
         Sorties
       </b-navbar-item>

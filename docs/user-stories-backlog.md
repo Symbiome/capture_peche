@@ -1351,6 +1351,82 @@ Causes probables (à confirmer) :
 
 ---
 
+## #17 — Paramétrage OOM sur « Maillages et tailles maximales » (181k entités hydrographiques)
+
+**Titre :** `[Bug] "Paramétrage → Maillages et tailles maximales" en OOM (181k entités hydrographiques)`
+**Labels :** `bug`, `backend`, `frontend`, `admin`, `perf`
+**Issue GitHub :** #154
+
+> **Mise à jour :** cette issue couvrait initialement deux pages, « Chiffres
+> clés » et « Paramétrage ». La page **« Chiffres clés » a été retirée**
+> (front + back) plutôt que corrigée : c'est une page purement analytique, et
+> les statistiques de valorisation seront reconstruites proprement en phase 2
+> sur le futur data warehouse (cf. `CLAUDE.md`). Cette entrée ne porte donc
+> plus que sur **« Paramétrage → Maillages et tailles maximales »**, qui
+> reste une fonctionnalité de configuration nécessaire (tailles/maillages
+> légaux par espèce et par milieu) et toujours en OOM.
+
+### User Story
+En tant qu'**administrateur** (national ou fédération), je veux ouvrir la
+page « Paramétrage → Maillages et tailles maximales » sans faire planter le
+navigateur (OOM), afin de pouvoir continuer à configurer les tailles/maillages
+légaux par espèce et par entité hydrographique.
+
+### Contexte
+`water_entity` couvrait à l'origine une poignée de lacs alpins (Fishola
+d'origine). Avec l'extension multi-milieux RM&C (rivières, tronçons, canaux —
+cf. #134), la table compte aujourd'hui **181 649 lignes** en local (échelle
+qui grandira encore avec le chargement national, cf. #51).
+
+`fishola-admin/src/views/customize/AuthorizedSamples.vue` continue de
+raisonner « une colonne = une entité hydrographique » : au chargement, le
+composant récupère **la totalité** de `GET /v1/referential/waterEntities` et
+`GET /v1/referential/species-per-waterEntity`, puis construit une matrice
+espèces × entités hydrographiques et un tableau HTML avec une colonne par
+entité. Le seuil `maxLakeBeforeShowingAutoComplete` (= 5) ne fait que
+masquer/afficher un filtre de sélection après coup ; il ne réduit ni le
+volume téléchargé ni le volume gardé en mémoire côté navigateur.
+
+### Critères d'acceptance
+- [ ] La page ne charge plus la totalité des entités hydrographiques au
+      chargement : l'admin choisit d'abord un périmètre restreint (ex.
+      département, ou la sélection déjà existante) avant que la matrice
+      espèces × entités ne soit construite
+- [ ] Aucun OOM navigateur ni backend en ouvrant la page sur la base de
+      données actuelle (181 649 entités hydrographiques)
+- [ ] L'export/import CSV existant reste fonctionnel sur le périmètre
+      sélectionné
+- [ ] Temps de chargement compatible avec un usage interactif (cible : < 3 s
+      sur l'environnement de recette)
+
+### Notes techniques
+- `ReferentialResource.java` (`/waterEntities`, `/species-per-waterEntity`) :
+  ajouter un filtre serveur par périmètre (département ou sélection) pour que
+  `AuthorizedSamples.vue` ne rapatrie plus l'intégralité du référentiel.
+- `AuthorizedSamples.vue` : rendre obligatoire une présélection (département
+  ou recherche) avant tout chargement de la matrice ; revoir
+  `maxLakeBeforeShowingAutoComplete` qui ne protège plus rien à cette
+  échelle.
+- Pas de colonne département aujourd'hui sur `water_entity` ni sur
+  `commune` : `commune.insee_com` permet de le dériver
+  (`substring(insee_com, 1, 2)`, cas particuliers Corse/DOM à vérifier), mais
+  `water_entity` n'a pas de clé vers `commune` (jointure spatiale
+  `ST_Intersects`/`ST_Contains` nécessaire, ou colonne calculée à l'import
+  `scripts/import_hydro_gpkg.sql`).
+
+### Rôles concernés
+- Administrateur national et administrateur régional (fédération) : la page
+  est bloquée aujourd'hui par l'OOM, quel que soit le périmètre.
+
+### Liens
+- Conséquence directe de l'extension multi-milieux RM&C (#134) et du
+  chargement hydrographique par département déjà en cours (cf. #134 :
+  « 7 départements chargés »)
+- À recadrer avant le chargement hydrographique national (#51), qui
+  aggravera encore le volume de `water_entity`
+
+---
+
 ## Récap
 
 | # | Titre court | Complexité | Priorité |
@@ -1371,6 +1447,7 @@ Causes probables (à confirmer) :
 | 14 | Nom réel de l'entité hydro, désambiguïsation hors libellé | Moyenne | Sprint 0 |
 | 15 | Marqueurs des sorties visibles à tout niveau de zoom | Faible | Sprint 0 |
 | 16 | Bouton de confirmation de position hors écran sur mobile | Faible | Sprint 0 |
+| 17 | Paramétrage : fix OOM maillages/tailles (Chiffres clés retirée) | Faible | Sprint 0 |
 
 Les issues #3 et #4 sont les plus rapides à merger (implémentées).
 Les issues #7 et #8 sont les plus structurantes (BDD) et doivent
@@ -1392,3 +1469,10 @@ L'issue #14 propose la résolution de fond de #117 (et rouvre le
 sujet de #107) : elle sort la désambiguïsation du champ `name`
 plutôt que de chercher un meilleur suffixe. À cadrer avant tout
 nouveau chargement hydrographique national (#51).
+
+L'issue #17 bloque aujourd'hui l'accès à la page « Paramétrage »
+de l'admin (OOM navigateur et backend) : à traiter en priorité, et
+avant tout nouveau chargement hydrographique national (#51) qui
+aggraverait encore le volume de `water_entity`. La page « Chiffres
+clés », purement analytique, a été retirée en attendant le data
+warehouse de la phase 2 plutôt que corrigée.
