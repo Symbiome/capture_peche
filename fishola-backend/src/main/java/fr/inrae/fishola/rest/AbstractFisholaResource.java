@@ -196,7 +196,7 @@ public abstract class AbstractFisholaResource {
      * régional atteindrait ces actions par l'API alors que son menu les masque.
      *
      * <p>Les écrans bornés au périmètre (paramétrage par plan d'eau, actualités
-     * régionales, chiffres clés) restent ouverts au régional via {@link #checkIsAdmin()}.
+     * régionales) restent ouverts au régional via {@link #checkIsAdmin()}.
      */
     protected FisholaAdmin checkIsNationalAdmin() throws NotAuthenticatedException, AccessDeniedException {
         FisholaAdmin admin = checkIsAdmin();
