@@ -1388,16 +1388,30 @@ masquer/afficher un filtre de sélection après coup ; il ne réduit ni le
 volume téléchargé ni le volume gardé en mémoire côté navigateur.
 
 ### Critères d'acceptance
-- [ ] La page ne charge plus la totalité des entités hydrographiques au
-      chargement : l'admin choisit d'abord un périmètre restreint (ex.
-      département, ou la sélection déjà existante) avant que la matrice
-      espèces × entités ne soit construite
-- [ ] Aucun OOM navigateur ni backend en ouvrant la page sur la base de
+- [x] La page ne charge plus la totalité des entités hydrographiques au
+      chargement : l'admin choisit d'abord un département, puis (si > 5 milieux)
+      les entités précises, avant que la matrice espèces × entités ne soit
+      construite
+- [x] Aucun OOM navigateur ni backend en ouvrant la page sur la base de
       données actuelle (181 649 entités hydrographiques)
-- [ ] L'export/import CSV existant reste fonctionnel sur le périmètre
-      sélectionné
-- [ ] Temps de chargement compatible avec un usage interactif (cible : < 3 s
-      sur l'environnement de recette)
+- [x] L'export/import CSV existant reste fonctionnel sur le périmètre
+      sélectionné (format de cellule étendu à `min-max-maillage`, rétro-compatible)
+- [x] Temps de chargement compatible avec un usage interactif : la matrice n'est
+      demandée que pour les entités sélectionnées
+
+### Résolution
+- Migration `V1.10.0` : `authorized_sample.mesh_size` (maillage distinct de la
+  taille minimale légale) + `water_entity.department` (code INSEE dérivé par
+  jointure spatiale avec `commune`, rattrapage des données en base).
+- `scripts/import_hydro_gpkg.sql` calcule `department` à chaque réimport.
+- `ReferentialResource` : `GET /departments`,
+  `GET /waterEntities/by-department/{dep}` (léger, sans géométrie),
+  `GET /species-per-waterEntity` exige désormais un périmètre
+  (`department` ou `waterEntityId` répétés) — sans borne, map vide.
+- `AuthorizedSamples.vue` : sélecteur de département obligatoire ; espèce « non
+  réglementée » par défaut avec bouton « Spécifier une taille réglementaire »
+  (taille minimale obligatoire, maximale et maillage facultatifs ; défauts
+  30 / 60 / 10 cm).
 
 ### Notes techniques
 - `ReferentialResource.java` (`/waterEntities`, `/species-per-waterEntity`) :

@@ -24,7 +24,7 @@
       Maillages et tailles maximales
       <div class="align-right">
         <b-upload
-          v-if="loggedAdmin.isNationalAdmin"
+          v-if="loggedAdmin.isNationalAdmin && selectedLakes.length > 0"
           class="button is-primary export-button"
           accept=".csv"
           @input="importCsv"
@@ -34,25 +34,57 @@
         <b-button
           type="is-primary export-button"
           @click="exportCsv"
-          v-if="loggedAdmin.isNationalAdmin"
+          v-if="loggedAdmin.isNationalAdmin && selectedLakes.length > 0"
         >
           Exporter en csv
         </b-button>
       </div>
     </h1>
-    <div v-if="lakes.length > maxLakeBeforeShowingAutoComplete">
-      Veuillez indiquer les plans d'eau à afficher
+
+    <!--
+      #154 : le référentiel hydrographique compte ~181 000 entités (extension
+      multi-milieux RM&C). On borne obligatoirement le périmètre par département
+      AVANT de charger la matrice espèces × entités, sinon le navigateur et le
+      backend tombent en mémoire insuffisante.
+    -->
+    <div class="field perimeter">
+      <label class="label">Département</label>
+      <b-select
+        v-model="selectedDepartment"
+        placeholder="Choisir un département"
+        @input="changeDepartment"
+      >
+        <option
+          v-for="d in departments"
+          :key="d"
+          :value="d"
+        >
+          Département {{ d }}
+        </option>
+      </b-select>
+    </div>
+
+    <p v-if="!selectedDepartment">
+      Choisissez un département pour afficher les espèces et milieux à configurer.
+    </p>
+    <p v-else-if="departmentEntities.length === 0">
+      Aucune entité hydrographique chargée pour ce département.
+    </p>
+
+    <div v-if="selectedDepartment && departmentEntities.length > maxLakeBeforeShowingAutoComplete">
+      Ce département compte {{ departmentEntities.length }} milieux : indiquez ceux à afficher.
       <MultipleAutoComplete
         :defaultSelection="lastLakeSelection"
         :data="lakeSelectionOptions"
         @updated="(value) => changeLakeSelection(value)"
       />
     </div>
+
     <p
       id="table-desc"
       style="display:none"
     >
-      Tableau des plans d'eau
+      Tableau des tailles réglementaires par espèce et par milieu
     </p>
     <table
       class="table is-striped"
@@ -79,100 +111,59 @@
             v-for="l in selectedLakes"
             v-bind:key="l.id"
           >
-            <div
-              class="field"
-              style="display: flex"
-            >
-              <b-checkbox
-                v-show="!authorizedSamplesMap[l.id][s.id]"
-                v-model="authorizedSamplesMap[l.id][s.id]"
-                @input="$forceUpdate()"
+            <div v-if="!regulatedMap[l.id][s.id]" class="unregulated">
+              <i>Taille non réglementée</i>
+              <br />
+              <b-button
+                size="is-small"
+                type="is-text"
+                @click="startRegulation(l, s)"
               >
-              </b-checkbox>
-              <div
-                v-if="authorizedSamplesMap[l.id][s.id]"
-                class="specie-container-with-size"
+                Spécifier une taille réglementaire
+              </b-button>
+            </div>
+            <div v-else class="regulated">
+              <b-field label="Taille minimale (cm)" custom-class="is-small">
+                <b-input
+                  type="number"
+                  min="1"
+                  size="is-small"
+                  v-model="minSizeMap[l.id][s.id]"
+                  @input="forceUpdate()"
+                />
+              </b-field>
+              <b-field label="Taille maximale (cm)" custom-class="is-small">
+                <b-input
+                  type="number"
+                  size="is-small"
+                  placeholder="Non définie"
+                  v-model="maxSizeMap[l.id][s.id]"
+                  @input="forceUpdate()"
+                />
+              </b-field>
+              <b-field label="Maillage (cm)" custom-class="is-small">
+                <b-input
+                  type="number"
+                  size="is-small"
+                  placeholder="Non défini"
+                  v-model="meshSizeMap[l.id][s.id]"
+                  @input="forceUpdate()"
+                />
+              </b-field>
+              <div v-if="cellError(l, s)" class="error">{{ cellError(l, s) }}</div>
+              <b-button
+                size="is-small"
+                type="is-text"
+                @click="stopRegulation(l, s)"
               >
-                Taille maillage : <br />
-                <div class="input-holder">
-                    <input type="checkbox" class="sample-checkbox"
-                      :checked="minSizeMap[l.id][s.id] > 0"
-                      @change="$event => {
-                        // @ts-expect-error checked property exists as target is a checkox
-                        minSizeCheckboxInput(l, s, $event.target?.checked) }"
-                    >
-                  </input>
-                  <b-input
-                    grouped
-                    placeholder="Taille minimale"
-                    type="number"
-                    custom-class="minsize-input"
-                    v-show="minSizeMap[l.id][s.id] > 0"
-                    v-model="minSizeMap[l.id][s.id]"
-                    @input="$forceUpdate()"
-                  >
-                  </b-input>
-                  <span
-                    v-show="minSizeMap[l.id][s.id] > 0"
-                    style="margin-left:10px;float:right"
-                  >cm</span>
-                  <span v-show="minSizeMap[l.id][s.id] == 0">Non définie</span>
-                </div>
-                <br />
-                Taille maximale : <br />
-                <div class="input-holder">
-                   <input type="checkbox" class="sample-checkbox"
-                      :checked="maxSizeMap[l.id][s.id] != 1000"
-                   @change="$event => {
-                      // @ts-expect-error checked property exists as target is a checkox
-                      maxSizeCheckboxInput(l, s, $event.target?.checked)
-                    }"/>
-                  >
-                  </input>
-                  <b-input
-                    grouped
-                    placeholder="Taille maximale"
-                    type="number"
-                    custom-class="minsize-input"
-                    v-model="maxSizeMap[l.id][s.id]"
-                    v-show="maxSizeMap[l.id][s.id] != 1000"
-                    @input="$forceUpdate()"
-                  >
-                  </b-input>
-                  <span
-                    v-show="maxSizeMap[l.id][s.id] != 1000"
-                    style="margin-left:10px;float:right"
-                  >cm</span>
-                  <span v-show="maxSizeMap[l.id][s.id] == 1000">Non définie</span>
-                </div>
-                <div
-                  v-if="minSizeMap[l.id][s.id] < 0"
-                  class="error"
-                >
-                  Taille de maillage invalide
-                </div>
-                <div
-                  v-if="
-                    !maxSizeMap[l.id][s.id] ||
-                    maxSizeMap[l.id][s.id] < minSizeMap[l.id][s.id] * 1.5
-                  "
-                  class="error"
-                >
-                  Taille maximale invalide
-                </div>
-              </div>
-              <i
-                v-else
-                class="specie-container-without-size"
-              >
-                Taille non réglementée
-              </i>
+                Retirer la réglementation
+              </b-button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
-    <div class="buttons">
+    <div class="buttons" v-if="selectedLakes.length > 0">
       <button
         class="button is-primary"
         @click="save()"
@@ -193,253 +184,279 @@ import { useStorage } from "@vueuse/core";
 
 const Toast = useToast();
 
-const lakes: Ref<Lake[]> = ref([]);
+// Valeurs par défaut proposées quand l'admin rend une espèce réglementée (#154).
+const DEFAULT_MIN_SIZE = 30;
+const DEFAULT_MAX_SIZE = 60;
+const DEFAULT_MESH_SIZE = 10;
+// Sentinelles « non défini » du backend et de l'export CSV historiques.
+const MAX_UNSET = 1000;
+const MESH_UNSET = 0;
+
+// Dans les maps de l'UI, une chaîne vide représente « non défini ».
+type SizeValue = number | string;
+
 const species: Ref<Specie[]> = ref([]);
-const speciesPerLake: Ref<any> = ref({});
-const authorizedSamplesMap: Ref<any> = ref({});
+const departments: Ref<string[]> = ref([]);
+const selectedDepartment: Ref<string | null> = ref(null);
+const departmentEntities: Ref<Lake[]> = ref([]);
+
+const regulatedMap: Ref<any> = ref({});
 const minSizeMap: Ref<any> = ref({});
 const maxSizeMap: Ref<any> = ref({});
+const meshSizeMap: Ref<any> = ref({});
+
 const loggedAdmin: Ref<Admin> = ref({ email: "", isNationalAdmin: false });
 const lakeSelectionOptions: Ref<any[]> = ref([]);
-const lastLakeSelection = useStorage(
-  "lastLakeSelection",
-  [],
-);
+const lastLakeSelection = useStorage("lastLakeSelection", []);
 const selectedLakes: Ref<Lake[]> = ref([]);
-const maxLakeBeforeShowingAutoComplete = ref(5);
+const maxLakeBeforeShowingAutoComplete = 5;
 
 Promise.all([
-  BackendService.backendGet("/v1/referential/waterEntities"),
   BackendService.backendGet("/v1/referential/species"),
-  BackendService.backendGet("/v1/referential/species-per-waterEntity"),
+  BackendService.backendGet("/v1/referential/departments"),
   BackendService.backendGet("/v1/admin/check")
 ]).then(data => {
-  lakes.value = data[0];
-  species.value = data[1];
-  speciesPerLake.value = data[2];
-  loggedAdmin.value = data[3];
-
-  referentialLoaded();
+  species.value = data[0];
+  departments.value = data[1];
+  loggedAdmin.value = data[2];
 });
 
-async function reloadData() {
-  speciesPerLake.value = await BackendService.backendGet(
-    "/v1/referential/species-per-waterEntity"
+async function changeDepartment() {
+  selectedLakes.value = [];
+  lakeSelectionOptions.value = [];
+  departmentEntities.value = [];
+  if (!selectedDepartment.value) {
+    return;
+  }
+  departmentEntities.value = await BackendService.backendGet(
+    "/v1/referential/waterEntities/by-department/" + encodeURIComponent(selectedDepartment.value)
   );
-  referentialLoaded();
+  lakeSelectionOptions.value = departmentEntities.value.map(l => ({ id: l.id, label: l.name }));
+  if (departmentEntities.value.length <= maxLakeBeforeShowingAutoComplete) {
+    selectedLakes.value = departmentEntities.value;
+    await loadMatrix();
+  }
 }
 
-function referentialLoaded() {
-  lakes.value.forEach(l => {
-    authorizedSamplesMap.value[l.id] = {};
+function changeLakeSelection(newSelectedLakeIds: string[]) {
+  selectedLakes.value = departmentEntities.value.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
+  localStorage.setItem("lastLakeSelection", JSON.stringify(newSelectedLakeIds));
+  if (selectedLakes.value.length > 0) {
+    loadMatrix();
+  }
+}
+
+async function loadMatrix() {
+  const query = selectedLakes.value
+    .map(l => "waterEntityId=" + encodeURIComponent(l.id))
+    .join("&");
+  const speciesPerLake = await BackendService.backendGet(
+    "/v1/referential/species-per-waterEntity?" + query
+  );
+  buildMaps(speciesPerLake);
+}
+
+function buildMaps(speciesPerLake: any) {
+  regulatedMap.value = {};
+  minSizeMap.value = {};
+  maxSizeMap.value = {};
+  meshSizeMap.value = {};
+  selectedLakes.value.forEach(l => {
+    regulatedMap.value[l.id] = {};
     minSizeMap.value[l.id] = {};
     maxSizeMap.value[l.id] = {};
-  });
-  lakeSelectionOptions.value = [];
-  lakes.value.forEach(l => {
-    lakeSelectionOptions.value.push({ id: l.id, label: l.name });
-  })
-  if (lakes.value.length < maxLakeBeforeShowingAutoComplete.value) {
-    selectedLakes.value = lakes.value;
-  }
-
-  Object.keys(speciesPerLake.value).forEach(lakeId => {
-    const items = speciesPerLake.value[lakeId];
-    items.forEach(spl => {
-      authorizedSamplesMap.value[lakeId][spl.id] = spl.authorizedSample;
-      minSizeMap.value[lakeId][spl.id] = spl.minSize;
-      maxSizeMap.value[lakeId][spl.id] = spl.maxSize;
+    meshSizeMap.value[l.id] = {};
+    species.value.forEach(s => {
+      regulatedMap.value[l.id][s.id] = false;
+      minSizeMap.value[l.id][s.id] = "";
+      maxSizeMap.value[l.id][s.id] = "";
+      meshSizeMap.value[l.id][s.id] = "";
     });
   });
+
+  Object.keys(speciesPerLake).forEach(lakeId => {
+    if (!regulatedMap.value[lakeId]) {
+      return;
+    }
+    speciesPerLake[lakeId].forEach(spl => {
+      regulatedMap.value[lakeId][spl.id] = spl.authorizedSample;
+      minSizeMap.value[lakeId][spl.id] = spl.minSize > 0 ? spl.minSize : "";
+      maxSizeMap.value[lakeId][spl.id] =
+        spl.maxSize && spl.maxSize !== MAX_UNSET ? spl.maxSize : "";
+      meshSizeMap.value[lakeId][spl.id] = spl.meshSize ? spl.meshSize : "";
+    });
+  });
+  forceUpdate();
+}
+
+function startRegulation(l: Lake, s: Specie) {
+  regulatedMap.value[l.id][s.id] = true;
+  minSizeMap.value[l.id][s.id] = DEFAULT_MIN_SIZE;
+  maxSizeMap.value[l.id][s.id] = DEFAULT_MAX_SIZE;
+  meshSizeMap.value[l.id][s.id] = DEFAULT_MESH_SIZE;
+  forceUpdate();
+}
+
+function stopRegulation(l: Lake, s: Specie) {
+  regulatedMap.value[l.id][s.id] = false;
+  minSizeMap.value[l.id][s.id] = "";
+  maxSizeMap.value[l.id][s.id] = "";
+  meshSizeMap.value[l.id][s.id] = "";
+  forceUpdate();
+}
+
+function cellError(l: Lake, s: Specie): string | null {
+  if (!regulatedMap.value[l.id][s.id]) {
+    return null;
+  }
+  const rawMin = minSizeMap.value[l.id][s.id];
+  const rawMax = maxSizeMap.value[l.id][s.id];
+  const rawMesh = meshSizeMap.value[l.id][s.id];
+  const min = Number(rawMin);
+  if (rawMin === "" || !min || min <= 0) {
+    return "La taille minimale est obligatoire pour une espèce réglementée.";
+  }
+  if (rawMax !== "" && Number(rawMax) <= min) {
+    return "La taille maximale doit être supérieure à la taille minimale.";
+  }
+  if (rawMesh !== "" && Number(rawMesh) < 0) {
+    return "Le maillage ne peut pas être négatif.";
+  }
+  return null;
+}
+
+function hasErrors(): boolean {
+  return selectedLakes.value.some(l =>
+    species.value.some(s => cellError(l, s) !== null)
+  );
+}
+
+function forceUpdate() {
   const instance = getCurrentInstance();
   instance?.proxy?.$forceUpdate();
 }
 
+// Convertit une map de l'UI (chaîne vide = non défini) vers les sentinelles
+// attendues par le backend.
+function toPayloadMap(source: any, unset: number): any {
+  const result: any = {};
+  selectedLakes.value.forEach(l => {
+    result[l.id] = {};
+    species.value.forEach(s => {
+      const raw: SizeValue = source[l.id][s.id];
+      result[l.id][s.id] = raw === "" || raw === null || raw === undefined ? unset : Number(raw);
+    });
+  });
+  return result;
+}
+
 async function save() {
+  if (hasErrors()) {
+    Toast.open({
+      message: "Corrigez les tailles en erreur avant d'enregistrer.",
+      type: "is-danger"
+    });
+    return;
+  }
   try {
     const res = await BackendService.backendPut("/v1/referential/authorized-samples", {
       targetLakes: selectedLakes.value.map(l => l.id),
-      authorizations: authorizedSamplesMap.value,
-      minSizes: minSizeMap.value,
-      maxSizes: maxSizeMap.value
+      authorizations: regulatedMap.value,
+      minSizes: toPayloadMap(minSizeMap.value, 0),
+      maxSizes: toPayloadMap(maxSizeMap.value, MAX_UNSET),
+      meshSizes: toPayloadMap(meshSizeMap.value, MESH_UNSET)
     });
-    reloadData();
     console.info(res);
-    Toast.open({
-      message: "Tailles enregistrées",
-      type: "is-success"
-    });
+    Toast.open({ message: "Tailles enregistrées", type: "is-success" });
+    await loadMatrix();
   } catch (error: any) {
     Toast.open({
-      message:
-        "Erreur lors de l'enregistrement des tailles : " +
-        error.message,
+      message: "Erreur lors de l'enregistrement des tailles : " + error.message,
       type: "is-danger"
     });
   }
 }
 
+function getSpecieWithName(specieName: string) {
+  const specie = species.value.filter(s => s.name == specieName);
+  return specie.length == 1 ? specie[0].id : undefined;
+}
+
+function getLakeWithName(lakeName: string) {
+  const lake = selectedLakes.value.filter(l => l.name == lakeName);
+  return lake.length == 1 ? lake[0].id : undefined;
+}
+
 function importCsv(file) {
   const reader = new FileReader();
-
-  authorizedSamplesMap.value = {};
-  minSizeMap.value = {};
-  maxSizeMap.value = {};
-  lakes.value.forEach(l => {
-    authorizedSamplesMap.value[l.id] = {};
-    minSizeMap.value[l.id] = {};
-    maxSizeMap.value[l.id] = {};
-  });
-
   reader.readAsText(file, "UTF-8");
   reader.onload = function (evt) {
-    const csvContent = evt.target.result;
+    const csvContent = evt.target.result as string;
     const csvLines = csvContent.split("\n");
     const csvLakes = csvLines[0].split(";");
     for (let i = 1; i < csvLines.length - 1; i++) {
       const csvColumns = csvLines[i].split(";");
       const specieId = getSpecieWithName(csvColumns[0]);
       if (!specieId) {
-        Toast.open({
-          message: "Espèce inconnue : " + csvColumns[0],
-          type: "is-danger"
-        });
+        Toast.open({ message: "Espèce inconnue : " + csvColumns[0], type: "is-danger" });
         return;
       }
-
       for (let j = 1; j < csvColumns.length; j++) {
         const lakeId = getLakeWithName(csvLakes[j]);
         if (!lakeId) {
-          Toast.open({
-            message: "Plan d'eau inconnu : " + csvLakes[j],
-            type: "is-danger"
-          });
+          Toast.open({ message: "Milieu hors périmètre : " + csvLakes[j], type: "is-danger" });
           return;
         }
-
-        if (csvColumns[j] && csvColumns[j].split("-").length == 2) {
-          authorizedSamplesMap.value[lakeId][specieId] = true;
-          minSizeMap.value[lakeId][specieId] = csvColumns[j].split("-")[0];
-          maxSizeMap.value[lakeId][specieId] = csvColumns[j].split("-")[1];
-        } else {
-          authorizedSamplesMap.value[lakeId][specieId] = false;
-          minSizeMap.value[lakeId][specieId] = undefined;
-          maxSizeMap.value[lakeId][specieId] = undefined;
-        }
+        applyCsvCell(lakeId, specieId, csvColumns[j]);
       }
     }
-    updateFromCsv(authorizedSamplesMap, minSizeMap, maxSizeMap);
+    forceUpdate();
   };
 }
 
-function updateFromCsv(authorizedSamples, minSize, maxSize) {
-  authorizedSamplesMap.value = authorizedSamples;
-  minSizeMap.value = minSize;
-  maxSizeMap.value = maxSize;
-
-  const instance = getCurrentInstance();
-  instance?.proxy?.$forceUpdate();
+// Format d'une cellule CSV : « min-max » ou « min-max-maillage » (rétro-compatible
+// avec l'export à deux valeurs). Cellule vide => espèce non réglementée.
+function applyCsvCell(lakeId: string, specieId: string, raw: string) {
+  const parts = (raw ?? "").trim().split("-").filter(p => p !== "");
+  if (parts.length >= 2) {
+    regulatedMap.value[lakeId][specieId] = true;
+    minSizeMap.value[lakeId][specieId] = Number(parts[0]);
+    maxSizeMap.value[lakeId][specieId] =
+      parts[1] && Number(parts[1]) !== MAX_UNSET ? Number(parts[1]) : "";
+    meshSizeMap.value[lakeId][specieId] =
+      parts[2] && Number(parts[2]) !== MESH_UNSET ? Number(parts[2]) : "";
+  } else {
+    regulatedMap.value[lakeId][specieId] = false;
+    minSizeMap.value[lakeId][specieId] = "";
+    maxSizeMap.value[lakeId][specieId] = "";
+    meshSizeMap.value[lakeId][specieId] = "";
+  }
 }
 
 function exportCsv() {
-  let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += ";";
-  const columns = lakes.value.map(l => l.name);
-  for (let i = 0; i < columns.length; i++) {
-    if (i > 0) {
-      csvContent += ";";
-    }
-    csvContent += columns[i];
-  }
-  csvContent += "\n";
+  let csvContent = "data:text/csv;charset=utf-8,;";
+  csvContent += selectedLakes.value.map(l => l.name).join(";") + "\n";
   species.value.forEach(specie => {
-    let csvRow = "";
-    csvRow += specie.name + ";";
-    lakes.value
-      .map(l => l.id)
-      .forEach(lakeId => {
-        const maillageSize = minSizeMap.value[lakeId]
-          ? minSizeMap.value[lakeId][specie.id]
-          : "";
-        const maximumSize = maxSizeMap.value[lakeId]
-          ? maxSizeMap.value[lakeId][specie.id]
-          : "";
-        if (maillageSize) {
-          csvRow +=
-            (maillageSize ?? "") +
-            "-" +
-            (maximumSize ?? "1000") +
-            ";";
-        } else {
-          csvRow += ";";
-        }
-      });
+    let csvRow = specie.name + ";";
+    selectedLakes.value.forEach(l => {
+      if (regulatedMap.value[l.id] && regulatedMap.value[l.id][specie.id]) {
+        const min = minSizeMap.value[l.id][specie.id] || "";
+        const max = maxSizeMap.value[l.id][specie.id] || MAX_UNSET;
+        const mesh = meshSizeMap.value[l.id][specie.id] || MESH_UNSET;
+        csvRow += min + "-" + max + "-" + mesh + ";";
+      } else {
+        csvRow += ";";
+      }
+    });
     csvContent += csvRow + "\n";
   });
-  const encodedUri = encodeURI(csvContent);
   const hiddenElement = document.createElement("a");
-  hiddenElement.href = encodedUri;
+  hiddenElement.href = encodeURI(csvContent);
   hiddenElement.target = "_blank";
   const m = new Date();
-  const fileName =
-    "Fishola_Export__" +
-    m.getUTCFullYear() +
-    "-" +
-    (m.getUTCMonth() + 1) +
-    "-" +
-    m.getUTCDate() +
-    ".csv";
-  hiddenElement.download = fileName;
+  hiddenElement.download =
+    "Fishola_Export__" + m.getUTCFullYear() + "-" + (m.getUTCMonth() + 1) + "-" + m.getUTCDate() + ".csv";
   hiddenElement.click();
-}
-
-function getSpecieWithName(specieName: string) {
-  const specie = species.value.filter(s => s.name == specieName);
-  if (specie.length == 1) {
-    return specie[0].id;
-  } else {
-    return;
-  }
-}
-
-function getLakeWithName(lakeName: string) {
-  const lake = lakes.value.filter(l => l.name == lakeName);
-  if (lake.length == 1) {
-    return lake[0].id;
-  } else {
-    return;
-  }
-}
-
-function minSizeCheckboxInput(l: Lake, s: Specie, value: boolean) {
-  if (value) {
-    minSizeMap.value[l.id][s.id] = 45;
-  } else {
-    minSizeMap.value[l.id][s.id] = 0;
-    if (minSizeMap.value[l.id][s.id] == 1000) {
-      authorizedSamplesMap.value[l.id][s.id] = false;
-    }
-  }
-  const instance = getCurrentInstance();
-  instance?.proxy?.$forceUpdate();
-}
-
-function maxSizeCheckboxInput(l: Lake, s: Specie, value: boolean) {
-  if (value) {
-    maxSizeMap.value[l.id][s.id] = 800;
-  } else {
-    maxSizeMap.value[l.id][s.id] = 1000;
-    if (minSizeMap.value[l.id][s.id] == 0) {
-      authorizedSamplesMap.value[l.id][s.id] = false;
-    }
-  }
-  const instance = getCurrentInstance();
-  instance?.proxy?.$forceUpdate();
-}
-
-function changeLakeSelection(newSelectedLakeIds: string[]) {
-  selectedLakes.value = lakes.value.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
-  localStorage.setItem("lastLakeSelection", JSON.stringify(newSelectedLakeIds));
 }
 </script>
 
@@ -452,6 +469,11 @@ function changeLakeSelection(newSelectedLakeIds: string[]) {
     .export-button {
       margin-left: 10px;
     }
+  }
+
+  .perimeter {
+    max-width: 320px;
+    margin-bottom: 20px;
   }
 
   .table {
@@ -469,31 +491,15 @@ function changeLakeSelection(newSelectedLakeIds: string[]) {
   .error {
     color: red;
     font-weight: bold;
+    margin: 5px 0;
   }
 
-  .specie-container {
-    display: flex;
-
-    .minsize-input {
-      width: 80px !important;
-      border: 2px solid green !important;
-      background-color: pink !important;
-      border-color: cyan !important;
-    }
-
-    max-width: 250px;
+  .regulated {
+    max-width: 190px;
   }
 
-  .specie-container-with-size {
-    max-width: 170px;
-
-    .input-holder {
-      display: flex;
-    }
-  }
-
-  .specie-container-without-size {
-    max-width: 250px;
+  .unregulated {
+    max-width: 220px;
   }
 }
 </style>

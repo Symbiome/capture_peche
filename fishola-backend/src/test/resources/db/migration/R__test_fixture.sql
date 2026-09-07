@@ -86,14 +86,24 @@ WHERE NOT EXISTS (SELECT 1 FROM public.released_fish_state);
 -- 4) Entités hydrographiques (avec géométrie ponctuelle ; lat/long sont générées).
 -- Les noms courts « Annecy / Bourget / Léman / Aiguebelette » sont attendus par
 -- ReferentialResourceTest (name ET exportAs).
-INSERT INTO public.water_entity (name, export_as, water_entity_code, kind, geom)
-SELECT v.name, v.name, v.code, v.kind::public.water_entity_kind,
+-- department (#154) : normalement dérivé par jointure spatiale avec commune ;
+-- posé en dur ici, la fixture ne charge pas le référentiel communal.
+INSERT INTO public.water_entity (name, export_as, water_entity_code, kind, department, geom)
+SELECT v.name, v.name, v.code, v.kind::public.water_entity_kind, v.dep,
        public.ST_SetSRID(public.ST_MakePoint(v.lng, v.lat), 4326)
 FROM (VALUES
-    ('Annecy',        'LACA', 'STILL',   6.17, 45.85),
-    ('Bourget',       'LACB', 'STILL',   5.87, 45.72),
-    ('Léman',         'LACL', 'STILL',   6.50, 46.45),
-    ('Aiguebelette',  'LACG', 'STILL',   5.80, 45.55),
-    ('Rhône amont',   'RIVR', 'FLOWING', 5.90, 45.80)
-) v(name, code, kind, lng, lat)
+    ('Annecy',        'LACA', 'STILL',   '74', 6.17, 45.85),
+    ('Bourget',       'LACB', 'STILL',   '73', 5.87, 45.72),
+    ('Léman',         'LACL', 'STILL',   '74', 6.50, 46.45),
+    ('Aiguebelette',  'LACG', 'STILL',   '73', 5.80, 45.55),
+    ('Rhône amont',   'RIVR', 'FLOWING', '01', 5.90, 45.80)
+) v(name, code, kind, dep, lng, lat)
 WHERE NOT EXISTS (SELECT 1 FROM public.water_entity);
+
+-- Une taille réglementaire complète (min + max + maillage) pour couvrir la
+-- lecture/écriture de mesh_size (#154).
+INSERT INTO public.authorized_sample (water_entity_id, species_id, min_size, max_size, mesh_size)
+SELECT we.id, sp.id, 30, 60, 10
+FROM public.water_entity we, public.species sp
+WHERE we.name = 'Annecy' AND sp.name = 'Carpe commune'
+  AND NOT EXISTS (SELECT 1 FROM public.authorized_sample);

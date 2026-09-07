@@ -45,7 +45,19 @@ WITH staged AS (
               FROM commune c
              WHERE ST_Intersects(c.geom, staged.geom)
              ORDER BY ST_Area(ST_Intersection(c.geom, staged.geom)) DESC
-             LIMIT 1) AS commune_name
+             LIMIT 1) AS commune_name,
+           -- Code département INSEE, même commune de plus grand recouvrement,
+           -- pour le filtre de périmètre du back-office (#154). NULL si le
+           -- référentiel commune ne couvre pas la zone.
+           (SELECT CASE
+                       WHEN c.insee_com LIKE '97%' OR c.insee_com LIKE '98%'
+                           THEN substring(c.insee_com, 1, 3)
+                       ELSE substring(c.insee_com, 1, 2)
+                   END
+              FROM commune c
+             WHERE ST_Intersects(c.geom, staged.geom)
+             ORDER BY ST_Area(ST_Intersection(c.geom, staged.geom)) DESC
+             LIMIT 1) AS commune_department
     FROM staged
 ), incumbency AS (
     -- Qui détient DÉJÀ le nom qu'il pourrait revendiquer ? Les contraintes UNIQUE
@@ -134,7 +146,7 @@ WITH staged AS (
            END AS final_name
     FROM candidate
 )
-INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, geom)
+INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, department, geom)
 SELECT
     -- name (#134) : toponyme brut, jamais l'escalier — c'est export_as qui
     -- porte la désambiguïsation, name n'a plus de contrainte d'unicité à tenir.
@@ -144,6 +156,7 @@ SELECT
     nature,
     altitude_moyenne,
     cleabs,
+    commune_department,
     ST_Force2D(geom)
 FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
@@ -151,6 +164,7 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     export_as = EXCLUDED.export_as,
     nature = EXCLUDED.nature,
     altitude_moyenne = EXCLUDED.altitude_moyenne,
+    department = EXCLUDED.department,
     geom = EXCLUDED.geom;
 
 -- ---------------------------------------------------------------------------
@@ -160,7 +174,19 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
 WITH ranked AS (
     SELECT *,
            coalesce(nullif(toponyme, ''), cleabs) AS base_name,
-           row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn
+           row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn,
+           -- Code département INSEE (#154). Un cours d'eau traverse souvent
+           -- plusieurs communes : on retient celle de plus grande longueur
+           -- d'intersection. NULL si le référentiel commune ne couvre pas la zone.
+           (SELECT CASE
+                       WHEN c.insee_com LIKE '97%' OR c.insee_com LIKE '98%'
+                           THEN substring(c.insee_com, 1, 3)
+                       ELSE substring(c.insee_com, 1, 2)
+                   END
+              FROM commune c
+             WHERE ST_Intersects(c.geom, cours_d_eau.geom)
+             ORDER BY ST_Length(ST_Intersection(c.geom, cours_d_eau.geom)) DESC, c.insee_com
+             LIMIT 1) AS commune_department
     FROM bdtopo_raw.cours_d_eau
 ), named AS (
     -- Le nom nu n'est retenu que s'il est réellement libre : premier de son groupe
@@ -181,18 +207,20 @@ WITH ranked AS (
            END AS final_name
     FROM ranked
 )
-INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, geom)
+INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, department, geom)
 SELECT
     -- name (#134) : toponyme brut, jamais l'escalier (cf. section 1).
     base_name,
     final_name,
     'FLOWING'::water_entity_kind,
     cleabs,
+    commune_department,
     ST_Force2D(geom)
 FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     name = EXCLUDED.name,
     export_as = EXCLUDED.export_as,
+    department = EXCLUDED.department,
     geom = EXCLUDED.geom;
 
 -- ---------------------------------------------------------------------------

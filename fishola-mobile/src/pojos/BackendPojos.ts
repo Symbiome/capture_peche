@@ -79,6 +79,7 @@ export interface SpeciesWithAlias {
     authorizedSample: boolean;
     minSize: number;
     maxSize: number;
+    meshSize?: number;
 }
 
 export interface ReleasedFishState extends Serializable {
@@ -317,6 +318,7 @@ export interface WaterEntity extends Serializable {
     geom: string;
     latitude: number;
     longitude: number;
+    department: string;
 }
 
 export interface DashboardLastTrip {

@@ -82,14 +82,52 @@ public class ReferentialDao extends AbstractFisholaDao {
                         Tables.WATER_ENTITY.LATITUDE, Tables.WATER_ENTITY.LONGITUDE)
                 .from(Tables.WATER_ENTITY)
                 .orderBy(Tables.WATER_ENTITY.NAME)
-                .fetch(rec -> (WaterEntitySummary) ImmutableWaterEntitySummary.builder()
-                        .id(rec.get(Tables.WATER_ENTITY.ID))
-                        .name(rec.get(Tables.WATER_ENTITY.NAME))
-                        .exportAs(rec.get(Tables.WATER_ENTITY.EXPORT_AS))
-                        .kind(rec.get("kind", String.class))
-                        .latitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LATITUDE)))
-                        .longitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LONGITUDE)))
-                        .build()));
+                .fetch(ReferentialDao::toWaterEntitySummary));
+    }
+
+    // Listing léger scopé à un département (#154) : le back-office « Maillages et
+    // tailles maximales » borne son périmètre par département avant de construire
+    // la matrice espèces × entités, sinon le référentiel entier (~181 000 lignes,
+    // #134) faisait tomber le backend en OutOfMemoryError.
+    public List<WaterEntitySummary> listWaterEntitiesSummaryByDepartment(String department) {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME, Tables.WATER_ENTITY.EXPORT_AS,
+                        Tables.WATER_ENTITY.KIND.cast(String.class).as("kind"),
+                        Tables.WATER_ENTITY.LATITUDE, Tables.WATER_ENTITY.LONGITUDE)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(ReferentialDao::toWaterEntitySummary));
+    }
+
+    public Set<UUID> listWaterEntityIdsByDepartment(String department) {
+        return withContext(context -> new HashSet<>(context
+                .select(Tables.WATER_ENTITY.ID)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
+                .fetch(Tables.WATER_ENTITY.ID)));
+    }
+
+    // Codes département couverts par le référentiel hydro chargé, pour alimenter
+    // le sélecteur de périmètre du back-office (#154).
+    public List<String> listDepartments() {
+        return withContext(context -> context
+                .selectDistinct(Tables.WATER_ENTITY.DEPARTMENT)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.DEPARTMENT.isNotNull())
+                .orderBy(Tables.WATER_ENTITY.DEPARTMENT)
+                .fetch(Tables.WATER_ENTITY.DEPARTMENT));
+    }
+
+    private static WaterEntitySummary toWaterEntitySummary(org.jooq.Record rec) {
+        return ImmutableWaterEntitySummary.builder()
+                .id(rec.get(Tables.WATER_ENTITY.ID))
+                .name(rec.get(Tables.WATER_ENTITY.NAME))
+                .exportAs(rec.get(Tables.WATER_ENTITY.EXPORT_AS))
+                .kind(rec.get("kind", String.class))
+                .latitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LATITUDE)))
+                .longitude(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.LONGITUDE)))
+                .build();
     }
 
     // latitude/longitude are GENERATED ALWAYS AS ... STORED (derived from geom); a
