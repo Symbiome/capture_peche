@@ -181,7 +181,7 @@ const perimeterNames = computed(() => {
 const Toast = useToast();
 
 onMounted(async () => {
-  lakes.value = await BackendService.backendGet("/v1/referential/waterEntities");
+  lakes.value = await BackendService.backendGet("/v1/referential/waterEntities/summary");
 
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");
