@@ -42,7 +42,8 @@ const specieColumns: any[] = [
     field: "id",
     label: "Identifiant",
     visible: false,
-    readOnly: true
+    readOnly: true,
+    hiddenInPopup: true
   },
   {
     field: "name",

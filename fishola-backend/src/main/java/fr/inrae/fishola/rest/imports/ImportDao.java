@@ -24,9 +24,12 @@ package fr.inrae.fishola.rest.imports;
 import fr.inrae.fishola.database.AbstractFisholaDao;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.CollectionMethod;
+import fr.inrae.fishola.entities.enums.DayPeriod;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.FishingMode;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
+import fr.inrae.fishola.entities.enums.TroutOrigin;
 import fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireParsedRow;
 import jakarta.inject.Singleton;
 import org.jooq.Condition;
@@ -69,6 +72,29 @@ public class ImportDao extends AbstractFisholaDao {
     public record Bounds(Integer min, Integer max) {}
 
     public record Persisted(UUID jobId, int inserted) {}
+
+    /**
+     * Champs {@code trip} additionnels des formats carnet volontaire (#143) / enquête (#144,
+     * cf. #145). {@link #NONE} pour le pipeline générique (#71), qui n'en a pas.
+     */
+    public record TripExtras(UUID expectedSpeciesId, UUID secondaryTechniqueId, String baitOrLure,
+                             Short rodCount, FishingMode fishingMode, String[] observations,
+                             DayPeriod dayPeriod, String externalRef, UUID surveySessionId,
+                             UUID surveyedAnglerId) {
+        public static final TripExtras NONE =
+                new TripExtras(null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /**
+     * Champs {@code catch} additionnels des formats carnet volontaire (#143) / enquête (#144,
+     * cf. #145). {@link #NONE} pour le pipeline générique (#71), qui n'en a pas.
+     */
+    public record CatchExtras(TroutOrigin troutOrigin, Short lotMinSize, Short lotMaxSize,
+                              Boolean tagged, String tagReference, String baitOrLure,
+                              LocalDateTime catchTimestamp) {
+        public static final CatchExtras NONE =
+                new CatchExtras(null, null, null, null, null, null, null);
+    }
 
     // --- Idempotence ---------------------------------------------------------
 
@@ -196,14 +222,15 @@ public class ImportDao extends AbstractFisholaDao {
                 ParsedRow s = rows.get(0);
                 String name = "Import " + sref + " " + s.day.format(DAY_FMT);
 
-                UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, s.end, s.waterEntityId, name, now);
+                UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, s.end, s.waterEntityId, name, now,
+                        TripExtras.NONE);
 
                 for (ParsedRow p : rows) {
                     if (!p.hasCapture) {
                         continue;
                     }
                     insertCatch(ctx, tripId, p.speciesId, s.techniqueId, p.longueur, p.weight, p.kept,
-                            p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now);
+                            p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now, CatchExtras.NONE);
                 }
             }
         }
@@ -309,6 +336,11 @@ public class ImportDao extends AbstractFisholaDao {
 
     private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
                             UUID waterEntityId, String name, LocalDateTime now) {
+        return insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now, TripExtras.NONE);
+    }
+
+    private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
+                            UUID waterEntityId, String name, LocalDateTime now, TripExtras extras) {
         LocalDateTime beginTimestamp = LocalDateTime.of(day, start);
         LocalDateTime endTimestamp = LocalDateTime.of(day, end);
         if (endTimestamp.isBefore(beginTimestamp)) {
@@ -317,10 +349,14 @@ public class ImportDao extends AbstractFisholaDao {
         return ctx.insertInto(TRIP,
                         TRIP.COLLECTION_METHOD, TRIP.BEGIN_TIMESTAMP, TRIP.END_TIMESTAMP,
                         TRIP.WATER_ENTITY_ID, TRIP.NAME, TRIP.TYPE, TRIP.MODE, TRIP.SOURCE,
-                        TRIP.HIDDEN, TRIP.CREATED_ON)
+                        TRIP.HIDDEN, TRIP.CREATED_ON, TRIP.EXPECTED_SPECIES_ID, TRIP.SECONDARY_TECHNIQUE_ID,
+                        TRIP.BAIT_OR_LURE, TRIP.ROD_COUNT, TRIP.FISHING_MODE, TRIP.TRIP_OBSERVATIONS,
+                        TRIP.DAY_PERIOD, TRIP.EXTERNAL_REF, TRIP.SURVEY_SESSION_ID, TRIP.SURVEYED_ANGLER_ID)
                 .values(CollectionMethod.valueOf(collectionMethod), beginTimestamp, endTimestamp,
                         waterEntityId, name, TripType.Border, TripMode.Afterwards, DeviceType.web,
-                        false, now)
+                        false, now, extras.expectedSpeciesId(), extras.secondaryTechniqueId(),
+                        extras.baitOrLure(), extras.rodCount(), extras.fishingMode(), extras.observations(),
+                        extras.dayPeriod(), extras.externalRef(), extras.surveySessionId(), extras.surveyedAnglerId())
                 .returning(TRIP.ID)
                 .fetchOne()
                 .getId();
@@ -329,11 +365,22 @@ public class ImportDao extends AbstractFisholaDao {
     private void insertCatch(DSLContext ctx, UUID tripId, UUID speciesId, UUID techniqueId, Integer size,
                              Integer weight, boolean kept, int quantity, String sizeClass, String description,
                              LocalDateTime now) {
+        insertCatch(ctx, tripId, speciesId, techniqueId, size, weight, kept, quantity, sizeClass, description,
+                now, CatchExtras.NONE);
+    }
+
+    private void insertCatch(DSLContext ctx, UUID tripId, UUID speciesId, UUID techniqueId, Integer size,
+                             Integer weight, boolean kept, int quantity, String sizeClass, String description,
+                             LocalDateTime now, CatchExtras extras) {
         ctx.insertInto(CATCH,
                         CATCH.CREATED_ON, CATCH.TRIP_ID, CATCH.SPECIES_ID, CATCH.TECHNIQUE_ID,
                         CATCH.SIZE, CATCH.WEIGHT, CATCH.KEPT, CATCH.QUANTITY,
-                        CATCH.SIZE_CLASS, CATCH.DESCRIPTION)
-                .values(now, tripId, speciesId, techniqueId, size, weight, kept, quantity, sizeClass, description)
+                        CATCH.SIZE_CLASS, CATCH.DESCRIPTION, CATCH.TROUT_ORIGIN, CATCH.LOT_MIN_SIZE_CM,
+                        CATCH.LOT_MAX_SIZE_CM, CATCH.IS_TAGGED, CATCH.TAG_REFERENCE, CATCH.BAIT_OR_LURE,
+                        CATCH.CATCH_TIMESTAMP)
+                .values(now, tripId, speciesId, techniqueId, size, weight, kept, quantity, sizeClass, description,
+                        extras.troutOrigin(), extras.lotMinSize(), extras.lotMaxSize(), extras.tagged(),
+                        extras.tagReference(), extras.baitOrLure(), extras.catchTimestamp())
                 .execute();
     }
 }

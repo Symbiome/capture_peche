@@ -136,6 +136,11 @@ Dans le geopackage téléchargé, les attributs pertinents sont:
 * plan_d_eau
 * surface_hydrographique (Donne la largeur des cours d'eau, si largeure significative)
 
+### Délimitations administratives
+
+Utilier département.parquet
+https://cartes.gouv.fr/rechercher-une-donnee/dataset/IGNF_ADMIN-EXPRESS?redirected_from=geoservices.ign.fr#telechargement
+
 #### Connexion à la base de dev locale
 
 ```bash
