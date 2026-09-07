@@ -30,4 +30,7 @@ public class AuthorizedSamplesModificationBean {
     public Map<UUID, Map<UUID, Object>> authorizations;
     public Map<UUID, Map<UUID, Object>> minSizes;
     public Map<UUID, Map<UUID, Object>> maxSizes;
+    // Maillage réglementaire par entité + espèce, facultatif (#154). Absent ou
+    // 0 => pas de maillage défini.
+    public Map<UUID, Map<UUID, Object>> meshSizes;
 }

@@ -52,13 +52,16 @@ public interface SpeciesWithAlias {
     boolean authorizedSample();
     Integer minSize();
     Integer maxSize();
+    // Maillage réglementaire en cm, distinct de la taille minimale légale
+    // (minSize) : facultatif, d'où l'Optional (#154).
+    Optional<Integer> meshSize();
 
     static SpeciesWithAlias of(Species source) {
-        SpeciesWithAlias result = of(source, Optional.empty(), Optional.empty(), false, 0, 1000);
+        SpeciesWithAlias result = of(source, Optional.empty(), Optional.empty(), false, 0, 1000, null);
         return result;
     }
 
-    static SpeciesWithAlias of(Species source, Optional<String> alias, Optional<Boolean> present, boolean authorizedSample, Integer minSize, Integer maxSize) {
+    static SpeciesWithAlias of(Species source, Optional<String> alias, Optional<Boolean> present, boolean authorizedSample, Integer minSize, Integer maxSize, Integer meshSize) {
         ImmutableSpeciesWithAlias result = ImmutableSpeciesWithAlias.builder()
                 .id(source.getId())
                 .name(source.getName())
@@ -71,6 +74,7 @@ public interface SpeciesWithAlias {
                 .reportLink(Optional.ofNullable(source.getReportLink()))
                 .minSize(minSize)
                 .maxSize(maxSize)
+                .meshSize(Optional.ofNullable(meshSize))
                 .authorizedSample(authorizedSample)
                 .build();
         return result;

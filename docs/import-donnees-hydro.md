@@ -151,6 +151,19 @@ toujours le toponyme brut) :
   Aucune commune ne peut les départager, leur `export_as` retombe sur
   l'identifiant.
 
+## Code département
+
+L'import calcule aussi `water_entity.department` (code INSEE) par jointure
+spatiale avec `commune` : commune de plus grand recouvrement pour un plan d'eau,
+de plus grande longueur d'intersection pour un cours d'eau. Ce code borne le
+périmètre du back-office « Maillages et tailles maximales » (#154), qui ne peut
+pas charger les ~181 000 entités d'un coup.
+
+Comme pour `export_as`, si le référentiel commune ne couvre pas la zone au moment
+de l'import, `department` reste `NULL` et se remplit au prochain réimport,
+communes chargées. La migration `V1.10.0` fait le même calcul en rattrapage sur
+les données déjà en base.
+
 ## Communes seules
 
 Le référentiel commune s'alimente aussi indépendamment, depuis geo.api.gouv.fr :
