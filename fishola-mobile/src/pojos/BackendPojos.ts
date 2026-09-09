@@ -82,6 +82,21 @@ export interface SpeciesWithAlias {
     meshSize?: number;
 }
 
+export interface WaterEntity extends Serializable {
+    id: string;
+    name: string;
+    exportAs: string;
+    waterEntityCode: string;
+    kind: WaterEntityKind;
+    nature: string;
+    altitudeMoyenne: number;
+    bdtopoCleabs: string;
+    geom: string;
+    latitude: number;
+    longitude: number;
+    department: string;
+}
+
 export interface ReleasedFishState extends Serializable {
     id: string;
     name: string;
@@ -216,6 +231,10 @@ export interface GlobalDashboard {
     computedOn: Date;
 }
 
+export interface EvolutionMetricsForWaterEntity {
+    evolutionPerMonthAndSpecie: { [index: string]: EvolutionMetricForSpecieAndMonth[] };
+}
+
 export interface LicenceFromClientBean {
     name: string;
     expirationDate: Date;
@@ -306,21 +325,6 @@ export interface CommuneResult {
 export interface Serializable {
 }
 
-export interface WaterEntity extends Serializable {
-    id: string;
-    name: string;
-    exportAs: string;
-    waterEntityCode: string;
-    kind: WaterEntityKind;
-    nature: string;
-    altitudeMoyenne: number;
-    bdtopoCleabs: string;
-    geom: string;
-    latitude: number;
-    longitude: number;
-    department: string;
-}
-
 export interface DashboardLastTrip {
     tripId: string;
     day: Date;
@@ -333,6 +337,13 @@ export interface PicturePerTripBean {
     tripName: string;
     tripWaterEntityName: string;
     pictureURLs: string[];
+}
+
+export interface EvolutionMetricForSpecieAndMonth {
+    monthYear: string;
+    tripsCount: number;
+    keptCatchesCount: number;
+    totalCatchesCount: number;
 }
 
 export interface TripSocialReaction extends Serializable {
@@ -348,12 +359,12 @@ export type TripType = "Border" | "Craft";
 
 export type DeviceType = "web" | "application";
 
+export type WaterEntityKind = "STILL" | "FLOWING";
+
 export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" | "JULY" | "AUGUST" | "SEPTEMBER" | "OCTOBER" | "NOVEMBER" | "DECEMBER";
 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";
-
-export type WaterEntityKind = "STILL" | "FLOWING";
 
 export type SocialReaction = "LIKE" | "LOVE" | "LETS_MEET";

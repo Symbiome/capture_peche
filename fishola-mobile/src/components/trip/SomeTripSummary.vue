@@ -133,7 +133,7 @@
 <script lang="ts">
 import TripSummary from "@/pojos/TripSummary";
 import {
-  Lake,
+  WaterEntity as Lake,
   Weather,
   SpeciesWithAlias,
   Technique,

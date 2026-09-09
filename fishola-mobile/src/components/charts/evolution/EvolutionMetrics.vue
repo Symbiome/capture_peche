@@ -56,7 +56,7 @@
 
 <script lang="ts">
 
-import { EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
+import { EvolutionMetricsForWaterEntity as EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
 import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';

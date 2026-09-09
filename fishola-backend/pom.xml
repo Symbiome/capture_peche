@@ -411,7 +411,7 @@
                         <class>fr.inrae.fishola.rest.trips.TripBean</class>
                         <class>fr.inrae.fishola.rest.trips.TripLight</class>
                         <class>fr.inrae.fishola.rest.referential.SpeciesWithAlias</class>
-                        <class>fr.inrae.fishola.entities.tables.pojos.Lake</class>
+                        <class>fr.inrae.fishola.entities.tables.pojos.WaterEntity</class>
                         <class>fr.inrae.fishola.entities.tables.pojos.ReleasedFishState</class>
                         <class>fr.inrae.fishola.entities.tables.pojos.Species</class>
                         <class>fr.inrae.fishola.entities.tables.pojos.Technique</class>
@@ -426,7 +426,7 @@
                         <class>fr.inrae.fishola.rest.feedback.Feedback</class>
                         <class>fr.inrae.fishola.rest.dashboard.Dashboard</class>
                         <class>fr.inrae.fishola.rest.dashboard.GlobalDashboard</class>
-                        <class>fr.inrae.fishola.rest.dashboard.EvolutionMetricsForLake</class>
+                        <class>fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceFromClientBean</class>
                         <class>fr.inrae.fishola.rest.licences.LicenceResponseBean</class>
                         <class>fr.inrae.fishola.rest.trips.CatchMarker</class>

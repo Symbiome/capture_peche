@@ -164,6 +164,35 @@ de l'import, `department` reste `NULL` et se remplit au prochain réimport,
 communes chargées. La migration `V1.10.0` fait le même calcul en rattrapage sur
 les données déjà en base.
 
+## Contours départementaux
+
+La table `departement` (migration `V1.11.0`) porte les contours des 101
+départements français — 96 métropole plus les DOM 971/972/973/974/976 — issus du
+thème ADMINISTRATIF de la BD TOPO IGN.
+
+| Colonne | Contenu |
+|---|---|
+| `id` | identifiant technique (UUID) |
+| `code` | code INSEE, clé naturelle : `01` à `95`, `2A`/`2B`, DOM à 3 chiffres |
+| `name` | nom officiel |
+| `bdtopo_cleabs` | identifiant national BD TOPO, pour le ré-import idempotent |
+| `geom` | contour `MultiPolygon` EPSG:4326, indexé GIST |
+
+```bash
+# Prérequis : la base doit tourner, et ./data/departement.parquet doit exister
+./scripts/import_departements_parquet.sh ./data
+```
+
+Le fichier source `./data/departement.parquet` (GeoParquet, lu nativement par
+GDAL) se récupère sur <https://geoservices.ign.fr/bdtopo>, couche `departement`.
+Le script suit la même chaîne 100 % Docker que `import_admin_gpkg.sh` : staging
+`ogr2ogr` dans `bdtopo_raw.departement`, puis upsert SQL sur `code`
+(`import_departements_parquet.sql`). Réexécutable sans effet de bord.
+
+Cette table permet les jointures spatiales directes `ST_Intersects` /
+`ST_Contains` entité ↔ département (comptages captures / pêcheurs / sorties par
+département), sans dépendre de la couverture du référentiel `commune`.
+
 ## Communes seules
 
 Le référentiel commune s'alimente aussi indépendamment, depuis geo.api.gouv.fr :
