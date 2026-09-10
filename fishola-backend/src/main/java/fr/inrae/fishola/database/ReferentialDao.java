@@ -51,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jboss.logging.Logger;
 
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -106,17 +107,6 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .from(Tables.WATER_ENTITY)
                 .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
                 .fetch(Tables.WATER_ENTITY.ID)));
-    }
-
-    // Codes département couverts par le référentiel hydro chargé, pour alimenter
-    // le sélecteur de périmètre du back-office (#154).
-    public List<String> listDepartments() {
-        return withContext(context -> context
-                .selectDistinct(Tables.WATER_ENTITY.DEPARTMENT)
-                .from(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.DEPARTMENT.isNotNull())
-                .orderBy(Tables.WATER_ENTITY.DEPARTMENT)
-                .fetch(Tables.WATER_ENTITY.DEPARTMENT));
     }
 
     private static WaterEntitySummary toWaterEntitySummary(org.jooq.Record rec) {
@@ -443,10 +433,42 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
     }
 
-    public List<WaterEntity> fetchWaterEntitiesById(Set<UUID> allowedAdminWaterEntities) {
+    // Entités hydro d'un périmètre départemental (#159). Ensemble vide => aucune
+    // entité (un compte national ne passe jamais par ici).
+    public List<WaterEntity> fetchWaterEntitiesByDepartments(Set<String> departmentCodes) {
+        if (departmentCodes.isEmpty()) {
+            return List.of();
+        }
         return withContext(context -> context.selectFrom(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.ID.in(allowedAdminWaterEntities.toArray(UUID[]::new)))
+                .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetchInto(WaterEntity.class));
+    }
+
+    // Codes département (INSEE) distincts des entités hydro demandées, valeurs
+    // nulles exclues (#159).
+    public Set<String> departmentsOf(Collection<UUID> waterEntityIds) {
+        if (waterEntityIds.isEmpty()) {
+            return Set.of();
+        }
+        return withContext(context -> context
+                .selectDistinct(Tables.WATER_ENTITY.DEPARTMENT)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.ID.in(waterEntityIds))
+                .and(Tables.WATER_ENTITY.DEPARTMENT.isNotNull())
+                .fetchSet(Tables.WATER_ENTITY.DEPARTMENT));
+    }
+
+    // Département (code INSEE) de chaque entité hydro demandée ; sert à vérifier
+    // qu'une entité choisie dans l'UI est bien dans le périmètre du staff (#159).
+    public Map<UUID, String> departmentByWaterEntityId(Collection<UUID> waterEntityIds) {
+        if (waterEntityIds.isEmpty()) {
+            return Map.of();
+        }
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.DEPARTMENT)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.ID.in(waterEntityIds))
+                .fetchMap(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.DEPARTMENT));
     }
 }

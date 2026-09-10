@@ -1,47 +1,30 @@
-package fr.inrae.fishola.rest.security;
+package fr.inrae.fishola.rest.department;
 
 /*-
  * #%L
  * Fishola :: Backend
  * %%
- * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fr.inrae.fishola.ImmutableObject;
-
-import java.util.List;
-import java.util.UUID;
-
-@ImmutableObject
-@JsonSerialize(as = ImmutableAdminProfileForAdmin.class)
-public interface AdminProfileForAdmin {
-
-    UUID id();
-
-    String email();
-
-    boolean canCreateAdmin();
-
-    boolean isNationalAdmin();
-
-    boolean isOperator();
-
-    /** Codes département INSEE du périmètre géographique du compte (#159). Vide pour un national. */
-    List<String> departmentCodes();
-
+/**
+ * A department as a {@code {code, name}} pair, e.g. {@code {"74", "Haute-Savoie"}}.
+ * Item of {@code GET /api/v1/referential/departments}, consumed by the staff
+ * perimeter multi-select and the "Maillages et tailles maximales" screen (#159).
+ */
+public record DepartmentName(String code, String name) {
 }

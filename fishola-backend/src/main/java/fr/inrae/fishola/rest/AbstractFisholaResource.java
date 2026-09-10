@@ -206,14 +206,18 @@ public abstract class AbstractFisholaResource {
         return admin;
     }
 
-    protected Set<UUID> getAllowedAdminWaterEntities() {
+    /**
+     * Codes département du périmètre du staff connecté (admin régional OU opérateur).
+     * Ensemble <b>vide = national</b> : aucun filtre, voit tout. Un ensemble non vide
+     * borne toute lecture/écriture aux départements listés (#159).
+     */
+    protected Set<String> getAllowedAdminDepartments() {
         if (adminToken == null) {
             return Sets.newLinkedHashSet();
         }
-        // Périmètre du staff (admin régional OU opérateur) ; vide = national (pas de filtre).
         try {
             FisholaAdmin fisholaAdmin = this.checkIsStaff();
-            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedWaterEntities(fisholaAdmin.getId());
+            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedDepartments(fisholaAdmin.getId());
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();
         }

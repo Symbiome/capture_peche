@@ -1,7 +1,6 @@
 package fr.inrae.fishola.rest.security.admin;
 
 import java.util.Set;
-import java.util.UUID;
 
 /*-
  * #%L
@@ -27,7 +26,8 @@ public class RegisterAdminBean {
 
     public String email;
     public String password;
-    public Set<UUID> waterEntityIds;
+    /** Périmètre géographique : codes département INSEE (#159). Au moins un, sauf compte national. */
+    public Set<String> departmentCodes;
     public Boolean canCreateAdmin;
     public Boolean isOperator;
 }

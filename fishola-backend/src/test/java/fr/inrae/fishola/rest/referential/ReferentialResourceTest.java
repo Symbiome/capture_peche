@@ -85,14 +85,15 @@ class ReferentialResourceTest {
 
     @Test
     void testGetDepartments() {
-        // #154 : le sélecteur de périmètre du back-office liste les départements
-        // couverts par le référentiel hydro (fixture : 01, 73, 74).
+        // #159 : le sélecteur de périmètre du back-office liste TOUS les départements
+        // ({code, name}), pas seulement ceux couverts par le référentiel hydro.
         given()
                 .when()
                     .get("/api/v1/referential/departments")
                 .then()
                     .statusCode(200)
-                    .body("$", hasItems("01", "73", "74"));
+                    .body("code", hasItems("01", "2A", "74", "976"))
+                    .body("find { it.code == '74' }.name", is("Haute-Savoie"));
     }
 
     @Test

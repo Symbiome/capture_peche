@@ -56,10 +56,10 @@
       >
         <option
           v-for="d in departments"
-          :key="d"
-          :value="d"
+          :key="d.code"
+          :value="d.code"
         >
-          Département {{ d }}
+          {{ d.code }} — {{ d.name }}
         </option>
       </b-select>
     </div>
@@ -196,7 +196,7 @@ const MESH_UNSET = 0;
 type SizeValue = number | string;
 
 const species: Ref<Specie[]> = ref([]);
-const departments: Ref<string[]> = ref([]);
+const departments: Ref<{ code: string; name: string }[]> = ref([]);
 const selectedDepartment: Ref<string | null> = ref(null);
 const departmentEntities: Ref<Lake[]> = ref([]);
 

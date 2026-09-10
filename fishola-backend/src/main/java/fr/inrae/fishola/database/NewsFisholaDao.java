@@ -22,13 +22,11 @@ package fr.inrae.fishola.database;
  */
 
 import fr.inrae.fishola.entities.Tables;
-import fr.inrae.fishola.entities.tables.daos.FisholaAdminWaterEntitiesDao;
 import fr.inrae.fishola.entities.tables.daos.NewsDao;
 import fr.inrae.fishola.entities.tables.daos.NewsWaterEntityDao;
 import fr.inrae.fishola.entities.tables.daos.NewsPictureDao;
 import fr.inrae.fishola.entities.tables.daos.NextScheduledCourrielNotificationCheckDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdminWaterEntities;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
@@ -63,9 +61,16 @@ public class NewsFisholaDao extends AbstractFisholaDao {
             ).toList();
         }
         if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
-            // For local admin, only keep national and waterEntity-related actus
-            UUID[] adminWaterEntityIds = withDao(FisholaAdminWaterEntitiesDao.class, dao -> dao.fetchByFisholaAdminId(admin.get().getId()).stream().map(FisholaAdminWaterEntities::getWaterEntityId)).toArray(UUID[]::new);
-            Set<UUID> newsOfReleventWaterEntities =  withDao(NewsWaterEntityDao.class, dao -> dao.fetchByWaterEntityId(adminWaterEntityIds).stream().map(NewsWaterEntity::getNewsId).collect(Collectors.toSet()));
+            // Admin régional : on ne garde que les actus rattachées à une entité hydro
+            // d'un de ses départements de périmètre (#159).
+            Set<UUID> newsOfReleventWaterEntities = withContext(context -> context
+                    .selectDistinct(Tables.NEWS_WATER_ENTITY.NEWS_ID)
+                    .from(Tables.NEWS_WATER_ENTITY)
+                    .join(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID))
+                    .join(Tables.FISHOLA_ADMIN_DEPARTMENTS)
+                        .on(Tables.FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(Tables.WATER_ENTITY.DEPARTMENT))
+                    .where(Tables.FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.eq(admin.get().getId()))
+                    .fetchSet(Tables.NEWS_WATER_ENTITY.NEWS_ID));
             allNews = allNews.stream().filter(news ->
                     newsOfReleventWaterEntities.contains(news.getId())
             ).toList();
