@@ -11,9 +11,9 @@ force_rebuild: false
 # valeurs doivent correspondre exactement à ce mapping (à leur demander avant
 # le premier déploiement). Rien ici n'installe ni ne configure de proxy.
 app_domain: peche-rmc.adventiel.net
-api_domain: api.peche-rmc.adventiel.net
-admin_domain: admin.peche-rmc.adventiel.net
-dashboard_domain: dashboard.peche-rmc.adventiel.net
+api_domain: api-peche-rmc.adventiel.net
+admin_domain: admin-peche-rmc.adventiel.net
+dashboard_domain: dashboard-peche-rmc.adventiel.net
 # mail_dev_domain: maildev.peche-rmc.adventiel.net
 
 # --- Ports hôte --------------------------------------------------------------
