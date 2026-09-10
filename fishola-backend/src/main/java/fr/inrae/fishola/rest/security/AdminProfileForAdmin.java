@@ -41,6 +41,7 @@ public interface AdminProfileForAdmin {
 
     boolean isOperator();
 
-    List<UUID> waterEntityIds();
+    /** Codes département INSEE du périmètre géographique du compte (#159). Vide pour un national. */
+    List<String> departmentCodes();
 
 }

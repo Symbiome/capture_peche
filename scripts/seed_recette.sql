@@ -63,15 +63,27 @@ SELECT * FROM (VALUES
 ) v(name, export_as)
 WHERE NOT EXISTS (SELECT 1 FROM public.released_fish_state);
 
+-- ── Contours départementaux de recette (#159) ─────────────────────────────────
+-- Boîtes englobant les lacs ci-dessous, pour que l'estampillage spatial
+-- trip/catch <-> departement.geom fonctionne sans charger la BD TOPO complète.
+INSERT INTO public.departement (code, name, geom)
+SELECT v.code, v.name, public.ST_Multi(public.ST_GeomFromText(v.wkt, 4326))
+FROM (VALUES
+    ('74', 'Haute-Savoie', 'POLYGON((6.0 45.7, 7.0 45.7, 7.0 46.6, 6.0 46.6, 6.0 45.7))'),
+    ('73', 'Savoie',       'POLYGON((5.6 45.4, 6.0 45.4, 6.0 45.9, 5.6 45.9, 5.6 45.4))')
+) v(code, name, wkt)
+WHERE NOT EXISTS (SELECT 1 FROM public.departement WHERE code IN ('73', '74'));
+
 -- ── Entités hydrographiques de recette ─────────────────────────────────────────
--- « Lac A (recette) » = dans le périmètre régional/opérateur ; « Lac B (recette) » = hors périmètre.
-INSERT INTO public.water_entity (name, export_as, water_entity_code, kind, geom)
-SELECT v.name, v.name, v.code, v.kind::public.water_entity_kind,
+-- « Lac A (recette) » (dép. 74) = dans le périmètre régional/opérateur ;
+-- « Lac B (recette) » (dép. 73) = hors périmètre.
+INSERT INTO public.water_entity (name, export_as, water_entity_code, kind, department, geom)
+SELECT v.name, v.name, v.code, v.kind::public.water_entity_kind, v.dep,
        public.ST_SetSRID(public.ST_MakePoint(v.lng, v.lat), 4326)
 FROM (VALUES
-    ('Lac A (recette)', 'RECA', 'STILL', 6.17, 45.85),
-    ('Lac B (recette)', 'RECB', 'STILL', 5.87, 45.72)
-) v(name, code, kind, lng, lat)
+    ('Lac A (recette)', 'RECA', 'STILL', '74', 6.17, 45.85),
+    ('Lac B (recette)', 'RECB', 'STILL', '73', 5.87, 45.72)
+) v(name, code, kind, dep, lng, lat)
 WHERE NOT EXISTS (SELECT 1 FROM public.water_entity WHERE name IN ('Lac A (recette)', 'Lac B (recette)'));
 
 -- ── Comptes staff (mot de passe « Recette2026! ») ──────────────────────────────
@@ -103,15 +115,15 @@ SELECT 'Pêcheur', 'Recette', 'pecheur.recette@fishola.test',
        now(), 'pecheur.recette'
 WHERE NOT EXISTS (SELECT 1 FROM public.fishola_user WHERE email = 'pecheur.recette@fishola.test');
 
--- ── Périmètres (régional + opérateur → « Lac A (recette) ») ─────────────────────
-INSERT INTO public.fishola_admin_water_entities (fishola_admin_id, water_entity_id)
-SELECT a.id, w.id
+-- ── Périmètres départementaux (#159) : régional + opérateur → dép. 74 ──────────
+-- Lac A (recette) est dans le 74 (périmètre), Lac B (recette) dans le 73 (hors).
+INSERT INTO public.fishola_admin_departments (fishola_admin_id, department_code)
+SELECT a.id, '74'
 FROM public.fishola_admin a
-JOIN public.water_entity w ON w.name = 'Lac A (recette)'
 WHERE a.email IN ('regional.recette@fishola.test', 'operateur.recette@fishola.test')
   AND NOT EXISTS (
-      SELECT 1 FROM public.fishola_admin_water_entities l
-      WHERE l.fishola_admin_id = a.id AND l.water_entity_id = w.id
+      SELECT 1 FROM public.fishola_admin_departments d
+      WHERE d.fishola_admin_id = a.id AND d.department_code = '74'
   );
 
 -- ── Seuils de tailles aberrantes (règle métier Q8) ─────────────────────────────

@@ -84,7 +84,6 @@ class AuditLogTest {
     @Transactional
     void cleanup() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        ctx.execute("DELETE FROM fishola_admin_water_entities WHERE fishola_admin_id = ?", adminId);
         ctx.execute("DELETE FROM audit_log WHERE actor_id = ?", adminId);
         ctx.execute("DELETE FROM fishola_admin WHERE id = ?", adminId);
     }
@@ -102,7 +101,7 @@ class AuditLogTest {
         Map<String, Object> bean = Map.of(
                 "email", "audit-test@fishola.test",
                 "canCreateAdmin", false,
-                "waterEntityIds", new HashSet<>());
+                "departmentCodes", new HashSet<>());
 
         int before = auditCount("admin.update");
         given()
@@ -130,7 +129,7 @@ class AuditLogTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
-                .body(Map.of("email", "audit-test@fishola.test", "canCreateAdmin", false, "waterEntityIds", new HashSet<>()))
+                .body(Map.of("email", "audit-test@fishola.test", "canCreateAdmin", false, "departmentCodes", new HashSet<>()))
                 .when().put("/api/v1/admin/" + adminId)
                 .then().statusCode(204);
 

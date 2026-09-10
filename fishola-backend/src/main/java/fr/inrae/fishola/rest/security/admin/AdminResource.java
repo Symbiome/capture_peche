@@ -25,6 +25,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.rest.audit.Audited;
+import fr.inrae.fishola.rest.department.Departments;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
@@ -58,15 +59,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Path("/api/v1/admin")
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource extends AbstractSecurityFisholaResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
     protected static final String CLAIM_IS_OPERATOR = "isOperator";
-    protected static final String CLAIM_WATER_ENTITY_IDS = "waterEntityIds";
+    protected static final String CLAIM_DEPARTMENT_CODES = "departmentCodes";
 
     @POST
     @Path("/login")
@@ -102,15 +101,15 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        // Cloisonnement : un modificateur non national ne peut affecter que des plans d'eau de son périmètre.
-        if (!fisholaAdmin.getIsNationalAdmin() && bean.waterEntityIds != null
-                && !adminDao.getAllowedWaterEntities(fisholaAdmin.getId()).containsAll(bean.waterEntityIds)) {
-            throw new ForbiddenException("Un ou plusieurs plans d'eau sont hors de votre périmètre");
+        // Cloisonnement : un modificateur non national ne peut affecter que des départements de son périmètre.
+        if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
+                && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
+            throw new ForbiddenException("Un ou plusieurs départements sont hors de votre périmètre");
         }
         adminDao.updateAdmin(
                 adminId,
                 bean.canCreateAdmin,
-                bean.waterEntityIds
+                bean.departmentCodes
         );
         return Response.noContent().build();
     }
@@ -127,10 +126,10 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        // Cloisonnement : un créateur non national ne peut affecter que des plans d'eau de son périmètre.
-        if (!fisholaAdmin.getIsNationalAdmin() && bean.waterEntityIds != null
-                && !adminDao.getAllowedWaterEntities(fisholaAdmin.getId()).containsAll(bean.waterEntityIds)) {
-            throw new ForbiddenException("Un ou plusieurs plans d'eau sont hors de votre périmètre");
+        // Cloisonnement : un créateur non national ne peut affecter que des départements de son périmètre.
+        if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
+                && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
+            throw new ForbiddenException("Un ou plusieurs départements sont hors de votre périmètre");
         }
         Map<String, String> validationErrors = new HashMap<>();
         String email = StringUtils.trimToEmpty(bean.email).toLowerCase();
@@ -143,8 +142,10 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             // On vérifie qu'il n'y a pas déjà un compte avec cet email
             validationErrors.put(CLAIM_EMAIL, "E-mail déjà utilisé");
         }
-        if (bean.waterEntityIds.isEmpty()) {
-            validationErrors.put(CLAIM_WATER_ENTITY_IDS, "Au moins un lac doit être associé à l'administrateur");
+        if (bean.departmentCodes == null || bean.departmentCodes.isEmpty()) {
+            validationErrors.put(CLAIM_DEPARTMENT_CODES, "Au moins un département doit être associé au compte");
+        } else if (!bean.departmentCodes.stream().allMatch(Departments::isValidCode)) {
+            validationErrors.put(CLAIM_DEPARTMENT_CODES, "Code département inconnu");
         }
 
         Optional<String> passwordError = validatePassword(bean.password);
@@ -167,7 +168,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         Map<String, String> claims = new HashMap<>();
         claims.put(CLAIM_EMAIL, email);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
-        claims.put(CLAIM_WATER_ENTITY_IDS, bean.waterEntityIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+        claims.put(CLAIM_DEPARTMENT_CODES, String.join(",", bean.departmentCodes));
         claims.put(CLAIM_CAN_CREATE_ADMIN, Boolean.toString(canCreateAdmin));
         claims.put(CLAIM_IS_OPERATOR, Boolean.toString(isOperator));
 
@@ -248,7 +249,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                 fisholaAdmin.getIsNationalAdmin(),
                 fisholaAdmin.getCanCreateAdmin(),
                 fisholaAdmin.getIsOperator(),
-                adminDao.getAllowedWaterEntities(fisholaAdmin.getId())
+                adminDao.getAllowedDepartments(fisholaAdmin.getId())
         );
         return Response.ok(loggedAdmin).build();
     }
@@ -292,16 +293,16 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     private List<AdminProfileForAdmin> listStaff(boolean operators) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
         List<FisholaAdmin> staff = adminDao.findAll();
-        Set<UUID> allowedWaterEntities = getAllowedAdminWaterEntities();
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
         return staff.stream()
             .filter(admin -> Boolean.TRUE.equals(admin.getIsOperator()) == operators)
             .filter(admin -> {
                 if (fisholaAdmin.getIsNationalAdmin()) {
                     return true;
                 }
-                // Local admins can only see staff of their waterEntities
-                Set<UUID> adminWaterEntities = adminDao.getAllowedWaterEntities(admin.getId());
-                return !Collections.disjoint(allowedWaterEntities, adminWaterEntities);
+                // Un admin régional ne voit que le staff dont le périmètre recoupe le sien.
+                Set<String> adminDepartments = adminDao.getAllowedDepartments(admin.getId());
+                return !Collections.disjoint(allowedDepartments, adminDepartments);
             })
             .map(this.adminDao::toUserProfileForAdmin)
             .toList();
@@ -349,10 +350,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             };
 
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
-            String waterEntityIdsString = getClaimOrFail.apply(CLAIM_WATER_ENTITY_IDS);
-            UUID[] waterEntityIds = Stream.of(waterEntityIdsString.split(","))
-                    .map(UUID::fromString)
-                    .toList().toArray(UUID[]::new);
+            String departmentCodesString = getClaimOrFail.apply(CLAIM_DEPARTMENT_CODES);
+            String[] departmentCodes = departmentCodesString.split(",");
 
             if (log.isInfoEnabled()) {
                 log.infof("Email verified, create account for %s", email);
@@ -363,7 +362,7 @@ public class AdminResource extends AbstractSecurityFisholaResource {
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_CAN_CREATE_ADMIN)),
                     false,
                     Boolean.parseBoolean(claims.getOrDefault(CLAIM_IS_OPERATOR, "false")),
-                    waterEntityIds
+                    departmentCodes
             );
 
             return true;

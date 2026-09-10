@@ -59,7 +59,7 @@
       <b-navbar-item tag="router-link" :to="{ name: 'news' }" v-else-if="!loggedAdmin.isOperator">
         Communications
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'trips' }" v-if="loggedAdmin.isNationalAdmin">
+      <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
         Sorties
       </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
@@ -110,7 +110,7 @@
             <div class="role-info">
               <b>{{ roleLabel }}</b>
               <div v-if="!loggedAdmin.isNationalAdmin && perimeterNames.length" class="perimeter">
-                <span class="perimeter-label">Plans d'eau :</span>
+                <span class="perimeter-label">Départements :</span>
                 {{ perimeterNames.join(', ') }}
               </div>
             </div>
@@ -163,7 +163,7 @@ import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNav
 import {computed, onMounted, ref, Ref} from "vue";
 
 const loggedAdmin: Ref<Admin> = ref({ email: "" });
-const lakes: Ref<Lake[]> = ref([]);
+const departments: Ref<{ code: string; name: string }[]> = ref([]);
 
 const roleLabel = computed(() => {
   const a = loggedAdmin.value as any;
@@ -173,15 +173,15 @@ const roleLabel = computed(() => {
 });
 
 const perimeterNames = computed(() => {
-  const ids: string[] = (loggedAdmin.value as any).waterEntityIds ?? [];
-  const byId = new Map(lakes.value.map((l: any) => [l.id, l.name]));
-  return ids.map((id) => byId.get(id)).filter((n): n is string => !!n);
+  const codes: string[] = (loggedAdmin.value as any).departmentCodes ?? [];
+  const byCode = new Map(departments.value.map((d) => [d.code, d.name]));
+  return codes.map((code) => (byCode.has(code) ? code + " — " + byCode.get(code) : code));
 });
 
 const Toast = useToast();
 
 onMounted(async () => {
-  lakes.value = await BackendService.backendGet("/v1/referential/waterEntities/summary");
+  departments.value = await BackendService.backendGet("/v1/referential/departments");
 
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");

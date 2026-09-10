@@ -67,7 +67,7 @@ public class ImportResource extends AbstractFisholaResource {
         // un administrateur national n'est pas restreint (null = pas de filtre).
         Set<UUID> allowedWaterEntities = admin.getIsNationalAdmin()
                 ? null
-                : adminDao.getAllowedWaterEntities(admin.getId());
+                : adminDao.getAllowedWaterEntityIds(admin.getId());
 
         ImportResultBean result = importService.run(fileBytes, name, mode, admin.getId(), allowedWaterEntities);
 

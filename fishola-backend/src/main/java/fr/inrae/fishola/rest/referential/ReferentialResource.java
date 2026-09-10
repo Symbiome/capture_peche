@@ -37,6 +37,8 @@ import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
+import fr.inrae.fishola.rest.department.DepartmentName;
+import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -77,13 +79,12 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (adminToken == null) {
             return referentialDao.listWaterEntities();
         }
-        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre.
+        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre départemental.
         FisholaAdmin fisholaAdmin = this.checkIsStaff();
         if (fisholaAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntities();
         } else {
-            Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-            return referentialDao.fetchWaterEntitiesById(allowedAdminWaterEntities);
+            return referentialDao.fetchWaterEntitiesByDepartments(getAllowedAdminDepartments());
         }
     }
 
@@ -296,40 +297,43 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     // Résout le périmètre du back-office « Maillages et tailles maximales »
     // (#154) : une liste explicite d'entités l'emporte sur le département ;
-    // dans les deux cas, l'admin régional reste borné à son propre périmètre.
+    // dans les deux cas, l'admin régional reste borné à ses départements (#159).
     private Set<UUID> resolvePerimeter(String department, List<UUID> waterEntityIdParams) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
         Set<UUID> perimeter;
         if (waterEntityIdParams != null && !waterEntityIdParams.isEmpty()) {
             perimeter = new HashSet<>(waterEntityIdParams);
+            if (!allowedDepartments.isEmpty()) {
+                Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(perimeter);
+                perimeter.removeIf(id -> !allowedDepartments.contains(departmentByEntity.get(id)));
+            }
         } else if (StringUtils.isNotBlank(department)) {
+            if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
+                return Set.of();
+            }
             perimeter = new HashSet<>(referentialDao.listWaterEntityIdsByDepartment(department));
         } else {
             return Set.of();
-        }
-        Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-        if (!allowedAdminWaterEntities.isEmpty()) {
-            perimeter.retainAll(allowedAdminWaterEntities);
         }
         return perimeter;
     }
 
     @GET
     @Path("/departments")
-    public List<String> getDepartments() {
-        return referentialDao.listDepartments();
+    public List<DepartmentName> getDepartments() {
+        // Référentiel complet (101 départements) : un national doit pouvoir attribuer
+        // n'importe quel département, pas seulement ceux déjà couverts par l'import hydro.
+        return Departments.all();
     }
 
     @GET
     @Path("/waterEntities/by-department/{department}")
     public List<WaterEntitySummary> getWaterEntitiesByDepartment(@PathParam("department") String department) {
-        List<WaterEntitySummary> summaries = referentialDao.listWaterEntitiesSummaryByDepartment(department);
-        Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-        if (allowedAdminWaterEntities.isEmpty()) {
-            return summaries;
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
+            return List.of();
         }
-        return summaries.stream()
-                .filter(summary -> allowedAdminWaterEntities.contains(summary.id()))
-                .toList();
+        return referentialDao.listWaterEntitiesSummaryByDepartment(department);
     }
 
     @PUT
@@ -421,10 +425,16 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Audited(value = "authorizedSamples.save", entityType = "authorized_samples")
     public Response saveAuthorizedSamples(AuthorizedSamplesModificationBean authorizedSamples) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-        Set<UUID> waterEntityScope =  authorizedSamples.targetWaterEntities.stream()
-            .filter(l -> fisholaAdmin.getIsNationalAdmin() || allowedAdminWaterEntities.contains(l))
-            .collect(Collectors.toSet());
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        Set<UUID> waterEntityScope;
+        if (fisholaAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
+            waterEntityScope = new HashSet<>(authorizedSamples.targetWaterEntities);
+        } else {
+            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(authorizedSamples.targetWaterEntities);
+            waterEntityScope = authorizedSamples.targetWaterEntities.stream()
+                .filter(id -> allowedDepartments.contains(departmentByEntity.get(id)))
+                .collect(Collectors.toSet());
+        }
         
         // On transforme la map pour avoir un Set des clé waterEntityId+speciesId autorisées
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();

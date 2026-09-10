@@ -57,7 +57,7 @@ public class CarnetVolontaireManualEntryResource extends AbstractFisholaResource
 
         Set<UUID> allowedWaterEntities = admin.getIsNationalAdmin()
                 ? null
-                : adminDao.getAllowedWaterEntities(admin.getId());
+                : adminDao.getAllowedWaterEntityIds(admin.getId());
 
         ManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities, LocalDate.now());
 

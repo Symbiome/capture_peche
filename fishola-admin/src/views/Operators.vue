@@ -23,7 +23,7 @@
     v-if="loaded"
     name="Opérateurs"
     url="/v1/admin/operators"
-    @elements-loaded="computeLakeNames"
+    @elements-loaded="computeDepartmentNames"
     :columns="operatorColumns"
     :createElement="createOperator"
     :editable="canManageOperators"
@@ -36,25 +36,26 @@ import Referential from "@/components/Referential.vue";
 import BackendService from "@/services/BackendService";
 import { ref, Ref } from "vue";
 
-const lakesIdToNameMap = ref(new Map<string, string>());
+const departmentCodeToNameMap = ref(new Map<string, string>());
 const loaded = ref(false);
 const canManageOperators = ref(false);
 const operatorColumns: Ref<any[]> = ref([]);
 
-loadLakes();
+loadDepartments();
 
-async function loadLakes() {
+async function loadDepartments() {
   const admin = await BackendService.backendGet("/v1/admin/check");
   // Les opérateurs sont gérés par les mêmes profils que les administrateurs.
   canManageOperators.value = admin.isNationalAdmin || admin.canCreateAdmins;
-  const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
-  const lakesOptions: any[] = [];
-  lakes.forEach((l: any) => {
-    lakesOptions.push({
-      id: l.id,
-      label: l.name
+  // Périmètre exprimé en départements (#159) : on ne charge plus tout le référentiel hydro.
+  const departments = await BackendService.backendGet("/v1/referential/departments");
+  const departmentOptions: any[] = [];
+  departments.forEach((d: any) => {
+    departmentOptions.push({
+      id: d.code,
+      label: d.code + " — " + d.name
     });
-    lakesIdToNameMap.value.set(l.id, l.name);
+    departmentCodeToNameMap.value.set(d.code, d.name);
   });
 
   operatorColumns.value = [
@@ -72,8 +73,8 @@ async function loadLakes() {
       readOnlyIfFunction: (operator) => { return operator.id; }
     },
     {
-      field: "lakeNames",
-      label: "Plans d'eau",
+      field: "departmentNames",
+      label: "Départements",
       searchable: true,
       hiddenInPopup: true
     },
@@ -86,14 +87,14 @@ async function loadLakes() {
       },
     },
     {
-      // Le backend (RegisterAdminBean / AdminProfileForAdmin) lit et renvoie « waterEntityIds ».
-      field: "waterEntityIds",
-      label: "Plans d'eau",
+      // Le backend (RegisterAdminBean / AdminProfileForAdmin) lit et renvoie « departmentCodes ».
+      field: "departmentCodes",
+      label: "Départements",
       isArray: true,
       visible: false,
-      arrayOptions: lakesOptions,
+      arrayOptions: departmentOptions,
       possibleValuesForItemFunction: (operator) => {
-        return operator.waterEntityIds ?? [];
+        return operator.departmentCodes ?? [];
       },
     },
     {
@@ -108,10 +109,10 @@ async function loadLakes() {
   loaded.value = true;
 }
 
-function computeLakeNames(operators: any[]) {
+function computeDepartmentNames(operators: any[]) {
   operators.forEach(operator => {
-    operator.lakeNames = (operator.waterEntityIds ?? [])
-      .map((waterEntityId: string) => lakesIdToNameMap.value.get(waterEntityId))
+    operator.departmentNames = (operator.departmentCodes ?? [])
+      .map((code: string) => code + " — " + departmentCodeToNameMap.value.get(code))
       .join(", ");
   });
 }
@@ -121,7 +122,7 @@ function createOperator(): any {
     name: "Nouvel opérateur",
     email: "",
     password: "",
-    waterEntityIds: []
+    departmentCodes: []
   };
 }
 </script>

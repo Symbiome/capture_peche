@@ -21,6 +21,8 @@ package fr.inrae.fishola.rest.department;
  * #L%
  */
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -141,6 +143,19 @@ public final class Departments {
             Map.entry("974", "La Réunion"),
             Map.entry("975", "Saint-Pierre-et-Miquelon"),
             Map.entry("976", "Mayotte"));
+
+    /**
+     * All departments as {@code {code, name}}, ordered by code (INSEE order :
+     * "01"…"95", "2A"/"2B" fall between "29" and "30", DOM "97x" last). Feeds the
+     * staff perimeter multi-select (#159) — the full referential, not only the
+     * departments already covered by the hydro import.
+     */
+    public static List<DepartmentName> all() {
+        return NAMES.entrySet().stream()
+                .map(entry -> new DepartmentName(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(DepartmentName::code))
+                .toList();
+    }
 
     /** Human-readable name for a department code, or the code itself if unknown. */
     public static String nameOf(String code) {

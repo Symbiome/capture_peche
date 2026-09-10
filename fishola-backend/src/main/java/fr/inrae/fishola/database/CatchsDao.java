@@ -200,6 +200,22 @@ public class CatchsDao extends AbstractFisholaDao {
                 context.execute("UPDATE catch SET position = ST_GeomFromText(?, 4326) WHERE id = ?", wktPoint, catchId));
     }
 
+    /**
+     * Estampille le département de la prise (#159) : département contenant sa
+     * position, avec repli sur le département de la sortie parente quand la prise
+     * n'a pas de position propre. À appeler APRÈS
+     * {@link TripsDao#stampDepartment(UUID)} sur la sortie parente (le repli lit
+     * trip.department) et après {@link #updatePosition}.
+     */
+    public void stampDepartment(UUID catchId) {
+        withContextNoResult(context -> context.execute(
+                "UPDATE catch c SET department = COALESCE("
+                        + "(SELECT d.code FROM departement d WHERE ST_Contains(d.geom, c.position) LIMIT 1),"
+                        + "(SELECT t.department FROM trip t WHERE t.id = c.trip_id))"
+                        + " WHERE c.id = ?",
+                catchId));
+    }
+
     public Catch getCatch(UUID catchId) {
         Catch aCatch = withDao(CatchDao.class, dao -> dao.fetchOneById(catchId));
         return aCatch;

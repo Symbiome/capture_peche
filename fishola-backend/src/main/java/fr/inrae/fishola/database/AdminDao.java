@@ -23,9 +23,9 @@ package fr.inrae.fishola.database;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import fr.inrae.fishola.entities.tables.daos.FisholaAdminDao;
-import fr.inrae.fishola.entities.tables.daos.FisholaAdminWaterEntitiesDao;
+import fr.inrae.fishola.entities.tables.daos.FisholaAdminDepartmentsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.entities.tables.pojos.FisholaAdminWaterEntities;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdminDepartments;
 import fr.inrae.fishola.entities.tables.records.FisholaAdminRecord;
 import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.ImmutableAdminProfileForAdmin;
@@ -42,7 +42,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN;
-import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_WATER_ENTITIES;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_DEPARTMENTS;
+import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
 
 @Singleton
 public class AdminDao extends AbstractFisholaDao {
@@ -115,7 +116,7 @@ public class AdminDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, boolean isOperator, UUID[] waterEntityIds) {
+    public void create(String rawEmail, String passwordHashed, boolean canCreateAdmin, boolean isNationalAdmin, boolean isOperator, String[] departmentCodes) {
         String email = rawEmail.toLowerCase();
         FisholaAdminRecord inserted = withContext(context -> context.insertInto(FISHOLA_ADMIN,
                         FISHOLA_ADMIN.EMAIL, FISHOLA_ADMIN.PASSWORD, FISHOLA_ADMIN.CREATED_ON, FISHOLA_ADMIN.CAN_CREATE_ADMIN, FISHOLA_ADMIN.IS_NATIONAL_ADMIN, FISHOLA_ADMIN.IS_OPERATOR)
@@ -123,16 +124,32 @@ public class AdminDao extends AbstractFisholaDao {
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne());
         UUID insertedAdminId = inserted.getId();
-        withDaoNoResult(FisholaAdminWaterEntitiesDao.class, dao -> {
-            for (UUID waterEntityId: waterEntityIds) {
-                dao.insert(new FisholaAdminWaterEntities(insertedAdminId, waterEntityId));
+        withDaoNoResult(FisholaAdminDepartmentsDao.class, dao -> {
+            for (String departmentCode : departmentCodes) {
+                dao.insert(new FisholaAdminDepartments(insertedAdminId, departmentCode));
             }
         });
     }
 
 
-    public Set<UUID> getAllowedWaterEntities(UUID adminID) {
-        return withDao(FisholaAdminWaterEntitiesDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream().map(FisholaAdminWaterEntities::getWaterEntityId).collect(Collectors.toSet()));
+    /** Codes département du périmètre d'un compte staff ; ensemble vide = aucune restriction (national). */
+    public Set<String> getAllowedDepartments(UUID adminID) {
+        return withDao(FisholaAdminDepartmentsDao.class, dao -> dao.fetchByFisholaAdminId(adminID).stream()
+                .map(FisholaAdminDepartments::getDepartmentCode).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Entités hydro couvertes par le périmètre départemental d'un compte staff
+     * (#159) : résolues via water_entity.department. Sert au cloisonnement de
+     * l'import / de la saisie manuelle, qui raisonnent encore par entité.
+     */
+    public Set<UUID> getAllowedWaterEntityIds(UUID adminID) {
+        return withContext(context -> context
+                .select(WATER_ENTITY.ID)
+                .from(WATER_ENTITY)
+                .join(FISHOLA_ADMIN_DEPARTMENTS).on(FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(WATER_ENTITY.DEPARTMENT))
+                .where(FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.eq(adminID))
+                .fetchSet(WATER_ENTITY.ID));
     }
 
     public AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {
@@ -142,12 +159,12 @@ public class AdminDao extends AbstractFisholaDao {
                 .canCreateAdmin(input.getCanCreateAdmin())
                 .isNationalAdmin(input.getIsNationalAdmin())
                 .isOperator(input.getIsOperator())
-                .waterEntityIds(this.getAllowedWaterEntities(input.getId()))
+                .departmentCodes(this.getAllowedDepartments(input.getId()))
                 .build();
         return result;
     }
 
-    public void updateAdmin(UUID adminId, Boolean canCreateAdmin, Set<UUID> waterEntityIds) {
+    public void updateAdmin(UUID adminId, Boolean canCreateAdmin, Set<String> departmentCodes) {
         DSLContext context = newContext();
         context.update(FISHOLA_ADMIN)
                 .set(FISHOLA_ADMIN.CAN_CREATE_ADMIN, canCreateAdmin)
@@ -155,13 +172,13 @@ public class AdminDao extends AbstractFisholaDao {
                 .returning(FISHOLA_ADMIN.ID)
                 .fetchOne();
 
-        context.deleteFrom(FISHOLA_ADMIN_WATER_ENTITIES)
-        .where(FISHOLA_ADMIN_WATER_ENTITIES.FISHOLA_ADMIN_ID.equal(adminId))
+        context.deleteFrom(FISHOLA_ADMIN_DEPARTMENTS)
+        .where(FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.equal(adminId))
         .execute();
 
-        withDaoNoResult(FisholaAdminWaterEntitiesDao.class, dao -> {
-            for (UUID waterEntityId : waterEntityIds) {
-                dao.insert(new FisholaAdminWaterEntities(adminId, waterEntityId));
+        withDaoNoResult(FisholaAdminDepartmentsDao.class, dao -> {
+            for (String departmentCode : departmentCodes == null ? Set.<String>of() : departmentCodes) {
+                dao.insert(new FisholaAdminDepartments(adminId, departmentCode));
             }
         });
     }

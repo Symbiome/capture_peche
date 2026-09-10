@@ -232,6 +232,7 @@ public class ImportDao extends AbstractFisholaDao {
                     insertCatch(ctx, tripId, p.speciesId, s.techniqueId, p.longueur, p.weight, p.kept,
                             p.quantity == null ? 1 : p.quantity, p.sizeClass, p.description, now, CatchExtras.NONE);
                 }
+                stampDepartment(ctx, tripId);
             }
         }
 
@@ -290,6 +291,7 @@ public class ImportDao extends AbstractFisholaDao {
                     insertCatch(ctx, tripId, p.speciesId, p.captureTechniqueId, p.size, p.weight, p.kept,
                             p.quantity == null ? 1 : p.quantity, sizeClass, null, now);
                 }
+                stampDepartment(ctx, tripId);
             }
         }
 
@@ -329,6 +331,7 @@ public class ImportDao extends AbstractFisholaDao {
             insertCatch(ctx, tripId, c.speciesId(), technique, c.size(), c.weight(), c.kept(),
                     c.quantity() == null ? 1 : c.quantity(), c.sizeClass(), c.description(), now);
         }
+        stampDepartment(ctx, tripId);
         return tripId;
     }
 
@@ -360,6 +363,24 @@ public class ImportDao extends AbstractFisholaDao {
                 .returning(TRIP.ID)
                 .fetchOne()
                 .getId();
+    }
+
+    /**
+     * Estampille le département d'une sortie importée et de ses prises (#159).
+     * Aucune position n'est saisie à l'import : le COALESCE retombe sur le
+     * département de l'entité hydro rattachée (dérivé de commune, #154). À appeler
+     * une fois la sortie et ses prises insérées.
+     */
+    void stampDepartment(DSLContext ctx, UUID tripId) {
+        ctx.execute("UPDATE trip t SET department = COALESCE("
+                + "(SELECT d.code FROM departement d"
+                + " WHERE ST_Contains(d.geom, COALESCE(t.snapped_position, t.begin_position, t.end_position)) LIMIT 1),"
+                + "(SELECT we.department FROM water_entity we WHERE we.id = t.water_entity_id))"
+                + " WHERE t.id = ?", tripId);
+        ctx.execute("UPDATE catch c SET department = COALESCE("
+                + "(SELECT d.code FROM departement d WHERE ST_Contains(d.geom, c.position) LIMIT 1),"
+                + "(SELECT t.department FROM trip t WHERE t.id = c.trip_id))"
+                + " WHERE c.trip_id = ?", tripId);
     }
 
     private void insertCatch(DSLContext ctx, UUID tripId, UUID speciesId, UUID techniqueId, Integer size,

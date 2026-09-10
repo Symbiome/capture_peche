@@ -107,3 +107,19 @@ SELECT we.id, sp.id, 30, 60, 10
 FROM public.water_entity we, public.species sp
 WHERE we.name = 'Annecy' AND sp.name = 'Carpe commune'
   AND NOT EXISTS (SELECT 1 FROM public.authorized_sample);
+
+-- 5) Contours départementaux (#159) : boîtes englobant les points des entités
+-- hydro ci-dessus, pour que la jointure spatiale trip/catch <-> departement.geom
+-- résolve en test (la table departement de V1.11.0 n'est pas chargée en dev/test).
+--   74 : Annecy (6.17/45.85), Léman (6.50/46.45)
+--   73 : Bourget (5.87/45.72), Aiguebelette (5.80/45.55)
+--   01 : Rhône amont (5.90/45.80)
+INSERT INTO public.departement (code, name, geom)
+SELECT v.code, v.name,
+       public.ST_Multi(public.ST_GeomFromText(v.wkt, 4326))
+FROM (VALUES
+    ('74', 'Haute-Savoie', 'POLYGON((6.0 45.7, 7.0 45.7, 7.0 46.6, 6.0 46.6, 6.0 45.7))'),
+    ('73', 'Savoie',       'POLYGON((5.6 45.4, 6.0 45.4, 6.0 45.75, 5.6 45.75, 5.6 45.4))'),
+    ('01', 'Ain',          'POLYGON((5.6 45.75, 6.0 45.75, 6.0 46.2, 5.6 46.2, 5.6 45.75))')
+) v(code, name, wkt)
+WHERE NOT EXISTS (SELECT 1 FROM public.departement);

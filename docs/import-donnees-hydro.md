@@ -193,6 +193,14 @@ Cette table permet les jointures spatiales directes `ST_Intersects` /
 `ST_Contains` entité ↔ département (comptages captures / pêcheurs / sorties par
 département), sans dépendre de la couverture du référentiel `commune`.
 
+Depuis `V2.0.0` (#159), chaque **sortie** (`trip`) et chaque **prise** (`catch`)
+est estampillée du département où l'action a eu lieu, par jointure spatiale sur
+`departement.geom` à l'ajout / l'édition (repli sur `water_entity.department`
+sans position GPS — imports, saisie manuelle, mode a posteriori). Pour un
+rattrapage optimal, **charger `departement` avant d'appliquer `V2.0.0`** ; sinon
+le rattrapage retombe sur `water_entity.department` et se corrige à la prochaine
+écriture. Voir `docs/cloisonnement-departemental.md`.
+
 ## Communes seules
 
 Le référentiel commune s'alimente aussi indépendamment, depuis geo.api.gouv.fr :

@@ -56,19 +56,19 @@ import { computed, onMounted, ref } from "vue";
 defineOptions({ name: "Home" });
 
 const loggedAdmin = ref<any>({});
-const lakes = ref<any[]>([]);
+const departments = ref<{ code: string; name: string }[]>([]);
 
 const perimeterNames = computed(() => {
-  const ids: string[] = loggedAdmin.value.waterEntityIds ?? [];
-  const byId = new Map(lakes.value.map((l) => [l.id, l.name]));
-  return ids.map((id) => byId.get(id)).filter((n): n is string => !!n);
+  const codes: string[] = loggedAdmin.value.departmentCodes ?? [];
+  const byCode = new Map(departments.value.map((d) => [d.code, d.name]));
+  return codes.map((code) => (byCode.has(code) ? code + " — " + byCode.get(code) : code));
 });
 
 onMounted(async () => {
   try {
     loggedAdmin.value = await BackendService.backendGet("/v1/admin/check");
-    if (loggedAdmin.value.isOperator) {
-      lakes.value = await BackendService.backendGet("/v1/referential/waterEntities");
+    if (!loggedAdmin.value.isNationalAdmin) {
+      departments.value = await BackendService.backendGet("/v1/referential/departments");
     }
   } catch (e) {
     // Le dispatcher / le menu gèrent la redirection si la session est expirée.

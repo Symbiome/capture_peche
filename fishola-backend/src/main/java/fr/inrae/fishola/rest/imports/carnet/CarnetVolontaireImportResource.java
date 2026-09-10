@@ -66,7 +66,7 @@ public class CarnetVolontaireImportResource extends AbstractFisholaResource {
 
         Set<UUID> allowedWaterEntities = admin.getIsNationalAdmin()
                 ? null
-                : adminDao.getAllowedWaterEntities(admin.getId());
+                : adminDao.getAllowedWaterEntityIds(admin.getId());
 
         ImportResultBean result = importService.run(fileBytes, name, mode, admin.getId(), allowedWaterEntities);
 
