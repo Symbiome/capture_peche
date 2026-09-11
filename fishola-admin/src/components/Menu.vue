@@ -71,9 +71,6 @@
       <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
         Opérateurs
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-import' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Import CSV
-      </b-navbar-item>
       <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
         Nouvelle saisie
       </b-navbar-item>

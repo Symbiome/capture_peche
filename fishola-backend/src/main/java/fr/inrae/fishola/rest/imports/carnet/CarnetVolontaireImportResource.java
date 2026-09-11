@@ -40,10 +40,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Import CSV de masse opérateur, format « carnet volontaire » (#143) — dédié, distinct
- * du pipeline générique ({@link fr.inrae.fishola.rest.imports.ImportResource}, #71).
- * Même contrat que ce dernier : fichier en corps brut, nom/mode en query params, staff
- * uniquement, cloisonné par périmètre, journalisé.
+ * Import CSV de masse opérateur, format « carnet volontaire » (#143) — fichier en corps
+ * brut, nom/mode en query params, staff uniquement, cloisonné par périmètre, journalisé.
  */
 @Path("/api/v1/admin/imports/carnet-volontaire")
 @Produces(MediaType.APPLICATION_JSON)

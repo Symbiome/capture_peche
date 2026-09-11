@@ -28,11 +28,6 @@
       </p>
 
       <div class="action-cards">
-        <router-link :to="{ name: 'operator-import' }" class="action-card">
-          <b-icon icon="upload" size="is-large"></b-icon>
-          <h2>Import CSV</h2>
-          <p>Importer un fichier de sessions au format officiel.</p>
-        </router-link>
         <router-link :to="{ name: 'operator-manual-entry' }" class="action-card">
           <b-icon icon="playlist-plus" size="is-large"></b-icon>
           <h2>Nouvelle saisie</h2>
