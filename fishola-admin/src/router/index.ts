@@ -26,7 +26,6 @@ import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
 import Help from "@/views/Help.vue";
 
-import Lakes from "@/views/referentials/Lakes.vue";
 import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
@@ -67,11 +66,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/help",
     name: "help",
     component: Help
-  },
-  {
-    path: "/referentials/lakes",
-    name: "lakes",
-    component: Lakes
   },
   {
     path: "/referentials/weathers",

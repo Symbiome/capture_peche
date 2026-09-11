@@ -129,14 +129,6 @@ public class ReferentialDao extends AbstractFisholaDao {
         record.changed(Tables.WATER_ENTITY.LONGITUDE, false);
     }
 
-    public void updateWaterEntity(WaterEntity waterEntity) {
-        withContextNoResult(context -> {
-            WaterEntityRecord record = context.newRecord(Tables.WATER_ENTITY, waterEntity);
-            excludeGeneratedCoordinates(record);
-            record.update();
-        });
-    }
-
     // Plus exposé en REST (#88, les plans d'eau viennent de la BD TOPO IGN) : ne
     // reste que pour l'alimentation interne (jeux de test, imports).
     public void createWaterEntity(WaterEntity waterEntity) {

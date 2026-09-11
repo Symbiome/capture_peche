@@ -107,24 +107,6 @@ public class ReferentialResource extends AbstractFisholaResource {
         return usersDao.getFavoriteWaterEntities(userIdOrRenew.userId());
     }
 
-    @PUT
-    @Path("/waterEntities/{waterEntityId}")
-    @Audited(value = "waterEntity.update", entityType = "water_entity", entityIdParam = "waterEntityId")
-    public Response updateWaterEntity(@PathParam("waterEntityId") UUID waterEntityId, WaterEntity waterEntity) {
-        Preconditions.checkArgument(waterEntityId != null, "Identifiant de plan d'eau obligatoire");
-        Preconditions.checkArgument(waterEntityId.equals(waterEntity.getId()), NO_MATCHING_ID);
-        checkIsNationalAdmin();
-        referentialDao.updateWaterEntity(waterEntity);
-        return Response.noContent().build();
-    }
-
-    // Retiré : les plans d'eau sont désormais gérés via la BD TOPO IGN, plus de création manuelle (#88).
-    @POST
-    @Path("/waterEntities")
-    public Response createWaterEntity() {
-        return Response.status(Response.Status.GONE).build();
-    }
-
     @GET
     @Path("/techniques")
     public List<Technique> getTechniques() {

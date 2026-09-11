@@ -54,15 +54,7 @@
         </thead>
         <tbody>
           <tr>
-            <th rowspan="4">Référentiels</th>
-            <th>Plans d'eau</th>
-            <td></td>
-            <td><b-icon
-                icon="check"
-                size="is-medium"
-              ></b-icon></td>
-          </tr>
-          <tr>
+            <th rowspan="3">Référentiels</th>
             <th>Espèces</th>
             <td></td>
             <td><b-icon
@@ -177,12 +169,6 @@
           label="Référentiels"
           :active="true"
         >
-          <b-navbar-item
-            tag="router-link"
-            :to="{ name: 'lakes' }"
-          >
-            Plans d'eau
-          </b-navbar-item>
           <b-navbar-item
             tag="router-link"
             :to="{ name: 'species' }"
