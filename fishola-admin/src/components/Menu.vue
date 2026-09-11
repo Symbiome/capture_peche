@@ -27,9 +27,6 @@
     </template>
     <template v-slot:start>
       <b-navbar-dropdown label="Référentiels" v-if="loggedAdmin.isNationalAdmin">
-        <b-navbar-item tag="router-link" :to="{ name: 'lakes' }">
-          Plans d'eau
-        </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'species' }">
           Espèces
         </b-navbar-item>
