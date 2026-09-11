@@ -49,7 +49,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -98,8 +100,9 @@ class DepartmentalScopeTest {
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "dept-scope-national@fishola.test", "x");
+        // can_create_admin=true : requis par regionalOperatorUpdateForcesCreatorDepartments (#164).
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, false)", regional74Id, "dept-scope-regional74@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, false, false)", regional74Id, "dept-scope-regional74@fishola.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", regional74Id);
 
         UUID speciesId = ctx.fetchOne("SELECT id FROM species LIMIT 1").get("id", UUID.class);
@@ -228,5 +231,35 @@ class DepartmentalScopeTest {
                 .body("name", hasItem("Annecy"))
                 .body("name", hasItem("Léman"))
                 .body("name", not(hasItem("Bourget")));
+    }
+
+    /**
+     * #164 : un opérateur édité par un admin régional est rattaché à l'intégralité de son
+     * périmètre, quels que soient les {@code departmentCodes} envoyés dans le payload — ici
+     * "73" (hors périmètre de regional74, qui n'a que "74") est ignoré au profit de "74".
+     */
+    @Test
+    @Order(7)
+    void regionalOperatorUpdateForcesCreatorDepartments() {
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        UUID operatorId = UUID.randomUUID();
+        ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "dept-scope-operator@fishola.test", "x");
+        ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '73')", operatorId);
+
+        try {
+            given()
+                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                    .contentType("application/json")
+                    .body("{\"departmentCodes\":[\"73\"]}")
+                    .when().put("/api/v1/admin/operators/" + operatorId)
+                    .then().statusCode(204);
+
+            Set<String> departments = ctx.fetch("SELECT department_code FROM fishola_admin_departments WHERE fishola_admin_id = ?", operatorId)
+                    .stream().map(r -> r.get("department_code", String.class)).collect(Collectors.toSet());
+            Assertions.assertEquals(Set.of("74"), departments);
+        } finally {
+            ctx.execute("DELETE FROM fishola_admin WHERE id = ?", operatorId);
+        }
     }
 }

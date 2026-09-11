@@ -39,6 +39,8 @@ import { ref, Ref } from "vue";
 const departmentCodeToNameMap = ref(new Map<string, string>());
 const loaded = ref(false);
 const canManageOperators = ref(false);
+const isNationalAdmin = ref(false);
+const ownDepartmentNames = ref("");
 const operatorColumns: Ref<any[]> = ref([]);
 
 loadDepartments();
@@ -47,6 +49,7 @@ async function loadDepartments() {
   const admin = await BackendService.backendGet("/v1/admin/check");
   // Les opérateurs sont gérés par les mêmes profils que les administrateurs.
   canManageOperators.value = admin.isNationalAdmin || admin.canCreateAdmins;
+  isNationalAdmin.value = admin.isNationalAdmin;
   // Périmètre exprimé en départements (#159) : on ne charge plus tout le référentiel hydro.
   const departments = await BackendService.backendGet("/v1/referential/departments");
   const departmentOptions: any[] = [];
@@ -57,6 +60,11 @@ async function loadDepartments() {
     });
     departmentCodeToNameMap.value.set(d.code, d.name);
   });
+  // #164 : un opérateur créé/édité par un admin régional hérite intégralement de son
+  // périmètre (imposé côté backend) — affiché ici en lecture seule, pas de sélection.
+  ownDepartmentNames.value = (admin.departmentCodes ?? [])
+    .map((code: string) => code + " — " + departmentCodeToNameMap.value.get(code))
+    .join(", ");
 
   operatorColumns.value = [
     {
@@ -76,7 +84,11 @@ async function loadDepartments() {
       field: "departmentNames",
       label: "Départements",
       searchable: true,
-      hiddenInPopup: true
+      readOnly: true,
+      // #164 : un admin régional ne choisit pas les départements, il n'a donc que ce
+      // champ de lecture (le multi-select ci-dessous est réservé au national admin).
+      showItemIfFunction: () => !isNationalAdmin.value,
+      helpMessage: "Rattachement automatique à vos départements : un administrateur régional ne peut pas choisir les départements d'un opérateur.",
     },
     {
       field: "password",
@@ -92,6 +104,7 @@ async function loadDepartments() {
       label: "Départements",
       isArray: true,
       visible: false,
+      showItemIfFunction: () => isNationalAdmin.value,
       arrayOptions: departmentOptions,
       possibleValuesForItemFunction: (operator) => {
         return operator.departmentCodes ?? [];
@@ -122,7 +135,8 @@ function createOperator(): any {
     name: "Nouvel opérateur",
     email: "",
     password: "",
-    departmentCodes: []
+    departmentCodes: [],
+    departmentNames: ownDepartmentNames.value
   };
 }
 </script>
