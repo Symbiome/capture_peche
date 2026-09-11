@@ -101,6 +101,11 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        // #164 : un opérateur édité par un admin régional est rattaché à l'intégralité de son
+        // périmètre, sans sélection manuelle possible — le payload client est ignoré sur ce point.
+        if (!fisholaAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
+            bean.departmentCodes = adminDao.getAllowedDepartments(fisholaAdmin.getId());
+        }
         // Cloisonnement : un modificateur non national ne peut affecter que des départements de son périmètre.
         if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
                 && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
@@ -125,6 +130,13 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        // #164 : un opérateur créé par un admin régional est rattaché à l'intégralité de son
+        // périmètre, sans sélection manuelle possible — le payload client est ignoré sur ce point.
+        // Un périmètre vide déclenche naturellement l'erreur de validation « au moins un
+        // département » ci-dessous (cas théorique, un admin régional a toujours un périmètre).
+        if (!fisholaAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
+            bean.departmentCodes = adminDao.getAllowedDepartments(fisholaAdmin.getId());
         }
         // Cloisonnement : un créateur non national ne peut affecter que des départements de son périmètre.
         if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
@@ -335,6 +347,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     public Response updateOperator(RegisterAdminBean bean, @PathParam("operatorId") UUID operatorId, @Context HttpServletRequest request) {
         if (bean != null) {
             bean.canCreateAdmin = Boolean.FALSE;
+            // #164 : nécessaire pour que updateAdmin() applique le rattachement forcé au périmètre du modificateur.
+            bean.isOperator = Boolean.TRUE;
         }
         return updateAdmin(bean, operatorId, request);
     }
