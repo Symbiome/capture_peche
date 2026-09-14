@@ -80,6 +80,12 @@
       <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-carnet-volontaire' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
         Saisie carnet volontaire
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-import-survey' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Import enquête terrain
+      </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-survey' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        Saisie enquête terrain
+      </b-navbar-item>
     </template>
 
     <template v-slot:end>
