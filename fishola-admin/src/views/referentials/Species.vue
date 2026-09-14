@@ -42,7 +42,8 @@ const specieColumns: any[] = [
     field: "id",
     label: "Identifiant",
     visible: false,
-    readOnly: true
+    readOnly: true,
+    hiddenInPopup: true
   },
   {
     field: "name",
@@ -69,6 +70,16 @@ const specieColumns: any[] = [
     label: "Nom scientifique",
   },
   {
+    field: "mandatoryReport",
+    label: "Déclaration obligatoire ?",
+    isABoolean: true
+  },
+  {
+    field: "reportLink",
+    label: "Lien de déclaration",
+    isUrl: true
+  },
+  {
     field: "codeEspece",
     label: "Code espèce SANDRE",
   },
@@ -87,7 +98,8 @@ function createSpecie(): any {
     name: "Nouvelle espèce",
     builtIn: true,
     exportAs: "NouvelleEspece",
-    mandatorySize: true
+    mandatorySize: true,
+    mandatoryReport: false
   };
 }
 

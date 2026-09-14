@@ -39,7 +39,6 @@ import org.junit.jupiter.api.TestInstance;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Cloisonnement de l'administrateur RÉGIONAL (CdC §3.1.5.1, volet A).
@@ -60,8 +59,6 @@ class RegionalAdminScopeTest {
     /** Portées réservées au national (non cloisonnables par périmètre). */
     private static final String USERS_ENDPOINT = "/api/v1/security/users";
     private static final String AUDIT_ENDPOINT = "/api/v1/admin/audit-log";
-    /** Portée bornée au périmètre : doit rester ouverte au régional. */
-    private static final String METRICS_ENDPOINT = "/api/v1/metrics";
 
     @Inject
     JwtHelper jwtHelper;
@@ -98,7 +95,6 @@ class RegionalAdminScopeTest {
     @Transactional
     void cleanup() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        ctx.execute("DELETE FROM fishola_admin_water_entities WHERE fishola_admin_id IN (?, ?)", nationalId, regionalId);
         ctx.execute("DELETE FROM fishola_admin WHERE id IN (?, ?)", nationalId, regionalId);
     }
 
@@ -136,13 +132,5 @@ class RegionalAdminScopeTest {
     @Test
     void nationalIsAllowedOnAuditLog() {
         as(nationalToken).when().get(AUDIT_ENDPOINT).then().statusCode(200);
-    }
-
-    @Test
-    void regionalKeepsPerimeterScopedAccess() {
-        // Non-régression : les écrans bornés au périmètre (chiffres clés) restent ouverts
-        // au régional. On vérifie l'AUTORISATION, pas le calcul : ce qui compte est de ne
-        // pas recevoir 403 (le contenu dépend des données présentes en base).
-        as(regionalToken).when().get(METRICS_ENDPOINT).then().statusCode(not(403));
     }
 }

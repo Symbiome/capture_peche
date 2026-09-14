@@ -122,9 +122,10 @@ import { ref, computed } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 
+// « carnet_volontaire » n'est plus proposé ici depuis #143 : ce mode a son propre
+// écran dédié (route operator-manual-entry-carnet-volontaire).
 const collectionMethods = [
   { value: "enquete", label: "Enquête" },
-  { value: "carnet_volontaire", label: "Carnet volontaire" },
   { value: "carnet_obligatoire", label: "Carnet obligatoire" }
 ];
 

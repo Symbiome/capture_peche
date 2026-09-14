@@ -21,13 +21,6 @@
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 
-export class LakesAndTripTypes {
-    constructor (
-        public lakes:Lake[],
-        public tripTypes:any[]) {
-    }
-}
-
 export class SpeciesWithAliasAndTechnique {
     constructor (
         public species:SpeciesWithAlias[],
@@ -35,12 +28,11 @@ export class SpeciesWithAliasAndTechnique {
     }
 }
 
-export class LakesWeathersTripTypesSpeciesAndTechniques {
+export class WeathersTripTypesSpeciesAndTechniques {
     constructor (
-        public lakes:Lake[],
         public weathers:Weather[],
         public tripTypes:any[],
-        public species:Map<string, SpeciesWithAlias[]>,
+        public species:SpeciesWithAlias[],
         public techniques:Technique[]) {
     }
 }
@@ -50,23 +42,36 @@ export default class ReferentialService extends AbstractFisholaService {
     super();
   }
 
+  // Listing léger (sans géométrie) : le référentiel complet sérialise la
+  // géométrie de chaque entité, ~1,2 Go pour le réseau France entière — bien
+  // au-delà du timeout de 5 s de backendGetWithCache, ce qui faisait échouer
+  // ce chargement (et en cascade les formulaires de saisie qui en dépendent :
+  // plan d'eau, type de pêche). Ce formulaire n'a besoin que de
+  // nom/type/centroïde ; la géométrie fine reste servie par les tuiles MVT.
   static getLakes(): Promise<Lake[]> {
-    return this.backendGetWithCache("/v1/referential/waterEntities");
+    return this.backendGetWithCache("/v1/referential/waterEntities/summary");
   }
 
   static getFavoriteLakes(): Promise<Lake[]> {
     return this.backendGetWithCache("/v1/referential/waterEntities/favorites");
   }
 
+  // Mémoïsé sur la référence du tableau source (~181k entités, cf. #128) :
+  // sans ça, chaque appelant (une carte de sortie par élément de liste, ex.
+  // MyTripsItem) reconstruisait sa propre Map nationale rien que pour
+  // résoudre un seul nom de lac par id.
+  private static lakesIndexCache: { source: Lake[]; index: Map<string, Lake> } | null = null;
+
   static getLakesIndex(): Promise<Map<string, Lake>> {
-    return new Promise<Map<string, Lake>>((resolve, reject) => {
-      ReferentialService.getLakes().then((lakes: Lake[]) => {
-        const result = new Map<string, Lake>();
-        lakes.forEach((lake: Lake) => {
-          result.set(lake.id, lake);
-        });
-        resolve(result);
-      }, reject);
+    return ReferentialService.getLakes().then((lakes: Lake[]) => {
+      const cache = ReferentialService.lakesIndexCache;
+      if (cache && cache.source === lakes) {
+        return cache.index;
+      }
+      const index = new Map<string, Lake>();
+      lakes.forEach((lake: Lake) => index.set(lake.id, lake));
+      ReferentialService.lakesIndexCache = { source: lakes, index };
+      return index;
     });
   }
 
@@ -148,21 +153,16 @@ export default class ReferentialService extends AbstractFisholaService {
     return this.backendGet(`/v1/waterEntities/attribution?lat=${lat}&lng=${lng}`);
   }
 
-  static getSpeciesPerLake(): Promise<Map<string, SpeciesWithAlias[]>> {
-    return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-      // Repli hors ligne obligatoire : ce référentiel est consulté pendant la
-      // validation d'une capture (contrôle de la taille maximale). Avec un
-      // simple `backendGet`, la promesse rejetait sans réseau et la validation
-      // était abandonnée en silence — capture impossible à saisir hors ligne.
-      this.backendGetOrOfflineStorage("/v1/referential/species-per-waterEntity").then((map) => {
-        const someMap = new Map<string, SpeciesWithAlias[]>();
-        const lakeIds: string[] = Object.keys(map);
-        lakeIds.forEach((lakeId) => {
-          someMap.set(lakeId, map[lakeId]);
-        });
-        resolve(someMap);
-      }, reject);
-    });
+  // #131 : taille maximale réglementaire d'une espèce pour UN plan d'eau,
+  // scopée côté backend (referentialDao.getMaxSize) au lieu de charger la map
+  // species-per-waterEntity du bassin RM&C entier pour n'en lire qu'une valeur.
+  // Pas de cache offline dédié : l'appelant (EditCatch.getMaxSize) retombe déjà
+  // sur la borne permissive par défaut (1000) en cas d'échec réseau, donc la
+  // saisie hors ligne n'est jamais bloquée.
+  static getAuthorizedSampleMaxSize(waterEntityId: string, speciesId: string): Promise<number> {
+    return this.backendGet(
+      `/v1/referential/authorized-samples/max-size?waterEntityId=${encodeURIComponent(waterEntityId)}&speciesId=${encodeURIComponent(speciesId)}`
+    );
   }
 
   static getSpeciesWithoutLake(): Promise<SpeciesWithAlias[]> {
@@ -213,73 +213,6 @@ export default class ReferentialService extends AbstractFisholaService {
     this.clearCache("/v1/referential/species-custom");
   }
 
-  static getSpeciesPerLakePlusCustom(): Promise<
-    Map<string, SpeciesWithAlias[]>
-  > {
-    return new Promise<Map<string, SpeciesWithAlias[]>>((resolve, reject) => {
-      Promise.all([
-        ReferentialService.getSpeciesPerLake(),
-        ReferentialService.getSpeciesCustom(),
-      ]).then(
-        (
-          serverResponse: [Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]
-        ) => {
-          resolve(ReferentialService.buildSpeciesAliasMapFromServerResponse(serverResponse));
-        },
-        reject
-      );
-    });
-  }
-
-  static buildSpeciesAliasMapFromServerResponse(
-    serverResponse: [Map<string, SpeciesWithAlias[]>, SpeciesWithAlias[]]
-  ) {
-    const result: Map<string, SpeciesWithAlias[]> = new Map<
-      string,
-      SpeciesWithAlias[]
-    >();
-
-    const custom: SpeciesWithAlias[] = serverResponse[1];
-
-    const perLake = serverResponse[0];
-    perLake.forEach((value, lakeId) => {
-      if (lakeId != "offlineMarker") {
-        const lakeSpecies: SpeciesWithAlias[] = [];
-        value.forEach((s) => lakeSpecies.push(s));
-        // Quel que soit le lac, on ajoute les espèces custom à la liste
-        custom.forEach((s) => lakeSpecies.push(s));
-        result.set(lakeId, lakeSpecies);
-      }
-    });
-    return result;
-  }
-
-  static getSpecies(lakeId: string): Promise<SpeciesWithAlias[]> {
-    return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
-      this.getSpeciesPerLake().then((map) => {
-        const species = map.get(lakeId);
-        if (species) {
-          resolve(species);
-        } else {
-          resolve([]);
-        }
-      }, reject);
-    });
-  }
-
-  static getSpeciesPlusCustom(lakeId: string): Promise<SpeciesWithAlias[]> {
-    return new Promise<SpeciesWithAlias[]>((resolve, reject) => {
-      this.getSpeciesPerLakePlusCustom().then((map) => {
-        const species = map.get(lakeId);
-        if (species) {
-          resolve(species);
-        } else {
-          resolve([]);
-        }
-      }, reject);
-    });
-  }
-
   static getWeathers(): Promise<Weather[]> {
     return this.backendGetWithCache("/v1/referential/weathers");
   }
@@ -312,32 +245,29 @@ export default class ReferentialService extends AbstractFisholaService {
     return Promise.resolve(types);
   }
 
-  static getLakesWeathersTripTypesSpeciesAndTechniques(): Promise<LakesWeathersTripTypesSpeciesAndTechniques> {
-    return new Promise<LakesWeathersTripTypesSpeciesAndTechniques>(
+  // Ne charge PLUS le référentiel national des lacs (cf. #128) : le plan
+  // d'eau se sélectionne exclusivement via l'autocomplete serveur
+  // (searchWaterEntities) dans LakeSelection, qui n'a pas besoin de cette
+  // liste. Le lac déjà associé à une sortie existante se résout séparément
+  // via getLakesIndex() (mémoïsée).
+  static getWeathersTripTypesSpeciesAndTechniques(): Promise<WeathersTripTypesSpeciesAndTechniques> {
+    return new Promise<WeathersTripTypesSpeciesAndTechniques>(
       (resolve, reject) => {
         Promise.all([
-          ReferentialService.getLakes(),
           ReferentialService.getWeathers(),
           ReferentialService.getTripTypes(),
-          ReferentialService.getSpeciesPerLakePlusCustom(),
+          ReferentialService.getAllSpecies(),
           ReferentialService.getTechniques(),
         ]).then(
           (
-            data: [
-              Lake[],
-              Weather[],
-              any[],
-              Map<string, SpeciesWithAlias[]>,
-              Technique[]
-            ]
+            data: [Weather[], any[], SpeciesWithAlias[], Technique[]]
           ) => {
-            const result: LakesWeathersTripTypesSpeciesAndTechniques =
-              new LakesWeathersTripTypesSpeciesAndTechniques(
+            const result: WeathersTripTypesSpeciesAndTechniques =
+              new WeathersTripTypesSpeciesAndTechniques(
                 data[0],
                 data[1],
                 data[2],
-                data[3],
-                data[4]
+                data[3]
               );
             resolve(result);
           },
@@ -347,29 +277,14 @@ export default class ReferentialService extends AbstractFisholaService {
     );
   }
 
-  static getLakesAndTripTypes(): Promise<LakesAndTripTypes> {
-    return new Promise<LakesAndTripTypes>((resolve, reject) => {
-      Promise.all([
-        ReferentialService.getLakes(),
-        ReferentialService.getTripTypes(),
-      ]).then((data: [Lake[], any[]]) => {
-        const result: LakesAndTripTypes = new LakesAndTripTypes(
-          data[0],
-          data[1]
-        );
-        resolve(result);
-      }, reject);
-    });
-  }
-
-  static getSpeciesAndTechniques(
-    lakeId?: string
-  ): Promise<SpeciesWithAliasAndTechnique> {
+  // #131 : la liste d'espèces ne dépend plus du plan d'eau (cf. #130) — toutes
+  // les espèces de la table species sont proposées, quel que soit le lac.
+  static getSpeciesAndTechniques(): Promise<SpeciesWithAliasAndTechnique> {
     return new Promise<SpeciesWithAliasAndTechnique>((resolve, reject) => {
-      const speciesPromise = lakeId
-        ? ReferentialService.getSpeciesPlusCustom(lakeId)
-        : ReferentialService.getAllSpecies();
-      Promise.all([speciesPromise, ReferentialService.getTechniques()]).then(
+      Promise.all([
+        ReferentialService.getAllSpecies(),
+        ReferentialService.getTechniques(),
+      ]).then(
         (data: [SpeciesWithAlias[], Technique[]]) => {
           const result: SpeciesWithAliasAndTechnique =
             new SpeciesWithAliasAndTechnique(data[0], data[1]);
@@ -387,7 +302,6 @@ export default class ReferentialService extends AbstractFisholaService {
       // en cache, un appareil qui n'a jamais ouvert l'écran en ligne n'a aucune
       // entrée locale et le sélecteur restait vide hors ligne.
       this.prepareCache("/v1/referential/waterEntities/favorites"),
-      this.prepareCache("/v1/referential/species-per-waterEntity"),
       this.prepareCache("/v1/referential/species"),
       this.prepareCache("/v1/referential/species-custom"),
       this.prepareCache("/v1/referential/weathers"),

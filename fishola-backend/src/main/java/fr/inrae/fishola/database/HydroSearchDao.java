@@ -78,8 +78,17 @@ public class HydroSearchDao extends AbstractFisholaDao {
             + ") "
             + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
             + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
-            + "       r.persistent AS persistent "
+            + "       r.persistent AS persistent, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
             + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            // Commune de l'entité (#6/#15/#134, désambiguïsation des homonymes dans
+            // la liste "autour de moi") : même LATERAL join que la recherche
+            // textuelle, sur le centroïde de l'entité (pas le point le plus proche).
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT c.name, c.code_postal FROM commune c "
+            + "  WHERE ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
             + "WHERE (?::text IS NULL OR we.kind::text = ?) "
             + "ORDER BY r.dist "
             + "LIMIT ? OFFSET ?";
@@ -253,8 +262,17 @@ public class HydroSearchDao extends AbstractFisholaDao {
             + ") "
             + "SELECT r.weid AS water_entity_id, we.name AS name, we.kind::text AS kind, "
             + "       r.dist AS distance_m, r.cp_lat AS cp_lat, r.cp_lng AS cp_lng, "
-            + "       r.persistent AS persistent "
+            + "       r.persistent AS persistent, "
+            + "       com.name AS commune, com.code_postal AS code_postal "
             + "FROM ranked r JOIN water_entity we ON we.id = r.weid "
+            // Commune de l'entité (#134) : peut différer de la commune recherchée,
+            // une entité proche de sa frontière peut avoir son centroïde ailleurs.
+            // Alias "cm" (pas "c") : la CTE "c" ci-dessus est la commune recherchée.
+            + "LEFT JOIN LATERAL ( "
+            + "  SELECT cm.name, cm.code_postal FROM commune cm "
+            + "  WHERE ST_Contains(cm.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+            + "  LIMIT 1 "
+            + ") com ON true "
             + "ORDER BY r.dist";
 
     /**
@@ -469,6 +487,8 @@ public class HydroSearchDao extends AbstractFisholaDao {
                         .lng(rec.get("cp_lng", Double.class))
                         .build())
                 .persistent(Optional.ofNullable(rec.get("persistent", Boolean.class)))
+                .commune(Optional.ofNullable(rec.get("commune", String.class)))
+                .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
                 .build();
     }
 }

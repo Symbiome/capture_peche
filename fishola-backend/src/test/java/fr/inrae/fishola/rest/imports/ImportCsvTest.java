@@ -70,15 +70,16 @@ class ImportCsvTest {
     @Transactional
     void seedOperator() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        // Une entité hydro de la fixture sert de périmètre.
-        var rec = ctx.fetchOne("SELECT id, name FROM water_entity WHERE name = 'Annecy' LIMIT 1");
+        // Une entité hydro de la fixture sert de périmètre ; son département borne l'opérateur (#159).
+        var rec = ctx.fetchOne("SELECT id, name, department FROM water_entity WHERE name = 'Annecy' LIMIT 1");
         waterEntityId = rec.get("id", UUID.class);
         waterEntityName = rec.get("name", String.class);
+        String department = rec.get("department", String.class);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "import-test-op@fishola.test", "x");
-        ctx.execute("INSERT INTO fishola_admin_water_entities (fishola_admin_id, water_entity_id) VALUES (?, ?)",
-                operatorId, waterEntityId);
+        ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
+                operatorId, department);
 
         ManagedContext requestContext = Arc.container().requestContext();
         requestContext.activate();
@@ -97,7 +98,6 @@ class ImportCsvTest {
         ctx.execute("DELETE FROM trip WHERE name LIKE '%IMPORT-TEST%'");
         ctx.execute("DELETE FROM import_row_error WHERE import_id IN (SELECT id FROM import_job WHERE file_name LIKE 'import-test%')");
         ctx.execute("DELETE FROM import_job WHERE file_name LIKE 'import-test%'");
-        ctx.execute("DELETE FROM fishola_admin_water_entities WHERE fishola_admin_id = ?", operatorId);
         ctx.execute("DELETE FROM fishola_admin WHERE id = ?", operatorId);
     }
 

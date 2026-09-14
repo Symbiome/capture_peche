@@ -33,6 +33,7 @@ public class ExportBean {
     public Integer longueurTotaleDuPoissonCalculee;
     public Integer poidsDuPoisson;
     public String aExclure;
+    public Integer nombreDePoissons;
 
     public UUID catchId;
 }

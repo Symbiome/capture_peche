@@ -114,6 +114,19 @@
               />
             </b-field>
           </div>
+          <div class="columns">
+            <b-field
+              label="Nombre de poissons"
+              class="column"
+            >
+              <b-numberinput
+                v-model="aCatch.quantity"
+                type="numeric"
+                min="1"
+                class="number-input"
+              />
+            </b-field>
+          </div>
           <b-field label="Exclure des exports"> </b-field>
 
           <b-radio

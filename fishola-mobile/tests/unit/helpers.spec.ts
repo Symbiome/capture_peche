@@ -129,3 +129,48 @@ describe("Helpers — masque de saisie horaire 24h", () => {
     expect(Helpers.isValidTimeString("")).toBe(false);
   });
 });
+
+// Alerte de déclaration obligatoire (#91), déclenchée après l'enregistrement
+// d'une capture d'une espèce soumise à déclaration.
+describe("Helpers — alerte de déclaration obligatoire", () => {
+  function fakeModal() {
+    let shown: any = null;
+    return {
+      show: (name: string, params: any) => {
+        shown = params;
+      },
+      hide: () => {
+        shown = null;
+      },
+      get shown() {
+        return shown;
+      },
+    };
+  }
+
+  it("propose d'ouvrir le lien officiel quand il est renseigné", async () => {
+    const modal = fakeModal();
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+
+    const promise = Helpers.declareCatchAlert(modal, "https://federation.example/declarer");
+    expect(modal.shown.buttons).toHaveLength(2);
+
+    const declareButton = modal.shown.buttons.find((b: any) => b.title === "Déclarer");
+    declareButton.handler();
+    await promise;
+
+    expect(openSpy).toHaveBeenCalledWith("https://federation.example/declarer", "_blank");
+    openSpy.mockRestore();
+  });
+
+  it("affiche un message générique et un seul bouton sans lien officiel", async () => {
+    const modal = fakeModal();
+    const promise = Helpers.declareCatchAlert(modal, undefined);
+
+    expect(modal.shown.buttons).toHaveLength(1);
+    expect(modal.shown.text).toContain("Contactez votre fédération");
+
+    modal.shown.buttons[0].handler();
+    await promise;
+  });
+});

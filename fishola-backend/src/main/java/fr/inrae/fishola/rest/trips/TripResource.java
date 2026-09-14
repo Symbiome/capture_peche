@@ -43,6 +43,7 @@ import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -236,6 +237,9 @@ public class TripResource extends AbstractFisholaResource {
                             toWktPoint(attr.snappedLng(), attr.snappedLat()),
                             attr.riverSectionId(), attr.hydroValidation()));
         }
+        // Département où s'est déroulée la sortie (#159) : après les positions et
+        // l'attribution hydro, avant les captures (qui en héritent à défaut de GPS).
+        tripsDao.stampDepartment(tripId);
         replacements.put(trip.id, tripId);
         if (log.isDebugEnabled()) {
             log.debugf("Sortie en cours de création : %s -> %s", trip.id, tripId);
@@ -348,6 +352,9 @@ public class TripResource extends AbstractFisholaResource {
                                     attr.riverSectionId(), attr.hydroValidation()),
                             () -> tripsDao.clearHydroAttribution(tripId));
         }
+        // L'entité rattachée a pu changer : on ré-estampille le département (#159)
+        // avant de traiter les captures, qui en héritent à défaut de GPS propre.
+        tripsDao.stampDepartment(tripId);
 
         if (log.isDebugEnabled()) {
             log.debugf("Sortie mise à jour : %s", tripId);
@@ -480,6 +487,7 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.size.ifPresent(catchPojo::setSize);
         aCatch.automaticMeasure.ifPresent(catchPojo::setAutomaticMeasure);
         aCatch.weight.ifPresent(catchPojo::setWeight);
+        catchPojo.setQuantity(Math.max(1, aCatch.quantity));
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
             aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
@@ -504,6 +512,8 @@ public class TripResource extends AbstractFisholaResource {
         if (positionWkt != null) {
             catchsDao.updatePosition(catchId, positionWkt);
         }
+        // Département de la prise (#159) : après sa position, hérite de la sortie à défaut.
+        catchsDao.stampDepartment(catchId);
 
         return catchId;
     }
@@ -519,6 +529,7 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setSize(aCatch.size.orElse(null));
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
+        existingCatch.setQuantity(Math.max(1, aCatch.quantity));
         existingCatch.setKept(aCatch.keep);
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
@@ -541,6 +552,8 @@ public class TripResource extends AbstractFisholaResource {
         if (positionWkt != null) {
             catchsDao.updatePosition(existingCatch.getId(), positionWkt);
         }
+        // La position de la prise a pu être ajoutée/retirée : on ré-estampille (#159).
+        catchsDao.stampDepartment(existingCatch.getId());
 
     }
 
@@ -582,8 +595,8 @@ public class TripResource extends AbstractFisholaResource {
     @Produces("text/csv")
     @Audited("trip.export")
     public Response getTripsCSV() {
-        checkIsNationalAdmin();
-        String csv = tripsDao.getTripsCSV();
+        checkIsAdmin();
+        String csv = tripsDao.getTripsCSV(getAllowedAdminDepartments());
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
         Response response = Response.ok(csv)
@@ -602,18 +615,20 @@ public class TripResource extends AbstractFisholaResource {
             @PathParam("sortDirection") String sortDirection,
             @Context UriInfo uriInfo
     ) {
-        checkIsNationalAdmin();
+        checkIsAdmin();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection, queryParameters);
+        PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection,
+                queryParameters, getAllowedAdminDepartments());
         return result;
     }
 
     @GET
     @Path("/catches/{catchId}")
     public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
-        checkIsNationalAdmin();
+        checkIsAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
+        assertCatchInAllowedDepartments(aCatch);
         Trip trip = tripsDao.getTrip(aCatch.getTripId());
         Preconditions.checkNotNull(trip);
 
@@ -627,9 +642,10 @@ public class TripResource extends AbstractFisholaResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
-        checkIsNationalAdmin();
+        checkIsAdmin();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
+        assertCatchInAllowedDepartments(aCatch);
         if (updatedCatch.editedSize.isPresent()) {
             aCatch.setEditedSize(updatedCatch.editedSize.get());
         }
@@ -641,7 +657,19 @@ public class TripResource extends AbstractFisholaResource {
         }
         aCatch.setExcludeFromExports(updatedCatch.excludeFromExport);
         catchsDao.update(aCatch);
+        catchsDao.stampDepartment(catchId);
         return updatedCatch;
+    }
+
+    /**
+     * Cloisonnement départemental (#159) : un staff régional ne consulte / n'édite
+     * que les prises de ses départements. Un compte national (périmètre vide) passe.
+     */
+    private void assertCatchInAllowedDepartments(Catch aCatch) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(aCatch.getDepartment())) {
+            throw new ForbiddenException("Cette prise est hors de votre périmètre départemental");
+        }
     }
 
     protected UUID checkSpeciesOrCreateIfNecessary(Optional<String> speciesId, Optional<String> otherSpecies) {
@@ -704,6 +732,8 @@ public class TripResource extends AbstractFisholaResource {
         result.size = Optional.ofNullable(aCatch.getSize());
         result.automaticMeasure = Optional.ofNullable(aCatch.getAutomaticMeasure());
         result.weight = Optional.ofNullable(aCatch.getWeight());
+        // Colonne NOT NULL DEFAULT 1 : jamais nulle en base, comme getKept() ci-dessous.
+        result.quantity = aCatch.getQuantity();
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();

@@ -34,6 +34,7 @@ public class CatchBean {
     public Optional<Integer> size = Optional.empty();
     public Optional<Integer> automaticMeasure = Optional.empty();
     public Optional<Integer> weight = Optional.empty();
+    public int quantity = 1;
     public boolean keep;
     public Optional<UUID> releasedStateId = Optional.empty();
     public UUID techniqueId;
@@ -61,6 +62,7 @@ public class CatchBean {
                 ", size=" + size +
                 ", automaticMeasure" + automaticMeasure +
                 ", weight=" + weight +
+                ", quantity=" + quantity +
                 ", keep=" + keep +
                 ", releasedStateId=" + releasedStateId +
                 ", techniqueId=" + techniqueId +

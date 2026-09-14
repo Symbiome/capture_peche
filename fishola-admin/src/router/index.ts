@@ -26,7 +26,6 @@ import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
 import Help from "@/views/Help.vue";
 
-import Lakes from "@/views/referentials/Lakes.vue";
 import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
@@ -35,13 +34,15 @@ import CatchEditionPage from "@/views/CatchEditionPage.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
-import Metrics from "@/views/Metrics.vue";
 
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
-import OperatorImport from "@/views/operator/Import.vue";
 import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
+import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
+import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
+import OperatorSurveyImport from "@/views/operator/SurveyImport.vue";
+import OperatorSurveyManualEntry from "@/views/operator/SurveyManualEntry.vue";
 import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
 import AuditLog from "@/views/AuditLog.vue";
@@ -66,11 +67,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/help",
     name: "help",
     component: Help
-  },
-  {
-    path: "/referentials/lakes",
-    name: "lakes",
-    component: Lakes
   },
   {
     path: "/referentials/weathers",
@@ -124,14 +120,29 @@ const routes: Array<RouteRecordRaw> = [
     component: Operators
   },
   {
-    path: "/operator/import",
-    name: "operator-import",
-    component: OperatorImport
-  },
-  {
     path: "/operator/manual-entry",
     name: "operator-manual-entry",
     component: OperatorManualEntry
+  },
+  {
+    path: "/operator/import/carnet-volontaire",
+    name: "operator-import-carnet-volontaire",
+    component: OperatorCarnetVolontaireImport
+  },
+  {
+    path: "/operator/manual-entry/carnet-volontaire",
+    name: "operator-manual-entry-carnet-volontaire",
+    component: OperatorCarnetVolontaireManualEntry
+  },
+  {
+    path: "/operator/import/survey",
+    name: "operator-import-survey",
+    component: OperatorSurveyImport
+  },
+  {
+    path: "/operator/manual-entry/survey",
+    name: "operator-manual-entry-survey",
+    component: OperatorSurveyManualEntry
   },
   {
     path: "/account/password",
@@ -152,11 +163,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/news",
     name: "news",
     component: NewsVue
-  },
-  {
-    path: "/metrics",
-    name: "metrics",
-    component: Metrics
   }
 ];
 

@@ -190,6 +190,10 @@ export default class TripsService extends AbstractFisholaService {
       catchs: catchs,
       startedAt: input.startedAt,
       finishedAt: input.finishedAt,
+      beginLatitude: input.beginLatitude,
+      beginLongitude: input.beginLongitude,
+      endLatitude: input.endLatitude,
+      endLongitude: input.endLongitude,
     };
 
     if (input.modifiableUntil) {
@@ -583,27 +587,10 @@ export default class TripsService extends AbstractFisholaService {
    * Appelé quand la sortie est complète et qu'on veut la sauvegarder sur le serveur (trip.id == Constants.RUNNING_ID)
    */
   static sendTripAndCancelCreations(trip: TripBean): Promise<string> {
-    if (trip.mode == "Live") {
-      // On tente de récupérer les coordonnées GPS pour enregistrer les coordonnées de fin de sortie
-      return new Promise<string>((resolve, reject) => {
-        GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
-          (position) => {
-            trip.endLatitude = position.coords.latitude;
-            trip.endLongitude = position.coords.longitude;
-            console.info(
-              `Coordonnées de fin de sortie : ${trip.endLatitude},${trip.endLongitude}`
-            );
-            this.doSendTripAndCancelCreations(trip).then(resolve, reject);
-          },
-          (e) => {
-            console.error("Pas de coordonnées, on sauvegarde quand même", e);
-            this.doSendTripAndCancelCreations(trip).then(resolve, reject);
-          }
-        );
-      });
-    } else {
-      return this.doSendTripAndCancelCreations(trip);
-    }
+    // Le point de fin de sortie (#86) n'est plus capturé automatiquement depuis
+    // le GPS : le pêcheur le place lui-même sur la carte du récapitulatif
+    // (TripPositionsMap éditable), quand il le souhaite. Il reste optionnel.
+    return this.doSendTripAndCancelCreations(trip);
   }
 
   static syncTrips(): Promise<boolean> {

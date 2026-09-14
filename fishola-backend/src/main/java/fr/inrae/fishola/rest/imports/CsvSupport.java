@@ -31,7 +31,6 @@ import java.util.Map;
 
 /**
  * Lecture du CSV (séparateur « ; », UTF-8) et coercition des valeurs.
- * Portage fidèle de {@code fishola-backoffice/backoffice/imports/parsing.py}.
  */
 public final class CsvSupport {
 

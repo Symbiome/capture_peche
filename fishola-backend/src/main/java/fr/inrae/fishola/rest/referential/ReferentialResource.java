@@ -37,6 +37,8 @@ import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
+import fr.inrae.fishola.rest.department.DepartmentName;
+import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -45,6 +47,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
@@ -76,14 +79,25 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (adminToken == null) {
             return referentialDao.listWaterEntities();
         }
-        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre.
+        // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre départemental.
         FisholaAdmin fisholaAdmin = this.checkIsStaff();
         if (fisholaAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntities();
         } else {
-            Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-            return referentialDao.fetchWaterEntitiesById(allowedAdminWaterEntities);
+            return referentialDao.fetchWaterEntitiesByDepartments(getAllowedAdminDepartments());
         }
+    }
+
+    // Listing léger (sans géométrie) pour les formulaires de saisie (plan d'eau,
+    // sortie) : getAllWaterEntities() sérialise la géométrie complète, ~1,2 Go
+    // pour le réseau France entière, largement au-delà du timeout du client
+    // mobile (5 s côté AbstractFisholaService.timeout). Même périmètre public
+    // que getAllWaterEntities() côté pêcheur (pas de scoping admin ici, ce
+    // listing n'est pas consommé par le back-office).
+    @GET
+    @Path("/waterEntities/summary")
+    public List<WaterEntitySummary> getAllWaterEntitiesSummary() {
+        return referentialDao.listWaterEntitiesSummary();
     }
 
     @GET
@@ -91,24 +105,6 @@ public class ReferentialResource extends AbstractFisholaResource {
     public List<WaterEntity> getFavoriteWaterEntities() {
         UserIdAndRenewal userIdOrRenew = this.getUserIdOrRenew();
         return usersDao.getFavoriteWaterEntities(userIdOrRenew.userId());
-    }
-
-    @PUT
-    @Path("/waterEntities/{waterEntityId}")
-    @Audited(value = "waterEntity.update", entityType = "water_entity", entityIdParam = "waterEntityId")
-    public Response updateWaterEntity(@PathParam("waterEntityId") UUID waterEntityId, WaterEntity waterEntity) {
-        Preconditions.checkArgument(waterEntityId != null, "Identifiant de plan d'eau obligatoire");
-        Preconditions.checkArgument(waterEntityId.equals(waterEntity.getId()), NO_MATCHING_ID);
-        checkIsNationalAdmin();
-        referentialDao.updateWaterEntity(waterEntity);
-        return Response.noContent().build();
-    }
-
-    // Retiré : les plans d'eau sont désormais gérés via la BD TOPO IGN, plus de création manuelle (#88).
-    @POST
-    @Path("/waterEntities")
-    public Response createWaterEntity() {
-        return Response.status(Response.Status.GONE).build();
     }
 
     @GET
@@ -217,23 +213,25 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
+    // Matrice espèces × entités hydrographiques du back-office « Maillages et
+    // tailles maximales ». Le périmètre est OBLIGATOIREMENT borné (#154) : soit
+    // une liste explicite d'entités (waterEntityId, après sélection dans l'UI),
+    // soit un département. Sans borne, on renvoie une map vide plutôt que de
+    // sérialiser tout le référentiel (~181 000 entités, #134), ce qui faisait
+    // tomber le backend en OutOfMemoryError.
     @GET
     @Path("/species-per-waterEntity")
-    public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerWaterEntity() {
+    public Map<UUID, Collection<SpeciesWithAlias>> getSpeciesPerWaterEntity(
+            @QueryParam("department") String department,
+            @QueryParam("waterEntityId") List<UUID> waterEntityIdParams) {
 
-        // On récupère la liste des toutes les espèces builtIn et des lacs
-        List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
-        Set<UUID> waterEntityIds;
-        // If logged as local admin
-        // We filter the species ton only show relevant ones
-        Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-        if (!allowedAdminWaterEntities.isEmpty()) {
-            waterEntityIds = allowedAdminWaterEntities;
-        } else {
-            waterEntityIds = referentialDao.listWaterEntities()
-                    .stream()
-                    .map(WaterEntity::getId).collect(Collectors.toSet());
+        Set<UUID> waterEntityIds = resolvePerimeter(department, waterEntityIdParams);
+        if (waterEntityIds.isEmpty()) {
+            return Map.of();
         }
+
+        // On récupère la liste des toutes les espèces builtIn
+        List<Species> builtInSpecies = referentialDao.listBuiltInSpecies();
 
         // On charge les alias par lac+espèce et on en fait un index
         List<SpeciesByWaterEntity> speciesByWaterEntity = referentialDao.listSpeciesByWaterEntity();
@@ -252,6 +250,10 @@ public class ReferentialResource extends AbstractFisholaResource {
         authorizedSamples.stream().forEach(as ->
             authorizedSamplesMaxSizes.put(Pair.of(as.getWaterEntityId(), as.getSpeciesId()), as.getMaxSize())
         );
+        Map<Pair<UUID, UUID>, Integer> authorizedSamplesMeshSizes = new LinkedHashMap<>();
+        authorizedSamples.stream().forEach(as ->
+            authorizedSamplesMeshSizes.put(Pair.of(as.getWaterEntityId(), as.getSpeciesId()), as.getMeshSize())
+        );
 
         // On compile le tout
         Multimap<UUID, SpeciesWithAlias> result = HashMultimap.create();
@@ -268,10 +270,52 @@ public class ReferentialResource extends AbstractFisholaResource {
             if (authorizedSamplesMaxSizes.get(waterEntityPlusSpeciesIds) != null) {
                 maxSize = authorizedSamplesMaxSizes.get(waterEntityPlusSpeciesIds);
             }
-            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, present, authorizedSample, minSize, maxSize);
+            Integer meshSize = authorizedSamplesMeshSizes.get(waterEntityPlusSpeciesIds);
+            SpeciesWithAlias speciesWithAlias = SpeciesWithAlias.of(rawSpecies, alias, present, authorizedSample, minSize, maxSize, meshSize);
             result.put(waterEntityId, speciesWithAlias);
         }));
         return result.asMap();
+    }
+
+    // Résout le périmètre du back-office « Maillages et tailles maximales »
+    // (#154) : une liste explicite d'entités l'emporte sur le département ;
+    // dans les deux cas, l'admin régional reste borné à ses départements (#159).
+    private Set<UUID> resolvePerimeter(String department, List<UUID> waterEntityIdParams) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        Set<UUID> perimeter;
+        if (waterEntityIdParams != null && !waterEntityIdParams.isEmpty()) {
+            perimeter = new HashSet<>(waterEntityIdParams);
+            if (!allowedDepartments.isEmpty()) {
+                Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(perimeter);
+                perimeter.removeIf(id -> !allowedDepartments.contains(departmentByEntity.get(id)));
+            }
+        } else if (StringUtils.isNotBlank(department)) {
+            if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
+                return Set.of();
+            }
+            perimeter = new HashSet<>(referentialDao.listWaterEntityIdsByDepartment(department));
+        } else {
+            return Set.of();
+        }
+        return perimeter;
+    }
+
+    @GET
+    @Path("/departments")
+    public List<DepartmentName> getDepartments() {
+        // Référentiel complet (101 départements) : un national doit pouvoir attribuer
+        // n'importe quel département, pas seulement ceux déjà couverts par l'import hydro.
+        return Departments.all();
+    }
+
+    @GET
+    @Path("/waterEntities/by-department/{department}")
+    public List<WaterEntitySummary> getWaterEntitiesByDepartment(@PathParam("department") String department) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
+            return List.of();
+        }
+        return referentialDao.listWaterEntitiesSummaryByDepartment(department);
     }
 
     @PUT
@@ -363,22 +407,29 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Audited(value = "authorizedSamples.save", entityType = "authorized_samples")
     public Response saveAuthorizedSamples(AuthorizedSamplesModificationBean authorizedSamples) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        Set<UUID> allowedAdminWaterEntities = getAllowedAdminWaterEntities();
-        Set<UUID> waterEntityScope =  authorizedSamples.targetWaterEntities.stream()
-            .filter(l -> fisholaAdmin.getIsNationalAdmin() || allowedAdminWaterEntities.contains(l))
-            .collect(Collectors.toSet());
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        Set<UUID> waterEntityScope;
+        if (fisholaAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
+            waterEntityScope = new HashSet<>(authorizedSamples.targetWaterEntities);
+        } else {
+            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(authorizedSamples.targetWaterEntities);
+            waterEntityScope = authorizedSamples.targetWaterEntities.stream()
+                .filter(id -> allowedDepartments.contains(departmentByEntity.get(id)))
+                .collect(Collectors.toSet());
+        }
         
         // On transforme la map pour avoir un Set des clé waterEntityId+speciesId autorisées
         Set<Pair<UUID, UUID>> authorizationsSet = new HashSet<>();
         Map<Pair<UUID, UUID>, Integer> minSizesMap = new LinkedHashMap<>();
         Map<Pair<UUID, UUID>, Integer> maxSizesMap = new LinkedHashMap<>();
-        computeMinMaxMaps(authorizedSamples, authorizationsSet, minSizesMap, maxSizesMap);
+        Map<Pair<UUID, UUID>, Integer> meshSizesMap = new LinkedHashMap<>();
+        computeMinMaxMaps(authorizedSamples, authorizationsSet, minSizesMap, maxSizesMap, meshSizesMap);
 
         // On charge les autorisations par lac+espèce et on en fait un index
         List<AuthorizedSample> existingAuthorizations = referentialDao.listAuthorizedSamples();
 
         // On commence par supprimer les autorisations en trop
-        updateAndDeleteAuthorizations(existingAuthorizations, waterEntityScope, authorizationsSet, minSizesMap, maxSizesMap);
+        updateAndDeleteAuthorizations(existingAuthorizations, waterEntityScope, authorizationsSet, minSizesMap, maxSizesMap, meshSizesMap);
 
         // Puis on créé les nouvelles
         authorizationsSet
@@ -398,6 +449,7 @@ public class ReferentialResource extends AbstractFisholaResource {
                 authorizedSample.setSpeciesId(entry.getValue());
                 authorizedSample.setMinSize(minSize);
                 authorizedSample.setMaxSize(maxSize);
+                authorizedSample.setMeshSize(nullIfZero(meshSizesMap.get(entry)));
                 return authorizedSample;
             })
             .forEach(referentialDao::createAuthorizedSample);
@@ -406,7 +458,7 @@ public class ReferentialResource extends AbstractFisholaResource {
         return response;
     }
 
-    private void updateAndDeleteAuthorizations(List<AuthorizedSample> existingAuthorizations, Set<UUID> waterEntityScope, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap) {
+    private void updateAndDeleteAuthorizations(List<AuthorizedSample> existingAuthorizations, Set<UUID> waterEntityScope, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap, Map<Pair<UUID, UUID>, Integer> meshSizesMap) {
         for (AuthorizedSample entity : existingAuthorizations) {
             Pair<UUID, UUID> waterEntityPluSpeciesId = Pair.of(entity.getWaterEntityId(), entity.getSpeciesId());
             if (waterEntityScope.contains(entity.getWaterEntityId())) {
@@ -424,6 +476,7 @@ public class ReferentialResource extends AbstractFisholaResource {
                     }
                     entity.setMinSize(minSize);
                     entity.setMaxSize(maxSize);
+                    entity.setMeshSize(nullIfZero(meshSizesMap.get(waterEntityPluSpeciesId)));
                     referentialDao.updateAuthorizeSample(entity);
                 }
                 authorizationsSet.remove(waterEntityPluSpeciesId);
@@ -431,10 +484,17 @@ public class ReferentialResource extends AbstractFisholaResource {
         }
     }
 
-    private static void computeMinMaxMaps(AuthorizedSamplesModificationBean authorizedSamples, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap) {
+    // Le maillage est facultatif (#154) : 0 ou absent => pas de maillage défini,
+    // stocké NULL en base.
+    private static Integer nullIfZero(Integer value) {
+        return value == null || value == 0 ? null : value;
+    }
+
+    private static void computeMinMaxMaps(AuthorizedSamplesModificationBean authorizedSamples, Set<Pair<UUID, UUID>> authorizationsSet, Map<Pair<UUID, UUID>, Integer> minSizesMap, Map<Pair<UUID, UUID>, Integer> maxSizesMap, Map<Pair<UUID, UUID>, Integer> meshSizesMap) {
         Map<UUID, Map<UUID, Object>> authorizations = authorizedSamples.authorizations;
         Map<UUID, Map<UUID, Object>> minSizes = authorizedSamples.minSizes;
         Map<UUID, Map<UUID, Object>> maxSizes = authorizedSamples.maxSizes;
+        Map<UUID, Map<UUID, Object>> meshSizes = authorizedSamples.meshSizes;
         for (Map.Entry<UUID, Map<UUID, Object>> byWaterEntityEntry : authorizations.entrySet()) {
             Map<UUID, Object> bySpeciesEntries = byWaterEntityEntry.getValue();
             for (Map.Entry<UUID, Object> entry : bySpeciesEntries.entrySet()) {
@@ -443,14 +503,24 @@ public class ReferentialResource extends AbstractFisholaResource {
                 if (Boolean.TRUE.equals(authorized)) {
                     authorizationsSet.add(waterEntityPluSpeciesId);
                 }
-                if (minSizes.get(byWaterEntityEntry.getKey()) != null && minSizes.get(byWaterEntityEntry.getKey()).get(entry.getKey()) != null) {
-                    minSizesMap.put(waterEntityPluSpeciesId, Integer.parseInt(minSizes.get(byWaterEntityEntry.getKey()).get(entry.getKey()).toString()));
-                }
-                if (maxSizes.get(byWaterEntityEntry.getKey()) != null && maxSizes.get(byWaterEntityEntry.getKey()).get(entry.getKey()) != null) {
-                    maxSizesMap.put(waterEntityPluSpeciesId, Integer.parseInt(maxSizes.get(byWaterEntityEntry.getKey()).get(entry.getKey()).toString()));
-                }
+                putSize(minSizes, byWaterEntityEntry.getKey(), entry.getKey(), waterEntityPluSpeciesId, minSizesMap);
+                putSize(maxSizes, byWaterEntityEntry.getKey(), entry.getKey(), waterEntityPluSpeciesId, maxSizesMap);
+                putSize(meshSizes, byWaterEntityEntry.getKey(), entry.getKey(), waterEntityPluSpeciesId, meshSizesMap);
             }
         }
+    }
+
+    private static void putSize(Map<UUID, Map<UUID, Object>> source, UUID waterEntityId, UUID speciesId, Pair<UUID, UUID> key, Map<Pair<UUID, UUID>, Integer> target) {
+        if (source == null || source.get(waterEntityId) == null || source.get(waterEntityId).get(speciesId) == null) {
+            return;
+        }
+        String raw = source.get(waterEntityId).get(speciesId).toString().trim();
+        if (raw.isEmpty()) {
+            return;
+        }
+        // Le front envoie soit un nombre JSON, soit une chaîne (b-input type=number) :
+        // on passe par Double pour tolérer « 30.0 » avant de tronquer en entier.
+        target.put(key, (int) Math.round(Double.parseDouble(raw)));
     }
 
     @GET
@@ -509,5 +579,14 @@ public class ReferentialResource extends AbstractFisholaResource {
         return result;
     }
 
+    // #131 : équivalent de la taille min déjà utilisée par TripResource pour le
+    // flag "maillée" (referentialDao.getMinSize), scopé à un seul plan d'eau.
+    // Remplace le passage par l'ensemble de la map species-per-waterEntity
+    // (tout le bassin RM&C) pour le seul contrôle de plausibilité côté saisie.
+    @GET
+    @Path("/authorized-samples/max-size")
+    public Integer getMaxSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
+        return referentialDao.getMaxSize(waterEntityId, speciesId);
+    }
 
 }

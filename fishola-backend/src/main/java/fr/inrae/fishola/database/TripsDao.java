@@ -144,6 +144,24 @@ public class TripsDao extends AbstractFisholaDao {
                 tripId));
     }
 
+    /**
+     * Estampille le département où s'est déroulée la sortie (#159) : département
+     * contenant le point de la sortie (snapped_position en priorité, sinon
+     * begin/end_position), avec repli sur le département de l'entité hydro
+     * rattachée quand la sortie n'a pas de position (import opérateur, saisie
+     * manuelle, mode a posteriori sans GPS). Jointure spatiale PostGIS, à appeler
+     * après {@link #updatePositions} / {@link #updateHydroAttribution}.
+     */
+    public void stampDepartment(UUID tripId) {
+        withContextNoResult(context -> context.execute(
+                "UPDATE trip t SET department = COALESCE("
+                        + "(SELECT d.code FROM departement d"
+                        + " WHERE ST_Contains(d.geom, COALESCE(t.snapped_position, t.begin_position, t.end_position)) LIMIT 1),"
+                        + "(SELECT we.department FROM water_entity we WHERE we.id = t.water_entity_id))"
+                        + " WHERE t.id = ?",
+                tripId));
+    }
+
     public int setSpecies(UUID tripId, Set<UUID> speciesIds) {
         deleteTripSpecies(tripId);
         Set<TripExpectedSpecies> expectedSpecies = speciesIds.stream()
@@ -282,13 +300,22 @@ public class TripsDao extends AbstractFisholaDao {
                 .execute());
     }
 
-    public String getTripsCSV() {
+    /**
+     * Export CSV des captures. {@code allowedDepartments} vide = aucun filtre
+     * (compte national) ; non vide = seules les captures de ces départements,
+     * pour le staff régional (#159).
+     */
+    public String getTripsCSV(Set<String> allowedDepartments) {
         return withContext(context -> {
-            String result = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
-                    .where("a_exclure='non'")
+            List<Condition> conditions = new ArrayList<>();
+            conditions.add(DSL.condition("a_exclure = 'non'"));
+            if (!allowedDepartments.isEmpty()) {
+                conditions.add(DSL.field(DSL.name("departement"), String.class).in(allowedDepartments));
+            }
+            return context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
+                    .where(conditions)
                     .fetch()
                     .formatCSV(';');
-            return result;
         });
     }
 
@@ -336,7 +363,8 @@ public class TripsDao extends AbstractFisholaDao {
     /**
      * Paginated view of catchs_openadom_export.
      */
-    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction, MultivaluedMap<String, String> filters) {
+    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction,
+                                                 MultivaluedMap<String, String> filters, Set<String> allowedDepartments) {
         int catchesPerPage = 15;
         if (offset == null || offset < 0) {
             throw new IllegalArgumentException("Numéro de page invalide : " + offset);
@@ -363,6 +391,10 @@ public class TripsDao extends AbstractFisholaDao {
                 List<String> values = filter.getValue();
                 String value = values == null || values.isEmpty() ? "" : values.get(0);
                 conditions.add(DSL.condition("{0}::varchar(255) ILIKE {1}", filterColumn, DSL.val("%" + value + "%")));
+            }
+            // Cloisonnement départemental du staff régional (#159) : vide = national, pas de filtre.
+            if (!allowedDepartments.isEmpty()) {
+                conditions.add(DSL.field(DSL.name("departement"), String.class).in(allowedDepartments));
             }
 
             // Execute paginated query

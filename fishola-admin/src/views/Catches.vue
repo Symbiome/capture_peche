@@ -171,6 +171,12 @@ const columns: any[] = [
     sortable: true
   },
   {
+    field: "nombreDePoissons",
+    label: "Nombre de poissons",
+    searchable: true,
+    sortable: true
+  },
+  {
     field: "aExclure",
     label: "Exclure de l'export",
     searchable: true,

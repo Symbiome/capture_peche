@@ -26,9 +26,13 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 class ReferentialResourceTest {
@@ -58,6 +62,112 @@ class ReferentialResourceTest {
                     .body("[1].longitude", notNullValue())
                     .body("[2].longitude", notNullValue())
                     .body("[3].longitude", notNullValue());
+    }
+
+    @Test
+    void testGetWaterEntitiesSummary() {
+        // Listing léger sans géométrie (payload ~1,2 Go pour le réseau France
+        // entière sur /waterEntities, au-delà du timeout client mobile) : mêmes
+        // entités, seulement id/name/exportAs/kind/latitude/longitude.
+        given()
+                .when()
+                    .get("/api/v1/referential/waterEntities/summary")
+                .then()
+                    .statusCode(200)
+                    .body("size()", greaterThanOrEqualTo(5))
+                    .body("name", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
+                    .body("exportAs", hasItems("Annecy", "Léman", "Bourget", "Aiguebelette"))
+                    .body("[0].id", notNullValue())
+                    .body("[0].kind", notNullValue())
+                    .body("[0].latitude", notNullValue())
+                    .body("[0].longitude", notNullValue());
+    }
+
+    @Test
+    void testGetDepartments() {
+        // #159 : le sélecteur de périmètre du back-office liste TOUS les départements
+        // ({code, name}), pas seulement ceux couverts par le référentiel hydro.
+        given()
+                .when()
+                    .get("/api/v1/referential/departments")
+                .then()
+                    .statusCode(200)
+                    .body("code", hasItems("01", "2A", "74", "976"))
+                    .body("find { it.code == '74' }.name", is("Haute-Savoie"));
+    }
+
+    @Test
+    void testGetWaterEntitiesByDepartment() {
+        // #154 : listing léger borné à un département, sans géométrie.
+        given()
+                .when()
+                    .get("/api/v1/referential/waterEntities/by-department/74")
+                .then()
+                    .statusCode(200)
+                    .body("name", hasItems("Annecy", "Léman"))
+                    .body("name", not(hasItem("Bourget")));
+    }
+
+    @Test
+    void testSpeciesPerWaterEntityRequiresPerimeter() {
+        // #154 : sans périmètre (ni département ni entité), on renvoie une map
+        // vide plutôt que de sérialiser tout le référentiel (OOM).
+        given()
+                .when()
+                    .get("/api/v1/referential/species-per-waterEntity")
+                .then()
+                    .statusCode(200)
+                    .body("size()", is(0));
+    }
+
+    @Test
+    void testSpeciesPerWaterEntityByDepartmentExposesMeshSize() {
+        // #154 : la matrice espèces × entités bornée par département expose la
+        // taille minimale, la taille maximale et le maillage (fixture : Carpe
+        // commune sur Annecy = 30 / 60 / 10).
+        given()
+                .when()
+                    .get("/api/v1/referential/species-per-waterEntity?department=74")
+                .then()
+                    .statusCode(200)
+                    .body("size()", greaterThanOrEqualTo(1))
+                    .body("collect { it.value }.flatten().findAll { it.authorizedSample }.minSize", hasItem(30))
+                    .body("collect { it.value }.flatten().findAll { it.authorizedSample }.maxSize", hasItem(60))
+                    .body("collect { it.value }.flatten().findAll { it.authorizedSample }.meshSize", hasItem(10));
+    }
+
+    @Test
+    void testSpeciesPerWaterEntityByExplicitEntityIds() {
+        // #154 : chemin nominal de l'UI — la matrice est demandée pour les seules
+        // entités sélectionnées, passées en waterEntityId répétés.
+        String annecyId = given()
+                .when()
+                    .get("/api/v1/referential/waterEntities/by-department/74")
+                .then()
+                    .statusCode(200)
+                    .extract().path("find { it.name == 'Annecy' }.id");
+
+        given()
+                .when()
+                    .get("/api/v1/referential/species-per-waterEntity?waterEntityId=" + annecyId)
+                .then()
+                    .statusCode(200)
+                    .body("size()", is(1))
+                    .body("collect { it.value }.flatten().findAll { it.authorizedSample }.meshSize", hasItem(10));
+    }
+
+    @Test
+    void testGetSpeciesExposesMandatoryReport() {
+        // Déclaration obligatoire (#91) : le champ doit être exposé par l'API
+        // consommée par l'app pêcheur, avec une valeur par défaut à false pour
+        // les espèces de la fixture (aucune n'est marquée soumise à déclaration).
+        given()
+                .when()
+                    .get("/api/v1/referential/species")
+                .then()
+                    .statusCode(200)
+                    .body("size()", greaterThanOrEqualTo(1))
+                    .body("mandatoryReport", everyItem(equalTo(false)));
     }
 
 }

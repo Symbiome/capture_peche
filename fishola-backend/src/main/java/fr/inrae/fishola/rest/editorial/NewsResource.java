@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.editorial;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
@@ -57,6 +58,9 @@ public class NewsResource extends AbstractFisholaResource {
 
     @Inject
     protected NewsFisholaDao dao;
+
+    @Inject
+    protected ReferentialDao referentialDao;
 
     @GET
     @Path("/news")
@@ -106,9 +110,7 @@ public class NewsResource extends AbstractFisholaResource {
     @Audited(value = "news.update", entityType = "news", entityIdParam = "newsId")
     public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
-        boolean newsIsRegionalAndAdminHasNoRightsOnWaterEntity = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminWaterEntities().containsAll(news.waterEntityIds);
-        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnWaterEntity) {
+        if (isNewsOutsidePerimeter(news, fisholaAdmin)) {
             throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
@@ -129,9 +131,7 @@ public class NewsResource extends AbstractFisholaResource {
     @Audited(value = "news.create", entityType = "news")
     public Response createNews(NewsBean news) {
         FisholaAdmin fisholaAdmin = checkIsAdmin();
-        boolean newsIsNationalAndAdminIsRegional = news.isNational && !fisholaAdmin.getIsNationalAdmin();
-        boolean newsIsRegionalAndAdminHasNoRightsOnWaterEntity = !news.isNational && !fisholaAdmin.getIsNationalAdmin() && !getAllowedAdminWaterEntities().containsAll(news.waterEntityIds);
-        if (newsIsNationalAndAdminIsRegional || newsIsRegionalAndAdminHasNoRightsOnWaterEntity) {
+        if (isNewsOutsidePerimeter(news, fisholaAdmin)) {
             throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         try {
@@ -144,6 +144,20 @@ public class NewsResource extends AbstractFisholaResource {
             entity.put("error", "Impossible de créer la news : " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity(entity).build();
         }
+    }
+
+    // Un admin régional ne peut toucher qu'une actu régionale rattachée à des
+    // entités hydro de ses départements de périmètre (#159). Un national passe
+    // toujours ; une actu nationale est réservée au national.
+    private boolean isNewsOutsidePerimeter(NewsBean news, FisholaAdmin fisholaAdmin) {
+        if (fisholaAdmin.getIsNationalAdmin()) {
+            return false;
+        }
+        if (news.isNational) {
+            return true;
+        }
+        return !getAllowedAdminDepartments()
+                .containsAll(referentialDao.departmentByWaterEntityId(news.waterEntityIds).values());
     }
 
     @POST

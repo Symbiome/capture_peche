@@ -23,7 +23,7 @@
     v-if="loaded"
     name="Administrateurs"
     url="/v1/admin"
-    @elements-loaded="computeLakeNames"
+    @elements-loaded="computeDepartmentNames"
     :columns="userColumns"
     :createElement="createAdmin"
     :editable="canCreateAdmins"
@@ -36,24 +36,25 @@ import Referential from "@/components/Referential.vue";
 import BackendService from "@/services/BackendService";
 import { ref, Ref } from "vue";
 
-const lakesIdToNameMap = ref(new Map<string, string>());
+const departmentCodeToNameMap = ref(new Map<string, string>());
 const loaded = ref(false);
 const canCreateAdmins = ref(false);
 const userColumns: Ref<any[]> = ref([]);
 
-loadLakes();
+loadDepartments();
 
-async function loadLakes() {
+async function loadDepartments() {
   const admin = await BackendService.backendGet("/v1/admin/check");
   canCreateAdmins.value = admin.isNationalAdmin || admin.canCreateAdmins;
-  const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
-  const lakesOptions: any[] = [];
-  lakes.forEach((l: any) => {
-    lakesOptions.push({
-      id: l.id,
-      label: l.name
+  // Périmètre exprimé en départements (#159) : on ne charge plus tout le référentiel hydro.
+  const departments = await BackendService.backendGet("/v1/referential/departments");
+  const departmentOptions: any[] = [];
+  departments.forEach((d: any) => {
+    departmentOptions.push({
+      id: d.code,
+      label: d.code + " — " + d.name
     });
-    lakesIdToNameMap.value.set(l.id, l.name);
+    departmentCodeToNameMap.value.set(d.code, d.name);
   });
 
   userColumns.value = [
@@ -71,8 +72,8 @@ async function loadLakes() {
       readOnlyIfFunction: (admin) => { return admin.id; }
     },
     {
-      field: "lakeNames",
-      label: "Plans d'eau",
+      field: "departmentNames",
+      label: "Départements",
       searchable: true,
       hiddenInPopup: true
     },
@@ -85,14 +86,14 @@ async function loadLakes() {
       },
     },
     {
-      // Le backend (RegisterAdminBean / AdminProfileForAdmin) lit et renvoie « waterEntityIds ».
-      field: "waterEntityIds",
-      label: "Plans d'eau",
+      // Le backend (RegisterAdminBean / AdminProfileForAdmin) lit et renvoie « departmentCodes ».
+      field: "departmentCodes",
+      label: "Départements",
       isArray: true,
       visible: false,
-      arrayOptions: lakesOptions,
+      arrayOptions: departmentOptions,
       possibleValuesForItemFunction: (admin) => {
-        return admin.waterEntityIds ?? [];
+        return admin.departmentCodes ?? [];
       },
     },
     {
@@ -119,11 +120,11 @@ async function loadLakes() {
   loaded.value = true;
 }
 
-function computeLakeNames(admins: any[]) {
+function computeDepartmentNames(admins: any[]) {
   admins.forEach(admin => {
-    admin.lakeNames = admin.isNationalAdmin ?
+    admin.departmentNames = admin.isNationalAdmin ?
       "National" :
-      (admin.waterEntityIds ?? []).map((waterEntityId: string) => lakesIdToNameMap.value.get(waterEntityId)).join(", ");
+      (admin.departmentCodes ?? []).map((code: string) => code + " — " + departmentCodeToNameMap.value.get(code)).join(", ");
   });
 }
 
@@ -133,7 +134,7 @@ function createAdmin(): any {
     email: "",
     password: "",
     isNationalAdmin: false,
-    waterEntityIds: []
+    departmentCodes: []
   };
 }
 </script>

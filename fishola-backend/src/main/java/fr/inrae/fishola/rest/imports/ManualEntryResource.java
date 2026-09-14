@@ -57,7 +57,7 @@ public class ManualEntryResource extends AbstractFisholaResource {
         // Cloisonnement (#63) : opérateur/admin régional borné à son périmètre ; national non restreint.
         Set<UUID> allowedWaterEntities = admin.getIsNationalAdmin()
                 ? null
-                : adminDao.getAllowedWaterEntities(admin.getId());
+                : adminDao.getAllowedWaterEntityIds(admin.getId());
 
         ManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities, LocalDate.now());
 

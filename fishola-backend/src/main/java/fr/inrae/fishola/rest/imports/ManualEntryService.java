@@ -32,8 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Saisie manuelle opérateur (#72), portage de
- * {@code fishola-backoffice/backoffice/manual_entry.py}.
+ * Saisie manuelle opérateur (#72).
  *
  * Un seul jeu de règles avec l'import : la résolution d'entité hydro, les bornes de
  * taille (Q8, {@link ImportService#sizeOutOfBounds}) et la persistance {@code Trip}+
@@ -47,9 +46,11 @@ public class ManualEntryService {
     /**
      * Méthodes de recueil ouvertes à l'opérateur (cf. cadrage §3, option a) —
      * {@code saisie_pecheur} est réservé à l'application pêcheur et exclu ici.
+     * {@code carnet_volontaire} est exclu depuis #143 : ce mode passe désormais par le
+     * pipeline dédié ({@link fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireManualEntryService}).
      */
     public static final Set<String> OPERATOR_COLLECTION_METHODS =
-            Set.of("enquete", "carnet_volontaire", "carnet_obligatoire");
+            Set.of("enquete", "carnet_obligatoire");
 
     @Inject
     protected ImportDao importDao;

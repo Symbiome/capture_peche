@@ -55,4 +55,49 @@ describe("Carte MapLibre", () => {
   it("expose le bouton de géolocalisation", () => {
     cy.contains("button", "Ma position").should("be.visible");
   });
+
+  // #138 : sur un viewport court, la feuille de confirmation d'attribution
+  // (proposition + alternatives + Annuler/Confirmer) doit tenir dans l'écran,
+  // actions comprises, même quand le corps défile.
+  it("garde le bouton Confirmer dans le viewport sur écran court après un tap carte", () => {
+    cy.viewport(390, 640);
+    cy.visit("/#/map-test");
+    cy.get(".maplibregl-canvas", { timeout: 15000 }).should("exist");
+
+    // Déclenche le flux d'attribution (le banc ouvre la vraie bottom-sheet).
+    cy.get('[data-cy="simulate-tap"]').click();
+    cy.get(".attribution-sheet").should("be.visible");
+
+    // Entièrement dans le viewport (pas masqué en bas / hors cadre). `should`
+    // avec callback : réessayé jusqu'à stabilisation.
+    cy.contains(".attribution-sheet button", "Confirmer")
+      .should("be.visible")
+      .should(($btn) => {
+        const rect = $btn[0].getBoundingClientRect();
+        expect(rect.top).to.be.greaterThan(0);
+        expect(rect.bottom).to.be.lessThan(640);
+      });
+
+    // Les actions restent atteignables : un clic réel (contrôle d'actionabilité
+    // Cypress → échoue si l'élément est recouvert) confirme la sélection.
+    cy.contains(".attribution-sheet button", "Confirmer").click();
+    cy.get('[data-cy="selected-entity"]').should("have.text", "demo-1");
+  });
+
+  it("laisse défiler le corps de la feuille, actions figées en bas", () => {
+    cy.viewport(390, 640);
+    cy.visit("/#/map-test");
+    cy.get(".maplibregl-canvas", { timeout: 15000 }).should("exist");
+    cy.get('[data-cy="simulate-tap"]').click();
+    cy.get(".attribution-sheet").should("be.visible");
+
+    cy.get(".attribution-sheet-body").scrollTo("bottom");
+    // La dernière alternative est atteinte par le défilement du corps...
+    cy.contains(".attribution-sheet-body", "Entité alternative 8").should("be.visible");
+    // ...et la ligne d'actions n'a pas bougé : toujours dans le viewport.
+    cy.contains(".attribution-sheet button", "Confirmer").should(($btn) => {
+      const rect = $btn[0].getBoundingClientRect();
+      expect(rect.bottom).to.be.lessThan(640);
+    });
+  });
 });

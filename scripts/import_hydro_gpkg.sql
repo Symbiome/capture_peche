@@ -9,18 +9,23 @@
 -- river_section / water_surface puissent résoudre leur water_entity_id directement
 -- à l'insertion (jointure sur bdtopo_cleabs), sans passe de backfill séparée.
 --
--- Nommage des plans d'eau : les toponymes BD TOPO ne sont pas uniques (« Lac
--- Blanc » désigne 17 plans d'eau distincts), alors que water_entity.name et
--- export_as portent une contrainte UNIQUE. Les homonymes sont donc départagés par
--- leur commune quand le référentiel `commune` la couvre — « Lac Blanc (Valloire) »
--- plutôt qu'un identifiant technique. Charger les communes des départements
--- concernés AVANT l'import améliore donc les libellés (scripts/import_communes_geoapi.sh
--- ou import_admin_gpkg.sh) ; sans elles, l'import réussit quand même et retombe
--- sur le suffixe cleabs.
+-- Nommage des plans d'eau (#134) : les toponymes BD TOPO ne sont pas uniques
+-- (« Lac Blanc » désigne 17 plans d'eau distincts), alors que
+-- water_entity.export_as porte une contrainte UNIQUE (water_entity.name n'en
+-- porte plus, cf. #134). `name` (nom affiché au pêcheur) vaut donc TOUJOURS le
+-- toponyme brut, jamais suffixé. Seul `export_as` (jamais montré au pêcheur,
+-- utilisé pour les exports Darwin Core) suit un escalier de désambiguïsation
+-- pour rester unique : toponyme nu → « toponyme (commune) », quand le
+-- référentiel `commune` la couvre, → « toponyme_cleabs » sinon. Charger les
+-- communes des départements concernés AVANT l'import améliore donc les
+-- libellés d'export (scripts/import_communes_geoapi.sh ou import_admin_gpkg.sh) ;
+-- sans elles, l'import réussit quand même et export_as retombe sur le suffixe
+-- cleabs (name reste le toponyme brut dans tous les cas).
 --
--- Les cours d'eau restent volontairement sur le suffixe cleabs : une entité
--- cours_d_eau porte le cours entier (l'Arve traverse 26 communes du seul 74),
--- un qualificatif communal y serait faux autant qu'inutile.
+-- Les cours d'eau n'utilisent volontairement pas la commune pour leur
+-- export_as : une entité cours_d_eau porte le cours entier (l'Arve traverse
+-- 26 communes du seul 74), un qualificatif communal y serait faux autant
+-- qu'inutile — seul le suffixe cleabs les désambiguïsent au besoin.
 
 -- ---------------------------------------------------------------------------
 -- 1. plan_d_eau -> water_entity (kind = STILL)
@@ -40,7 +45,19 @@ WITH staged AS (
               FROM commune c
              WHERE ST_Intersects(c.geom, staged.geom)
              ORDER BY ST_Area(ST_Intersection(c.geom, staged.geom)) DESC
-             LIMIT 1) AS commune_name
+             LIMIT 1) AS commune_name,
+           -- Code département INSEE, même commune de plus grand recouvrement,
+           -- pour le filtre de périmètre du back-office (#154). NULL si le
+           -- référentiel commune ne couvre pas la zone.
+           (SELECT CASE
+                       WHEN c.insee_com LIKE '97%' OR c.insee_com LIKE '98%'
+                           THEN substring(c.insee_com, 1, 3)
+                       ELSE substring(c.insee_com, 1, 2)
+                   END
+              FROM commune c
+             WHERE ST_Intersects(c.geom, staged.geom)
+             ORDER BY ST_Area(ST_Intersection(c.geom, staged.geom)) DESC
+             LIMIT 1) AS commune_department
     FROM staged
 ), incumbency AS (
     -- Qui détient DÉJÀ le nom qu'il pourrait revendiquer ? Les contraintes UNIQUE
@@ -129,14 +146,17 @@ WITH staged AS (
            END AS final_name
     FROM candidate
 )
-INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, geom)
+INSERT INTO water_entity (name, export_as, kind, nature, altitude_moyenne, bdtopo_cleabs, department, geom)
 SELECT
-    final_name,
+    -- name (#134) : toponyme brut, jamais l'escalier — c'est export_as qui
+    -- porte la désambiguïsation, name n'a plus de contrainte d'unicité à tenir.
+    base_name,
     final_name,
     'STILL'::water_entity_kind,
     nature,
     altitude_moyenne,
     cleabs,
+    commune_department,
     ST_Force2D(geom)
 FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
@@ -144,6 +164,7 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     export_as = EXCLUDED.export_as,
     nature = EXCLUDED.nature,
     altitude_moyenne = EXCLUDED.altitude_moyenne,
+    department = EXCLUDED.department,
     geom = EXCLUDED.geom;
 
 -- ---------------------------------------------------------------------------
@@ -153,7 +174,19 @@ ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
 WITH ranked AS (
     SELECT *,
            coalesce(nullif(toponyme, ''), cleabs) AS base_name,
-           row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn
+           row_number() OVER (PARTITION BY coalesce(nullif(toponyme, ''), cleabs) ORDER BY cleabs) AS rn,
+           -- Code département INSEE (#154). Un cours d'eau traverse souvent
+           -- plusieurs communes : on retient celle de plus grande longueur
+           -- d'intersection. NULL si le référentiel commune ne couvre pas la zone.
+           (SELECT CASE
+                       WHEN c.insee_com LIKE '97%' OR c.insee_com LIKE '98%'
+                           THEN substring(c.insee_com, 1, 3)
+                       ELSE substring(c.insee_com, 1, 2)
+                   END
+              FROM commune c
+             WHERE ST_Intersects(c.geom, cours_d_eau.geom)
+             ORDER BY ST_Length(ST_Intersection(c.geom, cours_d_eau.geom)) DESC, c.insee_com
+             LIMIT 1) AS commune_department
     FROM bdtopo_raw.cours_d_eau
 ), named AS (
     -- Le nom nu n'est retenu que s'il est réellement libre : premier de son groupe
@@ -174,17 +207,20 @@ WITH ranked AS (
            END AS final_name
     FROM ranked
 )
-INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, geom)
+INSERT INTO water_entity (name, export_as, kind, bdtopo_cleabs, department, geom)
 SELECT
-    final_name,
+    -- name (#134) : toponyme brut, jamais l'escalier (cf. section 1).
+    base_name,
     final_name,
     'FLOWING'::water_entity_kind,
     cleabs,
+    commune_department,
     ST_Force2D(geom)
 FROM named
 ON CONFLICT (bdtopo_cleabs) DO UPDATE SET
     name = EXCLUDED.name,
     export_as = EXCLUDED.export_as,
+    department = EXCLUDED.department,
     geom = EXCLUDED.geom;
 
 -- ---------------------------------------------------------------------------

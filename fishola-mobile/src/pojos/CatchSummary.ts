@@ -26,6 +26,7 @@ export default interface CatchSummary {
     size?: number;    
     automaticMeasure?: number;
     weight?: number;
+    quantity?: number;
     keep?: boolean;
     releasedStateId?: string;
     techniqueId?: string;

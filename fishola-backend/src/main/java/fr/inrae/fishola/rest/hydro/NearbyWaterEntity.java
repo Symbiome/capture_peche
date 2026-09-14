@@ -50,6 +50,16 @@ public interface NearbyWaterEntity {
     GeoPoint closestPoint();
 
     /**
+     * Name of the commune containing the entity centroid (#6/#134), to
+     * disambiguate homonyms in the list — {@code name} is the raw BD TOPO
+     * toponym and is not unique. Empty if no commune matches.
+     */
+    Optional<String> commune();
+
+    /** Code postal principal de la commune (#15/#134). Empty si non couvert. */
+    Optional<String> codePostal();
+
+    /**
      * Whether the closest river section is permanent. Empty for still waters
      * and for surfaces (no per-section permanence). {@code false} flags a
      * non-permanent watercourse (warning for the trip validation, #9).

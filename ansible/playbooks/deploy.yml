@@ -1,0 +1,105 @@
+---
+# Déploiement Fishola / capture_peche sur le serveur dev.
+#
+# Prérequis (voir DEPLOYMENT.md) : être déjà connecté en SSH sur le serveur
+# cible, Docker + docker compose déjà installés. Le reverse proxy et le
+# mapping domaine -> port sont gérés par Adventiel : ce playbook ne touche à
+# aucun proxy, il se contente de builder les images et démarrer la stack sur
+# les ports attendus (group_vars/dev/vars.yml).
+#
+# Secrets dans group_vars/dev/vault.yml (chiffré, voir DEPLOYMENT.md) — jamais
+# dans un .env à copier à la main : ce playbook génère lui-même le .env
+# consommé par docker compose.
+#
+# Rejouable sans risque (idempotent) : `mvn clean package` et
+# `docker compose build/up` ne refont que ce qui a changé, sauf
+# --extra-vars "force_rebuild=true".
+#
+# Usage :
+#   cd ansible && ansible-playbook playbooks/deploy.yml
+
+- name: Déployer Fishola (dev)
+  hosts: dev
+  connection: local
+  gather_facts: false
+
+  vars:
+    project_dir: "{{ playbook_dir }}/../.."
+    maven_image: maven:3.9-eclipse-temurin-25
+
+  tasks:
+    - name: Générer le fichier .env consommé par docker compose
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/dotenv.j2"
+        dest: "{{ project_dir }}/.env"
+        mode: "0600"
+      no_log: true
+
+    - name: Générer l'override Vite du front pêcheur (URL API publique)
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/mobile-env-demo.local.j2"
+        dest: "{{ project_dir }}/fishola-mobile/.env.demo.local"
+        mode: "0644"
+
+    - name: Générer l'override Vite du front admin (URL API publique)
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/admin-env-demo.local.j2"
+        dest: "{{ project_dir }}/fishola-admin/.env.demo.local"
+        mode: "0644"
+
+    - name: Déterminer le socket Docker de l'hôte (rootless ou non)
+      # DOCKER_HOST, quand il est exporté (typique d'une install rootless :
+      # /run/user/<uid>/docker.sock), prime sur le socket par défaut — même
+      # résolution que celle utilisée par le CLI docker lui-même.
+      ansible.builtin.command:
+        cmd: /bin/sh -c 'echo "${DOCKER_HOST:-unix:///var/run/docker.sock}"'
+      register: _docker_host
+      changed_when: false
+
+    - name: Construire le backend et les fronts (mvn clean package, profil demo)
+      # jooq-codegen-maven (génération des classes jOOQ) lance un Postgres
+      # éphémère via Testcontainers pour introspecter le schéma — une vraie
+      # étape de build (generate-sources), pas un test, donc -DskipTests ne la
+      # saute pas. Sans le socket Docker monté ici, Testcontainers ne trouve
+      # aucun environnement Docker et le module fishola-backend échoue direct.
+      # Le socket hôte (rootless ou non) est toujours monté sur le même
+      # chemin interne fixe, et DOCKER_HOST pointé dessus explicitement : la
+      # détection ci-dessus reste la seule chose à connaître de l'hôte.
+      #
+      # --network host : Testcontainers (Ryuk + le Postgres éphémère de jOOQ)
+      # tourne en frère de ce conteneur de build, publié sur l'hôte à une
+      # adresse de bridge (172.17.0.1:<port>) — pas forcément joignable depuis
+      # ce conteneur selon la conf réseau. En partageant le netns de l'hôte,
+      # cette adresse devient localhost:<port>, toujours joignable.
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm --network host
+          -v {{ project_dir }}:/workspace -w /workspace
+          -v fishola_maven_repo:/root/.m2
+          -v {{ _docker_host.stdout | regex_replace('^unix://', '') }}:/var/run/docker.sock
+          -e DOCKER_HOST=unix:///var/run/docker.sock
+          {{ maven_image }}
+          mvn -B -DskipTests {{ '-U' if force_rebuild | default(false) else '' }} clean package
+      changed_when: true
+
+    - name: Construire les images Docker applicatives
+      ansible.builtin.command:
+        cmd: "docker compose build {{ '--no-cache' if force_rebuild | default(false) else '' }}"
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Démarrer la stack
+      ansible.builtin.command:
+        cmd: docker compose up -d --remove-orphans
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Récapitulatif du déploiement
+      ansible.builtin.debug:
+        msg:
+          - "Déploiement terminé."
+          - "Front pêcheur : {{ app_domain }} (port local {{ mobile_port }})"
+          - "Front admin   : {{ admin_domain }} (port local {{ admin_port }})"
+          - "API backend   : {{ api_domain }}/api/v1/status (port local {{ backend_port }})"
+          - "Vérifier que ce mapping domaine -> port correspond bien au reverse proxy Adventiel."
+          - "Prochaine étape : ./health_check.sh --local puis ./health_check.sh"

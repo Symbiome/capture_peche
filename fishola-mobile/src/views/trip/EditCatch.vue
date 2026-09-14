@@ -115,6 +115,12 @@
                   v-bind:readonly="!modifiable" />
               </div>
 
+              <div>
+                <FormInput name="quantity" label="Nombre de prises" type="number" :min="1"
+                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError"
+                  v-bind:readonly="!modifiable" />
+              </div>
+
               <div class="two-columns-row-on-desktop">
                 <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
                   <i class="icon-info" />
@@ -326,6 +332,7 @@ export default class EditCatchView extends Vue {
   otherSpeciesError: string = "";
   sizeError: string = "";
   weightError: string = "";
+  quantityError: string = "";
   keepError: string = "";
   releasedStateIdError: string = "";
   techniqueIdError: string = "";
@@ -396,6 +403,10 @@ export default class EditCatchView extends Vue {
     this.tripMode = someTrip.mode;
     this.aCatch = someCatch;
 
+    if (!this.aCatch.quantity) {
+      this.aCatch.quantity = 1;
+    }
+
     if (this.aCatch.automaticMeasure && !this.aCatch.size) {
       this.aCatch.size = this.aCatch.automaticMeasure;
     }
@@ -417,7 +428,7 @@ export default class EditCatchView extends Vue {
       this.withSample = true;
     }
 
-    ReferentialService.getSpeciesAndTechniques(this.lakeId).then(
+    ReferentialService.getSpeciesAndTechniques().then(
       this.referentialLoaded
     );
 
@@ -588,6 +599,8 @@ export default class EditCatchView extends Vue {
       name: s.alias ? `${s.alias} (${s.name})` : s.name,
       builtIn: s.builtIn,
       mandatorySize: s.mandatorySize,
+      mandatoryReport: s.mandatoryReport,
+      reportLink: s.reportLink,
       authorizedSample: s.authorizedSample,
       minSize: 0,
       maxSize: 1000
@@ -619,6 +632,7 @@ export default class EditCatchView extends Vue {
           name: name,
           builtIn: false,
           mandatorySize: false,
+          mandatoryReport: false,
           authorizedSample: false,
           minSize: 0,
           maxSize: 1000,
@@ -635,6 +649,7 @@ export default class EditCatchView extends Vue {
       name: "Autre ...",
       builtIn: false,
       mandatorySize: false,
+      mandatoryReport: false,
       authorizedSample: false,
       minSize: 0,
       maxSize: 1000
@@ -664,27 +679,20 @@ export default class EditCatchView extends Vue {
 
   async getMaxSize(lakeId: string, speciesId?: string): Promise<number> {
     let result = 1000;
+    if (!speciesId) {
+      return result;
+    }
     // Contrôle non bloquant : hors ligne et sans référentiel en cache, on
     // conserve la borne permissive par défaut plutôt que de laisser rejeter
     // la promesse — sinon `validateClicked` s'interrompait et la capture ne
     // pouvait plus être enregistrée, sans aucun message pour l'utilisateur.
-    let speciesPerLake: Map<string, SpeciesWithAlias[]>;
     try {
-      speciesPerLake = await ReferentialService.getSpeciesPerLake();
+      result = await ReferentialService.getAuthorizedSampleMaxSize(lakeId, speciesId);
     } catch (e) {
       console.error(
-        "Référentiel espèces/plan d'eau indisponible, contrôle de taille maximale ignoré",
+        "Taille maximale autorisée indisponible, contrôle de taille maximale ignoré",
         e
       );
-      return result;
-    }
-    if (speciesPerLake.get(lakeId)) {
-      const speciesInLakeWithMaxSizes = speciesPerLake.get(lakeId)!;
-      speciesInLakeWithMaxSizes.forEach((s: SpeciesWithAlias) => {
-        if (s.id == speciesId) {
-          result = s.maxSize;
-        }
-      });
     }
     return result;
   }
@@ -912,6 +920,17 @@ export default class EditCatchView extends Vue {
       }
     }
 
+    if (!this.aCatch.quantity || this.aCatch.quantity < 1) {
+      this.aCatch.quantity = 1;
+    }
+    if (this.aCatch.quantity != Math.floor(this.aCatch.quantity)) {
+      hasError = true;
+      this.quantityError = "Le nombre de prises doit être un nombre entier";
+    } else {
+      this.aCatch.quantity = Math.floor(this.aCatch.quantity);
+      this.quantityError = "";
+    }
+
     if (this.aCatch.keep === true || this.aCatch.keep === false) {
       this.keepError = "";
     } else {
@@ -989,7 +1008,19 @@ export default class EditCatchView extends Vue {
         pictureToDelete.order
       );
     }
+    await this.alertIfMandatoryReport();
     this.leavePage();
+  }
+
+  // #91 : après l'enregistrement, alerte si l'espèce saisie est soumise à
+  // déclaration obligatoire (avec lien vers le formulaire officiel s'il existe).
+  async alertIfMandatoryReport() {
+    const species = this.allSpeciesWithAliases.find(
+      (s) => s.id === this.aCatch.speciesId
+    );
+    if (species && species.mandatoryReport) {
+      await Helpers.declareCatchAlert(this.$modal, species.reportLink);
+    }
   }
 
   deleteCatch() {
@@ -1316,6 +1347,11 @@ export default class EditCatchView extends Vue {
     .map {
       width: 100%;
       height: 200px;
+      // Petit écran : on borne la carte pour ne pas repousser le bouton
+      // d'enregistrement (barre d'action) hors de la vue (#138). `svh` suit les
+      // barres dynamiques du navigateur mobile, comme le reste des cartes (#97).
+      max-height: 45vh;
+      max-height: 45svh;
     }
   }
 

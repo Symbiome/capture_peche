@@ -82,7 +82,6 @@ import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
-import { LakesAndTripTypes } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 import GeolocationService from "@/services/GeolocationService";
 
@@ -129,13 +128,12 @@ export default class TripMetaView extends Vue {
   lakeIdError: string = "";
   typeError: string = "";
 
-  lakes: Lake[] = [];
   selectedLakes : Lake[] = [];
   favoriteLakes: Lake[] = [];
   types: any[] = [];
 
   created() {
-    ReferentialService.getLakesAndTripTypes().then(this.referentialsLoaded);
+    ReferentialService.getTripTypes().then(this.referentialsLoaded);
   }
 
   tripLoaded(someTrip: TripMeta) {
@@ -188,9 +186,8 @@ export default class TripMetaView extends Vue {
     }
   }
 
-  referentialsLoaded(data: LakesAndTripTypes) {
-    data.lakes.forEach((lake: Lake) => this.lakes.push(lake));
-    data.tripTypes.forEach((type: any) => this.types.push(type));
+  referentialsLoaded(tripTypes: any[]) {
+    tripTypes.forEach((type: any) => this.types.push(type));
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 

@@ -44,6 +44,14 @@ export default abstract class AbstractFisholaService {
     this.caches.set(uri, newEntry);
   }
 
+  // Un console.log/info sur un tableau de plusieurs dizaines de milliers
+  // d'entrées (référentiel hydro national, #128) est retenu par la console
+  // DevTools tant qu'elle garde la trace du log : le GC ne peut alors plus
+  // jamais libérer la donnée, même après destruction du composant appelant.
+  static logSummary(content: any): any {
+    return Array.isArray(content) ? `Array(${content.length})` : content;
+  }
+
   /**
    * Une requête XHR qui échoue au niveau transport (réseau absent, hôte
    * injoignable, requête interrompue) ne déclenche PAS `onload`. Sans
@@ -322,7 +330,7 @@ export default abstract class AbstractFisholaService {
         (result) => {
           console.info(
             `New content available, save it to offline storage for '${uri}'`,
-            result
+            this.logSummary(result)
           );
           const entry: OfflineEntry = {
             key: uri,
@@ -361,7 +369,7 @@ export default abstract class AbstractFisholaService {
       const promise = this.backendGetAndStoreToOfflineStorage(uri);
       this.timeout(5000, promise).then(
         (result) => {
-          console.info(`Got fresh answer for '${uri}'`, result);
+          console.info(`Got fresh answer for '${uri}'`, this.logSummary(result));
           this.unmarkOffline(result);
           resolve(result);
         },

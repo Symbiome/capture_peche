@@ -13,4 +13,6 @@ fi
 
 echo "==> Seed de recette -> base 'fishola' (conteneur ${DB_CONTAINER})"
 docker exec -i "${DB_CONTAINER}" psql -v ON_ERROR_STOP=1 -U postgres -d fishola < "${SCRIPT_DIR}/seed_recette.sql"
+docker exec -i "${DB_CONTAINER}" psql -v ON_ERROR_STOP=1 -U postgres -d fishola < "${SCRIPT_DIR}/species_taxon_seed.sql"
 echo "==> OK. Comptes : national/regional/operateur.recette@fishola.test + pecheur.recette@fishola.test (mdp « Recette2026! »)."
+echo "Chargement des espèces fait."

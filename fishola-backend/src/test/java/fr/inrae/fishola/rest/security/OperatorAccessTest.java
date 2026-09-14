@@ -102,7 +102,6 @@ class OperatorAccessTest {
     @Transactional
     void cleanup() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        ctx.execute("DELETE FROM fishola_admin_water_entities WHERE fishola_admin_id IN (?, ?)", nationalAdminId, operatorId);
         ctx.execute("DELETE FROM fishola_admin WHERE id IN (?, ?)", nationalAdminId, operatorId);
     }
 

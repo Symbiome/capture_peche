@@ -122,6 +122,10 @@
       v-bind:beginLongitude="trip.beginLongitude"
       v-bind:endLatitude="trip.endLatitude"
       v-bind:endLongitude="trip.endLongitude"
+      v-bind:editable="!readonly"
+      v-bind:centerLat="currentLake ? currentLake.latitude : undefined"
+      v-bind:centerLng="currentLake ? currentLake.longitude : undefined"
+      v-on:end-position-picked="onEndPositionPicked"
     />
   </div>
 </template>
@@ -129,14 +133,14 @@
 <script lang="ts">
 import TripSummary from "@/pojos/TripSummary";
 import {
-  Lake,
+  WaterEntity as Lake,
   Weather,
   SpeciesWithAlias,
   Technique,
 } from "@/pojos/BackendPojos";
 
 import Helpers from "@/services/Helpers";
-import { LakesWeathersTripTypesSpeciesAndTechniques } from "@/services/ReferentialService";
+import { WeathersTripTypesSpeciesAndTechniques } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 
 import FormInput from "@/components/common/FormInput.vue";
@@ -182,43 +186,73 @@ export default class SomeTripSummary extends Vue {
   techniquesLabel: string = "Technique utilisée";
   types: string[] = [];
 
-  allLakes: Lake[] = [];
-  allSpecies: Map<string, SpeciesWithAlias[]> = new Map();
+  allSpecies: SpeciesWithAlias[] = [];
   allWeathers: Weather[] = [];
   allTripTypes: any[] = [];
   allTechniques: Technique[] = [];
   noFavorites: Lake[] = [];
 
   // Plan d'eau : autocomplete (recherche serveur, #7) au lieu d'un select de
-  // toutes les entités (inutilisable à l'échelle France). Le nom courant est
-  // résolu localement pour l'affichage/la pré-sélection.
+  // toutes les entités (inutilisable à l'échelle France). Le lac déjà associé
+  // à la sortie est résolu séparément (currentLake, cf. loadCurrentLake) au
+  // lieu de charger le référentiel national complet pour un seul id (#128).
+  currentLake: Lake | null = null;
+
   get selectedLakes(): Lake[] {
-    if (!this.trip.lakeId) {
-      return [];
-    }
-    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
-    return found ? [found] : [];
+    return this.currentLake ? [this.currentLake] : [];
   }
 
   get selectedLakeName(): string {
-    const found = this.allLakes.find((l) => l.id === this.trip.lakeId);
-    return found ? found.name : "";
+    return this.currentLake ? this.currentLake.name : "";
   }
 
   onLakeSelected(lake: Lake) {
     // Mutation directe du modèle (comme l'ancien v-model) — la sauvegarde est
     // déclenchée par le parent au « Terminer », pas à la sélection.
     this.trip.lakeId = lake ? lake.id : "";
+    this.currentLake = lake || null;
+  }
+
+  // Point de fin placé par l'utilisateur sur la carte (#86). On le projette
+  // ensuite sur l'entité hydro la plus proche (point le plus proche de sa
+  // géométrie), comme pour le point de début. On ne le contraint PAS à
+  // l'entité de la sortie : le pêcheur a pu terminer sur une autre rivière /
+  // mare / étang. Mutation directe du modèle ; la sauvegarde est déclenchée
+  // par le parent au « Terminer ».
+  onEndPositionPicked(coords: { lat: number; lng: number }) {
+    this.$set(this.trip, "endLatitude", coords.lat);
+    this.$set(this.trip, "endLongitude", coords.lng);
+    this.snapEndPositionToNearestWaterEntity(coords);
+  }
+
+  private snapEndPositionToNearestWaterEntity(coords: { lat: number; lng: number }) {
+    ReferentialService.getAttribution(coords.lat, coords.lng)
+      .then((res) => {
+        const snapped = res && res.proposal ? res.proposal.closestPoint : null;
+        if (snapped) {
+          this.$set(this.trip, "endLatitude", snapped.lat);
+          this.$set(this.trip, "endLongitude", snapped.lng);
+        }
+      })
+      // Hors ligne / erreur serveur : on conserve le point brut posé par
+      // l'utilisateur (le point de fin reste optionnel et non bloquant).
+      .catch(() => undefined);
   }
 
   created() {
-    ReferentialService.getLakesWeathersTripTypesSpeciesAndTechniques().then(
-      this.referentialsLoaded
-    );
+    const currentLakePromise = this.trip.lakeId
+      ? ReferentialService.getLakesIndex().then((index) => index.get(this.trip.lakeId) || null)
+      : Promise.resolve(null);
+    Promise.all([
+      ReferentialService.getWeathersTripTypesSpeciesAndTechniques(),
+      currentLakePromise,
+    ]).then(([data, currentLake]) => {
+      this.currentLake = currentLake;
+      this.referentialsLoaded(data);
+    });
   }
 
-  referentialsLoaded(data: LakesWeathersTripTypesSpeciesAndTechniques) {
-    data.lakes.forEach((lake) => this.allLakes.push(lake));
+  referentialsLoaded(data: WeathersTripTypesSpeciesAndTechniques) {
     this.allWeathers.push({
       id: "__none__",
       name: "",
@@ -250,9 +284,8 @@ export default class SomeTripSummary extends Vue {
       this.finishedAt = Helpers.truncateTimeToMinutes(someTrip.finishedAt);
     }
 
-    const speciesPerLake = this.allSpecies.get(someTrip.lakeId);
     someTrip.speciesIds.forEach((speciesId: string) => {
-      speciesPerLake!.forEach((s) => {
+      this.allSpecies.forEach((s) => {
         if (s.id == speciesId) {
           const speciesDisplayValue = s.alias
             ? `${s.alias} (${s.name})`
