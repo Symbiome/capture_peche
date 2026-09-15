@@ -38,7 +38,6 @@ import NewsVue from "@/views/referentials/News.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
-import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
 import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
 import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
 import OperatorSurveyImport from "@/views/operator/SurveyImport.vue";
@@ -118,11 +117,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/operators",
     name: "operators",
     component: Operators
-  },
-  {
-    path: "/operator/manual-entry",
-    name: "operator-manual-entry",
-    component: OperatorManualEntry
   },
   {
     path: "/operator/import/carnet-volontaire",

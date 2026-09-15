@@ -30,12 +30,17 @@ import fr.inrae.fishola.rest.hydro.ImmutableWaterEntitySearchResult;
 import fr.inrae.fishola.rest.hydro.NearbyWaterEntity;
 import fr.inrae.fishola.rest.hydro.WaterEntityAttribution;
 import fr.inrae.fishola.rest.hydro.WaterEntitySearchResult;
+import fr.inrae.fishola.rest.referential.ImmutableWaterEntityName;
+import fr.inrae.fishola.rest.referential.WaterEntityName;
 import jakarta.inject.Singleton;
 import org.jooq.Record;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Spatial searches over the hydrographic network. Queries the fine geometries
@@ -230,6 +235,47 @@ public class HydroSearchDao extends AbstractFisholaDao {
                                 .build())
                         .commune(Optional.ofNullable(rec.get("commune", String.class)))
                         .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
+                        .build()));
+    }
+
+    /**
+     * Minimal (id + name only) variant of {@link #searchWaterEntities}, optionally
+     * scoped to a set of departments (staff perimeter, #159). Backs the operator
+     * back-office trip/catch entry forms, which reference the entity only by id
+     * and never read kind/centroid/commune — unlike the mobile search, no
+     * {@code geom IS NOT NULL} requirement either, for consistency with
+     * {@link fr.inrae.fishola.database.ReferentialDao#listWaterEntityNames()}.
+     *
+     * @param departmentCodes empty means unrestricted (national admin)
+     */
+    public List<WaterEntityName> searchWaterEntityNames(String query, Set<String> departmentCodes, int limit) {
+        String q = forSearch(query);
+        boolean scoped = !departmentCodes.isEmpty();
+        String departmentClause = scoped
+                ? "AND we.department IN (" + departmentCodes.stream().map(d -> "?").collect(Collectors.joining(",")) + ") "
+                : "";
+        String sql = "SELECT we.id, we.name "
+                + "FROM water_entity we "
+                + "WHERE (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
+                + "       OR f_unaccent(we.name) % f_unaccent(?)) "
+                + departmentClause
+                + "ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(?) || '%') DESC, "
+                + "         similarity(f_unaccent(we.name), f_unaccent(?)) DESC, we.name "
+                + "LIMIT ?";
+        List<Object> binds = new ArrayList<>();
+        binds.add(q);
+        binds.add(q);
+        if (scoped) {
+            binds.addAll(departmentCodes);
+        }
+        binds.add(q);
+        binds.add(q);
+        binds.add(limit);
+        return withContext(context -> context
+                .fetch(sql, binds.toArray())
+                .map(rec -> (WaterEntityName) ImmutableWaterEntityName.builder()
+                        .id(rec.get("id", UUID.class))
+                        .name(rec.get("name", String.class))
                         .build()));
     }
 

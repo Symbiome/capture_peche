@@ -43,7 +43,9 @@ import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
 import fr.inrae.fishola.entities.tables.records.WaterEntityRecord;
+import fr.inrae.fishola.rest.referential.ImmutableWaterEntityName;
 import fr.inrae.fishola.rest.referential.ImmutableWaterEntitySummary;
+import fr.inrae.fishola.rest.referential.WaterEntityName;
 import fr.inrae.fishola.rest.referential.WaterEntitySummary;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -99,6 +101,36 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetch(ReferentialDao::toWaterEntitySummary));
+    }
+
+    // Listing minimal (id + nom) pour les selects "Entité hydrographique" des
+    // formulaires de saisie opérateur back-office : ceux-ci n'ont besoin que du
+    // nom, contrairement au /summary partagé avec le mobile (kind, centroïde).
+    public List<WaterEntityName> listWaterEntityNames() {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .from(Tables.WATER_ENTITY)
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(ReferentialDao::toWaterEntityName));
+    }
+
+    public List<WaterEntityName> listWaterEntityNamesByDepartments(Set<String> departmentCodes) {
+        if (departmentCodes.isEmpty()) {
+            return List.of();
+        }
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(ReferentialDao::toWaterEntityName));
+    }
+
+    private static WaterEntityName toWaterEntityName(org.jooq.Record rec) {
+        return ImmutableWaterEntityName.builder()
+                .id(rec.get(Tables.WATER_ENTITY.ID))
+                .name(rec.get(Tables.WATER_ENTITY.NAME))
+                .build();
     }
 
     public Set<UUID> listWaterEntityIdsByDepartment(String department) {

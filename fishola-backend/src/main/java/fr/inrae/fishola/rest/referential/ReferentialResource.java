@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -41,6 +42,7 @@ import fr.inrae.fishola.rest.department.DepartmentName;
 import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -72,6 +74,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
     @Inject
     protected ReferentialDao referentialDao;
+    @Inject
+    protected HydroSearchDao hydroSearchDao;
 
     @GET
     @Path("/waterEntities")
@@ -98,6 +102,39 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/waterEntities/summary")
     public List<WaterEntitySummary> getAllWaterEntitiesSummary() {
         return referentialDao.listWaterEntitiesSummary();
+    }
+
+    // Listing minimal (id + nom uniquement), scopé au périmètre départemental
+    // comme getAllWaterEntities() : utilisé par les selects "Entité
+    // hydrographique" des formulaires de saisie opérateur back-office, qui
+    // n'ont besoin ni de la géométrie ni des champs kind/centroïde du /summary.
+    @GET
+    @Path("/waterEntities/names")
+    public List<WaterEntityName> getAllWaterEntityNames() {
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
+        if (fisholaAdmin.getIsNationalAdmin()) {
+            return referentialDao.listWaterEntityNames();
+        } else {
+            return referentialDao.listWaterEntityNamesByDepartments(getAllowedAdminDepartments());
+        }
+    }
+
+    // Recherche texte (accent-insensible, tolérante aux fautes) sur le listing
+    // minimal id+nom, même scoping départemental que getAllWaterEntityNames() :
+    // alimente l'autocomplete "Entité hydrographique" des formulaires de saisie
+    // opérateur, à la place du <select> exhaustif qui fait planter l'onglet pour
+    // un national (~181 000 <option> à monter).
+    @GET
+    @Path("/waterEntities/names/search")
+    public List<WaterEntityName> searchWaterEntityNames(@QueryParam("q") String q,
+                                                          @QueryParam("limit") @DefaultValue("20") int limit) {
+        Preconditions.checkArgument(q != null && q.trim().length() >= 2,
+                "Le paramètre q doit contenir au moins 2 caractères.");
+        Preconditions.checkArgument(limit > 0 && limit <= 50,
+                "limit doit être dans l'intervalle [1, 50].");
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
+        Set<String> allowedDepartments = fisholaAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
+        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit);
     }
 
     @GET

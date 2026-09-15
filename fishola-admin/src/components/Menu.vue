@@ -59,33 +59,34 @@
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
         Sorties
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
-        Utilisateurs
-      </b-navbar-item>
+      <b-navbar-dropdown label="Utilisateurs" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
+          Pêcheurs
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
+          Administrateurs
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+          Opérateurs
+        </b-navbar-item>
+      </b-navbar-dropdown>
       <b-navbar-item tag="router-link" :to="{ name: 'audit-log' }" v-if="loggedAdmin.isNationalAdmin">
         Journal d'audit
       </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
-        Administrateurs
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Opérateurs
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Nouvelle saisie
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-import-carnet-volontaire' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Import carnet volontaire
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-carnet-volontaire' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Saisie carnet volontaire
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-import-survey' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Import enquête terrain
-      </b-navbar-item>
-      <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-survey' }" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        Saisie enquête terrain
-      </b-navbar-item>
+      <b-navbar-dropdown label="Saisie captures" v-if="loggedAdmin.isOperator || loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
+        <b-navbar-item tag="router-link" :to="{ name: 'operator-import-carnet-volontaire' }">
+          Import carnet volontaire
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-carnet-volontaire' }">
+          Saisie carnet volontaire
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'operator-import-survey' }">
+          Import enquête terrain
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'operator-manual-entry-survey' }">
+          Saisie enquête terrain
+        </b-navbar-item>
+      </b-navbar-dropdown>
     </template>
 
     <template v-slot:end>

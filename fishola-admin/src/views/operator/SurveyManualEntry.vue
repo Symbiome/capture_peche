@@ -49,9 +49,7 @@
           :value="sortie.endTime" @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
       <b-field label="Secteur" class="column is-4">
-        <b-select v-model="sortie.waterEntityId" expanded>
-          <option v-for="w in waterEntities" :key="w.id" :value="w.id">{{ w.name }}</option>
-        </b-select>
+        <WaterEntitySearchSelect v-model="sortie.waterEntityId" />
       </b-field>
 
       <b-field label="Pêcheurs carnassiers du bord non-enquêtés" class="column is-4">
@@ -157,9 +155,7 @@
             </b-select>
           </b-field>
           <b-field label="Site pêché" class="column is-6">
-            <b-select v-model="angler.souvenir.waterEntityId" expanded>
-              <option v-for="w in waterEntities" :key="w.id" :value="w.id">{{ w.name }}</option>
-            </b-select>
+            <WaterEntitySearchSelect v-model="angler.souvenir.waterEntityId" />
           </b-field>
 
           <b-field label="Mode de pêche" class="column is-4">
@@ -250,6 +246,7 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { reactive, ref, computed } from "vue";
 
@@ -259,7 +256,6 @@ const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 const FISHING_MODES = ["bateau", "float tube/canoë", "bord itinérant", "bord statique"];
 const DAY_PERIODS = ["matin", "après-midi", "journée entière", "soirée"];
 
-const waterEntities = ref<any[]>([]);
 const techniques = ref<any[]>([]);
 const species = ref<any[]>([]);
 
@@ -346,7 +342,6 @@ function onTimeBlur(field: "controlTime" | "startTime" | "endTime") {
 loadReferentials();
 
 async function loadReferentials() {
-  waterEntities.value = await BackendService.backendGet("/v1/referential/waterEntities");
   techniques.value = await BackendService.backendGet("/v1/referential/techniques");
   species.value = await BackendService.backendGet("/v1/referential/species");
 }
