@@ -22,6 +22,8 @@
   <div id="app">
     <v-dialog :width="270" />
     <Toaster />
+    <BadgeShareCard />
+    <BadgeUnlockNotification />
     <component :is="layout()" class="layout">
       <router-view />
     </component>
@@ -33,6 +35,8 @@ import Helpers from "@/services/Helpers";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import Toaster from "@/components/layout/Toaster.vue";
+import BadgeShareCard from "@/components/gamification/BadgeShareCard.vue";
+import BadgeUnlockNotification from "@/components/gamification/BadgeUnlockNotification.vue";
 
 import TripsService from "@/services/TripsService";
 import PicturesService from "@/services/PicturesService";
@@ -52,6 +56,8 @@ import { App } from "@capacitor/app";
 @Component({
   components: {
     Toaster,
+    BadgeShareCard,
+    BadgeUnlockNotification,
   },
 })
 export default class AppView extends Vue {

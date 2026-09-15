@@ -28,6 +28,16 @@ export default class ShareService extends AbstractFisholaService {
 
   static async sharePicture(pictureURL: string, fileName: string) {
     const base64 = await ShareService.getBase64FromUrl(pictureURL);
+    ShareService.shareBase64Picture(base64, fileName);
+  }
+
+  /** Carte de partage social (#146) : image déjà générée côté client (canvas/html2canvas), au format `data:image/png;base64,...`. */
+  static async shareGeneratedImage(dataUrl: string, fileName: string) {
+    const base64 = dataUrl.replace("data:", "").replace(/^.+,/, "");
+    ShareService.shareBase64Picture(base64, fileName);
+  }
+
+  private static shareBase64Picture(base64: string, fileName: string) {
     FileSharer.share({
       filename: fileName,
       contentType: "application/png",
