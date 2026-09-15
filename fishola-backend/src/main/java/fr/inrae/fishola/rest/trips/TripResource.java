@@ -37,6 +37,7 @@ import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
+import fr.inrae.fishola.gamification.GamificationEngine;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
@@ -100,6 +101,9 @@ public class TripResource extends AbstractFisholaResource {
 
     @Inject
     protected CatchsDao catchsDao;
+
+    @Inject
+    protected GamificationEngine gamificationEngine;
 
     @Inject
     protected HydroSearchDao hydroSearchDao;
@@ -282,6 +286,10 @@ public class TripResource extends AbstractFisholaResource {
             usersDao.increaseSampleBaseId(userId);
         }
 
+        // Réévaluation des badges (#146) : toutes les captures de la sortie sont
+        // désormais persistées.
+        gamificationEngine.evaluateForUser(userId);
+
         URI uri = UriBuilder.fromPath("/api/v1/trips/" + tripId).build();
         if (log.isDebugEnabled()) {
             log.debugf("URI de la sortie : %s", uri);
@@ -399,6 +407,10 @@ public class TripResource extends AbstractFisholaResource {
             // On reçoit un échantillon, on incrémente l'identifiant de l'utilisateur
             usersDao.increaseSampleBaseId(userId);
         }
+
+        // Réévaluation des badges (#146) : la sortie mise à jour peut désormais
+        // satisfaire (ou, pour les badges "record", améliorer) une règle.
+        gamificationEngine.evaluateForUser(userId);
 
         Response response = wrapEntity(replacements, userIdAndRenewal);
         return response;

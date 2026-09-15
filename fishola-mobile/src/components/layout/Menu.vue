@@ -311,6 +311,11 @@ export default class Menu extends Vue {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/community/social");
   }
 
+  goBadges() {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/badges");
+  }
+
   logout() {
     Helpers.confirm(
       this.$modal,
@@ -403,6 +408,14 @@ export default class Menu extends Vue {
         label: "Communauté",
         iconName: "fishing",
         clickHandler: this.goSocialAndNews,
+        onlyConnected: true,
+        onlyUnlogged: false,
+      },
+      {
+        name: "badges",
+        label: "Mes badges",
+        iconName: "star",
+        clickHandler: this.goBadges,
         onlyConnected: true,
         onlyUnlogged: false,
       },

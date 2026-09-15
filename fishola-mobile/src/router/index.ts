@@ -61,6 +61,7 @@ import Settings from "@/views/Settings.vue";
 import OfflineAreas from "@/views/OfflineAreas.vue";
 import ProfileAndSettingsView from "@/views/ProfileAndSettings.vue";
 import ProfilePassword from "@/views/ProfilePassword.vue";
+import BadgesView from "@/views/Badges.vue";
 
 import ResetPassword from "@/views/ResetPassword.vue";
 import VerifyAccount from "@/views/VerifyAccount.vue";
@@ -243,6 +244,11 @@ const routes = [
     path: "/profile-password",
     name: "profile-password",
     component: ProfilePassword,
+  },
+  {
+    path: "/badges",
+    name: "badges",
+    component: BadgesView,
   },
   {
     path: "/reset-password/:token",

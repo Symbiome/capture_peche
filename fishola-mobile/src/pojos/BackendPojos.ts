@@ -322,6 +322,21 @@ export interface CommuneResult {
     centroid: GeoPoint;
 }
 
+export interface BadgeBean {
+    id: string;
+    code: string;
+    category: string;
+    name: string;
+    description: string;
+    icon: string;
+    ruleType: string;
+    tier: number;
+    annualReset: boolean;
+    unlocked: boolean;
+    unlockedAt: Date;
+    context: any;
+}
+
 export interface Serializable {
 }
 

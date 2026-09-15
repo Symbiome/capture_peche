@@ -49,8 +49,12 @@ SELECT * FROM (VALUES
 ) v(name, export_as, built_in, mandatory_size)
 WHERE NOT EXISTS (SELECT 1 FROM public.species);
 
+-- Idempotence par ligne (et non par « table vide ») : une migration applicative peut
+-- légitimement avoir déjà inséré une ligne dans public.technique avant que cette fixture
+-- ne s'exécute (ex. V2.2.0__Gamification_badge_catalogue.sql, #146) -- un contrôle
+-- « WHERE NOT EXISTS (SELECT 1 FROM technique) » sauterait alors tout ce bloc.
 INSERT INTO public.technique (name, export_as, built_in)
-SELECT * FROM (VALUES
+SELECT v.name, v.export_as, v.built_in FROM (VALUES
     ('Pêche aux leurres',   'Pêche aux leurres',   true),
     ('Pêche à la mouche',   'Pêche à la mouche',   true),
     ('Pêche au coup',       'Pêche au coup',       true),
@@ -60,7 +64,7 @@ SELECT * FROM (VALUES
     ('Pêche au feeder',     'Pêche au feeder',     true),
     ('Pêche à la bouée',    'Pêche à la bouée',    true)
 ) v(name, export_as, built_in)
-WHERE NOT EXISTS (SELECT 1 FROM public.technique);
+WHERE NOT EXISTS (SELECT 1 FROM public.technique t WHERE t.name = v.name);
 
 INSERT INTO public.weather (name, export_as)
 SELECT * FROM (VALUES
