@@ -155,6 +155,7 @@ export default class TripsService extends AbstractFisholaService {
       automaticMeasure: input.automaticMeasure,
       pictureOrders: input.pictureOrders,
       hasMeasurementPicture: input.hasMeasurementPicture,
+      certainty: input.certainty,
     };
 
     return result;

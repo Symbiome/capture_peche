@@ -365,6 +365,16 @@ public class TripsDao extends AbstractFisholaDao {
      */
     public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction,
                                                  MultivaluedMap<String, String> filters, Set<String> allowedDepartments) {
+        return getExportPaginated(offset, orderBy, direction, filters, allowedDepartments, Optional.empty());
+    }
+
+    /**
+     * @param extraCondition condition supplémentaire, non issue du client (#87 : file
+     *                        « Prises à valider », restreinte à {@code a_valider = 'oui'}).
+     */
+    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction,
+                                                 MultivaluedMap<String, String> filters, Set<String> allowedDepartments,
+                                                 Optional<Condition> extraCondition) {
         int catchesPerPage = 15;
         if (offset == null || offset < 0) {
             throw new IllegalArgumentException("Numéro de page invalide : " + offset);
@@ -396,6 +406,7 @@ public class TripsDao extends AbstractFisholaDao {
             if (!allowedDepartments.isEmpty()) {
                 conditions.add(DSL.field(DSL.name("departement"), String.class).in(allowedDepartments));
             }
+            extraCondition.ifPresent(conditions::add);
 
             // Execute paginated query
             pcb.elements = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)

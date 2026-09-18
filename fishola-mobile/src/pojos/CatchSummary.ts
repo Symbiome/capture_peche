@@ -38,4 +38,5 @@ export default interface CatchSummary {
     longitude?: number;
     hasMeasurementPicture?: boolean;
     pictureOrders?: number[];
+    certainty?: string;
 }

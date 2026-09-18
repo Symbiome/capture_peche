@@ -21,6 +21,9 @@ package fr.inrae.fishola.rest.trips;
  * #L%
  */
 
+import fr.inrae.fishola.entities.enums.IdentificationCertainty;
+
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +55,9 @@ public class CatchBean {
     public Optional<Integer> editedSize = Optional.empty();
     public Optional<Integer> editedWeight = Optional.empty();
     public boolean excludeFromExport = false;
+    public Optional<IdentificationCertainty> certainty = Optional.empty();
+    public Optional<UUID> validatedBy = Optional.empty();
+    public Optional<LocalDateTime> validatedAt = Optional.empty();
 
     @Override
     public String toString() {

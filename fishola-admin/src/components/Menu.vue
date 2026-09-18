@@ -59,6 +59,9 @@
       <b-navbar-item tag="router-link" :to="{ name: 'trips' }">
         Sorties
       </b-navbar-item>
+      <b-navbar-item tag="router-link" :to="{ name: 'catches-to-validate' }">
+        Prises à valider
+      </b-navbar-item>
       <b-navbar-dropdown label="Utilisateurs" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
         <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
           Pêcheurs

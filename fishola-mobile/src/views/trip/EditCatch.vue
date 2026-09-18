@@ -100,6 +100,10 @@
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
                   v-if="aCatch.speciesId == '__other__'" />
               </div>
+              <div>
+                <FormSelect name="certainty" label="Certitude d'identification"
+                  v-bind:options="certaintyOptions" v-model="aCatch.certainty" v-bind:readonly="!modifiable" />
+              </div>
               <div class="measure-row">
                 <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
                   <button @click="
@@ -346,6 +350,13 @@ export default class EditCatchView extends Vue {
   allSpeciesWithAliases: SpeciesWithAlias[] = [];
   allTechniques: Technique[] = [];
   speciesSearch: string = "";
+  // Certitude d'identification (#87) : le pêcheur signale une identification incertaine,
+  // revue ensuite par un opérateur dans la file "Prises à valider".
+  certaintyOptions = [
+    { id: "CERTAIN", name: "Certain" },
+    { id: "PROBABLE", name: "Probable" },
+    { id: "UNCERTAIN", name: "Incertain" },
+  ];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
   withSample: boolean = false;
@@ -405,6 +416,10 @@ export default class EditCatchView extends Vue {
 
     if (!this.aCatch.quantity) {
       this.aCatch.quantity = 1;
+    }
+
+    if (!this.aCatch.certainty) {
+      this.aCatch.certainty = "CERTAIN";
     }
 
     if (this.aCatch.automaticMeasure && !this.aCatch.size) {
