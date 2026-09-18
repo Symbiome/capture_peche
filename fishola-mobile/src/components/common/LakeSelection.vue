@@ -388,22 +388,27 @@ export default class LakeSelection extends Vue {
   // l'attribution hydro et on ouvre la feuille de confirmation (#9). Le pin
   // posé par MapLibreMap reste visible sous la feuille (backdrop non opaque),
   // pour que l'utilisateur voie sa saisie confirmée avant de valider.
-  onMapClick(coords: { lng: number; lat: number }) {
+  onMapClick(coords: { lng: number; lat: number; offlineAttribution?: WaterEntityAttribution | null }) {
     this.pendingPin = { lat: coords.lat, lng: coords.lng };
+    if (coords.offlineAttribution) {
+      // Résolution locale depuis un pack hors-ligne téléchargé (#174) : le
+      // point tapé couvre une entité connue localement, pas d'appel réseau.
+      this.attributionResult = { proposal: coords.offlineAttribution, alternatives: [] };
+      this.showAttributionSheet = true;
+      return;
+    }
     ReferentialService.getAttribution(coords.lat, coords.lng)
       .then((res) => {
         this.attributionResult = res;
         this.showAttributionSheet = true;
       })
       .catch(() => {
-        // Attribution indisponible (hors ligne / erreur serveur) : on prévient
-        // l'utilisateur plutôt que de laisser un pin sans effet.
+        // Attribution indisponible (hors ligne / erreur serveur) ET aucune
+        // donnée locale couvrant ce point (#174) : on prévient l'utilisateur
+        // et on l'oriente vers le téléchargement d'un pack hors-ligne plutôt
+        // que vers la recherche par nom, tout aussi bloquée hors-ligne.
         this.pendingPin = null;
-        Helpers.alert(
-          this.$modal,
-          "Le rattachement automatique n'est pas disponible (connexion indisponible). Sélectionnez le plan d'eau par son nom.",
-          "Rattachement indisponible"
-        );
+        Helpers.offlineAttributionAlert(this.$modal, () => this.$router.push({ name: "offline-areas" }));
       });
   }
 

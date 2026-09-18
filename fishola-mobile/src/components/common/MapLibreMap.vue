@@ -55,17 +55,17 @@
 </template>
 
 <script lang="ts">
-import { WaterEntity as Lake } from '@/pojos/BackendPojos';
+import { WaterEntity as Lake, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
 
-import maplibregl, { Map as MlMap, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, MapMouseEvent, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Ciblage et infobulle des entités hydro : logique mutualisée entre toutes les cartes.
-import { attachHydroHover } from './maplibreStyle';
+import { attachHydroHover, queryHydroAt } from './maplibreStyle';
 
 // Flux WMTS raster ouverts de la Géoplateforme IGN (sans clé pour les couches
 // essentielles). TileMatrixSet PM = Web Mercator, aligné sur la projection par
@@ -212,7 +212,10 @@ export default class MapLibreMap extends Vue {
         // elle-même vs. la plus proche).
         map.on('click', (e) => {
             this.setPin(e.lngLat.lng, e.lngLat.lat);
-            this.$emit('map-click', { lng: e.lngLat.lng, lat: e.lngLat.lat });
+            // Résolution locale depuis le pack hors-ligne (#174), quand chargé :
+            // évite de dépendre du réseau pour l'attribution hydro.
+            const offlineAttribution = this.resolveOfflineAttribution(e);
+            this.$emit('map-click', { lng: e.lngLat.lng, lat: e.lngLat.lat, offlineAttribution });
             // La feuille de confirmation (#9) va couvrir le bas de la carte :
             // sur mobile, on remonte la vue pour que le pin posé reste visible
             // dans la bande au-dessus d'elle (#138).
@@ -407,6 +410,30 @@ export default class MapLibreMap extends Vue {
         if (this.map.getLayer('hydro-offline-line-selected')) {
             this.map.setFilter('hydro-offline-line-selected', filter);
         }
+    }
+
+    // Résout l'entité tapée depuis la source locale `hydro-offline` (#174) :
+    // un pack départemental (#54) porte id/nom/type, mais aucune géométrie
+    // serveur pour un snap précis -- le point cliqué lui-même sert de
+    // `closestPoint` (distance 0), suffisant pour créer/corriger une sortie
+    // sans réseau. Couches absentes (aucun pack chargé) -> null, et
+    // LakeSelection.onMapClick retombe sur l'appel réseau `getAttribution`.
+    private resolveOfflineAttribution(e: MapMouseEvent): WaterEntityAttribution | null {
+        if (!this.map || (!this.map.getLayer('hydro-offline-fill') && !this.map.getLayer('hydro-offline-line'))) {
+            return null;
+        }
+        const feature = queryHydroAt(this.map, e.point)
+            .find((f) => f.layer && (f.layer.id === 'hydro-offline-fill' || f.layer.id === 'hydro-offline-line'));
+        if (!feature || !feature.properties) {
+            return null;
+        }
+        return {
+            waterEntityId: feature.properties.water_entity_id,
+            name: feature.properties.name,
+            kind: feature.properties.kind,
+            distanceM: 0,
+            closestPoint: { lat: e.lngLat.lat, lng: e.lngLat.lng },
+        };
     }
 
     toggleBaseLayer() {

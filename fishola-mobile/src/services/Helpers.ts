@@ -355,6 +355,40 @@ export default class Helpers {
     });
   }
 
+  /**
+   * Alerte quand le rattachement hydro (#9) échoue faute de réseau ET
+   * d'aucune donnée locale couvrant le point tapé (#174) : oriente vers le
+   * téléchargement du pack hors-ligne de secteur, plutôt que vers la
+   * recherche par nom (tout aussi bloquée hors-ligne).
+   */
+  static offlineAttributionAlert(modal: any, onDownloadPack: () => void): Promise<void> {
+    return new Promise<void>((resolve, _reject) => {
+      const buttons: any[] = [
+        {
+          title: "J'ai compris",
+          handler: () => {
+            modal.hide("dialog");
+            resolve();
+          },
+        },
+        {
+          title: "Télécharger un pack",
+          handler: () => {
+            modal.hide("dialog");
+            onDownloadPack();
+            resolve();
+          },
+        },
+      ];
+      modal.show("dialog", {
+        title: "Rattachement indisponible",
+        text: "Le rattachement automatique n'est pas disponible (connexion indisponible). "
+          + "Téléchargez le pack hors-ligne de votre secteur pour sélectionner un plan d'eau sans connexion.",
+        buttons,
+      });
+    });
+  }
+
   static getDeviceType(): Promise<DeviceType> {
     if (import.meta.env.VITE__FORCED_DEVICE_TYPE) {
       return Promise.resolve(import.meta.env.VITE__FORCED_DEVICE_TYPE);

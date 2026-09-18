@@ -97,7 +97,29 @@ export default class ReferentialService extends AbstractFisholaService {
         altitudeMoyenne: 0,
         bdtopoCleabs: "",
         geom: "",
-      } as unknown as Lake)));
+      } as unknown as Lake)))
+      .catch((err) => {
+        // Repli hors-ligne (#174) : filtrage local du référentiel léger déjà en
+        // cache (getLakes(), backendGetWithCache -> stockage hors-ligne). Une
+        // erreur de transport (réseau absent) est un objet {networkError:
+        // true, ...} (cf. AbstractFisholaService.rejectOnTransportFailure) ;
+        // une erreur HTTP numérique (ex. session expirée) est propagée telle
+        // quelle, sans masquer le problème derrière un repli silencieux.
+        if (err && err.networkError) {
+          return ReferentialService.searchWaterEntitiesOffline(q);
+        }
+        throw err;
+      });
+  }
+
+  private static searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
+    const term = q.trim().toLowerCase();
+    if (!term) {
+      return Promise.resolve([]);
+    }
+    return ReferentialService.getLakes()
+      .then((lakes) => lakes.filter((l) => l.name && l.name.toLowerCase().indexOf(term) >= 0).slice(0, 50))
+      .catch(() => []);
   }
 
   // Entités hydro autour d'un point, triées par distance (#5). Alimente le mode
