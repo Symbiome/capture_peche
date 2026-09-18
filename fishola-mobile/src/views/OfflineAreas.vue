@@ -50,96 +50,124 @@
             </span>
           </div>
 
-          <!-- Packs installés (disponibles même hors-ligne). -->
-          <section v-if="packs.length" class="block">
-            <h2>Départements téléchargés</h2>
-            <ul class="pack-list">
-              <li v-for="pack in packs" :key="pack.code" class="pack">
-                <div class="pack-main">
-                  <span class="pack-name">
-                    <span class="dept-code">{{ pack.code }}</span>
-                    {{ pack.name }}
-                  </span>
-                  <span class="pack-meta">
-                    {{ pack.entityCount }} entité{{ pack.entityCount > 1 ? 's' : '' }}
-                    · {{ formatBytes(pack.bytes) }}
-                    · {{ formatDate(pack.downloadedAt) }}
-                  </span>
-                </div>
-                <div class="pack-actions">
-                  <button
-                    type="button"
-                    class="link-btn"
-                    :disabled="offline || downloadingCode === pack.code"
-                    @click="download(pack.code, pack.name)"
-                    title="Mettre à jour"
-                  >
-                    {{ downloadingCode === pack.code ? '…' : 'Mettre à jour' }}
-                  </button>
-                  <button
-                    type="button"
-                    class="link-btn danger"
-                    @click="remove(pack)"
-                    title="Supprimer"
-                  >
-                    Supprimer
-                  </button>
-                </div>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Ajout d'un département (nécessite une connexion). -->
-          <section class="block" v-if="!offline">
-            <h2>Ajouter un département</h2>
-
-            <span class="input-wrapper">
-              <input
-                type="text"
-                v-model="filter"
-                inputmode="search"
-                autocomplete="off"
-                placeholder="Filtrer par nom ou code (ex. « 74 », « Savoie »)"
-              />
-            </span>
-
-            <div v-if="loadingDepartments" class="loading-row">
-              <div class="mini-spinner" /> Chargement des départements…
+          <div class="main-tabs">
+            <div
+              class="tab"
+              :class="viewMode === 'list' ? 'selected' : ''"
+              @click="viewMode = 'list'"
+            >
+              Liste
             </div>
+            <div
+              class="tab"
+              :class="viewMode === 'map' ? 'selected' : ''"
+              @click="viewMode = 'map'"
+            >
+              Carte
+            </div>
+          </div>
 
-            <ul v-else class="dept-list">
-              <li
-                v-for="dep in filteredDepartments"
-                :key="dep.code"
-                class="dept"
-              >
-                <span class="dept-label">
-                  <span class="dept-code">{{ dep.code }}</span>
-                  {{ dep.name }}
-                  <small class="dept-communes">{{ dep.communeCount }} communes</small>
-                </span>
-                <button
-                  v-if="downloadedCodes.has(dep.code)"
-                  type="button"
-                  class="pill installed"
-                  disabled
+          <template v-if="viewMode === 'list'">
+            <!-- Packs installés (disponibles même hors-ligne). -->
+            <section v-if="packs.length" class="block">
+              <h2>Départements téléchargés</h2>
+              <ul class="pack-list">
+                <li v-for="pack in packs" :key="pack.code" class="pack">
+                  <div class="pack-main">
+                    <span class="pack-name">
+                      <span class="dept-code">{{ pack.code }}</span>
+                      {{ pack.name }}
+                    </span>
+                    <span class="pack-meta">
+                      {{ pack.entityCount }} entité{{ pack.entityCount > 1 ? 's' : '' }}
+                      · {{ formatBytes(pack.bytes) }}
+                      · {{ formatDate(pack.downloadedAt) }}
+                    </span>
+                  </div>
+                  <div class="pack-actions">
+                    <button
+                      type="button"
+                      class="link-btn"
+                      :disabled="offline || downloadingCode === pack.code"
+                      @click="download(pack.code, pack.name)"
+                      title="Mettre à jour"
+                    >
+                      {{ downloadingCode === pack.code ? '…' : 'Mettre à jour' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="link-btn danger"
+                      @click="remove(pack)"
+                      title="Supprimer"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Ajout d'un département (nécessite une connexion). -->
+            <section class="block" v-if="!offline">
+              <h2>Ajouter un département</h2>
+
+              <span class="input-wrapper">
+                <input
+                  type="text"
+                  v-model="filter"
+                  inputmode="search"
+                  autocomplete="off"
+                  placeholder="Filtrer par nom ou code (ex. « 74 », « Savoie »)"
+                />
+              </span>
+
+              <div v-if="loadingDepartments" class="loading-row">
+                <div class="mini-spinner" /> Chargement des départements…
+              </div>
+
+              <ul v-else class="dept-list">
+                <li
+                  v-for="dep in filteredDepartments"
+                  :key="dep.code"
+                  class="dept"
                 >
-                  <i class="icon-check" /> Téléchargé
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="pill"
-                  :disabled="downloadingCode === dep.code"
-                  @click="download(dep.code, dep.name)"
-                >
-                  {{ downloadingCode === dep.code ? 'Téléchargement…' : 'Télécharger' }}
-                </button>
-              </li>
-              <li v-if="!filteredDepartments.length" class="empty">
-                Aucun département ne correspond.
-              </li>
-            </ul>
+                  <span class="dept-label">
+                    <span class="dept-code">{{ dep.code }}</span>
+                    {{ dep.name }}
+                    <small class="dept-communes">{{ dep.communeCount }} communes</small>
+                  </span>
+                  <button
+                    v-if="downloadedCodes.has(dep.code)"
+                    type="button"
+                    class="pill installed"
+                    disabled
+                  >
+                    <i class="icon-check" /> Téléchargé
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="pill"
+                    :disabled="downloadingCode === dep.code"
+                    @click="download(dep.code, dep.name)"
+                  >
+                    {{ downloadingCode === dep.code ? 'Téléchargement…' : 'Télécharger' }}
+                  </button>
+                </li>
+                <li v-if="!filteredDepartments.length" class="empty">
+                  Aucun département ne correspond.
+                </li>
+              </ul>
+            </section>
+          </template>
+
+          <!-- Montée uniquement le temps où l'onglet Carte est ouvert : la
+               carte MapLibre est recréée à chaque ouverture, simple et sans
+               risque de conteneur DOM orphelin (cf. la garde « conteneur de
+               taille nulle » des autres cartes de l'appli). Coût négligeable
+               ici (données locales, pas d'appel réseau). -->
+          <section class="block" v-else>
+            <OfflinePacksMap :packs="packs" :offline="offline" />
           </section>
 
           <div class="bottom-page-spacer"></div>
@@ -153,6 +181,7 @@
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import OfflinePacksMap from "@/components/common/OfflinePacksMap.vue";
 
 import OfflineAreasService, {
   DepartmentSummary,
@@ -167,6 +196,7 @@ import { Component, Vue } from "vue-property-decorator";
   components: {
     FisholaHeader,
     FisholaFooter,
+    OfflinePacksMap,
   },
 })
 export default class OfflineAreasView extends Vue {
@@ -177,6 +207,7 @@ export default class OfflineAreasView extends Vue {
   loadingDepartments: boolean = true;
   downloadingCode: string | null = null;
   offline: boolean = false;
+  viewMode: "list" | "map" = "list";
   private unsubscribeNetwork: (() => void) | null = null;
 
   mounted() {
