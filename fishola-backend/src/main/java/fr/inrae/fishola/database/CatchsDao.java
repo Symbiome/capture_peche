@@ -28,6 +28,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.inrae.fishola.entities.Tables;
+import fr.inrae.fishola.entities.enums.IdentificationCertainty;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.WaterEntity;
 import fr.inrae.fishola.entities.tables.daos.CatchDao;
@@ -85,6 +86,9 @@ public class CatchsDao extends AbstractFisholaDao {
         }
         if (c.getExcludeFromExports() == null) {
             c.setExcludeFromExports(false);
+        }
+        if (c.getCertainty() == null) {
+            c.setCertainty(IdentificationCertainty.CERTAIN);
         }
         return withContext(context -> {
             CatchRecord record = context.newRecord(Tables.CATCH, c);
@@ -337,6 +341,12 @@ public class CatchsDao extends AbstractFisholaDao {
                 // ... ou les sorties où il n'y a pas d'utilisateur
                 Condition noUserCondition = Tables.TRIP.OWNER_ID.isNull();
                 selectStep = selectStep.and(or(nonExcludedUserCondition, noUserCondition));
+                // Statistiques publiques (#87) : une capture PROBABLE/UNCERTAIN encore
+                // non revue par un opérateur (validated_at NULL) n'en fait pas partie.
+                // Une fois validée -- avec ou sans correction d'espèce -- elle y entre,
+                // quelle que soit la certitude déclarée par le pêcheur.
+                selectStep = selectStep.and(Tables.CATCH.CERTAINTY.eq(IdentificationCertainty.CERTAIN)
+                        .or(Tables.CATCH.VALIDATED_AT.isNotNull()));
             }
             if (year.isPresent()) {
                 LocalDateTime min = LocalDate.of(year.get(), Month.JANUARY, 1).atStartOfDay();
@@ -373,6 +383,10 @@ public class CatchsDao extends AbstractFisholaDao {
      */
     public int countCatchs() {
         int result = withContext(context -> {
+            // Statistiques publiques (#87) : cf. findMonthly0.
+            Condition validatedOrCertain = Tables.CATCH.CERTAINTY.eq(IdentificationCertainty.CERTAIN)
+                    .or(Tables.CATCH.VALIDATED_AT.isNotNull());
+
             // On compte les sorties des utilisateurs non exclus
             BigDecimal totalFromNonExcludedUsers = context
                     .select(coalesce(DSL.sum(Tables.CATCH.QUANTITY), BigDecimal.ZERO))
@@ -380,6 +394,7 @@ public class CatchsDao extends AbstractFisholaDao {
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .innerJoin(Tables.FISHOLA_USER).on(Tables.FISHOLA_USER.ID.eq(Tables.TRIP.OWNER_ID))
                     .where(Tables.FISHOLA_USER.EXCLUDE_FROM_EXPORTS.eq(false))
+                    .and(validatedOrCertain)
                     .fetchOne(0, BigDecimal.class);
 
             // On compte aussi les sorties dont l'utilisateur a été supprimé
@@ -388,6 +403,7 @@ public class CatchsDao extends AbstractFisholaDao {
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .where(Tables.TRIP.OWNER_ID.isNull())
+                    .and(validatedOrCertain)
                     .fetchOne(0, BigDecimal.class);
 
             return totalFromNonExcludedUsers.add(totalNoUser).intValue();
@@ -421,11 +437,15 @@ public class CatchsDao extends AbstractFisholaDao {
 
     public Map<UUID, Integer> countCatchsByWaterEntityId() {
         Map<UUID, Integer> result = withContext(context -> {
+            // Statistiques publiques (#87) : cf. findMonthly0.
+            Condition validatedOrCertain = Tables.CATCH.CERTAINTY.eq(IdentificationCertainty.CERTAIN)
+                    .or(Tables.CATCH.VALIDATED_AT.isNotNull());
             Result<Record2<UUID, BigDecimal>> fetched =
                     context.select(WaterEntity.WATER_ENTITY.ID, DSL.sum(Tables.CATCH.QUANTITY))
                     .from(Tables.CATCH)
                     .innerJoin(Tables.TRIP).on(Tables.TRIP.ID.eq(Tables.CATCH.TRIP_ID))
                     .innerJoin(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.TRIP.WATER_ENTITY_ID))
+                    .where(validatedOrCertain)
                     .groupBy(WaterEntity.WATER_ENTITY.ID)
                     .fetch();
             ImmutableMap.Builder<UUID, Integer> builder = ImmutableMap.builder();

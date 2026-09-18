@@ -33,8 +33,10 @@ import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.IdentificationCertainty;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.gamification.GamificationEngine;
@@ -60,6 +62,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.impl.DSL;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -508,6 +511,9 @@ public class TripResource extends AbstractFisholaResource {
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
         aCatch.sampleId.ifPresent(catchPojo::setSampleId);
+        // Certitude d'identification (#87) : si absente (ancienne appli), CatchsDao.create()
+        // applique le défaut CERTAIN.
+        aCatch.certainty.ifPresent(catchPojo::setCertainty);
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
@@ -548,6 +554,9 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
+        // Certitude d'identification (#87) : contrairement à create(), update() n'a pas de
+        // logique de valeur par défaut -- la colonne est NOT NULL, donc CERTAIN ici si absente.
+        existingCatch.setCertainty(aCatch.certainty.orElse(IdentificationCertainty.CERTAIN));
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
@@ -637,7 +646,8 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/catches/{catchId}")
     public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
-        checkIsAdmin();
+        // #87 : un opérateur doit pouvoir ouvrir une prise à valider, pas seulement un admin.
+        checkIsStaff();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         assertCatchInAllowedDepartments(aCatch);
@@ -648,13 +658,34 @@ public class TripResource extends AbstractFisholaResource {
         return tripBean;
     }
 
+    @GET
+    @Path("/catches/pending-validation/{pageOffset}/{sortField}/{sortDirection}")
+    public PaginatedExportBean getCatchesPendingValidation(
+            @PathParam("pageOffset") Integer pageOffset,
+            @PathParam("sortField") String sortField,
+            @PathParam("sortDirection") String sortDirection,
+            @Context UriInfo uriInfo
+    ) {
+        // « Prises à valider » (#87) : PROBABLE/UNCERTAIN pas encore revues par un opérateur
+        // (a_valider = 'oui', cf. vue catchs_openadom_export). Ouvert à l'opérateur, borné à
+        // son périmètre départemental comme le reste des écrans de saisie/import.
+        checkIsStaff();
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection,
+                queryParameters, getAllowedAdminDepartments(), Optional.of(DSL.condition("a_valider = 'oui'")));
+        return result;
+    }
+
     @PUT
     @Path("/catches/{catchId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
-        checkIsAdmin();
+        // #87 : cette correction (espèce/taille/poids/exclusion) est aussi le geste de
+        // validation opérateur -- checkIsStaff() plutôt que checkIsAdmin() pour l'ouvrir
+        // à l'opérateur, qui stampe validatedBy/validatedAt ci-dessous.
+        FisholaAdmin staff = checkIsStaff();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         assertCatchInAllowedDepartments(aCatch);
@@ -668,6 +699,8 @@ public class TripResource extends AbstractFisholaResource {
             aCatch.setEditedSpeciesId(updatedCatch.editedSpeciesId.get());
         }
         aCatch.setExcludeFromExports(updatedCatch.excludeFromExport);
+        aCatch.setValidatedBy(staff.getId());
+        aCatch.setValidatedAt(LocalDateTime.now());
         catchsDao.update(aCatch);
         catchsDao.stampDepartment(catchId);
         return updatedCatch;
@@ -762,6 +795,9 @@ public class TripResource extends AbstractFisholaResource {
         result.editedSize = Optional.ofNullable(aCatch.getEditedSize());
         result.editedSpeciesId = Optional.ofNullable(aCatch.getEditedSpeciesId());
         result.editedWeight = Optional.ofNullable(aCatch.getEditedWeight());
+        result.certainty = Optional.ofNullable(aCatch.getCertainty());
+        result.validatedBy = Optional.ofNullable(aCatch.getValidatedBy());
+        result.validatedAt = Optional.ofNullable(aCatch.getValidatedAt());
         return result;
     }
 

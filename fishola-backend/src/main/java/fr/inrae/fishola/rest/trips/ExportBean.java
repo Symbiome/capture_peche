@@ -34,6 +34,8 @@ public class ExportBean {
     public Integer poidsDuPoisson;
     public String aExclure;
     public Integer nombreDePoissons;
+    public String certitude;
+    public String aValider;
 
     public UUID catchId;
 }

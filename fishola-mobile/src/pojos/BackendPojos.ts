@@ -25,6 +25,9 @@ export interface CatchBean {
     editedSize?: number;
     editedWeight?: number;
     excludeFromExport: boolean;
+    certainty?: IdentificationCertainty;
+    validatedBy?: string;
+    validatedAt?: Date;
 }
 
 export interface TripBean {
@@ -367,6 +370,8 @@ export interface TripSocialReaction extends Serializable {
     message: string;
     reaction: SocialReaction;
 }
+
+export type IdentificationCertainty = "CERTAIN" | "PROBABLE" | "UNCERTAIN";
 
 export type TripMode = "Live" | "Afterwards";
 

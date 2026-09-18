@@ -166,6 +166,15 @@
                 {{ techniquesIdMap.get(aCatch.techniqueId) }}</span><span v-else>Non renseignée</span>
             </b-field>
           </b-field>
+          <b-field grouped>
+            <b-field label="Certitude d'identification (pêcheur)">
+              {{ certaintyLabel(aCatch.certainty) }}
+            </b-field>
+            <b-field label="Validée par un opérateur">
+              <span v-if="aCatch.validatedAt">Oui, le {{ formatDate(aCatch.validatedAt) }}</span>
+              <span v-else>Non</span>
+            </b-field>
+          </b-field>
           <hr />
           <b-field
             label="Photo de mesure automatique"
@@ -205,6 +214,9 @@
       </div>
     </div>
 
+    <p v-if="aCatch.id && !aCatch.validatedAt" class="validation-notice">
+      Enregistrer marque cette prise comme validée.
+    </p>
     <div class="buttons">
       <button
         v-if="aCatch.id"
@@ -325,6 +337,16 @@ function cancel() {
 function formatDate(date: number[]): string {
   return UtilityServices.formatDate(date);
 }
+
+const CERTAINTY_LABELS: Record<string, string> = {
+  CERTAIN: "Certain",
+  PROBABLE: "Probable",
+  UNCERTAIN: "Incertain"
+};
+
+function certaintyLabel(certainty: string): string {
+  return CERTAINTY_LABELS[certainty] || "Non renseignée";
+}
 </script>
 
 <style lang="less">
@@ -347,6 +369,11 @@ function formatDate(date: number[]): string {
 
   .bo-detail-pic {
     max-height: 300px;
+  }
+
+  .validation-notice {
+    color: @pale-sky;
+    font-style: italic;
   }
 }
 </style>

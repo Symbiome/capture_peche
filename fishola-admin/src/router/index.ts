@@ -30,6 +30,7 @@ import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
 import Catches from "@/views/Catches.vue";
+import CatchesToValidate from "@/views/CatchesToValidate.vue";
 import CatchEditionPage from "@/views/CatchEditionPage.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
@@ -91,6 +92,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/trips",
     name: "trips",
     component: Catches
+  },
+  {
+    path: "/catches/to-validate",
+    name: "catches-to-validate",
+    component: CatchesToValidate
   },
   {
     path: "/catch/:catchId",
