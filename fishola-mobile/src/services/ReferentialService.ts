@@ -131,6 +131,30 @@ export default class ReferentialService extends AbstractFisholaService {
       .catch(() => null);
   }
 
+  // Résout un plan d'eau par id sans charger le référentiel complet (#175) --
+  // utilisé pour retrouver le libellé d'une sélection connue par avance (URL,
+  // historique local) qui n'est ni un favori ni le résultat d'une recherche en
+  // cours. Silencieux en cas de 404 / hors-ligne.
+  static getWaterEntityById(id: string): Promise<Lake | null> {
+    return this.backendGet(`/v1/waterEntities/${encodeURIComponent(id)}`)
+      .then((r: any) => (r ? {
+        id: r.waterEntityId,
+        name: r.name,
+        kind: r.kind,
+        latitude: r.centroid ? r.centroid.lat : undefined,
+        longitude: r.centroid ? r.centroid.lng : undefined,
+        commune: r.commune,
+        codePostal: r.codePostal,
+        exportAs: r.name,
+        waterEntityCode: "",
+        nature: "",
+        altitudeMoyenne: 0,
+        bdtopoCleabs: "",
+        geom: "",
+      } as unknown as Lake : null))
+      .catch(() => null);
+  }
+
   // Recherche serveur des communes (référentiel ADMIN EXPRESS, #6).
   static searchCommunes(q: string): Promise<any[]> {
     return this.backendGet(`/v1/communes/search?q=${encodeURIComponent(q)}`);
