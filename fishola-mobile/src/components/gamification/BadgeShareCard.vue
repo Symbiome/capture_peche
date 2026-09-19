@@ -32,7 +32,13 @@
             <div class="badge-card" ref="card" v-if="badge">
               <div class="badge-card-icon">{{ badge.icon }}</div>
               <div class="badge-card-name">{{ badge.name }}</div>
-              <div class="badge-card-description">{{ badge.description }}</div>
+              <!-- Badge concours (#90) : nom + date du concours plutôt que la description
+                   générique du catalogue, propre à cette attribution précise. -->
+              <div class="badge-card-description" v-if="badge.competitionName">
+                {{ badge.competitionName }}
+                <span v-if="badge.competitionDate"><br />{{ formatCompetitionDate(badge.competitionDate) }}</span>
+              </div>
+              <div class="badge-card-description" v-else>{{ badge.description }}</div>
               <div class="badge-card-pseudo" v-if="pseudo">{{ pseudo }}</div>
               <img
                 class="badge-card-logo"
@@ -76,6 +82,7 @@ import ProfileService from "@/services/ProfileService";
 import ShareService from "@/services/ShareService";
 
 import html2canvas from "html2canvas";
+import moment from "moment";
 
 import { Component, Vue } from "vue-property-decorator";
 
@@ -107,6 +114,15 @@ export default class BadgeShareCard extends Vue {
 
   close() {
     this.display = false;
+  }
+
+  // #90, même conversion défensive que Badges.vue : LocalDate arrive en [y, m(1-12), d].
+  formatCompetitionDate(d: any): string {
+    if (Array.isArray(d)) {
+      const [year, month, day] = d;
+      return moment([year, month - 1, day]).format("DD/MM/YYYY");
+    }
+    return moment(d).format("DD/MM/YYYY");
   }
 
   shareClicked() {

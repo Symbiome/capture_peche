@@ -44,14 +44,22 @@
               <div
                 class="badge-tile"
                 v-for="badge in badgesByCategory[category]"
-                :key="badge.id"
+                :key="badgeKey(badge)"
                 v-bind:class="badge.unlocked ? 'unlocked' : 'locked'"
                 v-on:click="badgeClicked(badge)"
               >
                 <div class="badge-icon">{{ badge.icon }}</div>
                 <div class="badge-name">{{ badge.name }}</div>
-                <div class="badge-description">{{ badge.description }}</div>
-                <div class="badge-unlocked-at" v-if="badge.unlocked">
+                <!-- Badge concours (#90) : le nom/date du concours prime sur la description
+                     générique du catalogue, propre à ce déblocage plutôt qu'au badge lui-même. -->
+                <div class="badge-description" v-if="badge.competitionName">
+                  {{ badge.competitionName }}
+                </div>
+                <div class="badge-description" v-else>{{ badge.description }}</div>
+                <div class="badge-unlocked-at" v-if="badge.unlocked && badge.competitionDate">
+                  Le {{ formatCompetitionDate(badge.competitionDate) }}
+                </div>
+                <div class="badge-unlocked-at" v-else-if="badge.unlocked">
                   Débloqué le {{ formatDate(badge.unlockedAt) }}
                 </div>
               </div>
@@ -118,7 +126,24 @@ export default class BadgesView extends Vue {
     return result;
   }
 
+  // #90 : le badge CONCOURS peut apparaître plusieurs fois (même id, un par concours) --
+  // badge.id seul ne suffit plus comme clé v-for.
+  badgeKey(badge: BadgeBean): string {
+    return badge.id + (badge.competitionId ? "-" + badge.competitionId : "");
+  }
+
   formatDate(d: Date): string {
+    return moment(d).format("DD/MM/YYYY");
+  }
+
+  // competitionDate est un LocalDate (#90) : sérialisé par Jackson comme [année, mois,
+  // jour] (mois 1-12), alors que le constructeur array de moment attend un mois 0-11 --
+  // passer le tableau brut décalerait l'affichage d'un mois.
+  formatCompetitionDate(d: any): string {
+    if (Array.isArray(d)) {
+      const [year, month, day] = d;
+      return moment([year, month - 1, day]).format("DD/MM/YYYY");
+    }
     return moment(d).format("DD/MM/YYYY");
   }
 
