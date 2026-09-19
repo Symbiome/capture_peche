@@ -209,7 +209,7 @@ export default class EditTripView extends Vue {
   }
 
   openPdfExport() {
-    this.$root.$emit("open-trip-pdf-export", this.trip);
+    this.$root.$emit("open-trip-pdf-export", [this.id]);
   }
 
   openCatch(catchId: string) {

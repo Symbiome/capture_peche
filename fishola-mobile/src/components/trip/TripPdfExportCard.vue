@@ -19,11 +19,15 @@
   #L%
   -->
 <!--
-  Export PDF d'une sortie (#173) : carte (début/fin/captures), liste des
-  prises et leurs photos, technique(s), durée. Ouvert via l'évènement
-  `$root` `open-trip-pdf-export` (même pattern que BadgeShareCard.vue, #146),
-  déclenché depuis EditTrip.vue. La génération se fait entièrement côté
-  client (jsPDF), sans nouvel appel backend.
+  Export PDF d'une ou plusieurs sorties (#173) : carte (début/fin/captures),
+  liste des prises et leurs photos, technique(s), durée. Ouvert via
+  l'évènement `$root` `open-trip-pdf-export` (même pattern que
+  BadgeShareCard.vue, #146) avec la liste des identifiants de sorties à
+  exporter, depuis EditTrip.vue (une sortie) ou MyTrips.vue (une sélection).
+  La génération se fait entièrement côté client (jsPDF), sans nouvel appel
+  backend, une sortie à la fois (une page par sortie), chaque sortie étant
+  rechargée en entier (`TripsService.getTrip`) car la liste des sorties ne
+  transporte que des `TripLight` sans captures ni positions.
   -->
 <template>
   <div class="trip-pdf-export page-with-header-and-footer" v-bind:class="display ? '' : 'trip-pdf-export-hidden'">
@@ -32,29 +36,33 @@
         <div class="pane-content rounded">
           <h1>Exporter en PDF</h1>
 
-          <div class="trip-pdf-export-summary" v-if="trip">
-            <div class="trip-pdf-export-name">{{ trip.name }}</div>
-            <div class="trip-pdf-export-duration">{{ duration }}</div>
+          <div class="trip-pdf-export-summary">
+            <div class="trip-pdf-export-name" v-if="tripIds.length <= 1">Sortie sélectionnée</div>
+            <div class="trip-pdf-export-name" v-else>{{ tripIds.length }} sorties sélectionnées</div>
           </div>
 
           <!--
-            Carte réellement rendue (pas juste affichée en aperçu) : c'est
-            elle qui sera capturée par `captureImage()` pour le PDF, d'où
-            `captureMode` (préserve le tampon WebGL, cf. TripPositionsMap.vue).
+            Une seule carte à la fois, réellement rendue (pas juste affichée
+            en aperçu) : c'est elle qui sera capturée par `captureImage()`
+            pour le PDF, d'où `captureMode` (préserve le tampon WebGL, cf.
+            TripPositionsMap.vue). La `key` force un remontage complet à
+            chaque sortie (nouvelle instance MapLibre, recentrage inclus)
+            plutôt que de réutiliser l'instance précédente.
           -->
           <TripPositionsMap
-            v-if="trip"
+            v-if="currentTrip"
+            v-bind:key="currentTrip.id"
             ref="map"
-            v-bind:beginLatitude="trip.beginLatitude"
-            v-bind:beginLongitude="trip.beginLongitude"
-            v-bind:endLatitude="trip.endLatitude"
-            v-bind:endLongitude="trip.endLongitude"
+            v-bind:beginLatitude="currentTrip.beginLatitude"
+            v-bind:beginLongitude="currentTrip.beginLongitude"
+            v-bind:endLatitude="currentTrip.endLatitude"
+            v-bind:endLongitude="currentTrip.endLongitude"
             v-bind:catches="catchPoints"
             v-bind:captureMode="true"
           />
 
           <div class="trip-pdf-export-generating" v-if="generating">
-            <i class="icon-clock" /> Génération du PDF en cours…
+            <i class="icon-clock" /> {{ generatingLabel }}
           </div>
 
           <div class="buttons-bar hide-on-mobile">
@@ -91,6 +99,7 @@ import TripPositionsMap, { TripPositionsCatchPoint } from "@/components/trip/Tri
 import { CatchBean, TripBean } from "@/pojos/BackendPojos";
 import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
+import TripsService from "@/services/TripsService";
 import PicturesService from "@/services/PicturesService";
 import ShareService from "@/services/ShareService";
 import Constants from "@/services/Constants";
@@ -120,7 +129,9 @@ const CONTENT_WIDTH_MM = PAGE_WIDTH_MM - 2 * MARGIN_MM;
 export default class TripPdfExportCard extends Vue {
   display = false;
   generating = false;
-  trip: TripBean | null = null;
+  tripIds: string[] = [];
+  currentTrip: TripBean | null = null;
+  currentIndex = 0;
   duration = "";
 
   private cursorY = MARGIN_MM;
@@ -133,59 +144,117 @@ export default class TripPdfExportCard extends Vue {
     this.$root.$off("open-trip-pdf-export", this.open);
   }
 
-  open(trip: TripBean) {
-    this.trip = trip;
-    this.duration = Helpers.renderDuration(trip.startedAt, trip.finishedAt);
+  /** @param tripIds Identifiants des sorties à exporter (une seule = export simple, plusieurs = fusionnées en un PDF, #173). */
+  open(tripIds: string[]) {
+    this.tripIds = tripIds;
+    this.currentTrip = null;
     this.display = true;
   }
 
   close() {
     this.display = false;
+    this.currentTrip = null;
   }
 
   get catchPoints(): TripPositionsCatchPoint[] {
-    if (!this.trip || !this.trip.catchs) {
+    if (!this.currentTrip || !this.currentTrip.catchs) {
       return [];
     }
-    return this.trip.catchs
+    return this.currentTrip.catchs
       .filter((c) => c.latitude != null && c.longitude != null)
       .map((c) => ({ lat: c.latitude!, lng: c.longitude! }));
   }
 
+  get generatingLabel(): string {
+    if (this.tripIds.length <= 1) {
+      return "Génération du PDF en cours…";
+    }
+    return `Génération du PDF en cours… (sortie ${this.currentIndex + 1} / ${this.tripIds.length})`;
+  }
+
   async generateClicked() {
-    if (!this.trip || this.generating) {
+    if (!this.tripIds.length || this.generating) {
       return;
     }
     this.generating = true;
     try {
-      await this.generatePdf(this.trip);
+      await this.generatePdf();
     } catch (error) {
-      console.error("Erreur lors de la génération du PDF de la sortie", error);
-      this.$root.$emit("toaster-error", "Impossible de générer le PDF de cette sortie");
+      console.error("Erreur lors de la génération du PDF", error);
+      this.$root.$emit("toaster-error", "Impossible de générer le PDF");
     } finally {
       this.generating = false;
+      this.currentTrip = null;
     }
   }
 
-  private async generatePdf(trip: TripBean) {
-    const [refData, lakeName, mapImage, catchesWithPhotos] = await Promise.all([
-      ReferentialService.getSpeciesAndTechniques(),
+  private async generatePdf() {
+    const refData = await ReferentialService.getSpeciesAndTechniques();
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    let pageStarted = false;
+
+    for (let i = 0; i < this.tripIds.length; i++) {
+      this.currentIndex = i;
+      const trip = await this.loadTrip(this.tripIds[i]);
+      if (!trip) {
+        console.error(`Sortie ${this.tripIds[i]} introuvable, ignorée dans l'export PDF`);
+        continue;
+      }
+      if (pageStarted) {
+        doc.addPage();
+      }
+      pageStarted = true;
+      this.cursorY = MARGIN_MM;
+      await this.writeTripSection(doc, trip, i, refData);
+    }
+
+    if (!pageStarted) {
+      throw new Error("Aucune des sorties sélectionnées n'a pu être chargée");
+    }
+
+    await ShareService.shareGeneratedPdf(doc.output("datauristring"), this.buildFileName());
+  }
+
+  private loadTrip(id: string): Promise<TripBean | null> {
+    return new Promise((resolve) => {
+      TripsService.getTrip(id, (trip: TripBean) => resolve(trip || null));
+    });
+  }
+
+  private buildFileName(): string {
+    if (this.tripIds.length === 1 && this.currentTrip) {
+      return `sortie_${Helpers.formatToDate(new Date(this.currentTrip.date))}.pdf`;
+    }
+    return `sorties_${Helpers.formatToDate(new Date())}.pdf`;
+  }
+
+  private async writeTripSection(
+    doc: jsPDF,
+    trip: TripBean,
+    index: number,
+    refData: SpeciesWithAliasAndTechnique
+  ) {
+    this.currentTrip = trip;
+    this.duration = Helpers.renderDuration(trip.startedAt, trip.finishedAt);
+    // Laisse le temps à TripPositionsMap (remonté via sa `key`) de s'initialiser :
+    // son propre mounted() planifie initMap() dans un $nextTick imbriqué.
+    await this.$nextTick();
+    await this.$nextTick();
+
+    const [lakeName, mapImage, catchesWithPhotos] = await Promise.all([
       this.resolveLakeName(trip),
       this.captureMapImage(),
       this.resolveCatchPhotos(trip.catchs || []),
     ]);
 
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    this.cursorY = MARGIN_MM;
-
+    if (this.tripIds.length > 1) {
+      this.writePageIndex(doc, index);
+    }
     this.writeHeader(doc, trip, lakeName, refData);
     if (mapImage) {
       this.writeMapImage(doc, mapImage);
     }
-    this.writeCatches(doc, refData, catchesWithPhotos);
-
-    const fileName = `sortie_${Helpers.formatToDate(new Date(trip.date))}.pdf`;
-    await ShareService.shareGeneratedPdf(doc.output("datauristring"), fileName);
+    this.writeCatches(doc, trip, refData, catchesWithPhotos);
   }
 
   private async resolveLakeName(trip: TripBean): Promise<string> {
@@ -287,6 +356,15 @@ export default class TripPdfExportCard extends Vue {
     }
   }
 
+  private writePageIndex(doc: jsPDF, index: number) {
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+    doc.text(`Sortie ${index + 1} / ${this.tripIds.length}`, PAGE_WIDTH_MM - MARGIN_MM, MARGIN_MM, {
+      align: "right",
+    });
+    doc.setTextColor(0);
+  }
+
   private writeHeader(
     doc: jsPDF,
     trip: TripBean,
@@ -333,10 +411,11 @@ export default class TripPdfExportCard extends Vue {
 
   private writeCatches(
     doc: jsPDF,
+    trip: TripBean,
     refData: SpeciesWithAliasAndTechnique,
     photos: Map<string, NormalizedImage>
   ) {
-    const catchs = this.trip?.catchs || [];
+    const catchs = trip.catchs || [];
     this.ensureSpace(doc, 10);
     doc.setFontSize(14);
     doc.text(`Captures (${catchs.length})`, MARGIN_MM, this.cursorY);
@@ -433,11 +512,6 @@ export default class TripPdfExportCard extends Vue {
   .trip-pdf-export-name {
     font-weight: bold;
     color: @gunmetal;
-  }
-
-  .trip-pdf-export-duration {
-    color: @pale-sky;
-    font-size: @fontsize-small-paragraph;
   }
 }
 
