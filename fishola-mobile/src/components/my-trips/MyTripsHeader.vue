@@ -22,6 +22,15 @@
   <div class="my-trips-header secondary-header">
     <slot></slot>
     <div class="header-icons">
+      <!-- Export PDF des sorties sélectionnées (#173) : ne s'affiche que lorsqu'au moins une sortie est cochée. -->
+      <div
+        class="header-icons-group clickable"
+        v-if="selectedCount > 0"
+        v-on:click="$emit('exportSelectedTrips')"
+        title="Exporter les sorties sélectionnées en PDF"
+      >
+        <i class="icon-download"></i>
+      </div>
       <div
         class="header-icons-group clickable"
         v-on:click="$emit('reverseSortOrder')"
@@ -48,6 +57,7 @@ export default class MyTripsHeader extends Vue {
   @Prop() offline!: boolean;
   @Prop() count!: number;
   @Prop() sortDown!: boolean;
+  @Prop({ default: 0 }) selectedCount!: number;
 }
 </script>
 

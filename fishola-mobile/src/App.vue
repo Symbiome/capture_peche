@@ -24,6 +24,7 @@
     <Toaster />
     <BadgeShareCard />
     <BadgeUnlockNotification />
+    <TripPdfExportCard />
     <component :is="layout()" class="layout">
       <router-view />
     </component>
@@ -37,6 +38,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 import Toaster from "@/components/layout/Toaster.vue";
 import BadgeShareCard from "@/components/gamification/BadgeShareCard.vue";
 import BadgeUnlockNotification from "@/components/gamification/BadgeUnlockNotification.vue";
+import TripPdfExportCard from "@/components/trip/TripPdfExportCard.vue";
 
 import TripsService from "@/services/TripsService";
 import PicturesService from "@/services/PicturesService";
@@ -58,6 +60,7 @@ import { App } from "@capacitor/app";
     Toaster,
     BadgeShareCard,
     BadgeUnlockNotification,
+    TripPdfExportCard,
   },
 })
 export default class AppView extends Vue {
