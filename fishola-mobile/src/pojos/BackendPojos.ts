@@ -338,6 +338,9 @@ export interface BadgeBean {
     unlocked: boolean;
     unlockedAt: Date;
     context: any;
+    competitionId: string;
+    competitionName: string;
+    competitionDate: Date;
 }
 
 export interface Serializable {
