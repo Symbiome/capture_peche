@@ -53,6 +53,10 @@
             v-on:trip-modified="onUpdatedTrip" v-on:goEditSpecies="goEditSpecies"
             v-on:goEditTechniques="goEditTechniques" class="summary-pane" />
 
+          <div class="edit-trip-pdf-export" v-if="ready">
+            <button v-on:click="openPdfExport"><i class="icon-download" /> Exporter en PDF</button>
+          </div>
+
           <div class="buttons-bar hide-on-mobile">
             <div class="button button-primary" v-if="modifiable">
               <button v-on:click="startSave">Enregistrer</button>
@@ -204,6 +208,10 @@ export default class EditTripView extends Vue {
     }
   }
 
+  openPdfExport() {
+    this.$root.$emit("open-trip-pdf-export", this.trip);
+  }
+
   openCatch(catchId: string) {
     RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "catch",
@@ -275,6 +283,26 @@ export default class EditTripView extends Vue {
 
     height: 200px;
     margin-bottom: @vertical-margin-medium;
+  }
+
+  .edit-trip-pdf-export {
+    display: flex;
+    justify-content: center;
+    margin-bottom: @vertical-margin-medium;
+
+    button {
+      background: none;
+      border: 1px solid @pelorous;
+      border-radius: 20px;
+      color: @pelorous;
+      padding: 6px 16px;
+      font-size: @fontsize-small-paragraph;
+      cursor: pointer;
+
+      i {
+        margin-right: @margin-x-small;
+      }
+    }
   }
 
   .edit-trip-modifiable-until {

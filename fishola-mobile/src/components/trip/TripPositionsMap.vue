@@ -19,12 +19,14 @@
   #L%
   -->
 <!--
-  Carte du point de début (vert) et du point de fin (rouge) d'une sortie (#86).
-  Même fond de carte que la saisie d'une prise (fonds IGN + réseau hydro,
-  bascule Plan/Satellite). En mode `editable`, l'utilisateur place lui-même le
-  point de fin en touchant la carte ou en déplaçant le marqueur ; la nouvelle
-  position est émise via `end-position-picked` ({ lat, lng }). Le point de début
-  n'est jamais déplaçable ici (il est fixé à la création de la sortie).
+  Carte du point de début (vert), du point de fin (rouge) et, si fournis, des
+  points de capture (bleu) d'une sortie (#86, captures ajoutées en #173 pour
+  l'export PDF). Même fond de carte que la saisie d'une prise (fonds IGN +
+  réseau hydro, bascule Plan/Satellite). En mode `editable`, l'utilisateur
+  place lui-même le point de fin en touchant la carte ou en déplaçant le
+  marqueur ; la nouvelle position est émise via `end-position-picked`
+  ({ lat, lng }). Le point de début n'est jamais déplaçable ici (il est fixé
+  à la création de la sortie).
   -->
 <template>
   <div v-if="hasAnyPosition || editable" class="trip-positions-map">
@@ -39,6 +41,9 @@
       <li v-if="hasEndPosition || editable">
         <span class="legend-dot legend-dot-end" /> Fin
       </li>
+      <li v-if="catches && catches.length">
+        <span class="legend-dot legend-dot-catch" /> Capture{{ catches.length > 1 ? 's' : '' }}
+      </li>
     </ul>
     <span v-if="editable" class="trip-positions-map-hint">
       <i class="icon-map" />
@@ -49,9 +54,10 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import maplibregl, { Map as MlMap, Marker, LngLatBoundsLike } from 'maplibre-gl';
+import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
+  addCatchPinIcon,
   attachHydroHover,
   BaseLayer,
   createFisholaMap,
@@ -62,6 +68,13 @@ import {
 
 const BEGIN_COLOR = '#44BD32';
 const END_COLOR = '#D62137';
+const CATCH_COLOR = '#1e9bc4';
+const CATCH_PIN_ID = 'trip-positions-catch-pin';
+
+export interface TripPositionsCatchPoint {
+  lat: number;
+  lng: number;
+}
 
 @Component
 export default class TripPositionsMap extends Vue {
@@ -74,6 +87,10 @@ export default class TripPositionsMap extends Vue {
   /** Centre de repli quand aucune position n'existe encore (ex. centroïde du plan d'eau). */
   @Prop() centerLat?: number;
   @Prop() centerLng?: number;
+  /** Points de capture (#173, export PDF) : un pin par prise géolocalisée. */
+  @Prop({ default: () => [] }) catches: TripPositionsCatchPoint[];
+  /** #173 : préserve le tampon WebGL pour permettre `captureImage()` (export PDF). */
+  @Prop({ default: false }) captureMode: boolean;
 
   private map: MlMap | null = null;
   private beginMarker: Marker | null = null;
@@ -133,6 +150,15 @@ export default class TripPositionsMap extends Vue {
     this.refreshMarkers();
   }
 
+  @Watch('catches')
+  onCatchesChanged() {
+    if (!this.map) {
+      return;
+    }
+    this.refreshCatchLayer();
+    this.fitToMarkers();
+  }
+
   private initMap() {
     const container = this.$refs.mapContainer as HTMLElement;
     if (!container || this.map) {
@@ -142,11 +168,20 @@ export default class TripPositionsMap extends Vue {
       center: this.initialCenter(),
       zoom: this.initialZoom(),
       baseLayer: this.baseLayer,
+      preserveDrawingBuffer: this.captureMode,
     });
     this.detachHydroHover = attachHydroHover(this.map);
+    // Le pin de capture (goutte bleue, même style que MyTripsMap.vue) n'est
+    // enregistré qu'à la demande de la couche symbole (#173).
+    this.map.on('styleimagemissing', (e: any) => {
+      if (this.map && e.id === CATCH_PIN_ID) {
+        addCatchPinIcon(this.map, CATCH_PIN_ID, CATCH_COLOR, 'fish');
+      }
+    });
     this.map.on('load', () => {
       this.map?.resize();
       this.refreshMarkers();
+      this.addCatchLayer();
       this.fitToMarkers();
     });
     if (this.editable) {
@@ -154,6 +189,47 @@ export default class TripPositionsMap extends Vue {
         this.setEndMarker(e.lngLat.lng, e.lngLat.lat);
         this.emitEndPosition(e.lngLat.lng, e.lngLat.lat);
       });
+    }
+  }
+
+  private catchesGeoJson(): any {
+    return {
+      type: 'FeatureCollection',
+      features: (this.catches || []).map((c) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
+        properties: {},
+      })),
+    };
+  }
+
+  private addCatchLayer() {
+    if (!this.map || this.map.getSource('trip-catches')) {
+      return;
+    }
+    this.map.addSource('trip-catches', { type: 'geojson', data: this.catchesGeoJson() });
+    this.map.addLayer({
+      id: 'trip-catch-points',
+      type: 'symbol',
+      source: 'trip-catches',
+      layout: {
+        'icon-image': CATCH_PIN_ID,
+        'icon-size': 1,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+      },
+    });
+  }
+
+  private refreshCatchLayer() {
+    if (!this.map) {
+      return;
+    }
+    const source = this.map.getSource('trip-catches') as GeoJSONSource | undefined;
+    if (source) {
+      source.setData(this.catchesGeoJson());
+    } else {
+      this.addCatchLayer();
     }
   }
 
@@ -223,17 +299,30 @@ export default class TripPositionsMap extends Vue {
     this.$emit('end-position-picked', { lat, lng });
   }
 
+  // Cadre l'ensemble début/fin/captures (#173) : au moins 2 points requis,
+  // sinon le cadrage initial (initialCenter/initialZoom) suffit déjà.
   private fitToMarkers() {
     if (!this.map) {
       return;
     }
-    if (this.hasBeginPosition && this.hasEndPosition) {
-      const bounds: LngLatBoundsLike = [
-        [Math.min(this.beginLongitude!, this.endLongitude!), Math.min(this.beginLatitude!, this.endLatitude!)],
-        [Math.max(this.beginLongitude!, this.endLongitude!), Math.max(this.beginLatitude!, this.endLatitude!)],
-      ];
-      this.map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+    const points: [number, number][] = [];
+    if (this.hasBeginPosition) {
+      points.push([this.beginLongitude!, this.beginLatitude!]);
     }
+    if (this.hasEndPosition) {
+      points.push([this.endLongitude!, this.endLatitude!]);
+    }
+    (this.catches || []).forEach((c) => points.push([c.lng, c.lat]));
+    if (points.length < 2) {
+      return;
+    }
+    const lngs = points.map((p) => p[0]);
+    const lats = points.map((p) => p[1]);
+    const bounds: LngLatBoundsLike = [
+      [Math.min(...lngs), Math.min(...lats)],
+      [Math.max(...lngs), Math.max(...lats)],
+    ];
+    this.map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
   }
 
   toggleBase() {
@@ -241,6 +330,25 @@ export default class TripPositionsMap extends Vue {
     if (this.map) {
       setBaseLayer(this.map, this.baseLayer);
     }
+  }
+
+  // #173 (export PDF) : nécessite `captureMode` (sinon le tampon WebGL est
+  // effacé et l'image est vide). On attend l'évènement `idle` avant de lire
+  // le canvas, sinon la capture peut tomber pendant l'animation de
+  // `fitBounds` et rendre une carte pas encore centrée/chargée.
+  captureImage(): Promise<string | null> {
+    const map = this.map;
+    if (!map) {
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve) => {
+      const capture = () => resolve(map.getCanvas().toDataURL('image/png'));
+      if (map.loaded() && !map.isMoving() && !map.isZooming()) {
+        requestAnimationFrame(capture);
+      } else {
+        map.once('idle', capture);
+      }
+    });
   }
 }
 </script>
@@ -314,6 +422,10 @@ export default class TripPositionsMap extends Vue {
 
   .legend-dot-end {
     background-color: #d62137;
+  }
+
+  .legend-dot-catch {
+    background-color: #1e9bc4;
   }
 }
 
