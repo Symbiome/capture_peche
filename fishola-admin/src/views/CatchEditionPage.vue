@@ -148,7 +148,7 @@
         <section class="section column">
           <h2 class="title">Autres informations</h2>
           <b-field grouped>
-            <b-field label="Plan d'eau"><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span><span
+            <b-field label="Plan d'eau"><span v-if="trip.waterEntityId"> {{ lakesIdMap.get(trip.waterEntityId) }}</span><span
                 v-else>Non renseigné</span>
             </b-field>
             <b-field label="Date de la prise">
@@ -210,6 +210,19 @@
               :src="otherPicURL"
             />
           </a>
+
+          <hr v-if="catchMapURL" />
+          <b-field
+            label="Lieu de la prise"
+            v-if="catchMapURL"
+          >
+            <iframe
+              class="bo-detail-map"
+              :src="catchMapURL"
+              loading="lazy"
+              title="Lieu de la prise"
+            />
+          </b-field>
         </section>
       </div>
     </div>
@@ -264,6 +277,7 @@ const speciesNamesMap = reactive(new Map<string, string>());
 const sortedSpeciesNames: Ref<Array<string>> = ref([]);
 const measurementPicURL = ref("");
 const otherPicsUrls: Ref<Array<string>> = ref([]);
+const catchMapURL = ref("");
 
 onMounted(loadCatch);
 
@@ -292,10 +306,17 @@ async function loadCatch() {
   }
   measurementPicURL.value = "";
   otherPicsUrls.value = [];
+  catchMapURL.value = "";
   trip.value = await BackendService.backendGet(
     "/v1/trips/catches/" + catchId
   );
   aCatch.value = trip.value.catchs.find((c: any) => c.id == catchId);
+  if (aCatch.value.latitude != null && aCatch.value.longitude != null) {
+    catchMapURL.value = buildCatchMapURL(
+      aCatch.value.latitude,
+      aCatch.value.longitude
+    );
+  }
   if (aCatch.value.hasMeasurementPicture) {
     measurementPicURL.value = Constants.apiUrl(
       `/v1/pictures/measure/${aCatch.value.id}/preview`
@@ -334,6 +355,23 @@ function cancel() {
   router.go(-1);
 }
 
+/**
+ * URL d'un fond OpenStreetMap embarqué centré sur la prise, avec un marqueur.
+ * Pas de dépendance à une librairie cartographique (l'admin n'en a aucune) :
+ * l'affichage y est ponctuel et non interactif, contrairement aux cartes de
+ * saisie pêcheur (MapLibre).
+ */
+function buildCatchMapURL(latitude: number, longitude: number): string {
+  const delta = 0.005;
+  const bbox = [
+    longitude - delta,
+    latitude - delta,
+    longitude + delta,
+    latitude + delta
+  ].join(",");
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&marker=${latitude},${longitude}`;
+}
+
 function formatDate(date: number[]): string {
   return UtilityServices.formatDate(date);
 }
@@ -369,6 +407,13 @@ function certaintyLabel(certainty: string): string {
 
   .bo-detail-pic {
     max-height: 300px;
+  }
+
+  .bo-detail-map {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
+    border: 1px solid #dbdbdb;
   }
 
   .validation-notice {
