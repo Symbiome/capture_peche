@@ -46,6 +46,8 @@ import OperatorSurveyManualEntry from "@/views/operator/SurveyManualEntry.vue";
 import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
 import AuditLog from "@/views/AuditLog.vue";
+import Competitions from "@/views/Competitions.vue";
+import CompetitionDetail from "@/views/CompetitionDetail.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -163,6 +165,17 @@ const routes: Array<RouteRecordRaw> = [
     path: "/news",
     name: "news",
     component: NewsVue
+  },
+  {
+    path: "/competitions",
+    name: "competitions",
+    component: Competitions
+  },
+  {
+    path: "/competitions/:id",
+    name: "competition-detail",
+    props: true,
+    component: CompetitionDetail
   }
 ];
 

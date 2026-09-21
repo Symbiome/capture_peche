@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.gamification;
  * #L%
  */
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,6 +30,11 @@ import java.util.UUID;
  * renvoyé par {@link GamificationResource} ({@code unlocked = false} et les champs de
  * déblocage nuls sinon). {@link GamificationAdminResource} réutilise ce même bean pour le
  * sélecteur d'attribution manuelle (unlocked toujours faux dans ce contexte).
+ *
+ * <p>Le badge CONCOURS (#90) peut être débloqué plusieurs fois par le même pêcheur (un par
+ * concours) : {@link GamificationResource#myBadges} renvoie alors une entrée par
+ * déblocage (même {@code id}/{@code code}, {@code competitionId} différent) plutôt qu'une
+ * seule ligne fusionnée comme pour les autres badges.
  */
 public class BadgeBean {
 
@@ -45,4 +51,8 @@ public class BadgeBean {
     public boolean unlocked;
     public LocalDateTime unlockedAt;
     public Object context;
+
+    public UUID competitionId;
+    public String competitionName;
+    public LocalDate competitionDate;
 }
