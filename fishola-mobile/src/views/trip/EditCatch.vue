@@ -103,6 +103,13 @@
               <div>
                 <FormSelect name="certainty" label="Certitude d'identification"
                   v-bind:options="certaintyOptions" v-model="aCatch.certainty" v-bind:readonly="!modifiable" />
+                <div class="certainty-hint" v-if="shouldSuggestPictureForCertainty">
+                  <i class="icon-info" />
+                  <span>
+                    Une photo aidera un expert à confirmer l'identification de
+                    cette prise.
+                  </span>
+                </div>
               </div>
               <div class="measure-row">
                 <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
@@ -678,6 +685,18 @@ export default class EditCatchView extends Vue {
       // Comportement supprimé suite aux retours des pêcheurs
       // Décommenter ceci pour réactiver : this.takePicture();
     }
+  }
+
+  // Une photo aide l'opérateur/expert à trancher sur une identification non
+  // certaine (#87, file "Prises à valider") : on le rappelle au pêcheur tant
+  // qu'aucune photo (galerie ou mesure) n'a encore été prise.
+  get shouldSuggestPictureForCertainty(): boolean {
+    return (
+      !!this.aCatch.certainty &&
+      this.aCatch.certainty !== "CERTAIN" &&
+      !this.allNonMeasurePictures.length &&
+      !this.measurementPictureSrc
+    );
   }
 
   isMandatorySize(speciesId?: string): boolean {
@@ -1278,7 +1297,8 @@ export default class EditCatchView extends Vue {
     text-align: center;
   }
 
-  .multiple-catchs-info {
+  .multiple-catchs-info,
+  .certainty-hint {
     width: 100%;
     display: flex;
     align-items: center;
@@ -1293,6 +1313,10 @@ export default class EditCatchView extends Vue {
       font-weight: normal;
       font-size: @fontsize-info;
     }
+  }
+
+  .certainty-hint {
+    margin-top: @vertical-margin-small;
   }
 
   .sample-id-container {

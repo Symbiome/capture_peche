@@ -62,7 +62,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.impl.DSL;
 import org.nuiton.util.pagination.PaginationParameter;
 import org.nuiton.util.pagination.PaginationResult;
 
@@ -667,12 +666,14 @@ public class TripResource extends AbstractFisholaResource {
             @Context UriInfo uriInfo
     ) {
         // « Prises à valider » (#87) : PROBABLE/UNCERTAIN pas encore revues par un opérateur
-        // (a_valider = 'oui', cf. vue catchs_openadom_export). Ouvert à l'opérateur, borné à
-        // son périmètre départemental comme le reste des écrans de saisie/import.
+        // (a_valider = 'oui', cf. vue catchs_pending_validation, V2.6.0 — sans l'embargo de
+        // 7 jours de la vue d'export, qui masquait sinon toute capture incertaine
+        // fraîchement saisie par un pêcheur, pour tout le staff). Ouvert à l'opérateur,
+        // borné à son périmètre départemental comme le reste des écrans de saisie/import.
         checkIsStaff();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection,
-                queryParameters, getAllowedAdminDepartments(), Optional.of(DSL.condition("a_valider = 'oui'")));
+        PaginatedExportBean result = tripsDao.getPendingValidationPaginated(pageOffset, sortField, sortDirection,
+                queryParameters, getAllowedAdminDepartments());
         return result;
     }
 

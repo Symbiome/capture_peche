@@ -80,6 +80,13 @@ import java.util.stream.Collectors;
 public class TripsDao extends AbstractFisholaDao {
 
     public static final String CATCHS_OPENADOM_EXPORT_VIEW = "catchs_openadom_export";
+    /**
+     * Mêmes colonnes que {@link #CATCHS_OPENADOM_EXPORT_VIEW}, mais sans l'embargo de
+     * 7 jours sur les sorties saisies par le pêcheur ni l'exclusion exclude_from_exports
+     * (#87 : ces deux règles ne concernent que l'export vers des tiers, pas la file
+     * « Prises à valider » de l'opérateur — cf. V2.6.0).
+     */
+    public static final String CATCHS_PENDING_VALIDATION_VIEW = "catchs_pending_validation";
     @Inject
     protected CatchsDao catchsDao;
 
@@ -365,14 +372,32 @@ public class TripsDao extends AbstractFisholaDao {
      */
     public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction,
                                                  MultivaluedMap<String, String> filters, Set<String> allowedDepartments) {
-        return getExportPaginated(offset, orderBy, direction, filters, allowedDepartments, Optional.empty());
+        return getExportPaginated(CATCHS_OPENADOM_EXPORT_VIEW, offset, orderBy, direction, filters, allowedDepartments,
+                Optional.empty());
     }
 
     /**
+     * File « Prises à valider » (#87) : interroge {@link #CATCHS_PENDING_VALIDATION_VIEW}
+     * plutôt que la vue d'export, pour ne pas hériter de son embargo de 7 jours sur les
+     * sorties saisies par le pêcheur (cf. V2.6.0) — sans quoi une capture incertaine
+     * fraîchement saisie reste invisible de tout le staff, national comme régional,
+     * pendant une semaine.
+     */
+    public PaginatedExportBean getPendingValidationPaginated(Integer offset, String orderBy, String direction,
+                                                 MultivaluedMap<String, String> filters, Set<String> allowedDepartments) {
+        return getExportPaginated(CATCHS_PENDING_VALIDATION_VIEW, offset, orderBy, direction, filters, allowedDepartments,
+                Optional.of(DSL.condition("a_valider = 'oui'")));
+    }
+
+    /**
+     * @param viewName vue interrogée ({@link #CATCHS_OPENADOM_EXPORT_VIEW} ou
+     *                  {@link #CATCHS_PENDING_VALIDATION_VIEW}) ; les deux exposent le
+     *                  même jeu de colonnes (cf. V2.6.0), la liste blanche de tri/filtre
+     *                  dérivée de la vue d'export reste donc valable pour les deux.
      * @param extraCondition condition supplémentaire, non issue du client (#87 : file
      *                        « Prises à valider », restreinte à {@code a_valider = 'oui'}).
      */
-    public PaginatedExportBean getExportPaginated(Integer offset, String orderBy, String direction,
+    private PaginatedExportBean getExportPaginated(String viewName, Integer offset, String orderBy, String direction,
                                                  MultivaluedMap<String, String> filters, Set<String> allowedDepartments,
                                                  Optional<Condition> extraCondition) {
         int catchesPerPage = 15;
@@ -409,14 +434,14 @@ public class TripsDao extends AbstractFisholaDao {
             extraCondition.ifPresent(conditions::add);
 
             // Execute paginated query
-            pcb.elements = context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW)
+            pcb.elements = context.selectFrom(viewName)
                     .where(conditions)
                     .orderBy(orderByField)
                     .limit(catchesPerPage)
                     .offset(offset * catchesPerPage)
                     .fetchInto(ExportBean.class);
             pcb.offset = offset;
-            pcb.total =  context.selectFrom(CATCHS_OPENADOM_EXPORT_VIEW).where(conditions).stream().count();
+            pcb.total =  context.selectFrom(viewName).where(conditions).stream().count();
             return pcb;
         });
     }

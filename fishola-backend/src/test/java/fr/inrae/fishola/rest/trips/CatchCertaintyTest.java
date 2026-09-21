@@ -121,12 +121,23 @@ class CatchCertaintyTest {
      * qui suivent dans la même méthode -- exécutés dans un thread/une connexion séparés.
      */
     protected UUID createTripWithCatch(String name, IdentificationCertainty certainty) {
+        return createTripWithCatch(name, certainty, LocalDateTime.now().minusDays(30));
+    }
+
+    /**
+     * @param tripCreatedOn permet de simuler une sortie fraîchement saisie par un
+     *                      pêcheur (proche de {@code now}), par opposition à une sortie
+     *                      ancienne comme dans les autres tests -- c'est justement ce cas
+     *                      que l'embargo d'export (V1.4.0) masquait à tort de la file
+     *                      « Prises à valider » avant V2.6.0 (cf.
+     *                      {@link #freshlySubmittedProbableCatchIsImmediatelyVisibleInQueue}).
+     */
+    protected UUID createTripWithCatch(String name, IdentificationCertainty certainty, LocalDateTime tripCreatedOn) {
         return QuarkusTransaction.requiringNew().call(() -> {
-            LocalDateTime now = LocalDateTime.now();
             Trip trip = new Trip();
-            trip.setCreatedOn(now.minusDays(30));
-            trip.setBeginTimestamp(now.minusDays(30).minusHours(3));
-            trip.setEndTimestamp(now.minusDays(30));
+            trip.setCreatedOn(tripCreatedOn);
+            trip.setBeginTimestamp(tripCreatedOn.minusHours(3));
+            trip.setEndTimestamp(tripCreatedOn);
             trip.setWaterEntityId(waterEntityId);
             trip.setName(name);
             trip.setType(TripType.Border);
@@ -139,8 +150,8 @@ class CatchCertaintyTest {
 
             Catch aCatch = new Catch();
             aCatch.setTripId(tripId);
-            aCatch.setCreatedOn(now.minusDays(30));
-            aCatch.setCatchTimestamp(now.minusDays(30));
+            aCatch.setCreatedOn(tripCreatedOn);
+            aCatch.setCatchTimestamp(tripCreatedOn);
             aCatch.setSpeciesId(speciesId);
             aCatch.setTechniqueId(techniqueId);
             aCatch.setSize(25);
@@ -215,6 +226,24 @@ class CatchCertaintyTest {
                 .when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
                 .then().statusCode(200)
                 .body("elements.catchId", org.hamcrest.CoreMatchers.not(hasItem(catchId.toString())));
+    }
+
+    @Test
+    @Transactional
+    void freshlySubmittedProbableCatchIsImmediatelyVisibleInQueue() {
+        // Régression (#87 -> bug rapporté) : la file « Prises à valider » interrogeait
+        // catchs_openadom_export, qui masque les sorties saisie_pecheur créées il y a
+        // moins de 168h (embargo export, V1.4.0). Une prise incertaine tout juste saisie
+        // par un pêcheur restait donc invisible de tout le staff -- national comme
+        // régional -- pendant une semaine. Depuis V2.6.0, la file interroge
+        // catchs_pending_validation, qui ne porte pas cet embargo.
+        UUID catchId = createTripWithCatch("CERTAINTY-TEST-FRESH", IdentificationCertainty.UNCERTAIN, LocalDateTime.now());
+
+        given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
+                .then().statusCode(200)
+                .body("elements.catchId", hasItem(catchId.toString()));
     }
 
     @Test
