@@ -62,7 +62,7 @@ export default class DashboardService extends AbstractFisholaService {
   ): Promise<DashboardAndSpecies> {
     const params = {
       year: year,
-      lake: lake,
+      waterEntity: lake,
     };
     return new Promise<DashboardAndSpecies>((resolve, reject) => {
       Promise.all([
@@ -97,7 +97,7 @@ export default class DashboardService extends AbstractFisholaService {
   ): Promise<GlobalDashboardAndSpecies> {
     const params = {
       year: year,
-      lake: lake,
+      waterEntity: lake,
     };
     return new Promise<GlobalDashboardAndSpecies>((resolve, reject) => {
       Promise.all([
