@@ -85,6 +85,8 @@ class OperatorAccessTest {
         // Opérateur : is_operator = true, sans droit d'administration ni périmètre national.
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "operator-test-op@fishola.test", "x");
+        // Périmètre non vide : un périmètre vide vaut « national » dans getAllowedAdminDepartments() (#188).
+        ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         // JwtHelper est @RequestScoped : on active un contexte de requête le temps de forger
         // les jetons (hors flux HTTP réel dans @BeforeAll). Idem AuditLogTest.
@@ -141,5 +143,76 @@ class OperatorAccessTest {
         given()
                 .when().get(ADMIN_ONLY_ENDPOINT)
                 .then().statusCode(401);
+    }
+
+    // --- Matrice des droits (#188) : un endpoint représentatif par domaine, rôle opérateur. ---
+
+    private io.restassured.specification.RequestSpecification asOperator() {
+        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken);
+    }
+
+    @Test
+    void operatorIsForbiddenOnAuditLog() {
+        // Compte & profil — « Accéder au journal d'audit » : Non.
+        asOperator().when().get("/api/v1/admin/audit-log").then().statusCode(403);
+    }
+
+    @Test
+    void operatorIsForbiddenToCreateOperator() {
+        // Compte & profil — « Créer un compte opérateur » : Non.
+        asOperator()
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body("{}")
+                .when().post("/api/v1/admin/operators")
+                .then().statusCode(403);
+    }
+
+    @Test
+    void operatorCanListCatchesPendingValidation() {
+        // Prises — « Voir les prises à valider » : Oui (borné à ses départements).
+        asOperator().when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
+                .then().statusCode(200);
+    }
+
+    @Test
+    void operatorIsForbiddenToEditSpecies() {
+        // Espèces — « Ajouter / modifier une espèce » : Non.
+        asOperator()
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body(java.util.Map.of("name", "Espèce (test)"))
+                .when().post("/api/v1/referential/raw-species")
+                .then().statusCode(403);
+    }
+
+    @Test
+    void operatorIsForbiddenToAssignDepartments() {
+        // Fédérations & départements — « Attribuer des départements à un opérateur » : Non.
+        asOperator()
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body("{\"departmentCodes\":[\"74\"]}")
+                .when().put("/api/v1/admin/operators/" + operatorId)
+                .then().statusCode(403);
+    }
+
+    @Test
+    void operatorCanListCompetitions() {
+        // Récompenses — « Créer un concours / attribuer un badge » : Oui (#90).
+        asOperator().when().get("/api/v1/admin/competitions").then().statusCode(200);
+    }
+
+    @Test
+    void operatorIsForbiddenOnBadgeDefinitions() {
+        // Récompenses — « Créer / modifier les définitions de badges » : Non.
+        asOperator().when().get("/api/v1/admin/gamification/badges").then().statusCode(403);
+    }
+
+    @Test
+    void operatorCanReachManualEntry() {
+        // Import/export — « Importer les données » : Oui. Corps vide => 400 de validation, pas 403.
+        asOperator()
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body("{}")
+                .when().post("/api/v1/admin/manual-entries")
+                .then().statusCode(400);
     }
 }

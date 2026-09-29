@@ -167,6 +167,28 @@ public final class Departments {
         return code != null && NAMES.containsKey(code);
     }
 
+    /**
+     * Department of a French postal code : first two digits, except Corsica
+     * ({@code 200xx}-{@code 201xx} = 2A, {@code 202xx}-{@code 206xx} = 2B) and overseas
+     * departments (first three digits, {@code 97x}). Empty for a missing, malformed or
+     * non-departmental code (Monaco, overseas collectivities). A few postal codes span two
+     * departments ; the prefix is then an approximation (#188).
+     */
+    public static Optional<String> fromPostalCode(String postalCode) {
+        if (postalCode == null || !postalCode.matches("\\d{5}")) {
+            return Optional.empty();
+        }
+        String code;
+        if (postalCode.startsWith("20")) {
+            code = postalCode.charAt(2) <= '1' ? "2A" : "2B";
+        } else if (postalCode.startsWith("97")) {
+            code = postalCode.substring(0, 3);
+        } else {
+            code = postalCode.substring(0, 2);
+        }
+        return isValidCode(code) ? Optional.of(code) : Optional.empty();
+    }
+
     /** Optional name lookup, empty when the code is unknown. */
     public static Optional<String> lookup(String code) {
         return Optional.ofNullable(NAMES.get(code));

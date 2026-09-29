@@ -77,7 +77,7 @@ class CompetitionResourceTest {
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, 'x', now(), false, false, true)", operatorId, "competition-test-operator@fishola.test");
         // Périmètre départemental (#159) : sans cette ligne, un compte non-national mais
-        // sans aucun département configuré verrait tout (getAllowedAdminDepartments vide).
+        // sans aucun département configuré ne verrait rien (#188).
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         ctx.execute("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "

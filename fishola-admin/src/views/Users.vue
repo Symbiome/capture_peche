@@ -32,6 +32,7 @@
       url="/v1/security/users"
       :columns="userColumns"
       @elements-loaded="usersLoaded"
+      :editable="isNationalAdmin"
       :canDelete="true"
     ></Referential>
   </div>
@@ -39,10 +40,20 @@
 
 <script setup lang="ts">
 import Referential from "@/components/Referential.vue";
+import BackendService from "@/services/BackendService";
 import { useToast } from "buefy";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const Toast = useToast();
+
+// #188 (E1) : liste ouverte à tout le staff (bornée côté back-end) ; modification et
+// suppression des comptes pêcheurs réservées à l'administrateur national.
+const isNationalAdmin = ref(false);
+
+onMounted(async () => {
+  const loggedAdmin = await BackendService.backendGet("/v1/admin/check");
+  isNationalAdmin.value = loggedAdmin.isNationalAdmin;
+});
 
 const userEmails = ref("");
 const userColumns: any[] = [

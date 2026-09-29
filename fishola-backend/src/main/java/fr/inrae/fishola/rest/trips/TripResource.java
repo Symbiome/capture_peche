@@ -615,7 +615,8 @@ public class TripResource extends AbstractFisholaResource {
     @Produces("text/csv")
     @Audited("trip.export")
     public Response getTripsCSV() {
-        checkIsAdmin();
+        // #188 (E5) : liste et export ouverts à l'opérateur, bornés à son périmètre départemental.
+        checkIsStaff();
         String csv = tripsDao.getTripsCSV(getAllowedAdminDepartments());
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
@@ -635,7 +636,7 @@ public class TripResource extends AbstractFisholaResource {
             @PathParam("sortDirection") String sortDirection,
             @Context UriInfo uriInfo
     ) {
-        checkIsAdmin();
+        checkIsStaff();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection,
                 queryParameters, getAllowedAdminDepartments());
@@ -685,11 +686,13 @@ public class TripResource extends AbstractFisholaResource {
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
         // #87 : cette correction (espèce/taille/poids/exclusion) est aussi le geste de
         // validation opérateur -- checkIsStaff() plutôt que checkIsAdmin() pour l'ouvrir
-        // à l'opérateur, qui stampe validatedBy/validatedAt ci-dessous.
+        // à l'opérateur, qui stampe validatedBy/validatedAt ci-dessous. L'opérateur est
+        // limité aux prises à valider (#188).
         FisholaAdmin staff = checkIsStaff();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         assertCatchInAllowedDepartments(aCatch);
+        assertOperatorOnlyValidatesPendingCatch(staff, aCatch);
         if (updatedCatch.editedSize.isPresent()) {
             aCatch.setEditedSize(updatedCatch.editedSize.get());
         }
@@ -705,6 +708,19 @@ public class TripResource extends AbstractFisholaResource {
         catchsDao.update(aCatch);
         catchsDao.stampDepartment(catchId);
         return updatedCatch;
+    }
+
+    /**
+     * Matrice des droits (#188, E8) : l'opérateur valide / corrige une prise incertaine
+     * (L26) mais ne modifie pas les autres (L23). Une prise est à valider tant que son
+     * identification n'est pas certaine et qu'elle n'a pas été validée (cf. a_valider).
+     */
+    private void assertOperatorOnlyValidatesPendingCatch(FisholaAdmin staff, Catch aCatch) {
+        boolean pendingValidation = aCatch.getCertainty() != IdentificationCertainty.CERTAIN
+                && aCatch.getValidatedAt() == null;
+        if (Boolean.TRUE.equals(staff.getIsOperator()) && !pendingValidation) {
+            throw new ForbiddenException("Un opérateur ne peut corriger qu'une prise à valider");
+        }
     }
 
     /**

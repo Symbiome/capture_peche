@@ -300,6 +300,15 @@ public class TripsDao extends AbstractFisholaDao {
                 .execute());
     }
 
+    /** Pêcheurs ayant au moins une sortie dans l'un des départements donnés (#188). */
+    public Set<UUID> findOwnerIdsInDepartments(Set<String> departments) {
+        return withContext(context -> context.selectDistinct(Tables.TRIP.OWNER_ID)
+                .from(Tables.TRIP)
+                .where(Tables.TRIP.DEPARTMENT.in(departments))
+                .and(Tables.TRIP.OWNER_ID.isNotNull())
+                .fetchSet(Tables.TRIP.OWNER_ID));
+    }
+
     public void unsetOwner(UUID userId) {
         withContext(context -> context.update(Tables.TRIP)
                 .setNull(Tables.TRIP.OWNER_ID)

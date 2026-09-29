@@ -31,6 +31,7 @@ import fr.inrae.fishola.exceptions.NotFoundException;
 import fr.inrae.fishola.mails.FisholaMail;
 import fr.inrae.fishola.mails.ImmutableFisholaMail;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
+import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -645,9 +646,19 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     @GET
     @Path("/users")
     public List<UserProfileForAdmin> listUsers() {
-        checkIsNationalAdmin();
+        // #188 (E1) : ouvert à tout le staff ; hors national, borné aux pêcheurs du périmètre,
+        // c'est-à-dire ayant pêché dans l'un de ses départements ou dont le code postal y est.
+        checkIsStaff();
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
         // TODO AThimel 07/07/2020 Pagination
         List<FisholaUser> users = usersDao.findAll();
+        if (!allowedDepartments.isEmpty()) {
+            Set<UUID> fishedInPerimeter = tripsDao.findOwnerIdsInDepartments(allowedDepartments);
+            users = users.stream()
+                    .filter(user -> fishedInPerimeter.contains(user.getId())
+                            || Departments.fromPostalCode(user.getPostalCode()).filter(allowedDepartments::contains).isPresent())
+                    .toList();
+        }
         List<UserProfileForAdmin> result = users.stream()
                 .map(this::toUserProfileForAdmin)
                 .toList();

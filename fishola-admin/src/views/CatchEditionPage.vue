@@ -227,12 +227,15 @@
       </div>
     </div>
 
-    <p v-if="aCatch.id && !aCatch.validatedAt" class="validation-notice">
+    <p v-if="aCatch.id && canEdit && !aCatch.validatedAt" class="validation-notice">
       Enregistrer marque cette prise comme validée.
+    </p>
+    <p v-if="aCatch.id && !canEdit" class="validation-notice">
+      Consultation seule : un opérateur ne peut corriger qu'une prise à valider.
     </p>
     <div class="buttons">
       <button
-        v-if="aCatch.id"
+        v-if="aCatch.id && canEdit"
         class="button is-primary"
         @click="save()"
       >
@@ -255,7 +258,7 @@ import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
 
 import router from "@/router";
-import { onMounted, reactive, ref, Ref } from "vue";
+import { computed, onMounted, reactive, ref, Ref } from "vue";
 import { useToast } from "buefy";
 
 const Toast = useToast();
@@ -269,6 +272,11 @@ const emit = defineEmits<{
 }>();
 
 const aCatch: Ref<any> = ref({});
+const isOperator = ref(false);
+// #188 (E8) : l'opérateur ne corrige que les prises à valider (identification non certaine, pas encore validée).
+const canEdit = computed(() =>
+  !isOperator.value || (aCatch.value.certainty !== "CERTAIN" && !aCatch.value.validatedAt)
+);
 const trip: Ref<any> = ref({});
 const speciesIdMap = reactive(new Map<string, string>());
 const techniquesIdMap = reactive(new Map<string, string>());
@@ -283,6 +291,8 @@ onMounted(loadCatch);
 
 async function loadCatch() {
   if (speciesIdMap.size == 0) {
+    const loggedAdmin = await BackendService.backendGet("/v1/admin/check");
+    isOperator.value = loggedAdmin.isOperator;
     const species = await BackendService.backendGet(
       "/v1/referential/raw-species"
     );
