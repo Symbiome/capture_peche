@@ -35,6 +35,12 @@ périmètres sont repris via `water_entity.department`).
    quand il n'y a pas de position : imports opérateur, saisie manuelle, carnet
    volontaire, sorties « a posteriori » sans GPS.
 
+Saisies manuelles staff (enquête, carnet volontaire) : le point saisi sur la
+carte (#189) devient `begin_position`, projeté sur l'entité choisie
+(`snapped_position`), et fixe donc le département. Hors national, un point hors
+du périmètre est refusé ; la carte ne propose que les entités du périmètre
+(`GET /v1/referential/waterEntities/attribution`).
+
 `trip.water_entity_id` / `catch.trip_id` restent la source du rattachement hydro :
 le département est une donnée **complémentaire**.
 

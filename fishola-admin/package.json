@@ -21,6 +21,7 @@
     "buefy": "^3.0.5",
     "core-js": "^3.49.0",
     "html2pdf.js": "^0.14.0",
+    "maplibre-gl": "4.7.1",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },

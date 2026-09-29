@@ -44,7 +44,8 @@ tests/cypress/
 ```
 tests/cypress/
 ├── e2e/
-│   └── auth-smoke.cypress.js             # smoke connexion staff (#76)
+│   ├── auth-smoke.cypress.js             # smoke connexion staff (#76)
+│   └── water-entity-search-select.cypress.js  # sélecteur d'entité hydro + carte de position (#189)
 └── support/
     ├── e2e.js                            # charge commands
     ├── commands.js                       # cy.loginStaff()

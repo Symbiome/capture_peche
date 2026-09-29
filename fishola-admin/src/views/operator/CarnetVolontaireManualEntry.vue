@@ -45,7 +45,7 @@
       </b-field>
 
       <b-field label="Entité hydrographique" class="column is-6">
-        <WaterEntitySearchSelect v-model="trip.waterEntityId" />
+        <WaterEntitySearchSelect v-model="trip.waterEntityId" v-model:position="trip.position" with-map />
       </b-field>
       <b-field label="Technique principale" class="column is-6">
         <b-select v-model="trip.techniqueId" expanded>
@@ -172,6 +172,7 @@
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
+import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { ref, computed } from "vue";
 
@@ -191,6 +192,7 @@ function newTrip() {
     startTime: "",
     endTime: "",
     waterEntityId: null,
+    position: null as MapPosition | null,
     fishingMode: FISHING_MODES[0],
     techniqueId: null,
     secondaryTechniqueId: null,
@@ -300,8 +302,11 @@ async function submit() {
   loading.value = true;
   success.value = null;
   errors.value = [];
+  const { position, ...tripFields } = trip.value;
   const payload = {
-    ...trip.value,
+    ...tripFields,
+    latitude: position ? position.lat : null,
+    longitude: position ? position.lng : null,
     rodCount: toIntOrNull(trip.value.rodCount),
     captures: trip.value.bredouille ? [] : captures.value.map(cleanCapture)
   };

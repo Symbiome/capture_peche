@@ -40,6 +40,9 @@ public class CarnetVolontaireTripBean {
     public UUID waterEntityId;
     public String eauNom;
     public String commune;
+    /** Point saisi sur la carte (#189) : facultatif, latitude et longitude vont ensemble. */
+    public Double latitude;
+    public Double longitude;
 
     public String fishingMode;
     public UUID techniqueId;

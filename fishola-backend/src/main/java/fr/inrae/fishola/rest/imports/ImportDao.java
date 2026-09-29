@@ -22,6 +22,7 @@ package fr.inrae.fishola.rest.imports;
  */
 
 import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.CollectionMethod;
 import fr.inrae.fishola.entities.enums.DayPeriod;
@@ -454,16 +455,32 @@ public class ImportDao extends AbstractFisholaDao {
     }
 
     /**
+     * Point saisi sur la carte par le staff : position de départ de la sortie, et son
+     * rattachement à l'entité choisie recalculé côté serveur ({@code attribution} nul
+     * quand l'entité n'a pas de géométrie où projeter le point).
+     */
+    public record ManualPosition(double lat, double lng, HydroSearchDao.TripAttribution attribution) {}
+
+    /**
      * Persiste une saisie manuelle (une sortie + ses captures) en une transaction.
      * La technique d'une capture retombe sur celle de la sortie si absente.
      */
     @Transactional
     public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
                                 UUID waterEntityId, String name, UUID tripTechniqueId, List<ManualCatch> catches) {
+        return saveManualEntry(collectionMethod, day, start, end, waterEntityId, name, tripTechniqueId, catches, null);
+    }
+
+    /** Idem, avec la position saisie sur la carte ({@code position} nul : aucune position). */
+    @Transactional
+    public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
+                                UUID waterEntityId, String name, UUID tripTechniqueId, List<ManualCatch> catches,
+                                ManualPosition position) {
         // Atomicité JTA (cf. remarque sur persist()).
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
         UUID tripId = insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now);
+        applyPosition(ctx, tripId, position);
         for (ManualCatch c : catches) {
             UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
             insertCatch(ctx, tripId, c.speciesId(), technique, c.size(), c.weight(), c.kept(),
@@ -471,6 +488,26 @@ public class ImportDao extends AbstractFisholaDao {
         }
         stampDepartment(ctx, tripId);
         return tripId;
+    }
+
+    /**
+     * Enregistre le point saisi comme position de départ de la sortie et, si disponible,
+     * son rattachement hydro (point projeté, tronçon, CONFIRMED/OVERRIDDEN), comme pour une
+     * sortie saisie sur la carte par le pêcheur (#9). À appeler avant {@link #stampDepartment}.
+     */
+    private void applyPosition(DSLContext ctx, UUID tripId, ManualPosition position) {
+        if (position == null) {
+            return;
+        }
+        ctx.execute("UPDATE trip SET begin_position = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?",
+                position.lng(), position.lat(), tripId);
+        HydroSearchDao.TripAttribution attribution = position.attribution();
+        if (attribution != null) {
+            ctx.execute("UPDATE trip SET snapped_position = ST_SetSRID(ST_MakePoint(?, ?), 4326),"
+                            + " river_section_id = ?, hydro_validation = ? WHERE id = ?",
+                    attribution.snappedLng(), attribution.snappedLat(), attribution.riverSectionId(),
+                    attribution.hydroValidation(), tripId);
+        }
     }
 
     /** Une capture (ou un lot) saisie manuellement, format « enquête terrain » (#144, #145). */
@@ -485,7 +522,7 @@ public class ImportDao extends AbstractFisholaDao {
     /** Bloc « session souvenir » facultatif d'un pêcheur, saisi manuellement (#144). {@code catch_} nul = bredouille. */
     public record SurveyManualSouvenir(LocalDate day, DayPeriod dayPeriod, UUID waterEntityId, FishingMode fishingMode,
                                        UUID techniqueId, Short rodCount, String baitOrLure, UUID expectedSpeciesId,
-                                       SurveyManualCatch catch_) {}
+                                       SurveyManualCatch catch_, ManualPosition position) {}
 
     public record ManualSurveyResult(UUID sessionId, List<UUID> tripIds) {}
 
@@ -499,7 +536,7 @@ public class ImportDao extends AbstractFisholaDao {
     public ManualSurveyResult saveManualEntrySurvey(UUID waterEntityId, LocalDate day, LocalTime controlTime,
                                                      LocalTime startTime, LocalTime endTime,
                                                      Short unsurveyedShoreAnglers, Short unsurveyedBoatAnglers,
-                                                     List<SurveyManualAngler> anglers) {
+                                                     List<SurveyManualAngler> anglers, ManualPosition position) {
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
 
@@ -529,6 +566,7 @@ public class ImportDao extends AbstractFisholaDao {
             TripExtras extras = new TripExtras(angler.expectedSpeciesId(), null, angler.baitOrLure(),
                     angler.rodCount(), angler.fishingMode(), null, null, externalRef, sessionId, anglerId);
             UUID tripId = insertTrip(ctx, "enquete", day, startTime, endTime, waterEntityId, name, now, extras);
+            applyPosition(ctx, tripId, position);
             tripIds.add(tripId);
 
             for (SurveyManualCatch c : angler.catches()) {
@@ -545,6 +583,7 @@ public class ImportDao extends AbstractFisholaDao {
                         null, anglerId);
                 UUID souvenirTripId = insertTrip(ctx, "enquete_souvenir", souvenir.day(), nominal[0], nominal[1],
                         souvenir.waterEntityId(), souvenirName, now, souvenirExtras);
+                applyPosition(ctx, souvenirTripId, souvenir.position());
                 tripIds.add(souvenirTripId);
                 if (souvenir.catch_() != null) {
                     insertSurveyManualCatch(ctx, souvenirTripId, souvenir.catch_(), souvenir.techniqueId(),
@@ -597,10 +636,9 @@ public class ImportDao extends AbstractFisholaDao {
     }
 
     /**
-     * Estampille le département d'une sortie importée et de ses prises (#159).
-     * Aucune position n'est saisie à l'import : le COALESCE retombe sur le
-     * département de l'entité hydro rattachée (dérivé de commune, #154). À appeler
-     * une fois la sortie et ses prises insérées.
+     * Estampille le département d'une sortie importée et de ses prises (#159) : celui du
+     * point saisi sur la carte s'il existe, sinon celui de l'entité hydro rattachée
+     * (dérivé de commune, #154). À appeler une fois la sortie et ses prises insérées.
      */
     void stampDepartment(DSLContext ctx, UUID tripId) {
         ctx.execute("UPDATE trip t SET department = COALESCE("
