@@ -515,6 +515,18 @@ public class HydroSearchDao extends AbstractFisholaDao {
                 rec.get("rsid", UUID.class));
     }
 
+    /**
+     * Code of the department containing a point (spatial join on {@code departement.geom}),
+     * empty outside every department. Same rule as the trip department stamping (#159).
+     */
+    public Optional<String> departmentAt(double lat, double lng) {
+        return withContext(context -> context
+                .fetchOptional("SELECT d.code FROM departement d"
+                                + " WHERE ST_Contains(d.geom, ST_SetSRID(ST_MakePoint(?, ?), 4326)) LIMIT 1",
+                        lng, lat)
+                .map(rec -> rec.get("code", String.class)));
+    }
+
     /** A point snapped onto a chosen entity ({@code riverSectionId} null for still waters). */
     public record EntitySnap(double lat, double lng, UUID riverSectionId) {}
 

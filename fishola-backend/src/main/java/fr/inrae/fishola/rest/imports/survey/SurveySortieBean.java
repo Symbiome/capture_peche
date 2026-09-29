@@ -36,6 +36,9 @@ public class SurveySortieBean {
     // Localisation : id prioritaire (clic-carte), repli par nom.
     public UUID waterEntityId;
     public String secteur;
+    /** Point saisi sur la carte (#189) : facultatif, latitude et longitude vont ensemble. */
+    public Double latitude;
+    public Double longitude;
 
     public LocalDate day;
     public LocalTime controlTime;

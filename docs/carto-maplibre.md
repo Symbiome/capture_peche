@@ -20,6 +20,10 @@ Trois raisons de ne pas monter en v5 :
    - `src/components/common/maplibreStyle.ts`
    - `src/components/my-trips/MyTripsMap.vue`
 
+   Le back-office (`fishola-admin`) épingle la même version (`"maplibre-gl": "4.7.1"`)
+   pour la carte des saisies manuelles staff (#189) :
+   `src/components/WaterEntityMapPicker.vue` et `src/components/maplibreStyle.ts`.
+
    Il faudrait revérifier trois écrans de carte, le clustering natif, le survol
    hydro, les pins de capture, la sélection depuis les listes et le mode dégradé
    hors-ligne. Une demi-journée de recette.

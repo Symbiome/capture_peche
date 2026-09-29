@@ -49,7 +49,7 @@
           :value="sortie.endTime" @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
       <b-field label="Secteur" class="column is-4">
-        <WaterEntitySearchSelect v-model="sortie.waterEntityId" />
+        <WaterEntitySearchSelect v-model="sortie.waterEntityId" v-model:position="sortie.position" with-map />
       </b-field>
 
       <b-field label="Pêcheurs carnassiers du bord non-enquêtés" class="column is-4">
@@ -155,7 +155,8 @@
             </b-select>
           </b-field>
           <b-field label="Site pêché" class="column is-6">
-            <WaterEntitySearchSelect v-model="angler.souvenir.waterEntityId" />
+            <WaterEntitySearchSelect v-model="angler.souvenir.waterEntityId" v-model:position="angler.souvenir.position"
+              with-map />
           </b-field>
 
           <b-field label="Mode de pêche" class="column is-4">
@@ -247,6 +248,7 @@
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
+import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { reactive, ref, computed } from "vue";
 
@@ -266,6 +268,7 @@ function newSortie() {
     startTime: "",
     endTime: "",
     waterEntityId: null,
+    position: null as MapPosition | null,
     unsurveyedShoreAnglers: null,
     unsurveyedBoatAnglers: null
   };
@@ -280,6 +283,7 @@ function newSouvenir() {
     day: "",
     dayPeriod: DAY_PERIODS[0],
     waterEntityId: null,
+    position: null as MapPosition | null,
     fishingMode: FISHING_MODES[0],
     techniqueId: null,
     rodCount: 1,
@@ -387,6 +391,8 @@ function cleanSouvenir(angler: any) {
     day: s.day || null,
     dayPeriod: s.dayPeriod,
     waterEntityId: s.waterEntityId,
+    latitude: s.position ? s.position.lat : null,
+    longitude: s.position ? s.position.lng : null,
     fishingMode: s.fishingMode,
     techniqueId: s.techniqueId,
     rodCount: toIntOrNull(s.rodCount),
@@ -419,6 +425,8 @@ async function submit() {
   errors.value = [];
   const payload = {
     waterEntityId: sortie.value.waterEntityId,
+    latitude: sortie.value.position ? sortie.value.position.lat : null,
+    longitude: sortie.value.position ? sortie.value.position.lng : null,
     secteur: null,
     day: sortie.value.day || null,
     controlTime: sortie.value.controlTime || null,

@@ -59,7 +59,8 @@ public class CarnetVolontaireManualEntryResource extends AbstractFisholaResource
                 ? null
                 : adminDao.getAllowedWaterEntityIds(admin.getId());
 
-        ManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities, LocalDate.now());
+        ManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities, getAllowedAdminDepartments(),
+                LocalDate.now());
 
         Response.Status status = result.errors.isEmpty()
                 ? Response.Status.CREATED

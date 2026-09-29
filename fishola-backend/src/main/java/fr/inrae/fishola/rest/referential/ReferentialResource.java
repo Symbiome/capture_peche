@@ -40,6 +40,9 @@ import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.department.DepartmentName;
 import fr.inrae.fishola.rest.department.Departments;
+import fr.inrae.fishola.rest.hydro.AttributionResponse;
+import fr.inrae.fishola.rest.hydro.ImmutableAttributionResponse;
+import fr.inrae.fishola.rest.hydro.WaterEntityAttribution;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -72,6 +75,8 @@ import java.util.stream.Collectors;
 public class ReferentialResource extends AbstractFisholaResource {
 
     public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
+    /** Nombre de candidats proposés au clic sur la carte (proposition + alternatives), comme côté pêcheur. */
+    private static final int STAFF_ATTRIBUTION_LIMIT = 4;
     @Inject
     protected ReferentialDao referentialDao;
     @Inject
@@ -117,6 +122,33 @@ public class ReferentialResource extends AbstractFisholaResource {
         } else {
             return referentialDao.listWaterEntityNamesByDepartments(getAllowedAdminDepartments());
         }
+    }
+
+    /**
+     * Attribution hydro d'un point cliqué sur la carte des saisies manuelles (#189) :
+     * entité la plus proche + alternatives, comme {@code GET /api/v1/waterEntities/attribution}
+     * côté pêcheur, mais ouverte au staff et, hors national, limitée aux entités de son
+     * périmètre départemental.
+     */
+    @GET
+    @Path("/waterEntities/attribution")
+    public AttributionResponse getStaffAttribution(@QueryParam("lat") Double lat, @QueryParam("lng") Double lng) {
+        checkIsStaff();
+        Preconditions.checkArgument(lat != null && lng != null, "Les paramètres lat et lng sont obligatoires.");
+        Preconditions.checkArgument(lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180, "Position invalide.");
+        List<WaterEntityAttribution> candidates = hydroSearchDao.attribution(lat, lng, STAFF_ATTRIBUTION_LIMIT);
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        if (!allowedDepartments.isEmpty()) {
+            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(
+                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList());
+            candidates = candidates.stream()
+                    .filter(c -> allowedDepartments.contains(departmentByEntity.get(c.waterEntityId())))
+                    .toList();
+        }
+        return ImmutableAttributionResponse.builder()
+                .proposal(candidates.stream().findFirst())
+                .alternatives(candidates.stream().skip(1).toList())
+                .build();
     }
 
     // Recherche texte (accent-insensible, tolérante aux fautes) sur le listing
