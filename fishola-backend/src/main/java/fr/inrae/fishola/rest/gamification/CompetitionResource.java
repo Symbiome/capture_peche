@@ -142,7 +142,10 @@ public class CompetitionResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
-    /** Recherche libre de pêcheur pour le sélecteur d'attribution (#90), ouverte à l'opérateur. */
+    /**
+     * Recherche libre de pêcheur pour le sélecteur d'attribution (#90), ouverte à l'opérateur.
+     * Volontairement nationale : tout pêcheur peut participer à un concours (arbitrage #188).
+     */
     @GET
     @Path("/search-users")
     public List<UserSearchResultBean> searchUsers(@QueryParam("q") String q) {

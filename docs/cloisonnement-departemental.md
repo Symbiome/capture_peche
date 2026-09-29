@@ -15,6 +15,10 @@ périmètres sont repris via `water_entity.department`).
   applicative par `Departments.isValidCode()`.
 - Un compte **national** (`is_national_admin = true`) a un périmètre vide, qui
   signifie « aucune restriction ».
+- Un compte **non national** a toujours au moins un département : la création
+  et la modification (`PUT /admin/{id}`) refusent un périmètre vide. Si un tel
+  compte existe malgré tout, `getAllowedAdminDepartments()` lui renvoie un code
+  fictif (`NO_DEPARTMENT_PERIMETER`) : il ne voit rien au lieu de tout (#188).
 - Côté back-end : `AbstractFisholaResource.getAllowedAdminDepartments()` renvoie
   `Set<String>` (vide = national). `AdminDao.getAllowedDepartments(id)` et
   `getAllowedWaterEntityIds(id)` (entités dérivées du périmètre, pour l'import).
@@ -45,9 +49,10 @@ Points d'appel : `TripsDao.stampDepartment` / `CatchsDao.stampDepartment`
 ## Lecture / export cloisonnés
 
 `TripResource` — `/export`, `/export/{...}`, `GET`/`PUT /catches/{id}` : passés de
-`checkIsNationalAdmin()` à `checkIsAdmin()`.
+`checkIsNationalAdmin()` à `checkIsAdmin()`, puis à `checkIsStaff()` pour ouvrir
+la consultation et l'export à l'opérateur (#87, #188).
 
-- Un staff **régional** ne voit / n'exporte / n'édite que les prises de ses
+- Un staff **régional** (admin ou opérateur) ne voit / n'exporte / n'édite que les prises de ses
   départements (`catchs_openadom_export.departement = ANY(périmètre)`, `403` sur
   une prise hors périmètre).
 - Un **national** voit tout (périmètre vide → pas de filtre).

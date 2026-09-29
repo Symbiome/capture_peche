@@ -45,7 +45,7 @@ import static io.restassured.RestAssured.given;
  *
  * <p>Avant ce correctif, la distinction national/régional n'existait que dans le menu du
  * back-office : {@code checkIsAdmin()} ne rejetant que les opérateurs, un régional pouvait
- * atteindre par l'API les portées non cloisonnables (comptes pêcheurs, référentiels
+ * atteindre par l'API les portées non cloisonnables (modification des comptes pêcheurs, référentiels
  * nationaux, documentation, sorties, journal d'audit). Ces portées sont désormais gardées
  * par {@code checkIsNationalAdmin()}.
  *
@@ -80,6 +80,8 @@ class RegionalAdminScopeTest {
         // Régional : peut gérer des comptes, mais n'est PAS national.
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, ?, now(), true, false, false)", regionalId, "scope-test-regional@fishola.test", "x");
+        // Périmètre non vide : un périmètre vide vaut « national » dans getAllowedAdminDepartments() (#188).
+        ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", regionalId);
 
         ManagedContext requestContext = Arc.container().requestContext();
         requestContext.activate();
@@ -103,9 +105,15 @@ class RegionalAdminScopeTest {
     }
 
     @Test
-    void regionalIsForbiddenOnUsers() {
-        // Comptes pêcheurs : écran « Utilisateurs », réservé au national.
-        as(regionalToken).when().get(USERS_ENDPOINT).then().statusCode(403);
+    void regionalCanListUsers() {
+        // Comptes pêcheurs : liste ouverte au régional, bornée à son périmètre (#188, E1).
+        as(regionalToken).when().get(USERS_ENDPOINT).then().statusCode(200);
+    }
+
+    @Test
+    void regionalIsForbiddenToDeleteUser() {
+        // « Désactiver un compte » : réservé au national.
+        as(regionalToken).when().delete(USERS_ENDPOINT + "/" + UUID.randomUUID()).then().statusCode(403);
     }
 
     @Test
@@ -132,5 +140,54 @@ class RegionalAdminScopeTest {
     @Test
     void nationalIsAllowedOnAuditLog() {
         as(nationalToken).when().get(AUDIT_ENDPOINT).then().statusCode(200);
+    }
+
+    // --- Matrice des droits (#188) : un endpoint représentatif par domaine, rôle régional. ---
+
+    @Test
+    void regionalCanListOperators() {
+        // Compte & profil — gestion des opérateurs de son périmètre : Oui.
+        as(regionalToken).when().get("/api/v1/admin/operators").then().statusCode(200);
+    }
+
+    @Test
+    void regionalCanExportTrips() {
+        // Sessions / prises — « Voir toutes les sessions / prises », export : Oui (borné).
+        as(regionalToken).when().get("/api/v1/trips/export").then().statusCode(200);
+    }
+
+    @Test
+    void regionalCanListCatchesPendingValidation() {
+        // Prises — « Voir les prises à valider » : Oui (borné).
+        as(regionalToken).when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
+                .then().statusCode(200);
+    }
+
+    @Test
+    void regionalIsForbiddenToEditSpecies() {
+        // Espèces — référentiel national : réservé au national (arbitrage A2, #188).
+        as(regionalToken)
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body(java.util.Map.of("name", "Espèce (test)"))
+                .when().post("/api/v1/referential/raw-species")
+                .then().statusCode(403);
+    }
+
+    @Test
+    void regionalCanListCompetitions() {
+        // Récompenses — concours : Oui (borné).
+        as(regionalToken).when().get("/api/v1/admin/competitions").then().statusCode(200);
+    }
+
+    @Test
+    void regionalIsForbiddenOnBadgeDefinitions() {
+        // Récompenses — définitions de badges : réservé au national.
+        as(regionalToken).when().get("/api/v1/admin/gamification/badges").then().statusCode(403);
+    }
+
+    @Test
+    void nationalIsAllowedOnBadgeDefinitions() {
+        // Témoin du 403 ci-dessus.
+        as(nationalToken).when().get("/api/v1/admin/gamification/badges").then().statusCode(200);
     }
 }

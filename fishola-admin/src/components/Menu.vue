@@ -65,8 +65,8 @@
       <b-navbar-item tag="router-link" :to="{ name: 'competitions' }">
         Concours
       </b-navbar-item>
-      <b-navbar-dropdown label="Utilisateurs" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
-        <b-navbar-item tag="router-link" :to="{ name: 'users' }" v-if="loggedAdmin.isNationalAdmin">
+      <b-navbar-dropdown label="Utilisateurs">
+        <b-navbar-item tag="router-link" :to="{ name: 'users' }">
           Pêcheurs
         </b-navbar-item>
         <b-navbar-item tag="router-link" :to="{ name: 'admins' }" v-if="loggedAdmin.canCreateAdmins">
