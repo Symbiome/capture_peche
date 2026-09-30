@@ -30,8 +30,9 @@
 <template>
     <div class="offline-packs-map">
         <p v-if="!packs.length" class="empty-map">
-            Aucun département téléchargé pour le moment. Téléchargez un
-            département ci-dessus pour visualiser sa couverture sur la carte.
+            Aucune zone téléchargée sur cet appareil. Téléchargez un
+            département depuis l'onglet « Liste » pour visualiser sa
+            couverture sur la carte.
         </p>
         <template v-else>
             <div ref="mapContainer" class="opm-container" />
@@ -55,6 +56,17 @@ interface DepartmentLabel {
     code: string;
     name: string;
     center: [number, number];
+}
+
+interface BoundingBox {
+    minLng: number;
+    minLat: number;
+    maxLng: number;
+    maxLat: number;
+}
+
+function emptyBox(): BoundingBox {
+    return { minLng: Infinity, minLat: Infinity, maxLng: -Infinity, maxLat: -Infinity };
 }
 
 @Component
@@ -111,6 +123,7 @@ export default class OfflinePacksMap extends Vue {
                 if (!this.map) {
                     return;
                 }
+                this.map.resize();
                 this.map.addSource('hydro-offline', { type: 'geojson', data: collection });
                 // Mêmes identifiants de couche que MapLibreMap.vue : attachHydroHover
                 // (ciblage mutualisé) reconnaît hydro-offline-fill/-line et affiche
@@ -189,10 +202,10 @@ export default class OfflinePacksMap extends Vue {
     } {
         const features: any[] = [];
         const departments: DepartmentLabel[] = [];
-        let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+        const globalBox = emptyBox();
 
         this.packs.forEach((pack) => {
-            const deptCoords: [number, number][] = [];
+            const deptBox = emptyBox();
             const packFeatures = (pack.geojson && pack.geojson.features) || [];
             packFeatures.forEach((f: any) => {
                 features.push({
@@ -203,46 +216,49 @@ export default class OfflinePacksMap extends Vue {
                         department_name: pack.name,
                     },
                 });
-                this.flattenCoords(f.geometry, deptCoords);
+                this.extendBox(f.geometry, deptBox);
             });
-            if (deptCoords.length) {
-                const lngs = deptCoords.map((c) => c[0]);
-                const lats = deptCoords.map((c) => c[1]);
+            if (deptBox.minLng !== Infinity) {
                 departments.push({
                     code: pack.code,
                     name: pack.name,
-                    center: [
-                        (Math.min(...lngs) + Math.max(...lngs)) / 2,
-                        (Math.min(...lats) + Math.max(...lats)) / 2,
-                    ],
+                    center: [(deptBox.minLng + deptBox.maxLng) / 2, (deptBox.minLat + deptBox.maxLat) / 2],
                 });
-                deptCoords.forEach(([lng, lat]) => {
-                    if (lng < minLng) minLng = lng;
-                    if (lat < minLat) minLat = lat;
-                    if (lng > maxLng) maxLng = lng;
-                    if (lat > maxLat) maxLat = lat;
-                });
+                globalBox.minLng = Math.min(globalBox.minLng, deptBox.minLng);
+                globalBox.minLat = Math.min(globalBox.minLat, deptBox.minLat);
+                globalBox.maxLng = Math.max(globalBox.maxLng, deptBox.maxLng);
+                globalBox.maxLat = Math.max(globalBox.maxLat, deptBox.maxLat);
             }
         });
 
         return {
             collection: { type: 'FeatureCollection', features },
-            bounds: minLng === Infinity ? null : [[minLng, minLat], [maxLng, maxLat]],
+            bounds:
+                globalBox.minLng === Infinity
+                    ? null
+                    : [[globalBox.minLng, globalBox.minLat], [globalBox.maxLng, globalBox.maxLat]],
             departments,
         };
     }
 
-    private flattenCoords(geometry: any, out: [number, number][]) {
+    // Emprise calculée par min/max courant, sans tableau intermédiaire ni
+    // `Math.min(...coords)` : un pack départemental compte des centaines de
+    // milliers de sommets, et l'étalement en arguments dépassait la pile
+    // d'appels -- la carte n'était alors jamais créée (#209).
+    private extendBox(geometry: any, box: BoundingBox) {
         if (!geometry) {
             return;
         }
         if (geometry.type === 'GeometryCollection') {
-            (geometry.geometries || []).forEach((g: any) => this.flattenCoords(g, out));
+            (geometry.geometries || []).forEach((g: any) => this.extendBox(g, box));
             return;
         }
         const walk = (c: any) => {
             if (typeof c[0] === 'number') {
-                out.push([c[0], c[1]]);
+                if (c[0] < box.minLng) box.minLng = c[0];
+                if (c[1] < box.minLat) box.minLat = c[1];
+                if (c[0] > box.maxLng) box.maxLng = c[0];
+                if (c[1] > box.maxLat) box.maxLat = c[1];
             } else {
                 c.forEach(walk);
             }
