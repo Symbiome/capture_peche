@@ -38,6 +38,7 @@ export default class GeolocationService extends AbstractFisholaService {
   static latestPosition?: Position;
   static latestError?: any;
   static notifiedPositionDisabled: boolean = false;
+  static readonly WATCH_TIMEOUT_MS = 15000;
 
   constructor() {
     super();
@@ -75,10 +76,13 @@ export default class GeolocationService extends AbstractFisholaService {
             console.error("Il y a déjà un watcher en cours");
             resolve(false);
           } else {
+            // Un premier fix navigateur (Wi-Fi/IP sur desktop, GPS à froid sur
+            // mobile web) dépasse souvent 3 s ; or une erreur TIMEOUT arrête le
+            // watcher et « autour de moi » échouait systématiquement (#198).
             const options = {
               enableHighAccuracy: false,
               maximumAge: 20,
-              timeout: 3000,
+              timeout: GeolocationService.WATCH_TIMEOUT_MS,
             };
             const watchId: CallbackID = await Geolocation.watchPosition(
               options,
@@ -134,6 +138,36 @@ export default class GeolocationService extends AbstractFisholaService {
     });
   }
 
+  // Refus de permission : code 1 de GeolocationPositionError (web) ou message
+  // du plugin natif.
+  static isPermissionDenied(error: any): boolean {
+    if (!error) {
+      return false;
+    }
+    if (error.code === 1) {
+      return true;
+    }
+    const message: string = (error.message || "").toLowerCase();
+    return message.indexOf("denied") != -1;
+  }
+
+  // Erreur remontée par le watcher (qui s'est alors arrêté) : inutile
+  // d'attendre une position qui ne viendra plus, on rejette tout de suite.
+  static isDefinitiveError(error: any): boolean {
+    if (!error) {
+      return false;
+    }
+    if (GeolocationService.isPermissionDenied(error)) {
+      return true;
+    }
+    if (error.code === 2 || error.code === 3) {
+      return true;
+    }
+    return (
+      !!error.message && error.message.indexOf("location unavailable") != -1
+    );
+  }
+
   static getPositionWithRetryUntilTimeout(ms: number): Promise<Position> {
     console.debug("getPositionWithRetryUntilTimeout", ms);
     if (ms < 0) {
@@ -146,17 +180,7 @@ export default class GeolocationService extends AbstractFisholaService {
           resolve(result);
         },
         (error) => {
-          if (
-            error &&
-            error.message &&
-            error.message.indexOf("User denied") != -1
-          ) {
-            reject(error);
-          } else if (
-            error &&
-            error.message &&
-            error.message.indexOf("location unavailable") != -1
-          ) {
+          if (GeolocationService.isDefinitiveError(error)) {
             reject(error);
           } else {
             setTimeout(() => {
