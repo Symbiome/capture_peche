@@ -210,11 +210,25 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.ok(canDelete).build();
     }
 
+    /** Captures et sorties qui utilisent la technique (#202). */
+    @GET
+    @Path("/techniques/usage/{techniqueId}")
+    public ReferentialDao.ReferentialUsage getTechniqueUsage(@PathParam("techniqueId") UUID techniqueId) {
+        checkIsStaff();
+        return referentialDao.techniqueUsage(techniqueId);
+    }
+
+    // Une technique utilisée n'est pas supprimée (historique perdu) mais
+    // refusée en 409 avec son usage : l'admin l'archive à la place (#202).
     @DELETE
     @Path("/techniques/{techniqueId}")
     @Audited(value = "technique.delete", entityType = "technique", entityIdParam = "techniqueId")
     public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
         checkIsNationalAdmin();
+        ReferentialDao.ReferentialUsage usage = referentialDao.techniqueUsage(techniqueId);
+        if (usage.isUsed()) {
+            return Response.status(Response.Status.CONFLICT).entity(usage).build();
+        }
         referentialDao.deleteTechnique(techniqueId);
         return Response.noContent().build();
     }
@@ -253,11 +267,24 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.ok(canDelete).build();
     }
 
+    /** Captures et sorties qui utilisent l'espèce (#202). */
+    @GET
+    @Path("/raw-species/usage/{speciesId}")
+    public ReferentialDao.ReferentialUsage getSpecieUsage(@PathParam("speciesId") UUID speciesId) {
+        checkIsStaff();
+        return referentialDao.speciesUsage(speciesId);
+    }
+
+    // Même règle que pour les techniques : 409 + usage si l'espèce est utilisée (#202).
     @DELETE
     @Path("/raw-species/{speciesId}")
     @Audited(value = "species.delete", entityType = "species", entityIdParam = "speciesId")
     public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
         checkIsNationalAdmin();
+        ReferentialDao.ReferentialUsage usage = referentialDao.speciesUsage(speciesId);
+        if (usage.isUsed()) {
+            return Response.status(Response.Status.CONFLICT).entity(usage).build();
+        }
         referentialDao.deleteSpecie(speciesId);
         return Response.noContent().build();
     }

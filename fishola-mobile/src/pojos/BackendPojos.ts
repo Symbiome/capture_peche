@@ -77,6 +77,7 @@ export interface SpeciesWithAlias {
     scientificName?: string;
     mandatoryReport: boolean;
     reportLink?: string;
+    archived: boolean;
     alias?: string;
     present: boolean;
     authorizedSample: boolean;
@@ -118,6 +119,7 @@ export interface Species extends Serializable {
     scientificName: string;
     mandatoryReport: boolean;
     reportLink: string;
+    archived: boolean;
 }
 
 export interface Technique extends Serializable {
@@ -125,6 +127,7 @@ export interface Technique extends Serializable {
     name: string;
     exportAs: string;
     builtIn: boolean;
+    archived: boolean;
 }
 
 export interface Weather extends Serializable {

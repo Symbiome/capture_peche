@@ -26,6 +26,7 @@
       :columns="specieColumns"
       :createElement="createSpecie"
       :canDelete="true"
+      :archivable="true"
       :canDeletePredicate="canDeleteSpecie"
     ></Referential>
   </div>
@@ -90,6 +91,11 @@ const specieColumns: any[] = [
   {
     field: "codeTaxref",
     label: "Code TAXREF",
+  },
+  {
+    field: "archived",
+    label: "Archivé ?",
+    isABoolean: true
   }
 ];
 
@@ -99,7 +105,8 @@ function createSpecie(): any {
     builtIn: true,
     exportAs: "NouvelleEspece",
     mandatorySize: true,
-    mandatoryReport: false
+    mandatoryReport: false,
+    archived: false
   };
 }
 
