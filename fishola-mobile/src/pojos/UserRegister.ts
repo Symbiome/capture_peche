@@ -26,7 +26,6 @@ export default class UserRegister {
   email: string;
   password: string;
   acceptsMailNotifications: boolean;
-  acceptsShareTrips: boolean;
   postalCode: string;
   birthYear: string;
 
@@ -37,7 +36,6 @@ export default class UserRegister {
     this.email = "";
     this.password = "";
     this.acceptsMailNotifications = false;
-    this.acceptsShareTrips = false;
     this.postalCode = "";
     this.birthYear = "";
   }

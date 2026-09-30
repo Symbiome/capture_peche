@@ -35,7 +35,6 @@ export default class UserProfile {
     public initials: string,
     public sampleBaseId: string,
     public acceptsMailNotifications: boolean,
-    public acceptsShareTrips: boolean,
     public lastNewsSeenDate: Date
   ) {}
 
@@ -55,7 +54,6 @@ export default class UserProfile {
       input.initials,
       input.sampleBaseId,
       input.acceptsMailNotifications,
-      input.acceptsShareTrips,
       input.lastNewsSeenDate,
     );
     result.lastName = input.lastName;

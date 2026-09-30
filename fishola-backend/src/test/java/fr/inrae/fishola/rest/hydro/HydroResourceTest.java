@@ -93,7 +93,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void ensureTestUser() {
         if (usersDao.findByEmail("thimel@codelutin.com").isEmpty()) {
             usersDao.create("Thimel", "Test", "thimel-hydro-test",
-                    "thimel@codelutin.com", usersDao.hashPassword("sispea"), false, false, "74000", 1990);
+                    "thimel@codelutin.com", usersDao.hashPassword("sispea"), false, "74000", 1990);
         }
     }
 

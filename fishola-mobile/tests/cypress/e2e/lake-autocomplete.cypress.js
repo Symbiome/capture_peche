@@ -39,7 +39,7 @@
  * par URL directe, la sortie en cours de création vit dans IndexedDB).
  */
 describe("Autocomplétion du champ « Plan d'eau » (#98)", () => {
-  // Profil de recette. `acceptsMailNotifications` / `acceptsShareTrips` à true et
+  // Profil de recette. `acceptsMailNotifications` à true et
   // `lastNewsSeenDate` récente : sinon Menu.vue ouvre la modale « Du nouveau sur
   // FISHOLA » au premier lancement, qui bloque toute interaction.
   const PROFILE = {
@@ -51,7 +51,6 @@ describe("Autocomplétion du champ « Plan d'eau » (#98)", () => {
     initials: "PR",
     sampleBaseId: "PR",
     acceptsMailNotifications: true,
-    acceptsShareTrips: true,
     lastNewsSeenDate: [2026, 1, 1, 0, 0],
   };
 

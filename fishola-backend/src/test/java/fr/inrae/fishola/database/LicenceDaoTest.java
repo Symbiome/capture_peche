@@ -81,7 +81,7 @@ public class LicenceDaoTest extends AbstractFisholaTest {
         Assertions.assertTrue(fishingLicencesDao.getLicence(licence.getId()).isEmpty());
 
         // User is needed for other tests, so we add it again.
-        usersDao.create(user.getFirstName(), user.getLastName(), user.getPseudo(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getAcceptsShareTrips(), user.getPostalCode(), user.getBirthYear());
+        usersDao.create(user.getFirstName(), user.getLastName(), user.getPseudo(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getPostalCode(), user.getBirthYear());
     }
 
     /**
@@ -92,7 +92,7 @@ public class LicenceDaoTest extends AbstractFisholaTest {
     @Transactional
     void testAnonymisingUserDeletesLicencesAndPostalCode() {
         String email = "anonymisation-" + UUID.randomUUID() + "@fishola.test";
-        usersDao.create("Prénom", "Nom", "pseudo-anonymisation", email, "x", true, true, "74000", 1980);
+        usersDao.create("Prénom", "Nom", "pseudo-anonymisation", email, "x", true, "74000", 1980);
         FisholaUser user = usersDao.findByEmail(email).orElseThrow();
 
         FisholaUserLicences licence = new FisholaUserLicences();

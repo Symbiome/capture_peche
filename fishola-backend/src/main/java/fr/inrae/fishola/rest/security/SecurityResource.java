@@ -72,7 +72,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
     private static final String CLAIM_LAST_NAME = "lastName";
     private static final String CLAIM_PSEUDO = "pseudo";
     private static final String CLAIM_RECEIVE_MAIL_NOTIFICATIONS = "receive_mail_notifications";
-    private static final String CLAIM_SHARE_TRIPS = "share_trips";
     private static final String CLAIM_POSTAL_CODE = "postalCode";
     private static final String CLAIM_BIRTH_YEAR = "birthYear";
     private static final Pattern POSTAL_CODE_PATTERN = Pattern.compile("^\\d{5}$");
@@ -143,7 +142,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         claims.put(CLAIM_LAST_NAME, bean.lastName);
         claims.put(CLAIM_PSEUDO, bean.pseudo);
         claims.put(CLAIM_RECEIVE_MAIL_NOTIFICATIONS, ""+ bean.acceptsMailNotifications);
-        claims.put(CLAIM_SHARE_TRIPS, ""+ bean.acceptsShareTrips);
         claims.put(CLAIM_PASSWORD_HASHED, passwordHashed);
         claims.put(CLAIM_POSTAL_CODE, bean.postalCode);
         claims.put(CLAIM_BIRTH_YEAR, ""+ bean.birthYear);
@@ -236,7 +234,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                     email,
                     getClaimOrFail.apply(CLAIM_PASSWORD_HASHED),
                     Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_RECEIVE_MAIL_NOTIFICATIONS)),
-                    Boolean.parseBoolean(getClaimOrFail.apply(CLAIM_SHARE_TRIPS)),
                     getClaimOrFail.apply(CLAIM_POSTAL_CODE),
                     Integer.parseInt(getClaimOrFail.apply(CLAIM_BIRTH_YEAR))
             );
@@ -471,7 +468,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                 .gender(Optional.ofNullable(input.getGender()))
                 .sampleBaseId(encodeSampleBaseId(input.getSampleBaseId()))
                 .acceptsMailNotifications(input.getAcceptsMailNotifications())
-                .acceptsShareTrips(input.getAcceptsShareTrips())
                 .lastNewsSeenDate(input.getLastNewsSeenDate());
         ImmutableUserProfile result = builder.build();
         return result;
@@ -517,7 +513,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         user.setBirthYear(profile.birthYear().orElse(null));
         user.setGender(profile.gender().orElse(null));
         user.setAcceptsMailNotifications(profile.acceptsMailNotifications());
-        user.setAcceptsShareTrips(profile.acceptsShareTrips());
         user.setLastNewsSeenDate(profile.lastNewsSeenDate());
 
         Map<String, String> validationErrors = validateProfile(user);
@@ -638,7 +633,6 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
                 .excludeFromExports(input.getExcludeFromExports())
                 .createdOn(input.getCreatedOn())
                 .acceptsEmailNotifications(input.getAcceptsMailNotifications())
-                .acceptsShareTrips(input.getAcceptsShareTrips())
                 .build();
         return result;
     }
