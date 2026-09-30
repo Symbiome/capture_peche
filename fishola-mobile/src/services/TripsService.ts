@@ -27,8 +27,6 @@ import {
   TripBean,
   CatchBean,
   DeviceType,
-  TripSocialReaction,
-  SocialReaction,
 } from "@/pojos/BackendPojos";
 import CatchSummary from "@/pojos/CatchSummary";
 
@@ -227,42 +225,6 @@ export default class TripsService extends AbstractFisholaService {
     const realDate = Helpers.parseLocalDate(input.date);
     input.date = realDate;
     return input;
-  }
-
-  static async listSocialTrips(lakeId: string) {
-    const params = {
-      lakeId: lakeId,
-      pageNumber: 1,
-      pageSize: 40,
-    };
-    const result = await this.backendGetWithArgs("/v1/social/", params);
-    return result.elements;
-  }
-
-  static async postSocialReaction(
-    tripId: string,
-    socialReaction: SocialReaction
-  ) {
-    const tripSocialReaction: TripSocialReaction = {
-      tripId: tripId,
-      userId: "",
-      message: "",
-      reaction: socialReaction,
-    };
-    await this.backendPost("/v1/social/" + tripId, tripSocialReaction);
-  }
-
-  static async deleteSocialReaction(
-    tripId: string,
-    socialReaction: SocialReaction
-  ) {
-    const tripSocialReaction: TripSocialReaction = {
-      tripId: tripId,
-      userId: "",
-      message: "",
-      reaction: socialReaction,
-    };
-    await this.backendDelete("/v1/social/" + tripId, tripSocialReaction);
   }
 
   static listTrips(

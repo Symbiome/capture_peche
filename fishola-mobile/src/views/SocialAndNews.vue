@@ -33,11 +33,7 @@
           </h1>
 
           <div class="main-tabs">
-            <div class="tab" :class="visualizationMode === 'news' ? '' : 'selected'"
-              @click="changeVisualizationMode('social')">
-              Autour de moi
-            </div>
-            <div class="tab" :class="visualizationMode === 'news' ? 'selected' : ''" @click="showNewsTab">
+            <div class="tab selected">
               <span> Communications </span>
               <div class="news-badge" v-if="unreadNewsCountForCurrentLake > 0">
                 {{ unreadNewsCountForCurrentLake }}
@@ -45,8 +41,7 @@
             </div>
           </div>
           <div class="padding-content">
-            <SocialView v-if="visualizationMode === 'social'" :lakeId="selectedLakeId" />
-            <NewsView :news="news" v-else />
+            <NewsView :news="news" />
           </div>
         </div>
       </div>
@@ -62,12 +57,11 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
 import { NewsBean } from "@/pojos/BackendPojos";
-import SocialView from "./Social.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import TripsService from "@/services/TripsService";
@@ -76,7 +70,6 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
   components: {
     MyTrips,
     FisholaHeader,
-    SocialView,
     NewsView,
     FisholaFooter,
     RunningOverlay,
@@ -84,11 +77,7 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
   },
 })
 export default class SocialAndNewsView extends Vue {
-  @Prop()
-  visualizationMode: string;
-
   unreadNewsCountForCurrentLake = 0;
-  unreadNewsCountPerLake: Map<string, number> = new Map();
   hasRunningTrip = false;
   selectedLakeId = "";
   news: NewsBean[] = [];
@@ -137,28 +126,19 @@ export default class SocialAndNewsView extends Vue {
         }
         return (lastNewsSeenDateForLake ? newsDate > lastNewsSeenDateForLake : true);
       }).length;
-      this.unreadNewsCountPerLake.set(this.selectedLakeId, this.unreadNewsCountForCurrentLake);
-      
+      this.markNewsAsSeen();
     } catch (e) {
       // News section will be left empty
     }
   }
 
-  changeVisualizationMode(newMode: string) {
-    if (this.visualizationMode !== newMode) {
-      this.$router.push({ params: { visualizationMode: newMode } });
-    }
-  }
-
-  async showNewsTab() {
-    this.changeVisualizationMode('news');
+  async markNewsAsSeen() {
     localStorage.setItem("last_news_seen_" + this.selectedLakeId, new Date().toISOString());
-    if (this.unreadNewsCountPerLake.get(this.selectedLakeId) ?? 0 > 0) {
+    if (this.unreadNewsCountForCurrentLake > 0) {
       try {
         let profile = await ProfileService.getProfile();
         profile.lastNewsSeenDate = new Date();
         ProfileService.saveProfile(profile);
-        this.updateUnreadNewsCount();
       } catch (e) {
         // Unread news count won't be updated
       }

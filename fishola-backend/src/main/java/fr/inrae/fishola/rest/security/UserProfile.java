@@ -59,8 +59,6 @@ public interface UserProfile {
 
     Boolean acceptsMailNotifications();
 
-    Boolean acceptsShareTrips();
-
     LocalDateTime lastNewsSeenDate();
 
     @Value.Derived

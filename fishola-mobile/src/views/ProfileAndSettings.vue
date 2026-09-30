@@ -85,7 +85,6 @@ export default class ProfileAndSettingsView extends Vue {
         sampleBaseId: "",
         offlineMarker: false,
         acceptsMailNotifications: false,
-        acceptsShareTrips: true,
         lastNewsSeenDate: new Date(),
     };
     fullName: string = "";

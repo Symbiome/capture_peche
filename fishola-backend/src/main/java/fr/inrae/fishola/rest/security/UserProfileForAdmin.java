@@ -53,6 +53,4 @@ public interface UserProfileForAdmin {
 
     boolean acceptsEmailNotifications();
 
-    boolean acceptsShareTrips();
-
 }
