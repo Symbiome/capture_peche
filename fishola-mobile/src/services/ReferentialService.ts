@@ -20,6 +20,7 @@
  */
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import Helpers from '@/services/Helpers';
 
 export class SpeciesWithAliasAndTechnique {
     constructor (
@@ -113,12 +114,11 @@ export default class ReferentialService extends AbstractFisholaService {
   }
 
   private static searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
-    const term = q.trim().toLowerCase();
-    if (!term) {
+    if (!q.trim()) {
       return Promise.resolve([]);
     }
     return ReferentialService.getLakes()
-      .then((lakes) => lakes.filter((l) => l.name && l.name.toLowerCase().indexOf(term) >= 0).slice(0, 50))
+      .then((lakes) => Helpers.rankBySearch(lakes, q, (l) => [l.name]).slice(0, 50))
       .catch(() => []);
   }
 

@@ -71,6 +71,7 @@
 
 import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 import ReferentialService from '@/services/ReferentialService';
+import Helpers from '@/services/Helpers';
 import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 
 @Component({
@@ -219,9 +220,7 @@ export default class LakeAndYearSelection extends Vue {
       return;
     }
 
-    const lowered = term.toLowerCase();
-    this.suggestedFavorites = this.favoriteLakes.filter((lake) =>
-      lake.name.toString().toLowerCase().indexOf(lowered) >= 0);
+    this.suggestedFavorites = Helpers.rankBySearch(this.favoriteLakes, term, (lake) => [lake.name]);
 
     if (term.trim().length < 2) {
       this.suggestedLakes = [];

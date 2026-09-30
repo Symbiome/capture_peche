@@ -239,9 +239,7 @@ export default class LakeSelection extends Vue {
     }
 
     // Favoris filtrés côté client (petite liste, pas d'appel serveur).
-    const lowered = term.toLowerCase();
-    this.suggestedFavorites = this.favoriteLakes.filter((lake) =>
-      lake.name.toString().toLowerCase().indexOf(lowered) >= 0);
+    this.suggestedFavorites = Helpers.rankBySearch(this.favoriteLakes, term, (lake) => [lake.name]);
 
     // Moins de 2 caractères : on n'interroge pas le serveur.
     if (term.trim().length < 2) {

@@ -1126,19 +1126,17 @@ export default class EditCatchView extends Vue {
     this.$forceUpdate();
   }
 
-  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique.
+  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique,
+  // correspondances exactes puis en début de nom en tête (#197).
   filteredSpeciesOptions(): SpeciesWithAlias[] {
     if (!this.speciesSearch.trim()) {
       return this.allSpeciesWithAliases;
     }
-    const needle = Helpers.unaccent(this.speciesSearch.trim());
-    return this.allSpeciesWithAliases.filter((s) => {
-      return (
-        Helpers.unaccent(s.name).includes(needle) ||
-        (s.alias && Helpers.unaccent(s.alias).includes(needle)) ||
-        (s.scientificName && Helpers.unaccent(s.scientificName).includes(needle))
-      );
-    });
+    return Helpers.rankBySearch(this.allSpeciesWithAliases, this.speciesSearch, (s) => [
+      s.name,
+      s.alias,
+      s.scientificName,
+    ]);
   }
 
   checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {

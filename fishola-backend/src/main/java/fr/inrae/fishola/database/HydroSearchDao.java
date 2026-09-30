@@ -36,6 +36,8 @@ import jakarta.inject.Singleton;
 import org.jooq.Record;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -117,28 +119,55 @@ public class HydroSearchDao extends AbstractFisholaDao {
                 .map(HydroSearchDao::toNearby));
     }
 
+    // Search key of a name: unaccented, lower-case, every run of non-alphanumeric
+    // characters (hyphen, apostrophe, space...) collapsed to one space, leading
+    // article dropped, so that « chalon sur saone » and « Chalon-sur-Saône »
+    // share the same key, as do « rhone » and « le Rhône » (BD TOPO names
+    // carry their article: « l'Arve », « la Saône ») (#197).
+    private static String searchKey(String expression) {
+        return "regexp_replace(btrim(regexp_replace(lower(f_unaccent(" + expression + ")), "
+                + "'[^a-z0-9]+', ' ', 'g')), '^(le|la|les|l) ', '')";
+    }
+
+    // Relevance ordering shared by every name search (#197): exact match, then
+    // name starting with the query, then query found as a whole word, then any
+    // other match; ties broken by trigram similarity then by the shortest name
+    // (« Lyon » before « Lyons-la-Forêt »). Consumes RELEVANCE_BINDS binds of
+    // the query.
+    private static final int RELEVANCE_BINDS = 4;
+
+    private static String relevanceOrderBy(String column) {
+        String name = searchKey(column);
+        String term = searchKey("?");
+        return "ORDER BY CASE "
+                + "  WHEN " + name + " = " + term + " THEN 0 "
+                + "  WHEN " + name + " LIKE " + term + " || '%' THEN 1 "
+                + "  WHEN ' ' || " + name + " || ' ' LIKE '% ' || " + term + " || ' %' THEN 2 "
+                + "  ELSE 3 END, "
+                + "similarity(f_unaccent(" + column + "), f_unaccent(?)) DESC, "
+                + "length(" + column + "), " + column + " ";
+    }
+
     // Accent-insensitive, typo-tolerant name search: a substring match
     // (ILIKE '%q%') OR a trigram-similar match (%), both on f_unaccent(name) so
-    // they use the functional GIN index (V1.1.2). Prefix matches rank first,
-    // then similarity. Bind order: q (ILIKE where), q (% where), q (prefix
-    // order), q (similarity order), limit.
+    // they use the functional GIN index (V1.1.2), ranked by relevanceOrderBy.
+    // Bind order: q (ILIKE where), q (% where), q x RELEVANCE_BINDS, limit.
     private static final String SEARCH_COMMUNES_SQL = ""
             + "SELECT insee_com, name, latitude, longitude "
             + "FROM commune "
             + "WHERE f_unaccent(name) ILIKE '%' || f_unaccent(?) || '%' "
             + "   OR f_unaccent(name) % f_unaccent(?) "
-            + "ORDER BY (f_unaccent(name) ILIKE f_unaccent(?) || '%') DESC, "
-            + "         similarity(f_unaccent(name), f_unaccent(?)) DESC, name "
+            + relevanceOrderBy("name")
             + "LIMIT ?";
 
     /**
      * Communes matching the textual query (accent-insensitive, typo-tolerant),
-     * prefix matches first then by descending trigram similarity.
+     * exact matches first, then prefix, whole-word and similar matches.
      */
     public List<CommuneResult> searchCommunes(String query, int limit) {
         String q = forSearch(query);
         return withContext(context -> context
-                .fetch(SEARCH_COMMUNES_SQL, q, q, q, q, limit)
+                .fetch(SEARCH_COMMUNES_SQL, searchBinds(q, List.of(), limit))
                 .map(rec -> (CommuneResult) ImmutableCommuneResult.builder()
                         .insee(rec.get("insee_com", String.class))
                         .name(rec.get("name", String.class))
@@ -152,7 +181,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // Water entity name search, accent-insensitive and typo-tolerant (same
     // strategy as communes), with an optional kind filter and only entities that
     // have a geometry (so a centroid is available). Bind order: q (ILIKE where),
-    // q (% where), kind, kind, q (prefix order), q (similarity order), limit.
+    // q (% where), kind, kind, q x RELEVANCE_BINDS, limit.
     private static final String SEARCH_ENTITIES_SQL = ""
             + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
             + "       com.name AS commune, com.code_postal AS code_postal "
@@ -168,8 +197,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
             + "  AND (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
             + "       OR f_unaccent(we.name) % f_unaccent(?)) "
             + "  AND (?::text IS NULL OR we.kind::text = ?) "
-            + "ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(?) || '%') DESC, "
-            + "         similarity(f_unaccent(we.name), f_unaccent(?)) DESC, we.name "
+            + relevanceOrderBy("we.name")
             + "LIMIT ?";
 
     // Résolution commune/CP d'une entité par son id (#15, « résolution
@@ -217,14 +245,14 @@ public class HydroSearchDao extends AbstractFisholaDao {
 
     /**
      * Water entities matching the textual query (accent-insensitive, typo-
-     * tolerant), optionally filtered by kind, prefix matches first then by
-     * descending trigram similarity.
+     * tolerant), optionally filtered by kind, exact matches first, then
+     * prefix, whole-word and similar matches.
      */
     public List<WaterEntitySearchResult> searchWaterEntities(String query, Optional<String> kind, int limit) {
         String q = forSearch(query);
         String kindFilter = kind.orElse(null);
         return withContext(context -> context
-                .fetch(SEARCH_ENTITIES_SQL, q, q, kindFilter, kindFilter, q, q, limit)
+                .fetch(SEARCH_ENTITIES_SQL, searchBinds(q, Arrays.<Object>asList(kindFilter, kindFilter), limit))
                 .map(rec -> (WaterEntitySearchResult) ImmutableWaterEntitySearchResult.builder()
                         .waterEntityId(rec.get("id", UUID.class))
                         .name(rec.get("name", String.class))
@@ -259,20 +287,10 @@ public class HydroSearchDao extends AbstractFisholaDao {
                 + "WHERE (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
                 + "       OR f_unaccent(we.name) % f_unaccent(?)) "
                 + departmentClause
-                + "ORDER BY (f_unaccent(we.name) ILIKE f_unaccent(?) || '%') DESC, "
-                + "         similarity(f_unaccent(we.name), f_unaccent(?)) DESC, we.name "
+                + relevanceOrderBy("we.name")
                 + "LIMIT ?";
-        List<Object> binds = new ArrayList<>();
-        binds.add(q);
-        binds.add(q);
-        if (scoped) {
-            binds.addAll(departmentCodes);
-        }
-        binds.add(q);
-        binds.add(q);
-        binds.add(limit);
         return withContext(context -> context
-                .fetch(sql, binds.toArray())
+                .fetch(sql, searchBinds(q, new ArrayList<>(departmentCodes), limit))
                 .map(rec -> (WaterEntityName) ImmutableWaterEntityName.builder()
                         .id(rec.get("id", UUID.class))
                         .name(rec.get("name", String.class))
@@ -335,6 +353,18 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // inject ILIKE wildcards; entity / commune names never contain them.
     private static String forSearch(String query) {
         return query == null ? "" : query.replaceAll("[%_\\\\]", "");
+    }
+
+    // Binds of a name search, in SQL order: q (ILIKE where), q (% where), the
+    // query-specific filter binds, q x RELEVANCE_BINDS, limit.
+    private static Object[] searchBinds(String q, List<Object> filterBinds, int limit) {
+        List<Object> binds = new ArrayList<>();
+        binds.add(q);
+        binds.add(q);
+        binds.addAll(filterBinds);
+        binds.addAll(Collections.nCopies(RELEVANCE_BINDS, q));
+        binds.add(limit);
+        return binds.toArray();
     }
 
     // Mapbox Vector Tile of the hydrographic network for a slippy-map tile
