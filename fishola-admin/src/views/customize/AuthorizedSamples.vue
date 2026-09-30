@@ -52,7 +52,6 @@
       <b-select
         v-model="selectedDepartment"
         placeholder="Choisir un département"
-        @input="changeDepartment"
       >
         <option
           v-for="d in departments"
@@ -74,7 +73,8 @@
     <div v-if="selectedDepartment && departmentEntities.length > maxLakeBeforeShowingAutoComplete">
       Ce département compte {{ departmentEntities.length }} milieux : indiquez ceux à afficher.
       <MultipleAutoComplete
-        :defaultSelection="lastLakeSelection"
+        :key="selectedDepartment"
+        :defaultSelection="initialLakeSelection"
         :data="lakeSelectionOptions"
         @updated="(value) => changeLakeSelection(value)"
       />
@@ -89,7 +89,7 @@
     <table
       class="table is-striped"
       aria-describedby="table-desc"
-      v-if="selectedLakes.length > 0"
+      v-if="isMatrixReady()"
     >
       <thead>
         <tr>
@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, ref, Ref } from "vue";
+import { getCurrentInstance, ref, Ref, watch } from "vue";
 
 import BackendService from "@/services/BackendService";
 import MultipleAutoComplete from "@/components/MultipleAutoComplete.vue";
@@ -207,7 +207,11 @@ const meshSizeMap: Ref<any> = ref({});
 
 const loggedAdmin: Ref<Admin> = ref({ email: "", isNationalAdmin: false });
 const lakeSelectionOptions: Ref<any[]> = ref([]);
-const lastLakeSelection = useStorage("lastLakeSelection", []);
+const lastLakeSelectionByDepartment: Ref<Record<string, string[]>> = useStorage(
+  "lastLakeSelectionByDepartment",
+  {}
+);
+const initialLakeSelection: Ref<string[]> = ref([]);
 const selectedLakes: Ref<Lake[]> = ref([]);
 const maxLakeBeforeShowingAutoComplete = 5;
 
@@ -221,6 +225,10 @@ Promise.all([
   loggedAdmin.value = data[2];
 });
 
+// #203 : un @input sur b-select se déclenche avant la mise à jour du v-model (écouté sur
+// « change ») et chargeait les milieux du département précédent.
+watch(selectedDepartment, changeDepartment);
+
 async function changeDepartment() {
   selectedLakes.value = [];
   lakeSelectionOptions.value = [];
@@ -228,19 +236,38 @@ async function changeDepartment() {
   if (!selectedDepartment.value) {
     return;
   }
-  departmentEntities.value = await BackendService.backendGet(
-    "/v1/referential/waterEntities/by-department/" + encodeURIComponent(selectedDepartment.value)
+  const requestedDepartment = selectedDepartment.value;
+  const entities = await BackendService.backendGet(
+    "/v1/referential/waterEntities/by-department/" + encodeURIComponent(requestedDepartment)
   );
+  if (requestedDepartment !== selectedDepartment.value) {
+    return;
+  }
+  departmentEntities.value = entities;
   lakeSelectionOptions.value = departmentEntities.value.map(l => ({ id: l.id, label: l.name }));
+  initialLakeSelection.value = lastLakeSelectionForDepartment();
   if (departmentEntities.value.length <= maxLakeBeforeShowingAutoComplete) {
     selectedLakes.value = departmentEntities.value;
     await loadMatrix();
   }
 }
 
+// La sélection mémorisée est propre à chaque département (#203) : sans cela, les
+// milieux d'un autre département réapparaissaient en puces « Autre plan d'eau » inertes.
+function lastLakeSelectionForDepartment(): string[] {
+  const stored = lastLakeSelectionByDepartment.value[selectedDepartment.value ?? ""] ?? [];
+  const departmentIds = new Set(departmentEntities.value.map(l => l.id));
+  return stored.filter(id => departmentIds.has(id));
+}
+
 function changeLakeSelection(newSelectedLakeIds: string[]) {
   selectedLakes.value = departmentEntities.value.filter(l => newSelectedLakeIds.indexOf(l.id) > -1);
-  localStorage.setItem("lastLakeSelection", JSON.stringify(newSelectedLakeIds));
+  if (selectedDepartment.value) {
+    lastLakeSelectionByDepartment.value = {
+      ...lastLakeSelectionByDepartment.value,
+      [selectedDepartment.value]: [...newSelectedLakeIds]
+    };
+  }
   if (selectedLakes.value.length > 0) {
     loadMatrix();
   }
@@ -287,6 +314,12 @@ function buildMaps(speciesPerLake: any) {
     });
   });
   forceUpdate();
+}
+
+// Entre le choix des milieux et la réponse du backend, les maps ne couvrent pas encore
+// les nouveaux milieux : on n'affiche la matrice qu'une fois construite.
+function isMatrixReady(): boolean {
+  return selectedLakes.value.length > 0 && selectedLakes.value.every(l => !!regulatedMap.value[l.id]);
 }
 
 function startRegulation(l: Lake, s: Specie) {

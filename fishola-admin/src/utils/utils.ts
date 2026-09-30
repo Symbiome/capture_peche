@@ -21,3 +21,35 @@ export function maskTimeInput(raw: string): string {
 export function isValidTimeString(value: string): boolean {
   return TIME_24H_REGEX.test(value);
 }
+
+// Minuscules, sans accents, tirets et apostrophes remplacés par des espaces :
+// « Saône » et « saone », « Chalon-sur-Saône » et « chalon sur saone » se valent.
+export function normalizeSearchText(value: string): string {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[-'’]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Classement d'un libellé pour une recherche (#197, #203) : égalité exacte, puis
+// préfixe, puis début de mot, puis simple inclusion. null si le libellé ne correspond pas.
+export function searchRank(label: string, query: string): number | null {
+  const normalizedLabel = normalizeSearchText(label);
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) {
+    return 3;
+  }
+  if (normalizedLabel === normalizedQuery) {
+    return 0;
+  }
+  if (normalizedLabel.startsWith(normalizedQuery)) {
+    return 1;
+  }
+  if (normalizedLabel.includes(" " + normalizedQuery)) {
+    return 2;
+  }
+  return normalizedLabel.includes(normalizedQuery) ? 3 : null;
+}
