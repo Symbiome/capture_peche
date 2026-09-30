@@ -27,6 +27,7 @@ interface ViteTypeOptions {
 interface ImportMetaEnv {
   readonly VITE__FORCED_DEVICE_TYPE: any;
   readonly VITE__REMOVE_PDF_VIEWER: string;
+  readonly VITE__AUTOMATIC_MEASURE_ENABLED: string | undefined;
   readonly VITE__MVN_VERSION: string;
   readonly VITE__PACKAGE_JSON_VERSION: string;
   readonly VITE__GIT_REVISION: string;
