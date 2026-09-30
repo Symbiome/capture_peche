@@ -147,7 +147,9 @@ export default class TripSpeciesView extends Vue {
     this.trip = someTrip;
     this.species = [];
     this.allSpecies.forEach((s) => {
-      if (s.builtIn || this.trip.speciesIds.indexOf(s.id) != -1) {
+      const selected = this.trip.speciesIds.indexOf(s.id) != -1;
+      // Espèce archivée (#202) : plus proposée, sauf si déjà choisie pour la sortie.
+      if ((s.builtIn && !s.archived) || selected) {
         this.species.push(s);
       }
     });

@@ -372,8 +372,11 @@ function onTimeBlur(field: "controlTime" | "startTime" | "endTime") {
 loadReferentials();
 
 async function loadReferentials() {
-  techniques.value = await BackendService.backendGet("/v1/referential/techniques");
-  species.value = await BackendService.backendGet("/v1/referential/species");
+  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie.
+  const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
+  const allSpecies = await BackendService.backendGet("/v1/referential/species");
+  techniques.value = allTechniques.filter((t: any) => !t.archived);
+  species.value = allSpecies.filter((s: any) => !s.archived);
 }
 
 function addAngler() {

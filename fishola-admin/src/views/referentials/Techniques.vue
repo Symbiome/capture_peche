@@ -26,6 +26,7 @@
       :columns="techniqueColumns"
       :createElement="createTechnique"
       :canDelete="true"
+      :archivable="true"
       :canDeletePredicate="canDeleteTechnique"
     ></Referential>
   </div>
@@ -50,6 +51,11 @@ const techniqueColumns: any[] = [
   {
     field: "exportAs",
     label: "Nom d'export"
+  },
+  {
+    field: "archived",
+    label: "Archivé ?",
+    isABoolean: true
   }
 ];
 
@@ -57,7 +63,8 @@ function createTechnique(): any {
   return {
     name: "Nouvelle technique",
     builtIn: true,
-    exportAs: "technique"
+    exportAs: "technique",
+    archived: false
   };
 }
 

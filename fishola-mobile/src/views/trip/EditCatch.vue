@@ -623,6 +623,7 @@ export default class EditCatchView extends Vue {
       mandatorySize: s.mandatorySize,
       mandatoryReport: s.mandatoryReport,
       reportLink: s.reportLink,
+      archived: s.archived,
       authorizedSample: s.authorizedSample,
       minSize: 0,
       maxSize: 1000
@@ -632,6 +633,10 @@ export default class EditCatchView extends Vue {
 
   referentialLoaded(data: SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
+      // Espèce archivée (#202) : plus proposée, sauf si c'est celle de la capture.
+      if (s.archived && this.aCatch.speciesId != s.id) {
+        return;
+      }
       if (
           (s.present || ((localStorage.getItem("manual-species")?.indexOf(s.id) ?? -1) > -1)) && (
           s.builtIn || // Espèce de base
@@ -655,6 +660,7 @@ export default class EditCatchView extends Vue {
           builtIn: false,
           mandatorySize: false,
           mandatoryReport: false,
+          archived: false,
           authorizedSample: false,
           minSize: 0,
           maxSize: 1000,
@@ -672,11 +678,14 @@ export default class EditCatchView extends Vue {
       builtIn: false,
       mandatorySize: false,
       mandatoryReport: false,
+      archived: false,
       authorizedSample: false,
       minSize: 0,
       maxSize: 1000
     });
-    data.techniques.forEach((t) => this.allTechniques.push(t));
+    data.techniques
+      .filter((t) => !t.archived || t.id == this.aCatch.techniqueId)
+      .forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
 
