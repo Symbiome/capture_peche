@@ -117,6 +117,10 @@ public class SurveyManualEntryService {
         if (bean.startTime != null && bean.endTime != null && !bean.endTime.isAfter(bean.startTime)) {
             errors.add(new ManualError(null, "endTime", "l'heure de fin doit être postérieure à l'heure de début"));
         }
+        if (bean.controlTime != null && bean.startTime != null && bean.controlTime.isBefore(bean.startTime)) {
+            errors.add(new ManualError(null, "controlTime",
+                    "l'heure du contrôle ne peut pas être antérieure à l'heure de début de pêche"));
+        }
         if (bean.unsurveyedShoreAnglers != null && bean.unsurveyedShoreAnglers < 0) {
             errors.add(new ManualError(null, "unsurveyedShoreAnglers", "doit être ≥ 0"));
         }

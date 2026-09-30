@@ -32,8 +32,8 @@
       <b-field label="Date" class="column is-2">
         <input type="date" class="input" v-model="sortie.day" :max="todayIso" />
       </b-field>
-      <b-field label="Heure du contrôle" class="column is-2" :type="timeErrors.controlTime ? 'is-danger' : ''"
-        :message="timeErrors.controlTime">
+      <b-field label="Heure du contrôle" class="column is-2" :type="controlTimeMessage ? 'is-danger' : ''"
+        :message="controlTimeMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.controlTime" @input="onTimeInput($event, 'controlTime')"
           @blur="onTimeBlur('controlTime')" />
@@ -43,8 +43,8 @@
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.startTime" @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
-      <b-field label="Heure de fin prévue" class="column is-2" :type="timeErrors.endTime ? 'is-danger' : ''"
-        :message="timeErrors.endTime">
+      <b-field label="Heure de fin prévue" class="column is-2" :type="endTimeMessage ? 'is-danger' : ''"
+        :message="endTimeMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.endTime" @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
@@ -224,7 +224,8 @@
     <b-button type="is-light" icon-left="plus" @click="addAngler">Ajouter un pêcheur interrogé</b-button>
 
     <div class="mt-5">
-      <b-button type="is-primary" icon-left="content-save" :loading="loading" @click="submit">
+      <b-button type="is-primary" icon-left="content-save" :loading="loading" :disabled="hasTimeErrors"
+        @click="submit">
         Enregistrer la sortie enquêtée
       </b-button>
     </div>
@@ -319,6 +320,31 @@ const success = ref<any>(null);
 const errors = ref<any[]>([]);
 
 const timeErrors = reactive({ controlTime: "", startTime: "", endTime: "" });
+
+const CONTROL_BEFORE_START_ERROR = "L'heure du contrôle ne peut pas être antérieure à l'heure de début";
+const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'heure de début";
+
+function areValidTimes(...values: string[]): boolean {
+  return values.every((value) => !!value && isValidTimeString(value));
+}
+
+const controlTimeMessage = computed(() => {
+  const { controlTime, startTime } = sortie.value;
+  if (timeErrors.controlTime) {
+    return timeErrors.controlTime;
+  }
+  return areValidTimes(controlTime, startTime) && controlTime < startTime ? CONTROL_BEFORE_START_ERROR : "";
+});
+
+const endTimeMessage = computed(() => {
+  const { endTime, startTime } = sortie.value;
+  if (timeErrors.endTime) {
+    return timeErrors.endTime;
+  }
+  return areValidTimes(endTime, startTime) && endTime <= startTime ? END_NOT_AFTER_START_ERROR : "";
+});
+
+const hasTimeErrors = computed(() => !!(controlTimeMessage.value || timeErrors.startTime || endTimeMessage.value));
 
 const todayIso = computed(() => new Date().toISOString().slice(0, 10));
 
@@ -420,6 +446,9 @@ function cleanAngler(angler: any) {
 }
 
 async function submit() {
+  if (hasTimeErrors.value) {
+    return;
+  }
   loading.value = true;
   success.value = null;
   errors.value = [];

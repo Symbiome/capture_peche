@@ -229,6 +229,29 @@ class SurveyImportXlsxTest {
     }
 
     @Test
+    void sortieWithControlTimeBeforeStartTimeIsRejected() {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            writeSheet(wb, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, List.<String[]>of(
+                    new String[] {"SURVEY-TEST-CTRL", waterEntityName, "01/07/2026", "", ""}));
+            writeSheet(wb, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, List.<String[]>of(
+                    new String[] {"SURVEY-TEST-CTRL", "SURVEY-TEST-SOCTRL", "07:30", "08:00", "11:00"}));
+            writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.of());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+
+            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                    .contentType("application/octet-stream").body(out.toByteArray())
+                    .when().post(URI + "?filename=survey-test-control-time.xlsx&mode=partial")
+                    .then().statusCode(200)
+                    .body("status", equalTo("DONE_WITH_ERRORS"))
+                    .body("errors.code", hasItem("STRUCT_TIME_ORDER"))
+                    .body("errors.column", hasItem(SurveySchema.SHEET_SORTIE + " / Heure du contrôle"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Test
     void lotWithoutBoundsIsRejected() {
         given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")

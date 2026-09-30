@@ -296,6 +296,16 @@ class SurveyManualEntryResourceTest {
     }
 
     @Test
+    void controlTimeBeforeStartTimeIsRejectedWithoutPersisting() {
+        SurveySortieBean sortie = validSortie();
+        sortie.controlTime = LocalTime.of(7, 30);
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.field", hasItem("controlTime"));
+    }
+
+    @Test
     void waterEntityOutsideOperatorScopeIsRejectedWithoutPersisting() {
         SurveySortieBean sortie = validSortie();
         sortie.waterEntityId = bourgetId;
