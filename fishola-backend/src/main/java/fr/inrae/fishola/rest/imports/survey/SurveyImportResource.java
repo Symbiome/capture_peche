@@ -28,6 +28,7 @@ import fr.inrae.fishola.rest.imports.ImportResultBean;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -48,6 +49,8 @@ import java.util.UUID;
 @Path("/api/v1/admin/imports/survey")
 @Produces(MediaType.APPLICATION_JSON)
 public class SurveyImportResource extends AbstractFisholaResource {
+
+    private static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     @Inject
     protected SurveyImportService importService;
@@ -72,5 +75,16 @@ public class SurveyImportResource extends AbstractFisholaResource {
 
         Response.Status httpStatus = result.duplicate ? Response.Status.CONFLICT : Response.Status.OK;
         return Response.status(httpStatus).entity(result).build();
+    }
+
+    /** Gabarit XLSX à remplir (#207) : les quatre feuilles et une ligne d'exemple chacune. */
+    @GET
+    @Path("/template")
+    @Produces(XLSX_MEDIA_TYPE)
+    public Response template() {
+        checkIsStaff();
+        return Response.ok(SurveyTemplate.build())
+                .header("Content-Disposition", "attachment; filename=\"" + SurveyTemplate.FILE_NAME + "\"")
+                .build();
     }
 }
