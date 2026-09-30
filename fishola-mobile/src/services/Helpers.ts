@@ -52,6 +52,64 @@ export default class Helpers {
       .toLowerCase();
   }
 
+  // Minuscules, sans accents, tirets et apostrophes remplacés par des espaces,
+  // article initial retiré : « Chalon-sur-Saône » et « chalon sur saone »,
+  // « le Rhône » et « rhone » se valent (#197, même clé que le backend).
+  static normalizeSearchText(value: string): string {
+    return Helpers.unaccent(value || "")
+      .replace(/[-'’]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/^(le|la|les|l) /, "");
+  }
+
+  // Classement d'un libellé pour une recherche (#197, même règle que l'admin
+  // #203 et que le backend) : égalité exacte, puis préfixe, puis début de mot,
+  // puis simple inclusion. null si le libellé ne correspond pas.
+  static searchRank(label: string, query: string): number | null {
+    const normalizedLabel = Helpers.normalizeSearchText(label);
+    const normalizedQuery = Helpers.normalizeSearchText(query);
+    if (!normalizedQuery) {
+      return 3;
+    }
+    if (normalizedLabel === normalizedQuery) {
+      return 0;
+    }
+    if (normalizedLabel.startsWith(normalizedQuery)) {
+      return 1;
+    }
+    if (normalizedLabel.includes(" " + normalizedQuery)) {
+      return 2;
+    }
+    return normalizedLabel.includes(normalizedQuery) ? 3 : null;
+  }
+
+  // Éléments correspondant à la recherche sur l'un de leurs libellés, les plus
+  // pertinents d'abord (meilleur rang parmi les libellés), ordre d'origine
+  // conservé à rang égal.
+  static rankBySearch<T>(
+    items: T[],
+    query: string,
+    labelsOf: (item: T) => (string | null | undefined)[]
+  ): T[] {
+    return items
+      .map((item) => ({ item, rank: Helpers.bestSearchRank(labelsOf(item), query) }))
+      .filter((entry) => entry.rank !== null)
+      .sort((a, b) => (a.rank as number) - (b.rank as number))
+      .map((entry) => entry.item);
+  }
+
+  private static bestSearchRank(
+    labels: (string | null | undefined)[],
+    query: string
+  ): number | null {
+    const ranks = labels
+      .filter((label): label is string => !!label)
+      .map((label) => Helpers.searchRank(label, query))
+      .filter((rank): rank is number => rank !== null);
+    return ranks.length ? Math.min(...ranks) : null;
+  }
+
   static renderDuration(startedAt: string, finishedAt?: string): string {
     const duration = this.computeDuration(startedAt, finishedAt);
     const result = this.formatDuration(duration, true);
