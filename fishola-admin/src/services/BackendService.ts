@@ -206,6 +206,24 @@ export default abstract class BackendService {
     });
   }
 
+  static backendGetBlob(uri: string): Promise<Blob> {
+    return new Promise<Blob>((resolve, reject) => {
+      const apiUrl = Constants.apiUrl(uri);
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", apiUrl, true);
+      xhr.withCredentials = true;
+      xhr.responseType = "blob";
+      xhr.onload = function() {
+        if (this.status == 200) {
+          resolve(this.response);
+        } else {
+          reject(BackendService.wrapResponseReject(this));
+        }
+      };
+      xhr.send();
+    });
+  }
+
   static backendPostBinary(uri: string, data: ArrayBuffer | Blob): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const apiUrl = Constants.apiUrl(uri);
