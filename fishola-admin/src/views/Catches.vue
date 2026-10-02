@@ -177,6 +177,18 @@ const columns: any[] = [
     sortable: true
   },
   {
+    field: "tailleMinDuLot",
+    label: "Taille min du lot (mm)",
+    searchable: true,
+    sortable: true
+  },
+  {
+    field: "tailleMaxDuLot",
+    label: "Taille max du lot (mm)",
+    searchable: true,
+    sortable: true
+  },
+  {
     field: "aExclure",
     label: "Exclure de l'export",
     searchable: true,
