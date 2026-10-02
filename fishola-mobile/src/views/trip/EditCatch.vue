@@ -111,8 +111,9 @@
                   </span>
                 </div>
               </div>
-              <div class="measure-row">
-                <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
+              <div :class="{ 'measure-row': automaticMeasureEnabled }">
+                <div class="button button-secondary-no-outline automatic-measure"
+                  v-if="modifiable && automaticMeasureEnabled">
                   <button @click="
                     displayMeasurementPicturePopup =
                     !displayMeasurementPicturePopup
@@ -374,6 +375,9 @@ export default class EditCatchView extends Vue {
   gpsLocation: { lat: number; lng: number } | null = null;
 
   displayMeasurementPicturePopup = false;
+  // Mesure automatique par photo masquée tant qu'elle n'est pas fonctionnelle
+  // (#195) ; réactivable par VITE__AUTOMATIC_MEASURE_ENABLED=true au build.
+  automaticMeasureEnabled = import.meta.env.VITE__AUTOMATIC_MEASURE_ENABLED === "true";
   requestNewPicture = false;
   shouldLaunchAutomaticMeasure = false;
 
