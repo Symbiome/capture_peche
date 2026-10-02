@@ -138,7 +138,7 @@
               <b-numberinput
                 v-model="aCatch.lotMinSize"
                 type="numeric"
-                min="1"
+                min="0"
                 class="number-input"
               />
             </b-field>

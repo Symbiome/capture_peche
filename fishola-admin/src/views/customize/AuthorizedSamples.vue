@@ -84,7 +84,7 @@
       id="table-desc"
       style="display:none"
     >
-      Tableau des tailles réglementaires par espèce et par milieu
+      Tableau des tailles maximales et maillages par espèce et par milieu
     </p>
     <table
       class="table is-striped"
@@ -112,31 +112,22 @@
             v-bind:key="l.id"
           >
             <div v-if="!regulatedMap[l.id][s.id]" class="unregulated">
-              <i>Taille non réglementée</i>
+              <i>Aucune taille définie</i>
               <br />
               <b-button
                 size="is-small"
                 type="is-text"
                 @click="startRegulation(l, s)"
               >
-                Spécifier une taille réglementaire
+                Définir les tailles et le maillage
               </b-button>
             </div>
             <div v-else class="regulated">
-              <b-field label="Taille minimale (cm)" custom-class="is-small">
-                <b-input
-                  type="number"
-                  min="1"
-                  size="is-small"
-                  v-model="minSizeMap[l.id][s.id]"
-                  @input="forceUpdate()"
-                />
-              </b-field>
               <b-field label="Taille maximale (cm)" custom-class="is-small">
                 <b-input
                   type="number"
                   size="is-small"
-                  placeholder="Non définie"
+                  min="1"
                   v-model="maxSizeMap[l.id][s.id]"
                   @input="forceUpdate()"
                 />
@@ -156,7 +147,7 @@
                 type="is-text"
                 @click="stopRegulation(l, s)"
               >
-                Retirer la réglementation
+                Retirer les tailles et le maillage
               </b-button>
             </div>
           </td>
@@ -184,8 +175,7 @@ import { useStorage } from "@vueuse/core";
 
 const Toast = useToast();
 
-// Valeurs par défaut proposées quand l'admin rend une espèce réglementée (#154).
-const DEFAULT_MIN_SIZE = 30;
+// Valeurs par défaut proposées quand l'admin définit les tailles d'une espèce (#154).
 const DEFAULT_MAX_SIZE = 60;
 const DEFAULT_MESH_SIZE = 10;
 // Sentinelles « non défini » du backend et de l'export CSV historiques.
@@ -201,7 +191,6 @@ const selectedDepartment: Ref<string | null> = ref(null);
 const departmentEntities: Ref<Lake[]> = ref([]);
 
 const regulatedMap: Ref<any> = ref({});
-const minSizeMap: Ref<any> = ref({});
 const maxSizeMap: Ref<any> = ref({});
 const meshSizeMap: Ref<any> = ref({});
 
@@ -285,17 +274,14 @@ async function loadMatrix() {
 
 function buildMaps(speciesPerLake: any) {
   regulatedMap.value = {};
-  minSizeMap.value = {};
   maxSizeMap.value = {};
   meshSizeMap.value = {};
   selectedLakes.value.forEach(l => {
     regulatedMap.value[l.id] = {};
-    minSizeMap.value[l.id] = {};
     maxSizeMap.value[l.id] = {};
     meshSizeMap.value[l.id] = {};
     species.value.forEach(s => {
       regulatedMap.value[l.id][s.id] = false;
-      minSizeMap.value[l.id][s.id] = "";
       maxSizeMap.value[l.id][s.id] = "";
       meshSizeMap.value[l.id][s.id] = "";
     });
@@ -307,7 +293,6 @@ function buildMaps(speciesPerLake: any) {
     }
     speciesPerLake[lakeId].forEach(spl => {
       regulatedMap.value[lakeId][spl.id] = spl.authorizedSample;
-      minSizeMap.value[lakeId][spl.id] = spl.minSize > 0 ? spl.minSize : "";
       maxSizeMap.value[lakeId][spl.id] =
         spl.maxSize && spl.maxSize !== MAX_UNSET ? spl.maxSize : "";
       meshSizeMap.value[lakeId][spl.id] = spl.meshSize ? spl.meshSize : "";
@@ -324,7 +309,6 @@ function isMatrixReady(): boolean {
 
 function startRegulation(l: Lake, s: Specie) {
   regulatedMap.value[l.id][s.id] = true;
-  minSizeMap.value[l.id][s.id] = DEFAULT_MIN_SIZE;
   maxSizeMap.value[l.id][s.id] = DEFAULT_MAX_SIZE;
   meshSizeMap.value[l.id][s.id] = DEFAULT_MESH_SIZE;
   forceUpdate();
@@ -332,7 +316,6 @@ function startRegulation(l: Lake, s: Specie) {
 
 function stopRegulation(l: Lake, s: Specie) {
   regulatedMap.value[l.id][s.id] = false;
-  minSizeMap.value[l.id][s.id] = "";
   maxSizeMap.value[l.id][s.id] = "";
   meshSizeMap.value[l.id][s.id] = "";
   forceUpdate();
@@ -342,15 +325,10 @@ function cellError(l: Lake, s: Specie): string | null {
   if (!regulatedMap.value[l.id][s.id]) {
     return null;
   }
-  const rawMin = minSizeMap.value[l.id][s.id];
   const rawMax = maxSizeMap.value[l.id][s.id];
   const rawMesh = meshSizeMap.value[l.id][s.id];
-  const min = Number(rawMin);
-  if (rawMin === "" || !min || min <= 0) {
-    return "La taille minimale est obligatoire pour une espèce réglementée.";
-  }
-  if (rawMax !== "" && Number(rawMax) <= min) {
-    return "La taille maximale doit être supérieure à la taille minimale.";
+  if (rawMax === "" || Number(rawMax) <= 0) {
+    return "La taille maximale est obligatoire.";
   }
   if (rawMesh !== "" && Number(rawMesh) < 0) {
     return "Le maillage ne peut pas être négatif.";
@@ -395,7 +373,6 @@ async function save() {
     const res = await BackendService.backendPut("/v1/referential/authorized-samples", {
       targetLakes: selectedLakes.value.map(l => l.id),
       authorizations: regulatedMap.value,
-      minSizes: toPayloadMap(minSizeMap.value, 0),
       maxSizes: toPayloadMap(maxSizeMap.value, MAX_UNSET),
       meshSizes: toPayloadMap(meshSizeMap.value, MESH_UNSET)
     });
@@ -447,20 +424,19 @@ function importCsv(file) {
   };
 }
 
-// Format d'une cellule CSV : « min-max » ou « min-max-maillage » (rétro-compatible
-// avec l'export à deux valeurs). Cellule vide => espèce non réglementée.
+// Format d'une cellule CSV : « max-maillage ». Les exports antérieurs
+// « min-max-maillage » restent importables, la taille minimale étant ignorée.
+// Cellule vide => aucune taille définie.
 function applyCsvCell(lakeId: string, specieId: string, raw: string) {
   const parts = (raw ?? "").trim().split("-").filter(p => p !== "");
-  if (parts.length >= 2) {
+  const [rawMax, rawMesh] = parts.length >= 3 ? parts.slice(1) : parts;
+  if (rawMax) {
     regulatedMap.value[lakeId][specieId] = true;
-    minSizeMap.value[lakeId][specieId] = Number(parts[0]);
-    maxSizeMap.value[lakeId][specieId] =
-      parts[1] && Number(parts[1]) !== MAX_UNSET ? Number(parts[1]) : "";
+    maxSizeMap.value[lakeId][specieId] = Number(rawMax) !== MAX_UNSET ? Number(rawMax) : "";
     meshSizeMap.value[lakeId][specieId] =
-      parts[2] && Number(parts[2]) !== MESH_UNSET ? Number(parts[2]) : "";
+      rawMesh && Number(rawMesh) !== MESH_UNSET ? Number(rawMesh) : "";
   } else {
     regulatedMap.value[lakeId][specieId] = false;
-    minSizeMap.value[lakeId][specieId] = "";
     maxSizeMap.value[lakeId][specieId] = "";
     meshSizeMap.value[lakeId][specieId] = "";
   }
@@ -473,10 +449,9 @@ function exportCsv() {
     let csvRow = specie.name + ";";
     selectedLakes.value.forEach(l => {
       if (regulatedMap.value[l.id] && regulatedMap.value[l.id][specie.id]) {
-        const min = minSizeMap.value[l.id][specie.id] || "";
         const max = maxSizeMap.value[l.id][specie.id] || MAX_UNSET;
         const mesh = meshSizeMap.value[l.id][specie.id] || MESH_UNSET;
-        csvRow += min + "-" + max + "-" + mesh + ";";
+        csvRow += max + "-" + mesh + ";";
       } else {
         csvRow += ";";
       }

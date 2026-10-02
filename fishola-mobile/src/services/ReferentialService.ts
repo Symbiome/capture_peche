@@ -199,7 +199,7 @@ export default class ReferentialService extends AbstractFisholaService {
     return this.backendGet(`/v1/waterEntities/attribution?lat=${lat}&lng=${lng}`);
   }
 
-  // #131 : taille maximale réglementaire d'une espèce pour UN plan d'eau,
+  // #131 : taille maximale (contrôle de cohérence) d'une espèce pour UN plan d'eau,
   // scopée côté backend (referentialDao.getMaxSize) au lieu de charger la map
   // species-per-waterEntity du bassin RM&C entier pour n'en lire qu'une valeur.
   // Pas de cache offline dédié : l'appelant (EditCatch.getMaxSize) retombe déjà
@@ -208,6 +208,15 @@ export default class ReferentialService extends AbstractFisholaService {
   static getAuthorizedSampleMaxSize(waterEntityId: string, speciesId: string): Promise<number> {
     return this.backendGet(
       `/v1/referential/authorized-samples/max-size?waterEntityId=${encodeURIComponent(waterEntityId)}&speciesId=${encodeURIComponent(speciesId)}`
+    );
+  }
+
+  // Maillage (largeur des classes de taille) d'une espèce sur UN milieu (#196),
+  // pour proposer au pêcheur les classes de taille d'un lot. `undefined` si
+  // aucun maillage n'est défini (réponse 204).
+  static getAuthorizedSampleMeshSize(waterEntityId: string, speciesId: string): Promise<number | undefined> {
+    return this.backendGet(
+      `/v1/referential/authorized-samples/mesh-size?waterEntityId=${encodeURIComponent(waterEntityId)}&speciesId=${encodeURIComponent(speciesId)}`
     );
   }
 

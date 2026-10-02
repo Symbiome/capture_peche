@@ -459,6 +459,45 @@ class TripResourceTest extends AbstractFisholaTest {
      * d'une taille exacte. La taille exacte est alors vidée, pour que records et statistiques
      * de taille ne prennent pas une borne pour une mesure ; une classe min > max est refusée.
      */
+    /**
+     * La première classe d'un maillage (#196) commence à 0 cm : « 10 perches entre 0 et 10 cm ».
+     */
+    @Test
+    void testCatchLotSizeClassStartingAtZero() {
+        TripBean trip = buildValidTripBean();
+
+        CatchBean lotCatch = new CatchBean();
+        lotCatch.id = "lot-size-class-zero";
+        lotCatch.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        lotCatch.techniqueId = trip.techniqueIds.iterator().next();
+        lotCatch.keep = true;
+        lotCatch.quantity = 10;
+        lotCatch.lotMinSize = Optional.of(0);
+        lotCatch.lotMaxSize = Optional.of(10);
+        trip.catchs = List.of(lotCatch);
+
+        String tripId = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+            .extract()
+                .body()
+                .path(trip.id);
+
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("catchs[0].lotMinSize", equalTo(0))
+                .body("catchs[0].lotMaxSize", equalTo(10));
+    }
+
     @Test
     void testCatchLotSizeClass() {
         TripBean trip = buildValidTripBean();

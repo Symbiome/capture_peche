@@ -461,6 +461,20 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .orElse(1000);
     }
 
+    /**
+     * Maillage (largeur des classes de taille, en cm) défini par l'administrateur pour
+     * une espèce sur un milieu : un lot de poissons se saisit alors par classe (#196).
+     * Vide si aucun maillage n'est défini.
+     */
+    public Optional<Integer> getMeshSize(UUID waterEntityId, UUID specieId) {
+        List<AuthorizedSample> authorizedWaterEntitySamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByWaterEntityId(waterEntityId));
+        return authorizedWaterEntitySamples.stream()
+                .filter(authorizedSample -> Objects.equals(authorizedSample.getSpeciesId(), specieId))
+                .map(AuthorizedSample::getMeshSize)
+                .filter(meshSize -> meshSize != null && meshSize > 0)
+                .findFirst();
+    }
+
     public void createAuthorizedSample(AuthorizedSample entity) {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.insert(entity));
     }

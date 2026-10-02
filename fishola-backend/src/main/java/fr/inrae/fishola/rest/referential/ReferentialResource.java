@@ -685,4 +685,14 @@ public class ReferentialResource extends AbstractFisholaResource {
         return referentialDao.getMaxSize(waterEntityId, speciesId);
     }
 
+    /**
+     * Maillage d'une espèce sur un milieu (#196) : largeur des classes de taille proposées
+     * au pêcheur pour saisir un lot. 204 si aucun maillage n'est défini.
+     */
+    @GET
+    @Path("/authorized-samples/mesh-size")
+    public Integer getMeshSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
+        return referentialDao.getMeshSize(waterEntityId, speciesId).orElse(null);
+    }
+
 }

@@ -87,6 +87,22 @@ export default class Helpers {
   // Éléments correspondant à la recherche sur l'un de leurs libellés, les plus
   // pertinents d'abord (meilleur rang parmi les libellés), ordre d'origine
   // conservé à rang égal.
+  /**
+   * Classes de taille d'un lot (#196) découpées selon le maillage défini par
+   * l'administrateur : [0–m], [m–2m]… jusqu'à la taille maximale de l'espèce,
+   * la dernière classe étant tronquée à cette taille maximale.
+   */
+  static sizeClasses(meshSize: number, maxSize: number): { min: number; max: number }[] {
+    const classes: { min: number; max: number }[] = [];
+    if (!meshSize || meshSize <= 0 || !maxSize || maxSize <= 0) {
+      return classes;
+    }
+    for (let min = 0; min < maxSize; min += meshSize) {
+      classes.push({ min, max: Math.min(min + meshSize, maxSize) });
+    }
+    return classes;
+  }
+
   static rankBySearch<T>(
     items: T[],
     query: string,
