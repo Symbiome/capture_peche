@@ -578,7 +578,7 @@ public class TripResource extends AbstractFisholaResource {
                 "Classe de taille incomplète : taille min et taille max sont requises");
         int lotMinSize = aCatch.lotMinSize.get();
         int lotMaxSize = aCatch.lotMaxSize.get();
-        Preconditions.checkArgument(lotMinSize > 0 && lotMinSize <= lotMaxSize,
+        Preconditions.checkArgument(lotMinSize >= 0 && lotMinSize <= lotMaxSize && lotMaxSize > 0,
                 "Classe de taille invalide : %s-%s cm", lotMinSize, lotMaxSize);
         target.setSize(null);
         setLotSizeClass(target, lotMinSize, lotMaxSize);

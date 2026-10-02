@@ -204,3 +204,22 @@ describe("Helpers — classement des recherches", () => {
     expect(ranked.map((s) => s.name)).toEqual(["Truite fario", "Saumon"]);
   });
 });
+
+// Classes de taille d'un lot (#196) découpées selon le maillage de l'administrateur.
+describe("Helpers — classes de taille", () => {
+  it("découpe de 0 à la taille maximale par pas de maillage", () => {
+    expect(Helpers.sizeClasses(10, 30)).toEqual([
+      { min: 0, max: 10 },
+      { min: 10, max: 20 },
+      { min: 20, max: 30 },
+    ]);
+  });
+
+  it("tronque la dernière classe à la taille maximale", () => {
+    expect(Helpers.sizeClasses(10, 25).pop()).toEqual({ min: 20, max: 25 });
+  });
+
+  it("ne propose aucune classe sans maillage", () => {
+    expect(Helpers.sizeClasses(0, 60)).toEqual([]);
+  });
+});

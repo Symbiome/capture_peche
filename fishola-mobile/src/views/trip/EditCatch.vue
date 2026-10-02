@@ -117,17 +117,13 @@
                   v-bind:readonly="!modifiable" />
               </div>
 
-              <FormToggle v-if="isLot" label="Indiquer une classe de taille (min – max)"
+              <FormToggle v-if="isLot && hasLotSizeClasses" label="Indiquer une classe de taille (min – max)"
                 v-model="lotSizeClassEnabled" v-bind:readonly="!modifiable" />
 
-              <div class="lot-size-class-row" v-if="useLotSizeClass">
-                <FormInput name="lotMinSize" label="Taille min en cm" type="number" :min="1"
-                  placeholder="Ex. 40" v-model="aCatch.lotMinSize" v-bind:error="lotMinSizeError"
-                  v-bind:readonly="!modifiable" />
-                <FormInput name="lotMaxSize" label="Taille max en cm" type="number" :min="1"
-                  placeholder="Ex. 50" v-model="aCatch.lotMaxSize" v-bind:error="lotMaxSizeError"
-                  v-bind:readonly="!modifiable" />
-              </div>
+              <FormSelect v-if="useLotSizeClass" name="lotSizeClass"
+                label="Classe de taille" v-bind:options="lotSizeClassOptions"
+                v-model="selectedLotSizeClass" v-bind:error="lotSizeClassError"
+                v-bind:readonly="!modifiable" />
 
               <div v-else :class="{ 'measure-row': automaticMeasureEnabled }">
                 <div class="button button-secondary-no-outline automatic-measure"
@@ -358,8 +354,13 @@ export default class EditCatchView extends Vue {
   weightError: string = "";
   quantityError: string = "";
   lotSizeClassEnabled: boolean = false;
-  lotMinSizeError: string = "";
-  lotMaxSizeError: string = "";
+  lotSizeClassError: string = "";
+  // Maillage et taille maximale de l'espèce sur le milieu (#196) : bornes des
+  // classes de taille proposées pour un lot. Maillage absent (non défini par
+  // l'administrateur, ou hors-ligne) → pas de classe de taille.
+  meshSize: number | null = null;
+  speciesMaxSize: number = 1000;
+  private sizeLimitsSeq: number = 0;
   keepError: string = "";
   releasedStateIdError: string = "";
   techniqueIdError: string = "";
@@ -762,40 +763,53 @@ export default class EditCatchView extends Vue {
   }
 
   /**
-   * Contrôle de la classe de taille d'un lot (#196) : bornes entières, strictement
-   * positives, min ≤ max, et max ≤ taille maximale de l'espèce. Renvoie `true` en cas d'erreur.
+   * Classe de taille choisie parmi celles du maillage (#196) ; renvoie `true`
+   * en cas d'erreur.
    */
-  async validateLotSizeClass(): Promise<boolean> {
-    this.lotMinSizeError = this.lotSizeBoundError(this.aCatch.lotMinSize);
-    this.lotMaxSizeError = this.lotSizeBoundError(this.aCatch.lotMaxSize);
-    if (this.lotMinSizeError || this.lotMaxSizeError) {
-      return true;
-    }
-    const lotMinSize = this.aCatch.lotMinSize as number;
-    const lotMaxSize = this.aCatch.lotMaxSize as number;
-    if (lotMinSize > lotMaxSize) {
-      this.lotMaxSizeError = "La taille max doit être supérieure ou égale à la taille min";
-      return true;
-    }
-    const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-    if (lotMaxSize > maxSize) {
-      this.lotMaxSizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
-      return true;
-    }
-    return false;
+  validateMeshSizeClass(): boolean {
+    this.lotSizeClassError = this.selectedLotSizeClass ? "" : "Classe de taille obligatoire";
+    return !!this.lotSizeClassError;
   }
 
-  lotSizeBoundError(bound?: number): string {
-    if (!bound) {
-      return "Taille obligatoire";
+  get lotSizeClassOptions(): { id: string; name: string }[] {
+    const classes = this.meshSize ? Helpers.sizeClasses(this.meshSize, this.speciesMaxSize) : [];
+    const current = this.selectedLotSizeClass;
+    // Lot saisi avant le maillage actuel : sa classe reste proposée pour ne
+    // pas la perdre en réouvrant la capture.
+    if (current && !classes.some((c) => `${c.min}-${c.max}` === current)) {
+      classes.push({ min: this.aCatch.lotMinSize as number, max: this.aCatch.lotMaxSize as number });
     }
-    if (bound <= 0) {
-      return "La taille doit être strictement positive";
+    return classes.map((c) => ({ id: `${c.min}-${c.max}`, name: `${c.min} – ${c.max} cm` }));
+  }
+
+  get selectedLotSizeClass(): string {
+    const { lotMinSize, lotMaxSize } = this.aCatch;
+    return lotMinSize != null && lotMaxSize != null ? `${lotMinSize}-${lotMaxSize}` : "";
+  }
+
+  set selectedLotSizeClass(value: string) {
+    const [min, max] = (value || "").split("-").map(Number);
+    this.aCatch.lotMinSize = value ? min : undefined;
+    this.aCatch.lotMaxSize = value ? max : undefined;
+  }
+
+  /** Charge maillage et taille maximale de l'espèce sur le milieu de la sortie (#196). */
+  async loadSizeLimits(speciesId?: string) {
+    const seq = ++this.sizeLimitsSeq;
+    let meshSize: number | null = null;
+    if (speciesId && this.lakeId && speciesId != "__other__") {
+      try {
+        meshSize = (await ReferentialService.getAuthorizedSampleMeshSize(this.lakeId, speciesId)) || null;
+      } catch (e) {
+        console.error("Maillage indisponible, pas de classe de taille proposée", e);
+      }
     }
-    if (bound != Math.floor(bound)) {
-      return "La taille doit être un nombre entier";
+    const maxSize = await this.getMaxSize(this.lakeId, speciesId);
+    if (seq === this.sizeLimitsSeq) {
+      this.meshSize = meshSize;
+      this.speciesMaxSize = maxSize;
+      this.lotSizeClassError = "";
     }
-    return "";
   }
 
   get isLot(): boolean {
@@ -804,7 +818,13 @@ export default class EditCatchView extends Vue {
 
   // Classe de taille d'un lot (#196) : remplace la taille exacte, ex. « 10 truites de 40 à 50 cm ».
   get useLotSizeClass(): boolean {
-    return this.isLot && this.lotSizeClassEnabled;
+    return this.isLot && this.lotSizeClassEnabled && this.hasLotSizeClasses;
+  }
+
+  // Classes proposées seulement si l'administrateur a défini un maillage, ou
+  // pour réafficher la classe d'un lot déjà saisi.
+  get hasLotSizeClasses(): boolean {
+    return !!this.meshSize || !!this.selectedLotSizeClass;
   }
 
   isMandatorySize(speciesId?: string): boolean {
@@ -841,6 +861,7 @@ export default class EditCatchView extends Vue {
 
   @Watch("aCatch.speciesId")
   speciesChanged(newValue: string, _oldValue: string) {
+    this.loadSizeLimits(newValue);
     this.sizeLabel = this.defaultSizeLabel;
     this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
@@ -994,7 +1015,7 @@ export default class EditCatchView extends Vue {
     if (this.useLotSizeClass) {
       this.aCatch.size = undefined;
       this.sizeError = "";
-      hasError = (await this.validateLotSizeClass()) || hasError;
+      hasError = this.validateMeshSizeClass() || hasError;
     } else {
       this.aCatch.lotMinSize = undefined;
       this.aCatch.lotMaxSize = undefined;
@@ -1479,16 +1500,6 @@ export default class EditCatchView extends Vue {
       // barres dynamiques du navigateur mobile, comme le reste des cartes (#97).
       max-height: 45vh;
       max-height: 45svh;
-    }
-  }
-
-  .lot-size-class-row {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-
-    > * {
-      flex: 1;
     }
   }
 

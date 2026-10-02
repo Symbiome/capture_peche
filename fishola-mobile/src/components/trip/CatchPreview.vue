@@ -25,7 +25,7 @@
         <div class="meta-row" v-if="metaMode == 'size' && aCatch.size">
           <i class="icon-size" /> {{ aCatch.size }} cm<br />
         </div>
-        <div class="meta-row" v-if="metaMode == 'size' && !aCatch.size && aCatch.lotMinSize">
+        <div class="meta-row" v-if="metaMode == 'size' && !aCatch.size && aCatch.lotMaxSize">
           <i class="icon-size" /> {{ aCatch.lotMinSize }}–{{ aCatch.lotMaxSize }} cm<br />
         </div>
         <div class="meta-row" v-if="metaMode == 'weight'">
