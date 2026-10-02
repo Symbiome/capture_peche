@@ -371,7 +371,7 @@ async function save() {
   }
   try {
     const res = await BackendService.backendPut("/v1/referential/authorized-samples", {
-      targetLakes: selectedLakes.value.map(l => l.id),
+      targetWaterEntities: selectedLakes.value.map(l => l.id),
       authorizations: regulatedMap.value,
       maxSizes: toPayloadMap(maxSizeMap.value, MAX_UNSET),
       meshSizes: toPayloadMap(meshSizeMap.value, MESH_UNSET)
