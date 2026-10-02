@@ -132,6 +132,8 @@ import NearbyList from "@/components/common/NearbyList.vue";
 import CommuneSearch from "@/components/common/CommuneSearch.vue";
 import AttributionConfirmSheet from "@/components/common/AttributionConfirmSheet.vue";
 import ReferentialService from '@/services/ReferentialService';
+import OfflineAreasService from '@/services/OfflineAreasService';
+import NetworkStatusService from '@/services/NetworkStatusService';
 import Helpers from '@/services/Helpers';
 
 @Component({
@@ -389,25 +391,40 @@ export default class LakeSelection extends Vue {
   onMapClick(coords: { lng: number; lat: number; offlineAttribution?: WaterEntityAttribution | null }) {
     this.pendingPin = { lat: coords.lat, lng: coords.lng };
     if (coords.offlineAttribution) {
-      // Résolution locale depuis un pack hors-ligne téléchargé (#174) : le
-      // point tapé couvre une entité connue localement, pas d'appel réseau.
-      this.attributionResult = { proposal: coords.offlineAttribution, alternatives: [] };
-      this.showAttributionSheet = true;
+      // Entité tapée directement sur la couche du pack hors-ligne (#174).
+      this.showAttribution({ proposal: coords.offlineAttribution, alternatives: [] });
       return;
     }
-    ReferentialService.getAttribution(coords.lat, coords.lng)
-      .then((res) => {
-        this.attributionResult = res;
-        this.showAttributionSheet = true;
-      })
+    const attribution = NetworkStatusService.isOffline()
+      ? this.attributeFromOfflinePacks(coords.lat, coords.lng)
+      : ReferentialService.getAttribution(coords.lat, coords.lng)
+        .catch(() => this.attributeFromOfflinePacks(coords.lat, coords.lng));
+    attribution
+      .then((res) => this.showAttribution(res))
       .catch(() => {
-        // Attribution indisponible (hors ligne / erreur serveur) ET aucune
-        // donnée locale couvrant ce point (#174) : on prévient l'utilisateur
-        // et on l'oriente vers le téléchargement d'un pack hors-ligne plutôt
-        // que vers la recherche par nom, tout aussi bloquée hors-ligne.
+        // Ni réseau ni pack hors-ligne couvrant ce point (#174) : on oriente
+        // vers le téléchargement d'un pack, la recherche par nom étant tout
+        // aussi bloquée sans données locales.
         this.pendingPin = null;
         Helpers.offlineAttributionAlert(this.$modal, () => this.$router.push({ name: "offline-areas" }));
       });
+  }
+
+  // Attribution locale par proximité sur les packs téléchargés (#174) : un tap
+  // à côté d'un cours d'eau fin doit aboutir comme en ligne, pas seulement un
+  // tap pile sur le trait. Rejette si aucune entité locale n'est dans le rayon.
+  private attributeFromOfflinePacks(lat: number, lng: number): Promise<AttributionResponse> {
+    return OfflineAreasService.attributeLocally(lat, lng).then((res) => {
+      if (!res.proposal) {
+        throw new Error("Aucune entité hors-ligne à proximité");
+      }
+      return res;
+    });
+  }
+
+  private showAttribution(res: AttributionResponse) {
+    this.attributionResult = res;
+    this.showAttributionSheet = true;
   }
 
   onAttributionConfirm(entity: WaterEntityAttribution) {
