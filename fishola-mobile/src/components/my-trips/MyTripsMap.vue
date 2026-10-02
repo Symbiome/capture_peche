@@ -38,6 +38,9 @@
         </div>
         <div class="map" v-if="validMarkers.length > 0">
             <div ref="mapContainer" class="mtm-container" />
+            <button type="button" class="mtm-base-btn" @click="toggleBase">
+                {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
+            </button>
             <button
                 type="button"
                 class="mtm-recenter-btn"
@@ -83,7 +86,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { addCatchPinIcon, attachHydroHover, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from '@/components/common/maplibreStyle';
+import { addCatchPinIcon, attachHydroHover, BaseLayer, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM, setBaseLayer } from '@/components/common/maplibreStyle';
 
 // Zoom minimal de la carte « Mes sorties » (#136). Cohérent avec une emprise
 // nationale : à ce niveau la France entière tient à l'écran et le fond IGN
@@ -105,6 +108,7 @@ export default class MyTripsMapView extends Vue {
     invalidMarkers: CatchMarker[] = [];
     showPersonnalMapWarning = true;
     mapIsLoading = false;
+    baseLayer: BaseLayer = 'plan';
 
     private map: MlMap | null = null;
     private detachHydroHover: (() => void) | null = null;
@@ -180,7 +184,7 @@ export default class MyTripsMapView extends Vue {
             this.mapIsLoading = false;
             return;
         }
-        const style = buildFisholaStyle('plan');
+        const style = buildFisholaStyle(this.baseLayer);
         this.map = new maplibregl.Map({
             container,
             style,
@@ -281,6 +285,13 @@ export default class MyTripsMapView extends Vue {
         this.fitToMarkers();
     }
 
+    toggleBase() {
+        this.baseLayer = this.baseLayer === 'plan' ? 'satellite' : 'plan';
+        if (this.map) {
+            setBaseLayer(this.map, this.baseLayer);
+        }
+    }
+
     private fitToMarkers() {
         if (!this.map || this.validMarkers.length === 0) {
             return;
@@ -350,6 +361,25 @@ export default class MyTripsMapView extends Vue {
 .mtm-container {
     width: 100%;
     height: 100%;
+}
+
+.mtm-base-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 996;
+    background-color: @pelorous;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 0 3px #0003;
+
+    &:hover {
+        background-color: @terra-cotta;
+    }
 }
 
 .mtm-recenter-btn {

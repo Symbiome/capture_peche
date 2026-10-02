@@ -93,7 +93,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void ensureTestUser() {
         if (usersDao.findByEmail("thimel@codelutin.com").isEmpty()) {
             usersDao.create("Thimel", "Test", "thimel-hydro-test",
-                    "thimel@codelutin.com", usersDao.hashPassword("sispea"), false, false, "74000", 1990);
+                    "thimel@codelutin.com", usersDao.hashPassword("sispea"), false, "74000", 1990);
         }
     }
 
@@ -148,6 +148,23 @@ class HydroResourceTest extends AbstractFisholaTest {
         ctx.execute("INSERT INTO water_entity (name, kind, geom, water_entity_code, export_as) "
                 + "VALUES ('IT Léman', 'STILL', ST_SetSRID(ST_GeomFromText('POINT(6.2 46.4)'), 4326), "
                 + "'IT_LEMAN', 'IT Léman') ON CONFLICT DO NOTHING");
+
+        // Homonymes partiels pour le classement de la recherche (#197), loin
+        // des entités ci-dessus pour ne pas changer leur commune.
+        seedRankingCommune(ctx, "99998", "Lyons-la-Forêt", 1);
+        seedRankingCommune(ctx, "99997", "Chazelles-sur-Lyon", 2);
+        seedRankingCommune(ctx, "99996", "Lyon", 3);
+        seedRankingCommune(ctx, "99995", "Chalon", 4);
+        seedRankingCommune(ctx, "99994", "Chalon-sur-Saône", 5);
+        ctx.execute("INSERT INTO water_entity (name, kind, geom, water_entity_code, export_as) "
+                + "VALUES ('IT Lac du Fier', 'STILL', ST_SetSRID(ST_GeomFromText('POINT(6.3 46.3)'), 4326), "
+                + "'IT_LAC_FIER', 'IT Lac du Fier') ON CONFLICT DO NOTHING");
+    }
+
+    private static void seedRankingCommune(org.jooq.DSLContext ctx, String insee, String name, int offset) {
+        ctx.execute("INSERT INTO commune (insee_com, name, geom) VALUES (?, ?, "
+                + "ST_Multi(ST_MakeEnvelope(?, 0, ? + 0.001, 0.001, 4326))) ON CONFLICT DO NOTHING",
+                insee, name, (double) offset, (double) offset);
     }
 
     @AfterAll
@@ -159,7 +176,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         ctx.execute("DELETE FROM water_surface WHERE water_entity_id IN "
                 + "(SELECT id FROM water_entity WHERE water_entity_code LIKE 'IT\\_%')");
         ctx.execute("DELETE FROM water_entity WHERE water_entity_code LIKE 'IT\\_%'");
-        ctx.execute("DELETE FROM commune WHERE insee_com = '99999'");
+        ctx.execute("DELETE FROM commune WHERE insee_com IN ('99999', '99998', '99997', '99996', '99995', '99994')");
     }
 
     @Test
@@ -292,6 +309,48 @@ class HydroResourceTest extends AbstractFisholaTest {
 
         assertTrue(items.size() >= 1, "au moins une commune attendue");
         assertEquals("Annecy", items.get(0).get("name"));
+    }
+
+    @Test
+    void communeSearchRanksExactThenPrefixThenWord() {
+        // #197 : « Lyon » avant « Lyons-la-Forêt » (préfixe) puis
+        // « Chazelles-sur-Lyon » (mot entier).
+        List<Map<String, Object>> items = searchCommunes("lyon");
+
+        assertEquals("Lyon", items.get(0).get("name"));
+        assertTrue(indexOfName(items, "Lyons-la-Forêt") < indexOfName(items, "Chazelles-sur-Lyon"),
+                "préfixe attendu avant mot entier");
+    }
+
+    @Test
+    void communeSearchIgnoresCaseAccentsAndHyphens() {
+        // #197 : « chalon sur saone » trouve « Chalon-sur-Saône » en tête.
+        List<Map<String, Object>> items = searchCommunes("chalon sur saone");
+
+        assertEquals("Chalon-sur-Saône", items.get(0).get("name"));
+    }
+
+    @Test
+    void waterEntitySearchRanksExactMatchFirst() {
+        // #197 : même classement pour les milieux ; « IT Fier » avant
+        // « IT Lac du Fier ».
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "it fier")
+                .when().get("/api/v1/waterEntities/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        assertEquals("IT Fier", items.get(0).get("name"));
+    }
+
+    private List<Map<String, Object>> searchCommunes(String query) {
+        return given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", query)
+                .when().get("/api/v1/communes/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
     }
 
     @Test

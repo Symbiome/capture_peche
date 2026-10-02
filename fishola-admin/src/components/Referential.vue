@@ -185,6 +185,9 @@ interface Props {
    * If not specified, only the "canDelete" boolean wil be used to determine if deletion is allowed.
    * */
   canDeletePredicate?: ((elementToDelete: any) => Promise<boolean>) | null;
+  /** Elements used elsewhere can be archived instead of deleted (#202): the backend
+   * exposes their usage at url/usage/id and an "archived" flag. */
+  archivable?: boolean;
 }
 
 const {
@@ -197,6 +200,7 @@ const {
   createElement = null,
   canDelete = false,
   canDeletePredicate = null,
+  archivable = false,
 } = defineProps<Props>();
 
 const data = ref([]);
@@ -307,11 +311,58 @@ function showDeleteDialog(event: Event, element: any) {
         );
       }
     });
+  } else if (archivable) {
+    proposeArchiving(element);
   } else {
     // Explain why we cannot delete
     Dialog.alert(
       "Impossible de supprimer cet élément car il est référencé ailleurs au sein de l'application"
     );
+  }
+}
+
+function escapeHtml(value: string): string {
+  const div = document.createElement("div");
+  div.textContent = value;
+  return div.innerHTML;
+}
+
+function describeUsage(usage: { catches: number; trips: number }): string {
+  const parts = [];
+  if (usage.catches) parts.push(usage.catches + (usage.catches > 1 ? " captures" : " capture"));
+  if (usage.trips) parts.push(usage.trips + (usage.trips > 1 ? " sorties" : " sortie"));
+  return parts.join(" et ");
+}
+
+/** Used element (#202): explain where it is used and offer to archive it instead. */
+async function proposeArchiving(element: any) {
+  const label = "« " + escapeHtml(element["name"] || "Cet élément") + " »";
+  const usage = await BackendService.backendGet(`${url}/usage/${element["id"]}`);
+  const reason = label + " est utilisé par " + describeUsage(usage)
+    + " : le supprimer ferait perdre cet historique.";
+  if (element["archived"]) {
+    Dialog.alert(reason + " Il est déjà archivé et n'est donc plus proposé à la saisie.");
+    return;
+  }
+  Dialog.confirm({
+    title: "Suppression impossible",
+    message: reason + "<br><br>Vous pouvez l'<b>archiver</b> : il ne sera plus proposé à la saisie, "
+      + "mais les données existantes sont conservées. Il pourra être restauré en décochant « Archivé ».",
+    confirmText: "Archiver",
+    cancelText: "Annuler",
+    type: "is-warning",
+    hasIcon: true,
+    onConfirm: () => archive(element)
+  });
+}
+
+async function archive(element: any) {
+  try {
+    await BackendService.backendPut(`${url}/${element["id"]}`, { ...element, archived: true });
+    Toast.open({ message: (element["name"] || "Élément") + " archivé", type: "is-success" });
+    loadData();
+  } catch (error) {
+    Toast.open({ message: "Erreur lors de l'archivage de " + (element["name"] || "l'élément"), type: "is-danger" });
   }
 }
 </script>

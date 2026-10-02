@@ -32,8 +32,8 @@
       <b-field label="Date" class="column is-2">
         <input type="date" class="input" v-model="sortie.day" :max="todayIso" />
       </b-field>
-      <b-field label="Heure du contrôle" class="column is-2" :type="timeErrors.controlTime ? 'is-danger' : ''"
-        :message="timeErrors.controlTime">
+      <b-field label="Heure du contrôle" class="column is-2" :type="controlTimeMessage ? 'is-danger' : ''"
+        :message="controlTimeMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.controlTime" @input="onTimeInput($event, 'controlTime')"
           @blur="onTimeBlur('controlTime')" />
@@ -43,15 +43,13 @@
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.startTime" @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
-      <b-field label="Heure de fin prévue" class="column is-2" :type="timeErrors.endTime ? 'is-danger' : ''"
-        :message="timeErrors.endTime">
+      <b-field label="Heure de fin prévue" class="column is-2" :type="endTimeMessage ? 'is-danger' : ''"
+        :message="endTimeMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.endTime" @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
       <b-field label="Secteur" class="column is-4">
-        <b-select v-model="sortie.waterEntityId" expanded>
-          <option v-for="w in waterEntities" :key="w.id" :value="w.id">{{ w.name }}</option>
-        </b-select>
+        <WaterEntitySearchSelect v-model="sortie.waterEntityId" v-model:position="sortie.position" with-map />
       </b-field>
 
       <b-field label="Pêcheurs carnassiers du bord non-enquêtés" class="column is-4">
@@ -157,9 +155,8 @@
             </b-select>
           </b-field>
           <b-field label="Site pêché" class="column is-6">
-            <b-select v-model="angler.souvenir.waterEntityId" expanded>
-              <option v-for="w in waterEntities" :key="w.id" :value="w.id">{{ w.name }}</option>
-            </b-select>
+            <WaterEntitySearchSelect v-model="angler.souvenir.waterEntityId" v-model:position="angler.souvenir.position"
+              with-map />
           </b-field>
 
           <b-field label="Mode de pêche" class="column is-4">
@@ -227,7 +224,8 @@
     <b-button type="is-light" icon-left="plus" @click="addAngler">Ajouter un pêcheur interrogé</b-button>
 
     <div class="mt-5">
-      <b-button type="is-primary" icon-left="content-save" :loading="loading" @click="submit">
+      <b-button type="is-primary" icon-left="content-save" :loading="loading" :disabled="hasTimeErrors"
+        @click="submit">
         Enregistrer la sortie enquêtée
       </b-button>
     </div>
@@ -250,6 +248,8 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
+import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { reactive, ref, computed } from "vue";
 
@@ -259,7 +259,6 @@ const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 const FISHING_MODES = ["bateau", "float tube/canoë", "bord itinérant", "bord statique"];
 const DAY_PERIODS = ["matin", "après-midi", "journée entière", "soirée"];
 
-const waterEntities = ref<any[]>([]);
 const techniques = ref<any[]>([]);
 const species = ref<any[]>([]);
 
@@ -270,6 +269,7 @@ function newSortie() {
     startTime: "",
     endTime: "",
     waterEntityId: null,
+    position: null as MapPosition | null,
     unsurveyedShoreAnglers: null,
     unsurveyedBoatAnglers: null
   };
@@ -284,6 +284,7 @@ function newSouvenir() {
     day: "",
     dayPeriod: DAY_PERIODS[0],
     waterEntityId: null,
+    position: null as MapPosition | null,
     fishingMode: FISHING_MODES[0],
     techniqueId: null,
     rodCount: 1,
@@ -320,6 +321,31 @@ const errors = ref<any[]>([]);
 
 const timeErrors = reactive({ controlTime: "", startTime: "", endTime: "" });
 
+const CONTROL_BEFORE_START_ERROR = "L'heure du contrôle ne peut pas être antérieure à l'heure de début";
+const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'heure de début";
+
+function areValidTimes(...values: string[]): boolean {
+  return values.every((value) => !!value && isValidTimeString(value));
+}
+
+const controlTimeMessage = computed(() => {
+  const { controlTime, startTime } = sortie.value;
+  if (timeErrors.controlTime) {
+    return timeErrors.controlTime;
+  }
+  return areValidTimes(controlTime, startTime) && controlTime < startTime ? CONTROL_BEFORE_START_ERROR : "";
+});
+
+const endTimeMessage = computed(() => {
+  const { endTime, startTime } = sortie.value;
+  if (timeErrors.endTime) {
+    return timeErrors.endTime;
+  }
+  return areValidTimes(endTime, startTime) && endTime <= startTime ? END_NOT_AFTER_START_ERROR : "";
+});
+
+const hasTimeErrors = computed(() => !!(controlTimeMessage.value || timeErrors.startTime || endTimeMessage.value));
+
 const todayIso = computed(() => new Date().toISOString().slice(0, 10));
 
 function isLot(c: any): boolean {
@@ -346,9 +372,11 @@ function onTimeBlur(field: "controlTime" | "startTime" | "endTime") {
 loadReferentials();
 
 async function loadReferentials() {
-  waterEntities.value = await BackendService.backendGet("/v1/referential/waterEntities");
-  techniques.value = await BackendService.backendGet("/v1/referential/techniques");
-  species.value = await BackendService.backendGet("/v1/referential/species");
+  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie.
+  const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
+  const allSpecies = await BackendService.backendGet("/v1/referential/species");
+  techniques.value = allTechniques.filter((t: any) => !t.archived);
+  species.value = allSpecies.filter((s: any) => !s.archived);
 }
 
 function addAngler() {
@@ -392,6 +420,8 @@ function cleanSouvenir(angler: any) {
     day: s.day || null,
     dayPeriod: s.dayPeriod,
     waterEntityId: s.waterEntityId,
+    latitude: s.position ? s.position.lat : null,
+    longitude: s.position ? s.position.lng : null,
     fishingMode: s.fishingMode,
     techniqueId: s.techniqueId,
     rodCount: toIntOrNull(s.rodCount),
@@ -419,11 +449,16 @@ function cleanAngler(angler: any) {
 }
 
 async function submit() {
+  if (hasTimeErrors.value) {
+    return;
+  }
   loading.value = true;
   success.value = null;
   errors.value = [];
   const payload = {
     waterEntityId: sortie.value.waterEntityId,
+    latitude: sortie.value.position ? sortie.value.position.lat : null,
+    longitude: sortie.value.position ? sortie.value.position.lng : null,
     secteur: null,
     day: sortie.value.day || null,
     controlTime: sortie.value.controlTime || null,

@@ -223,9 +223,8 @@ const routes = [
     component: OfflineAreas,
   },
   {
-    path: "/community/:visualizationMode",
+    path: "/community",
     name: "community",
-    props: true,
     component: SocialAndNewsView,
   },
   {

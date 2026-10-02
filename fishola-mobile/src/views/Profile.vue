@@ -53,13 +53,6 @@
           Je souhaite être informé des communications Fishola par mail
         </label>
       </div>
-      <div class="form-checkbox">
-        <input type="checkbox" id="show-trips" class="pelorous-checkbox" v-model="profile.acceptsShareTrips" />
-        <label for="show-trips"></label>
-        <label for="show-trips" class="real-label">
-          Je souhaite partager mes sorties avec les utilisateurs Fishola qui pêchent sur les mêmes lacs que moi.
-        </label>
-      </div>
       <br />
       <a @click="safeDeleteAccount" class="safe-delete-button">Supprimer mon compte</a>
       <br />

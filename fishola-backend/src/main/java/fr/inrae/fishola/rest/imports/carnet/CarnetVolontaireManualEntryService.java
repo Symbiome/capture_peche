@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.imports.carnet;
 import fr.inrae.fishola.rest.imports.ImportDao;
 import fr.inrae.fishola.rest.imports.ImportService;
 import fr.inrae.fishola.rest.imports.ManualError;
+import fr.inrae.fishola.rest.imports.ManualPositionService;
 import fr.inrae.fishola.rest.imports.ManualResultBean;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -52,12 +53,16 @@ public class CarnetVolontaireManualEntryService {
     @Inject
     protected ImportDao importDao;
 
+    @Inject
+    protected ManualPositionService manualPositionService;
+
     private static String normalize(String v) {
         String s = Normalizer.normalize(v.strip().toLowerCase(), Normalizer.Form.NFD);
         return s.replaceAll("\\p{M}", "");
     }
 
-    public ManualResultBean submit(CarnetVolontaireTripBean bean, Set<UUID> allowedWaterEntities, LocalDate today) {
+    public ManualResultBean submit(CarnetVolontaireTripBean bean, Set<UUID> allowedWaterEntities,
+                                   Set<String> allowedDepartments, LocalDate today) {
         List<ManualError> errors = new ArrayList<>();
         if (bean == null) {
             errors.add(new ManualError(null, null, "corps de requête manquant"));
@@ -94,6 +99,8 @@ public class CarnetVolontaireManualEntryService {
         } else if (allowedWaterEntities != null && !allowedWaterEntities.contains(waterEntityId)) {
             errors.add(new ManualError(null, "waterEntityId", "entité hydrographique hors de votre périmètre"));
         }
+        ImportDao.ManualPosition position = manualPositionService.resolve(bean.latitude, bean.longitude,
+                waterEntityId, allowedDepartments, null, "position", errors).orElse(null);
 
         if (bean.techniqueId == null || !importDao.existsTechnique(bean.techniqueId)) {
             errors.add(new ManualError(null, "techniqueId", "technique invalide"));
@@ -144,7 +151,7 @@ public class CarnetVolontaireManualEntryService {
                 .toList();
 
         UUID tripId = importDao.saveManualEntry("carnet_volontaire", bean.day, bean.startTime, bean.endTime,
-                waterEntityId, name, bean.techniqueId, rows);
+                waterEntityId, name, bean.techniqueId, rows, position);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }
 

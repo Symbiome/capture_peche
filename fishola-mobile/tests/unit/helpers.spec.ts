@@ -174,3 +174,33 @@ describe("Helpers — alerte de déclaration obligatoire", () => {
     await promise;
   });
 });
+
+// Classement des recherches textuelles (#197) : égalité exacte, préfixe, mot
+// entier, puis inclusion ; casse, accents, tirets et article ignorés.
+describe("Helpers — classement des recherches", () => {
+  it("met la correspondance exacte en tête", () => {
+    const names = ["Chazelles-sur-Lyon", "Lyons-la-Forêt", "Lyon", "Cognat-Lyonne"];
+    const ranked = Helpers.rankBySearch(names, "lyon", (n) => [n]);
+    expect(ranked).toEqual(["Lyon", "Lyons-la-Forêt", "Chazelles-sur-Lyon", "Cognat-Lyonne"]);
+  });
+
+  it("ignore casse, accents, tirets et article initial", () => {
+    expect(Helpers.searchRank("Chalon-sur-Saône", "chalon sur saone")).toBe(0);
+    expect(Helpers.searchRank("le Rhône", "rhone")).toBe(0);
+    expect(Helpers.searchRank("l'Arve", "Arve")).toBe(0);
+  });
+
+  it("écarte les libellés sans correspondance", () => {
+    expect(Helpers.searchRank("Brochet", "truite")).toBeNull();
+  });
+
+  it("classe selon le meilleur des libellés d'un élément", () => {
+    const species = [
+      { name: "Truite arc-en-ciel", scientificName: "Oncorhynchus mykiss" },
+      { name: "Truite fario", scientificName: "Salmo trutta" },
+      { name: "Saumon", scientificName: "Salmo salar" },
+    ];
+    const ranked = Helpers.rankBySearch(species, "salmo", (s) => [s.name, s.scientificName]);
+    expect(ranked.map((s) => s.name)).toEqual(["Truite fario", "Saumon"]);
+  });
+});

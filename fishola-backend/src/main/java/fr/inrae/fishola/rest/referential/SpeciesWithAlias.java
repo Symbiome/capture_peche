@@ -45,6 +45,9 @@ public interface SpeciesWithAlias {
     // (ou un message générique si absent).
     boolean mandatoryReport();
     Optional<String> reportLink();
+    // Archivée (#202) : plus proposée à la saisie, mais toujours résolue pour
+    // afficher les captures et sorties existantes.
+    boolean archived();
 
     // Informations dépendante du lac
     Optional<String> alias();
@@ -72,6 +75,7 @@ public interface SpeciesWithAlias {
                 .scientificName(Optional.ofNullable(source.getScientificName()))
                 .mandatoryReport(source.getMandatoryReport())
                 .reportLink(Optional.ofNullable(source.getReportLink()))
+                .archived(source.getArchived())
                 .minSize(minSize)
                 .maxSize(maxSize)
                 .meshSize(Optional.ofNullable(meshSize))

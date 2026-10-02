@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @QuarkusTest
@@ -80,6 +81,35 @@ public class LicenceDaoTest extends AbstractFisholaTest {
         Assertions.assertTrue(fishingLicencesDao.getLicence(licence.getId()).isEmpty());
 
         // User is needed for other tests, so we add it again.
-        usersDao.create(user.getFirstName(), user.getLastName(), user.getPseudo(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getAcceptsShareTrips(), user.getPostalCode(), user.getBirthYear());
+        usersDao.create(user.getFirstName(), user.getLastName(), user.getPseudo(), user.getEmail(), user.getPassword(), user.getAcceptsMailNotifications(), user.getPostalCode(), user.getBirthYear());
+    }
+
+    /**
+     * Arbitrage A9 (#188) : l'anonymisation supprime toutes les données personnelles
+     * identifiantes, y compris le code postal et les permis de pêche téléversés.
+     */
+    @Test
+    @Transactional
+    void testAnonymisingUserDeletesLicencesAndPostalCode() {
+        String email = "anonymisation-" + UUID.randomUUID() + "@fishola.test";
+        usersDao.create("Prénom", "Nom", "pseudo-anonymisation", email, "x", true, "74000", 1980);
+        FisholaUser user = usersDao.findByEmail(email).orElseThrow();
+
+        FisholaUserLicences licence = new FisholaUserLicences();
+        licence.setUserId(user.getId());
+        licence.setName("licence");
+        licence.setType(LicenceType.PDF);
+        licence.setExpirationDate(LocalDate.now().plusYears(2));
+        licence.setContent(new byte[]{1, 2, 3});
+        fishingLicencesDao.createLicence(licence);
+
+        usersDao.safeDeleteByAnonymiseUser(user);
+
+        FisholaUser anonymised = usersDao.findById(user.getId()).orElseThrow();
+        Assertions.assertNull(anonymised.getPostalCode());
+        Assertions.assertEquals("Anonymisé", anonymised.getLastName());
+        Assertions.assertTrue(fishingLicencesDao.getLicence(licence.getId()).isEmpty());
+
+        usersDao.deleteUser(anonymised);
     }
 }

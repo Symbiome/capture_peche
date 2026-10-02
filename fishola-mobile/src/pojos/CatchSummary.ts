@@ -27,6 +27,8 @@ export default interface CatchSummary {
     automaticMeasure?: number;
     weight?: number;
     quantity?: number;
+    lotMinSize?: number;
+    lotMaxSize?: number;
     keep?: boolean;
     releasedStateId?: string;
     techniqueId?: string;
@@ -38,4 +40,5 @@ export default interface CatchSummary {
     longitude?: number;
     hasMeasurementPicture?: boolean;
     pictureOrders?: number[];
+    certainty?: string;
 }

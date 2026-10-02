@@ -59,7 +59,8 @@ public class SurveyManualEntryResource extends AbstractFisholaResource {
                 ? null
                 : adminDao.getAllowedWaterEntityIds(admin.getId());
 
-        SurveyManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities, LocalDate.now());
+        SurveyManualResultBean result = manualEntryService.submit(bean, allowedWaterEntities,
+                getAllowedAdminDepartments(), LocalDate.now());
 
         Response.Status status = result.errors.isEmpty()
                 ? Response.Status.CREATED

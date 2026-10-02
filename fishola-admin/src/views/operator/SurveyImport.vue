@@ -28,6 +28,13 @@
           « Session souvenir » facultatif.
         </p>
       </div>
+      <b-button
+        icon-left="file-download-outline"
+        :loading="downloadingTemplate"
+        @click="downloadTemplate"
+      >
+        Télécharger le gabarit
+      </b-button>
     </header>
 
     <b-collapse class="card format-help" animation="slide" :open="false">
@@ -148,10 +155,13 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import { useToast } from "buefy";
 import { ref, computed } from "vue";
 
+const Toast = useToast();
 const file = ref<File | null>(null);
 const loading = ref(false);
+const downloadingTemplate = ref(false);
 const result = ref<any>(null);
 
 // Reflète SurveySchema.HEADER_* côté backend (fr.inrae.fishola.rest.imports.survey).
@@ -218,6 +228,24 @@ function stageTagType(stage: string): string {
     case "referentiel": return "is-warning";
     case "metier": return "is-info";
     default: return "is-light";
+  }
+}
+
+/** Gabarit XLSX généré par le backend depuis le schéma d'import (#207). */
+async function downloadTemplate() {
+  downloadingTemplate.value = true;
+  try {
+    const blob = await BackendService.backendGetBlob("/v1/admin/imports/survey/template");
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "gabarit-enquete-terrain.xlsx";
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    Toast.open({ message: "Impossible de télécharger le gabarit, réessayez.", type: "is-danger" });
+  } finally {
+    downloadingTemplate.value = false;
   }
 }
 

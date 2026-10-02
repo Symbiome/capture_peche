@@ -52,6 +52,9 @@
 <script setup lang="ts">
 import {BAutocomplete} from "buefy";
 import {onMounted, ref, Ref, watch} from "vue";
+import {searchRank} from "@/utils/utils";
+
+const MAX_OPTIONS_SHOWN = 50;
 
 interface Props {
   data?: any[];
@@ -65,19 +68,19 @@ const {
 } = defineProps<Props>();
 
 const search = ref("");
-const selectedIds: Ref<string[]> = ref(defaultSelection);
+const selectedIds: Ref<string[]> = ref([...defaultSelection]);
 
 const emit = defineEmits<{
   (e: "updated", value: string[]): void
 }>();
 
 onMounted(() => {
-  selectedIds.value = defaultSelection;
+  selectedIds.value = [...defaultSelection];
   emit("updated", selectedIds.value);
 });
 
-watch(() => defaultSelection, (oldSelection, newSelection) => {
-  selectedIds.value = newSelection;
+watch(() => defaultSelection, (newSelection) => {
+  selectedIds.value = [...newSelection];
   emit("updated", selectedIds.value);
 });
 
@@ -94,15 +97,13 @@ function unselectedOption(optionId: string) {
 }
 
 function getOptions() {
-  return data.filter((option) => {
-    return (
-      option.label
-        .toString()
-        .toLowerCase()
-        .indexOf(search.value.toLowerCase()) >= 0
-      && !selectedIds.value.includes(option.id)
-    );
-  });
+  return data
+    .filter((option) => !selectedIds.value.includes(option.id))
+    .map((option) => ({option, label: option.label.toString(), rank: searchRank(option.label.toString(), search.value)}))
+    .filter((ranked) => ranked.rank !== null)
+    .sort((a, b) => a.rank - b.rank || a.label.length - b.label.length || a.label.localeCompare(b.label, "fr"))
+    .slice(0, MAX_OPTIONS_SHOWN)
+    .map((ranked) => ranked.option);
 }
 
 function getItemLabel(id: string) {

@@ -21,6 +21,9 @@ package fr.inrae.fishola.rest.trips;
  * #L%
  */
 
+import fr.inrae.fishola.entities.enums.IdentificationCertainty;
+
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +38,9 @@ public class CatchBean {
     public Optional<Integer> automaticMeasure = Optional.empty();
     public Optional<Integer> weight = Optional.empty();
     public int quantity = 1;
+    /** Classe de taille d'un lot (#196), en cm : remplace {@link #size} quand {@code quantity > 1}. */
+    public Optional<Integer> lotMinSize = Optional.empty();
+    public Optional<Integer> lotMaxSize = Optional.empty();
     public boolean keep;
     public Optional<UUID> releasedStateId = Optional.empty();
     public UUID techniqueId;
@@ -52,6 +58,9 @@ public class CatchBean {
     public Optional<Integer> editedSize = Optional.empty();
     public Optional<Integer> editedWeight = Optional.empty();
     public boolean excludeFromExport = false;
+    public Optional<IdentificationCertainty> certainty = Optional.empty();
+    public Optional<UUID> validatedBy = Optional.empty();
+    public Optional<LocalDateTime> validatedAt = Optional.empty();
 
     @Override
     public String toString() {
@@ -63,6 +72,8 @@ public class CatchBean {
                 ", automaticMeasure" + automaticMeasure +
                 ", weight=" + weight +
                 ", quantity=" + quantity +
+                ", lotMinSize=" + lotMinSize +
+                ", lotMaxSize=" + lotMaxSize +
                 ", keep=" + keep +
                 ", releasedStateId=" + releasedStateId +
                 ", techniqueId=" + techniqueId +

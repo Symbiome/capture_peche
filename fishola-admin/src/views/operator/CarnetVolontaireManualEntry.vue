@@ -45,9 +45,7 @@
       </b-field>
 
       <b-field label="Entité hydrographique" class="column is-6">
-        <b-select v-model="trip.waterEntityId" expanded>
-          <option v-for="w in waterEntities" :key="w.id" :value="w.id">{{ w.name }}</option>
-        </b-select>
+        <WaterEntitySearchSelect v-model="trip.waterEntityId" v-model:position="trip.position" with-map />
       </b-field>
       <b-field label="Technique principale" class="column is-6">
         <b-select v-model="trip.techniqueId" expanded>
@@ -173,6 +171,8 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
+import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import { maskTimeInput, isValidTimeString } from "@/utils/utils";
 import { ref, computed } from "vue";
 
@@ -183,7 +183,6 @@ const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 const FISHING_MODES = ["bateau", "float tube/canoë", "bord itinérant", "bord statique"];
 const TROUT_ORIGINS = ["naturelle", "déversement", "inconnue"];
 
-const waterEntities = ref<any[]>([]);
 const techniques = ref<any[]>([]);
 const species = ref<any[]>([]);
 
@@ -193,6 +192,7 @@ function newTrip() {
     startTime: "",
     endTime: "",
     waterEntityId: null,
+    position: null as MapPosition | null,
     fishingMode: FISHING_MODES[0],
     techniqueId: null,
     secondaryTechniqueId: null,
@@ -243,9 +243,11 @@ function onTimeBlur(field: "startTime" | "endTime") {
 loadReferentials();
 
 async function loadReferentials() {
-  waterEntities.value = await BackendService.backendGet("/v1/referential/waterEntities");
-  techniques.value = await BackendService.backendGet("/v1/referential/techniques");
-  species.value = await BackendService.backendGet("/v1/referential/species");
+  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie.
+  const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
+  const allSpecies = await BackendService.backendGet("/v1/referential/species");
+  techniques.value = allTechniques.filter((t: any) => !t.archived);
+  species.value = allSpecies.filter((s: any) => !s.archived);
 }
 
 function newCapture() {
@@ -303,8 +305,11 @@ async function submit() {
   loading.value = true;
   success.value = null;
   errors.value = [];
+  const { position, ...tripFields } = trip.value;
   const payload = {
-    ...trip.value,
+    ...tripFields,
+    latitude: position ? position.lat : null,
+    longitude: position ? position.lng : null,
     rodCount: toIntOrNull(trip.value.rodCount),
     captures: trip.value.bredouille ? [] : captures.value.map(cleanCapture)
   };

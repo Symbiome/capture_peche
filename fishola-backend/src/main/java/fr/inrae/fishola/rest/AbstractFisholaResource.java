@@ -207,9 +207,16 @@ public abstract class AbstractFisholaResource {
     }
 
     /**
+     * Code département fictif, présent dans aucune donnée : périmètre d'un compte non national
+     * sans département, pour qu'il ne voie rien au lieu de tout (#188).
+     */
+    protected static final String NO_DEPARTMENT_PERIMETER = "-";
+
+    /**
      * Codes département du périmètre du staff connecté (admin régional OU opérateur).
      * Ensemble <b>vide = national</b> : aucun filtre, voit tout. Un ensemble non vide
-     * borne toute lecture/écriture aux départements listés (#159).
+     * borne toute lecture/écriture aux départements listés (#159). Un compte non national
+     * sans département reçoit {@link #NO_DEPARTMENT_PERIMETER} et ne voit rien (#188).
      */
     protected Set<String> getAllowedAdminDepartments() {
         if (adminToken == null) {
@@ -217,7 +224,11 @@ public abstract class AbstractFisholaResource {
         }
         try {
             FisholaAdmin fisholaAdmin = this.checkIsStaff();
-            return fisholaAdmin.getIsNationalAdmin() ? Sets.newLinkedHashSet() : adminDao.getAllowedDepartments(fisholaAdmin.getId());
+            if (fisholaAdmin.getIsNationalAdmin()) {
+                return Sets.newLinkedHashSet();
+            }
+            Set<String> departments = adminDao.getAllowedDepartments(fisholaAdmin.getId());
+            return departments.isEmpty() ? Sets.newLinkedHashSet(Set.of(NO_DEPARTMENT_PERIMETER)) : departments;
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();
         }

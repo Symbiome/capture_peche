@@ -9,6 +9,8 @@ export interface CatchBean {
     automaticMeasure?: number;
     weight?: number;
     quantity: number;
+    lotMinSize?: number;
+    lotMaxSize?: number;
     keep: boolean;
     releasedStateId?: string;
     techniqueId: string;
@@ -25,6 +27,9 @@ export interface CatchBean {
     editedSize?: number;
     editedWeight?: number;
     excludeFromExport: boolean;
+    certainty?: IdentificationCertainty;
+    validatedBy?: string;
+    validatedAt?: Date;
 }
 
 export interface TripBean {
@@ -74,6 +79,7 @@ export interface SpeciesWithAlias {
     scientificName?: string;
     mandatoryReport: boolean;
     reportLink?: string;
+    archived: boolean;
     alias?: string;
     present: boolean;
     authorizedSample: boolean;
@@ -115,6 +121,7 @@ export interface Species extends Serializable {
     scientificName: string;
     mandatoryReport: boolean;
     reportLink: string;
+    archived: boolean;
 }
 
 export interface Technique extends Serializable {
@@ -122,6 +129,7 @@ export interface Technique extends Serializable {
     name: string;
     exportAs: string;
     builtIn: boolean;
+    archived: boolean;
 }
 
 export interface Weather extends Serializable {
@@ -265,17 +273,6 @@ export interface CatchMarker {
     hasValidCoordinates: boolean;
 }
 
-export interface TripSocial {
-    id: string;
-    tripName: string;
-    userName: string;
-    waterEntityName: string;
-    date: Date;
-    durationInSeconds: number;
-    socialReactions: TripSocialReaction[];
-    catchesCountPerMaillage: { [index: string]: { [P in Maillage]?: number } };
-}
-
 export interface NearbyWaterEntity {
     waterEntityId: string;
     name: string;
@@ -335,6 +332,9 @@ export interface BadgeBean {
     unlocked: boolean;
     unlockedAt: Date;
     context: any;
+    competitionId: string;
+    competitionName: string;
+    competitionDate: Date;
 }
 
 export interface Serializable {
@@ -361,12 +361,7 @@ export interface EvolutionMetricForSpecieAndMonth {
     totalCatchesCount: number;
 }
 
-export interface TripSocialReaction extends Serializable {
-    tripId: string;
-    userId: string;
-    message: string;
-    reaction: SocialReaction;
-}
+export type IdentificationCertainty = "CERTAIN" | "PROBABLE" | "UNCERTAIN";
 
 export type TripMode = "Live" | "Afterwards";
 
@@ -381,5 +376,3 @@ export type Month = "JANUARY" | "FEBRUARY" | "MARCH" | "APRIL" | "MAY" | "JUNE" 
 export type Maillage = "MAILLEE" | "NON_MAILLEE" | "NON_DEFINI";
 
 export type LicenceType = "PDF" | "JPEG" | "PNG";
-
-export type SocialReaction = "LIKE" | "LOVE" | "LETS_MEET";

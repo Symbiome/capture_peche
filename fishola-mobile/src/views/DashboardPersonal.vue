@@ -94,11 +94,9 @@ import {
   DashboardAndSpecies
 } from "@/services/DashboardService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
-import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 
-import ReferentialService from "../services/ReferentialService";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
 
@@ -129,7 +127,6 @@ export default class DashboardPersonalView extends Vue {
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
   selectedLakeId = "";
-  lakes: Lake[] = [];
   isFirstLoad = true;
 
   changeVisualizationMode(newMode: string) {
@@ -183,24 +180,6 @@ export default class DashboardPersonalView extends Vue {
         this.year,
         this.selectedLakeId
       ).then(this.personalDashboardLoaded, this.cannotLoad);
-    }
-  }
-
-  async loadLakes(): Promise<void> {
-    this.lakes = [];
-    const defaultLake = {
-      id: "",
-      name: "Tous les plans d'eau",
-      exportAs: "",
-      latitude: 0,
-      longitude: 0,
-    };
-    this.lakes.push(defaultLake);
-    try {
-      const allLakes = await ReferentialService.getLakes();
-      this.lakes = this.lakes.concat(allLakes);
-    } catch (e) {
-      // Silent catch, no more lakes will be added
     }
   }
 

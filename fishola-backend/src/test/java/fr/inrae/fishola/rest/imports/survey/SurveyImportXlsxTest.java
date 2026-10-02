@@ -40,9 +40,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,12 +108,12 @@ class SurveyImportXlsxTest {
         // Un trip « souvenir » n'a pas de survey_session_id (cf. #144) : le repère aussi par
         // surveyed_angler_id, sans quoi il échappe au nettoyage par nom de session/sortie.
         String tripFilter = "(survey_session_id IN (SELECT id FROM survey_session WHERE code LIKE 'SURVEY-TEST%') "
-                + "OR surveyed_angler_id IN (SELECT id FROM surveyed_angler WHERE code = 'P1'))";
+                + "OR surveyed_angler_id IN (SELECT id FROM surveyed_angler WHERE code IN ('P1', 'P-TPL')))";
         ctx.execute("DELETE FROM catch WHERE trip_id IN (SELECT id FROM trip WHERE " + tripFilter + ")");
         ctx.execute("DELETE FROM trip WHERE " + tripFilter);
         ctx.execute("DELETE FROM import_row_error WHERE import_id IN (SELECT id FROM import_job WHERE file_name LIKE 'survey-test%')");
         ctx.execute("DELETE FROM import_job WHERE file_name LIKE 'survey-test%'");
-        ctx.execute("DELETE FROM surveyed_angler WHERE code = 'P1'");
+        ctx.execute("DELETE FROM surveyed_angler WHERE code IN ('P1', 'P-TPL')");
         ctx.execute("DELETE FROM survey_session WHERE code LIKE 'SURVEY-TEST%'");
         ctx.execute("DELETE FROM fishola_admin WHERE id = ?", operatorId);
     }
@@ -229,6 +231,29 @@ class SurveyImportXlsxTest {
     }
 
     @Test
+    void sortieWithControlTimeBeforeStartTimeIsRejected() {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            writeSheet(wb, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, List.<String[]>of(
+                    new String[] {"SURVEY-TEST-CTRL", waterEntityName, "01/07/2026", "", ""}));
+            writeSheet(wb, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, List.<String[]>of(
+                    new String[] {"SURVEY-TEST-CTRL", "SURVEY-TEST-SOCTRL", "07:30", "08:00", "11:00"}));
+            writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.of());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+
+            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                    .contentType("application/octet-stream").body(out.toByteArray())
+                    .when().post(URI + "?filename=survey-test-control-time.xlsx&mode=partial")
+                    .then().statusCode(200)
+                    .body("status", equalTo("DONE_WITH_ERRORS"))
+                    .body("errors.code", hasItem("STRUCT_TIME_ORDER"))
+                    .body("errors.column", hasItem(SurveySchema.SHEET_SORTIE + " / Heure du contrôle"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Test
     void lotWithoutBoundsIsRejected() {
         given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
@@ -262,5 +287,59 @@ class SurveyImportXlsxTest {
                 "SELECT count(*) FROM trip WHERE collection_method = 'enquete_souvenir' AND external_ref = 'P1'")
                 .get(0, Integer.class);
         Assertions.assertEquals(1, souvenirTrips, "la session souvenir doit créer sa propre sortie");
+    }
+
+    @Test
+    void templateFilledWithItsExampleRowsImportsWithoutError() throws IOException {
+        byte[] template = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(URI + "/template")
+                .then().statusCode(200)
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .extract().asByteArray();
+
+        byte[] filled;
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(template))) {
+            Assertions.assertEquals(List.of(SurveySchema.SHEET_SESSION, SurveySchema.SHEET_SORTIE,
+                    SurveySchema.SHEET_CAPTURE, SurveySchema.SHEET_SOUVENIR), sheetNames(wb));
+            Assertions.assertEquals(SurveySchema.HEADER_CAPTURE, headerOf(wb.getSheet(SurveySchema.SHEET_CAPTURE)));
+            // Seules les valeurs propres à la base de test changent : secteur/site existants,
+            // codes repérables par le nettoyage.
+            setExample(wb, SurveySchema.SHEET_SESSION, "Code session", "SURVEY-TEST-TPL");
+            setExample(wb, SurveySchema.SHEET_SESSION, "Secteur", waterEntityName);
+            setExample(wb, SurveySchema.SHEET_SORTIE, "Code session", "SURVEY-TEST-TPL");
+            setExample(wb, SurveySchema.SHEET_CAPTURE, "Code pêcheur", "P-TPL");
+            setExample(wb, SurveySchema.SHEET_SOUVENIR, "Code pêcheur", "P-TPL");
+            setExample(wb, SurveySchema.SHEET_SOUVENIR, "Site pêché", waterEntityName);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+            filled = out.toByteArray();
+        }
+
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(filled)
+                .when().post(URI + "?filename=survey-test-template.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE"))
+                .body("inserted", equalTo(2))
+                .body("rejected", equalTo(0));
+    }
+
+    private static List<String> sheetNames(XSSFWorkbook wb) {
+        List<String> names = new ArrayList<>();
+        wb.forEach(sheet -> names.add(sheet.getSheetName()));
+        return names;
+    }
+
+    private static List<String> headerOf(Sheet sheet) {
+        List<String> header = new ArrayList<>();
+        sheet.getRow(0).forEach(cell -> header.add(cell.getStringCellValue()));
+        return header;
+    }
+
+    private static void setExample(XSSFWorkbook wb, String sheetName, String column, String value) {
+        Sheet sheet = wb.getSheet(sheetName);
+        int index = headerOf(sheet).indexOf(column);
+        sheet.getRow(1).getCell(index).setCellValue(value);
     }
 }

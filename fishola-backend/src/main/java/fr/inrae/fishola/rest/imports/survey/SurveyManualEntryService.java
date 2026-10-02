@@ -26,6 +26,7 @@ import fr.inrae.fishola.entities.enums.FishingMode;
 import fr.inrae.fishola.rest.imports.ImportDao;
 import fr.inrae.fishola.rest.imports.ImportService;
 import fr.inrae.fishola.rest.imports.ManualError;
+import fr.inrae.fishola.rest.imports.ManualPositionService;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -55,6 +56,9 @@ public class SurveyManualEntryService {
 
     @Inject
     protected ImportDao importDao;
+
+    @Inject
+    protected ManualPositionService manualPositionService;
 
     private static String normalize(String v) {
         String s = Normalizer.normalize(v.strip().toLowerCase(), Normalizer.Form.NFD);
@@ -87,7 +91,8 @@ public class SurveyManualEntryService {
         };
     }
 
-    public SurveyManualResultBean submit(SurveySortieBean bean, Set<UUID> allowedWaterEntities, LocalDate today) {
+    public SurveyManualResultBean submit(SurveySortieBean bean, Set<UUID> allowedWaterEntities,
+                                         Set<String> allowedDepartments, LocalDate today) {
         List<ManualError> errors = new ArrayList<>();
         if (bean == null) {
             errors.add(new ManualError(null, null, "corps de requête manquant"));
@@ -112,6 +117,10 @@ public class SurveyManualEntryService {
         if (bean.startTime != null && bean.endTime != null && !bean.endTime.isAfter(bean.startTime)) {
             errors.add(new ManualError(null, "endTime", "l'heure de fin doit être postérieure à l'heure de début"));
         }
+        if (bean.controlTime != null && bean.startTime != null && bean.controlTime.isBefore(bean.startTime)) {
+            errors.add(new ManualError(null, "controlTime",
+                    "l'heure du contrôle ne peut pas être antérieure à l'heure de début de pêche"));
+        }
         if (bean.unsurveyedShoreAnglers != null && bean.unsurveyedShoreAnglers < 0) {
             errors.add(new ManualError(null, "unsurveyedShoreAnglers", "doit être ≥ 0"));
         }
@@ -125,6 +134,8 @@ public class SurveyManualEntryService {
         } else if (allowedWaterEntities != null && !allowedWaterEntities.contains(waterEntityId)) {
             errors.add(new ManualError(null, "waterEntityId", "secteur hors de votre périmètre"));
         }
+        ImportDao.ManualPosition position = manualPositionService.resolve(bean.latitude, bean.longitude,
+                waterEntityId, allowedDepartments, null, "position", errors).orElse(null);
 
         List<SurveyAnglerBean> anglers = bean.anglers == null ? List.of() : bean.anglers;
         if (anglers.isEmpty()) {
@@ -135,7 +146,7 @@ public class SurveyManualEntryService {
         List<ImportDao.SurveyManualAngler> resolvedAnglers = new ArrayList<>();
         for (int i = 0; i < anglers.size(); i++) {
             SurveyAnglerBean angler = anglers.get(i);
-            resolvedAnglers.add(validateAngler(i, angler, allowedWaterEntities, today, errors));
+            resolvedAnglers.add(validateAngler(i, angler, allowedWaterEntities, allowedDepartments, today, errors));
         }
 
         if (!errors.isEmpty()) {
@@ -146,7 +157,7 @@ public class SurveyManualEntryService {
                 bean.controlTime, bean.startTime, bean.endTime,
                 bean.unsurveyedShoreAnglers == null ? null : bean.unsurveyedShoreAnglers.shortValue(),
                 bean.unsurveyedBoatAnglers == null ? null : bean.unsurveyedBoatAnglers.shortValue(),
-                resolvedAnglers);
+                resolvedAnglers, position);
 
         int totalCatches = resolvedAnglers.stream().mapToInt(a -> a.catches().size()
                 + (a.souvenir() != null && a.souvenir().catch_() != null ? 1 : 0)).sum();
@@ -154,7 +165,8 @@ public class SurveyManualEntryService {
     }
 
     private ImportDao.SurveyManualAngler validateAngler(int index, SurveyAnglerBean angler,
-                                                         Set<UUID> allowedWaterEntities, LocalDate today,
+                                                         Set<UUID> allowedWaterEntities,
+                                                         Set<String> allowedDepartments, LocalDate today,
                                                          List<ManualError> errors) {
         FishingMode fishingMode = resolveFishingMode(angler.fishingMode);
         if (fishingMode == null) {
@@ -178,7 +190,8 @@ public class SurveyManualEntryService {
 
         ImportDao.SurveyManualSouvenir souvenir = null;
         if (angler.souvenir != null) {
-            souvenir = validateSouvenir(index, angler.souvenir, allowedWaterEntities, today, errors);
+            souvenir = validateSouvenir(index, angler.souvenir, allowedWaterEntities, allowedDepartments, today,
+                    errors);
         }
 
         SurveyAnglerOrigin origin = SurveyAnglerOrigin.resolve(angler.origin);
@@ -188,7 +201,8 @@ public class SurveyManualEntryService {
     }
 
     private ImportDao.SurveyManualSouvenir validateSouvenir(int index, SurveySouvenirBean souvenir,
-                                                             Set<UUID> allowedWaterEntities, LocalDate today,
+                                                             Set<UUID> allowedWaterEntities,
+                                                             Set<String> allowedDepartments, LocalDate today,
                                                              List<ManualError> errors) {
         if (souvenir.day == null) {
             errors.add(new ManualError(index, "souvenir.day", "date obligatoire"));
@@ -205,6 +219,8 @@ public class SurveyManualEntryService {
         } else if (allowedWaterEntities != null && !allowedWaterEntities.contains(waterEntityId)) {
             errors.add(new ManualError(index, "souvenir.waterEntityId", "site pêché hors de votre périmètre"));
         }
+        ImportDao.ManualPosition position = manualPositionService.resolve(souvenir.latitude, souvenir.longitude,
+                waterEntityId, allowedDepartments, index, "souvenir.position", errors).orElse(null);
 
         FishingMode fishingMode = resolveFishingMode(souvenir.fishingMode);
         if (fishingMode == null) {
@@ -237,7 +253,8 @@ public class SurveyManualEntryService {
 
         return new ImportDao.SurveyManualSouvenir(souvenir.day, dayPeriod, waterEntityId, fishingMode,
                 souvenir.techniqueId, souvenir.rodCount == null ? null : souvenir.rodCount.shortValue(),
-                souvenir.baitOrLure, souvenir.noExpectedSpecies ? null : souvenir.expectedSpeciesId, resolvedCatch);
+                souvenir.baitOrLure, souvenir.noExpectedSpecies ? null : souvenir.expectedSpeciesId, resolvedCatch,
+                position);
     }
 
     /** Validation métier partagée avec l'import (Q8, lots, bredouille). */

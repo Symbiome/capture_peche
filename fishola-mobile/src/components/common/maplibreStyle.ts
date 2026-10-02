@@ -103,7 +103,17 @@ export function setBaseLayer(map: MlMap, baseLayer: BaseLayer) {
 /** Crée une carte MapLibre « Fishola » (style IGN + hydro, contrôle de navigation). */
 export function createFisholaMap(
     container: HTMLElement,
-    opts: { center?: [number, number]; zoom?: number; baseLayer?: BaseLayer } = {},
+    opts: {
+        center?: [number, number];
+        zoom?: number;
+        baseLayer?: BaseLayer;
+        // Capture d'export (#173, PDF de sortie) : le canvas WebGL efface son
+        // tampon après chaque frame par défaut -- `getCanvas().toDataURL()`
+        // rendrait une image vide sans ce drapeau. Coûte en mémoire/perf,
+        // donc réservé aux cartes créées juste pour une capture ponctuelle,
+        // jamais au défaut des cartes interactives affichées à l'écran.
+        preserveDrawingBuffer?: boolean;
+    } = {},
 ): MlMap {
     const map = new maplibregl.Map({
         container,
@@ -111,6 +121,7 @@ export function createFisholaMap(
         center: opts.center || DEFAULT_CENTER,
         zoom: opts.zoom != null ? opts.zoom : DEFAULT_ZOOM,
         attributionControl: { compact: true },
+        preserveDrawingBuffer: opts.preserveDrawingBuffer || false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
     return map;

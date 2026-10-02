@@ -139,8 +139,9 @@ Dans le geopackage téléchargé, les attributs pertinents sont:
 ### Délimitations administratives
 
 Utilier département.parquet
-https://cartes.gouv.fr/rechercher-une-donnee/dataset/IGNF_ADMIN-EXPRESS?redirected_from=geoservices.ign.fr#telechargement
-
+```bash
+curl -o departement.parquet https://data.geopf.fr/telechargement/download/ADMIN-EXPRESS-COG/ADMIN-EXPRESS-COG_4-0__GEOPARQUET_WGS84G_FRA_2026-01-01/departement.parquet
+```
 #### Connexion à la base de dev locale
 
 ```bash

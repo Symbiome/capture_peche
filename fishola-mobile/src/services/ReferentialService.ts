@@ -20,6 +20,7 @@
  */
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
+import Helpers from '@/services/Helpers';
 
 export class SpeciesWithAliasAndTechnique {
     constructor (
@@ -97,7 +98,28 @@ export default class ReferentialService extends AbstractFisholaService {
         altitudeMoyenne: 0,
         bdtopoCleabs: "",
         geom: "",
-      } as unknown as Lake)));
+      } as unknown as Lake)))
+      .catch((err) => {
+        // Repli hors-ligne (#174) : filtrage local du référentiel léger déjà en
+        // cache (getLakes(), backendGetWithCache -> stockage hors-ligne). Une
+        // erreur de transport (réseau absent) est un objet {networkError:
+        // true, ...} (cf. AbstractFisholaService.rejectOnTransportFailure) ;
+        // une erreur HTTP numérique (ex. session expirée) est propagée telle
+        // quelle, sans masquer le problème derrière un repli silencieux.
+        if (err && err.networkError) {
+          return ReferentialService.searchWaterEntitiesOffline(q);
+        }
+        throw err;
+      });
+  }
+
+  private static searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
+    if (!q.trim()) {
+      return Promise.resolve([]);
+    }
+    return ReferentialService.getLakes()
+      .then((lakes) => Helpers.rankBySearch(lakes, q, (l) => [l.name]).slice(0, 50))
+      .catch(() => []);
   }
 
   // Entités hydro autour d'un point, triées par distance (#5). Alimente le mode
@@ -128,6 +150,30 @@ export default class ReferentialService extends AbstractFisholaService {
   ): Promise<{ commune?: string; codePostal?: string } | null> {
     return this.backendGet(`/v1/waterEntities/${encodeURIComponent(id)}`)
       .then((r: any) => (r ? { commune: r.commune, codePostal: r.codePostal } : null))
+      .catch(() => null);
+  }
+
+  // Résout un plan d'eau par id sans charger le référentiel complet (#175) --
+  // utilisé pour retrouver le libellé d'une sélection connue par avance (URL,
+  // historique local) qui n'est ni un favori ni le résultat d'une recherche en
+  // cours. Silencieux en cas de 404 / hors-ligne.
+  static getWaterEntityById(id: string): Promise<Lake | null> {
+    return this.backendGet(`/v1/waterEntities/${encodeURIComponent(id)}`)
+      .then((r: any) => (r ? {
+        id: r.waterEntityId,
+        name: r.name,
+        kind: r.kind,
+        latitude: r.centroid ? r.centroid.lat : undefined,
+        longitude: r.centroid ? r.centroid.lng : undefined,
+        commune: r.commune,
+        codePostal: r.codePostal,
+        exportAs: r.name,
+        waterEntityCode: "",
+        nature: "",
+        altitudeMoyenne: 0,
+        bdtopoCleabs: "",
+        geom: "",
+      } as unknown as Lake : null))
       .catch(() => null);
   }
 

@@ -29,7 +29,6 @@ public class RegisterBean {
     public String email;
     public String password;
     public boolean acceptsMailNotifications;
-    public boolean acceptsShareTrips;
     public String postalCode;
     public Integer birthYear;
 

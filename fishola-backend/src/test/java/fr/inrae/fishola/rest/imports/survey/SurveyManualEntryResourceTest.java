@@ -75,13 +75,17 @@ class SurveyManualEntryResourceTest {
     AgroalDataSource dataSource;
 
     private final UUID operatorId = UUID.randomUUID();
+    private final UUID nationalAdminId = UUID.randomUUID();
     private String operatorToken;
+    private String nationalToken;
     private UUID annecyId;
     private UUID bourgetId;
     private UUID perchSpeciesId;
     private UUID techniqueId;
 
     private final List<UUID> createdTripIds = new ArrayList<>();
+    /** Surfaces en eau ajoutées par ce test (#189) : l'attribution hydro s'appuie sur water_surface. */
+    private final List<UUID> seededSurfaceEntityIds = new ArrayList<>();
 
     @BeforeAll
     @Transactional
@@ -93,18 +97,33 @@ class SurveyManualEntryResourceTest {
         bourgetId = ctx.fetchOne("SELECT id FROM water_entity WHERE name = 'Bourget'").get("id", UUID.class);
         perchSpeciesId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Perche'").get("id", UUID.class);
         techniqueId = ctx.fetchOne("SELECT id FROM technique WHERE name = 'Pêche au coup'").get("id", UUID.class);
+        seedWaterSurface(ctx, annecyId, "MULTIPOLYGON(((6.165 45.845,6.175 45.845,6.175 45.855,6.165 45.855,6.165 45.845)))");
+        seedWaterSurface(ctx, bourgetId, "MULTIPOLYGON(((5.865 45.715,5.875 45.715,5.875 45.725,5.865 45.725,5.865 45.715)))");
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
                 + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "survey-manual-test-op@fishola.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, department);
+        ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "survey-manual-test-national@fishola.test", "x");
 
         ManagedContext requestContext = Arc.container().requestContext();
         requestContext.activate();
         try {
             operatorToken = jwtHelper.createAdminToken(operatorId);
+            nationalToken = jwtHelper.createAdminToken(nationalAdminId);
         } finally {
             requestContext.deactivate();
+        }
+    }
+
+    private void seedWaterSurface(org.jooq.DSLContext ctx, UUID waterEntityId, String wkt) {
+        boolean exists = ctx.fetchOne("SELECT count(*) FROM water_surface WHERE water_entity_id = ?", waterEntityId)
+                .get(0, Integer.class) > 0;
+        if (!exists) {
+            ctx.execute("INSERT INTO water_surface (water_entity_id, geom) VALUES (?, ST_SetSRID(ST_GeomFromText(?), 4326))",
+                    waterEntityId, wkt);
+            seededSurfaceEntityIds.add(waterEntityId);
         }
     }
 
@@ -112,6 +131,9 @@ class SurveyManualEntryResourceTest {
     @Transactional
     void cleanup() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        for (UUID waterEntityId : seededSurfaceEntityIds) {
+            ctx.execute("DELETE FROM water_surface WHERE water_entity_id = ?", waterEntityId);
+        }
         Set<UUID> sessionIds = new HashSet<>();
         Set<UUID> anglerIds = new HashSet<>();
         for (UUID tripId : createdTripIds) {
@@ -136,7 +158,7 @@ class SurveyManualEntryResourceTest {
         for (UUID sessionId : sessionIds) {
             ctx.execute("DELETE FROM survey_session WHERE id = ?", sessionId);
         }
-        ctx.execute("DELETE FROM fishola_admin WHERE id = ?", operatorId);
+        ctx.execute("DELETE FROM fishola_admin WHERE id IN (?, ?)", operatorId, nationalAdminId);
     }
 
     private SurveySortieBean validSortie() {
@@ -274,6 +296,16 @@ class SurveyManualEntryResourceTest {
     }
 
     @Test
+    void controlTimeBeforeStartTimeIsRejectedWithoutPersisting() {
+        SurveySortieBean sortie = validSortie();
+        sortie.controlTime = LocalTime.of(7, 30);
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.field", hasItem("controlTime"));
+    }
+
+    @Test
     void waterEntityOutsideOperatorScopeIsRejectedWithoutPersisting() {
         SurveySortieBean sortie = validSortie();
         sortie.waterEntityId = bourgetId;
@@ -286,5 +318,123 @@ class SurveyManualEntryResourceTest {
                 .then().statusCode(400)
                 .body("tripIds", empty())
                 .body("errors.field", hasItem("waterEntityId"));
+    }
+
+    // --- #189 : position saisie sur la carte par le staff. ---
+
+    /** Point dans la boîte « 74 » de la fixture, à côté d'Annecy. */
+    private static final double LAT_74 = 45.86;
+    private static final double LNG_74 = 6.18;
+    /** Point dans la boîte « 73 » de la fixture, à côté du Bourget. */
+    private static final double LAT_73 = 45.71;
+    private static final double LNG_73 = 5.88;
+
+    private SurveySouvenirBean validSouvenir() {
+        SurveySouvenirBean souvenir = new SurveySouvenirBean();
+        souvenir.day = LocalDate.of(2026, 6, 15);
+        souvenir.dayPeriod = "matin";
+        souvenir.waterEntityId = annecyId;
+        souvenir.fishingMode = "bord statique";
+        souvenir.techniqueId = techniqueId;
+        souvenir.rodCount = 1;
+        souvenir.noExpectedSpecies = true;
+        souvenir.bredouille = true;
+        return souvenir;
+    }
+
+    private io.restassured.response.ValidatableResponse submitAs(String token, SurveySortieBean sortie) {
+        return given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .contentType("application/json")
+                .body(sortie)
+                .when().post(URI)
+                .then();
+    }
+
+    @Test
+    void mapPositionIsStoredSnappedAndStampsItsDepartment() {
+        SurveySortieBean sortie = validSortie();
+        sortie.latitude = LAT_74;
+        sortie.longitude = LNG_74;
+        SurveySouvenirBean souvenir = validSouvenir();
+        souvenir.latitude = LAT_74;
+        souvenir.longitude = LNG_74;
+        sortie.anglers.get(0).souvenir = souvenir;
+
+        var response = submitAs(operatorToken, sortie).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        for (String tripId : response.jsonPath().getList("tripIds", String.class)) {
+            var trip = ctx.fetchOne("SELECT ST_Y(begin_position) AS lat, ST_X(begin_position) AS lng, "
+                    + "snapped_position IS NOT NULL AS snapped, hydro_validation, department FROM trip WHERE id = ?",
+                    UUID.fromString(tripId));
+            Assertions.assertEquals(LAT_74, trip.get("lat", Double.class), 1e-9);
+            Assertions.assertEquals(LNG_74, trip.get("lng", Double.class), 1e-9);
+            Assertions.assertTrue(trip.get("snapped", Boolean.class));
+            Assertions.assertEquals("CONFIRMED", trip.get("hydro_validation", String.class));
+            Assertions.assertEquals("74", trip.get("department", String.class));
+        }
+    }
+
+    @Test
+    void departmentComesFromThePointRatherThanTheWaterEntity() {
+        // Arbitrage A5 : la sortie relève du département où tombe son point (ici 73), même
+        // rattachée à une entité d'un autre département (Annecy, 74). National : sans périmètre.
+        SurveySortieBean sortie = validSortie();
+        sortie.latitude = LAT_73;
+        sortie.longitude = LNG_73;
+
+        var response = submitAs(nationalToken, sortie).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        UUID tripId = UUID.fromString(response.jsonPath().getList("tripIds", String.class).get(0));
+        Assertions.assertEquals("73", ctx.fetchOne("SELECT department FROM trip WHERE id = ?", tripId)
+                .get("department", String.class));
+    }
+
+    @Test
+    void operatorPositionOutsidePerimeterIsRejected() {
+        SurveySortieBean sortie = validSortie();
+        sortie.latitude = LAT_73;
+        sortie.longitude = LNG_73;
+        SurveySouvenirBean souvenir = validSouvenir();
+        souvenir.latitude = LAT_73;
+        souvenir.longitude = LNG_73;
+        sortie.anglers.get(0).souvenir = souvenir;
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.field", hasItem("position"))
+                .body("errors.field", hasItem("souvenir.position"));
+    }
+
+    @Test
+    void incompletePositionIsRejected() {
+        SurveySortieBean sortie = validSortie();
+        sortie.latitude = LAT_74;
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("errors.field", hasItem("position"));
+    }
+
+    @Test
+    void staffAttributionIsLimitedToThePerimeter() {
+        String uri = "/api/v1/referential/waterEntities/attribution";
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(uri + "?lat=" + LAT_74 + "&lng=" + LNG_74)
+                .then().statusCode(200)
+                .body("proposal.name", equalTo("Annecy"));
+        // Bourget (73) est hors périmètre de l'opérateur : jamais proposé.
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(uri + "?lat=" + LAT_73 + "&lng=" + LNG_73)
+                .then().statusCode(200)
+                .body("proposal.name", org.hamcrest.Matchers.not(equalTo("Bourget")))
+                .body("alternatives.name", org.hamcrest.Matchers.not(hasItem("Bourget")));
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                .when().get(uri + "?lat=" + LAT_73 + "&lng=" + LNG_73)
+                .then().statusCode(200)
+                .body("proposal.name", equalTo("Bourget"));
     }
 }

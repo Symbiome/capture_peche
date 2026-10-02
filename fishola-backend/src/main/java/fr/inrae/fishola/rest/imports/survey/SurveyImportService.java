@@ -228,6 +228,12 @@ public class SurveyImportService {
                     SurveySchema.STRUCT_TIME_ORDER,
                     "l'heure de fin prévue doit être postérieure à l'heure de début"));
         }
+        if (timesOk && s.controlTime.isBefore(s.startTime)) {
+            errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure du contrôle", SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME_ORDER,
+                    "l'heure du contrôle (" + s.controlTime + ") ne peut pas être antérieure à l'heure de début de pêche ("
+                            + s.startTime + ")"));
+        }
 
         return new SortieRowResult(errors, errors.isEmpty() ? s : null);
     }

@@ -28,10 +28,15 @@
       </p>
 
       <div class="action-cards">
-        <router-link :to="{ name: 'operator-manual-entry' }" class="action-card">
+        <router-link :to="{ name: 'operator-manual-entry-carnet-volontaire' }" class="action-card">
           <b-icon icon="playlist-plus" size="is-large"></b-icon>
-          <h2>Nouvelle saisie</h2>
+          <h2>Saisie carnet volontaire</h2>
           <p>Saisir une sortie et ses captures à la main.</p>
+        </router-link>
+        <router-link :to="{ name: 'operator-manual-entry-survey' }" class="action-card">
+          <b-icon icon="playlist-plus" size="is-large"></b-icon>
+          <h2>Saisie enquête terrain</h2>
+          <p>Saisir une session d'enquête et ses captures à la main.</p>
         </router-link>
       </div>
     </div>

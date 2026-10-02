@@ -56,7 +56,8 @@ public class GamificationDao extends AbstractFisholaDao {
                            boolean annualReset, boolean active) {}
 
     public record UnlockRow(UUID badgeId, short periodYear, java.time.LocalDateTime unlockedAt,
-                            JsonNode context, UUID attributedBy) {}
+                            JsonNode context, UUID attributedBy, UUID competitionId,
+                            String competitionName, LocalDate competitionDate) {}
 
     private static final String BADGE_COLUMNS = "id, code, category::text AS category, name, description, "
             + "icon, rule_type::text AS rule_type, rule_params::text AS rule_params, tier, annual_reset, active";
@@ -107,24 +108,33 @@ public class GamificationDao extends AbstractFisholaDao {
 
     // --- Déblocages --------------------------------------------------------------
 
+    private static final String UNLOCK_COLUMNS = "u.badge_id, u.period_year, u.unlocked_at, "
+            + "u.context::text AS context, u.attributed_by, u.competition_id, "
+            + "c.name AS competition_name, c.competition_date";
+
+    private static final String UNLOCK_FROM_JOIN_COMPETITION =
+            "FROM gamification_badge_unlock u LEFT JOIN competition c ON c.id = u.competition_id";
+
+    private UnlockRow toUnlockRow(Record r) {
+        return new UnlockRow(r.get("badge_id", UUID.class), r.get("period_year", Short.class),
+                r.get("unlocked_at", java.time.LocalDateTime.class),
+                parseJson(r.get("context", String.class)), r.get("attributed_by", UUID.class),
+                r.get("competition_id", UUID.class), r.get("competition_name", String.class),
+                r.get("competition_date", LocalDate.class));
+    }
+
     public List<UnlockRow> listUnlocksForUser(UUID userId) {
         return withContext(ctx -> ctx.fetch(
-                "SELECT badge_id, period_year, unlocked_at, context::text AS context, attributed_by "
-                        + "FROM gamification_badge_unlock WHERE fishola_user_id = ?", userId)
-                .map(r -> new UnlockRow(r.get("badge_id", UUID.class), r.get("period_year", Short.class),
-                        r.get("unlocked_at", java.time.LocalDateTime.class),
-                        parseJson(r.get("context", String.class)), r.get("attributed_by", UUID.class))));
+                "SELECT " + UNLOCK_COLUMNS + " " + UNLOCK_FROM_JOIN_COMPETITION + " WHERE u.fishola_user_id = ?",
+                userId).map(this::toUnlockRow));
     }
 
     public Optional<UnlockRow> findUnlock(UUID badgeId, UUID userId, short periodYear) {
         return withContext(ctx -> ctx.fetch(
-                        "SELECT badge_id, period_year, unlocked_at, context::text AS context, attributed_by "
-                                + "FROM gamification_badge_unlock "
-                                + "WHERE badge_id = ? AND fishola_user_id = ? AND period_year = ?",
+                        "SELECT " + UNLOCK_COLUMNS + " " + UNLOCK_FROM_JOIN_COMPETITION
+                                + " WHERE u.badge_id = ? AND u.fishola_user_id = ? AND u.period_year = ?",
                         badgeId, userId, periodYear)
-                .map(r -> new UnlockRow(r.get("badge_id", UUID.class), r.get("period_year", Short.class),
-                        r.get("unlocked_at", java.time.LocalDateTime.class),
-                        parseJson(r.get("context", String.class)), r.get("attributed_by", UUID.class))))
+                .map(this::toUnlockRow))
                 .stream().findFirst();
     }
 
@@ -137,8 +147,10 @@ public class GamificationDao extends AbstractFisholaDao {
 
     /**
      * Insère (ou met à jour si {@code updateIfExists}, cas des badges "record" qui
-     * évoluent) le déblocage d'un badge. Idempotent via la contrainte unique
-     * {@code (badge_id, fishola_user_id, period_year)}.
+     * évoluent) le déblocage d'un badge. Idempotent via l'index unique partiel
+     * {@code (badge_id, fishola_user_id, period_year) WHERE competition_id IS NULL} (#90) --
+     * cette méthode ne pose jamais de {@code competition_id} ; les attributions de badge
+     * "concours" passent par {@link #attributeCompetitionBadge}.
      */
     @Transactional
     public void upsertUnlock(UUID badgeId, UUID userId, short periodYear, Map<String, Object> context,
@@ -146,9 +158,32 @@ public class GamificationDao extends AbstractFisholaDao {
         DSLContext ctx = newContext();
         String contextJson = toJson(context);
         String sql = "INSERT INTO gamification_badge_unlock (badge_id, fishola_user_id, period_year, context, attributed_by) "
-                + "VALUES (?, ?, ?, ?::jsonb, ?) ON CONFLICT (badge_id, fishola_user_id, period_year) "
+                + "VALUES (?, ?, ?, ?::jsonb, ?) "
+                + "ON CONFLICT (badge_id, fishola_user_id, period_year) WHERE competition_id IS NULL "
                 + (updateIfExists ? "DO UPDATE SET context = EXCLUDED.context, unlocked_at = now()" : "DO NOTHING");
         ctx.execute(sql, badgeId, userId, periodYear, contextJson, attributedBy);
+    }
+
+    /**
+     * Attribution du badge CONCOURS pour un concours donné (#90). Idempotent via l'index
+     * unique partiel {@code (fishola_user_id, competition_id) WHERE competition_id IS NOT
+     * NULL} : un pêcheur ne peut être attribué qu'une fois par concours, mais peut
+     * accumuler le même {@code badgeId} pour plusieurs concours (impossible avec
+     * {@link #upsertUnlock}, cadenassé par pêcheur+année).
+     */
+    @Transactional
+    public void attributeCompetitionBadge(UUID badgeId, UUID userId, UUID competitionId, UUID attributedBy) {
+        DSLContext ctx = newContext();
+        ctx.execute("INSERT INTO gamification_badge_unlock "
+                        + "(badge_id, fishola_user_id, period_year, attributed_by, competition_id) "
+                        + "VALUES (?, ?, 0, ?, ?) "
+                        + "ON CONFLICT (fishola_user_id, competition_id) WHERE competition_id IS NOT NULL DO NOTHING",
+                badgeId, userId, attributedBy, competitionId);
+    }
+
+    public Optional<BadgeRow> findBadgeByCode(String code) {
+        return withContext(ctx -> ctx.fetch("SELECT " + BADGE_COLUMNS + " FROM gamification_badge WHERE code = ?", code)
+                .map(this::toBadgeRow)).stream().findFirst();
     }
 
     public boolean existsUser(UUID userId) {

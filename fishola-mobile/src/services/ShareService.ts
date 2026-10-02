@@ -28,25 +28,31 @@ export default class ShareService extends AbstractFisholaService {
 
   static async sharePicture(pictureURL: string, fileName: string) {
     const base64 = await ShareService.getBase64FromUrl(pictureURL);
-    ShareService.shareBase64Picture(base64, fileName);
+    ShareService.shareBase64File(base64, fileName, "application/png");
   }
 
   /** Carte de partage social (#146) : image déjà générée côté client (canvas/html2canvas), au format `data:image/png;base64,...`. */
   static async shareGeneratedImage(dataUrl: string, fileName: string) {
     const base64 = dataUrl.replace("data:", "").replace(/^.+,/, "");
-    ShareService.shareBase64Picture(base64, fileName);
+    ShareService.shareBase64File(base64, fileName, "application/png");
   }
 
-  private static shareBase64Picture(base64: string, fileName: string) {
+  /** Export PDF d'une sortie (#173) : PDF généré côté client (jsPDF), au format `data:application/pdf;base64,...`. */
+  static async shareGeneratedPdf(dataUrl: string, fileName: string) {
+    const base64 = dataUrl.replace("data:", "").replace(/^.+,/, "");
+    ShareService.shareBase64File(base64, fileName, "application/pdf");
+  }
+
+  private static shareBase64File(base64: string, fileName: string, contentType: string) {
     FileSharer.share({
       filename: fileName,
-      contentType: "application/png",
+      contentType: contentType,
       // If you want to save base64:
       base64Data: base64,
     })
       .then(() => {})
       .catch((error) => {
-        console.error("Impossible de partager l'image ", error.message);
+        console.error("Impossible de partager le fichier ", error.message);
       });
   }
 

@@ -33,8 +33,10 @@ import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.enums.DeviceType;
+import fr.inrae.fishola.entities.enums.IdentificationCertainty;
 import fr.inrae.fishola.entities.enums.Maillage;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
+import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.gamification.GamificationEngine;
@@ -500,6 +502,7 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.automaticMeasure.ifPresent(catchPojo::setAutomaticMeasure);
         aCatch.weight.ifPresent(catchPojo::setWeight);
         catchPojo.setQuantity(Math.max(1, aCatch.quantity));
+        applyLotSizeClass(catchPojo, aCatch);
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
             aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
@@ -508,18 +511,13 @@ public class TripResource extends AbstractFisholaResource {
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
         aCatch.sampleId.ifPresent(catchPojo::setSampleId);
+        // Certitude d'identification (#87) : si absente (ancienne appli), CatchsDao.create()
+        // applique le défaut CERTAIN.
+        aCatch.certainty.ifPresent(catchPojo::setCertainty);
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
-        if (minSize.isPresent() && minSize.get() > 0 && catchPojo.getSize() != null) {
-            if (catchPojo.getSize() >= minSize.get()) {
-                catchPojo.setMaillee(Maillage.MAILLEE);
-            } else {
-                catchPojo.setMaillee(Maillage.NON_MAILLEE);
-            }
-        } else {
-            catchPojo.setMaillee(Maillage.NON_DEFINI);
-        }
+        catchPojo.setMaillee(computeMaillage(catchPojo, minSize));
         UUID catchId = catchsDao.create(catchPojo);
         if (positionWkt != null) {
             catchsDao.updatePosition(catchId, positionWkt);
@@ -542,24 +540,20 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setQuantity(Math.max(1, aCatch.quantity));
+        applyLotSizeClass(existingCatch, aCatch);
         existingCatch.setKept(aCatch.keep);
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
         existingCatch.setReleasedFishStateId(!aCatch.keep ? aCatch.releasedStateId.orElse(null) : null);
         existingCatch.setDescription(aCatch.description.map(StringUtils::trimToNull).orElse(null));
         existingCatch.setSampleId(aCatch.sampleId.orElse(null));
+        // Certitude d'identification (#87) : contrairement à create(), update() n'a pas de
+        // logique de valeur par défaut -- la colonne est NOT NULL, donc CERTAIN ici si absente.
+        existingCatch.setCertainty(aCatch.certainty.orElse(IdentificationCertainty.CERTAIN));
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
-        if (minSize.isPresent() && minSize.get() > 0) {
-            if (existingCatch.getSize() >= minSize.get()) {
-                existingCatch.setMaillee(Maillage.MAILLEE);
-            } else {
-                existingCatch.setMaillee(Maillage.NON_MAILLEE);
-            }
-        } else {
-            existingCatch.setMaillee(Maillage.NON_DEFINI);
-        }
+        existingCatch.setMaillee(computeMaillage(existingCatch, minSize));
         catchsDao.update(existingCatch);
         if (positionWkt != null) {
             catchsDao.updatePosition(existingCatch.getId(), positionWkt);
@@ -567,6 +561,62 @@ public class TripResource extends AbstractFisholaResource {
         // La position de la prise a pu être ajoutée/retirée : on ré-estampille (#159).
         catchsDao.stampDepartment(existingCatch.getId());
 
+    }
+
+    /**
+     * Classe de taille d'un lot (#196) : un lot de plusieurs poissons peut porter une taille
+     * min–max plutôt qu'une taille exacte. La taille exacte est alors vidée, pour que les
+     * records personnels et les statistiques de taille ne prennent pas une borne de classe
+     * pour une taille mesurée. Hors lot, ou sans aucune borne, la classe est effacée.
+     */
+    protected static void applyLotSizeClass(Catch target, CatchBean aCatch) {
+        if (aCatch.quantity <= 1 || (aCatch.lotMinSize.isEmpty() && aCatch.lotMaxSize.isEmpty())) {
+            setLotSizeClass(target, null, null);
+            return;
+        }
+        Preconditions.checkArgument(aCatch.lotMinSize.isPresent() && aCatch.lotMaxSize.isPresent(),
+                "Classe de taille incomplète : taille min et taille max sont requises");
+        int lotMinSize = aCatch.lotMinSize.get();
+        int lotMaxSize = aCatch.lotMaxSize.get();
+        Preconditions.checkArgument(lotMinSize > 0 && lotMinSize <= lotMaxSize,
+                "Classe de taille invalide : %s-%s cm", lotMinSize, lotMaxSize);
+        target.setSize(null);
+        setLotSizeClass(target, lotMinSize, lotMaxSize);
+    }
+
+    /**
+     * Renseigne les bornes du lot et leur libellé {@code size_class} (« 40-50 »), au même
+     * format que l'import opérateur ({@code ImportDao}).
+     */
+    private static void setLotSizeClass(Catch target, Integer lotMinSize, Integer lotMaxSize) {
+        target.setLotMinSizeCm(lotMinSize == null ? null : lotMinSize.shortValue());
+        target.setLotMaxSizeCm(lotMaxSize == null ? null : lotMaxSize.shortValue());
+        target.setSizeClass(lotMinSize == null ? null : lotMinSize + "-" + lotMaxSize);
+    }
+
+    /**
+     * Maillage au regard de la taille légale minimale : sur la taille exacte, ou pour une
+     * classe de taille (#196) seulement si toute la classe est du même côté de la taille
+     * légale ; une classe qui la chevauche reste {@link Maillage#NON_DEFINI}.
+     */
+    protected static Maillage computeMaillage(Catch aCatch, Optional<Integer> legalMinSize) {
+        if (legalMinSize.isEmpty() || legalMinSize.get() <= 0) {
+            return Maillage.NON_DEFINI;
+        }
+        int legal = legalMinSize.get();
+        Integer smallest = aCatch.getSize() != null ? aCatch.getSize() : toInteger(aCatch.getLotMinSizeCm());
+        Integer largest = aCatch.getSize() != null ? aCatch.getSize() : toInteger(aCatch.getLotMaxSizeCm());
+        if (smallest != null && smallest >= legal) {
+            return Maillage.MAILLEE;
+        }
+        if (largest != null && largest < legal) {
+            return Maillage.NON_MAILLEE;
+        }
+        return Maillage.NON_DEFINI;
+    }
+
+    private static Integer toInteger(Short value) {
+        return value == null ? null : value.intValue();
     }
 
     protected Optional<UUID> tryToParseUUID(String input) {
@@ -607,7 +657,8 @@ public class TripResource extends AbstractFisholaResource {
     @Produces("text/csv")
     @Audited("trip.export")
     public Response getTripsCSV() {
-        checkIsAdmin();
+        // #188 (E5) : liste et export ouverts à l'opérateur, bornés à son périmètre départemental.
+        checkIsStaff();
         String csv = tripsDao.getTripsCSV(getAllowedAdminDepartments());
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
@@ -627,7 +678,7 @@ public class TripResource extends AbstractFisholaResource {
             @PathParam("sortDirection") String sortDirection,
             @Context UriInfo uriInfo
     ) {
-        checkIsAdmin();
+        checkIsStaff();
         MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
         PaginatedExportBean result = tripsDao.getExportPaginated(pageOffset, sortField, sortDirection,
                 queryParameters, getAllowedAdminDepartments());
@@ -637,7 +688,8 @@ public class TripResource extends AbstractFisholaResource {
     @GET
     @Path("/catches/{catchId}")
     public TripBean getTripFromCatchId( @PathParam("catchId") UUID catchId) {
-        checkIsAdmin();
+        // #87 : un opérateur doit pouvoir ouvrir une prise à valider, pas seulement un admin.
+        checkIsStaff();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         assertCatchInAllowedDepartments(aCatch);
@@ -648,16 +700,41 @@ public class TripResource extends AbstractFisholaResource {
         return tripBean;
     }
 
+    @GET
+    @Path("/catches/pending-validation/{pageOffset}/{sortField}/{sortDirection}")
+    public PaginatedExportBean getCatchesPendingValidation(
+            @PathParam("pageOffset") Integer pageOffset,
+            @PathParam("sortField") String sortField,
+            @PathParam("sortDirection") String sortDirection,
+            @Context UriInfo uriInfo
+    ) {
+        // « Prises à valider » (#87) : PROBABLE/UNCERTAIN pas encore revues par un opérateur
+        // (a_valider = 'oui', cf. vue catchs_pending_validation, V2.6.0 — sans l'embargo de
+        // 7 jours de la vue d'export, qui masquait sinon toute capture incertaine
+        // fraîchement saisie par un pêcheur, pour tout le staff). Ouvert à l'opérateur,
+        // borné à son périmètre départemental comme le reste des écrans de saisie/import.
+        checkIsStaff();
+        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+        PaginatedExportBean result = tripsDao.getPendingValidationPaginated(pageOffset, sortField, sortDirection,
+                queryParameters, getAllowedAdminDepartments());
+        return result;
+    }
+
     @PUT
     @Path("/catches/{catchId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Audited(value = "catch.update", entityType = "catch", entityIdParam = "catchId")
     public CatchBean putCatch(@PathParam("catchId") UUID catchId, CatchBean updatedCatch) {
-        checkIsAdmin();
+        // #87 : cette correction (espèce/taille/poids/exclusion) est aussi le geste de
+        // validation opérateur -- checkIsStaff() plutôt que checkIsAdmin() pour l'ouvrir
+        // à l'opérateur, qui stampe validatedBy/validatedAt ci-dessous. L'opérateur est
+        // limité aux prises à valider (#188).
+        FisholaAdmin staff = checkIsStaff();
         Catch aCatch = catchsDao.getCatch(catchId);
         Preconditions.checkNotNull(aCatch);
         assertCatchInAllowedDepartments(aCatch);
+        assertOperatorOnlyValidatesPendingCatch(staff, aCatch);
         if (updatedCatch.editedSize.isPresent()) {
             aCatch.setEditedSize(updatedCatch.editedSize.get());
         }
@@ -667,10 +744,29 @@ public class TripResource extends AbstractFisholaResource {
         if (updatedCatch.editedSpeciesId.isPresent()) {
             aCatch.setEditedSpeciesId(updatedCatch.editedSpeciesId.get());
         }
+        if (aCatch.getQuantity() > 1) {
+            updatedCatch.quantity = aCatch.getQuantity();
+            applyLotSizeClass(aCatch, updatedCatch);
+        }
         aCatch.setExcludeFromExports(updatedCatch.excludeFromExport);
+        aCatch.setValidatedBy(staff.getId());
+        aCatch.setValidatedAt(LocalDateTime.now());
         catchsDao.update(aCatch);
         catchsDao.stampDepartment(catchId);
         return updatedCatch;
+    }
+
+    /**
+     * Matrice des droits (#188, E8) : l'opérateur valide / corrige une prise incertaine
+     * (L26) mais ne modifie pas les autres (L23). Une prise est à valider tant que son
+     * identification n'est pas certaine et qu'elle n'a pas été validée (cf. a_valider).
+     */
+    private void assertOperatorOnlyValidatesPendingCatch(FisholaAdmin staff, Catch aCatch) {
+        boolean pendingValidation = aCatch.getCertainty() != IdentificationCertainty.CERTAIN
+                && aCatch.getValidatedAt() == null;
+        if (Boolean.TRUE.equals(staff.getIsOperator()) && !pendingValidation) {
+            throw new ForbiddenException("Un opérateur ne peut corriger qu'une prise à valider");
+        }
     }
 
     /**
@@ -746,6 +842,8 @@ public class TripResource extends AbstractFisholaResource {
         result.weight = Optional.ofNullable(aCatch.getWeight());
         // Colonne NOT NULL DEFAULT 1 : jamais nulle en base, comme getKept() ci-dessous.
         result.quantity = aCatch.getQuantity();
+        result.lotMinSize = Optional.ofNullable(toInteger(aCatch.getLotMinSizeCm()));
+        result.lotMaxSize = Optional.ofNullable(toInteger(aCatch.getLotMaxSizeCm()));
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
@@ -762,6 +860,9 @@ public class TripResource extends AbstractFisholaResource {
         result.editedSize = Optional.ofNullable(aCatch.getEditedSize());
         result.editedSpeciesId = Optional.ofNullable(aCatch.getEditedSpeciesId());
         result.editedWeight = Optional.ofNullable(aCatch.getEditedWeight());
+        result.certainty = Optional.ofNullable(aCatch.getCertainty());
+        result.validatedBy = Optional.ofNullable(aCatch.getValidatedBy());
+        result.validatedAt = Optional.ofNullable(aCatch.getValidatedAt());
         return result;
     }
 

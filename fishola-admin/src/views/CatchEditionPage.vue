@@ -127,6 +127,33 @@
               />
             </b-field>
           </div>
+          <div
+            v-if="aCatch.quantity > 1"
+            class="columns"
+          >
+            <b-field
+              label="Classe de taille du lot : min (cm)"
+              class="column"
+            >
+              <b-numberinput
+                v-model="aCatch.lotMinSize"
+                type="numeric"
+                min="1"
+                class="number-input"
+              />
+            </b-field>
+            <b-field
+              label="Classe de taille du lot : max (cm)"
+              class="column"
+            >
+              <b-numberinput
+                v-model="aCatch.lotMaxSize"
+                type="numeric"
+                min="1"
+                class="number-input"
+              />
+            </b-field>
+          </div>
           <b-field label="Exclure des exports"> </b-field>
 
           <b-radio
@@ -148,7 +175,7 @@
         <section class="section column">
           <h2 class="title">Autres informations</h2>
           <b-field grouped>
-            <b-field label="Plan d'eau"><span v-if="trip.lakeId"> {{ lakesIdMap.get(trip.lakeId) }}</span><span
+            <b-field label="Plan d'eau"><span v-if="trip.waterEntityId"> {{ lakesIdMap.get(trip.waterEntityId) }}</span><span
                 v-else>Non renseigné</span>
             </b-field>
             <b-field label="Date de la prise">
@@ -164,6 +191,15 @@
             </b-field>
             <b-field label="Technique"><span v-if="aCatch.techniqueId">
                 {{ techniquesIdMap.get(aCatch.techniqueId) }}</span><span v-else>Non renseignée</span>
+            </b-field>
+          </b-field>
+          <b-field grouped>
+            <b-field label="Certitude d'identification (pêcheur)">
+              {{ certaintyLabel(aCatch.certainty) }}
+            </b-field>
+            <b-field label="Validée par un opérateur">
+              <span v-if="aCatch.validatedAt">Oui, le {{ formatDate(aCatch.validatedAt) }}</span>
+              <span v-else>Non</span>
             </b-field>
           </b-field>
           <hr />
@@ -201,13 +237,32 @@
               :src="otherPicURL"
             />
           </a>
+
+          <hr v-if="catchMapURL" />
+          <b-field
+            label="Lieu de la prise"
+            v-if="catchMapURL"
+          >
+            <iframe
+              class="bo-detail-map"
+              :src="catchMapURL"
+              loading="lazy"
+              title="Lieu de la prise"
+            />
+          </b-field>
         </section>
       </div>
     </div>
 
+    <p v-if="aCatch.id && canEdit && !aCatch.validatedAt" class="validation-notice">
+      Enregistrer marque cette prise comme validée.
+    </p>
+    <p v-if="aCatch.id && !canEdit" class="validation-notice">
+      Consultation seule : un opérateur ne peut corriger qu'une prise à valider.
+    </p>
     <div class="buttons">
       <button
-        v-if="aCatch.id"
+        v-if="aCatch.id && canEdit"
         class="button is-primary"
         @click="save()"
       >
@@ -230,7 +285,7 @@ import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
 
 import router from "@/router";
-import { onMounted, reactive, ref, Ref } from "vue";
+import { computed, onMounted, reactive, ref, Ref } from "vue";
 import { useToast } from "buefy";
 
 const Toast = useToast();
@@ -244,6 +299,11 @@ const emit = defineEmits<{
 }>();
 
 const aCatch: Ref<any> = ref({});
+const isOperator = ref(false);
+// #188 (E8) : l'opérateur ne corrige que les prises à valider (identification non certaine, pas encore validée).
+const canEdit = computed(() =>
+  !isOperator.value || (aCatch.value.certainty !== "CERTAIN" && !aCatch.value.validatedAt)
+);
 const trip: Ref<any> = ref({});
 const speciesIdMap = reactive(new Map<string, string>());
 const techniquesIdMap = reactive(new Map<string, string>());
@@ -252,11 +312,14 @@ const speciesNamesMap = reactive(new Map<string, string>());
 const sortedSpeciesNames: Ref<Array<string>> = ref([]);
 const measurementPicURL = ref("");
 const otherPicsUrls: Ref<Array<string>> = ref([]);
+const catchMapURL = ref("");
 
 onMounted(loadCatch);
 
 async function loadCatch() {
   if (speciesIdMap.size == 0) {
+    const loggedAdmin = await BackendService.backendGet("/v1/admin/check");
+    isOperator.value = loggedAdmin.isOperator;
     const species = await BackendService.backendGet(
       "/v1/referential/raw-species"
     );
@@ -273,17 +336,24 @@ async function loadCatch() {
     techniques.forEach((technique: { id: string; name: string }) => {
       techniquesIdMap.set(technique.id, technique.name);
     });
-    const lakes = await BackendService.backendGet("/v1/referential/waterEntities");
+    const lakes = await BackendService.backendGet("/v1/referential/waterEntities/names");
     lakes.forEach((lake: { id: string; name: string }) => {
       lakesIdMap.set(lake.id, lake.name);
     });
   }
   measurementPicURL.value = "";
   otherPicsUrls.value = [];
+  catchMapURL.value = "";
   trip.value = await BackendService.backendGet(
     "/v1/trips/catches/" + catchId
   );
   aCatch.value = trip.value.catchs.find((c: any) => c.id == catchId);
+  if (aCatch.value.latitude != null && aCatch.value.longitude != null) {
+    catchMapURL.value = buildCatchMapURL(
+      aCatch.value.latitude,
+      aCatch.value.longitude
+    );
+  }
   if (aCatch.value.hasMeasurementPicture) {
     measurementPicURL.value = Constants.apiUrl(
       `/v1/pictures/measure/${aCatch.value.id}/preview`
@@ -322,8 +392,35 @@ function cancel() {
   router.go(-1);
 }
 
+/**
+ * URL d'un fond OpenStreetMap embarqué centré sur la prise, avec un marqueur.
+ * Pas de dépendance à une librairie cartographique (l'admin n'en a aucune) :
+ * l'affichage y est ponctuel et non interactif, contrairement aux cartes de
+ * saisie pêcheur (MapLibre).
+ */
+function buildCatchMapURL(latitude: number, longitude: number): string {
+  const delta = 0.005;
+  const bbox = [
+    longitude - delta,
+    latitude - delta,
+    longitude + delta,
+    latitude + delta
+  ].join(",");
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&marker=${latitude},${longitude}`;
+}
+
 function formatDate(date: number[]): string {
   return UtilityServices.formatDate(date);
+}
+
+const CERTAINTY_LABELS: Record<string, string> = {
+  CERTAIN: "Certain",
+  PROBABLE: "Probable",
+  UNCERTAIN: "Incertain"
+};
+
+function certaintyLabel(certainty: string): string {
+  return CERTAINTY_LABELS[certainty] || "Non renseignée";
 }
 </script>
 
@@ -347,6 +444,18 @@ function formatDate(date: number[]): string {
 
   .bo-detail-pic {
     max-height: 300px;
+  }
+
+  .bo-detail-map {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
+    border: 1px solid #dbdbdb;
+  }
+
+  .validation-notice {
+    color: @pale-sky;
+    font-style: italic;
   }
 }
 </style>

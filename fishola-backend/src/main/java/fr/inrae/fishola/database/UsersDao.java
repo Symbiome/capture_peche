@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER;
 import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_FAVORITE_WATER_ENTITIES;
+import static fr.inrae.fishola.entities.Tables.FISHOLA_USER_LICENCES;
 import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
 
 @Singleton
@@ -98,11 +99,11 @@ public class UsersDao extends AbstractFisholaDao {
         return result;
     }
 
-    public void create(String firstName, String lastName, String pseudo, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, boolean acceptsShareTrips, String postalCode, Integer birthYear) {
+    public void create(String firstName, String lastName, String pseudo, String rawEmail, String passwordHashed, boolean acceptsMailNotifications, String postalCode, Integer birthYear) {
         String email = rawEmail.toLowerCase();
         withContext(context -> context.insertInto(FISHOLA_USER,
-                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.PSEUDO, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.ACCEPTS_SHARE_TRIPS, FISHOLA_USER.POSTAL_CODE, FISHOLA_USER.BIRTH_YEAR)
-                .values(firstName, lastName, pseudo, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, acceptsShareTrips, postalCode, birthYear)
+                FISHOLA_USER.FIRST_NAME, FISHOLA_USER.LAST_NAME, FISHOLA_USER.PSEUDO, FISHOLA_USER.EMAIL, FISHOLA_USER.PASSWORD, FISHOLA_USER.CREATED_ON, FISHOLA_USER.ACCEPTS_MAIL_NOTIFICATIONS, FISHOLA_USER.POSTAL_CODE, FISHOLA_USER.BIRTH_YEAR)
+                .values(firstName, lastName, pseudo, email, passwordHashed, LocalDateTime.now(), acceptsMailNotifications, postalCode, birthYear)
                 .execute());
     }
 
@@ -114,17 +115,25 @@ public class UsersDao extends AbstractFisholaDao {
         withDaoNoResult(FisholaUserDao.class, dao -> dao.delete(existingUser));
     }
 
+    /**
+     * Anonymise le compte pêcheur : supprime toutes les données personnelles identifiantes
+     * (identité, contact, code postal, permis de pêche téléversés) mais conserve sorties et
+     * prises pour les statistiques (arbitrage UFBRMC A9, #188).
+     */
     public void safeDeleteByAnonymiseUser(FisholaUser existingUser ) {
         // Anonymise user but keep his fishing data so that we can still make stat
         existingUser.setAcceptsMailNotifications(false);
-        existingUser.setAcceptsShareTrips(false);
         existingUser.setBirthYear(1920);
         existingUser.setPseudo("Anonymisé");
         existingUser.setEmail(existingUser.getId().toString().replace("-", "") + "@anonymised.fr");
         existingUser.setGender(Gender.NonBinary);
         existingUser.setFirstName("Anonymisé");
         existingUser.setLastName("Anonymisé");
+        existingUser.setPostalCode(null);
         withDaoNoResult(FisholaUserDao.class, dao -> dao.update(existingUser));
+        withContextNoResult(context -> context.deleteFrom(FISHOLA_USER_LICENCES)
+                .where(FISHOLA_USER_LICENCES.USER_ID.eq(existingUser.getId()))
+                .execute());
     }
 
     public void increaseSampleBaseId(UUID userId) {

@@ -36,6 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -110,6 +111,22 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
                 && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
             throw new ForbiddenException("Un ou plusieurs départements sont hors de votre périmètre");
+        }
+        FisholaAdmin target = adminDao.findById(adminId)
+                .orElseThrow(() -> new NotFoundException("Compte inconnu : " + adminId));
+        // #188 : un modificateur non national ne gère que des comptes entièrement inclus dans son
+        // périmètre — jamais un national, ni un compte d'un autre département (qu'il rattacherait au sien).
+        if (!fisholaAdmin.getIsNationalAdmin()
+                && (Boolean.TRUE.equals(target.getIsNationalAdmin())
+                    || !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(adminDao.getAllowedDepartments(adminId)))) {
+            throw new ForbiddenException("Ce compte est hors de votre périmètre");
+        }
+        // #188 : un compte non national sans département verrait tout ; on refuse de vider son périmètre.
+        if (!Boolean.TRUE.equals(target.getIsNationalAdmin())
+                && (bean.departmentCodes == null || bean.departmentCodes.isEmpty())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of(CLAIM_DEPARTMENT_CODES, "Au moins un département doit être associé au compte"))
+                    .build();
         }
         adminDao.updateAdmin(
                 adminId,

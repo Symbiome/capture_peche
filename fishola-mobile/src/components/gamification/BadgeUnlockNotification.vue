@@ -58,7 +58,7 @@ export default class BadgeUnlockNotification extends Vue {
     GamificationService.getMyBadges().then((badges: BadgeBean[]) => {
       const unlocked = badges.filter((b) => b.unlocked);
       const previouslyKnownIds = this.readKnownUnlockedBadgeIds();
-      this.writeKnownUnlockedBadgeIds(unlocked.map((b) => b.id));
+      this.writeKnownUnlockedBadgeIds(unlocked.map((b) => this.badgeKey(b)));
 
       // Premier chargement (aucune trace locale) : on initialise silencieusement,
       // sans notifier pour tous les badges déjà débloqués auparavant.
@@ -66,13 +66,20 @@ export default class BadgeUnlockNotification extends Vue {
         return;
       }
       const newlyUnlocked = unlocked.filter(
-        (b) => previouslyKnownIds.indexOf(b.id) === -1
+        (b) => previouslyKnownIds.indexOf(this.badgeKey(b)) === -1
       );
       newlyUnlocked.forEach((b) => this.queue.push(b));
       if (newlyUnlocked.length > 0 && !this.badge) {
         this.showNext();
       }
     });
+  }
+
+  // #90 : le badge CONCOURS peut être débloqué plusieurs fois (même id, un par concours) --
+  // suivre uniquement badge.id masquerait la notification d'un 2e concours déjà "connu"
+  // via le 1er. Même composition de clé que Badges.vue.
+  private badgeKey(badge: BadgeBean): string {
+    return badge.id + (badge.competitionId ? "-" + badge.competitionId : "");
   }
 
   private showNext() {

@@ -30,6 +30,7 @@ import Weathers from "@/views/referentials/Weathers.vue";
 import Techniques from "@/views/referentials/Techniques.vue";
 import Species from "@/views/referentials/Species.vue";
 import Catches from "@/views/Catches.vue";
+import CatchesToValidate from "@/views/CatchesToValidate.vue";
 import CatchEditionPage from "@/views/CatchEditionPage.vue";
 import EditorialPagesVue from "@/views/referentials/EditorialPages.vue";
 import DocumentationVue from "@/views/referentials/Documentation.vue";
@@ -38,7 +39,6 @@ import NewsVue from "@/views/referentials/News.vue";
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
 import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
-import OperatorManualEntry from "@/views/operator/ManualEntry.vue";
 import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
 import OperatorCarnetVolontaireManualEntry from "@/views/operator/CarnetVolontaireManualEntry.vue";
 import OperatorSurveyImport from "@/views/operator/SurveyImport.vue";
@@ -46,6 +46,8 @@ import OperatorSurveyManualEntry from "@/views/operator/SurveyManualEntry.vue";
 import ChangePassword from "@/views/account/ChangePassword.vue";
 import Users from "@/views/Users.vue";
 import AuditLog from "@/views/AuditLog.vue";
+import Competitions from "@/views/Competitions.vue";
+import CompetitionDetail from "@/views/CompetitionDetail.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -94,6 +96,11 @@ const routes: Array<RouteRecordRaw> = [
     component: Catches
   },
   {
+    path: "/catches/to-validate",
+    name: "catches-to-validate",
+    component: CatchesToValidate
+  },
+  {
     path: "/catch/:catchId",
     name: "catch-edition",
     props: true,
@@ -118,11 +125,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/operators",
     name: "operators",
     component: Operators
-  },
-  {
-    path: "/operator/manual-entry",
-    name: "operator-manual-entry",
-    component: OperatorManualEntry
   },
   {
     path: "/operator/import/carnet-volontaire",
@@ -163,6 +165,17 @@ const routes: Array<RouteRecordRaw> = [
     path: "/news",
     name: "news",
     component: NewsVue
+  },
+  {
+    path: "/competitions",
+    name: "competitions",
+    component: Competitions
+  },
+  {
+    path: "/competitions/:id",
+    name: "competition-detail",
+    props: true,
+    component: CompetitionDetail
   }
 ];
 

@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -39,8 +40,12 @@ import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.department.DepartmentName;
 import fr.inrae.fishola.rest.department.Departments;
+import fr.inrae.fishola.rest.hydro.AttributionResponse;
+import fr.inrae.fishola.rest.hydro.ImmutableAttributionResponse;
+import fr.inrae.fishola.rest.hydro.WaterEntityAttribution;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -70,8 +75,12 @@ import java.util.stream.Collectors;
 public class ReferentialResource extends AbstractFisholaResource {
 
     public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
+    /** Nombre de candidats proposés au clic sur la carte (proposition + alternatives), comme côté pêcheur. */
+    private static final int STAFF_ATTRIBUTION_LIMIT = 4;
     @Inject
     protected ReferentialDao referentialDao;
+    @Inject
+    protected HydroSearchDao hydroSearchDao;
 
     @GET
     @Path("/waterEntities")
@@ -98,6 +107,66 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/waterEntities/summary")
     public List<WaterEntitySummary> getAllWaterEntitiesSummary() {
         return referentialDao.listWaterEntitiesSummary();
+    }
+
+    // Listing minimal (id + nom uniquement), scopé au périmètre départemental
+    // comme getAllWaterEntities() : utilisé par les selects "Entité
+    // hydrographique" des formulaires de saisie opérateur back-office, qui
+    // n'ont besoin ni de la géométrie ni des champs kind/centroïde du /summary.
+    @GET
+    @Path("/waterEntities/names")
+    public List<WaterEntityName> getAllWaterEntityNames() {
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
+        if (fisholaAdmin.getIsNationalAdmin()) {
+            return referentialDao.listWaterEntityNames();
+        } else {
+            return referentialDao.listWaterEntityNamesByDepartments(getAllowedAdminDepartments());
+        }
+    }
+
+    /**
+     * Attribution hydro d'un point cliqué sur la carte des saisies manuelles (#189) :
+     * entité la plus proche + alternatives, comme {@code GET /api/v1/waterEntities/attribution}
+     * côté pêcheur, mais ouverte au staff et, hors national, limitée aux entités de son
+     * périmètre départemental.
+     */
+    @GET
+    @Path("/waterEntities/attribution")
+    public AttributionResponse getStaffAttribution(@QueryParam("lat") Double lat, @QueryParam("lng") Double lng) {
+        checkIsStaff();
+        Preconditions.checkArgument(lat != null && lng != null, "Les paramètres lat et lng sont obligatoires.");
+        Preconditions.checkArgument(lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180, "Position invalide.");
+        List<WaterEntityAttribution> candidates = hydroSearchDao.attribution(lat, lng, STAFF_ATTRIBUTION_LIMIT);
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        if (!allowedDepartments.isEmpty()) {
+            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(
+                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList());
+            candidates = candidates.stream()
+                    .filter(c -> allowedDepartments.contains(departmentByEntity.get(c.waterEntityId())))
+                    .toList();
+        }
+        return ImmutableAttributionResponse.builder()
+                .proposal(candidates.stream().findFirst())
+                .alternatives(candidates.stream().skip(1).toList())
+                .build();
+    }
+
+    // Recherche texte (accent-insensible, tolérante aux fautes) sur le listing
+    // minimal id+nom, même scoping départemental que getAllWaterEntityNames() :
+    // alimente l'autocomplete "Entité hydrographique" des formulaires de saisie
+    // opérateur, à la place du <select> exhaustif qui fait planter l'onglet pour
+    // un national (~181 000 <option> à monter).
+    @GET
+    @Path("/waterEntities/names/search")
+    public List<WaterEntityName> searchWaterEntityNames(@QueryParam("q") String q,
+                                                          @QueryParam("limit") @DefaultValue("20") int limit) {
+        Preconditions.checkArgument(q != null && q.trim().length() >= 2,
+                "Le paramètre q doit contenir au moins 2 caractères.");
+        Preconditions.checkArgument(limit > 0 && limit <= 50,
+                "limit doit être dans l'intervalle [1, 50].");
+        FisholaAdmin fisholaAdmin = this.checkIsStaff();
+        Set<String> allowedDepartments = fisholaAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
+        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit);
     }
 
     @GET
@@ -141,11 +210,25 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.ok(canDelete).build();
     }
 
+    /** Captures et sorties qui utilisent la technique (#202). */
+    @GET
+    @Path("/techniques/usage/{techniqueId}")
+    public ReferentialDao.ReferentialUsage getTechniqueUsage(@PathParam("techniqueId") UUID techniqueId) {
+        checkIsStaff();
+        return referentialDao.techniqueUsage(techniqueId);
+    }
+
+    // Une technique utilisée n'est pas supprimée (historique perdu) mais
+    // refusée en 409 avec son usage : l'admin l'archive à la place (#202).
     @DELETE
     @Path("/techniques/{techniqueId}")
     @Audited(value = "technique.delete", entityType = "technique", entityIdParam = "techniqueId")
     public Response deleteTechnique(@PathParam("techniqueId") UUID techniqueId) {
         checkIsNationalAdmin();
+        ReferentialDao.ReferentialUsage usage = referentialDao.techniqueUsage(techniqueId);
+        if (usage.isUsed()) {
+            return Response.status(Response.Status.CONFLICT).entity(usage).build();
+        }
         referentialDao.deleteTechnique(techniqueId);
         return Response.noContent().build();
     }
@@ -184,11 +267,24 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.ok(canDelete).build();
     }
 
+    /** Captures et sorties qui utilisent l'espèce (#202). */
+    @GET
+    @Path("/raw-species/usage/{speciesId}")
+    public ReferentialDao.ReferentialUsage getSpecieUsage(@PathParam("speciesId") UUID speciesId) {
+        checkIsStaff();
+        return referentialDao.speciesUsage(speciesId);
+    }
+
+    // Même règle que pour les techniques : 409 + usage si l'espèce est utilisée (#202).
     @DELETE
     @Path("/raw-species/{speciesId}")
     @Audited(value = "species.delete", entityType = "species", entityIdParam = "speciesId")
     public Response deleteSpecie(@PathParam("speciesId") UUID speciesId) {
         checkIsNationalAdmin();
+        ReferentialDao.ReferentialUsage usage = referentialDao.speciesUsage(speciesId);
+        if (usage.isUsed()) {
+            return Response.status(Response.Status.CONFLICT).entity(usage).build();
+        }
         referentialDao.deleteSpecie(speciesId);
         return Response.noContent().build();
     }

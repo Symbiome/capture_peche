@@ -64,7 +64,13 @@
         </div>
 
         <div v-else-if="items.length === 0" class="nearby-state">
-            <p>Aucune entité hydro dans un rayon de {{ Math.round(radiusM / 1000) }} km.</p>
+            <i class="icon-warning" />
+            <p>
+                Aucun {{ emptyKindLabel }} référencé dans un rayon de
+                {{ Math.round(radiusM / 1000) }} km autour de votre position.
+                Utilisez la carte ou la recherche par nom ou par commune.
+            </p>
+            <button type="button" class="retry-btn" @click="locate">Réessayer</button>
         </div>
 
         <ul v-else class="nearby-list">
@@ -103,6 +109,9 @@ import GeolocationService from '@/services/GeolocationService';
 // utile) et taille de page pour la pagination « Charger plus ».
 const RADIUS_M = 5000;
 const PAGE_SIZE = 20;
+// Laisse le temps de répondre à la demande de permission et au premier fix
+// navigateur (Wi-Fi/IP), qui dépassent souvent quelques secondes (#198).
+const POSITION_TIMEOUT_MS = 20000;
 
 @Component
 export default class NearbyList extends Vue {
@@ -142,18 +151,20 @@ export default class NearbyList extends Vue {
         this.items = [];
         this.pageNumber = 0;
         try {
-            const pos = await GeolocationService.checkWatchAndGetPositionUntilTimeout(4000);
+            const pos = await GeolocationService.checkWatchAndGetPositionUntilTimeout(
+                POSITION_TIMEOUT_MS
+            );
             this.position = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            await this.fetchPage(true);
         } catch (err) {
-            // Géoloc indisponible (permission refusée, position introuvable,
-            // contexte non sécurisé) : message explicite plutôt qu'une liste
-            // vide muette. La géoloc desktop est désormais supportée (#16) ;
-            // l'échec vient le plus souvent d'une permission refusée.
+            // Géoloc indisponible : message explicite plutôt qu'une liste vide
+            // muette, en distinguant le refus de permission (#198).
             this.position = null;
-            this.error = "Votre position n'est pas disponible. Autorisez la "
-                + "géolocalisation dans votre navigateur puis réessayez, ou "
-                + "utilisez la recherche par nom.";
+            this.error = this.positionErrorMessage(err);
+            this.loading = false;
+            return;
+        }
+        try {
+            await this.fetchPage(true);
         } finally {
             this.loading = false;
         }
@@ -205,6 +216,26 @@ export default class NearbyList extends Vue {
                 this.loading = false;
             }
         }
+    }
+
+    get emptyKindLabel(): string {
+        if (this.kindFilter === 'STILL') {
+            return "plan d'eau";
+        }
+        if (this.kindFilter === 'FLOWING') {
+            return "cours d'eau";
+        }
+        return "cours d'eau ni plan d'eau";
+    }
+
+    positionErrorMessage(err: any): string {
+        if (GeolocationService.isPermissionDenied(err)) {
+            return "La géolocalisation est refusée. Autorisez-la dans les "
+                + "réglages de votre navigateur ou de votre appareil puis "
+                + "réessayez, ou utilisez la recherche par nom ou par commune.";
+        }
+        return "Votre position n'a pas pu être déterminée. Réessayez, ou "
+            + "utilisez la recherche par nom ou par commune.";
     }
 
     selectItem(item: NearbyWaterEntity) {

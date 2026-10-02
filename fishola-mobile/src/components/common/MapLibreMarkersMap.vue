@@ -25,6 +25,9 @@
 <template>
     <div class="maplibre-markers">
         <div ref="mapContainer" class="mlm-container" />
+        <button type="button" class="mlm-base-btn" @click="toggleBase">
+            {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
+        </button>
     </div>
 </template>
 
@@ -32,7 +35,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import maplibregl, { Map as MlMap, Marker, Popup, LngLatBounds } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { attachHydroHover, createFisholaMap } from '@/components/common/maplibreStyle';
+import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
 export interface MapMarker {
     lat: number;
@@ -52,6 +55,7 @@ export default class MapLibreMarkersMap extends Vue {
     private map: MlMap | null = null;
     private markerObjects: Marker[] = [];
     private detachHydroHover: (() => void) | null = null;
+    baseLayer: BaseLayer = 'plan';
 
     mounted() {
         this.$nextTick(() => this.init());
@@ -73,6 +77,7 @@ export default class MapLibreMarkersMap extends Vue {
         this.map = createFisholaMap(container, {
             center: this.center || undefined,
             zoom: this.zoom,
+            baseLayer: this.baseLayer,
         });
         this.map.on('load', () => {
             this.map?.resize();
@@ -128,11 +133,19 @@ export default class MapLibreMarkersMap extends Vue {
             this.refreshMarkers();
         }
     }
+
+    toggleBase() {
+        this.baseLayer = this.baseLayer === 'plan' ? 'satellite' : 'plan';
+        if (this.map) {
+            setBaseLayer(this.map, this.baseLayer);
+        }
+    }
 }
 </script>
 
 <style scoped lang="less">
 .maplibre-markers {
+    position: relative;
     width: 100%;
     height: 100%;
 }
@@ -140,5 +153,24 @@ export default class MapLibreMarkersMap extends Vue {
 .mlm-container {
     width: 100%;
     height: 100%;
+}
+
+.mlm-base-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 500;
+    background-color: @pelorous;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 0 2px #0002;
+
+    &:hover {
+        background-color: @terra-cotta;
+    }
 }
 </style>

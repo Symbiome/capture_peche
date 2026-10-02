@@ -107,14 +107,20 @@ export default class TripTechniquesView extends Vue {
     ReferentialService.getTechniques().then(this.techniquesLoaded);
   }
 
+  allTechniques: Technique[] = [];
+
   techniquesLoaded(list: Technique[]) {
-    this.techniques = list;
+    this.allTechniques = list;
     TripsService.getTrip(this.id, this.tripLoaded);
   }
 
+  // Technique archivée (#202) : plus proposée, sauf si déjà choisie pour la sortie.
   tripLoaded(someTrip: TripBean) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
+    this.techniques = this.allTechniques.filter(
+      (t) => !t.archived || someTrip.techniqueIds.indexOf(t.id) != -1
+    );
   }
 
   toggle(s: Technique) {

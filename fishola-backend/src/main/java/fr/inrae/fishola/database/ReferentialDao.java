@@ -43,7 +43,9 @@ import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.entities.tables.records.SpeciesRecord;
 import fr.inrae.fishola.entities.tables.records.WaterEntityRecord;
+import fr.inrae.fishola.rest.referential.ImmutableWaterEntityName;
 import fr.inrae.fishola.rest.referential.ImmutableWaterEntitySummary;
+import fr.inrae.fishola.rest.referential.WaterEntityName;
 import fr.inrae.fishola.rest.referential.WaterEntitySummary;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -101,6 +103,36 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .fetch(ReferentialDao::toWaterEntitySummary));
     }
 
+    // Listing minimal (id + nom) pour les selects "Entité hydrographique" des
+    // formulaires de saisie opérateur back-office : ceux-ci n'ont besoin que du
+    // nom, contrairement au /summary partagé avec le mobile (kind, centroïde).
+    public List<WaterEntityName> listWaterEntityNames() {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .from(Tables.WATER_ENTITY)
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(ReferentialDao::toWaterEntityName));
+    }
+
+    public List<WaterEntityName> listWaterEntityNamesByDepartments(Set<String> departmentCodes) {
+        if (departmentCodes.isEmpty()) {
+            return List.of();
+        }
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
+                .orderBy(Tables.WATER_ENTITY.NAME)
+                .fetch(ReferentialDao::toWaterEntityName));
+    }
+
+    private static WaterEntityName toWaterEntityName(org.jooq.Record rec) {
+        return ImmutableWaterEntityName.builder()
+                .id(rec.get(Tables.WATER_ENTITY.ID))
+                .name(rec.get(Tables.WATER_ENTITY.NAME))
+                .build();
+    }
+
     public Set<UUID> listWaterEntityIdsByDepartment(String department) {
         return withContext(context -> new HashSet<>(context
                 .select(Tables.WATER_ENTITY.ID)
@@ -140,34 +172,53 @@ public class ReferentialDao extends AbstractFisholaDao {
     }
 
     public void createSpecie(Species species) {
+        if (species.getArchived() == null) {
+            species.setArchived(false);
+        }
         withDaoNoResult(SpeciesDao.class, dao -> dao.insert(species));
     }
 
-    public boolean canDeleteSpecie(UUID specieId) {
-        boolean hasReferences = withContext(context -> {
-            // Has catch
-            boolean result = context.select(Tables.CATCH.SPECIES_ID)
-                    .from(Tables.CATCH)
-                    .where(Tables.CATCH.SPECIES_ID.eq(specieId))
-                    .fetch().isNotEmpty();
-            // Has expected
-            result = result || context.select(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID)
-                    .from(Tables.TRIP_EXPECTED_SPECIES)
-                    .where(Tables.TRIP_EXPECTED_SPECIES.SPECIES_ID.eq(specieId))
-                    .fetch().isNotEmpty();
-            return result;
-        });
-        return !hasReferences;
+    /**
+     * Données de collecte qui référencent un élément de référentiel (#202) : captures, et
+     * sorties distinctes (quelle que soit la colonne qui y fait référence). Un élément
+     * utilisé ne peut pas être supprimé sans perdre cet historique, seulement archivé.
+     */
+    public record ReferentialUsage(int catches, int trips) {
+        public boolean isUsed() {
+            return catches > 0 || trips > 0;
+        }
     }
 
+    // Sorties citant l'espèce comme espèce recherchée, par la colonne historique
+    // trip.expected_species_id ou par la table multi-espèces trip_expected_species.
+    private static final String SPECIES_TRIPS_SQL = "SELECT count(*) FROM ("
+            + "SELECT id FROM trip WHERE expected_species_id = ? "
+            + "UNION SELECT trip_id FROM trip_expected_species WHERE species_id = ?) t";
+
+    // Sorties citant la technique, principale (trip_techniques) ou secondaire.
+    private static final String TECHNIQUE_TRIPS_SQL = "SELECT count(*) FROM ("
+            + "SELECT trip_id FROM trip_techniques WHERE technique_id = ? "
+            + "UNION SELECT id FROM trip WHERE secondary_technique_id = ?) t";
+
+    public ReferentialUsage speciesUsage(UUID specieId) {
+        return withContext(context -> new ReferentialUsage(
+                context.fetchCount(Tables.CATCH, Tables.CATCH.SPECIES_ID.eq(specieId)),
+                context.fetchOne(SPECIES_TRIPS_SQL, specieId, specieId).get(0, Integer.class)));
+    }
+
+    public boolean canDeleteSpecie(UUID specieId) {
+        return !speciesUsage(specieId).isUsed();
+    }
+
+    // Supprime aussi le paramétrage propre à l'espèce (alias, autorisations de
+    // prélèvement, bornes de taille) : ce n'est pas de la donnée de collecte.
     public void deleteSpecie(UUID specieId) {
-        // Delete all links between this specie and waterEntities
         withContextNoResult(context -> {
             context.deleteFrom(Tables.SPECIES_BY_WATER_ENTITY).where(Tables.SPECIES_BY_WATER_ENTITY.SPECIES_ID.eq(specieId)).execute();
             context.deleteFrom(Tables.AUTHORIZED_SAMPLE).where(Tables.AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId)).execute();
+            context.deleteFrom(Tables.SPECIES_SIZE_BOUNDS).where(Tables.SPECIES_SIZE_BOUNDS.SPECIES_ID.eq(specieId)).execute();
             withDaoNoResult(SpeciesDao.class, dao -> dao.deleteById(specieId));
         });
-
     }
 
 
@@ -209,24 +260,20 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(TechniqueDao.class, dao -> dao.update(technique));
     }
     public void createTechnique(Technique techniques) {
+        if (techniques.getArchived() == null) {
+            techniques.setArchived(false);
+        }
         withDaoNoResult(TechniqueDao.class, dao -> dao.insert(techniques));
     }
 
+    public ReferentialUsage techniqueUsage(UUID techniqueId) {
+        return withContext(context -> new ReferentialUsage(
+                context.fetchCount(Tables.CATCH, Tables.CATCH.TECHNIQUE_ID.eq(techniqueId)),
+                context.fetchOne(TECHNIQUE_TRIPS_SQL, techniqueId, techniqueId).get(0, Integer.class)));
+    }
+
     public boolean canDeleteTechnique(UUID techniqueId) {
-        boolean hasReferences = withContext(context -> {
-            // Has catch
-            boolean result = context.select(Tables.CATCH.TECHNIQUE_ID)
-                    .from(Tables.CATCH)
-                    .where(Tables.CATCH.TECHNIQUE_ID.eq(techniqueId))
-                    .fetch().isNotEmpty();
-            // Has trip
-            result = result || context.select(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID)
-                    .from(Tables.TRIP_TECHNIQUES)
-                    .where(Tables.TRIP_TECHNIQUES.TECHNIQUE_ID.eq(techniqueId))
-                    .fetch().isNotEmpty();
-            return result;
-        });
-        return !hasReferences;
+        return !techniqueUsage(techniqueId).isUsed();
     }
 
     public void deleteTechnique(UUID techniqueId) {
@@ -367,6 +414,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
         Species species = new Species();
         species.setBuiltIn(false);
+        species.setArchived(false);
         species.setName(speciesName);
         species.setExportAs(exportAs);
         UUID result = withContext(context -> {

@@ -25,7 +25,9 @@
         v-bind:count="count"
         v-bind:offline="offline"
         v-bind:sortDown="sortDown"
+        v-bind:selectedCount="selectedTripIds.length"
         v-on:reverseSortOrder="reverseSortOrder"
+        v-on:exportSelectedTrips="exportSelectedTrips"
       >
         <MyTripsSearch
           class="hide-on-desktop"
@@ -258,6 +260,19 @@ export default class MyTripsView extends Vue {
     const message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
     this.$root.$emit("toaster-success", message);
     this.loadTrips();
+  }
+
+  // Export PDF (#173) : on conserve l'ordre d'affichage de la liste (et non
+  // l'ordre de clic) pour un document lisible, plutôt que l'ordre de
+  // sélection brut dans `selectedTripIds`.
+  exportSelectedTrips() {
+    if (!this.selectedTripIds.length) {
+      return;
+    }
+    const orderedIds = this.trips
+      .map((t) => t.id)
+      .filter((id) => this.selectedTripIds.includes(id));
+    this.$root.$emit("open-trip-pdf-export", orderedIds);
   }
 }
 </script>

@@ -100,8 +100,38 @@
                   v-model="aCatch.otherSpecies" v-bind:error="otherSpeciesError" v-bind:readonly="!modifiable"
                   v-if="aCatch.speciesId == '__other__'" />
               </div>
-              <div class="measure-row">
-                <div class="button button-secondary-no-outline automatic-measure" v-if="modifiable">
+              <div>
+                <FormSelect name="certainty" label="Certitude d'identification"
+                  v-bind:options="certaintyOptions" v-model="aCatch.certainty" v-bind:readonly="!modifiable" />
+                <div class="certainty-hint" v-if="shouldSuggestPictureForCertainty">
+                  <i class="icon-info" />
+                  <span>
+                    Une photo aidera un expert à confirmer l'identification de
+                    cette prise.
+                  </span>
+                </div>
+              </div>
+              <div>
+                <FormInput name="quantity" label="Nombre de prises" type="number" :min="1"
+                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError"
+                  v-bind:readonly="!modifiable" />
+              </div>
+
+              <FormToggle v-if="isLot" label="Indiquer une classe de taille (min – max)"
+                v-model="lotSizeClassEnabled" v-bind:readonly="!modifiable" />
+
+              <div class="lot-size-class-row" v-if="useLotSizeClass">
+                <FormInput name="lotMinSize" label="Taille min en cm" type="number" :min="1"
+                  placeholder="Ex. 40" v-model="aCatch.lotMinSize" v-bind:error="lotMinSizeError"
+                  v-bind:readonly="!modifiable" />
+                <FormInput name="lotMaxSize" label="Taille max en cm" type="number" :min="1"
+                  placeholder="Ex. 50" v-model="aCatch.lotMaxSize" v-bind:error="lotMaxSizeError"
+                  v-bind:readonly="!modifiable" />
+              </div>
+
+              <div v-else :class="{ 'measure-row': automaticMeasureEnabled }">
+                <div class="button button-secondary-no-outline automatic-measure"
+                  v-if="modifiable && automaticMeasureEnabled">
                   <button @click="
                     displayMeasurementPicturePopup =
                     !displayMeasurementPicturePopup
@@ -112,12 +142,6 @@
                 </div>
                 <FormInput name="size" :label="sizeLabel" type="number" :min="1"
                   placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
-                  v-bind:readonly="!modifiable" />
-              </div>
-
-              <div>
-                <FormInput name="quantity" label="Nombre de prises" type="number" :min="1"
-                  placeholder="1" v-model="aCatch.quantity" v-bind:error="quantityError"
                   v-bind:readonly="!modifiable" />
               </div>
 
@@ -333,6 +357,9 @@ export default class EditCatchView extends Vue {
   sizeError: string = "";
   weightError: string = "";
   quantityError: string = "";
+  lotSizeClassEnabled: boolean = false;
+  lotMinSizeError: string = "";
+  lotMaxSizeError: string = "";
   keepError: string = "";
   releasedStateIdError: string = "";
   techniqueIdError: string = "";
@@ -346,6 +373,13 @@ export default class EditCatchView extends Vue {
   allSpeciesWithAliases: SpeciesWithAlias[] = [];
   allTechniques: Technique[] = [];
   speciesSearch: string = "";
+  // Certitude d'identification (#87) : le pêcheur signale une identification incertaine,
+  // revue ensuite par un opérateur dans la file "Prises à valider".
+  certaintyOptions = [
+    { id: "CERTAIN", name: "Certain" },
+    { id: "PROBABLE", name: "Probable" },
+    { id: "UNCERTAIN", name: "Incertain" },
+  ];
   // allReleasedFishStates:ReleasedFishState[] = [];
 
   withSample: boolean = false;
@@ -356,6 +390,9 @@ export default class EditCatchView extends Vue {
   gpsLocation: { lat: number; lng: number } | null = null;
 
   displayMeasurementPicturePopup = false;
+  // Mesure automatique par photo masquée tant qu'elle n'est pas fonctionnelle
+  // (#195) ; réactivable par VITE__AUTOMATIC_MEASURE_ENABLED=true au build.
+  automaticMeasureEnabled = import.meta.env.VITE__AUTOMATIC_MEASURE_ENABLED === "true";
   requestNewPicture = false;
   shouldLaunchAutomaticMeasure = false;
 
@@ -405,6 +442,11 @@ export default class EditCatchView extends Vue {
 
     if (!this.aCatch.quantity) {
       this.aCatch.quantity = 1;
+    }
+    this.lotSizeClassEnabled = !!this.aCatch.lotMinSize || !!this.aCatch.lotMaxSize;
+
+    if (!this.aCatch.certainty) {
+      this.aCatch.certainty = "CERTAIN";
     }
 
     if (this.aCatch.automaticMeasure && !this.aCatch.size) {
@@ -601,6 +643,7 @@ export default class EditCatchView extends Vue {
       mandatorySize: s.mandatorySize,
       mandatoryReport: s.mandatoryReport,
       reportLink: s.reportLink,
+      archived: s.archived,
       authorizedSample: s.authorizedSample,
       minSize: 0,
       maxSize: 1000
@@ -610,6 +653,10 @@ export default class EditCatchView extends Vue {
 
   referentialLoaded(data: SpeciesWithAliasAndTechnique) {
     data.species.forEach((s) => {
+      // Espèce archivée (#202) : plus proposée, sauf si c'est celle de la capture.
+      if (s.archived && this.aCatch.speciesId != s.id) {
+        return;
+      }
       if (
           (s.present || ((localStorage.getItem("manual-species")?.indexOf(s.id) ?? -1) > -1)) && (
           s.builtIn || // Espèce de base
@@ -633,6 +680,7 @@ export default class EditCatchView extends Vue {
           builtIn: false,
           mandatorySize: false,
           mandatoryReport: false,
+          archived: false,
           authorizedSample: false,
           minSize: 0,
           maxSize: 1000,
@@ -650,11 +698,14 @@ export default class EditCatchView extends Vue {
       builtIn: false,
       mandatorySize: false,
       mandatoryReport: false,
+      archived: false,
       authorizedSample: false,
       minSize: 0,
       maxSize: 1000
     });
-    data.techniques.forEach((t) => this.allTechniques.push(t));
+    data.techniques
+      .filter((t) => !t.archived || t.id == this.aCatch.techniqueId)
+      .forEach((t) => this.allTechniques.push(t));
     // data.states.forEach((s) => this.allReleasedFishStates.push(s));
     this.ready = true;
 
@@ -663,6 +714,97 @@ export default class EditCatchView extends Vue {
       // Comportement supprimé suite aux retours des pêcheurs
       // Décommenter ceci pour réactiver : this.takePicture();
     }
+  }
+
+  // Une photo aide l'opérateur/expert à trancher sur une identification non
+  // certaine (#87, file "Prises à valider") : on le rappelle au pêcheur tant
+  // qu'aucune photo (galerie ou mesure) n'a encore été prise.
+  get shouldSuggestPictureForCertainty(): boolean {
+    return (
+      !!this.aCatch.certainty &&
+      this.aCatch.certainty !== "CERTAIN" &&
+      !this.allNonMeasurePictures.length &&
+      !this.measurementPictureSrc
+    );
+  }
+
+  /** Contrôle de la taille exacte ; renvoie `true` en cas d'erreur. */
+  async validateSize(): Promise<boolean> {
+    let hasError = false;
+    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
+    if (mandatorySize && !this.aCatch.size) {
+      hasError = true;
+      this.sizeError = "Taille obligatoire";
+    } else if (this.aCatch.size && this.aCatch.size <= 0) {
+      hasError = true;
+      this.sizeError = "La taille doit être strictement positive";
+    } else {
+      if (this.aCatch.size) {
+        if (this.aCatch.size != Math.floor(this.aCatch.size)) {
+          hasError = true;
+          this.sizeError = "La taille doit être un nombre entier";
+        } else {
+          // On force pour stocker uniquement la valeur tronquée
+          this.aCatch.size = Math.floor(this.aCatch.size);
+          this.sizeError = "";
+
+          const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+          if (this.aCatch.size > maxSize) {
+            hasError = true;
+            this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
+          }
+        }
+      } else {
+        this.sizeError = "";
+      }
+    }
+    return hasError;
+  }
+
+  /**
+   * Contrôle de la classe de taille d'un lot (#196) : bornes entières, strictement
+   * positives, min ≤ max, et max ≤ taille maximale de l'espèce. Renvoie `true` en cas d'erreur.
+   */
+  async validateLotSizeClass(): Promise<boolean> {
+    this.lotMinSizeError = this.lotSizeBoundError(this.aCatch.lotMinSize);
+    this.lotMaxSizeError = this.lotSizeBoundError(this.aCatch.lotMaxSize);
+    if (this.lotMinSizeError || this.lotMaxSizeError) {
+      return true;
+    }
+    const lotMinSize = this.aCatch.lotMinSize as number;
+    const lotMaxSize = this.aCatch.lotMaxSize as number;
+    if (lotMinSize > lotMaxSize) {
+      this.lotMaxSizeError = "La taille max doit être supérieure ou égale à la taille min";
+      return true;
+    }
+    const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+    if (lotMaxSize > maxSize) {
+      this.lotMaxSizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
+      return true;
+    }
+    return false;
+  }
+
+  lotSizeBoundError(bound?: number): string {
+    if (!bound) {
+      return "Taille obligatoire";
+    }
+    if (bound <= 0) {
+      return "La taille doit être strictement positive";
+    }
+    if (bound != Math.floor(bound)) {
+      return "La taille doit être un nombre entier";
+    }
+    return "";
+  }
+
+  get isLot(): boolean {
+    return !!this.aCatch.quantity && this.aCatch.quantity > 1;
+  }
+
+  // Classe de taille d'un lot (#196) : remplace la taille exacte, ex. « 10 truites de 40 à 50 cm ».
+  get useLotSizeClass(): boolean {
+    return this.isLot && this.lotSizeClassEnabled;
   }
 
   isMandatorySize(speciesId?: string): boolean {
@@ -849,32 +991,14 @@ export default class EditCatchView extends Vue {
       }
     }
 
-    const mandatorySize = this.isMandatorySize(this.aCatch.speciesId);
-    if (mandatorySize && !this.aCatch.size) {
-      hasError = true;
-      this.sizeError = "Taille obligatoire";
-    } else if (this.aCatch.size && this.aCatch.size <= 0) {
-      hasError = true;
-      this.sizeError = "La taille doit être strictement positive";
+    if (this.useLotSizeClass) {
+      this.aCatch.size = undefined;
+      this.sizeError = "";
+      hasError = (await this.validateLotSizeClass()) || hasError;
     } else {
-      if (this.aCatch.size) {
-        if (this.aCatch.size != Math.floor(this.aCatch.size)) {
-          hasError = true;
-          this.sizeError = "La taille doit être un nombre entier";
-        } else {
-          // On force pour stocker uniquement la valeur tronquée
-          this.aCatch.size = Math.floor(this.aCatch.size);
-          this.sizeError = "";
-
-          const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-          if (this.aCatch.size > maxSize) {
-            hasError = true;
-            this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
-          }
-        }
-      } else {
-        this.sizeError = "";
-      }
+      this.aCatch.lotMinSize = undefined;
+      this.aCatch.lotMaxSize = undefined;
+      hasError = (await this.validateSize()) || hasError;
     }
 
     if (!this.aCatch.weight || this.aCatch.weight > 0) {
@@ -1092,19 +1216,17 @@ export default class EditCatchView extends Vue {
     this.$forceUpdate();
   }
 
-  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique.
+  // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique,
+  // correspondances exactes puis en début de nom en tête (#197).
   filteredSpeciesOptions(): SpeciesWithAlias[] {
     if (!this.speciesSearch.trim()) {
       return this.allSpeciesWithAliases;
     }
-    const needle = Helpers.unaccent(this.speciesSearch.trim());
-    return this.allSpeciesWithAliases.filter((s) => {
-      return (
-        Helpers.unaccent(s.name).includes(needle) ||
-        (s.alias && Helpers.unaccent(s.alias).includes(needle)) ||
-        (s.scientificName && Helpers.unaccent(s.scientificName).includes(needle))
-      );
-    });
+    return Helpers.rankBySearch(this.allSpeciesWithAliases, this.speciesSearch, (s) => [
+      s.name,
+      s.alias,
+      s.scientificName,
+    ]);
   }
 
   checkExistingSpecie(existingSpecies: SpeciesWithAlias[]): void {
@@ -1263,7 +1385,8 @@ export default class EditCatchView extends Vue {
     text-align: center;
   }
 
-  .multiple-catchs-info {
+  .multiple-catchs-info,
+  .certainty-hint {
     width: 100%;
     display: flex;
     align-items: center;
@@ -1278,6 +1401,10 @@ export default class EditCatchView extends Vue {
       font-weight: normal;
       font-size: @fontsize-info;
     }
+  }
+
+  .certainty-hint {
+    margin-top: @vertical-margin-small;
   }
 
   .sample-id-container {
@@ -1352,6 +1479,16 @@ export default class EditCatchView extends Vue {
       // barres dynamiques du navigateur mobile, comme le reste des cartes (#97).
       max-height: 45vh;
       max-height: 45svh;
+    }
+  }
+
+  .lot-size-class-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+
+    > * {
+      flex: 1;
     }
   }
 

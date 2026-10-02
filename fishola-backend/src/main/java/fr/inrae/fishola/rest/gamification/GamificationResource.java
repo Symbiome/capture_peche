@@ -52,19 +52,27 @@ public class GamificationResource extends AbstractFisholaResource {
         UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
         UUID userId = userIdAndRenewal.userId();
 
-        Map<UUID, GamificationDao.UnlockRow> unlocksByBadgeId = gamificationDao.listUnlocksForUser(userId).stream()
-                .collect(java.util.stream.Collectors.toMap(GamificationDao.UnlockRow::badgeId, u -> u,
-                        (a, b) -> a.unlockedAt().isAfter(b.unlockedAt()) ? a : b));
+        // #90 : un badge peut désormais avoir plusieurs déblocages pour un même pêcheur
+        // (CONCOURS, un par concours) -- on groupe donc par badge plutôt que de ne garder
+        // que le plus récent, pour ensuite émettre une entrée par déblocage.
+        Map<UUID, List<GamificationDao.UnlockRow>> unlocksByBadgeId = gamificationDao.listUnlocksForUser(userId)
+                .stream().collect(java.util.stream.Collectors.groupingBy(GamificationDao.UnlockRow::badgeId));
 
-        List<BadgeBean> badges = gamificationDao.listActiveBadges().stream().map(badge -> {
-            BadgeBean bean = toBean(badge);
-            GamificationDao.UnlockRow unlock = unlocksByBadgeId.get(badge.id());
-            if (unlock != null) {
+        List<BadgeBean> badges = gamificationDao.listActiveBadges().stream().flatMap(badge -> {
+            List<GamificationDao.UnlockRow> unlocks = unlocksByBadgeId.get(badge.id());
+            if (unlocks == null || unlocks.isEmpty()) {
+                return java.util.stream.Stream.of(toBean(badge));
+            }
+            return unlocks.stream().map(unlock -> {
+                BadgeBean bean = toBean(badge);
                 bean.unlocked = true;
                 bean.unlockedAt = unlock.unlockedAt();
                 bean.context = unlock.context();
-            }
-            return bean;
+                bean.competitionId = unlock.competitionId();
+                bean.competitionName = unlock.competitionName();
+                bean.competitionDate = unlock.competitionDate();
+                return bean;
+            });
         }).toList();
 
         return wrapEntity(badges, userIdAndRenewal);
