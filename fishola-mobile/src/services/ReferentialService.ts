@@ -21,6 +21,8 @@
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import Helpers from '@/services/Helpers';
+import NetworkStatusService from '@/services/NetworkStatusService';
+import OfflineAreasService from '@/services/OfflineAreasService';
 
 export class SpeciesWithAliasAndTechnique {
     constructor (
@@ -82,6 +84,9 @@ export default class ReferentialService extends AbstractFisholaService {
   // consommateurs existants ; seuls id/name/kind/latitude/longitude sont
   // renseignés (le centroïde sert au centrage carte).
   static searchWaterEntities(q: string): Promise<Lake[]> {
+    if (NetworkStatusService.isOffline()) {
+      return ReferentialService.searchWaterEntitiesOffline(q);
+    }
     return this.backendGet(`/v1/waterEntities/search?q=${encodeURIComponent(q)}`)
       .then((results: any[]) => (results || []).map((r) => ({
         id: r.waterEntityId,
@@ -113,9 +118,16 @@ export default class ReferentialService extends AbstractFisholaService {
       });
   }
 
-  private static searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
+  // Hors-ligne, la source de vérité est le réseau hydro des packs
+  // départementaux téléchargés (#54) ; le référentiel léger en cache n'est
+  // qu'un dernier recours (rarement présent : il n'est jamais préchargé).
+  private static async searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
     if (!q.trim()) {
-      return Promise.resolve([]);
+      return [];
+    }
+    const fromPacks = await OfflineAreasService.searchByName(q).catch(() => [] as Lake[]);
+    if (fromPacks.length) {
+      return fromPacks;
     }
     return ReferentialService.getLakes()
       .then((lakes) => Helpers.rankBySearch(lakes, q, (l) => [l.name]).slice(0, 50))
