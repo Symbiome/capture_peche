@@ -38,6 +38,9 @@ public class CatchBean {
     public Optional<Integer> automaticMeasure = Optional.empty();
     public Optional<Integer> weight = Optional.empty();
     public int quantity = 1;
+    /** Classe de taille d'un lot (#196), en cm : remplace {@link #size} quand {@code quantity > 1}. */
+    public Optional<Integer> lotMinSize = Optional.empty();
+    public Optional<Integer> lotMaxSize = Optional.empty();
     public boolean keep;
     public Optional<UUID> releasedStateId = Optional.empty();
     public UUID techniqueId;
@@ -69,6 +72,8 @@ public class CatchBean {
                 ", automaticMeasure" + automaticMeasure +
                 ", weight=" + weight +
                 ", quantity=" + quantity +
+                ", lotMinSize=" + lotMinSize +
+                ", lotMaxSize=" + lotMaxSize +
                 ", keep=" + keep +
                 ", releasedStateId=" + releasedStateId +
                 ", techniqueId=" + techniqueId +

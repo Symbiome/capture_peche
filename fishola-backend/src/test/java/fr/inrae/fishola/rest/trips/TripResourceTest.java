@@ -454,6 +454,71 @@ class TripResourceTest extends AbstractFisholaTest {
         return catchsDao.countCatchs(tripId);
     }
 
+    /**
+     * #196 : un lot peut porter une classe de taille (ex. 10 truites de 40 à 50 cm) au lieu
+     * d'une taille exacte. La taille exacte est alors vidée, pour que records et statistiques
+     * de taille ne prennent pas une borne pour une mesure ; une classe min > max est refusée.
+     */
+    @Test
+    void testCatchLotSizeClass() {
+        TripBean trip = buildValidTripBean();
+
+        CatchBean lotCatch = new CatchBean();
+        lotCatch.id = "lot-size-class";
+        lotCatch.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        lotCatch.techniqueId = trip.techniqueIds.iterator().next();
+        lotCatch.keep = true;
+        lotCatch.size = Optional.of(45);
+        lotCatch.quantity = 10;
+        lotCatch.lotMinSize = Optional.of(40);
+        lotCatch.lotMaxSize = Optional.of(50);
+
+        trip.catchs = List.of(lotCatch);
+
+        String tripId = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+            .extract()
+                .body()
+                .path(trip.id);
+
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("catchs[0].quantity", equalTo(10))
+                .body("catchs[0].lotMinSize", equalTo(40))
+                .body("catchs[0].lotMaxSize", equalTo(50))
+                .body("catchs[0].size", nullValue());
+
+        TripBean invalidTrip = buildValidTripBean();
+        CatchBean invalidLotCatch = new CatchBean();
+        invalidLotCatch.id = "inverted-size-class";
+        invalidLotCatch.speciesId = Optional.of(invalidTrip.speciesIds.iterator().next().toString());
+        invalidLotCatch.techniqueId = invalidTrip.techniqueIds.iterator().next();
+        invalidLotCatch.keep = true;
+        invalidLotCatch.quantity = 10;
+        invalidLotCatch.lotMinSize = Optional.of(50);
+        invalidLotCatch.lotMaxSize = Optional.of(40);
+        invalidTrip.catchs = List.of(invalidLotCatch);
+
+        given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(invalidTrip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(400);
+    }
+
     @Test
     void testTripWithPictureGallery() throws IOException {
 

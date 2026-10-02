@@ -9,6 +9,8 @@ export interface CatchBean {
     automaticMeasure?: number;
     weight?: number;
     quantity: number;
+    lotMinSize?: number;
+    lotMaxSize?: number;
     keep: boolean;
     releasedStateId?: string;
     techniqueId: string;

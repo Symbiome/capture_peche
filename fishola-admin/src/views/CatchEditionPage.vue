@@ -127,6 +127,33 @@
               />
             </b-field>
           </div>
+          <div
+            v-if="aCatch.quantity > 1"
+            class="columns"
+          >
+            <b-field
+              label="Classe de taille du lot : min (cm)"
+              class="column"
+            >
+              <b-numberinput
+                v-model="aCatch.lotMinSize"
+                type="numeric"
+                min="1"
+                class="number-input"
+              />
+            </b-field>
+            <b-field
+              label="Classe de taille du lot : max (cm)"
+              class="column"
+            >
+              <b-numberinput
+                v-model="aCatch.lotMaxSize"
+                type="numeric"
+                min="1"
+                class="number-input"
+              />
+            </b-field>
+          </div>
           <b-field label="Exclure des exports"> </b-field>
 
           <b-radio

@@ -502,6 +502,7 @@ public class TripResource extends AbstractFisholaResource {
         aCatch.automaticMeasure.ifPresent(catchPojo::setAutomaticMeasure);
         aCatch.weight.ifPresent(catchPojo::setWeight);
         catchPojo.setQuantity(Math.max(1, aCatch.quantity));
+        applyLotSizeClass(catchPojo, aCatch);
         catchPojo.setKept(aCatch.keep);
         if (!aCatch.keep) {
             aCatch.releasedStateId.ifPresent(catchPojo::setReleasedFishStateId);
@@ -516,15 +517,7 @@ public class TripResource extends AbstractFisholaResource {
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
-        if (minSize.isPresent() && minSize.get() > 0 && catchPojo.getSize() != null) {
-            if (catchPojo.getSize() >= minSize.get()) {
-                catchPojo.setMaillee(Maillage.MAILLEE);
-            } else {
-                catchPojo.setMaillee(Maillage.NON_MAILLEE);
-            }
-        } else {
-            catchPojo.setMaillee(Maillage.NON_DEFINI);
-        }
+        catchPojo.setMaillee(computeMaillage(catchPojo, minSize));
         UUID catchId = catchsDao.create(catchPojo);
         if (positionWkt != null) {
             catchsDao.updatePosition(catchId, positionWkt);
@@ -547,6 +540,7 @@ public class TripResource extends AbstractFisholaResource {
         existingCatch.setAutomaticMeasure(aCatch.automaticMeasure.orElse(null));
         existingCatch.setWeight(aCatch.weight.orElse(null));
         existingCatch.setQuantity(Math.max(1, aCatch.quantity));
+        applyLotSizeClass(existingCatch, aCatch);
         existingCatch.setKept(aCatch.keep);
         String positionWkt = (aCatch.latitude.isPresent() && aCatch.longitude.isPresent())
                 ? toWktPoint(aCatch.longitude.get(), aCatch.latitude.get()) : null;
@@ -559,15 +553,7 @@ public class TripResource extends AbstractFisholaResource {
 
         // Get min size to determine if catch is maillee or not
         Optional<Integer> minSize = this.referentialDao.getMinSize(waterEntityId, speciesId);
-        if (minSize.isPresent() && minSize.get() > 0) {
-            if (existingCatch.getSize() >= minSize.get()) {
-                existingCatch.setMaillee(Maillage.MAILLEE);
-            } else {
-                existingCatch.setMaillee(Maillage.NON_MAILLEE);
-            }
-        } else {
-            existingCatch.setMaillee(Maillage.NON_DEFINI);
-        }
+        existingCatch.setMaillee(computeMaillage(existingCatch, minSize));
         catchsDao.update(existingCatch);
         if (positionWkt != null) {
             catchsDao.updatePosition(existingCatch.getId(), positionWkt);
@@ -575,6 +561,62 @@ public class TripResource extends AbstractFisholaResource {
         // La position de la prise a pu être ajoutée/retirée : on ré-estampille (#159).
         catchsDao.stampDepartment(existingCatch.getId());
 
+    }
+
+    /**
+     * Classe de taille d'un lot (#196) : un lot de plusieurs poissons peut porter une taille
+     * min–max plutôt qu'une taille exacte. La taille exacte est alors vidée, pour que les
+     * records personnels et les statistiques de taille ne prennent pas une borne de classe
+     * pour une taille mesurée. Hors lot, ou sans aucune borne, la classe est effacée.
+     */
+    protected static void applyLotSizeClass(Catch target, CatchBean aCatch) {
+        if (aCatch.quantity <= 1 || (aCatch.lotMinSize.isEmpty() && aCatch.lotMaxSize.isEmpty())) {
+            setLotSizeClass(target, null, null);
+            return;
+        }
+        Preconditions.checkArgument(aCatch.lotMinSize.isPresent() && aCatch.lotMaxSize.isPresent(),
+                "Classe de taille incomplète : taille min et taille max sont requises");
+        int lotMinSize = aCatch.lotMinSize.get();
+        int lotMaxSize = aCatch.lotMaxSize.get();
+        Preconditions.checkArgument(lotMinSize > 0 && lotMinSize <= lotMaxSize,
+                "Classe de taille invalide : %s-%s cm", lotMinSize, lotMaxSize);
+        target.setSize(null);
+        setLotSizeClass(target, lotMinSize, lotMaxSize);
+    }
+
+    /**
+     * Renseigne les bornes du lot et leur libellé {@code size_class} (« 40-50 »), au même
+     * format que l'import opérateur ({@code ImportDao}).
+     */
+    private static void setLotSizeClass(Catch target, Integer lotMinSize, Integer lotMaxSize) {
+        target.setLotMinSizeCm(lotMinSize == null ? null : lotMinSize.shortValue());
+        target.setLotMaxSizeCm(lotMaxSize == null ? null : lotMaxSize.shortValue());
+        target.setSizeClass(lotMinSize == null ? null : lotMinSize + "-" + lotMaxSize);
+    }
+
+    /**
+     * Maillage au regard de la taille légale minimale : sur la taille exacte, ou pour une
+     * classe de taille (#196) seulement si toute la classe est du même côté de la taille
+     * légale ; une classe qui la chevauche reste {@link Maillage#NON_DEFINI}.
+     */
+    protected static Maillage computeMaillage(Catch aCatch, Optional<Integer> legalMinSize) {
+        if (legalMinSize.isEmpty() || legalMinSize.get() <= 0) {
+            return Maillage.NON_DEFINI;
+        }
+        int legal = legalMinSize.get();
+        Integer smallest = aCatch.getSize() != null ? aCatch.getSize() : toInteger(aCatch.getLotMinSizeCm());
+        Integer largest = aCatch.getSize() != null ? aCatch.getSize() : toInteger(aCatch.getLotMaxSizeCm());
+        if (smallest != null && smallest >= legal) {
+            return Maillage.MAILLEE;
+        }
+        if (largest != null && largest < legal) {
+            return Maillage.NON_MAILLEE;
+        }
+        return Maillage.NON_DEFINI;
+    }
+
+    private static Integer toInteger(Short value) {
+        return value == null ? null : value.intValue();
     }
 
     protected Optional<UUID> tryToParseUUID(String input) {
@@ -702,6 +744,10 @@ public class TripResource extends AbstractFisholaResource {
         if (updatedCatch.editedSpeciesId.isPresent()) {
             aCatch.setEditedSpeciesId(updatedCatch.editedSpeciesId.get());
         }
+        if (aCatch.getQuantity() > 1) {
+            updatedCatch.quantity = aCatch.getQuantity();
+            applyLotSizeClass(aCatch, updatedCatch);
+        }
         aCatch.setExcludeFromExports(updatedCatch.excludeFromExport);
         aCatch.setValidatedBy(staff.getId());
         aCatch.setValidatedAt(LocalDateTime.now());
@@ -796,6 +842,8 @@ public class TripResource extends AbstractFisholaResource {
         result.weight = Optional.ofNullable(aCatch.getWeight());
         // Colonne NOT NULL DEFAULT 1 : jamais nulle en base, comme getKept() ci-dessous.
         result.quantity = aCatch.getQuantity();
+        result.lotMinSize = Optional.ofNullable(toInteger(aCatch.getLotMinSizeCm()));
+        result.lotMaxSize = Optional.ofNullable(toInteger(aCatch.getLotMaxSizeCm()));
         result.keep = aCatch.getKept();
         result.releasedStateId = Optional.ofNullable(aCatch.getReleasedFishStateId());
         result.techniqueId = aCatch.getTechniqueId();
