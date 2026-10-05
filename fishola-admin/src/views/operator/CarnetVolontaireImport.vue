@@ -28,7 +28,8 @@
           Les fichiers Excel français (Windows-1252) sont acceptés.
         </p>
       </div>
-      <b-button icon-left="file-download-outline" @click="downloadTemplate">
+      <!-- Mis en valeur (#205) : premier geste d'un import, il doit se voir. -->
+      <b-button type="is-primary" size="is-medium" icon-left="file-download-outline" @click="downloadTemplate">
         Télécharger le gabarit
       </b-button>
     </header>

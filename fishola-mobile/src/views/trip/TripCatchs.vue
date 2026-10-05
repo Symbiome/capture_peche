@@ -39,8 +39,8 @@
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
-              <i class="icon-fish" />
-              Nouvelle capture
+              <i class="icon-plus" />
+              Ajouter une capture
             </button>
           </div>
 
@@ -233,7 +233,7 @@ export default class TripCatchsView extends Vue {
         margin-top: @vertical-margin-x-small;
       }
 
-      height: 44px;
+      height: 52px;
 
       @media (max-height: 610px) {
         height: 80px;
@@ -241,11 +241,13 @@ export default class TripCatchsView extends Vue {
 
       width: 100%;
 
+      // Bouton plein et agrandi (#206) : c'est l'action principale de l'écran.
       button {
-        height: 44px;
+        height: 52px;
+        min-width: 70%;
 
         @media (max-height: 610px) {
-          height: 35px;
+          height: 44px;
         }
 
         font-style: normal;
@@ -253,8 +255,9 @@ export default class TripCatchsView extends Vue {
         font-size: @fontsize-button;
         line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-        color: @pelorous;
-        background-color: transparent;
+        color: @white;
+        background-color: @pelorous;
+        box-shadow: 0 2px 6px #0003;
 
         border: 1px solid @pelorous;
         border-radius: 22px;
