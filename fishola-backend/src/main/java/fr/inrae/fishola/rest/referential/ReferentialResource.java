@@ -47,6 +47,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -122,6 +123,19 @@ public class ReferentialResource extends AbstractFisholaResource {
         } else {
             return referentialDao.listWaterEntityNamesByDepartments(getAllowedAdminDepartments());
         }
+    }
+
+    /**
+     * Nom d'une seule entité hydrographique (#204) : la fiche d'une prise
+     * chargeait l'intégralité de /waterEntities/names (~181 000 entités pour un
+     * national) pour n'en afficher qu'un nom. 404 si l'entité n'existe pas.
+     */
+    @GET
+    @Path("/waterEntities/names/{waterEntityId}")
+    public WaterEntityName getWaterEntityName(@PathParam("waterEntityId") UUID waterEntityId) {
+        checkIsStaff();
+        return referentialDao.findWaterEntityName(waterEntityId)
+                .orElseThrow(NotFoundException::new);
     }
 
     /**

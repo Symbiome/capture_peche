@@ -114,6 +114,15 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .fetch(ReferentialDao::toWaterEntityName));
     }
 
+    /** Nom d'une seule entité (#204), sans charger tout le référentiel. */
+    public Optional<WaterEntityName> findWaterEntityName(UUID waterEntityId) {
+        return withContext(context -> context
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .from(Tables.WATER_ENTITY)
+                .where(Tables.WATER_ENTITY.ID.eq(waterEntityId))
+                .fetchOptional(ReferentialDao::toWaterEntityName));
+    }
+
     public List<WaterEntityName> listWaterEntityNamesByDepartments(Set<String> departmentCodes) {
         if (departmentCodes.isEmpty()) {
             return List.of();
