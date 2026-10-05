@@ -38,9 +38,7 @@
         </div>
         <div class="map" v-if="validMarkers.length > 0">
             <div ref="mapContainer" class="mtm-container" />
-            <button type="button" class="mtm-base-btn" @click="toggleBase">
-                {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-            </button>
+            <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBase" />
             <button
                 type="button"
                 class="mtm-recenter-btn"
@@ -83,6 +81,7 @@ import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
 import Helpers from '@/services/Helpers';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -100,7 +99,7 @@ const MAP_MIN_ZOOM = 4;
 const CATCH_PIN_AVEC_CAPTURE = 'catch-pin-avec-capture';
 const CATCH_PIN_SANS_CAPTURE = 'catch-pin-sans-capture';
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class MyTripsMapView extends Vue {
     @Prop() visible: boolean;
 
@@ -363,29 +362,13 @@ export default class MyTripsMapView extends Vue {
     height: 100%;
 }
 
-.mtm-base-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 996;
-    background-color: @pelorous;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    box-shadow: 0 0 3px #0003;
 
-    &:hover {
-        background-color: @terra-cotta;
-    }
-}
-
+// Bas droite, au-dessus de l'attribution : le bas gauche est réservé à la
+// bascule Plan/Satellite (#199).
 .mtm-recenter-btn {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
+    bottom: 40px;
+    right: 12px;
     z-index: 996;
     display: flex;
     align-items: center;

@@ -25,14 +25,13 @@
 <template>
     <div class="maplibre-markers">
         <div ref="mapContainer" class="mlm-container" />
-        <button type="button" class="mlm-base-btn" @click="toggleBase">
-            {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-        </button>
+        <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBase" />
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, Popup, LngLatBounds } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
@@ -44,7 +43,7 @@ export interface MapMarker {
     title?: string;
 }
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class MapLibreMarkersMap extends Vue {
     @Prop({ default: () => [] }) markers: MapMarker[];
     @Prop({ default: 9 }) zoom: number;
@@ -155,22 +154,4 @@ export default class MapLibreMarkersMap extends Vue {
     height: 100%;
 }
 
-.mlm-base-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 500;
-    background-color: @pelorous;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    box-shadow: 0 0 2px #0002;
-
-    &:hover {
-        background-color: @terra-cotta;
-    }
-}
 </style>
