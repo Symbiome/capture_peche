@@ -27,6 +27,7 @@
 
 import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
 import Constants from '@/services/Constants';
+import TileCacheService from '@/services/TileCacheService';
 
 export const IGN_ATTRIBUTION =
     '© <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a>';
@@ -51,11 +52,11 @@ export function buildFisholaStyle(baseLayer: BaseLayer = 'plan'): StyleSpecifica
         version: 8,
         sources: {
             'ign-plan': {
-                type: 'raster', tiles: [IGN_PLAN_URL], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)], tileSize: 256, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             'ign-ortho': {
-                type: 'raster', tiles: [IGN_ORTHO_URL], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)], tileSize: 256, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             hydro: {

@@ -24,7 +24,34 @@
          class="pane-content"
          v-on:scroll="scrolled"
          id="scroll-container">
-      <div v-for="t in trips" v-bind:key="t.id">
+      <!-- File de synchronisation (#53) : les sorties locales sont regroupées
+           sous un en-tête qui en donne le nombre, pour que le pêcheur sache ce
+           qui n'est pas encore parti au serveur. -->
+      <div v-if="pendingTrips().length > 0" class="sync-queue">
+        <div class="sync-queue-header">
+          <div class="sync-queue-title">
+            <i class="icon-send" />{{ pendingTitle() }}
+          </div>
+          <div class="sync-queue-hint" v-if="offline">
+            Elles seront envoyées automatiquement au retour du réseau.
+          </div>
+          <button v-else
+                  type="button"
+                  class="sync-queue-button"
+                  v-on:click="$emit('sync-now')">
+            Synchroniser maintenant
+          </button>
+        </div>
+        <div v-for="t in pendingTrips()" v-bind:key="t.id">
+          <MyTripsItem v-bind:trip="t"
+                       v-on:selected="tripSelected(t.id)"
+                       v-on:unselected="tripUnselected(t.id)"/>
+        </div>
+        <div v-if="syncedTrips().length > 0" class="synced-header">
+          Sorties synchronisées
+        </div>
+      </div>
+      <div v-for="t in syncedTrips()" v-bind:key="t.id">
         <MyTripsItem v-bind:trip="t"
                      v-on:selected="tripSelected(t.id)"
                      v-on:unselected="tripUnselected(t.id)"/>
@@ -118,6 +145,21 @@ export default class MyTripsList extends Vue {
     }
   }
 
+  /** Sorties locales pas encore poussées au serveur (badge « Non synchronisée »). */
+  pendingTrips(): TripLight[] {
+    return this.trips.filter((t: any) => t.pending);
+  }
+
+  syncedTrips(): TripLight[] {
+    return this.trips.filter((t: any) => !t.pending);
+  }
+
+  pendingTitle(): string {
+    const count = this.pendingTrips().length;
+    const plural = count > 1 ? 's' : '';
+    return `${count} sortie${plural} en attente de synchronisation`;
+  }
+
   askForMoreTrips() {
     this.$emit('more-trips');
   }
@@ -142,6 +184,48 @@ export default class MyTripsList extends Vue {
     padding-right: 0px;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
+  }
+
+  .sync-queue {
+    .sync-queue-header {
+      margin: @margin-small @margin-medium 0 @margin-medium;
+      padding: @margin-small @margin-medium;
+      border-left: 4px solid @terra-cotta;
+      border-radius: 8px;
+      background-color: @white;
+
+      .sync-queue-title {
+        display: flex;
+        align-items: center;
+        gap: @margin-x-small;
+        font-weight: bold;
+        color: @terra-cotta;
+      }
+
+      .sync-queue-hint {
+        margin-top: @margin-x-small;
+        font-size: @fontsize-small-paragraph;
+        color: @pale-sky;
+      }
+
+      .sync-queue-button {
+        margin-top: @margin-x-small;
+        padding: 4px 12px;
+        border: 1px solid @pelorous;
+        border-radius: 16px;
+        background: none;
+        color: @pelorous;
+        font-size: @fontsize-small-paragraph;
+        cursor: pointer;
+      }
+    }
+
+    .synced-header {
+      margin: @margin-medium @margin-medium 0 @margin-medium;
+      font-size: @fontsize-small-paragraph;
+      font-weight: bold;
+      color: @pale-sky;
+    }
   }
 
   .no-trips {
