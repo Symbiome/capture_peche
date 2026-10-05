@@ -31,9 +31,7 @@
 <template>
   <div v-if="hasAnyPosition || editable" class="trip-positions-map" :class="{ 'capture-mode': captureMode }">
     <div ref="mapContainer" class="trip-positions-map-container" />
-    <button type="button" class="trip-positions-map-base-btn" @click="toggleBase">
-      {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-    </button>
+    <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBase" />
     <ul v-if="showLegend" class="trip-positions-map-legend">
       <li v-if="hasBeginPosition">
         <span class="legend-dot legend-dot-begin" /> Début
@@ -54,6 +52,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
@@ -86,7 +85,7 @@ export interface TripPositionsCatchPoint {
   lng: number;
 }
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class TripPositionsMap extends Vue {
   @Prop() beginLatitude?: number;
   @Prop() beginLongitude?: number;
@@ -502,24 +501,6 @@ export default class TripPositionsMap extends Vue {
   height: 100%;
 }
 
-.trip-positions-map-base-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 500;
-  background-color: @pelorous;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  box-shadow: 0 0 2px #0002;
-
-  &:hover {
-    background-color: @terra-cotta;
-  }
-}
 
 .trip-positions-map-legend {
   position: absolute;
@@ -562,11 +543,12 @@ export default class TripPositionsMap extends Vue {
   }
 }
 
+// Au-dessus de la bascule Plan/Satellite, posée en bas à gauche (#199).
 .trip-positions-map-hint {
   position: absolute;
   left: 10px;
   right: 10px;
-  bottom: 10px;
+  bottom: 66px;
   z-index: 500;
   background-color: rgba(255, 255, 255, 0.92);
   border-radius: 4px;

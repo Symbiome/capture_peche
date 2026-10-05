@@ -36,10 +36,8 @@
 <div class="map">
     <i class="icon-error close-button" @click="closeMap" />
     <div ref="mapContainer" class="maplibre-container" />
+    <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBaseLayer" />
     <div class="map-controls">
-        <button type="button" class="map-btn" @click="toggleBaseLayer">
-            {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-        </button>
         <button type="button" class="map-btn" @click="locateMe" title="Ma position">
             Ma position
         </button>
@@ -57,6 +55,7 @@
 <script lang="ts">
 import { WaterEntity as Lake, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
 import NetworkStatusService from '@/services/NetworkStatusService';
@@ -90,7 +89,7 @@ const DEFAULT_ZOOM = 10;
 
 type BaseLayer = 'plan' | 'satellite';
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class MapLibreMap extends Vue {
     @Prop() favoriteLakes: Lake[];
     @Prop() selectedLake: Lake;
@@ -755,7 +754,8 @@ export default class MapLibreMap extends Vue {
 
 .offline-hint {
     position: absolute;
-    bottom: 12px;
+    // Au-dessus de la bascule Plan/Satellite, posée en bas à gauche (#199).
+    bottom: 68px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;

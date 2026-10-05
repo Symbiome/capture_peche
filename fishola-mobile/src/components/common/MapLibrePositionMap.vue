@@ -27,19 +27,18 @@
 <template>
     <div class="maplibre-position">
         <div ref="mapContainer" class="mlpos-container" />
-        <button type="button" class="mlpos-base-btn" @click="toggleBase">
-            {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-        </button>
+        <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBase" />
     </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class MapLibrePositionMap extends Vue {
     @Prop({ default: null }) lat: number | null;
     @Prop({ default: null }) lng: number | null;
@@ -149,22 +148,4 @@ export default class MapLibrePositionMap extends Vue {
     height: 100%;
 }
 
-.mlpos-base-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 500;
-    background-color: @pelorous;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    box-shadow: 0 0 2px #0002;
-
-    &:hover {
-        background-color: @terra-cotta;
-    }
-}
 </style>
