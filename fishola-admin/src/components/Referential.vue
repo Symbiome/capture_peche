@@ -27,6 +27,7 @@
       :default-sort="defaultSort"
       v-model:selected="selection.item"
       :loading="!data"
+      :class="{ 'clickable-rows': editable }"
     >
       <b-table-column
         v-for="col in columns.filter(
@@ -392,6 +393,16 @@ async function archive(element: any) {
         white-space: nowrap;
         text-overflow: ellipsis;
       }
+    }
+  }
+
+  // Une ligne ouvre la fiche d'édition (#201) : curseur main et léger
+  // surlignage au survol, y compris sur les lignes zébrées.
+  .clickable-rows table tbody tr {
+    cursor: pointer;
+
+    &:hover {
+      background-color: fade(@pelorous, 10%) !important;
     }
   }
 
