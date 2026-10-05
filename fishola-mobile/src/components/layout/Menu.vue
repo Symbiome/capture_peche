@@ -576,12 +576,12 @@ export default class Menu extends Vue {
 
         &.active {
           .active-marker {
-            background-color: @white;
+            background-color: @surface;
           }
 
           .pastille {
             color: @pelorous;
-            background: @white;
+            background: @surface;
           }
         }
 

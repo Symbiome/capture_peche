@@ -303,7 +303,7 @@ export default class PictureModal extends Vue {
 
     .add-pic-button {
       cursor: pointer;
-      background-color: white;
+      background-color: @surface;
       border: 2px solid @gainsboro;
       border-radius: 2px;
       img {

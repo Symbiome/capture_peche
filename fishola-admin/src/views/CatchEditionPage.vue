@@ -432,7 +432,7 @@ function certaintyLabel(certainty: string): string {
     font-size: 24px;
   }
 
-  background-color: @white;
+  background-color: var(--bulma-scheme-main);
 
   .number-input {
     max-width: 250px;
@@ -454,7 +454,7 @@ function certaintyLabel(certainty: string): string {
   }
 
   .validation-notice {
-    color: @pale-sky;
+    color: var(--bulma-text-weak);
     font-style: italic;
   }
 }

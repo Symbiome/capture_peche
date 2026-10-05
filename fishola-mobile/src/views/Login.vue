@@ -365,7 +365,7 @@ export default class LoginView extends Vue {
       color: @pelorous;
 
       .form-input label {
-        color: @black;
+        color: @text-strong;
       }
     }
 

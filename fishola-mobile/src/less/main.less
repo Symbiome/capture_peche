@@ -1,5 +1,40 @@
 @import "_icons";
 
+/* ========== Thème clair / sombre (#208) ========== */
+// Valeurs des neutres de _colors.less. Le thème est porté par
+// <html data-theme="light|dark"> (ThemeService) ; un conteneur peut forcer le
+// thème clair avec la classe .force-light-theme (visuels exportés, page vitrine).
+:root,
+.force-light-theme {
+  --fishola-gunmetal: #2D3436;
+  --fishola-pale-sky: #636E72;
+  --fishola-very-light-grey: #CDCDCD;
+  --fishola-link-water: #D2DAE2;
+  --fishola-white-smoke: #F7F7F7;
+  --fishola-gainsboro: #E7E7E7;
+  --fishola-zircon: #EBEEEE;
+  --fishola-solitude: #DFE6E9;
+  --fishola-surface: #FFFFFF;
+  --fishola-surface-overlay: rgba(255, 255, 255, 0.92);
+  --fishola-text-strong: #000000;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --fishola-gunmetal: #E6E9EB;
+  --fishola-pale-sky: #A9B4B9;
+  --fishola-very-light-grey: #3C464D;
+  --fishola-link-water: #34404A;
+  --fishola-white-smoke: #121619;
+  --fishola-gainsboro: #2A3136;
+  --fishola-zircon: #1F2529;
+  --fishola-solitude: #2A3237;
+  --fishola-surface: #1C2226;
+  --fishola-surface-overlay: rgba(28, 34, 38, 0.92);
+  --fishola-text-strong: #F5F7F8;
+  color-scheme: dark;
+}
+
 button {
   cursor: pointer;
 }

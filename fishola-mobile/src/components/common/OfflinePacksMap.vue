@@ -310,7 +310,7 @@ export default class OfflinePacksMap extends Vue {
 <style lang="less">
 /* Étiquette de département (élément DOM custom MapLibre, hors du scope Vue). */
 .department-label {
-    background: white;
+    background: @surface;
     border: 1px solid @pelorous;
     color: @pelorous;
     border-radius: 12px;

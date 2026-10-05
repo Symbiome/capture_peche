@@ -82,7 +82,7 @@ export default class FormMultiValues extends Vue {
 
     label {
       font-weight: 300;
-      color: @black;
+      color: @text-strong;
     }
 
     a {

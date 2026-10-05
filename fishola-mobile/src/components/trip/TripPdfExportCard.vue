@@ -502,7 +502,7 @@ export default class TripPdfExportCard extends Vue {
   width: 100%;
   height: 100%;
   z-index: 998;
-  background: @white;
+  background: @surface;
 }
 
 .trip-pdf-export-summary {

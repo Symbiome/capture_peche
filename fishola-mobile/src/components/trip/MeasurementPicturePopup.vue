@@ -391,7 +391,7 @@ export default class MeasurementPicturePopup extends Vue {
     .measure {
       float: left;
       padding-right: 10px;
-      color: black;
+      color: @text-strong;
     }
   }
 

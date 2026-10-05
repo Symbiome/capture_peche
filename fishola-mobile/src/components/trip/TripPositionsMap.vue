@@ -396,7 +396,7 @@ export default class TripPositionsMap extends Vue {
   margin: 0;
   padding: 4px 8px;
   list-style: none;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: @surface-overlay;
   border-radius: 4px;
   box-shadow: 0 0 2px #0002;
   font-size: 0.78rem;
@@ -435,7 +435,7 @@ export default class TripPositionsMap extends Vue {
   right: 10px;
   bottom: 10px;
   z-index: 500;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: @surface-overlay;
   border-radius: 4px;
   padding: 6px 10px;
   font-size: 0.8rem;

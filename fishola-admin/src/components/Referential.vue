@@ -377,7 +377,7 @@ async function archive(element: any) {
     padding-top: 10px;
     position: sticky;
     bottom: 0;
-    background: linear-gradient(to bottom, #fff0, #fff);
+    background: linear-gradient(to bottom, transparent, var(--bulma-scheme-main));
   }
 
   table {

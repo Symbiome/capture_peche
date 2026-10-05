@@ -122,6 +122,19 @@
               </div>
             </div>
           </b-dropdown-item>
+          <!-- Mode nuit (#208) : mémorisé sur ce poste. -->
+          <b-dropdown-item custom>
+            <div class="theme-choice">
+              <span>Apparence</span>
+              <div class="select is-small">
+                <select v-model="themePreference" @change="changeTheme">
+                  <option value="light">Clair</option>
+                  <option value="dark">Sombre</option>
+                  <option value="system">Selon le système</option>
+                </select>
+              </div>
+            </div>
+          </b-dropdown-item>
           <b-dropdown-item has-link>
             <router-link :to="{ name: 'change-password' }">
               <b-icon icon="lock-reset" size="is-small"></b-icon>
@@ -166,10 +179,16 @@
 import router from "@/router";
 
 import BackendService from "@/services/BackendService";
+import ThemeService, { ThemePreference } from "@/services/ThemeService";
 import {BButton, BDropdown, BDropdownItem, BIcon, BNavbar, BNavbarDropdown, BNavbarItem, useToast} from "buefy";
 import {computed, onMounted, ref, Ref} from "vue";
 
 const loggedAdmin: Ref<Admin> = ref({ email: "" });
+const themePreference: Ref<ThemePreference> = ref(ThemeService.getPreference());
+
+function changeTheme() {
+  ThemeService.setPreference(themePreference.value);
+}
 const departments: Ref<{ code: string; name: string }[]> = ref([]);
 
 const roleLabel = computed(() => {
@@ -236,6 +255,13 @@ a.navbar-item.is-active,
 
 .buttons {
   margin-right: 10px;
+}
+
+.theme-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .logged-admin {

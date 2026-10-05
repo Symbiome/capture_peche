@@ -134,7 +134,7 @@ function getItemLabel(id: string) {
     border-radius: 50%;
     cursor: pointer;
     &:hover {
-      background: white;
+      background: var(--bulma-scheme-main);
     }
   }
 }

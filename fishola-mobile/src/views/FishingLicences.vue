@@ -108,7 +108,7 @@ export default class FishingLicencesView extends Vue {
 .new-button {
   border: 1px solid @pelorous !important;
   color: @pelorous;
-  background-color: white;
+  background-color: @surface;
 
   &:hover {
     border: 1px solid white;

@@ -150,7 +150,7 @@ class Slide {
   height: 13px;
   width: 13px;
   margin: 15px 2px 10px 10px;
-  background-color: white;
+  background-color: @surface;
   border-radius: 50%;
   border: 2px solid @pelorous;
   display: inline-block;
@@ -201,7 +201,7 @@ class Slide {
   margin-left: 1vw;
   width: calc(50% - 1vw);
   .frame {
-    background-color: white;
+    background-color: @surface;
     border: 5px solid @cardinal;
     display: flex;
     align-items: center;
@@ -217,7 +217,7 @@ class Slide {
   margin-right: 1vw;
   width: calc(50% - 1vw);
   .frame {
-    background-color: white;
+    background-color: @surface;
     border: 5px solid @lime-green;
 
     display: flex;

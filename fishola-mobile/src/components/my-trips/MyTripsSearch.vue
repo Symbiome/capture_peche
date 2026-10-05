@@ -74,7 +74,7 @@ export default class MyTripsSearch extends Vue {
   }
 
   div {
-    background-color: @white;
+    background-color: @surface;
 
     height: 40px;
     padding-left: @margin-medium;

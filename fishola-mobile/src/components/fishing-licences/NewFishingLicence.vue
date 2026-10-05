@@ -234,7 +234,7 @@ export default class NewFishingLicence extends Vue {
 
     label {
       font-weight: 300;
-      color: @black;
+      color: @text-strong;
     }
 
     input:not([type="file"]) {

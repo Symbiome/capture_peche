@@ -395,7 +395,7 @@ export default class GaleryFull extends Vue {
     max-width: 100vw;
 
     .lake-gallery-select {
-      background-color: white;
+      background-color: @surface;
       margin-top: 10px;
       margin-bottom: 10px;
       padding: 10px;

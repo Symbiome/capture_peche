@@ -245,7 +245,7 @@ export default class CommuneSearch extends Vue {
     max-height: 70vh; // fallback si dvh non supporté
     max-height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
     left: 0;
-    background-color: white;
+    background-color: @surface;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -337,7 +337,7 @@ export default class CommuneSearch extends Vue {
     margin: 2px 0 0;
     padding: 0;
     list-style: none;
-    background: white;
+    background: @surface;
     box-shadow: 0 0 5px #0002;
     z-index: 10;
 

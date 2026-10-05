@@ -598,7 +598,7 @@ function onSaved(closeModal: () => void) {
     font-size: 24px;
   }
 
-  background-color: @white;
+  background-color: var(--bulma-scheme-main);
 
   display: flex;
   flex-direction: column;
