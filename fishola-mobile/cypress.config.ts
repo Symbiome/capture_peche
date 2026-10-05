@@ -1,7 +1,7 @@
 import { defineConfig } from 'cypress'
 
 export default defineConfig({
-  fixturesFolder: 'tests/assets/',
+  fixturesFolder: false,
   viewportWidth: 1280,
   viewportHeight: 720,
   video: false,
@@ -12,8 +12,7 @@ export default defineConfig({
       return require('./tests/cypress/plugins/index.js')(on, config)
     },
     baseUrl: 'http://localhost:8081',
-    // Par défaut : uniquement les parcours fonctionnels (gating CI).
-    // Les bancs CV/perf (tests/cypress/bench) se lancent à part (script cypress:bench).
+    // Parcours fonctionnels (gating CI).
     specPattern: 'tests/cypress/e2e/**/*.cypress.js',
     supportFile: 'tests/cypress/support/index.js',
   },

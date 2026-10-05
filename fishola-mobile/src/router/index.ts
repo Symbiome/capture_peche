@@ -54,7 +54,6 @@ import Credits from "@/views/Credits.vue";
 
 import GaleryFull from "@/components/galery/GaleryFull.vue";
 
-import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
 import MapLibreMapTest from "@/views/dev/MapLibreMapTest.vue";
 
 import Settings from "@/views/Settings.vue";
@@ -272,14 +271,6 @@ const routes = [
     name: "galery",
     component: GaleryFull,
     props: true,
-  },
-  {
-    path: "/fish-measure-test",
-    name: "fish-measure-test",
-    meta: {
-      public: true,
-    },
-    component: OpenCVSizeComputation,
   },
   {
     // Banc de test isolé de la carte MapLibre (#8), consommé par l'e2e Cypress.

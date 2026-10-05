@@ -125,21 +125,9 @@
                 v-model="selectedLotSizeClass" v-bind:error="lotSizeClassError"
                 v-bind:readonly="!modifiable" />
 
-              <div v-else :class="{ 'measure-row': automaticMeasureEnabled }">
-                <div class="button button-secondary-no-outline automatic-measure"
-                  v-if="modifiable && automaticMeasureEnabled">
-                  <button @click="
-                    displayMeasurementPicturePopup =
-                    !displayMeasurementPicturePopup
-                    ">
-                    <i class="icon-size measure-button-icon" />
-                    <span id="measure-button-text"></span>
-                  </button>
-                </div>
-                <FormInput name="size" :label="sizeLabel" type="number" :min="1"
-                  placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
-                  v-bind:readonly="!modifiable" />
-              </div>
+              <FormInput v-else name="size" :label="sizeLabel" type="number" :min="1"
+                placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
+                v-bind:readonly="!modifiable" />
 
               <div class="two-columns-row-on-desktop">
                 <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
@@ -236,20 +224,12 @@
         </div>
       </div>
     </div>
-    <MeasurementPicturePopup v-if="displayMeasurementPicturePopup" :measurementPicture="measurementPictureToDispatch"
-      @close="displayMeasurementPicturePopup = false" @measurementPictureTaken="measurementPictureTaken" />
     <PictureSourceChoice :visible="requestNewPicture" @close="requestNewPicture = false" @pictureTaken="pictureTaken"
       :directlyOpenGaleryInWebMode="true" />
     <FisholaFooter v-if="ready && modifiable" v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
       button-icon="icon-fish" v-on:buttonClicked="validateClicked" v-on:deleteClicked="deleteCatch"
       v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut" />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
-    <!-- Invisible marker & pic (required for silent size computation) -->
-    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
-    <!-- To enable silent automatic size computation, simply add this to the following img
-      @load="launchSilentAutomaticMeasureIfRequired" -->
-    <img alt="Msure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
-      v-show="false" />
   </div>
 </template>
 
@@ -275,8 +255,6 @@ import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
-import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -294,9 +272,6 @@ import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
 
 import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
-import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
-import { DetectedShape } from "@/services/opencv/DetectedShape";
 
 @Component({
   components: {
@@ -309,7 +284,6 @@ import { DetectedShape } from "@/services/opencv/DetectedShape";
     FormToggle,
     PicturePreview,
     MapLibrePositionMap,
-    MeasurementPicturePopup,
     PictureSourceChoice,
     FisholaFooter,
   },
@@ -333,7 +307,6 @@ export default class EditCatchView extends Vue {
 
   allNonMeasurePictures: PictureContentWithOrder[] = [];
   measurementPictureSrc: string = "";
-  measurementPictureCandidateSrc: string = "";
   focusedPicSrc: string = "";
   // Pictures that have just been taken and hence should be saved in local DB when validating
   newTakenPictures: PictureContentWithOrder[] = [];
@@ -341,7 +314,6 @@ export default class EditCatchView extends Vue {
   picturesToDelete: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
-  markerSourceSRC = "";
 
   defaultSizeLabel: string = "Taille en cm";
   sizeLabel: string = this.defaultSizeLabel;
@@ -390,17 +362,10 @@ export default class EditCatchView extends Vue {
 
   gpsLocation: { lat: number; lng: number } | null = null;
 
-  displayMeasurementPicturePopup = false;
-  // Mesure automatique par photo masquée tant qu'elle n'est pas fonctionnelle
-  // (#195) ; réactivable par VITE__AUTOMATIC_MEASURE_ENABLED=true au build.
-  automaticMeasureEnabled = import.meta.env.VITE__AUTOMATIC_MEASURE_ENABLED === "true";
   requestNewPicture = false;
-  shouldLaunchAutomaticMeasure = false;
 
   lastUsedPicOrder = 0;
   watchingGPS = false;
-  lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
-  measurementPictureToDispatch = "";
 
   created() {
     TripsService.getTripAndCatch(
@@ -410,8 +375,6 @@ export default class EditCatchView extends Vue {
     );
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
-    this.markerSourceSRC = new OpenCVDetectionConfig().defaultMarkerSrc;
-    FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded();
   }
 
   mounted() {
@@ -566,73 +529,6 @@ export default class EditCatchView extends Vue {
           this.focusedPicSrc = this.measurementPictureSrc;
         }
       }
-    }
-  }
-
-  async launchSilentAutomaticMeasureIfRequired() {
-    if (this.shouldLaunchAutomaticMeasure && !this.aCatch.automaticMeasure) {
-      this.shouldLaunchAutomaticMeasure = false;
-      // Launch a silent measure
-      console.info("[Silent automatic measure] Loading opencv...");
-      FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(async () => {
-        if (FisholaOpenCVService.INSTANCE.isOpenCVReady()) {
-          try {
-            const imageElement = document.getElementById(
-              "sourcePictureAutomatic"
-            );
-            const markerElement = document.getElementById("markerAutomatic");
-            console.info(
-              "[Silent automatic measure] Launching automatic measure...",
-              imageElement,
-              markerElement
-            );
-            if (imageElement && markerElement) {
-              const openCVConfig = new OpenCVDetectionConfig();
-              openCVConfig.drawDebugCanvas = false;
-              openCVConfig.maxRetries = -1;
-              const detectedShapes: Array<DetectedShape> =
-                await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-                  imageElement,
-                  markerElement,
-                  openCVConfig,
-                  ""
-                );
-
-              const markers = detectedShapes.filter(
-                (shape: DetectedShape) => shape.isMarker
-              ).length;
-              const markerFound = markers === 1;
-              const fishes = detectedShapes.filter(
-                (shape: DetectedShape) => shape.isFish
-              );
-              let fishSizeAutomatedInMm = 0;
-              if (fishes.length === 1) {
-                fishSizeAutomatedInMm = fishes[0].calculatedLenght;
-              }
-              console.info(
-                "[Silent automatic measure] Success : " +
-                markers +
-                " markers and fish of " +
-                fishSizeAutomatedInMm +
-                "mm"
-              );
-              if (markerFound && fishSizeAutomatedInMm) {
-                const measureAndPic = new MeasureAndPic(
-                  fishSizeAutomatedInMm,
-                  fishSizeAutomatedInMm,
-                  this.measurementPictureSrc
-                );
-                this.gotAutomaticMeasure(measureAndPic);
-                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery =
-                  true;
-              }
-            }
-            // Step 2: launch calculation
-          } catch (error) {
-            console.error("[Silent automatic measure] Failure ", error);
-          }
-        }
-      });
     }
   }
 
@@ -872,7 +768,6 @@ export default class EditCatchView extends Vue {
 
   async takePicture() {
     if (this.modifiable) {
-      this.shouldLaunchAutomaticMeasure = true;
       this.requestNewPicture = true;
     }
   }
@@ -912,62 +807,39 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
-    this.measurementPictureToDispatch = "";
-    // Make sure the received pictures does not come from measurement popup (can happen due to cancel bugs)
-    if (!this.displayMeasurementPicturePopup) {
-      this.requestNewPicture = false;
-
-      // First check that we do not already have the picture in the gallery
-      let alreadyInGalery = false;
-      this.allNonMeasurePictures.forEach((pic) => {
-        alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
-      });
-      if (!alreadyInGalery) {
-        let  maxOrder = Math.max(
-          this.lastUsedPicOrder,
-          Math.max.apply(
-            Math,
-            this.allNonMeasurePictures.map(function (o) {
-              return o.order;
-            })
-          )
-        );
-        maxOrder += 1;
-        this.lastUsedPicOrder = maxOrder;
-        const pictureInDb: PictureContentWithOrder = {
-          order: maxOrder,
-          content: pictureContent,
-          isMeasurementPicture: isMeasurementPicture,
-        };
-        this.allNonMeasurePictures.unshift(pictureInDb);
-        this.newTakenPictures.unshift(pictureInDb);
-        this.focusedPicSrc = pictureInDb.content;
-
-        // If no automatic measure has been determined yet, let's try with this new picture
-        if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
-          this.measurementPictureCandidateSrc = pictureContent;
-        }
-      } else {
-        this.$root.$emit(
-          "toaster-error",
-          "Cette photo est déjà dans votre gallerie"
-        );
-      }
+  pictureTaken(pictureContent: string) {
+    this.requestNewPicture = false;
+    // First check that we do not already have the picture in the gallery
+    let alreadyInGalery = false;
+    this.allNonMeasurePictures.forEach((pic) => {
+      alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
+    });
+    if (!alreadyInGalery) {
+      let  maxOrder = Math.max(
+        this.lastUsedPicOrder,
+        Math.max.apply(
+          Math,
+          this.allNonMeasurePictures.map(function (o) {
+            return o.order;
+          })
+        )
+      );
+      maxOrder += 1;
+      this.lastUsedPicOrder = maxOrder;
+      const pictureInDb: PictureContentWithOrder = {
+        order: maxOrder,
+        content: pictureContent,
+        isMeasurementPicture: false,
+      };
+      this.allNonMeasurePictures.unshift(pictureInDb);
+      this.newTakenPictures.unshift(pictureInDb);
+      this.focusedPicSrc = pictureInDb.content;
     } else {
-      // Dispatching measurement pic to expected target
-      this.measurementPictureToDispatch = pictureContent;
+      this.$root.$emit(
+        "toaster-error",
+        "Cette photo est déjà dans votre gallerie"
+      );
     }
-  }
-
-  measurementPictureTaken(measureAndPic: MeasureAndPic) {
-    console.error("measurementPictureTaken", measureAndPic.measurePicSrc);
-    this.displayMeasurementPicturePopup = false;
-    this.shouldLaunchAutomaticMeasure = false;
-    this.measurementPictureSrc = measureAndPic.measurePicSrc;
-    this.pictureTaken(measureAndPic.measurePicSrc, true);
-    this.focusedPicSrc = this.measurementPictureSrc;
-    this.gotAutomaticMeasure(measureAndPic);
   }
 
   @Watch("withSample")
@@ -1194,49 +1066,6 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  gotAutomaticMeasure(measure: MeasureAndPic) {
-    this.displayMeasurementPicturePopup = false;
-    this.aCatch.automaticMeasure = Math.round(
-      measure.fishSizeAutomatedInMm / 10
-    );
-    // Override manual size, but user will still be able to modify it later on
-    this.aCatch.size = Math.round(measure.fishSizeManualInMm / 10);
-
-    // If we had a measure, means that latest taken picture is a measurement pic
-    if (this.newTakenPictures.length) {
-      if (this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery) {
-        // Keep measurement pic as it was automatic and should be kept in gallery
-        const automaticMeasurePic = this.newTakenPictures.filter(
-          (pic) =>
-            pic.isMeasurementPicture &&
-            pic.order != this.newTakenPictures[0].order
-        );
-        if (automaticMeasurePic.length) {
-          this.allNonMeasurePictures.unshift(automaticMeasurePic[0]);
-        }
-        this.newTakenPictures.forEach(
-          (pic) => (pic.isMeasurementPicture = false)
-        );
-        this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
-      } else {
-        // Remove all measurement pic to only keep the last
-        this.newTakenPictures = this.newTakenPictures.filter(
-          (pic) =>
-            !pic.isMeasurementPicture ||
-            pic.order == this.newTakenPictures[0].order
-        );
-      }
-      // All previously taken pictures should not be considered as measurement
-
-      this.measurementPictureSrc = this.newTakenPictures[0].content;
-      this.newTakenPictures[0].isMeasurementPicture = true;
-      this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
-        (pic) => !pic.isMeasurementPicture
-      );
-    }
-    this.$forceUpdate();
-  }
-
   // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique,
   // correspondances exactes puis en début de nom en tête (#197).
   filteredSpeciesOptions(): SpeciesWithAlias[] {
@@ -1312,20 +1141,6 @@ export default class EditCatchView extends Vue {
     padding-bottom: @margin-xx-large;
   }
 
-  .automatic-measure {
-    margin-left: 0px;
-    margin-top: 20px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: block;
-    overflow: hidden;
-
-    @media screen and (max-width: @desktop-min-width) {
-      margin-top: 0px;
-      padding-right: 0px;
-      width: 100%;
-    }
-  }
 
   .catch-picture {
     height: calc(165px + env(safe-area-inset-top));
@@ -1503,77 +1318,9 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  .measure-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
 
-    > :nth-child(1) {
-      width: calc(100% - 200px);
-      margin-top: 20px;
-      min-width: 150px;
-    }
 
-    > :nth-child(2) {
-      width: 200px;
-    }
 
-    @media screen and (min-width: 515px) {
-      > :nth-child(1) {
-        width: 300px;
-      }
-
-      > :nth-child(2) {
-        width: calc(100% - 300px);
-      }
-    }
-
-    @media screen and (min-width: @desktop-min-width) {
-      > :nth-child(1) {
-        width: calc(100% - 200px);
-        margin-top: 20px;
-      }
-
-      > :nth-child(2) {
-        width: 200px;
-      }
-    }
-
-    @media screen and (min-width: 880px) {
-      > :nth-child(1) {
-        width: 300px;
-      }
-
-      > :nth-child(2) {
-        width: calc(100% - 300px);
-      }
-    }
-  }
-
-  .measure-button-icon {
-    margin-left: -4px;
-  }
-
-  #measure-button-text {
-    padding-left: 8px;
-  }
-
-  #measure-button-text:after {
-    content: "Mesure";
-
-    @media screen and (min-width: 515px) {
-      content: "Mesure automatique";
-    }
-
-    @media screen and (min-width: @desktop-min-width) {
-      content: "Mesure";
-    }
-
-    @media screen and (min-width: 880px) {
-      content: "Mesure automatique";
-    }
-  }
 
   @media screen and (min-width: @desktop-min-width) {
     &.picture-background .edit-catch-page {

@@ -61,7 +61,6 @@ run_e2e() {
     cd fishola-mobile
     [ -d node_modules ] || npm install
     # cypress:run => specPattern tests/cypress/e2e/** (parcours fonctionnels).
-    # Les bancs CV/perf ont leur propre script (cypress:bench / cypress-report).
     npm run cypress:run
   )
   record "E2E (Cypress)" $?
