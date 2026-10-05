@@ -58,6 +58,7 @@
       v-on:more-trips="loadNextPage"
       v-on:trip-selected="tripSelected"
       v-on:trip-unselected="tripUnselected"
+      v-on:sync-now="syncNow"
     />
      <FisholaFooter 
               shortcuts="logout,dashboard,home" 
@@ -190,6 +191,14 @@ export default class MyTripsView extends Vue {
       this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
       RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
+  }
+
+  // Synchronisation à la demande (#53) : même passe que le polling d'App.vue,
+  // qui émet « trips-saved » (et donc le rechargement de la liste) en cas de
+  // succès.
+  syncNow() {
+    this.$root.$emit("ask-for-sync-check");
+    this.$root.$emit("toaster-success", "Synchronisation lancée");
   }
 
   reverseSortOrder() {

@@ -475,6 +475,17 @@ export default class TripsService extends AbstractFisholaService {
   }
 
   /**
+   * Nombre de sorties en attente de synchronisation (#53), affiché dans le
+   * bandeau hors-ligne et la liste. Les brouillons incomplets ne sont pas des
+   * sorties (cf. isSyncable) et ne sont donc pas comptés.
+   */
+  static countPendingTrips(): Promise<number> {
+    return this.getDatabase()
+      .dirtyTrips.toArray()
+      .then((trips) => trips.filter((t) => TripsService.isSyncable(t)).length);
+  }
+
+  /**
    * Indique si la sauvegarde de la sortie doit être différée ou non
    */
   static shouldDelaySave(someObject: TripBean): boolean {

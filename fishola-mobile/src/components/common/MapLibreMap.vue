@@ -61,6 +61,7 @@ import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
+import TileCacheService from '@/services/TileCacheService';
 
 import maplibregl, { Map as MlMap, MapMouseEvent, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -107,7 +108,7 @@ export default class MapLibreMap extends Vue {
     // Mode hors-ligne (#54) : quand la connexion manque à l'ouverture, on rend le
     // réseau hydro depuis les packs départementaux téléchargés (source GeoJSON
     // locale) au lieu des tuiles vectorielles du backend, injoignables. Le fond
-    // IGN reste, lui, indisponible (non téléchargé, hors périmètre) → carte nue.
+    // IGN n'est disponible que sur la dernière zone consultée (cache léger #53).
     private useOffline = false;
     private offlineData: any = null;
     // Bannière d'info affichée hors-ligne (aucun pack, ou rappel fond absent).
@@ -235,14 +236,14 @@ export default class MapLibreMap extends Vue {
         const sources: any = {
             'ign-plan': {
                 type: 'raster',
-                tiles: [IGN_PLAN_URL],
+                tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)],
                 tileSize: 256,
                 maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             'ign-ortho': {
                 type: 'raster',
-                tiles: [IGN_ORTHO_URL],
+                tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)],
                 tileSize: 256,
                 maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
@@ -438,7 +439,7 @@ export default class MapLibreMap extends Vue {
             this.offlineData = { type: 'FeatureCollection', features: [] };
         }
         this.offlineHint = this.hasOfflineData()
-            ? "Hors-ligne : réseau téléchargé affiché (fond de carte indisponible)."
+            ? "Hors-ligne : réseau téléchargé affiché (fond de carte limité aux dernières zones consultées)."
             : "Hors-ligne : aucune zone téléchargée. Réglages → Zones hors-ligne.";
     }
 
