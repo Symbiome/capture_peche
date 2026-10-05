@@ -29,7 +29,7 @@
   à la création de la sortie).
   -->
 <template>
-  <div v-if="hasAnyPosition || editable" class="trip-positions-map">
+  <div v-if="hasAnyPosition || editable" class="trip-positions-map" :class="{ 'capture-mode': captureMode }">
     <div ref="mapContainer" class="trip-positions-map-container" />
     <button type="button" class="trip-positions-map-base-btn" @click="toggleBase">
       {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
@@ -41,7 +41,7 @@
       <li v-if="hasEndPosition || editable">
         <span class="legend-dot legend-dot-end" /> Fin
       </li>
-      <li v-if="catches && catches.length">
+      <li v-if="hasCatches">
         <span class="legend-dot legend-dot-catch" /> Capture{{ catches.length > 1 ? 's' : '' }}
       </li>
     </ul>
@@ -70,6 +70,16 @@ const BEGIN_COLOR = '#44BD32';
 const END_COLOR = '#D62137';
 const CATCH_COLOR = '#1e9bc4';
 const CATCH_PIN_ID = 'trip-positions-catch-pin';
+// Encombrement à l'écran du pin de capture (68×92 px en pixelRatio 2, ancré en
+// bas) et des marqueurs début/fin : réservé dans les marges de cadrage pour
+// qu'aucun pin ne soit coupé ni collé au bord (#193).
+const PIN_HEIGHT_PX = 46;
+const PIN_HALF_WIDTH_PX = 17;
+// Marge de cadrage relative à la plus petite dimension de la carte (#193).
+const FRAMING_MARGIN_RATIO = 0.12;
+const MAX_FIT_ZOOM = 15;
+// Sécurité : une capture ne doit pas bloquer l'export si `idle` n'arrive pas.
+const CAPTURE_TIMEOUT_MS = 10000;
 
 export interface TripPositionsCatchPoint {
   lat: number;
@@ -96,6 +106,9 @@ export default class TripPositionsMap extends Vue {
   private beginMarker: Marker | null = null;
   private endMarker: Marker | null = null;
   private detachHydroHover: (() => void) | null = null;
+  // Résolue une fois le style chargé, l'icône de capture enregistrée et les
+  // couches ajoutées : préalable au cadrage final et à la capture (#193).
+  private ready: Promise<void> | null = null;
   baseLayer: BaseLayer = 'plan';
 
   get hasBeginPosition(): boolean {
@@ -106,8 +119,13 @@ export default class TripPositionsMap extends Vue {
     return this.endLatitude != null && this.endLongitude != null;
   }
 
+  get hasCatches(): boolean {
+    return !!this.catches && this.catches.length > 0;
+  }
+
+  /** Une sortie dont la seule position est une capture a aussi sa carte (#193). */
   get hasAnyPosition(): boolean {
-    return this.hasBeginPosition || this.hasEndPosition;
+    return this.hasBeginPosition || this.hasEndPosition || this.hasCatches;
   }
 
   private get hasCenter(): boolean {
@@ -171,18 +189,24 @@ export default class TripPositionsMap extends Vue {
       preserveDrawingBuffer: this.captureMode,
     });
     this.detachHydroHover = attachHydroHover(this.map);
-    // Le pin de capture (goutte bleue, même style que MyTripsMap.vue) n'est
-    // enregistré qu'à la demande de la couche symbole (#173).
-    this.map.on('styleimagemissing', (e: any) => {
-      if (this.map && e.id === CATCH_PIN_ID) {
-        addCatchPinIcon(this.map, CATCH_PIN_ID, CATCH_COLOR, 'fish');
-      }
-    });
-    this.map.on('load', () => {
-      this.map?.resize();
-      this.refreshMarkers();
-      this.addCatchLayer();
-      this.fitToMarkers();
+    const map = this.map;
+    // Le pin de capture (goutte bleue, même style que MyTripsMap.vue) est
+    // enregistré AVANT d'ajouter la couche symbole : chargé à la demande
+    // (`styleimagemissing`), il pouvait manquer à la capture PDF (#193).
+    this.ready = new Promise((resolve) => {
+      map.once('load', () => {
+        addCatchPinIcon(map, CATCH_PIN_ID, CATCH_COLOR, 'fish').then(() => {
+          if (this.map !== map) {
+            return;
+          }
+          map.resize();
+          this.addEndpointLayer();
+          this.refreshMarkers();
+          this.addCatchLayer();
+          this.fitToMarkers();
+          resolve();
+        });
+      });
     });
     if (this.editable) {
       this.map.on('click', (e) => {
@@ -233,12 +257,33 @@ export default class TripPositionsMap extends Vue {
     }
   }
 
-  private initialCenter(): [number, number] {
+  /** Début, fin et captures : l'emprise de la zone pêchée (#193). */
+  private allPoints(): [number, number][] {
+    const points: [number, number][] = [];
     if (this.hasBeginPosition) {
-      return [this.beginLongitude!, this.beginLatitude!];
+      points.push([this.beginLongitude!, this.beginLatitude!]);
     }
     if (this.hasEndPosition) {
-      return [this.endLongitude!, this.endLatitude!];
+      points.push([this.endLongitude!, this.endLatitude!]);
+    }
+    (this.catches || []).forEach((c) => points.push([c.lng, c.lat]));
+    return points;
+  }
+
+  private pointsBounds(points: [number, number][]): [[number, number], [number, number]] {
+    const lngs = points.map((p) => p[0]);
+    const lats = points.map((p) => p[1]);
+    return [
+      [Math.min(...lngs), Math.min(...lats)],
+      [Math.max(...lngs), Math.max(...lats)],
+    ];
+  }
+
+  private initialCenter(): [number, number] {
+    const points = this.allPoints();
+    if (points.length) {
+      const [[west, south], [east, north]] = this.pointsBounds(points);
+      return [(west + east) / 2, (south + north) / 2];
     }
     if (this.hasCenter) {
       return [this.centerLng!, this.centerLat!];
@@ -258,6 +303,10 @@ export default class TripPositionsMap extends Vue {
 
   private refreshMarkers() {
     if (!this.map) {
+      return;
+    }
+    if (this.captureMode) {
+      this.refreshEndpointLayer();
       return;
     }
     if (this.hasBeginPosition) {
@@ -299,30 +348,90 @@ export default class TripPositionsMap extends Vue {
     this.$emit('end-position-picked', { lat, lng });
   }
 
-  // Cadre l'ensemble début/fin/captures (#173) : au moins 2 points requis,
-  // sinon le cadrage initial (initialCenter/initialZoom) suffit déjà.
+  // Les marqueurs DOM ne font pas partie du canvas WebGL : en mode capture,
+  // début et fin sont dessinés en couche cercle pour figurer dans le PDF (#193).
+  private endpointsGeoJson(): any {
+    const features: any[] = [];
+    if (this.hasBeginPosition) {
+      features.push(this.endpointFeature(this.beginLongitude!, this.beginLatitude!, BEGIN_COLOR));
+    }
+    if (this.hasEndPosition) {
+      features.push(this.endpointFeature(this.endLongitude!, this.endLatitude!, END_COLOR));
+    }
+    return { type: 'FeatureCollection', features };
+  }
+
+  private endpointFeature(lng: number, lat: number, color: string): any {
+    return {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [lng, lat] },
+      properties: { color },
+    };
+  }
+
+  private addEndpointLayer() {
+    if (!this.map || !this.captureMode || this.map.getSource('trip-endpoints')) {
+      return;
+    }
+    this.map.addSource('trip-endpoints', { type: 'geojson', data: this.endpointsGeoJson() });
+    this.map.addLayer({
+      id: 'trip-endpoint-points',
+      type: 'circle',
+      source: 'trip-endpoints',
+      paint: {
+        'circle-radius': 9,
+        'circle-color': ['get', 'color'],
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#ffffff',
+      },
+    });
+  }
+
+  private refreshEndpointLayer() {
+    const source = this.map?.getSource('trip-endpoints') as GeoJSONSource | undefined;
+    source?.setData(this.endpointsGeoJson());
+  }
+
+  // Marges de cadrage proportionnelles à la taille de la carte (et non plus
+  // 40 px fixes), plus la place des pins ancrés par le bas (#193).
+  private framingPadding(width: number, height: number) {
+    const margin = Math.round(FRAMING_MARGIN_RATIO * Math.min(width, height));
+    return {
+      top: margin + PIN_HEIGHT_PX,
+      bottom: margin,
+      left: margin + PIN_HALF_WIDTH_PX,
+      right: margin + PIN_HALF_WIDTH_PX,
+    };
+  }
+
+  // Cadre l'emprise début/fin/captures (#173, #193). Un point unique est
+  // centré (décalé de la moitié du pin pour centrer le pin lui-même). Sans
+  // animation en mode capture : le cadrage doit être appliqué avant `idle`.
   private fitToMarkers() {
     if (!this.map) {
       return;
     }
-    const points: [number, number][] = [];
-    if (this.hasBeginPosition) {
-      points.push([this.beginLongitude!, this.beginLatitude!]);
-    }
-    if (this.hasEndPosition) {
-      points.push([this.endLongitude!, this.endLatitude!]);
-    }
-    (this.catches || []).forEach((c) => points.push([c.lng, c.lat]));
-    if (points.length < 2) {
+    const points = this.allPoints();
+    const { clientWidth: width, clientHeight: height } = this.map.getContainer();
+    if (!points.length || !width || !height) {
       return;
     }
-    const lngs = points.map((p) => p[0]);
-    const lats = points.map((p) => p[1]);
-    const bounds: LngLatBoundsLike = [
-      [Math.min(...lngs), Math.min(...lats)],
-      [Math.max(...lngs), Math.max(...lats)],
-    ];
-    this.map.fitBounds(bounds, { padding: 40, maxZoom: 15 });
+    const animate = !this.captureMode;
+    if (points.length === 1) {
+      this.map.easeTo({
+        center: points[0],
+        zoom: MAX_FIT_ZOOM,
+        offset: [0, PIN_HEIGHT_PX / 2],
+        duration: animate ? 500 : 0,
+      });
+      return;
+    }
+    const bounds: LngLatBoundsLike = this.pointsBounds(points);
+    this.map.fitBounds(bounds, {
+      padding: this.framingPadding(width, height),
+      maxZoom: MAX_FIT_ZOOM,
+      animate,
+    });
   }
 
   toggleBase() {
@@ -333,21 +442,31 @@ export default class TripPositionsMap extends Vue {
   }
 
   // #173 (export PDF) : nécessite `captureMode` (sinon le tampon WebGL est
-  // effacé et l'image est vide). On attend l'évènement `idle` avant de lire
-  // le canvas, sinon la capture peut tomber pendant l'animation de
-  // `fitBounds` et rendre une carte pas encore centrée/chargée.
-  captureImage(): Promise<string | null> {
+  // effacé et l'image est vide). #193 : une fois la carte prête, on la
+  // redimensionne à la taille finale de son conteneur PUIS on recadre, sans
+  // animation, et l'on attend `idle` (tuiles chargées) avant de lire le canvas.
+  async captureImage(): Promise<string | null> {
     const map = this.map;
-    if (!map) {
-      return Promise.resolve(null);
+    if (!map || !this.ready) {
+      return null;
+    }
+    await this.ready;
+    if (this.map !== map) {
+      return null;
     }
     return new Promise((resolve) => {
-      const capture = () => resolve(map.getCanvas().toDataURL('image/png'));
-      if (map.loaded() && !map.isMoving() && !map.isZooming()) {
-        requestAnimationFrame(capture);
-      } else {
-        map.once('idle', capture);
-      }
+      const capture = () => {
+        clearTimeout(timeout);
+        resolve(map.getCanvas().toDataURL('image/png'));
+      };
+      const timeout = setTimeout(() => {
+        map.off('idle', capture);
+        capture();
+      }, CAPTURE_TIMEOUT_MS);
+      map.resize();
+      this.fitToMarkers();
+      map.once('idle', capture);
+      map.triggerRepaint();
     });
   }
 }
@@ -362,6 +481,20 @@ export default class TripPositionsMap extends Vue {
   border-radius: 4px;
   overflow: hidden;
   border: 1px solid @pale-sky;
+}
+
+// Capture PDF (#193) : la carte est rendue au ratio exact du cadre du PDF
+// (TripPdfExportCard, MAP_ASPECT_RATIO = 3/2) au lieu d'un bandeau de 220 px
+// de haut sur toute la largeur. Repli sur 220 px sans `aspect-ratio`.
+.trip-positions-map.capture-mode {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @supports (aspect-ratio: 3 / 2) {
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
 }
 
 .trip-positions-map-container {

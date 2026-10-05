@@ -119,6 +119,10 @@ const PAGE_WIDTH_MM = 210;
 const PAGE_HEIGHT_MM = 297;
 const MARGIN_MM = 15;
 const CONTENT_WIDTH_MM = PAGE_WIDTH_MM - 2 * MARGIN_MM;
+// Cadre de la carte dans le PDF (#193) : même ratio 3/2 que le conteneur de
+// capture (TripPositionsMap, classe `capture-mode`), 180 × 120 mm.
+const MAP_ASPECT_RATIO = 3 / 2;
+const MAP_MAX_HEIGHT_MM = CONTENT_WIDTH_MM / MAP_ASPECT_RATIO;
 
 @Component({
   components: {
@@ -401,11 +405,19 @@ export default class TripPdfExportCard extends Vue {
       .map((t) => t.name);
   }
 
+  // Conserve le ratio de la capture (#193) : si l'image dépasse la hauteur
+  // du cadre, on réduit aussi sa largeur et on la centre, plutôt que de
+  // l'écraser verticalement (ce qui décalait la zone pêchée).
   private writeMapImage(doc: jsPDF, image: NormalizedImage) {
-    const width = CONTENT_WIDTH_MM;
-    const height = Math.min(width * (image.height / image.width), 100);
+    let width = CONTENT_WIDTH_MM;
+    let height = width * (image.height / image.width);
+    if (height > MAP_MAX_HEIGHT_MM) {
+      height = MAP_MAX_HEIGHT_MM;
+      width = height * (image.width / image.height);
+    }
+    const x = MARGIN_MM + (CONTENT_WIDTH_MM - width) / 2;
     this.ensureSpace(doc, height + 8);
-    doc.addImage(image.dataUrl, "JPEG", MARGIN_MM, this.cursorY, width, height);
+    doc.addImage(image.dataUrl, "JPEG", x, this.cursorY, width, height);
     this.cursorY += height + 8;
   }
 
