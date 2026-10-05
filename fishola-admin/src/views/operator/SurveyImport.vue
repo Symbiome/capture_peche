@@ -28,7 +28,10 @@
           « Session souvenir » facultatif.
         </p>
       </div>
+      <!-- Mis en valeur (#205), comme pour l'import carnet volontaire. -->
       <b-button
+        type="is-primary"
+        size="is-medium"
         icon-left="file-download-outline"
         :loading="downloadingTemplate"
         @click="downloadTemplate"

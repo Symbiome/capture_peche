@@ -144,7 +144,8 @@
           </b-field>
         </div>
       </div>
-      <b-button type="is-light" icon-left="plus" @click="addCapture">Ajouter une capture</b-button>
+      <!-- Mis en valeur (#206) ; contour seul pour rester distinct d'« Enregistrer ». -->
+      <b-button type="is-primary" size="is-medium" outlined icon-left="plus" @click="addCapture">Ajouter une capture</b-button>
     </div>
 
     <div class="mt-5">
