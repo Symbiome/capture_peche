@@ -35,6 +35,7 @@ import fr.inrae.fishola.entities.tables.daos.SpeciesDao;
 import fr.inrae.fishola.entities.tables.daos.TechniqueDao;
 import fr.inrae.fishola.entities.tables.daos.WeatherDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
+import fr.inrae.fishola.entities.tables.pojos.DepartmentAuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.ReleasedFishState;
 import fr.inrae.fishola.entities.tables.pojos.Species;
@@ -64,6 +65,9 @@ import java.util.UUID;
 
 @Singleton
 public class ReferentialDao extends AbstractFisholaDao {
+
+    /** Taille maximale « non définie » renvoyée au mobile (sentinelle historique). */
+    public static final int UNSET_MAX_SIZE = 1000;
 
     @Inject
     protected Logger log;
@@ -451,28 +455,78 @@ public class ReferentialDao extends AbstractFisholaDao {
     // #131 : miroir de getMinSize, scopé à un seul plan d'eau (fetchByWaterEntityId
     // est indexé) — évite de recharger authorized_sample pour tout le bassin RM&C
     // juste pour contrôler la taille max d'une capture.
+    // #246 : sans valeur propre à l'entité, la valeur par défaut du département
+    // de l'entité s'applique.
     public Integer getMaxSize(UUID waterEntityId, UUID specieId) {
-        List<AuthorizedSample> authorizedWaterEntitySamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByWaterEntityId(waterEntityId));
-        return authorizedWaterEntitySamples.stream()
-                .filter(authorizedSample -> Objects.equals(authorizedSample.getSpeciesId(), specieId))
+        return findAuthorizedSample(waterEntityId, specieId)
                 .map(AuthorizedSample::getMaxSize)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(1000);
+                .filter(ReferentialDao::isDefinedMaxSize)
+                .or(() -> findDepartmentAuthorizedSample(waterEntityId, specieId)
+                        .map(DepartmentAuthorizedSample::getMaxSize))
+                .orElse(UNSET_MAX_SIZE);
     }
 
     /**
      * Maillage (largeur des classes de taille, en cm) défini par l'administrateur pour
      * une espèce sur un milieu : un lot de poissons se saisit alors par classe (#196).
-     * Vide si aucun maillage n'est défini.
+     * Sans maillage propre à l'entité, celui du département de l'entité s'applique
+     * (#246). Vide si aucun maillage n'est défini.
      */
     public Optional<Integer> getMeshSize(UUID waterEntityId, UUID specieId) {
+        return findAuthorizedSample(waterEntityId, specieId)
+                .map(AuthorizedSample::getMeshSize)
+                .filter(ReferentialDao::isDefinedMeshSize)
+                .or(() -> findDepartmentAuthorizedSample(waterEntityId, specieId)
+                        .map(DepartmentAuthorizedSample::getMeshSize)
+                        .filter(ReferentialDao::isDefinedMeshSize));
+    }
+
+    /** Taille maximale réellement saisie : 0 (enregistrement sans valeur) et 1000 (défaut historique) valent « non définie ». */
+    public static boolean isDefinedMaxSize(Integer maxSize) {
+        return maxSize != null && maxSize > 0 && maxSize != UNSET_MAX_SIZE;
+    }
+
+    public static boolean isDefinedMeshSize(Integer meshSize) {
+        return meshSize != null && meshSize > 0;
+    }
+
+    private Optional<AuthorizedSample> findAuthorizedSample(UUID waterEntityId, UUID specieId) {
         List<AuthorizedSample> authorizedWaterEntitySamples = withDao(AuthorizedSampleDao.class, dao -> dao.fetchByWaterEntityId(waterEntityId));
         return authorizedWaterEntitySamples.stream()
                 .filter(authorizedSample -> Objects.equals(authorizedSample.getSpeciesId(), specieId))
-                .map(AuthorizedSample::getMeshSize)
-                .filter(meshSize -> meshSize != null && meshSize > 0)
                 .findFirst();
+    }
+
+    /** Valeurs par défaut (#246) du département auquel l'entité est rattachée. */
+    private Optional<DepartmentAuthorizedSample> findDepartmentAuthorizedSample(UUID waterEntityId, UUID specieId) {
+        return withContext(context -> context
+                .select(Tables.DEPARTMENT_AUTHORIZED_SAMPLE.fields())
+                .from(Tables.DEPARTMENT_AUTHORIZED_SAMPLE)
+                .join(Tables.WATER_ENTITY)
+                .on(Tables.WATER_ENTITY.DEPARTMENT.eq(Tables.DEPARTMENT_AUTHORIZED_SAMPLE.DEPARTMENT))
+                .where(Tables.WATER_ENTITY.ID.eq(waterEntityId))
+                .and(Tables.DEPARTMENT_AUTHORIZED_SAMPLE.SPECIES_ID.eq(specieId))
+                .fetchOptionalInto(DepartmentAuthorizedSample.class));
+    }
+
+    public List<DepartmentAuthorizedSample> listDepartmentAuthorizedSamples(String department) {
+        return withContext(context -> context
+                .selectFrom(Tables.DEPARTMENT_AUTHORIZED_SAMPLE)
+                .where(Tables.DEPARTMENT_AUTHORIZED_SAMPLE.DEPARTMENT.eq(department))
+                .fetchInto(DepartmentAuthorizedSample.class));
+    }
+
+    /**
+     * Remplace toutes les valeurs par défaut d'un département (#246), dans la
+     * transaction JTA de la ressource appelante (cf. AbstractFisholaDao).
+     */
+    public void replaceDepartmentAuthorizedSamples(String department, List<DepartmentAuthorizedSample> samples) {
+        withContextNoResult(context -> {
+            context.deleteFrom(Tables.DEPARTMENT_AUTHORIZED_SAMPLE)
+                    .where(Tables.DEPARTMENT_AUTHORIZED_SAMPLE.DEPARTMENT.eq(department))
+                    .execute();
+            samples.forEach(sample -> context.newRecord(Tables.DEPARTMENT_AUTHORIZED_SAMPLE, sample).insert());
+        });
     }
 
     public void createAuthorizedSample(AuthorizedSample entity) {

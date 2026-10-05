@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -693,6 +694,54 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/authorized-samples/mesh-size")
     public Integer getMeshSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
         return referentialDao.getMeshSize(waterEntityId, speciesId).orElse(null);
+    }
+
+    /**
+     * Maillages et tailles maximales par défaut d'un département (#246) : ils
+     * s'appliquent à toutes ses entités hydrographiques, sauf valeur propre à
+     * l'entité (cf. ReferentialDao.getMaxSize / getMeshSize).
+     */
+    @GET
+    @Path("/authorized-samples/department/{department}")
+    public List<DepartmentSizeDefaultBean> getDepartmentSizeDefaults(@PathParam("department") String department) {
+        checkIsStaff();
+        if (!isDepartmentAllowed(department)) {
+            return List.of();
+        }
+        return referentialDao.listDepartmentAuthorizedSamples(department).stream()
+                .map(DepartmentSizeDefaultBean::of)
+                .toList();
+    }
+
+    /** Remplace l'ensemble des valeurs par défaut du département (#246). */
+    @PUT
+    @Path("/authorized-samples/department/{department}")
+    @Audited(value = "departmentAuthorizedSamples.save", entityType = "department_authorized_samples")
+    public Response saveDepartmentSizeDefaults(@PathParam("department") String department,
+                                               List<DepartmentSizeDefaultBean> defaults) {
+        checkIsAdmin();
+        if (!isDepartmentAllowed(department)) {
+            return Response.status(Response.Status.FORBIDDEN).entity("Département hors de votre périmètre").build();
+        }
+        List<DepartmentSizeDefaultBean> values = defaults == null ? List.of() : defaults;
+        Optional<String> error = values.stream()
+                .map(DepartmentSizeDefaultBean::validationError)
+                .filter(Objects::nonNull)
+                .findFirst();
+        if (error.isPresent()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(error.get()).build();
+        }
+        referentialDao.replaceDepartmentAuthorizedSamples(department,
+                values.stream().map(value -> value.toEntity(department)).toList());
+        return Response.noContent().build();
+    }
+
+    // Un admin régional reste borné à ses départements (#159) ; un national
+    // (aucune restriction) peut configurer tous les départements.
+    private boolean isDepartmentAllowed(String department) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        return StringUtils.isNotBlank(department)
+                && (allowedDepartments.isEmpty() || allowedDepartments.contains(department));
     }
 
 }
