@@ -141,6 +141,11 @@ export default class TripsService extends AbstractFisholaService {
       speciesId: input.speciesId,
       size: input.size,
       weight: input.weight,
+      // Lot et classe de taille (#196) : sans eux, une prise rouverte depuis le
+      // serveur repassait à 1 poisson sans classe, et l'enregistrer effaçait le lot.
+      quantity: input.quantity,
+      lotMinSize: input.lotMinSize,
+      lotMaxSize: input.lotMaxSize,
       keep: input.keep,
       releasedStateId: input.releasedStateId,
       techniqueId: input.techniqueId,
