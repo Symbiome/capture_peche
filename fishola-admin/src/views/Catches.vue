@@ -141,6 +141,12 @@ const columns: any[] = [
     sortable: true
   },
   {
+    field: "dateDeFinDeLaSortie",
+    label: "Date fin sortie",
+    searchable: true,
+    sortable: true
+  },
+  {
     field: "typeDePeche",
     label: "Type de pêche",
     searchable: true,

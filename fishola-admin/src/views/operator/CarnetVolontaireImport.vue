@@ -176,7 +176,7 @@ const result = ref<any>(null);
 // dédié à ce format — distinct du format générique 28 colonnes.
 const EXPECTED_HEADER = [
   "session_ref", "eau_nom", "commune", "date", "mode_peche",
-  "heure_debut", "heure_fin", "technique_principale", "technique_secondaire",
+  "heure_debut", "date_fin", "heure_fin", "technique_principale", "technique_secondaire",
   "nombre_lignes", "appat_leurre", "espece_recherchee", "observations_diverses", "bredouille",
   "capture_espece", "capture_origine_trf", "capture_technique", "capture_appat_leurre",
   "capture_heure", "capture_taille", "capture_poids", "capture_nombre", "capture_conservee",
@@ -191,10 +191,11 @@ const COLUMN_GROUPS = [
       { nom: "session_ref", aide: "Identifiant de la sortie (regroupe ses captures)", requis: true },
       { nom: "eau_nom", aide: "Secteur pêché — nom du plan ou cours d'eau (référentiel)", requis: true },
       { nom: "commune", aide: "Commune — lève l'ambiguïté entre homonymes", requis: false },
-      { nom: "date", aide: "JJ/MM/AAAA", requis: true },
+      { nom: "date", aide: "JJ/MM/AAAA — date de début de la sortie", requis: true },
       { nom: "mode_peche", aide: "Bateau, float tube/canoë, bord itinérant, bord statique", requis: true },
       { nom: "heure_debut", aide: "HH:MM", requis: true },
-      { nom: "heure_fin", aide: "HH:MM, postérieure à l'heure de début", requis: true },
+      { nom: "date_fin", aide: "JJ/MM/AAAA — sortie de plusieurs jours ; vide = même jour que « date »", requis: false },
+      { nom: "heure_fin", aide: "HH:MM ; la fin doit être postérieure au début", requis: true },
       { nom: "technique_principale", aide: "Technique de pêche (référentiel)", requis: true },
       { nom: "technique_secondaire", aide: "Technique de pêche (référentiel)", requis: false },
       { nom: "nombre_lignes", aide: "Nombre de lignes en action", requis: true },
@@ -271,7 +272,7 @@ function stageTagType(stage: string): string {
 /** Gabarit CSV : en-tête officiel + une ligne d'exemple commentée. */
 function downloadTemplate() {
   const example = [
-    "S001", "Lac du Bourget", "", "01/07/2026", "bord statique", "08:00", "10:00",
+    "S001", "Lac du Bourget", "", "01/07/2026", "bord statique", "08:00", "", "10:00",
     "Pêche au coup", "", "1", "", "Aucune", "", "non",
     "Perche", "", "", "", "", "25", "200", "1", "oui", "", "", "non", "",
   ];
