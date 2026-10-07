@@ -55,4 +55,10 @@ public interface WaterEntitySearchResult {
 
     /** Code postal principal de la commune (#15). Empty si non couvert. */
     Optional<String> codePostal();
+
+    /**
+     * Département de l'entité ({@code water_entity.department}), affiché à côté
+     * du nom des homonymes (#230). Empty si inconnu.
+     */
+    Optional<String> department();
 }

@@ -27,6 +27,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.referential.WaterEntityName;
 import fr.inrae.fishola.rest.trips.TripBean;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -48,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -158,7 +160,21 @@ class HydroResourceTest extends AbstractFisholaTest {
         seedRankingCommune(ctx, "99994", "Chalon-sur-Saône", 5);
         ctx.execute("INSERT INTO water_entity (name, kind, geom, water_entity_code, export_as) "
                 + "VALUES ('IT Lac du Fier', 'STILL', ST_SetSRID(ST_GeomFromText('POINT(6.3 46.3)'), 4326), "
-                + "'IT_LAC_FIER', 'IT Lac du Fier') ON CONFLICT DO NOTHING");
+                + "'IT_LACFIER', 'IT Lac du Fier') ON CONFLICT DO NOTHING");
+
+        // Homonymes (#230) : deux départements différents, puis deux dans le
+        // même département dont un seul dans une commune connue.
+        seedHomonym(ctx, "IT_HB38", "IT Bourbre", "38", "POINT(7.1 0.5)");
+        seedHomonym(ctx, "IT_HB01", "IT Bourbre", "01", "POINT(7.2 0.5)");
+        seedRankingCommune(ctx, "99993", "Bourg-en-Bresse", 6);
+        seedHomonym(ctx, "IT_HEN_A", "IT Étang Neuf", "01", "POINT(6.0005 0.0005)");
+        seedHomonym(ctx, "IT_HEN_B", "IT Étang Neuf", "01", "POINT(7.3 0.5)");
+    }
+
+    private static void seedHomonym(org.jooq.DSLContext ctx, String code, String name, String department, String wkt) {
+        ctx.execute("INSERT INTO water_entity (name, kind, geom, water_entity_code, export_as, department) "
+                + "VALUES (?, 'STILL', ST_SetSRID(ST_GeomFromText(?), 4326), ?, ?, ?) ON CONFLICT DO NOTHING",
+                name, wkt, code, name + " " + code, department);
     }
 
     private static void seedRankingCommune(org.jooq.DSLContext ctx, String insee, String name, int offset) {
@@ -176,7 +192,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         ctx.execute("DELETE FROM water_surface WHERE water_entity_id IN "
                 + "(SELECT id FROM water_entity WHERE water_entity_code LIKE 'IT\\_%')");
         ctx.execute("DELETE FROM water_entity WHERE water_entity_code LIKE 'IT\\_%'");
-        ctx.execute("DELETE FROM commune WHERE insee_com IN ('99999', '99998', '99997', '99996', '99995', '99994')");
+        ctx.execute("DELETE FROM commune WHERE insee_com IN ('99999', '99998', '99997', '99996', '99995', '99994', '99993')");
     }
 
     @Test
@@ -377,6 +393,39 @@ class HydroResourceTest extends AbstractFisholaTest {
                 .extract().jsonPath().getList("$");
 
         assertTrue(indexOfName(items, "IT Léman") >= 0, "IT Léman attendu pour q=leman (unaccent)");
+    }
+
+    @Test
+    void searchCarriesDepartmentOfHomonyms() {
+        // #230 : le département permet de distinguer les homonymes côté mobile.
+        List<Map<String, Object>> items = given()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .queryParam("q", "IT Bourbre")
+                .when().get("/api/v1/waterEntities/search")
+                .then().statusCode(200)
+                .extract().jsonPath().getList("$");
+
+        Set<Object> departments = items.stream()
+                .filter(item -> "IT Bourbre".equals(item.get("name")))
+                .map(item -> item.get("department"))
+                .collect(Collectors.toSet());
+        assertEquals(Set.of("38", "01"), departments);
+    }
+
+    @Test
+    @Transactional
+    void nameSearchCarriesDepartmentAndCommuneOfHomonyms() {
+        // #230 : autocomplete back-office, homonymes d'un même département
+        // départagés par la commune quand elle est connue.
+        List<WaterEntityName> names = hydroSearchDao.searchWaterEntityNames("IT Etang Neuf", Set.of(), 20);
+
+        List<WaterEntityName> homonyms = names.stream()
+                .filter(name -> "IT Étang Neuf".equals(name.name()))
+                .toList();
+        assertEquals(2, homonyms.size());
+        assertTrue(homonyms.stream().allMatch(name -> name.department().equals(Optional.of("01"))));
+        assertEquals(Set.of(Optional.of("Bourg-en-Bresse"), Optional.empty()),
+                homonyms.stream().map(WaterEntityName::commune).collect(Collectors.toSet()));
     }
 
     @Test

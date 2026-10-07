@@ -97,6 +97,8 @@ export default class ReferentialService extends AbstractFisholaService {
         // Commune + code postal (#6/#15) — désambiguïsation dans l'autocomplete.
         commune: r.commune,
         codePostal: r.codePostal,
+        // Département (#230) — suffixe des homonymes dans l'autocomplete.
+        department: r.department,
         exportAs: r.name,
         waterEntityCode: "",
         nature: "",
@@ -179,6 +181,8 @@ export default class ReferentialService extends AbstractFisholaService {
         longitude: r.centroid ? r.centroid.lng : undefined,
         commune: r.commune,
         codePostal: r.codePostal,
+        // Département (#230) — suffixe des homonymes dans l'autocomplete.
+        department: r.department,
         exportAs: r.name,
         waterEntityCode: "",
         nature: "",

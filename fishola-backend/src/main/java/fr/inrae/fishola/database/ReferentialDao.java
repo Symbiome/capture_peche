@@ -112,7 +112,7 @@ public class ReferentialDao extends AbstractFisholaDao {
     // nom, contrairement au /summary partagé avec le mobile (kind, centroïde).
     public List<WaterEntityName> listWaterEntityNames() {
         return withContext(context -> context
-                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME, Tables.WATER_ENTITY.DEPARTMENT)
                 .from(Tables.WATER_ENTITY)
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetch(ReferentialDao::toWaterEntityName));
@@ -121,7 +121,7 @@ public class ReferentialDao extends AbstractFisholaDao {
     /** Nom d'une seule entité (#204), sans charger tout le référentiel. */
     public Optional<WaterEntityName> findWaterEntityName(UUID waterEntityId) {
         return withContext(context -> context
-                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME, Tables.WATER_ENTITY.DEPARTMENT)
                 .from(Tables.WATER_ENTITY)
                 .where(Tables.WATER_ENTITY.ID.eq(waterEntityId))
                 .fetchOptional(ReferentialDao::toWaterEntityName));
@@ -132,7 +132,7 @@ public class ReferentialDao extends AbstractFisholaDao {
             return List.of();
         }
         return withContext(context -> context
-                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
+                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME, Tables.WATER_ENTITY.DEPARTMENT)
                 .from(Tables.WATER_ENTITY)
                 .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
                 .orderBy(Tables.WATER_ENTITY.NAME)
@@ -143,6 +143,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         return ImmutableWaterEntityName.builder()
                 .id(rec.get(Tables.WATER_ENTITY.ID))
                 .name(rec.get(Tables.WATER_ENTITY.NAME))
+                .department(Optional.ofNullable(rec.get(Tables.WATER_ENTITY.DEPARTMENT)))
                 .build();
     }
 

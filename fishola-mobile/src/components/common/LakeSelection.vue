@@ -59,7 +59,7 @@
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
           >
-            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-html="highlightMatchingText(labelOf(lake))" />
             <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
           </li>
           <li
@@ -68,7 +68,7 @@
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
           >
-            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-html="highlightMatchingText(labelOf(lake))" />
             <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
           </li>
         </ul>
@@ -160,6 +160,9 @@ export default class LakeSelection extends Vue {
   selectedLabel: string = "";
   selectedCommuneLabel: string = "";
   selectedLakesId: string[] = [];
+  // Libellé suffixé (#230) du milieu choisi parmi des homonymes, conservé
+  // dans le champ après la sélection.
+  private chosenLabel: { id: string; label: string } | null = null;
   private searchSeq: number = 0;
   private communeSeq: number = 0;
   private searchTimer: any = null;
@@ -219,7 +222,10 @@ export default class LakeSelection extends Vue {
   updateSelectedLakeLabel() {
     this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
     if (this.selectedLakesId.length == 1) {
-      this.selectedLabel = this.selectedLakes[0].name || '';
+      const selected = this.selectedLakes[0];
+      this.selectedLabel = this.chosenLabel && this.chosenLabel.id === selected.id
+        ? this.chosenLabel.label
+        : selected.name || '';
       this.updateSuggestedLakes();
     }
   }
@@ -289,7 +295,10 @@ export default class LakeSelection extends Vue {
   selectLake(selected: Lake) {
     const seq = ++this.communeSeq;
     if (!this.allowMultipleSelection) {
-      this.search = selected.name;
+      const label = this.labelOf(selected);
+      this.chosenLabel = { id: selected.id, label };
+      this.selectedLabel = label;
+      this.search = label;
       this.selectedCommuneLabel = this.formatCommune(selected);
       // Entité choisie hors recherche (tap carte, mode liste, attribution) : les
       // objets du référentiel ne portent pas la commune → on la résout par id
@@ -313,9 +322,20 @@ export default class LakeSelection extends Vue {
 
   clearSelection() {
     this.communeSeq++;
+    this.chosenLabel = null;
     this.search = "";
     this.selectedCommuneLabel = "";
     this.$emit("updated", null);
+  }
+
+  // Homonymes des suggestions affichées (favoris compris) suffixés du
+  // département (#230).
+  get suggestionLabels(): Map<string, string> {
+    return Helpers.waterEntityLabels([...this.suggestedFavorites, ...this.suggestedLakes] as any[]);
+  }
+
+  labelOf(lake: Lake): string {
+    return this.suggestionLabels.get(lake.id) || lake.name;
   }
 
   // « 74000 Annecy » (CP + commune), le cas échéant (#6/#15). Champs portés par

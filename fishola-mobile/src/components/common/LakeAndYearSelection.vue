@@ -47,7 +47,7 @@
                   :class="lake.id === selectedLakeId ? 'selected' : ''"
                   @click="selectLake(lake)"
                 >
-                    {{ lake.name }}
+                    {{ labelOf(lake) }}
                 </li>
                 <li
                   v-for="lake in suggestedLakes"
@@ -55,7 +55,7 @@
                   :class="lake.id === selectedLakeId ? 'selected' : ''"
                   @click="selectLake(lake)"
                 >
-                    {{ lake.name }}
+                    {{ labelOf(lake) }}
                 </li>
             </ul>
         </span>
@@ -168,9 +168,10 @@ export default class LakeAndYearSelection extends Vue {
   }
 
   private applySelection(lake: Lake, persistAndEmit: boolean) {
+    const label = this.labelOf(lake);
     this.selectedLakeId = lake.id;
-    this.search = lake.name;
-    this.selectedLabel = lake.name;
+    this.search = label;
+    this.selectedLabel = label;
     if (persistAndEmit) {
       this.persistSelection();
     }
@@ -189,6 +190,16 @@ export default class LakeAndYearSelection extends Vue {
     if (this.doneLoading) {
       this.$emit("lake", this.selectedLakeId);
     }
+  }
+
+  // Homonymes des suggestions affichées (favoris compris) suffixés du
+  // département (#230), libellé conservé dans le champ après sélection.
+  get suggestionLabels(): Map<string, string> {
+    return Helpers.waterEntityLabels([...this.suggestedFavorites, ...this.suggestedLakes] as any[]);
+  }
+
+  labelOf(lake: Lake): string {
+    return this.suggestionLabels.get(lake.id) || lake.name;
   }
 
   selectLake(lake: Lake) {
