@@ -81,6 +81,11 @@ public interface FisholaConfiguration {
     @WithDefault("168")
     int newsMailSendingDelayHours();
 
+    // Buffer (mètres) autour des départements d'un compte staff : il gère tout
+    // milieu intersectant ses départements élargis de cette distance (#231).
+    @WithDefault("1000")
+    double staffPerimeterBufferM();
+
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = backendBaseUrl();
         String result;

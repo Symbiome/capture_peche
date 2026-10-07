@@ -67,7 +67,7 @@ public class CompetitionDao extends AbstractFisholaDao {
                 r.get("created_on", LocalDateTime.class));
     }
 
-    /** Périmètre national (allowedDepartments vide) ou filtré par département (#159, comme les autres écrans admin). */
+    /** Périmètre national (allowedDepartments vide) ou filtré par département, buffer staff compris (#159, #231). */
     public List<CompetitionRow> listCompetitions(Set<String> allowedDepartments) {
         if (allowedDepartments.isEmpty()) {
             return withContext(ctx -> ctx
@@ -76,7 +76,9 @@ public class CompetitionDao extends AbstractFisholaDao {
         }
         return withContext(ctx -> ctx
                 .fetch("SELECT " + COMPETITION_COLUMNS + " " + COMPETITION_FROM_JOIN
-                                + " WHERE w.department = ANY(?) ORDER BY co.competition_date DESC",
+                                + " WHERE EXISTS (SELECT 1 FROM water_entity_department wed"
+                                + " WHERE wed.water_entity_id = co.water_entity_id AND wed.department_code = ANY(?))"
+                                + " ORDER BY co.competition_date DESC",
                         (Object) allowedDepartments.toArray(new String[0]))
                 .map(this::toCompetitionRow));
     }

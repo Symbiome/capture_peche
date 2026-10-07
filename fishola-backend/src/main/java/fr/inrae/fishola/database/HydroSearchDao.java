@@ -268,7 +268,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
 
     /**
      * Minimal (id + name only) variant of {@link #searchWaterEntities}, optionally
-     * scoped to a set of departments (staff perimeter, #159). Backs the operator
+     * scoped to a set of departments (staff perimeter, #159, buffered #231). Backs the operator
      * back-office trip/catch entry forms, which reference the entity only by id
      * and never read kind/centroid/commune — unlike the mobile search, no
      * {@code geom IS NOT NULL} requirement either, for consistency with
@@ -280,7 +280,9 @@ public class HydroSearchDao extends AbstractFisholaDao {
         String q = forSearch(query);
         boolean scoped = !departmentCodes.isEmpty();
         String departmentClause = scoped
-                ? "AND we.department IN (" + departmentCodes.stream().map(d -> "?").collect(Collectors.joining(",")) + ") "
+                ? "AND EXISTS (SELECT 1 FROM water_entity_department wed WHERE wed.water_entity_id = we.id "
+                        + "AND wed.department_code IN ("
+                        + departmentCodes.stream().map(d -> "?").collect(Collectors.joining(",")) + ")) "
                 : "";
         String sql = "SELECT we.id, we.name "
                 + "FROM water_entity we "

@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.editorial;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.NewsFisholaDao;
 import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
@@ -61,6 +62,9 @@ public class NewsResource extends AbstractFisholaResource {
 
     @Inject
     protected ReferentialDao referentialDao;
+
+    @Inject
+    protected StaffPerimeterDao staffPerimeterDao;
 
     @GET
     @Path("/news")
@@ -156,8 +160,7 @@ public class NewsResource extends AbstractFisholaResource {
         if (news.isNational) {
             return true;
         }
-        return !getAllowedAdminDepartments()
-                .containsAll(referentialDao.departmentByWaterEntityId(news.waterEntityIds).values());
+        return !staffPerimeterDao.allInPerimeter(news.waterEntityIds, getAllowedAdminDepartments());
     }
 
     @POST

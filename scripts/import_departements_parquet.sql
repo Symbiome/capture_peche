@@ -20,3 +20,7 @@ ON CONFLICT (code) DO UPDATE SET
     name = EXCLUDED.name,
     bdtopo_cleabs = EXCLUDED.bdtopo_cleabs,
     geom = EXCLUDED.geom;
+
+-- Périmètre staff élargi (#231) : contours élargis du buffer et correspondance
+-- milieu <-> départements recalculés sur les contours fraîchement chargés.
+SELECT refresh_staff_perimeter();

@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
@@ -83,6 +84,9 @@ public class ReferentialResource extends AbstractFisholaResource {
     protected ReferentialDao referentialDao;
     @Inject
     protected HydroSearchDao hydroSearchDao;
+
+    @Inject
+    protected StaffPerimeterDao staffPerimeterDao;
 
     @GET
     @Path("/waterEntities")
@@ -154,10 +158,10 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<WaterEntityAttribution> candidates = hydroSearchDao.attribution(lat, lng, STAFF_ATTRIBUTION_LIMIT);
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         if (!allowedDepartments.isEmpty()) {
-            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(
-                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList());
+            Set<UUID> inPerimeter = staffPerimeterDao.filterInPerimeter(
+                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList(), allowedDepartments);
             candidates = candidates.stream()
-                    .filter(c -> allowedDepartments.contains(departmentByEntity.get(c.waterEntityId())))
+                    .filter(c -> inPerimeter.contains(c.waterEntityId()))
                     .toList();
         }
         return ImmutableAttributionResponse.builder()
@@ -390,15 +394,15 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     // Résout le périmètre du back-office « Maillages et tailles maximales »
     // (#154) : une liste explicite d'entités l'emporte sur le département ;
-    // dans les deux cas, l'admin régional reste borné à ses départements (#159).
+    // dans les deux cas, l'admin régional reste borné à ses départements (#159),
+    // élargis du buffer staff (#231).
     private Set<UUID> resolvePerimeter(String department, List<UUID> waterEntityIdParams) {
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         Set<UUID> perimeter;
         if (waterEntityIdParams != null && !waterEntityIdParams.isEmpty()) {
             perimeter = new HashSet<>(waterEntityIdParams);
             if (!allowedDepartments.isEmpty()) {
-                Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(perimeter);
-                perimeter.removeIf(id -> !allowedDepartments.contains(departmentByEntity.get(id)));
+                perimeter.retainAll(staffPerimeterDao.filterInPerimeter(perimeter, allowedDepartments));
             }
         } else if (StringUtils.isNotBlank(department)) {
             if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
@@ -523,10 +527,8 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (fisholaAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
             waterEntityScope = new HashSet<>(authorizedSamples.targetWaterEntities);
         } else {
-            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(authorizedSamples.targetWaterEntities);
-            waterEntityScope = authorizedSamples.targetWaterEntities.stream()
-                .filter(id -> allowedDepartments.contains(departmentByEntity.get(id)))
-                .collect(Collectors.toSet());
+            waterEntityScope = new HashSet<>(
+                    staffPerimeterDao.filterInPerimeter(authorizedSamples.targetWaterEntities, allowedDepartments));
         }
         
         // On transforme la map pour avoir un Set des clé waterEntityId+speciesId autorisées
