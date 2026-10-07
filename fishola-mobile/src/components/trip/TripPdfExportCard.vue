@@ -104,6 +104,7 @@ import PicturesService from "@/services/PicturesService";
 import ShareService from "@/services/ShareService";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import { jsPDF } from "jspdf";
 
@@ -239,7 +240,7 @@ export default class TripPdfExportCard extends Vue {
     refData: SpeciesWithAliasAndTechnique
   ) {
     this.currentTrip = trip;
-    this.duration = Helpers.renderDuration(trip.startedAt, trip.finishedAt);
+    this.duration = TripDates.formatDuration(trip as any, true);
     // Laisse le temps à TripPositionsMap (remonté via sa `key`) de s'initialiser :
     // son propre mounted() planifie initMap() dans un $nextTick imbriqué.
     await this.$nextTick();
@@ -380,7 +381,9 @@ export default class TripPdfExportCard extends Vue {
     this.cursorY += 9;
 
     doc.setFontSize(11);
-    doc.text(`Date : ${Helpers.formatToLongDate(new Date(trip.date))}`, MARGIN_MM, this.cursorY);
+    const multiDayPeriod = TripDates.formatMultiDayPeriod(trip as any);
+    doc.text(multiDayPeriod ? `Dates : ${multiDayPeriod}` : `Date : ${Helpers.formatToLongDate(new Date(trip.date))}`,
+      MARGIN_MM, this.cursorY);
     this.cursorY += 6;
     doc.text(`Durée : ${this.duration}`, MARGIN_MM, this.cursorY);
     this.cursorY += 6;

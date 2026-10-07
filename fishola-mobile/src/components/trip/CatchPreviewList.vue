@@ -40,6 +40,7 @@
         v-bind:aCatch="c"
         v-on:openCatch="openCatch(c)"
         v-bind:metaMode="metaMode"
+        v-bind:showCatchDay="showCatchDay"
         v-bind:bottom="
           bottomMode == 'species' ? 'species' : 'top-' + (index + 1)
         "
@@ -67,6 +68,8 @@ export default class CatchPreviewList extends Vue {
   @Prop({ default: true }) reverse: boolean;
   @Prop({ default: "size" }) metaMode: string;
   @Prop({ default: "species" }) bottomMode: string;
+  // Sortie de plusieurs jours (#237) : la date de chaque capture est affichée.
+  @Prop({ default: false }) showCatchDay: boolean;
 
   mounted() {
     if (this.catchs && this.catchs.length > 0) {

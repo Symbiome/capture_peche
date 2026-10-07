@@ -31,6 +31,7 @@ import {
 import CatchSummary from "@/pojos/CatchSummary";
 
 import Helpers from "@/services/Helpers";
+import TripDates, { TripPeriodFields } from "@/services/TripDates";
 import Constants from "@/services/Constants";
 
 import AbstractFisholaService from "@/services/AbstractFisholaService";
@@ -91,6 +92,29 @@ export default class TripsService extends AbstractFisholaService {
       this.getDatabase()
         .onCreationTrip.put(newTrip)
         .then((id) => resolve(id), reject);
+    });
+  }
+
+  /**
+   * Demande confirmation quand la sortie dépasse la durée plausible paramétrée (#237).
+   *
+   * @return true si la durée est plausible ou confirmée, false si le pêcheur veut corriger
+   */
+  static confirmPlausibleTripDuration(modal: any, trip: TripPeriodFields): Promise<boolean> {
+    return ReferentialService.getTripSettings().then((settings) => {
+      if (!TripDates.exceedsPlausibleDuration(trip, settings.maxPlausibleTripDays)) {
+        return true;
+      }
+      return Helpers.confirm(
+        modal,
+        `La sortie dure plus de ${settings.maxPlausibleTripDays} jours (${TripDates.formatMultiDayPeriod(trip)}).`,
+        "Êtes-vous sûr des dates de la sortie ?",
+        "Corriger",
+        "Confirmer"
+      ).then(
+        () => true,
+        () => false
+      );
     });
   }
 
@@ -155,6 +179,7 @@ export default class TripsService extends AbstractFisholaService {
       latitude: input.latitude,
       longitude: input.longitude,
       caughtAt: input.caughtAt,
+      caughtOn: TripDates.fromBackendDate(input.caughtOn),
       automaticMeasure: input.automaticMeasure,
       pictureOrders: input.pictureOrders,
       hasMeasurementPicture: input.hasMeasurementPicture,
@@ -193,6 +218,7 @@ export default class TripsService extends AbstractFisholaService {
       techniqueIds: input.techniqueIds || [],
       catchs: catchs,
       startedAt: input.startedAt,
+      endDate: TripDates.fromBackendDate(input.endDate),
       finishedAt: input.finishedAt,
       beginLatitude: input.beginLatitude,
       beginLongitude: input.beginLongitude,
@@ -209,13 +235,11 @@ export default class TripsService extends AbstractFisholaService {
   }
 
   static storedTripToLight(input: TripBean): TripLight {
-    const seconds: number = Helpers.computeDurationInSeconds(
-      input.startedAt,
-      input.finishedAt
-    );
+    const seconds: number = TripDates.durationSeconds(input as any);
     const catchsCount: number = input.catchs ? input.catchs.length : 0;
 
     const result: TripLight = <any>input;
+    (result as any).endDate = TripDates.endIsoDate(input as any);
     result.modifiable = true;
     result.durationInSeconds = seconds;
     result.catchsCount = catchsCount;
@@ -229,6 +253,7 @@ export default class TripsService extends AbstractFisholaService {
   static backendTripToLight(input: any): TripLight {
     const realDate = Helpers.parseLocalDate(input.date);
     input.date = realDate;
+    input.endDate = TripDates.fromBackendDate(input.endDate);
     return input;
   }
 
@@ -316,7 +341,10 @@ export default class TripsService extends AbstractFisholaService {
 
       return new Promise<void>((resolve, reject) => {
         if (trip.mode == "Live") {
+          // Sortie en direct finie un autre jour que celui où elle a commencé (#237) :
+          // la date de fin est celle du jour où on la termine.
           trip.finishedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+          trip.endDate = TripDates.toIsoDate(new Date());
         }
 
         const tripBean: TripBean = <TripBean>trip;
@@ -421,6 +449,8 @@ export default class TripsService extends AbstractFisholaService {
       };
 
       if (trip.mode == "Live") {
+        // Date et heure de début prises ensemble : la sortie a pu être créée la veille.
+        trip.date = new Date();
         trip.startedAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
 
         GeolocationService.checkWatchAndGetPositionUntilTimeout().then(
@@ -685,6 +715,11 @@ export default class TripsService extends AbstractFisholaService {
     // NULL violé côté serveur). Pont à l'envoi, sans renommer tout le modèle
     // interne (hors scope). Idem pour les captures rattachées.
     const payload: any = { ...trip };
+    // Dates en AAAA-MM-JJ local (#237) : sérialisée par JSON.stringify, une Date part
+    // en UTC et le serveur en garde le jour UTC, soit la veille pour minuit en France.
+    if (payload.date instanceof Date) {
+      payload.date = TripDates.toIsoDate(payload.date);
+    }
     if (payload.waterEntityId == null && payload.lakeId != null) {
       payload.waterEntityId = payload.lakeId;
     }
@@ -744,13 +779,15 @@ export default class TripsService extends AbstractFisholaService {
       if (trip.catchs) {
         trip.catchs.forEach((someCatch: CatchBean) => {
           if (catchId == someCatch.id) {
-            result = someCatch;
+            // caughtOn : AAAA-MM-JJ côté mobile (#237), typé Date par BackendPojos.
+            result = someCatch as unknown as CatchSummary;
           }
         });
       }
       if (result.id == Constants.NEW_CATCH_ID) {
         if (trip.mode == "Live") {
           result.caughtAt = moment().format(moment.HTML5_FMT.TIME_SECONDS);
+          result.caughtOn = TripDates.toIsoDate(new Date());
         }
 
         // On essaye de récupérer la dernière espèce capturée pour sélectionner la même
@@ -837,19 +874,23 @@ export default class TripsService extends AbstractFisholaService {
         .then((runningTrip) => {
           if (runningTrip) {
             if (runningTrip.mode == "Live") {
-              const dateMoment = moment(runningTrip.date);
-              const todayMoment = moment();
-              if (dateMoment.dayOfYear() == todayMoment.dayOfYear()) {
-                resolve(runningTrip);
-              } else {
-                console.debug(
-                  "Il y avait une sortie live en cours, on la bascule en sortie à posteriori"
-                );
-                runningTrip.mode = "Afterwards";
-                this.saveTrip(runningTrip, () => {
+              // Une sortie en direct peut durer plusieurs jours (#237, pêche de la carpe) ;
+              // au-delà de la durée plausible, elle a sans doute été oubliée : on la bascule
+              // en sortie a posteriori pour que le pêcheur en corrige les dates.
+              ReferentialService.getTripSettings().then((settings) => {
+                const daysSinceStart = moment().diff(moment(runningTrip.date).startOf("day"), "days");
+                if (daysSinceStart <= settings.maxPlausibleTripDays) {
                   resolve(runningTrip);
-                });
-              }
+                } else {
+                  console.debug(
+                    "Il y avait une sortie live en cours depuis trop longtemps, on la bascule en sortie à posteriori"
+                  );
+                  runningTrip.mode = "Afterwards";
+                  this.saveTrip(runningTrip, () => {
+                    resolve(runningTrip);
+                  });
+                }
+              });
             } else {
               resolve(runningTrip);
             }
