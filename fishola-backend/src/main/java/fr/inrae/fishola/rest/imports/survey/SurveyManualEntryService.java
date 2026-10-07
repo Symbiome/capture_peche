@@ -27,6 +27,7 @@ import fr.inrae.fishola.rest.imports.ImportDao;
 import fr.inrae.fishola.rest.imports.ImportService;
 import fr.inrae.fishola.rest.imports.ManualError;
 import fr.inrae.fishola.rest.imports.ManualPositionService;
+import fr.inrae.fishola.rest.imports.ManualTripEndValidation;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -114,9 +115,7 @@ public class SurveyManualEntryService {
         if (bean.endTime == null) {
             errors.add(new ManualError(null, "endTime", "heure de fin obligatoire"));
         }
-        if (bean.startTime != null && bean.endTime != null && !bean.endTime.isAfter(bean.startTime)) {
-            errors.add(new ManualError(null, "endTime", "l'heure de fin doit être postérieure à l'heure de début"));
-        }
+        ManualTripEndValidation.validate(bean.day, bean.startTime, bean.endDay, bean.endTime, null, errors);
         if (bean.controlTime != null && bean.startTime != null && bean.controlTime.isBefore(bean.startTime)) {
             errors.add(new ManualError(null, "controlTime",
                     "l'heure du contrôle ne peut pas être antérieure à l'heure de début de pêche"));
@@ -154,7 +153,7 @@ public class SurveyManualEntryService {
         }
 
         ImportDao.ManualSurveyResult result = importDao.saveManualEntrySurvey(waterEntityId, bean.day,
-                bean.controlTime, bean.startTime, bean.endTime,
+                bean.controlTime, bean.startTime, bean.endDay, bean.endTime,
                 bean.unsurveyedShoreAnglers == null ? null : bean.unsurveyedShoreAnglers.shortValue(),
                 bean.unsurveyedBoatAnglers == null ? null : bean.unsurveyedBoatAnglers.shortValue(),
                 resolvedAnglers, position);

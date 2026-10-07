@@ -26,6 +26,7 @@ import fr.inrae.fishola.rest.imports.ImportService;
 import fr.inrae.fishola.rest.imports.ManualError;
 import fr.inrae.fishola.rest.imports.ManualPositionService;
 import fr.inrae.fishola.rest.imports.ManualResultBean;
+import fr.inrae.fishola.rest.imports.ManualTripEndValidation;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -81,9 +82,7 @@ public class CarnetVolontaireManualEntryService {
         if (bean.endTime == null) {
             errors.add(new ManualError(null, "endTime", "heure de fin obligatoire"));
         }
-        if (bean.startTime != null && bean.endTime != null && !bean.endTime.isAfter(bean.startTime)) {
-            errors.add(new ManualError(null, "endTime", "l'heure de fin doit être postérieure à l'heure de début"));
-        }
+        ManualTripEndValidation.validate(bean.day, bean.startTime, bean.endDay, bean.endTime, today, errors);
         if (bean.fishingMode == null || !CarnetVolontaireSchema.MODES_PECHE.contains(normalize(bean.fishingMode))) {
             errors.add(new ManualError(null, "fishingMode", "mode de pêche invalide"));
         }
@@ -150,7 +149,7 @@ public class CarnetVolontaireManualEntryService {
                 })
                 .toList();
 
-        UUID tripId = importDao.saveManualEntry("carnet_volontaire", bean.day, bean.startTime, bean.endTime,
+        UUID tripId = importDao.saveManualEntry("carnet_volontaire", bean.day, bean.startTime, bean.endDay, bean.endTime,
                 waterEntityId, name, bean.techniqueId, rows, position);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }

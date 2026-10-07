@@ -38,6 +38,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -66,6 +69,50 @@ public class CarnetVolontaireImportService {
     protected ImportDao importDao;
 
     private record RowValidation(List<ImportError> errors, CarnetVolontaireParsedRow parsed) {}
+
+    /**
+     * Lit la colonne facultative « date_fin » d'une sortie de plusieurs jours (#237) et
+     * contrôle que la fin suit le début. Sans date de fin, la fin et le début sont le même
+     * jour, comme avant #237.
+     *
+     * @param rec ligne lue
+     * @param line numéro de la ligne dans le fichier
+     * @param day date de début, nulle si invalide
+     * @param start heure de début
+     * @param end heure de fin
+     * @param timesOk {@code false} si une des heures est invalide (contrôle d'ordre ignoré)
+     * @param errors erreurs de la ligne, complétées
+     * @return la date de fin, nulle si la colonne est absente, vide ou invalide
+     */
+    private static LocalDate parseEndDayAndCheckOrder(Map<String, String> rec, int line, LocalDate day,
+                                                      LocalTime start, LocalTime end, boolean timesOk,
+                                                      List<ImportError> errors) {
+        String rawEndDay = get(rec, "date_fin");
+        LocalDate endDay = null;
+        if (!CsvSupport.isBlank(rawEndDay)) {
+            try {
+                endDay = CsvSupport.parseDate(rawEndDay);
+            } catch (RuntimeException e) {
+                errors.add(new ImportError(line, "date_fin", CarnetVolontaireSchema.STRUCTUREL,
+                        CarnetVolontaireSchema.STRUCT_DATE, "date de fin invalide (JJ/MM/AAAA) : « " + rawEndDay + " »"));
+                return null;
+            }
+        }
+        if (!timesOk) {
+            return endDay;
+        }
+        if (endDay == null) {
+            if (!end.isAfter(start)) {
+                errors.add(new ImportError(line, "heure_fin", CarnetVolontaireSchema.STRUCTUREL,
+                        CarnetVolontaireSchema.STRUCT_TIME_ORDER, "l'heure de fin doit être postérieure à l'heure de début"));
+            }
+        } else if (day != null && !LocalDateTime.of(endDay, end).isAfter(LocalDateTime.of(day, start))) {
+            errors.add(new ImportError(line, "date_fin", CarnetVolontaireSchema.STRUCTUREL,
+                    CarnetVolontaireSchema.STRUCT_TIME_ORDER,
+                    "la fin de la sortie (date_fin, heure_fin) doit être postérieure à son début"));
+        }
+        return endDay;
+    }
 
     private static String get(Map<String, String> rec, String key) {
         String v = rec.get(key);
@@ -112,10 +159,7 @@ public class CarnetVolontaireImportService {
             errors.add(new ImportError(line, "heure_fin", CarnetVolontaireSchema.STRUCTUREL,
                     CarnetVolontaireSchema.STRUCT_TIME, "heure invalide (HH:MM) : « " + get(rec, "heure_fin") + " »"));
         }
-        if (timesOk && !parsed.end.isAfter(parsed.start)) {
-            errors.add(new ImportError(line, "heure_fin", CarnetVolontaireSchema.STRUCTUREL,
-                    CarnetVolontaireSchema.STRUCT_TIME_ORDER, "l'heure de fin doit être postérieure à l'heure de début"));
-        }
+        parsed.endDay = parseEndDayAndCheckOrder(rec, line, parsed.day, parsed.start, parsed.end, timesOk, errors);
 
         String heureCapture = get(rec, "capture_heure");
         if (!CsvSupport.isBlank(heureCapture)) {
@@ -392,7 +436,8 @@ public class CarnetVolontaireImportService {
         int total = parsed.records().size();
 
         // Étage 0 : en-tête conforme
-        if (!parsed.header().equals(CarnetVolontaireSchema.EXPECTED_HEADER)) {
+        if (!parsed.header().equals(CarnetVolontaireSchema.EXPECTED_HEADER)
+                && !parsed.header().equals(CarnetVolontaireSchema.LEGACY_HEADER)) {
             ImportError headerErr = new ImportError(1, null, CarnetVolontaireSchema.STRUCTUREL,
                     CarnetVolontaireSchema.STRUCT_HEADER,
                     "en-tête non conforme au modèle « carnet volontaire » attendu ("

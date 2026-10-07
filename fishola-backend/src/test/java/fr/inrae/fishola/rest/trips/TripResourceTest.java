@@ -225,6 +225,9 @@ class TripResourceTest extends AbstractFisholaTest {
         TripBean trip = buildValidTripBean();
         trip.source = DeviceType.application;
         trip.weatherId = this.weathers.stream().limit(1).map(Weather::getId).findAny();
+        // La capture de 21:05 doit tomber dans la sortie, sinon elle est refusée (#237).
+        trip.startedAt = "21:00";
+        trip.finishedAt = "21:30";
         CatchBean c = new CatchBean();
         c.id = "abc";
         c.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
@@ -295,8 +298,8 @@ class TripResourceTest extends AbstractFisholaTest {
                 .body("date[0]", equalTo(trip.date.getYear()))
                 .body("date[1]", equalTo(trip.date.getMonthValue()))
                 .body("date[2]", equalTo(trip.date.getDayOfMonth()))
-                .body("startedAt", equalTo("00:00"))
-                .body("finishedAt", equalTo("00:01"))
+                .body("startedAt", equalTo("21:00"))
+                .body("finishedAt", equalTo("21:30"))
                 .body("mode", equalTo(trip.mode.getLiteral()))
                 .body("type", equalTo(trip.type.getLiteral()))
                 .body("source", nullValue()) // La source n'est pas renvoyée au client. Sinon : equalTo(DeviceType.application.getLiteral())
@@ -1225,7 +1228,7 @@ class TripResourceTest extends AbstractFisholaTest {
         String adminToken = loginAsAdmin();
         UUID waterEntityId = this.waterEntities.iterator().next().getId();
         UUID seededTripId = importDao.saveManualEntry("enquete", LocalDate.now(),
-                LocalTime.of(8, 0), LocalTime.of(10, 0), waterEntityId,
+                LocalTime.of(8, 0), null, LocalTime.of(10, 0), waterEntityId,
                 "Sortie de recette #82", null, Collections.emptyList());
         try {
             int totalSansFiltre = exportTotal(adminToken, "date_de_la_sortie", "desc", null, null);

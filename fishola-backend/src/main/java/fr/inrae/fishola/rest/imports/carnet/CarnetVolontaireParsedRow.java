@@ -40,6 +40,7 @@ public class CarnetVolontaireParsedRow {
     // Niveau sortie (trip)
     public LocalDate day;
     public LocalTime start;
+    public LocalDate endDay; // colonne date_fin facultative (#237) : null = règle historique
     public LocalTime end;
     public boolean bredouille;
     public UUID waterEntityId;

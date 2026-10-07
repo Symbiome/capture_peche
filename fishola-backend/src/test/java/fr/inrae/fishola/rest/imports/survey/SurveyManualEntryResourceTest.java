@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -303,6 +304,35 @@ class SurveyManualEntryResourceTest {
         submitAs(operatorToken, sortie).statusCode(400)
                 .body("tripIds", empty())
                 .body("errors.field", hasItem("controlTime"));
+    }
+
+    /**
+     * #237 : carpiste contrôlé le 01/07, fin de pêche prévue le 03/07 à 10:00. Une fin prévue
+     * peut être dans le futur : seul l'ordre début / fin est contrôlé.
+     */
+    @Test
+    void plannedEndDayCreatesMultiDayTrip() {
+        SurveySortieBean sortie = validSortie();
+        sortie.endDay = LocalDate.of(2026, 7, 3);
+        sortie.endTime = LocalTime.of(10, 0);
+
+        var response = submitAs(operatorToken, sortie).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        UUID tripId = UUID.fromString(response.jsonPath().getList("tripIds", String.class).get(0));
+        var trip = DSL.using(dataSource, SQLDialect.POSTGRES)
+                .fetchOne("SELECT end_timestamp FROM trip WHERE id = ?", tripId);
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0), trip.get("end_timestamp", LocalDateTime.class));
+    }
+
+    @Test
+    void plannedEndDayBeforeStartIsRejectedWithoutPersisting() {
+        SurveySortieBean sortie = validSortie();
+        sortie.endDay = LocalDate.of(2026, 6, 30);
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.field", hasItem("endDay"));
     }
 
     @Test

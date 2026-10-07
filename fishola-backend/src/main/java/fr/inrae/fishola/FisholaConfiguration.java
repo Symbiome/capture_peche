@@ -69,6 +69,11 @@ public interface FisholaConfiguration {
     @WithDefault("168")
     int tripModifiableHours();
 
+    // Sortie de plusieurs jours (#237) : durée au-delà de laquelle les formulaires
+    // demandent confirmation à la saisie.
+    @WithDefault("7")
+    int maxPlausibleTripDays();
+
     @WithDefault("168") // Délai avant que les sorties soient disponibles dans le fichier d'export. En théorie ce chiffre doit être le même que #getTripModifiableHours()
     int exportSafeHours();
 

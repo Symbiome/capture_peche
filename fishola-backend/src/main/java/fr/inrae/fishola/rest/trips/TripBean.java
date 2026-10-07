@@ -45,6 +45,9 @@ public class TripBean {
     public String otherSpecies;
     public LocalDate date;
     public String startedAt;
+    // Sortie de plusieurs jours (#237) : absente pour les applis antérieures, la fin est
+    // alors recalculée par la règle historique (cf. TripTimestamps#endTimestamp).
+    public Optional<LocalDate> endDate = Optional.empty();
     public String finishedAt;
     public Optional<UUID> weatherId = Optional.empty();
     public List<CatchBean> catchs;
@@ -87,6 +90,7 @@ public class TripBean {
                 ", otherSpecies='" + otherSpecies + '\'' +
                 ", date=" + date +
                 ", startedAt=" + startedAt +
+                ", endDate=" + endDate +
                 ", finishedAt=" + finishedAt +
                 ", weatherId=" + weatherId +
                 ", catchs=" + CollectionUtils.size(catchs) +

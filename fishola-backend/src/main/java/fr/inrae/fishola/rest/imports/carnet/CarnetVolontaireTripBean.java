@@ -34,6 +34,7 @@ public class CarnetVolontaireTripBean {
 
     public LocalDate day;
     public LocalTime startTime;
+    public LocalDate endDay; // date de fin (#237) : nulle = même jour que le début
     public LocalTime endTime;
 
     // Localisation : id prioritaire (clic-carte), repli par nom.
