@@ -155,8 +155,10 @@
                             v-bind:readonly="!modifiable"/-->
                 <FormSelect name="technique" label="Technique de pêche" v-bind:options="allTechniques"
                   v-model="aCatch.techniqueId" v-bind:error="techniqueIdError" v-bind:readonly="!modifiable" />
+                <FormInput v-if="multiDayTrip" name="caughtOn" label="Date de la capture" type="date"
+                  v-model="caughtOn" v-bind:readonly="!modifiable" />
                 <FormInput name="caughtAt" label="Heure de la capture (optionnelle)" type="time" v-model="caughtAt"
-                  v-bind:readonly="!modifiable" />
+                  v-bind:error="caughtAtError" v-bind:readonly="!modifiable" />
               </div>
               <div>
                 <FormTextarea name="description" label="Observation (optionnelle)"
@@ -248,6 +250,7 @@ import TripsService from "@/services/TripsService";
 import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";
+import TripDates, { TripPeriodFields } from "@/services/TripDates";
 import GeolocationService from "@/services/GeolocationService";
 
 import { UserSettings } from "@/pojos/BackendPojos";
@@ -299,6 +302,8 @@ export default class EditCatchView extends Vue {
   ready: boolean = false;
 
   tripDate?: Date;
+  tripPeriod: TripPeriodFields = {};
+  multiDayTrip: boolean = false;
   lakeId: string = "";
   tripMode: TripMode = "Live";
   tripSpeciesIds: string[] = [];
@@ -314,6 +319,8 @@ export default class EditCatchView extends Vue {
   picturesToDelete: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
+  caughtOn: string = "";
+  caughtAtError: string = "";
 
   defaultSizeLabel: string = "Taille en cm";
   sizeLabel: string = this.defaultSizeLabel;
@@ -393,6 +400,14 @@ export default class EditCatchView extends Vue {
   async tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
     this.lakeId = someTrip.lakeId;
     this.tripDate = someTrip.date;
+    this.tripPeriod = {
+      date: someTrip.date,
+      startedAt: someTrip.startedAt,
+      endDate: (someTrip as any).endDate,
+      finishedAt: someTrip.finishedAt,
+    };
+    // Sortie de plusieurs jours (#237) : la capture se saisit avec sa date et son heure.
+    this.multiDayTrip = TripDates.isMultiDay(this.tripPeriod);
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
     if (!someCatch.speciesId && someCatch.otherSpecies) {
@@ -417,14 +432,15 @@ export default class EditCatchView extends Vue {
       this.aCatch.size = this.aCatch.automaticMeasure;
     }
 
+    const caughtMoment = TripDates.catchMoment(this.tripPeriod, someCatch);
+    this.caughtOn = someCatch.caughtOn
+      || (caughtMoment ? caughtMoment.format("YYYY-MM-DD") : "")
+      || (someTrip.date ? TripDates.toIsoDate(someTrip.date) : "");
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
-      if (this.inCreation && this.inTripCreation && this.tripMode == "Live") {
-        const seconds: number = Helpers.computeDurationInSeconds(
-          someTrip.startedAt,
-          someCatch.caughtAt!
-        );
+      if (this.inCreation && this.inTripCreation && this.tripMode == "Live" && caughtMoment) {
+        const seconds: number = caughtMoment.diff(TripDates.begin(this.tripPeriod), "seconds");
         this.rightShortcut = "timer-" + seconds;
       }
     }
@@ -967,16 +983,25 @@ export default class EditCatchView extends Vue {
       this.techniqueIdError = "Technique de pêche obligatoire";
     }
 
+    this.caughtAtError = "";
     if (this.caughtAt && this.caughtAt.length > 0) {
       this.aCatch.caughtAt = this.caughtAt;
+      if (this.multiDayTrip && this.caughtOn) {
+        this.aCatch.caughtOn = this.caughtOn;
+      }
+      if (!TripDates.isCatchWithinTrip(this.tripPeriod, this.aCatch)) {
+        hasError = true;
+        this.caughtAtError = TripDates.catchOutOfTripMessage(this.tripPeriod);
+      }
     } else {
       delete this.aCatch.caughtAt;
+      delete this.aCatch.caughtOn;
     }
 
     if (hasError) {
       this.$root.$emit(
         "toaster-error",
-        "Vous devez renseigner les champs obligatoires"
+        this.caughtAtError || "Vous devez renseigner les champs obligatoires"
       );
     } else {
       const aCatchBean: CatchBean = this.castToBean(this.aCatch);

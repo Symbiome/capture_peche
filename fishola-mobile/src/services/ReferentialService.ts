@@ -18,11 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
+import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity, TripSettings} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import Helpers from '@/services/Helpers';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
+import TripDates from '@/services/TripDates';
 
 export class SpeciesWithAliasAndTechnique {
     constructor (
@@ -282,6 +283,16 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static clearSpeciesCustomCache() {
     this.clearCache("/v1/referential/species-custom");
+  }
+
+  /**
+   * Paramètres de saisie des sorties (#237). Sans réseau ni cache, durée plausible par
+   * défaut : la saisie ne doit jamais être bloquée par ce paramètre.
+   */
+  static getTripSettings(): Promise<TripSettings> {
+    return this.backendGetWithCache("/v1/referential/trip-settings").catch(() => ({
+      maxPlausibleTripDays: TripDates.DEFAULT_MAX_PLAUSIBLE_TRIP_DAYS,
+    }));
   }
 
   static getWeathers(): Promise<Weather[]> {

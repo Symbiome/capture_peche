@@ -24,6 +24,7 @@ export default interface TripSpecies {
     id: string;
     lakeId: string;
     mode: string;
+    date?: Date;
     startedAt: string;
     speciesIds: string[];
     otherSpecies: string;

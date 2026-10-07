@@ -43,7 +43,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import { Component, Vue } from "vue-property-decorator";
 import TripMain from "@/pojos/TripMain";
-import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import Running from "@/components/common/Running.vue";
 
@@ -82,7 +82,7 @@ export default class RunningOverlay extends Vue {
   }
 
   computeDuration() {
-    this.label = Helpers.renderDurationNoSeconds(this.startedAt);
+    this.label = TripDates.formatDuration({ date: this.trip!.date, startedAt: this.startedAt });
   }
 
   goToRunningTrip() {

@@ -35,7 +35,8 @@
         <div class="pane-content large">
           <div class="catchs-list catch-preview-list-scrollable">
             <CatchPreviewList v-if="ready" v-bind:modifiable="true" v-bind:lakeId="trip.lakeId"
-              v-bind:catchs="trip.catchs" v-on:newCatch="newCatch()" v-on:openCatchFromId="openCatch($event)" />
+              v-bind:catchs="trip.catchs" v-bind:showCatchDay="multiDay" v-on:newCatch="newCatch()"
+              v-on:openCatchFromId="openCatch($event)" />
           </div>
           <div class="edit-trip-catchs-new-catch-button">
             <button v-on:click="newCatch">
@@ -66,6 +67,7 @@ import Constants from "@/services/Constants";
 import TripsService from "@/services/TripsService";
 import { RouterUtils } from "@/router/RouterUtils";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import BackButton from "@/components/common/BackButton.vue";
 import Running from "@/components/common/Running.vue";
@@ -104,6 +106,7 @@ export default class TripCatchsView extends Vue {
   ready: boolean = false;
 
   interval?: number;
+  multiDay: boolean = false;
 
   created() {
     TripsService.getTrip(this.id, this.tripLoaded);
@@ -112,6 +115,7 @@ export default class TripCatchsView extends Vue {
   tripLoaded(someTrip: TripMain) {
     console.debug("Trip chargé", someTrip);
     this.trip = someTrip;
+    this.multiDay = TripDates.isMultiDay(someTrip);
 
     if (this.trip.mode == "Live") {
       this.computeDuration();
@@ -137,13 +141,11 @@ export default class TripCatchsView extends Vue {
 
   computeDuration() {
     if (this.trip! && this.trip!.startedAt) {
+      // Sur les dates (#237) : une sortie en direct peut durer plusieurs jours.
       if (this.id == Constants.RUNNING_ID) {
-        this.duration = Helpers.renderDurationNoSeconds(this.trip!.startedAt);
+        this.duration = TripDates.formatDuration({ date: this.trip!.date, startedAt: this.trip!.startedAt });
       } else {
-        this.duration = Helpers.renderDurationNoSeconds(
-          this.trip!.startedAt,
-          this.trip!.finishedAt
-        );
+        this.duration = TripDates.formatDuration(this.trip!);
       }
     }
   }
