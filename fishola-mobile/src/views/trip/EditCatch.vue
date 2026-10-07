@@ -644,12 +644,6 @@ export default class EditCatchView extends Vue {
           // On force pour stocker uniquement la valeur tronquée
           this.aCatch.size = Math.floor(this.aCatch.size);
           this.sizeError = "";
-
-          const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-          if (this.aCatch.size > maxSize) {
-            hasError = true;
-            this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
-          }
         }
       } else {
         this.sizeError = "";
@@ -998,8 +992,33 @@ export default class EditCatchView extends Vue {
         aCatchBean.latitude = this.gpsLocation.lat;
         aCatchBean.longitude = this.gpsLocation.lng;
       }
+      if (!(await this.confirmSizeAboveMax())) {
+        this.focusSizeField();
+        return;
+      }
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
+  }
+
+  /**
+   * Taille exacte supérieure à la taille maximale admin (#229) : confirmation
+   * plutôt qu'erreur bloquante ; `false` si le pêcheur choisit de corriger.
+   */
+  async confirmSizeAboveMax(): Promise<boolean> {
+    if (this.useLotSizeClass || !this.aCatch.size) {
+      return true;
+    }
+    const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+    return Helpers.confirmSizeAboveMax(this.$modal, this.aCatch.size, maxSize);
+  }
+
+  focusSizeField() {
+    this.$nextTick(() => {
+      const sizeInput = document.getElementById("field-size") as HTMLInputElement | null;
+      if (sizeInput) {
+        sizeInput.focus();
+      }
+    });
   }
 
   castToBean(input: any): CatchBean {

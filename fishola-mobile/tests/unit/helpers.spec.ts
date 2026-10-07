@@ -223,3 +223,46 @@ describe("Helpers — classes de taille", () => {
     expect(Helpers.sizeClasses(0, 60)).toEqual([]);
   });
 });
+
+// #229 : une taille au-delà de la taille max admin demande confirmation au
+// lieu de bloquer l'enregistrement.
+describe("Helpers — confirmation de taille au-delà du maximum", () => {
+  function fakeModal(clickedButtonTitle?: string) {
+    const modal = {
+      shown: [] as any[],
+      show(_name: string, params: any) {
+        modal.shown.push(params);
+        const button = params.buttons.find((b: any) => b.title === clickedButtonTitle);
+        button.handler();
+      },
+      hide() {},
+    };
+    return modal;
+  }
+
+  it("n'affiche pas de confirmation quand la taille est inférieure ou égale au maximum", async () => {
+    const modal = fakeModal();
+    await expect(Helpers.confirmSizeAboveMax(modal, 60, 60)).resolves.toBe(true);
+    await expect(Helpers.confirmSizeAboveMax(modal, 40, 60)).resolves.toBe(true);
+    expect(modal.shown).toHaveLength(0);
+  });
+
+  it("n'affiche pas de confirmation sans taille maximale définie par l'administrateur", async () => {
+    const modal = fakeModal();
+    await expect(Helpers.confirmSizeAboveMax(modal, 1200, Helpers.DEFAULT_MAX_SIZE)).resolves.toBe(true);
+    expect(modal.shown).toHaveLength(0);
+  });
+
+  it("enregistre la prise après « Confirmer »", async () => {
+    const modal = fakeModal("Confirmer");
+    await expect(Helpers.confirmSizeAboveMax(modal, 95, 80)).resolves.toBe(true);
+    expect(modal.shown).toHaveLength(1);
+    expect(modal.shown[0].title).toBe("Êtes-vous sûr de la taille de la prise ?");
+    expect(modal.shown[0].text).toContain("95 cm");
+  });
+
+  it("revient au formulaire après « Corriger »", async () => {
+    const modal = fakeModal("Corriger");
+    await expect(Helpers.confirmSizeAboveMax(modal, 95, 80)).resolves.toBe(false);
+  });
+});
