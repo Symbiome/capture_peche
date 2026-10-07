@@ -81,6 +81,16 @@ public interface FisholaConfiguration {
     @WithDefault("168")
     int newsMailSendingDelayHours();
 
+    // Statistiques pêcheur (#210) : CPUE d'une espèce affichée à partir de ce
+    // nombre de prises de l'espèce.
+    @WithDefault("10")
+    int cpueMinCatches();
+
+    // Statistiques pêcheur (#210) : part de contribution au secteur affichée
+    // seulement à partir de ce nombre de pêcheurs distincts sur le secteur (RGPD).
+    @WithDefault("5")
+    int sectorContributionMinAnglers();
+
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = backendBaseUrl();
         String result;
