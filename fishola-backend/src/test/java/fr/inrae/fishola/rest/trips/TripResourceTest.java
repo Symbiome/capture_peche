@@ -1229,7 +1229,7 @@ class TripResourceTest extends AbstractFisholaTest {
         UUID waterEntityId = this.waterEntities.iterator().next().getId();
         UUID seededTripId = importDao.saveManualEntry("enquete", LocalDate.now(),
                 LocalTime.of(8, 0), null, LocalTime.of(10, 0), waterEntityId,
-                "Sortie de recette #82", null, Collections.emptyList());
+                "Sortie de recette #82", null, null, Collections.emptyList());
         try {
             int totalSansFiltre = exportTotal(adminToken, "date_de_la_sortie", "desc", null, null);
             Assertions.assertTrue(totalSansFiltre >= 1, "la vue d'export doit contenir la sortie semée");
@@ -1242,6 +1242,13 @@ class TripResourceTest extends AbstractFisholaTest {
             // Filtre sans correspondance possible : aucune ligne.
             Assertions.assertEquals(0,
                     exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "zzzz-aucune-correspondance"));
+
+            // Origine (#235) filtrée à l'égalité : « enquet » ne ramène rien, « enquete »
+            // ramène la sortie semée sans englober « enquete_souvenir ».
+            Assertions.assertTrue(
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "origine_donnee", "enquete") >= 1);
+            Assertions.assertEquals(0,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "origine_donnee", "enquet"));
 
             // Tautologie : la valeur est traitée comme une VALEUR, pas comme un prédicat.
             // Le code vulnérable renvoyait ici totalSansFiltre.

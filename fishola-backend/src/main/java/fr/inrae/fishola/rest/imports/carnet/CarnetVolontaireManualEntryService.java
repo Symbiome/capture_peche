@@ -29,6 +29,7 @@ import fr.inrae.fishola.rest.imports.ManualResultBean;
 import fr.inrae.fishola.rest.imports.ManualTripEndValidation;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -150,7 +151,7 @@ public class CarnetVolontaireManualEntryService {
                 .toList();
 
         UUID tripId = importDao.saveManualEntry("carnet_volontaire", bean.day, bean.startTime, bean.endDay, bean.endTime,
-                waterEntityId, name, bean.techniqueId, rows, position);
+                waterEntityId, name, StringUtils.trimToNull(bean.sessionCode), bean.techniqueId, rows, position);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }
 

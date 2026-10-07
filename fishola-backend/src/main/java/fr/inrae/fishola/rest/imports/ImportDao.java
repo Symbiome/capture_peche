@@ -89,9 +89,14 @@ public class ImportDao extends AbstractFisholaDao {
     public record TripExtras(UUID expectedSpeciesId, UUID secondaryTechniqueId, String baitOrLure,
                              Short rodCount, FishingMode fishingMode, String[] observations,
                              DayPeriod dayPeriod, String externalRef, UUID surveySessionId,
-                             UUID surveyedAnglerId) {
+                             UUID surveyedAnglerId, String sessionCode) {
         public static final TripExtras NONE =
-                new TripExtras(null, null, null, null, null, null, null, null, null, null);
+                new TripExtras(null, null, null, null, null, null, null, null, null, null, null);
+
+        /** Seul le code de la session d'origine (#235) est renseigné. */
+        public static TripExtras sessionCodeOnly(String sessionCode) {
+            return new TripExtras(null, null, null, null, null, null, null, null, null, null, sessionCode);
+        }
     }
 
     /**
@@ -232,7 +237,7 @@ public class ImportDao extends AbstractFisholaDao {
                 String name = "Import " + sref + " " + s.day.format(DAY_FMT);
 
                 UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, null, s.end, s.waterEntityId, name, now,
-                        TripExtras.NONE);
+                        TripExtras.sessionCodeOnly(sref));
 
                 for (ParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -288,7 +293,8 @@ public class ImportDao extends AbstractFisholaDao {
                 CarnetVolontaireParsedRow s = rows.get(0);
                 String name = "Carnet volontaire " + sref + " " + s.day.format(DAY_FMT);
 
-                UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.endDay, s.end, s.waterEntityId, name, now);
+                UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.endDay, s.end, s.waterEntityId, name, now,
+                        TripExtras.sessionCodeOnly(sref));
 
                 for (CarnetVolontaireParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -390,7 +396,7 @@ public class ImportDao extends AbstractFisholaDao {
                 String name = "Enquête " + first.sortieCode + "/" + first.anglerCode + " " + session.day.format(DAY_FMT);
                 TripExtras extras = new TripExtras(first.expectedSpeciesId, null, first.baitOrLure,
                         first.rodCount == null ? null : first.rodCount.shortValue(), first.fishingMode, null,
-                        null, first.sortieCode + "/" + first.anglerCode, sessionId, anglerId);
+                        null, first.sortieCode + "/" + first.anglerCode, sessionId, anglerId, sortie.sessionCode);
                 UUID tripId = insertTrip(ctx, "enquete", session.day, sortie.startTime, sortie.endDay, sortie.endTime,
                         session.waterEntityId, name, now, extras);
 
@@ -410,6 +416,7 @@ public class ImportDao extends AbstractFisholaDao {
                 stampDepartment(ctx, tripId);
             }
 
+            Map<String, String> sessionCodeByAngler = sessionCodeByAngler(sorties, tripsByKey);
             for (SurveyParsedSouvenir s : souvenirs) {
                 UUID anglerId = anglerIds.get(s.anglerCode);
                 LocalTime[] nominal = NOMINAL_TIMES_BY_PERIOD.get(s.dayPeriod);
@@ -417,7 +424,7 @@ public class ImportDao extends AbstractFisholaDao {
                 String name = "Enquête souvenir " + s.anglerCode + " " + s.day.format(DAY_FMT);
                 TripExtras extras = new TripExtras(s.expectedSpeciesId, null, s.baitOrLure,
                         s.rodCount == null ? null : s.rodCount.shortValue(), s.fishingMode, null,
-                        s.dayPeriod, s.anglerCode, null, anglerId);
+                        s.dayPeriod, s.anglerCode, null, anglerId, sessionCodeByAngler.get(s.anglerCode));
                 UUID tripId = insertTrip(ctx, "enquete_souvenir", s.day, nominal[0], null, nominal[1],
                         s.waterEntityId, name, now, extras);
 
@@ -468,21 +475,22 @@ public class ImportDao extends AbstractFisholaDao {
      */
     @Transactional
     public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalDate endDay,
-                                LocalTime end, UUID waterEntityId, String name, UUID tripTechniqueId,
-                                List<ManualCatch> catches) {
-        return saveManualEntry(collectionMethod, day, start, endDay, end, waterEntityId, name, tripTechniqueId,
-                catches, null);
+                                LocalTime end, UUID waterEntityId, String name, String sessionCode,
+                                UUID tripTechniqueId, List<ManualCatch> catches) {
+        return saveManualEntry(collectionMethod, day, start, endDay, end, waterEntityId, name, sessionCode,
+                tripTechniqueId, catches, null);
     }
 
     /** Idem, avec la position saisie sur la carte ({@code position} nul : aucune position). */
     @Transactional
     public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalDate endDay,
-                                LocalTime end, UUID waterEntityId, String name, UUID tripTechniqueId,
-                                List<ManualCatch> catches, ManualPosition position) {
+                                LocalTime end, UUID waterEntityId, String name, String sessionCode,
+                                UUID tripTechniqueId, List<ManualCatch> catches, ManualPosition position) {
         // Atomicité JTA (cf. remarque sur persist()).
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
-        UUID tripId = insertTrip(ctx, collectionMethod, day, start, endDay, end, waterEntityId, name, now);
+        UUID tripId = insertTrip(ctx, collectionMethod, day, start, endDay, end, waterEntityId, name, now,
+                TripExtras.sessionCodeOnly(sessionCode));
         applyPosition(ctx, tripId, position);
         for (ManualCatch c : catches) {
             UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
@@ -567,7 +575,7 @@ public class ImportDao extends AbstractFisholaDao {
             String externalRef = sessionCode + "/angler-" + anglerIndex;
             String name = "Enquête " + externalRef + " " + day.format(DAY_FMT);
             TripExtras extras = new TripExtras(angler.expectedSpeciesId(), null, angler.baitOrLure(),
-                    angler.rodCount(), angler.fishingMode(), null, null, externalRef, sessionId, anglerId);
+                    angler.rodCount(), angler.fishingMode(), null, null, externalRef, sessionId, anglerId, sessionCode);
             UUID tripId = insertTrip(ctx, "enquete", day, startTime, endDay, endTime, waterEntityId, name, now, extras);
             applyPosition(ctx, tripId, position);
             tripIds.add(tripId);
@@ -583,7 +591,7 @@ public class ImportDao extends AbstractFisholaDao {
                 String souvenirName = "Enquête souvenir " + anglerCode + " " + souvenir.day().format(DAY_FMT);
                 TripExtras souvenirExtras = new TripExtras(souvenir.expectedSpeciesId(), null, souvenir.baitOrLure(),
                         souvenir.rodCount(), souvenir.fishingMode(), null, souvenir.dayPeriod(), anglerCode,
-                        null, anglerId);
+                        null, anglerId, sessionCode);
                 UUID souvenirTripId = insertTrip(ctx, "enquete_souvenir", souvenir.day(), nominal[0], null, nominal[1],
                         souvenir.waterEntityId(), souvenirName, now, souvenirExtras);
                 applyPosition(ctx, souvenirTripId, souvenir.position());
@@ -608,6 +616,23 @@ public class ImportDao extends AbstractFisholaDao {
                 c.quantity() == null ? 1 : c.quantity(), sizeClass, null, now, extras);
     }
 
+    /**
+     * Code de la session où chaque pêcheur a été enquêté, pour rattacher sa sortie souvenir
+     * à cette session (#235) sans la compter parmi les sorties de la session.
+     */
+    private static Map<String, String> sessionCodeByAngler(Map<String, SurveyParsedSortie> sorties,
+                                                          Map<String, List<SurveyParsedCapture>> tripsByKey) {
+        Map<String, String> result = new java.util.HashMap<>();
+        for (List<SurveyParsedCapture> rows : tripsByKey.values()) {
+            SurveyParsedCapture first = rows.get(0);
+            SurveyParsedSortie sortie = sorties.get(first.sortieCode);
+            if (sortie != null) {
+                result.putIfAbsent(first.anglerCode, sortie.sessionCode);
+            }
+        }
+        return result;
+    }
+
     // --- Inserts partagés import / saisie manuelle ---------------------------
 
     private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start,
@@ -626,12 +651,14 @@ public class ImportDao extends AbstractFisholaDao {
                         TRIP.WATER_ENTITY_ID, TRIP.NAME, TRIP.TYPE, TRIP.MODE, TRIP.SOURCE,
                         TRIP.HIDDEN, TRIP.CREATED_ON, TRIP.EXPECTED_SPECIES_ID, TRIP.SECONDARY_TECHNIQUE_ID,
                         TRIP.BAIT_OR_LURE, TRIP.ROD_COUNT, TRIP.FISHING_MODE, TRIP.TRIP_OBSERVATIONS,
-                        TRIP.DAY_PERIOD, TRIP.EXTERNAL_REF, TRIP.SURVEY_SESSION_ID, TRIP.SURVEYED_ANGLER_ID)
+                        TRIP.DAY_PERIOD, TRIP.EXTERNAL_REF, TRIP.SURVEY_SESSION_ID, TRIP.SURVEYED_ANGLER_ID,
+                        TRIP.SESSION_CODE)
                 .values(CollectionMethod.valueOf(collectionMethod), beginTimestamp, endTimestamp,
                         waterEntityId, name, TripType.Border, TripMode.Afterwards, DeviceType.web,
                         false, now, extras.expectedSpeciesId(), extras.secondaryTechniqueId(),
                         extras.baitOrLure(), extras.rodCount(), extras.fishingMode(), extras.observations(),
-                        extras.dayPeriod(), extras.externalRef(), extras.surveySessionId(), extras.surveyedAnglerId())
+                        extras.dayPeriod(), extras.externalRef(), extras.surveySessionId(), extras.surveyedAnglerId(),
+                        extras.sessionCode())
                 .returning(TRIP.ID)
                 .fetchOne()
                 .getId();

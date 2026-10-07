@@ -63,18 +63,28 @@
           :key="col.name"
           :sortable="col.sortable"
           :searchable="col.searchable"
-          v-slot="props"
         >
-          <span v-if="col.isABoolean && props.row[col.field]">
-            Oui
-          </span>
-          <span v-else-if="col.isABoolean && !props.row[col.field]">
-            Non
-          </span>
-          <span v-else-if="col.isADate && props.row[col.field]">
-            {{ formatDate(props.row[col.field]) }}
-          </span>
-          <span v-else> {{ props.row[col.field] }} </span>
+          <template v-if="col.options" #searchable="filterProps">
+            <b-select v-model="filterProps.filters[filterProps.column.field]" size="is-small" expanded>
+              <option value="">Toutes</option>
+              <option v-for="(optionLabel, optionValue) in col.options" :key="optionValue" :value="optionValue">
+                {{ optionLabel }}
+              </option>
+            </b-select>
+          </template>
+          <template #default="props">
+            <span v-if="col.isABoolean && props.row[col.field]">
+              Oui
+            </span>
+            <span v-else-if="col.isABoolean && !props.row[col.field]">
+              Non
+            </span>
+            <span v-else-if="col.isADate && props.row[col.field]">
+              {{ formatDate(props.row[col.field]) }}
+            </span>
+            <span v-else-if="col.options"> {{ col.options[props.row[col.field]] || props.row[col.field] }} </span>
+            <span v-else> {{ props.row[col.field] }} </span>
+          </template>
         </b-table-column>
         <b-table-column
           v-for="col in columns.filter(
@@ -109,7 +119,7 @@ import { onMounted, ref, Ref } from "vue";
 
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
-import { showLink } from "@/utils/utils";
+import { showLink, DATA_ORIGIN_LABELS } from "@/utils/utils";
 
 import router from "@/router";
 
@@ -191,6 +201,19 @@ const columns: any[] = [
   {
     field: "aExclure",
     label: "Exclure de l'export",
+    searchable: true,
+    sortable: true
+  },
+  {
+    field: "origineDonnee",
+    label: "Origine",
+    searchable: true,
+    sortable: true,
+    options: DATA_ORIGIN_LABELS
+  },
+  {
+    field: "codeSession",
+    label: "Code session",
     searchable: true,
     sortable: true
   }
