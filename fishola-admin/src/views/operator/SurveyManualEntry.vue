@@ -43,6 +43,9 @@
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
           :value="sortie.startTime" @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
+      <b-field label="Date de fin prévue" class="column is-2">
+        <input type="date" class="input" v-model="sortie.endDay" :min="sortie.day" />
+      </b-field>
       <b-field label="Heure de fin prévue" class="column is-2" :type="endTimeMessage ? 'is-danger' : ''"
         :message="endTimeMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
@@ -251,8 +254,8 @@
 import BackendService from "@/services/BackendService";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
-import { maskTimeInput, isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
-import { reactive, ref, computed } from "vue";
+import { maskTimeInput, isValidTimeString, isEndAfterStart, localDateIso, localTimeHHmm } from "@/utils/utils";
+import { reactive, ref, computed, watch } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 
@@ -271,6 +274,8 @@ function newSortie() {
     day: localDateIso(now),
     controlTime: localTimeHHmm(now),
     startTime: "",
+    // Date de fin prévue (#237) : carpiste contrôlé pendant une session de plusieurs jours.
+    endDay: localDateIso(now),
     endTime: "",
     waterEntityId: null,
     position: null as MapPosition | null,
@@ -326,7 +331,7 @@ const errors = ref<any[]>([]);
 const timeErrors = reactive({ controlTime: "", startTime: "", endTime: "" });
 
 const CONTROL_BEFORE_START_ERROR = "L'heure du contrôle ne peut pas être antérieure à l'heure de début";
-const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'heure de début";
+const END_NOT_AFTER_START_ERROR = "La fin doit être postérieure au début";
 
 function areValidTimes(...values: string[]): boolean {
   return values.every((value) => !!value && isValidTimeString(value));
@@ -341,16 +346,23 @@ const controlTimeMessage = computed(() => {
 });
 
 const endTimeMessage = computed(() => {
-  const { endTime, startTime } = sortie.value;
+  const { day, startTime, endDay, endTime } = sortie.value;
   if (timeErrors.endTime) {
     return timeErrors.endTime;
   }
-  return areValidTimes(endTime, startTime) && endTime <= startTime ? END_NOT_AFTER_START_ERROR : "";
+  return isEndAfterStart(day, startTime, endDay, endTime) === false ? END_NOT_AFTER_START_ERROR : "";
 });
 
 const hasTimeErrors = computed(() => !!(controlTimeMessage.value || timeErrors.startTime || endTimeMessage.value));
 
 const todayIso = computed(() => localDateIso());
+
+// Date de fin prévue pré-remplie avec la date (#237), qu'elle suit tant qu'elle lui est égale.
+watch(() => sortie.value.day, (newDay: string, oldDay: string) => {
+  if (!sortie.value.endDay || sortie.value.endDay === oldDay) {
+    sortie.value.endDay = newDay;
+  }
+});
 
 function isLot(c: any): boolean {
   return Number(c.quantity) > 1;
@@ -467,6 +479,7 @@ async function submit() {
     day: sortie.value.day || null,
     controlTime: sortie.value.controlTime || null,
     startTime: sortie.value.startTime || null,
+    endDay: sortie.value.endDay || null,
     endTime: sortie.value.endTime || null,
     unsurveyedShoreAnglers: toIntOrNull(sortie.value.unsurveyedShoreAnglers),
     unsurveyedBoatAnglers: toIntOrNull(sortie.value.unsurveyedBoatAnglers),
