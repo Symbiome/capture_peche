@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -121,11 +122,17 @@ class SurveyImportXlsxTest {
     /** Un classeur avec une session, une sortie, une capture individuelle valide, sans session souvenir. */
     private byte[] workbook(String sessionCode, String sortieCode, String tailleNombre, String tailleMin,
                             String tailleMax, List<String[]> souvenirRows) {
+        return workbook(sessionCode, sortieCode, SurveySchema.HEADER_SORTIE,
+                new String[] {sessionCode, sortieCode, "09:00", "08:00", "11:00"},
+                tailleNombre, tailleMin, tailleMax, souvenirRows);
+    }
+
+    private byte[] workbook(String sessionCode, String sortieCode, List<String> sortieHeader, String[] sortieRow,
+                            String tailleNombre, String tailleMin, String tailleMax, List<String[]> souvenirRows) {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             writeSheet(wb, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, List.<String[]>of(
                     new String[] {sessionCode, waterEntityName, "01/07/2026", "", ""}));
-            writeSheet(wb, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, List.<String[]>of(
-                    new String[] {sessionCode, sortieCode, "09:00", "08:00", "11:00"}));
+            writeSheet(wb, SurveySchema.SHEET_SORTIE, sortieHeader, List.<String[]>of(sortieRow));
             writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.<String[]>of(
                     new String[] {sortieCode, "P1", "74", "Aucune", "bord statique", "Pêche au coup", "1", "",
                             "non", "Perche", tailleNombre.equals("1") ? "25" : "", tailleNombre, "oui",
@@ -139,6 +146,12 @@ class SurveyImportXlsxTest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Sortie de la session du 01/07/2026, contrôlée à 09:00, commencée à 08:00, fin prévue à 10:00 le {@code endDay}. */
+    private byte[] workbookWithPlannedEndDay(String sessionCode, String sortieCode, String endDay) {
+        return workbook(sessionCode, sortieCode, SurveySchema.HEADER_SORTIE,
+                new String[] {sessionCode, sortieCode, "09:00", "08:00", "10:00", endDay}, "1", "", "", null);
     }
 
     private byte[] simpleWorkbook(String sessionCode, String sortieCode) {
@@ -341,5 +354,49 @@ class SurveyImportXlsxTest {
         Sheet sheet = wb.getSheet(sheetName);
         int index = headerOf(sheet).indexOf(column);
         sheet.getRow(1).getCell(index).setCellValue(value);
+    }
+
+    /** #237 : un carpiste contrôlé en début de session de 3 jours, fin prévue le 03/07 à 10:00. */
+    @Test
+    void sortieWithPlannedEndDayCreatesMultiDayTrip() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbookWithPlannedEndDay("SURVEY-TEST-MULTIDAY", "SURVEY-TEST-SOMULTIDAY", "03/07/2026"))
+                .when().post(URI + "?filename=survey-test-multiday.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE"));
+
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        var trip = ctx.fetchOne("SELECT begin_timestamp, end_timestamp FROM trip "
+                + "WHERE external_ref = 'SURVEY-TEST-SOMULTIDAY/P1'");
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 1, 8, 0), trip.get("begin_timestamp", LocalDateTime.class));
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0), trip.get("end_timestamp", LocalDateTime.class));
+    }
+
+    /** #237 : une fin prévue avant la date de la session est rejetée. */
+    @Test
+    void plannedEndDayBeforeSessionDayIsRejected() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbookWithPlannedEndDay("SURVEY-TEST-ENDBEFORE", "SURVEY-TEST-SOENDBEFORE", "30/06/2026"))
+                .when().post(URI + "?filename=survey-test-endbefore.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE_WITH_ERRORS"))
+                .body("errors.code", hasItem("STRUCT_TIME_ORDER"))
+                .body("errors.column", hasItem(SurveySchema.SHEET_SORTIE + " / Date de fin de pêche prévue"));
+    }
+
+    /** #237 : un classeur rempli avec l'ancien modèle, sans la colonne de date de fin prévue, reste accepté. */
+    @Test
+    void legacySortieHeaderIsStillAccepted() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbook("SURVEY-TEST-LEGACY", "SURVEY-TEST-SOLEGACY", SurveySchema.LEGACY_HEADER_SORTIE,
+                        new String[] {"SURVEY-TEST-LEGACY", "SURVEY-TEST-SOLEGACY", "09:00", "08:00", "11:00"},
+                        "1", "", "", null))
+                .when().post(URI + "?filename=survey-test-legacy.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE"))
+                .body("inserted", equalTo(1));
     }
 }

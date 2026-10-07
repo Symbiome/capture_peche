@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.trips;
 
 import fr.inrae.fishola.entities.enums.IdentificationCertainty;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +47,9 @@ public class CatchBean {
     public UUID techniqueId;
     public Optional<String> description = Optional.empty();
     public Optional<String> caughtAt = Optional.empty();
+    // Jour de la capture (#237), indispensable sur une sortie de plusieurs jours ; absent
+    // pour les applis antérieures (cf. TripTimestamps#catchTimestamp).
+    public Optional<LocalDate> caughtOn = Optional.empty();
     public Optional<String> sampleId = Optional.empty();
     public Optional<Double> latitude = Optional.empty();
     public Optional<Double> longitude = Optional.empty();
@@ -79,6 +83,7 @@ public class CatchBean {
                 ", techniqueId=" + techniqueId +
                 ", description=" + description +
                 ", caughtAt=" + caughtAt +
+                ", caughtOn=" + caughtOn +
                 ", sampleId=" + sampleId +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +

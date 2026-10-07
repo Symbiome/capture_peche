@@ -16,6 +16,7 @@ export interface CatchBean {
     techniqueId: string;
     description?: string;
     caughtAt?: string;
+    caughtOn?: Date;
     sampleId?: string;
     latitude?: number;
     longitude?: number;
@@ -43,6 +44,7 @@ export interface TripBean {
     otherSpecies: string;
     date: Date;
     startedAt: string;
+    endDate?: Date;
     finishedAt: string;
     weatherId?: string;
     catchs: CatchBean[];
@@ -66,9 +68,14 @@ export interface TripLight {
     name: string;
     waterEntityId: string;
     date: Date;
+    endDate: Date;
     durationInSeconds: number;
     catchsCount: number;
     modifiable: boolean;
+}
+
+export interface TripSettings {
+    maxPlausibleTripDays: number;
 }
 
 export interface SpeciesWithAlias {

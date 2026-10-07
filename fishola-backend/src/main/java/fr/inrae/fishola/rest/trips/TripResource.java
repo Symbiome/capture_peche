@@ -90,7 +90,7 @@ public class TripResource extends AbstractFisholaResource {
 
     private static final Ordering<CatchBean> CATCH_ORDERING_ON_CAUGHT_AT = Ordering.natural()
             .nullsFirst()
-            .onResultOf(c -> c.caughtAt.orElse(null));
+            .onResultOf(c -> c.caughtAt.map(time -> c.caughtOn.map(day -> day + "T").orElse("") + time).orElse(null));
 
     private static final Pattern UUID_PATTERN = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
     public static final String HOURS_AND_MINUTES = "HH:mm";
@@ -148,6 +148,7 @@ public class TripResource extends AbstractFisholaResource {
         ImmutableTripLight.Builder builder = ImmutableTripLight.builder()
                 .catchsCount(catchsCount)
                 .date(beginTimestamp.toLocalDate())
+                .endDate(endTimestamp.toLocalDate())
                 .id(tripId)
                 .waterEntityId(trip.getWaterEntityId())
                 .name(trip.getName())
@@ -204,11 +205,9 @@ public class TripResource extends AbstractFisholaResource {
 
         Trip entity = new Trip();
         entity.setCreatedOn(LocalDateTime.now());
-        LocalDateTime beginTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.startedAt));
-        LocalDateTime endTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.finishedAt));
-        if (endTimestamp.isBefore(beginTimestamp)) {
-            endTimestamp = endTimestamp.plusDays(1);
-        }
+        TripPeriod period = toValidTripPeriod(trip);
+        LocalDateTime beginTimestamp = period.begin();
+        LocalDateTime endTimestamp = period.end();
         entity.setBeginTimestamp(beginTimestamp);
         entity.setEndTimestamp(endTimestamp);
         entity.setWaterEntityId(trip.waterEntityId);
@@ -330,11 +329,9 @@ public class TripResource extends AbstractFisholaResource {
         }
         AccessDeniedException.check(stillModifiable, "Il n'est plus possible de modifier la sortie");
 
-        LocalDateTime beginTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.startedAt));
-        LocalDateTime endTimestamp = LocalDateTime.of(trip.date, LocalTime.parse(trip.finishedAt));
-        if (endTimestamp.isBefore(beginTimestamp)) {
-            endTimestamp = endTimestamp.plusDays(1);
-        }
+        TripPeriod period = toValidTripPeriod(trip);
+        LocalDateTime beginTimestamp = period.begin();
+        LocalDateTime endTimestamp = period.end();
         existingTrip.setBeginTimestamp(beginTimestamp);
         existingTrip.setEndTimestamp(endTimestamp);
         existingTrip.setWaterEntityId(trip.waterEntityId);
@@ -493,8 +490,7 @@ public class TripResource extends AbstractFisholaResource {
         Catch catchPojo = new Catch();
         catchPojo.setTripId(tripId);
         catchPojo.setCreatedOn(LocalDateTime.now());
-        LocalTime catchTime = aCatch.caughtAt.map(LocalTime::parse).orElse(null);
-        catchPojo.setCatchTimestamp(resolveCatchTimestamp(catchTime, tripBeginTimestamp, tripEndTimestamp));
+        catchPojo.setCatchTimestamp(resolveCatchTimestamp(aCatch, tripBeginTimestamp, tripEndTimestamp));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         catchPojo.setSpeciesId(speciesId);
         catchPojo.setTechniqueId(aCatch.techniqueId);
@@ -531,8 +527,7 @@ public class TripResource extends AbstractFisholaResource {
     protected void updateCatch(UUID waterEntityId, Catch existingCatch, CatchBean aCatch,
                                LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
 
-        LocalTime catchTime = aCatch.caughtAt.map(LocalTime::parse).orElse(null);
-        existingCatch.setCatchTimestamp(resolveCatchTimestamp(catchTime, tripBeginTimestamp, tripEndTimestamp));
+        existingCatch.setCatchTimestamp(resolveCatchTimestamp(aCatch, tripBeginTimestamp, tripEndTimestamp));
         UUID speciesId = checkSpeciesOrCreateIfNecessary(aCatch.speciesId, aCatch.otherSpecies);
         existingCatch.setSpeciesId(speciesId);
         existingCatch.setTechniqueId(aCatch.techniqueId);
@@ -810,23 +805,55 @@ public class TripResource extends AbstractFisholaResource {
         return "POINT(" + longitude + " " + latitude + ")";
     }
 
-    // Une capture ne porte qu'une heure, jamais un jour : on la rattache au jour
-    // de début de la sortie, ou au lendemain si c'est la seule façon de la faire
-    // tomber dans la fenêtre [début, fin] de la sortie (capture après minuit sur
-    // une sortie à cheval sur minuit). Même règle que le backfill de V1.5.0.
-    private static LocalDateTime resolveCatchTimestamp(LocalTime catchTime, LocalDateTime tripBeginTimestamp, LocalDateTime tripEndTimestamp) {
-        if (catchTime == null) {
+    /** Début et fin d'une sortie reçue d'un client. */
+    protected record TripPeriod(LocalDateTime begin, LocalDateTime end) {}
+
+    /**
+     * Début et fin de la sortie reçue (#237), après validation de ses dates et de celles de
+     * ses captures, avant toute écriture en base.
+     *
+     * <p>Fin postérieure au début et dates non futures ne sont exigées que des clients qui
+     * envoient la date de fin : les applis antérieures ont encore des sorties hors-ligne en
+     * attente de synchro, qu'il ne faut pas bloquer. La borne « pas dans le futur » tolère
+     * un jour : une sortie en direct finie juste après minuit sur l'appareil peut arriver
+     * sur un serveur dont le fuseau est encore la veille.
+     *
+     * @param trip sortie reçue
+     * @return le début et la fin de la sortie
+     * @throws IllegalArgumentException (400) si une date de la sortie ou d'une capture est invalide
+     */
+    protected static TripPeriod toValidTripPeriod(TripBean trip) {
+        LocalTime beginTime = LocalTime.parse(trip.startedAt);
+        LocalDateTime begin = LocalDateTime.of(trip.date, beginTime);
+        LocalDateTime end = TripTimestamps.endTimestamp(trip.date, beginTime, trip.endDate.orElse(null),
+                LocalTime.parse(trip.finishedAt));
+        if (trip.endDate.isPresent()) {
+            Preconditions.checkArgument(end.isAfter(begin), TripTimestamps.END_NOT_AFTER_BEGIN);
+            LocalDate latestAllowedDay = LocalDate.now().plusDays(1);
+            Preconditions.checkArgument(!trip.date.isAfter(latestAllowedDay)
+                    && !trip.endDate.get().isAfter(latestAllowedDay), TripTimestamps.DATE_IN_FUTURE);
+        }
+        CollectionUtils.emptyIfNull(trip.catchs).forEach(aCatch -> resolveCatchTimestamp(aCatch, begin, end));
+        return new TripPeriod(begin, end);
+    }
+
+    /**
+     * Horodatage d'une capture (cf. {@link TripTimestamps#catchTimestamp}).
+     *
+     * @param aCatch capture reçue
+     * @param tripBeginTimestamp début de la sortie
+     * @param tripEndTimestamp fin de la sortie
+     * @return l'horodatage de la capture, {@code null} si elle n'a pas d'heure
+     * @throws IllegalArgumentException (400) si la capture ne tombe pas dans la sortie
+     */
+    private static LocalDateTime resolveCatchTimestamp(CatchBean aCatch, LocalDateTime tripBeginTimestamp,
+                                                       LocalDateTime tripEndTimestamp) {
+        if (aCatch.caughtAt.isEmpty()) {
             return null;
         }
-        LocalDateTime sameDay = LocalDateTime.of(tripBeginTimestamp.toLocalDate(), catchTime);
-        if (!sameDay.isBefore(tripBeginTimestamp) && !sameDay.isAfter(tripEndTimestamp)) {
-            return sameDay;
-        }
-        LocalDateTime nextDay = sameDay.plusDays(1);
-        if (!nextDay.isBefore(tripBeginTimestamp) && !nextDay.isAfter(tripEndTimestamp)) {
-            return nextDay;
-        }
-        return sameDay;
+        return TripTimestamps.catchTimestamp(aCatch.caughtOn.orElse(null), LocalTime.parse(aCatch.caughtAt.get()),
+                        tripBeginTimestamp, tripEndTimestamp)
+                .orElseThrow(() -> new IllegalArgumentException(TripTimestamps.CATCH_OUT_OF_TRIP));
     }
 
     public static CatchBean toCatchBean(Catch aCatch,
@@ -849,6 +876,7 @@ public class TripResource extends AbstractFisholaResource {
         result.techniqueId = aCatch.getTechniqueId();
         result.description = Optional.ofNullable(aCatch.getDescription());
         result.caughtAt = Optional.ofNullable(aCatch.getCatchTimestamp()).map(t -> t.toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES)));
+        result.caughtOn = Optional.ofNullable(aCatch.getCatchTimestamp()).map(LocalDateTime::toLocalDate);
         result.latitude = Optional.ofNullable(aCatch.getLatitude());
         result.longitude = Optional.ofNullable(aCatch.getLongitude());
         List<Integer> pictureIndexes = catchsWithPictures != null ? catchsWithPictures.get(catchId) : new ArrayList<>();
@@ -886,6 +914,7 @@ public class TripResource extends AbstractFisholaResource {
         result.hydroValidation = Optional.ofNullable(entity.getHydroValidation());
         result.date = entity.getBeginTimestamp().toLocalDate();
         result.startedAt = entity.getBeginTimestamp().toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
+        result.endDate = Optional.of(entity.getEndTimestamp().toLocalDate());
         result.finishedAt = entity.getEndTimestamp().toLocalTime().format(DateTimeFormatter.ofPattern(HOURS_AND_MINUTES));
         result.weatherId = Optional.ofNullable(entity.getWeatherId());
 

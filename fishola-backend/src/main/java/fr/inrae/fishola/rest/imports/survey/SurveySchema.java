@@ -52,7 +52,10 @@ public final class SurveySchema {
 
     public static final List<String> HEADER_SORTIE = List.of(
             "Code session", "Code sortie", "Heure du contrôle",
-            "Heure de début de pêche", "Heure de fin de pêche prévue");
+            "Heure de début de pêche", "Heure de fin de pêche prévue", "Date de fin de pêche prévue");
+
+    /** En-tête antérieur à #237, sans la colonne facultative « Date de fin de pêche prévue » : toujours accepté. */
+    public static final List<String> LEGACY_HEADER_SORTIE = HEADER_SORTIE.subList(0, HEADER_SORTIE.size() - 1);
 
     public static final List<String> HEADER_CAPTURE = List.of(
             "Code sortie", "Code pêcheur", "Département origine", "Espèce recherchée",

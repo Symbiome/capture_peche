@@ -87,9 +87,7 @@ public class ManualEntryService {
         if (bean.endTime == null) {
             errors.add(new ManualError(null, "endTime", "heure de fin obligatoire"));
         }
-        if (bean.startTime != null && bean.endTime != null && !bean.endTime.isAfter(bean.startTime)) {
-            errors.add(new ManualError(null, "endTime", "l'heure de fin doit être postérieure à l'heure de début"));
-        }
+        ManualTripEndValidation.validate(bean.day, bean.startTime, bean.endDay, bean.endTime, today, errors);
 
         // --- Référentiel ---
         UUID waterEntityId = resolveWaterEntity(bean);
@@ -126,7 +124,7 @@ public class ManualEntryService {
                         c.quantity, emptyToNull(c.sizeClass), emptyToNull(c.description)))
                 .toList();
 
-        UUID tripId = importDao.saveManualEntry(cm, bean.day, bean.startTime, bean.endTime, waterEntityId,
+        UUID tripId = importDao.saveManualEntry(cm, bean.day, bean.startTime, bean.endDay, bean.endTime, waterEntityId,
                 name, bean.techniqueId, rows);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }

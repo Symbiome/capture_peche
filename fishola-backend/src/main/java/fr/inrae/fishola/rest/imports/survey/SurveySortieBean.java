@@ -43,6 +43,7 @@ public class SurveySortieBean {
     public LocalDate day;
     public LocalTime controlTime;
     public LocalTime startTime;
+    public LocalDate endDay; // date de fin prévue (#237) : nulle = jour de l'enquête
     public LocalTime endTime;
 
     public Integer unsurveyedShoreAnglers;

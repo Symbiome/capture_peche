@@ -36,7 +36,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -223,10 +225,27 @@ public class SurveyImportService {
                     SurveySchema.STRUCT_TIME,
                     "heure invalide (HH:MM) : « " + get(rec, "Heure de fin de pêche prévue") + " »"));
         }
-        if (timesOk && !s.endTime.isAfter(s.startTime)) {
+        String rawEndDay = get(rec, "Date de fin de pêche prévue");
+        if (!CsvSupport.isBlank(rawEndDay)) {
+            try {
+                s.endDay = CsvSupport.parseDate(rawEndDay);
+            } catch (RuntimeException e) {
+                errors.add(err(SurveySchema.SHEET_SORTIE, line, "Date de fin de pêche prévue", SurveySchema.STRUCTUREL,
+                        SurveySchema.STRUCT_DATE, "date invalide (JJ/MM/AAAA) : « " + rawEndDay + " »"));
+            }
+        }
+        SurveyParsedSession session = sessions.get(s.sessionCode);
+        if (timesOk && s.endDay == null && CsvSupport.isBlank(rawEndDay) && !s.endTime.isAfter(s.startTime)) {
             errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure de fin de pêche prévue", SurveySchema.STRUCTUREL,
                     SurveySchema.STRUCT_TIME_ORDER,
                     "l'heure de fin prévue doit être postérieure à l'heure de début"));
+        }
+        if (timesOk && s.endDay != null && session != null && session.day != null
+                && !LocalDateTime.of(s.endDay, s.endTime).isAfter(LocalDateTime.of(session.day, s.startTime))) {
+            errors.add(err(SurveySchema.SHEET_SORTIE, line, "Date de fin de pêche prévue", SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME_ORDER,
+                    "la fin de pêche prévue doit être postérieure au début de pêche (date de la session "
+                            + session.day.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ")"));
         }
         if (timesOk && s.controlTime.isBefore(s.startTime)) {
             errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure du contrôle", SurveySchema.STRUCTUREL,
@@ -585,10 +604,11 @@ public class SurveyImportService {
         }
 
         List<ImportError> headerErrors = new ArrayList<>();
-        checkSheet(sheets, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_SOUVENIR, SurveySchema.HEADER_SOUVENIR, false, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_SESSION, List.of(SurveySchema.HEADER_SESSION), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_SORTIE,
+                List.of(SurveySchema.HEADER_SORTIE, SurveySchema.LEGACY_HEADER_SORTIE), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_CAPTURE, List.of(SurveySchema.HEADER_CAPTURE), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_SOUVENIR, List.of(SurveySchema.HEADER_SOUVENIR), false, headerErrors);
 
         if (!headerErrors.isEmpty()) {
             return persistFailed(filename, fileHash, createdBy, headerErrors);
@@ -634,8 +654,10 @@ public class SurveyImportService {
         }
     }
 
-    private void checkSheet(Map<String, XlsxSupport.SheetData> sheets, String sheetName, List<String> expectedHeader,
-                            boolean mandatory, List<ImportError> errors) {
+    /** {@code acceptedHeaders} : en-tête attendu en premier, puis éventuels en-têtes antérieurs encore acceptés. */
+    private void checkSheet(Map<String, XlsxSupport.SheetData> sheets, String sheetName,
+                            List<List<String>> acceptedHeaders, boolean mandatory, List<ImportError> errors) {
+        List<String> expectedHeader = acceptedHeaders.get(0);
         XlsxSupport.SheetData data = sheets.get(sheetName);
         if (data == null) {
             if (mandatory) {
@@ -653,7 +675,7 @@ public class SurveyImportService {
             }
             return;
         }
-        if (!data.header().equals(expectedHeader)) {
+        if (!acceptedHeaders.contains(data.header())) {
             errors.add(new ImportError(1, sheetName, SurveySchema.STRUCTUREL,
                     SurveySchema.STRUCT_HEADER,
                     "en-tête non conforme au modèle attendu pour « " + sheetName + " » ("

@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -56,7 +57,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CarnetVolontaireImportCsvTest {
 
-    private static final String HEADER = String.join(";", CarnetVolontaireSchema.EXPECTED_HEADER);
+    private static final String HEADER = String.join(";", CarnetVolontaireSchema.LEGACY_HEADER);
     private static final String URI = "/api/v1/admin/imports/carnet-volontaire";
 
     @Inject
@@ -129,6 +130,15 @@ class CarnetVolontaireImportCsvTest {
         return HEADER + "\n" + row + "\n";
     }
 
+    /** Sortie de plusieurs jours (#237) au format avec la colonne « date_fin ». */
+    private String csvWithEndDay(String sessionRef, String endDay) {
+        String row = String.join(";",
+                sessionRef, waterEntityName, "", "01/07/2026", "bord statique", "18:00", endDay, "10:00",
+                "Pêche au coup", "", "1", "", "Aucune", "", "non",
+                "Perche", "", "", "", "", "25", "210", "1", "oui", "", "", "non", "");
+        return String.join(";", CarnetVolontaireSchema.EXPECTED_HEADER) + "\n" + row + "\n";
+    }
+
     private int countJobs(String fileName) {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         return ctx.fetchOne("SELECT count(*) FROM import_job WHERE file_name = ?", fileName).get(0, Integer.class);
@@ -197,5 +207,22 @@ class CarnetVolontaireImportCsvTest {
                 .body("inserted", equalTo(0))
                 .body("rejected", equalTo(1))
                 .body("errors.code", hasItem("METIER_TAG_REF"));
+    }
+
+    /** #237 : une sortie du 01/07 18:00 au 03/07 10:00 est importée avec ses vraies dates. */
+    @Test
+    void importAcceptsMultiDayTripWithEndDay() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(csvWithEndDay("CARNET-TEST-MULTIDAY", "03/07/2026").getBytes(StandardCharsets.UTF_8))
+                .when().post(URI + "?filename=carnet-test-multiday.csv&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE"))
+                .body("inserted", equalTo(1));
+
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        var trip = ctx.fetchOne("SELECT end_timestamp FROM trip WHERE name LIKE '%CARNET-TEST-MULTIDAY%'");
+        org.junit.jupiter.api.Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0),
+                trip.get("end_timestamp", LocalDateTime.class));
     }
 }

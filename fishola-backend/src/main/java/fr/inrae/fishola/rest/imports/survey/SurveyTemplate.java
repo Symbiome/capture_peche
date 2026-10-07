@@ -51,7 +51,7 @@ public final class SurveyTemplate {
             "ENQ-001", "Lac d'Annecy", "01/07/2026", "2", "0");
 
     static final List<String> EXAMPLE_SORTIE = List.of(
-            "ENQ-001", "ENQ-001-01", "09:00", "07:30", "11:00");
+            "ENQ-001", "ENQ-001-01", "09:00", "07:30", "11:00", "");
 
     static final List<String> EXAMPLE_CAPTURE = List.of(
             "ENQ-001-01", "P001", "74", "Aucune", "bord statique", "Pêche au coup", "1", "",

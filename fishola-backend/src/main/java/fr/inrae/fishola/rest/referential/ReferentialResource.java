@@ -644,6 +644,14 @@ public class ReferentialResource extends AbstractFisholaResource {
     }
 
     @GET
+    @Path("/trip-settings")
+    public TripSettings getTripSettings() {
+        return ImmutableTripSettings.builder()
+                .maxPlausibleTripDays(config.maxPlausibleTripDays())
+                .build();
+    }
+
+    @GET
     @Path("/weathers")
     public List<Weather> getWeathers() {
         List<Weather> result = referentialDao.listWeathers();

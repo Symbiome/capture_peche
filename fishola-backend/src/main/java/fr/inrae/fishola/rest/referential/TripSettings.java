@@ -1,4 +1,4 @@
-package fr.inrae.fishola.rest.trips;
+package fr.inrae.fishola.rest.referential;
 
 /*-
  * #%L
@@ -24,27 +24,18 @@ package fr.inrae.fishola.rest.trips;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
-import java.time.LocalDate;
-import java.util.UUID;
-
+/**
+ * Paramètres de saisie des sorties communiqués aux formulaires pêcheur et opérateur (#237).
+ */
 @ImmutableObject
-@JsonSerialize(as = ImmutableTripLight.class)
-public interface TripLight {
+@JsonSerialize(as = ImmutableTripSettings.class)
+public interface TripSettings {
 
-    UUID id();
-
-    String name();
-
-    UUID waterEntityId();
-
-    LocalDate date();
-
-    LocalDate endDate();
-
-    long durationInSeconds();
-
-    int catchsCount();
-
-    boolean modifiable();
+    /**
+     * Durée de sortie, en jours, au-delà de laquelle le formulaire demande confirmation.
+     *
+     * @return le nombre de jours
+     */
+    int maxPlausibleTripDays();
 
 }
