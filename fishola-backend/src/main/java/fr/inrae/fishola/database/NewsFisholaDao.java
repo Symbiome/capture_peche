@@ -62,13 +62,14 @@ public class NewsFisholaDao extends AbstractFisholaDao {
         }
         if (admin.isPresent() && !admin.get().getIsNationalAdmin()) {
             // Admin régional : on ne garde que les actus rattachées à une entité hydro
-            // d'un de ses départements de périmètre (#159).
+            // d'un de ses départements de périmètre (#159), buffer staff compris (#231).
             Set<UUID> newsOfReleventWaterEntities = withContext(context -> context
                     .selectDistinct(Tables.NEWS_WATER_ENTITY.NEWS_ID)
                     .from(Tables.NEWS_WATER_ENTITY)
-                    .join(Tables.WATER_ENTITY).on(Tables.WATER_ENTITY.ID.eq(Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID))
+                    .join(Tables.WATER_ENTITY_DEPARTMENT)
+                        .on(Tables.WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID.eq(Tables.NEWS_WATER_ENTITY.WATER_ENTITY_ID))
                     .join(Tables.FISHOLA_ADMIN_DEPARTMENTS)
-                        .on(Tables.FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(Tables.WATER_ENTITY.DEPARTMENT))
+                        .on(Tables.FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(Tables.WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE))
                     .where(Tables.FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.eq(admin.get().getId()))
                     .fetchSet(Tables.NEWS_WATER_ENTITY.NEWS_ID));
             allNews = allNews.stream().filter(news ->

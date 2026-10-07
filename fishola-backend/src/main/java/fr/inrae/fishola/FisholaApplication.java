@@ -23,6 +23,7 @@ package fr.inrae.fishola;
 
 import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
+import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.exceptions.FisholaTechnicalException;
 import io.agroal.api.AgroalDataSource;
@@ -55,6 +56,9 @@ public class FisholaApplication {
     @Inject
     protected EditorialAndDocumentationDao documentationDao;
 
+    @Inject
+    protected StaffPerimeterDao staffPerimeterDao;
+
     void onStart(@Observes StartupEvent ev) {
 
         if (log.isInfoEnabled()) {
@@ -71,6 +75,10 @@ public class FisholaApplication {
                 .load();
 
         flyway.migrate();
+
+        if (staffPerimeterDao.syncBufferDistance(config.staffPerimeterBufferM()) && log.isInfoEnabled()) {
+            log.infof("Périmètre staff recalculé avec un buffer de %s m", config.staffPerimeterBufferM());
+        }
 
         checkForDocumentations();
     }

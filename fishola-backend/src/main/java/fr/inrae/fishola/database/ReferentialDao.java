@@ -92,7 +92,7 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .fetch(ReferentialDao::toWaterEntitySummary));
     }
 
-    // Listing léger scopé à un département (#154) : le back-office « Maillages et
+    // Listing léger scopé à un département (#154), buffer staff compris (#231) : le back-office « Maillages et
     // tailles maximales » borne son périmètre par département avant de construire
     // la matrice espèces × entités, sinon le référentiel entier (~181 000 lignes,
     // #134) faisait tomber le backend en OutOfMemoryError.
@@ -102,7 +102,7 @@ public class ReferentialDao extends AbstractFisholaDao {
                         Tables.WATER_ENTITY.KIND.cast(String.class).as("kind"),
                         Tables.WATER_ENTITY.LATITUDE, Tables.WATER_ENTITY.LONGITUDE)
                 .from(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
+                .where(StaffPerimeterDao.inPerimeter(Tables.WATER_ENTITY.ID, Set.of(department)))
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetch(ReferentialDao::toWaterEntitySummary));
     }
@@ -134,7 +134,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         return withContext(context -> context
                 .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.NAME)
                 .from(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
+                .where(StaffPerimeterDao.inPerimeter(Tables.WATER_ENTITY.ID, departmentCodes))
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetch(ReferentialDao::toWaterEntityName));
     }
@@ -150,7 +150,7 @@ public class ReferentialDao extends AbstractFisholaDao {
         return withContext(context -> new HashSet<>(context
                 .select(Tables.WATER_ENTITY.ID)
                 .from(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.DEPARTMENT.eq(department))
+                .where(StaffPerimeterDao.inPerimeter(Tables.WATER_ENTITY.ID, Set.of(department)))
                 .fetch(Tables.WATER_ENTITY.ID)));
     }
 
@@ -550,14 +550,14 @@ public class ReferentialDao extends AbstractFisholaDao {
         withDaoNoResult(AuthorizedSampleDao.class, dao -> dao.update(entity));
     }
 
-    // Entités hydro d'un périmètre départemental (#159). Ensemble vide => aucune
+    // Entités hydro d'un périmètre départemental (#159), buffer staff compris (#231). Ensemble vide => aucune
     // entité (un compte national ne passe jamais par ici).
     public List<WaterEntity> fetchWaterEntitiesByDepartments(Set<String> departmentCodes) {
         if (departmentCodes.isEmpty()) {
             return List.of();
         }
         return withContext(context -> context.selectFrom(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.DEPARTMENT.in(departmentCodes))
+                .where(StaffPerimeterDao.inPerimeter(Tables.WATER_ENTITY.ID, departmentCodes))
                 .orderBy(Tables.WATER_ENTITY.NAME)
                 .fetchInto(WaterEntity.class));
     }
@@ -574,18 +574,5 @@ public class ReferentialDao extends AbstractFisholaDao {
                 .where(Tables.WATER_ENTITY.ID.in(waterEntityIds))
                 .and(Tables.WATER_ENTITY.DEPARTMENT.isNotNull())
                 .fetchSet(Tables.WATER_ENTITY.DEPARTMENT));
-    }
-
-    // Département (code INSEE) de chaque entité hydro demandée ; sert à vérifier
-    // qu'une entité choisie dans l'UI est bien dans le périmètre du staff (#159).
-    public Map<UUID, String> departmentByWaterEntityId(Collection<UUID> waterEntityIds) {
-        if (waterEntityIds.isEmpty()) {
-            return Map.of();
-        }
-        return withContext(context -> context
-                .select(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.DEPARTMENT)
-                .from(Tables.WATER_ENTITY)
-                .where(Tables.WATER_ENTITY.ID.in(waterEntityIds))
-                .fetchMap(Tables.WATER_ENTITY.ID, Tables.WATER_ENTITY.DEPARTMENT));
     }
 }

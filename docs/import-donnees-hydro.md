@@ -193,6 +193,11 @@ Cette table permet les jointures spatiales directes `ST_Intersects` /
 `ST_Contains` entité ↔ département (comptages captures / pêcheurs / sorties par
 département), sans dépendre de la couverture du référentiel `commune`.
 
+Le script recalcule ensuite le périmètre staff élargi (#231,
+`SELECT refresh_staff_perimeter()`) : correspondance milieu ↔ départements
+dans un buffer de 1 km. L'import hydro, lui, la tient à jour par trigger. Voir
+`docs/cloisonnement-departemental.md`.
+
 Depuis `V2.0.0` (#159), chaque **sortie** (`trip`) et chaque **prise** (`catch`)
 est estampillée du département où l'action a eu lieu, par jointure spatiale sur
 `departement.geom` à l'ajout / l'édition (repli sur `water_entity.department`

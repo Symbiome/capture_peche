@@ -127,3 +127,7 @@ FROM (VALUES
     ('01', 'Ain',          'POLYGON((5.6 45.75, 6.0 45.75, 6.0 46.2, 5.6 46.2, 5.6 45.75))')
 ) v(code, name, wkt)
 WHERE NOT EXISTS (SELECT 1 FROM public.departement);
+
+-- 6) Périmètre staff élargi (#231) : les contours ci-dessus sont chargés après
+-- la migration V2.11.0, on recalcule la correspondance milieu <-> départements.
+SELECT public.refresh_staff_perimeter();
