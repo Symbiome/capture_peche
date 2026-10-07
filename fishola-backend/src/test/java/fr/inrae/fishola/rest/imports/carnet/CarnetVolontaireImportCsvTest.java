@@ -225,4 +225,34 @@ class CarnetVolontaireImportCsvTest {
         org.junit.jupiter.api.Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0),
                 trip.get("end_timestamp", LocalDateTime.class));
     }
+
+    /**
+     * #235 : la sortie importée expose son origine, son code session (session_ref) et le
+     * code SANDRE de l'espèce capturée ; « Aucune » espèce recherchée → pas de code.
+     */
+    @Test
+    void exportExposesOriginSessionCodeAndSpeciesCode() {
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        String previousCode = ctx.fetchOne("SELECT code_espece FROM species WHERE name = 'Perche'")
+                .get(0, String.class);
+        ctx.execute("UPDATE species SET code_espece = 'PER' WHERE name = 'Perche'");
+        try {
+            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                    .contentType("application/octet-stream")
+                    .body(csv("CARNET-TEST-ORIGIN").getBytes(StandardCharsets.UTF_8))
+                    .when().post(URI + "?filename=carnet-test-origin.csv&mode=partial")
+                    .then().statusCode(200)
+                    .body("status", equalTo("DONE"));
+
+            var row = ctx.fetchOne("SELECT e.origine_donnee, e.code_session, e.code_espece_capturee, "
+                    + "e.code_espece_recherchee FROM catchs_openadom_export e JOIN trip t ON t.id = e.id_sortie "
+                    + "WHERE t.name LIKE '%CARNET-TEST-ORIGIN%'");
+            org.junit.jupiter.api.Assertions.assertEquals("carnet_volontaire", row.get("origine_donnee", String.class));
+            org.junit.jupiter.api.Assertions.assertEquals("CARNET-TEST-ORIGIN", row.get("code_session", String.class));
+            org.junit.jupiter.api.Assertions.assertEquals("PER", row.get("code_espece_capturee", String.class));
+            org.junit.jupiter.api.Assertions.assertNull(row.get("code_espece_recherchee", String.class));
+        } finally {
+            ctx.execute("UPDATE species SET code_espece = ? WHERE name = 'Perche'", previousCode);
+        }
+    }
 }

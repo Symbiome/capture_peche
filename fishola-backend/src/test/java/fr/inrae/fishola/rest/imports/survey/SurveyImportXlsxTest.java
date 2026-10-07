@@ -300,6 +300,17 @@ class SurveyImportXlsxTest {
                 "SELECT count(*) FROM trip WHERE collection_method = 'enquete_souvenir' AND external_ref = 'P1'")
                 .get(0, Integer.class);
         Assertions.assertEquals(1, souvenirTrips, "la session souvenir doit créer sa propre sortie");
+
+        // #235 : la sortie enquêtée et la sortie souvenir portent le code de la session
+        // d'enquête ; la souvenir n'est pas rattachée à survey_session pour autant.
+        var surveyed = ctx.fetchOne("SELECT session_code, survey_session_id FROM trip WHERE external_ref = 'SURVEY-TEST-SOSOUV/P1'");
+        var souvenirTrip = ctx.fetchOne("SELECT t.session_code, t.survey_session_id, e.origine_donnee "
+                + "FROM trip t JOIN catchs_openadom_export e ON e.id_sortie = t.id "
+                + "WHERE t.collection_method = 'enquete_souvenir' AND t.external_ref = 'P1'");
+        Assertions.assertEquals("SURVEY-TEST-SOUV", surveyed.get("session_code", String.class));
+        Assertions.assertEquals("SURVEY-TEST-SOUV", souvenirTrip.get("session_code", String.class));
+        Assertions.assertNull(souvenirTrip.get("survey_session_id"));
+        Assertions.assertEquals("enquete_souvenir", souvenirTrip.get("origine_donnee", String.class));
     }
 
     @Test

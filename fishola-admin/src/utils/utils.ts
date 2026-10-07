@@ -40,6 +40,18 @@ export function localTimeHHmm(date: Date = new Date()): string {
   return `${padTwoDigits(date.getHours())}:${padTwoDigits(date.getMinutes())}`;
 }
 
+/**
+ * Libellés métier de l'origine de la donnée (trip.collection_method, #235). L'export
+ * garde la valeur technique, stable pour l'ETL ; le back-office affiche ces libellés.
+ */
+export const DATA_ORIGIN_LABELS: Record<string, string> = {
+  saisie_pecheur: "Application pêcheur",
+  enquete: "Enquête terrain",
+  enquete_souvenir: "Enquête – sortie souvenir",
+  carnet_volontaire: "Carnet volontaire",
+  carnet_obligatoire: "Carnet obligatoire",
+};
+
 // Minuscules, sans accents, tirets et apostrophes remplacés par des espaces,
 // article initial retiré : « Saône » et « saone », « Chalon-sur-Saône » et
 // « chalon sur saone », « le Rhône » et « rhone » se valent (#197).

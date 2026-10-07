@@ -74,6 +74,11 @@ public class TripsDao extends AbstractFisholaDao {
      * « Prises à valider » de l'opérateur — cf. V2.6.0).
      */
     public static final String CATCHS_PENDING_VALIDATION_VIEW = "catchs_pending_validation";
+    /**
+     * Colonnes d'export filtrées à l'égalité et non par sous-chaîne (#235) : « enquete » ne
+     * doit pas ramener aussi « enquete_souvenir ».
+     */
+    private static final Set<String> EXACT_MATCH_EXPORT_COLUMNS = Set.of("origine_donnee");
     @Inject
     protected CatchsDao catchsDao;
 
@@ -421,7 +426,11 @@ public class TripsDao extends AbstractFisholaDao {
                 Field<Object> filterColumn = checkedExportColumn(context, "Colonne de filtre", filter.getKey());
                 List<String> values = filter.getValue();
                 String value = values == null || values.isEmpty() ? "" : values.get(0);
-                conditions.add(DSL.condition("{0}::varchar(255) ILIKE {1}", filterColumn, DSL.val("%" + value + "%")));
+                if (EXACT_MATCH_EXPORT_COLUMNS.contains(filter.getKey())) {
+                    conditions.add(DSL.condition("{0}::text = {1}", filterColumn, DSL.val(value)));
+                } else {
+                    conditions.add(DSL.condition("{0}::varchar(255) ILIKE {1}", filterColumn, DSL.val("%" + value + "%")));
+                }
             }
             // Cloisonnement départemental du staff régional (#159) : vide = national, pas de filtre.
             if (!allowedDepartments.isEmpty()) {

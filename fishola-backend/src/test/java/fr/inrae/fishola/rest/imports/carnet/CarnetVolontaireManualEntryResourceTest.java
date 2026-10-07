@@ -179,4 +179,25 @@ class CarnetVolontaireManualEntryResourceTest {
                 .then().statusCode(400)
                 .body("errors.field", hasItem("endDay"));
     }
+
+    /** #235 : le code session saisi à la main est conservé et exposé dans l'export. */
+    @Test
+    void sessionCodeIsStoredAndExported() {
+        CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
+        trip.sessionCode = "  CARNET-PAPIER-42 ";
+        String tripId = given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(trip)
+                .when().post(URI)
+                .then().statusCode(201)
+                .extract().jsonPath().getString("tripId");
+        createdTripIds.add(UUID.fromString(tripId));
+
+        var row = DSL.using(dataSource, SQLDialect.POSTGRES).fetchOne(
+                "SELECT origine_donnee, code_session FROM catchs_openadom_export WHERE id_sortie = ?",
+                UUID.fromString(tripId));
+        Assertions.assertEquals("carnet_volontaire", row.get("origine_donnee", String.class));
+        Assertions.assertEquals("CARNET-PAPIER-42", row.get("code_session", String.class));
+    }
 }

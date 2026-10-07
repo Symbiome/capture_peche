@@ -23,6 +23,10 @@
     <h1 class="title">Nouvelle saisie — Carnet volontaire</h1>
 
     <div class="columns is-multiline">
+      <b-field label="Code session (facultatif)" class="column is-12"
+        message="Code de la session inscrit sur le carnet papier">
+        <b-input v-model="trip.sessionCode" maxlength="64"></b-input>
+      </b-field>
       <b-field label="Date" class="column is-2">
         <input type="date" class="input" v-model="trip.day" :max="todayIso" />
       </b-field>
@@ -189,6 +193,7 @@ const species = ref<any[]>([]);
 
 function newTrip() {
   return {
+    sessionCode: "",
     day: "",
     startTime: "",
     endTime: "",

@@ -53,9 +53,18 @@
         :key="col.name"
         :sortable="col.sortable"
         :searchable="col.searchable"
-        v-slot="props"
       >
-        {{ props.row[col.field] }}
+        <template v-if="col.options" #searchable="filterProps">
+          <b-select v-model="filterProps.filters[filterProps.column.field]" size="is-small" expanded>
+            <option value="">Toutes</option>
+            <option v-for="(optionLabel, optionValue) in col.options" :key="optionValue" :value="optionValue">
+              {{ optionLabel }}
+            </option>
+          </b-select>
+        </template>
+        <template #default="props">
+          {{ col.options ? (col.options[props.row[col.field]] || props.row[col.field]) : props.row[col.field] }}
+        </template>
       </b-table-column>
     </b-table>
   </div>
@@ -66,6 +75,7 @@ import { onMounted, ref, Ref } from "vue";
 
 import BackendService from "@/services/BackendService";
 import UtilityServices from "@/services/UtilityServices";
+import { DATA_ORIGIN_LABELS } from "@/utils/utils";
 
 import router from "@/router";
 
@@ -111,6 +121,19 @@ const columns: any[] = [
   {
     field: "longueurTotaleDuPoisson",
     label: "Taille du poisson",
+    searchable: true,
+    sortable: true
+  },
+  {
+    field: "origineDonnee",
+    label: "Origine",
+    searchable: true,
+    sortable: true,
+    options: DATA_ORIGIN_LABELS
+  },
+  {
+    field: "codeSession",
+    label: "Code session",
     searchable: true,
     sortable: true
   }

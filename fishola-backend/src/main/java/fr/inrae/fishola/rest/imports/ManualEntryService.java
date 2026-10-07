@@ -125,7 +125,7 @@ public class ManualEntryService {
                 .toList();
 
         UUID tripId = importDao.saveManualEntry(cm, bean.day, bean.startTime, bean.endDay, bean.endTime, waterEntityId,
-                name, bean.techniqueId, rows);
+                name, null, bean.techniqueId, rows);
         return new ManualResultBean(tripId, rows.size(), List.of());
     }
 

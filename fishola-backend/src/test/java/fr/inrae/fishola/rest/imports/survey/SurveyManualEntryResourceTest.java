@@ -258,6 +258,15 @@ class SurveyManualEntryResourceTest {
                         .get(0, Integer.class) == 1)
                 .count();
         Assertions.assertEquals(1, souvenirTrips, "la session souvenir doit produire sa propre trip");
+
+        // #235 : les deux sorties portent le code de la session d'enquête générée.
+        List<String> sessionCodes = response.jsonPath().getList("tripIds", String.class).stream()
+                .map(id -> ctx.fetchOne("SELECT session_code FROM trip WHERE id = ?", UUID.fromString(id))
+                        .get(0, String.class))
+                .distinct()
+                .toList();
+        Assertions.assertEquals(1, sessionCodes.size(), "un seul code session pour les deux sorties");
+        Assertions.assertTrue(sessionCodes.get(0).startsWith("MANUEL-"), sessionCodes.get(0));
     }
 
     @Test
