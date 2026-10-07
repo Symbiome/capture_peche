@@ -22,6 +22,24 @@ export function isValidTimeString(value: string): boolean {
   return TIME_24H_REGEX.test(value);
 }
 
+function padTwoDigits(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/**
+ * Date locale de l'appareil au format AAAA-MM-JJ (#234). Contrairement à
+ * `toISOString()`, qui renvoie la date UTC, ne donne pas la veille entre minuit
+ * et 2 h en France l'été.
+ */
+export function localDateIso(date: Date = new Date()): string {
+  return `${date.getFullYear()}-${padTwoDigits(date.getMonth() + 1)}-${padTwoDigits(date.getDate())}`;
+}
+
+/** Heure locale de l'appareil au format HH:mm, minutes tronquées (#234). */
+export function localTimeHHmm(date: Date = new Date()): string {
+  return `${padTwoDigits(date.getHours())}:${padTwoDigits(date.getMinutes())}`;
+}
+
 // Minuscules, sans accents, tirets et apostrophes remplacés par des espaces,
 // article initial retiré : « Saône » et « saone », « Chalon-sur-Saône » et
 // « chalon sur saone », « le Rhône » et « rhone » se valent (#197).

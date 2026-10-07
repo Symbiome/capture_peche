@@ -251,7 +251,7 @@
 import BackendService from "@/services/BackendService";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
-import { maskTimeInput, isValidTimeString } from "@/utils/utils";
+import { maskTimeInput, isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
 import { reactive, ref, computed } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
@@ -263,10 +263,13 @@ const DAY_PERIODS = ["matin", "après-midi", "journée entière", "soirée"];
 const techniques = ref<any[]>([]);
 const species = ref<any[]>([]);
 
+// Date et heure du contrôle pré-renseignées avec celles de l'appareil (#234),
+// modifiables pour la saisie a posteriori d'une enquête papier.
 function newSortie() {
+  const now = new Date();
   return {
-    day: "",
-    controlTime: "",
+    day: localDateIso(now),
+    controlTime: localTimeHHmm(now),
     startTime: "",
     endTime: "",
     waterEntityId: null,
@@ -347,7 +350,7 @@ const endTimeMessage = computed(() => {
 
 const hasTimeErrors = computed(() => !!(controlTimeMessage.value || timeErrors.startTime || endTimeMessage.value));
 
-const todayIso = computed(() => new Date().toISOString().slice(0, 10));
+const todayIso = computed(() => localDateIso());
 
 function isLot(c: any): boolean {
   return Number(c.quantity) > 1;
