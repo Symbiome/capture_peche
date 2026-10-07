@@ -278,7 +278,7 @@ export default class NearbyList extends Vue {
     max-height: 70vh; // fallback si dvh non supporté
     max-height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
     left: 0;
-    background-color: white;
+    background-color: @surface;
     overflow: hidden;
     display: flex;
     flex-direction: column;

@@ -25,11 +25,15 @@ document
   .setProperty("$primary", "yellow");
 
 import {createApp} from "vue";
+import ThemeService from "@/services/ThemeService";
 import Buefy from "buefy";
 import "buefy/dist/css/buefy.css";
 
 import App from "./App.vue";
 import router from "./router";
+
+// Thème appliqué avant le premier rendu (#208).
+ThemeService.init();
 
 createApp(App)
   .use(Buefy)

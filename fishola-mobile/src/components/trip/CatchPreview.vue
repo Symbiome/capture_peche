@@ -243,7 +243,7 @@ export default class CatchPreview extends Vue {
     justify-content: space-between;
 
     height: 50px;
-    background-color: @white;
+    background-color: @surface;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 

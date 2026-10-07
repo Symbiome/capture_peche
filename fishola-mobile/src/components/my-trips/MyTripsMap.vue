@@ -454,7 +454,7 @@ export default class MyTripsMapView extends Vue {
         cursor: pointer;
 
         &:hover {
-            background-color: @white;
+            background-color: @surface;
             color: @terra-cotta;
             border: 2px solid @terra-cotta;
         }

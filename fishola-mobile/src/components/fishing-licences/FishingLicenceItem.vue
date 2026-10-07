@@ -176,7 +176,7 @@ export default class FishingLicenceItem extends Vue {
     font-size: @pastille-size;
     line-height: calc(@pastille-size);
     color: @pelorous;
-    background: @white;
+    background: @surface;
     margin: auto;
     text-align: center;
     padding-top: 20px;

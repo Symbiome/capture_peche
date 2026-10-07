@@ -249,7 +249,7 @@ export default class RegisterView extends Vue {
     overflow: auto;
 
     .form-input label {
-      color: @black;
+      color: @text-strong;
     }
 
     .form-input input {

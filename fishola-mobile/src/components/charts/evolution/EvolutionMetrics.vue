@@ -328,7 +328,8 @@ export default class EvolutionMetricsView extends Vue {
           stacked: true,
           max: this.max[this.displayMode],
           grid: {
-              color: '#DFE6E9'
+              // Quadrillage selon le thème clair / sombre (#208, ThemeService).
+              color: ChartJS.defaults.borderColor as string
           },
           border: {
               color: '#999'
@@ -502,8 +503,8 @@ select {
   }
 
   option {
-    color: black;
-    background-color: white;
+    color: @text-strong;
+    background-color: @surface;
   }
 
   &:hover {

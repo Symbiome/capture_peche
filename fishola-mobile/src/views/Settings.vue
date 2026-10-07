@@ -24,6 +24,17 @@
       <div class="spinner"></div>
     </div>
 
+    <!-- Mode nuit (#208) : réglage local à l'appareil, disponible hors-ligne. -->
+    <div class="rounded theme-setting" v-if="!loading">
+      <FormRadio
+        name="theme"
+        label="Apparence"
+        v-bind:options="themeOptions"
+        v-bind:value="themePreference"
+        v-on:input="themeChanged"
+      />
+    </div>
+
     <div class="offline" v-if="!loading && offline">
       <span>Les paramètres ne sont pas disponible sans connexion internet</span>
       <div class="settings-row nav-row offline-nav" @click="goToOfflineAreas">
@@ -82,6 +93,8 @@
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
+import FormRadio from '@/components/common/FormRadio.vue'
+import ThemeService, { ThemePreference } from '@/services/ThemeService';
 import FisholaFooter from '@/components/layout/FisholaFooter.vue'
 
 import { UserSettings } from '@/pojos/BackendPojos';
@@ -97,6 +110,7 @@ import BottomInducementView from '@/components/common/BottomInducement.vue';
   components: {
     FisholaHeader,
     FormToggle,
+    FormRadio,
     FisholaFooter,
     BottomInducementView
   }
@@ -111,6 +125,12 @@ export default class SettingsView extends Vue {
   availableAppVersion = "";
 
   samplesDocumentationUrl: string = '';
+  themePreference: ThemePreference = ThemeService.getPreference();
+  themeOptions = [
+    { id: "light", name: "Clair" },
+    { id: "dark", name: "Sombre" },
+    { id: "system", name: "Selon le système" },
+  ];
   bottomInducementActions = [
     {
       name: "Voir les points de collecte",
@@ -121,6 +141,11 @@ export default class SettingsView extends Vue {
       action: "becomeScaleCollector"
     },
   ];
+
+  themeChanged(preference: ThemePreference) {
+    this.themePreference = preference;
+    ThemeService.setPreference(preference);
+  }
 
   constructor() {
     super();

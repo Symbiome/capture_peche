@@ -298,11 +298,11 @@ export default class LakeAndYearSelection extends Vue {
     cursor: pointer;
 
     option {
-      color: black;
+      color: @text-strong;
     }
 
     &:hover {
-      background-color: white;
+      background-color: @surface;
     }
   }
 
@@ -325,7 +325,7 @@ export default class LakeAndYearSelection extends Vue {
     color: @pelorous;
 
     &:hover {
-      background-color: white;
+      background-color: @surface;
     }
   }
 
@@ -339,7 +339,7 @@ export default class LakeAndYearSelection extends Vue {
     margin: 4px 0 0;
     padding: 0;
     list-style: none;
-    background-color: white;
+    background-color: @surface;
     box-shadow: 0 0 5px #0002;
     z-index: 500;
     text-align: left;

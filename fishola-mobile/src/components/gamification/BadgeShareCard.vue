@@ -20,7 +20,7 @@
   -->
 <template>
   <div
-    class="badge-share page-with-header-and-footer"
+    class="badge-share page-with-header-and-footer force-light-theme"
     v-bind:class="display ? '' : 'badge-share-hidden'"
   >
     <div class="page badge-share-page">

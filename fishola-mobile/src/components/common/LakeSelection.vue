@@ -519,7 +519,7 @@ export default class LakeSelection extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   .input-wrapper {
@@ -603,7 +603,7 @@ export default class LakeSelection extends Vue {
     margin: 0;
     padding: 0;
     list-style: none;
-    background-color: white;
+    background-color: @surface;
     box-shadow: 0 0 5px #0002;
     z-index: 100;
 

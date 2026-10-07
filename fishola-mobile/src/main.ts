@@ -34,6 +34,7 @@ import Vue2TouchEvents from "vue2-touch-events";
 import NoMenuLayout from "@/layouts/NoMenuLayout.vue";
 Vue.component("no-menu-layout", NoMenuLayout);
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import ThemeService from "@/services/ThemeService";
 Vue.component("default-layout", DefaultLayout);
 
 moment.locale("fr");
@@ -59,6 +60,9 @@ Vue.use(VueScrollTo, {
 Vue.use(VueObserveVisibility);
 Vue.use(Vue2TouchEvents);
 Vue.config.productionTip = false;
+
+// Thème appliqué avant le premier rendu (#208) : pas de flash en clair.
+ThemeService.init();
 
 new Vue({
   router,

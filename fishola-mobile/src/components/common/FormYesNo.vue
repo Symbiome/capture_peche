@@ -124,7 +124,7 @@ export default class FormYesNo extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   .choices {

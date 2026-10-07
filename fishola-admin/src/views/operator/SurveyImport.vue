@@ -367,7 +367,7 @@ async function doImport() {
 
   .stat {
     flex: 1 1 160px;
-    background: #fff;
+    background: var(--bulma-scheme-main);
     border: 1px solid #e2e8ec;
     border-left: 4px solid #c9d3da;
     border-radius: 8px;

@@ -46,7 +46,7 @@ defineOptions({
 @import "less/main";
 
 body {
-  background-color: @white;
+  background-color: var(--bulma-scheme-main);
   margin: 0px;
   height: 100%;
   overflow: hidden;
@@ -67,7 +67,7 @@ html {
   font-family: "Open Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: @gunmetal;
+  color: var(--bulma-text);
   height: 100%;
   max-height: 100%;
   max-width: 100%;

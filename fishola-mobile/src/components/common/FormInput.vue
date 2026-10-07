@@ -161,7 +161,7 @@ export default class FormInput extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   input {

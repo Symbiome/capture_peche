@@ -4,16 +4,23 @@
 @cyprus: #0A3C4D;
 
 @black: #000000;
-@gunmetal: #2D3436;
-@pale-sky: #636E72;
-@very-light-grey: #CDCDCD;
-@link-water: #D2DAE2;
+@gunmetal: var(--fishola-gunmetal);
+@pale-sky: var(--fishola-pale-sky);
+@very-light-grey: var(--fishola-very-light-grey);
+@link-water: var(--fishola-link-water);
 
 @white: #FFFFFF;
-@white-smoke: #F7F7F7;
-@gainsboro: #E7E7E7;
-@zircon: #EBEEEE;
-@solitude: #DFE6E9;
+
+// Mode nuit (#208) : les neutres (fonds, bordures, textes) sont des propriétés
+// CSS, redéfinies selon le thème dans main.less. Les couleurs de marque et
+// @white (texte sur fond coloré) restent fixes.
+@surface: var(--fishola-surface);
+@surface-overlay: var(--fishola-surface-overlay);
+@text-strong: var(--fishola-text-strong);
+@white-smoke: var(--fishola-white-smoke);
+@gainsboro: var(--fishola-gainsboro);
+@zircon: var(--fishola-zircon);
+@solitude: var(--fishola-solitude);
 
 @cardinal: #D62137;
 @lime-green: #44BD32;

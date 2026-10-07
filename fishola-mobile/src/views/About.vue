@@ -20,7 +20,8 @@
   -->
 <template>
   <!-- \\ Begin Holder \\ -->
-  <div class="DesignHolder" v-on:scroll="scrolled" id="about-scroll-container">
+  <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
+  <div class="DesignHolder force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
     <!-- \\ Begin Frame \\ -->
     <div class="LayoutFrame" id="top">
       <!-- \\ Begin Header \\ -->

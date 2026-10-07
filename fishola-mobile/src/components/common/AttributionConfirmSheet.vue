@@ -172,7 +172,7 @@ export default class AttributionConfirmSheet extends Vue {
     // feuille dépassait la zone réellement visible. Unités dynamiques, repli `vh`.
     max-height: 60vh;
     max-height: min(50svh, calc(100dvh - @footer-height));
-    background: white;
+    background: @surface;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     box-shadow: 0 -2px 12px #0003;
@@ -252,7 +252,7 @@ export default class AttributionConfirmSheet extends Vue {
     // déjà dégagée par `margin-bottom: @footer-height` sur la feuille.
     flex-shrink: 0;
     padding: 14px 20px;
-    background: white;
+    background: @surface;
     border-top: 1px solid @gainsboro;
 
     button {

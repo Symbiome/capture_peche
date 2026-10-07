@@ -121,7 +121,7 @@ export default class FormSelect extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   select {
