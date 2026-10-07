@@ -70,6 +70,12 @@
         </div>
     </div>
 
+    <AnglerEffortStatistics
+      :year="year"
+      :selectedLakeId="selectedLakeId"
+      :species="dashboardData.species"
+    />
+
     <div class="section">
       <div class="shrinked avg-size">
         <h2>
@@ -165,6 +171,7 @@ import OptionsList from "@/components/common/OptionsList.vue";
 
 import DistributionChart from "@/components/charts/DistributionChart.vue";
 import HistogramChart from "@/components/charts/HistogramChart.vue";
+import AnglerEffortStatistics from "@/components/charts/personal-dashboard/AnglerEffortStatistics.vue";
 
 import Constants from "@/services/Constants";
 import TripsService from "@/services/TripsService";
@@ -195,7 +202,8 @@ export class TopEntry {
     HistogramChart,
     CatchPreviewList,
     GaleryPreviewList,
-    MaillageLegend
+    MaillageLegend,
+    AnglerEffortStatistics,
   },
 })
 export default class PersonalDashboard extends Vue {

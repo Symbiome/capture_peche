@@ -243,6 +243,16 @@ export interface EvolutionMetricsForWaterEntity {
     evolutionPerMonthAndSpecie: { [index: string]: EvolutionMetricForSpecieAndMonth[] };
 }
 
+export interface AnglerEffortStatistics {
+    monthlyEffort: { [P in Month]?: MonthlyEffort };
+    totalHours: number;
+    hoursPerTechnique: { [index: string]: number };
+    cpueMinCatches: number;
+    cpuePerSpecies: SpeciesCpue[];
+    sectorMinAnglers: number;
+    sectorContribution?: SectorContribution;
+}
+
 export interface LicenceFromClientBean {
     name: string;
     expirationDate: Date;
@@ -358,6 +368,25 @@ export interface EvolutionMetricForSpecieAndMonth {
     monthYear: string;
     tripsCount: number;
     keptCatchesCount: number;
+    totalCatchesCount: number;
+}
+
+export interface MonthlyEffort {
+    tripsCount: number;
+    hours: number;
+}
+
+export interface SpeciesCpue {
+    speciesId: string;
+    catchesCount: number;
+    catchesPerHour?: number;
+}
+
+export interface SectorContribution {
+    anglersCount: number;
+    myTripsCount: number;
+    totalTripsCount: number;
+    myCatchesCount: number;
     totalCatchesCount: number;
 }
 
