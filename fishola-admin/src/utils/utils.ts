@@ -55,3 +55,43 @@ export function searchRank(label: string, query: string): number | null {
   }
   return normalizedLabel.includes(normalizedQuery) ? 3 : null;
 }
+
+export interface WaterEntityLabelSource {
+  id: string;
+  name: string;
+  department?: string;
+  commune?: string;
+}
+
+/**
+ * Libellés des milieux d'une liste de résultats (#230, même règle que
+ * fishola-mobile Helpers.waterEntityLabels) : les homonymes (même nom à la
+ * casse et aux accents près) sont suffixés de leur département, « La Bourbre
+ * (38) », et de la commune s'ils partagent le même département, « Étang Neuf
+ * (01 – Bourg-en-Bresse) ». Sans département connu, ou sans homonyme, le nom
+ * seul. Renvoie le libellé par id de milieu.
+ */
+export function waterEntityLabels(entities: WaterEntityLabelSource[]): Map<string, string> {
+  const uniqueById = new Map(entities.map((entity) => [entity.id, entity]));
+  const homonymsByName = new Map<string, WaterEntityLabelSource[]>();
+  uniqueById.forEach((entity) => {
+    const key = (entity.name || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+    homonymsByName.set(key, [...(homonymsByName.get(key) || []), entity]);
+  });
+  const labels = new Map<string, string>();
+  homonymsByName.forEach((homonyms) => {
+    homonyms.forEach((entity) => labels.set(entity.id, homonymLabel(entity, homonyms)));
+  });
+  return labels;
+}
+
+function homonymLabel(entity: WaterEntityLabelSource, homonyms: WaterEntityLabelSource[]): string {
+  if (homonyms.length < 2 || !entity.department) {
+    return entity.name;
+  }
+  const sameDepartment = homonyms.some(
+    (other) => other.id !== entity.id && other.department === entity.department
+  );
+  const suffix = sameDepartment && entity.commune ? `${entity.department} – ${entity.commune}` : entity.department;
+  return `${entity.name} (${suffix})`;
+}

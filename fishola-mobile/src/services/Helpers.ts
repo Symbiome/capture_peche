@@ -65,6 +65,47 @@ export default class Helpers {
       .replace(/^(le|la|les|l) /, "");
   }
 
+  /**
+   * Libellés des milieux d'une liste de résultats (#230) : les homonymes
+   * (même nom à la casse et aux accents près) sont suffixés de leur
+   * département, « La Bourbre (38) », et de la commune s'ils partagent le même
+   * département, « Étang Neuf (01 – Bourg-en-Bresse) ». Sans département connu,
+   * ou sans homonyme, le nom seul. Renvoie le libellé par id de milieu.
+   */
+  static waterEntityLabels(
+    entities: { id: string; name: string; department?: string; commune?: string }[]
+  ): Map<string, string> {
+    const uniqueById = new Map(entities.map((entity) => [entity.id, entity]));
+    const homonymsByName = new Map<string, typeof entities>();
+    uniqueById.forEach((entity) => {
+      const key = Helpers.unaccent(entity.name || "").trim();
+      homonymsByName.set(key, [...(homonymsByName.get(key) || []), entity]);
+    });
+    const labels = new Map<string, string>();
+    homonymsByName.forEach((homonyms) => {
+      homonyms.forEach((entity) => {
+        labels.set(entity.id, Helpers.homonymLabel(entity, homonyms));
+      });
+    });
+    return labels;
+  }
+
+  private static homonymLabel(
+    entity: { id: string; name: string; department?: string; commune?: string },
+    homonyms: { id: string; department?: string }[]
+  ): string {
+    if (homonyms.length < 2 || !entity.department) {
+      return entity.name;
+    }
+    const sameDepartment = homonyms.some(
+      (other) => other.id !== entity.id && other.department === entity.department
+    );
+    const suffix = sameDepartment && entity.commune
+      ? `${entity.department} – ${entity.commune}`
+      : entity.department;
+    return `${entity.name} (${suffix})`;
+  }
+
   // Classement d'un libellé pour une recherche (#197, même règle que l'admin
   // #203 et que le backend) : égalité exacte, puis préfixe, puis début de mot,
   // puis simple inclusion. null si le libellé ne correspond pas.

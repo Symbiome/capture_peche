@@ -306,6 +306,7 @@ export interface WaterEntitySearchResult {
     centroid: GeoPoint;
     commune?: string;
     codePostal?: string;
+    department?: string;
 }
 
 export interface WaterEntityAttribution {

@@ -24,7 +24,7 @@
       <b-autocomplete
         v-model="search"
         :data="suggestions"
-        field="name"
+        field="label"
         :placeholder="placeholder"
         :loading="loading"
         icon="magnify"
@@ -50,13 +50,21 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import { waterEntityLabels } from "@/utils/utils";
 import WaterEntityMapPicker, { MapPick, MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import { BAutocomplete } from "buefy";
 import { nextTick, ref, watch } from "vue";
 
-interface WaterEntityOption {
+interface WaterEntityName {
   id: string;
   name: string;
+  department?: string;
+  commune?: string;
+}
+
+interface WaterEntityOption extends WaterEntityName {
+  /** Nom, suffixé du département pour les homonymes (#230). */
+  label: string;
 }
 
 interface Props {
@@ -140,7 +148,7 @@ function onTyping(term: string) {
         "/v1/referential/waterEntities/names/search?q=" + encodeURIComponent(trimmed)
       );
       if (seq === searchSeq) {
-        suggestions.value = results;
+        suggestions.value = withLabels(results);
       }
     } catch {
       if (seq === searchSeq) {
@@ -152,6 +160,11 @@ function onTyping(term: string) {
       }
     }
   }, 250);
+}
+
+function withLabels(results: WaterEntityName[]): WaterEntityOption[] {
+  const labels = waterEntityLabels(results);
+  return results.map((result) => ({ ...result, label: labels.get(result.id) || result.name }));
 }
 
 // Buefy émet select(null) dès qu'on retape après une sélection ou qu'on vide le champ :
@@ -167,7 +180,7 @@ function onSelect(option: WaterEntityOption | null) {
     emit("update:position", null);
   }
   if (option) {
-    search.value = option.name;
+    search.value = option.label;
   }
 }
 

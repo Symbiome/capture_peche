@@ -177,6 +177,8 @@ export default class OfflineAreasService extends AbstractFisholaService {
       id: feature.properties.water_entity_id,
       name: feature.properties.name,
       kind: feature.properties.kind,
+      // Absent des packs téléchargés avant #230 : pas de suffixe d'homonyme.
+      department: feature.properties.department,
       latitude: point ? point.lat : undefined,
       longitude: point ? point.lng : undefined,
       exportAs: feature.properties.name,

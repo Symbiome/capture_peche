@@ -264,5 +264,47 @@ describe("Helpers — confirmation de taille au-delà du maximum", () => {
   it("revient au formulaire après « Corriger »", async () => {
     const modal = fakeModal("Corriger");
     await expect(Helpers.confirmSizeAboveMax(modal, 95, 80)).resolves.toBe(false);
+    });
+});
+// #230 : homonymes suffixés du département (et de la commune s'ils partagent
+// le même département) dans les listes de recherche de milieux.
+describe("Helpers — libellés des milieux homonymes", () => {
+  it("suffixe le département des homonymes de départements différents", () => {
+    const labels = Helpers.waterEntityLabels([
+      { id: "a", name: "La Bourbre", department: "38" },
+      { id: "b", name: "la bourbre", department: "01" },
+    ]);
+    expect(labels.get("a")).toBe("La Bourbre (38)");
+    expect(labels.get("b")).toBe("la bourbre (01)");
+  });
+
+  it("ajoute la commune aux homonymes d'un même département", () => {
+    const labels = Helpers.waterEntityLabels([
+      { id: "a", name: "Étang Neuf", department: "01", commune: "Bourg-en-Bresse" },
+      { id: "b", name: "Etang Neuf", department: "01", commune: "Pont-d'Ain" },
+      { id: "c", name: "Etang Neuf", department: "01" },
+    ]);
+    expect(labels.get("a")).toBe("Étang Neuf (01 – Bourg-en-Bresse)");
+    expect(labels.get("b")).toBe("Etang Neuf (01 – Pont-d'Ain)");
+    expect(labels.get("c")).toBe("Etang Neuf (01)");
+  });
+
+  it("laisse le nom seul sans homonyme ou sans département connu", () => {
+    const labels = Helpers.waterEntityLabels([
+      { id: "a", name: "Lac d'Annecy", department: "74" },
+      { id: "b", name: "Le Doulon" },
+      { id: "c", name: "Le Doulon", department: "43" },
+    ]);
+    expect(labels.get("a")).toBe("Lac d'Annecy");
+    expect(labels.get("b")).toBe("Le Doulon");
+    expect(labels.get("c")).toBe("Le Doulon (43)");
+  });
+
+  it("ne compte pas comme homonyme un favori aussi présent dans les résultats", () => {
+    const labels = Helpers.waterEntityLabels([
+      { id: "a", name: "Lac Vert", department: "74" },
+      { id: "a", name: "Lac Vert", department: "74" },
+    ]);
+    expect(labels.get("a")).toBe("Lac Vert");
   });
 });

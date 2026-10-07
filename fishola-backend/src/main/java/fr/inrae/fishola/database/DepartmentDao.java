@@ -66,7 +66,7 @@ public class DepartmentDao extends AbstractFisholaDao {
     // trimmed to ~0.1 m precision to bound the payload. Bind order: code, code.
     private static final String DEPARTMENT_HYDRO_GEOJSON_SQL = ""
             + "WITH we_in_dept AS ( "
-            + "  SELECT we.id, we.name, we.kind, we.geom "
+            + "  SELECT we.id, we.name, we.kind, we.department, we.geom "
             + "  FROM water_entity we "
             + "  WHERE we.geom IS NOT NULL "
             + "    AND EXISTS ( "
@@ -85,7 +85,8 @@ public class DepartmentDao extends AbstractFisholaDao {
             + "     'properties', json_build_object( "
             + "        'water_entity_id', f.id::text, "
             + "        'name', f.name, "
-            + "        'kind', f.kind::text "
+            + "        'kind', f.kind::text, "
+            + "        'department', f.department "
             + "     ) "
             + "  )), '[]'::json) "
             + ")::text AS pack "
