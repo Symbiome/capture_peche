@@ -27,6 +27,8 @@ import 'moment/dist/locale/fr';
 
 export default class Helpers {
   static readonly TIME_24H_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+  // Taille maximale par défaut (cm) quand l'administrateur n'en a pas défini.
+  static readonly DEFAULT_MAX_SIZE = 1000;
 
   // Masque de saisie HH:mm indépendant de la locale du navigateur/OS : les
   // champs <input type="time"> natifs affichent AM/PM selon la locale de
@@ -375,6 +377,29 @@ export default class Helpers {
       };
       modal.show("dialog", params);
     });
+  }
+
+  /**
+   * Taille d'une prise au-delà de la taille maximale définie par
+   * l'administrateur pour (milieu, espèce) (#229) : demande confirmation au
+   * lieu de bloquer l'enregistrement. Sans taille maximale définie (borne
+   * par défaut), aucune confirmation. Résout `true` pour enregistrer,
+   * `false` pour revenir corriger la taille.
+   */
+  static confirmSizeAboveMax(modal: any, size: number | undefined, maxSize: number): Promise<boolean> {
+    if (!size || maxSize >= Helpers.DEFAULT_MAX_SIZE || size <= maxSize) {
+      return Promise.resolve(true);
+    }
+    return Helpers.confirm(
+      modal,
+      `Taille saisie : ${size} cm, supérieure à la taille maximale de l'espèce sur ce milieu (${maxSize} cm).`,
+      "Êtes-vous sûr de la taille de la prise ?",
+      "Corriger",
+      "Confirmer"
+    ).then(
+      () => true,
+      () => false
+    );
   }
 
   static alert(modal: any, text: string, title?: string): Promise<void> {
