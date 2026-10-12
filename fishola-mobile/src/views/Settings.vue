@@ -51,7 +51,7 @@
         <FormToggle v-model="settings.promptWeight" />
       </div>
 
-      <div class="settings-row" v-if="settings">
+      <div class="settings-row" v-if="settings && scaleSamplingEnabled">
         <span>Effectuer des prélèvements</span>
         <FormToggle v-model="settings.promptSamples" />
       </div>
@@ -77,6 +77,7 @@
       </div>
 
       <BottomInducementView
+        v-if="scaleSamplingEnabled"
         icon="/img/fish-blue.svg"
         title="Devenez collecteur d'écailles salmonidés"
         text="Pour pouvoir effectuer des prélèvements, vous devez vous munir d'un kit de collectes d'écailles. À récupérer dans un des points de collecte ou en nous contactant pour le recevoir à votre adresse."
@@ -105,6 +106,7 @@ import DocumentationService from '../services/DocumentationService';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
 import BottomInducementView from '@/components/common/BottomInducement.vue';
+import ScaleSampling from '@/services/ScaleSampling';
 
 @Component({
   components: {
@@ -125,6 +127,7 @@ export default class SettingsView extends Vue {
   availableAppVersion = "";
 
   samplesDocumentationUrl: string = '';
+  scaleSamplingEnabled: boolean = ScaleSampling.isEnabled();
   themePreference: ThemePreference = ThemeService.getPreference();
   themeOptions = [
     { id: "light", name: "Clair" },

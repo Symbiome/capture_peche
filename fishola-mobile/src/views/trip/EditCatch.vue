@@ -163,14 +163,10 @@
                   placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
                   v-model="aCatch.description" v-bind:readonly="!modifiable" />
               </div>
-              <FormToggle v-if="withSample ||
-                (settings &&
-                  settings.promptSamples
-                  && aCatch.speciesId
-                  && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-              " label="Prélèvement (optionnel)" v-model="withSample" v-bind:readonly="!modifiable" />
+              <FormToggle v-if="showSampleToggle" label="Prélèvement (optionnel)" v-model="withSample"
+                v-bind:readonly="!modifiable" />
               <div class="sample two-columns-row-on-desktop" v-if="withSample">
-                <div class="info" v-if="samplesDocumentationUrl">
+                <div class="info" v-if="samplesDocumentationUrl && scaleSamplingEnabled">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
                   d'un kit dans un des points de collecte :
                   <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
@@ -270,6 +266,7 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
+import ScaleSampling from "@/services/ScaleSampling";
 
 import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
 
@@ -359,6 +356,7 @@ export default class EditCatchView extends Vue {
   samplesDocumentationUrl: string = "";
   sampleIdReady: boolean = false;
   authorizedSampleSpeciesIds: string[] = [];
+  scaleSamplingEnabled: boolean = ScaleSampling.isEnabled();
 
   gpsLocation: { lat: number; lng: number } | null = null;
 
@@ -613,6 +611,16 @@ export default class EditCatchView extends Vue {
     }
   }
 
+  get showSampleToggle(): boolean {
+    const speciesId = this.aCatch.speciesId;
+    return ScaleSampling.showSampleToggle(
+      this.scaleSamplingEnabled,
+      this.withSample,
+      !!(this.settings && this.settings.promptSamples),
+      !!speciesId && this.authorizedSampleSpeciesIds.indexOf(speciesId) != -1
+    );
+  }
+
   // Une photo aide l'opérateur/expert à trancher sur une identification non
   // certaine (#87, file "Prises à valider") : on le rappelle au pêcheur tant
   // qu'aucune photo (galerie ou mesure) n'a encore été prise.
@@ -838,7 +846,7 @@ export default class EditCatchView extends Vue {
 
   @Watch("withSample")
   onWithSampleChanged(value: boolean, _oldValue: boolean) {
-    if (value && !this.aCatch.sampleId) {
+    if (value && !this.aCatch.sampleId && this.scaleSamplingEnabled) {
       TripsService.newSampleId().then(this.onNewSampleId);
     }
   }
