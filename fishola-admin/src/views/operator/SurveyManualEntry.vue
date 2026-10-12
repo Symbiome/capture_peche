@@ -22,509 +22,102 @@
   <section class="section">
     <h1 class="title">Nouvelle saisie — Enquête terrain</h1>
     <p class="subtitle is-6">
-      Session d'enquête → sortie → pêcheur(s) interrogé(s) → captures, avec bloc « session
-      souvenir » facultatif par pêcheur. Les codes session / sortie / pêcheur sont générés
-      automatiquement.
+      Session d'enquête → sortie(s) → pêcheur(s) interrogé(s) → captures, avec bloc « session souvenir »
+      facultatif par pêcheur. Les codes session / sortie / pêcheur sont générés automatiquement.
     </p>
 
-    <h2 class="subtitle is-5">Sortie enquêtée</h2>
-    <div class="columns is-multiline">
-      <b-field label="Date" class="column is-2">
-        <input type="date" class="input" v-model="sortie.day" :max="todayIso" />
-      </b-field>
-      <b-field label="Heure du contrôle" class="column is-2" :type="controlTimeMessage ? 'is-danger' : ''"
-        :message="controlTimeMessage">
-        <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
-          :value="sortie.controlTime" @input="onTimeInput($event, 'controlTime')"
-          @blur="onTimeBlur('controlTime')" />
-      </b-field>
-      <b-field label="Heure de début" class="column is-2" :type="timeErrors.startTime ? 'is-danger' : ''"
-        :message="timeErrors.startTime">
-        <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
-          :value="sortie.startTime" @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
-      </b-field>
-      <b-field label="Heure de fin prévue" class="column is-2" :type="endTimeMessage ? 'is-danger' : ''"
-        :message="endTimeMessage">
-        <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input"
-          :value="sortie.endTime" @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
-      </b-field>
-      <b-field label="Secteur" class="column is-4">
-        <WaterEntitySearchSelect v-model="sortie.waterEntityId" v-model:position="sortie.position" with-map />
-      </b-field>
-
-      <b-field label="Pêcheurs carnassiers du bord non-enquêtés" class="column is-4">
-        <b-input type="number" min="0" v-model.number="sortie.unsurveyedShoreAnglers"></b-input>
-      </b-field>
-      <b-field label="Pêcheurs carnassiers en bateau non-enquêtés" class="column is-4">
-        <b-input type="number" min="0" v-model.number="sortie.unsurveyedBoatAnglers"></b-input>
-      </b-field>
-    </div>
-
-    <h2 class="subtitle is-5">Pêcheurs interrogés</h2>
-    <div v-for="(angler, i) in anglers" :key="i" class="box angler-box">
-      <div class="angler-header">
-        <strong>Pêcheur {{ i + 1 }}</strong>
-        <b-button type="is-danger" size="is-small" icon-left="delete" :disabled="anglers.length <= 1"
-          @click="removeAngler(i)">Retirer</b-button>
-      </div>
-
-      <div class="columns is-multiline">
-        <b-field label="Département / pays d'origine" class="column is-4">
-          <b-input v-model="angler.origin" placeholder="ex. 69, Suisse…"></b-input>
-        </b-field>
-        <b-field label="Mode de pêche" class="column is-4">
-          <b-select v-model="angler.fishingMode" expanded>
-            <option v-for="m in FISHING_MODES" :key="m" :value="m">{{ m }}</option>
-          </b-select>
-        </b-field>
-        <b-field label="Technique" class="column is-4">
-          <b-select v-model="angler.techniqueId" expanded>
-            <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-          </b-select>
-        </b-field>
-
-        <b-field label="Nombre de lignes" class="column is-3">
-          <b-input type="number" min="1" v-model.number="angler.rodCount"></b-input>
-        </b-field>
-        <b-field label="Appât / type de leurre" class="column is-4">
-          <b-input v-model="angler.baitOrLure"></b-input>
-        </b-field>
-        <b-field label="Espèce recherchée" class="column is-5">
-          <b-select v-model="angler.expectedSpeciesId" expanded :disabled="angler.noExpectedSpecies">
-            <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </b-select>
-        </b-field>
-        <b-field class="column is-12 no-species-field">
-          <b-switch v-model="angler.noExpectedSpecies">Aucune espèce recherchée / toutes espèces</b-switch>
-        </b-field>
-
-        <b-field class="column is-12">
-          <b-switch v-model="angler.bredouille">Bredouille (aucune capture)</b-switch>
-        </b-field>
-      </div>
-
-      <div v-if="!angler.bredouille">
-        <h3 class="capture-title">Captures</h3>
-        <div v-for="(c, j) in angler.captures" :key="j" class="box capture-box">
-          <div class="columns is-multiline is-vcentered">
-            <b-field label="Espèce" class="column is-3">
-              <b-select v-model="c.speciesId" expanded>
-                <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-              </b-select>
-            </b-field>
-            <b-field label="Nombre" class="column is-2">
-              <b-input type="number" min="1" v-model.number="c.quantity"></b-input>
-            </b-field>
-
-            <template v-if="isLot(c)">
-              <b-field label="Taille min (cm)" class="column is-2">
-                <b-input type="number" min="0" v-model.number="c.lotMinSize"></b-input>
-              </b-field>
-              <b-field label="Taille max (cm)" class="column is-2">
-                <b-input type="number" min="0" v-model.number="c.lotMaxSize"></b-input>
-              </b-field>
-            </template>
-            <b-field v-else label="Taille (cm)" class="column is-2">
-              <b-input type="number" min="0" v-model.number="c.size"></b-input>
-            </b-field>
-
-            <b-field label="Conservé" class="column is-2">
-              <b-switch v-model="c.kept"></b-switch>
-            </b-field>
-            <div class="column is-1">
-              <b-button type="is-danger" icon-left="delete" :disabled="angler.captures.length <= 1"
-                @click="removeCapture(angler, j)"></b-button>
-            </div>
-          </div>
-        </div>
-        <!-- Mis en valeur (#206) ; contour seul pour rester distinct d'« Enregistrer ». -->
-        <b-button type="is-primary" size="is-medium" outlined icon-left="plus" @click="addCapture(angler)">Ajouter une capture</b-button>
-      </div>
-
-      <div class="souvenir-toggle">
-        <b-switch v-model="angler.hasSouvenir">Session souvenir (dernière sortie passée du pêcheur)</b-switch>
-      </div>
-
-      <div v-if="angler.hasSouvenir" class="box souvenir-box">
-        <div class="columns is-multiline">
-          <b-field label="Date de la sortie" class="column is-3">
-            <input type="date" class="input" v-model="angler.souvenir.day" :max="todayIso" />
-          </b-field>
-          <b-field label="Période de la journée" class="column is-3">
-            <b-select v-model="angler.souvenir.dayPeriod" expanded>
-              <option v-for="p in DAY_PERIODS" :key="p" :value="p">{{ p }}</option>
-            </b-select>
-          </b-field>
-          <b-field label="Site pêché" class="column is-6">
-            <WaterEntitySearchSelect v-model="angler.souvenir.waterEntityId" v-model:position="angler.souvenir.position"
-              with-map />
-          </b-field>
-
-          <b-field label="Mode de pêche" class="column is-4">
-            <b-select v-model="angler.souvenir.fishingMode" expanded>
-              <option v-for="m in FISHING_MODES" :key="m" :value="m">{{ m }}</option>
-            </b-select>
-          </b-field>
-          <b-field label="Technique" class="column is-4">
-            <b-select v-model="angler.souvenir.techniqueId" expanded>
-              <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-            </b-select>
-          </b-field>
-          <b-field label="Nombre de lignes" class="column is-4">
-            <b-input type="number" min="1" v-model.number="angler.souvenir.rodCount"></b-input>
-          </b-field>
-
-          <b-field label="Appât / type de leurre" class="column is-6">
-            <b-input v-model="angler.souvenir.baitOrLure"></b-input>
-          </b-field>
-          <b-field label="Espèce recherchée" class="column is-6">
-            <b-select v-model="angler.souvenir.expectedSpeciesId" expanded
-              :disabled="angler.souvenir.noExpectedSpecies">
-              <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </b-select>
-          </b-field>
-          <b-field class="column is-12 no-species-field">
-            <b-switch v-model="angler.souvenir.noExpectedSpecies">Aucune espèce recherchée / toutes espèces</b-switch>
-          </b-field>
-
-          <b-field class="column is-12">
-            <b-switch v-model="angler.souvenir.bredouille">Bredouille (aucune capture)</b-switch>
-          </b-field>
-        </div>
-
-        <div v-if="!angler.souvenir.bredouille" class="box capture-box">
-          <div class="columns is-multiline is-vcentered">
-            <b-field label="Espèce" class="column is-3">
-              <b-select v-model="angler.souvenir.capture.speciesId" expanded>
-                <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-              </b-select>
-            </b-field>
-            <b-field label="Nombre" class="column is-2">
-              <b-input type="number" min="1" v-model.number="angler.souvenir.capture.quantity"></b-input>
-            </b-field>
-
-            <template v-if="isLot(angler.souvenir.capture)">
-              <b-field label="Taille min (cm)" class="column is-2">
-                <b-input type="number" min="0" v-model.number="angler.souvenir.capture.lotMinSize"></b-input>
-              </b-field>
-              <b-field label="Taille max (cm)" class="column is-2">
-                <b-input type="number" min="0" v-model.number="angler.souvenir.capture.lotMaxSize"></b-input>
-              </b-field>
-            </template>
-            <b-field v-else label="Taille (cm)" class="column is-2">
-              <b-input type="number" min="0" v-model.number="angler.souvenir.capture.size"></b-input>
-            </b-field>
-
-            <b-field label="Conservé" class="column is-2">
-              <b-switch v-model="angler.souvenir.capture.kept"></b-switch>
-            </b-field>
-          </div>
-        </div>
-      </div>
-    </div>
-    <b-button type="is-light" icon-left="plus" @click="addAngler">Ajouter un pêcheur interrogé</b-button>
-
-    <div class="mt-5">
-      <b-button type="is-primary" icon-left="content-save" :loading="loading" :disabled="hasTimeErrors"
-        @click="submit">
-        Enregistrer la sortie enquêtée
-      </b-button>
-    </div>
-
-    <b-notification v-if="success" type="is-success" class="mt-4" @close="success = null">
-      Sortie enregistrée : {{ success.tripIds.length }} sortie(s) créée(s), {{ success.captures }} capture(s).
+    <b-notification v-if="closedSession" type="is-success" @close="closedSession = null">
+      Session du {{ frenchDate(closedSession.day) }} clôturée : {{ closedSession.sortiesCount }} sortie(s),
+      {{ closedSession.anglersCount }} pêcheur(s) interrogé(s).
     </b-notification>
 
-    <b-notification v-if="errors.length" type="is-danger" class="mt-4" :closable="true" @close="errors = []">
-      <p><strong>Saisie non enregistrée :</strong></p>
-      <ul>
-        <li v-for="(e, i) in errors" :key="i">
-          <span v-if="e.index != null">Pêcheur {{ e.index + 1 }} — </span>
-          <span v-if="e.field">[{{ e.field }}] </span>{{ e.message }}
-        </li>
-      </ul>
-    </b-notification>
+    <SurveySessionPicker v-if="!session" @selected="selectSession" />
+
+    <template v-else>
+      <div class="box session-recap">
+        <div>
+          <strong>Session en cours</strong> — {{ frenchDate(session.day) }}, début {{ session.startTime }} ·
+          {{ session.waterEntityName }} · opérateur : {{ session.operatorName }}
+          <br />
+          <small>{{ session.sortiesCount }} sortie(s), {{ session.anglersCount }} pêcheur(s) interrogé(s)</small>
+        </div>
+        <div class="buttons">
+          <b-button size="is-small" icon-left="swap-horizontal" @click="session = null">Changer de session</b-button>
+          <b-button size="is-small" type="is-warning" icon-left="lock" @click="closing = true">
+            Clôturer la session
+          </b-button>
+        </div>
+      </div>
+
+      <SurveySessionClose v-if="closing" :session="session" @closed="onClosed" @cancel="closing = false" />
+
+      <b-notification v-if="lastSaved" type="is-success" class="mt-4" @close="lastSaved = null">
+        Sortie enregistrée : {{ lastSaved.tripIds.length }} sortie(s) créée(s), {{ lastSaved.captures }} capture(s).
+      </b-notification>
+
+      <SurveySortieForm v-if="!closing" :key="session.id" :session="session" :species="species"
+        :techniques="techniques" @saved="onSaved" />
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
-import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
-import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
-import { maskTimeInput, isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
-import { reactive, ref, computed } from "vue";
-
-const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
-
-// Référentiel fermé partagé avec le carnet volontaire (SurveySchema.MODES_PECHE, #145).
-const FISHING_MODES = ["bateau", "float tube/canoë", "bord itinérant", "bord statique"];
-const DAY_PERIODS = ["matin", "après-midi", "journée entière", "soirée"];
+import SurveySessionClose from "@/components/survey/SurveySessionClose.vue";
+import SurveySessionPicker from "@/components/survey/SurveySessionPicker.vue";
+import SurveySortieForm from "@/components/survey/SurveySortieForm.vue";
+import { SURVEY_SESSIONS_URI, SurveySession, frenchDate } from "@/components/survey/surveyForm";
+import { ref } from "vue";
 
 const techniques = ref<any[]>([]);
 const species = ref<any[]>([]);
 
-// Date et heure du contrôle pré-renseignées avec celles de l'appareil (#234),
-// modifiables pour la saisie a posteriori d'une enquête papier.
-function newSortie() {
-  const now = new Date();
-  return {
-    day: localDateIso(now),
-    controlTime: localTimeHHmm(now),
-    startTime: "",
-    endTime: "",
-    waterEntityId: null,
-    position: null as MapPosition | null,
-    unsurveyedShoreAnglers: null,
-    unsurveyedBoatAnglers: null
-  };
-}
-
-function newCapture() {
-  return { speciesId: null, quantity: 1, size: null, lotMinSize: null, lotMaxSize: null, kept: false };
-}
-
-function newSouvenir() {
-  return {
-    day: "",
-    dayPeriod: DAY_PERIODS[0],
-    waterEntityId: null,
-    position: null as MapPosition | null,
-    fishingMode: FISHING_MODES[0],
-    techniqueId: null,
-    rodCount: 1,
-    baitOrLure: "",
-    expectedSpeciesId: null,
-    noExpectedSpecies: false,
-    bredouille: false,
-    capture: newCapture()
-  };
-}
-
-function newAngler() {
-  return {
-    origin: "",
-    fishingMode: FISHING_MODES[0],
-    techniqueId: null,
-    rodCount: 1,
-    baitOrLure: "",
-    expectedSpeciesId: null,
-    noExpectedSpecies: false,
-    bredouille: false,
-    captures: [newCapture()],
-    hasSouvenir: false,
-    souvenir: newSouvenir()
-  };
-}
-
-const sortie = ref<any>(newSortie());
-const anglers = ref<any[]>([newAngler()]);
-
-const loading = ref(false);
-const success = ref<any>(null);
-const errors = ref<any[]>([]);
-
-const timeErrors = reactive({ controlTime: "", startTime: "", endTime: "" });
-
-const CONTROL_BEFORE_START_ERROR = "L'heure du contrôle ne peut pas être antérieure à l'heure de début";
-const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'heure de début";
-
-function areValidTimes(...values: string[]): boolean {
-  return values.every((value) => !!value && isValidTimeString(value));
-}
-
-const controlTimeMessage = computed(() => {
-  const { controlTime, startTime } = sortie.value;
-  if (timeErrors.controlTime) {
-    return timeErrors.controlTime;
-  }
-  return areValidTimes(controlTime, startTime) && controlTime < startTime ? CONTROL_BEFORE_START_ERROR : "";
-});
-
-const endTimeMessage = computed(() => {
-  const { endTime, startTime } = sortie.value;
-  if (timeErrors.endTime) {
-    return timeErrors.endTime;
-  }
-  return areValidTimes(endTime, startTime) && endTime <= startTime ? END_NOT_AFTER_START_ERROR : "";
-});
-
-const hasTimeErrors = computed(() => !!(controlTimeMessage.value || timeErrors.startTime || endTimeMessage.value));
-
-const todayIso = computed(() => localDateIso());
-
-function isLot(c: any): boolean {
-  return Number(c.quantity) > 1;
-}
-
-function onTimeInput(event: Event, field: "controlTime" | "startTime" | "endTime") {
-  const raw = (event.target as HTMLInputElement).value;
-  const masked = maskTimeInput(raw);
-  sortie.value[field] = masked;
-
-  if (!masked || isValidTimeString(masked)) {
-    timeErrors[field] = "";
-  } else if (masked.length === 5) {
-    timeErrors[field] = TIME_FORMAT_ERROR;
-  }
-}
-
-function onTimeBlur(field: "controlTime" | "startTime" | "endTime") {
-  const value = sortie.value[field];
-  timeErrors[field] = !value || isValidTimeString(value) ? "" : TIME_FORMAT_ERROR;
-}
+const session = ref<SurveySession | null>(null);
+const closing = ref(false);
+const lastSaved = ref<{ tripIds: string[]; captures: number } | null>(null);
+const closedSession = ref<SurveySession | null>(null);
 
 loadReferentials();
 
+/** Techniques et espèces proposées à la saisie, hors éléments archivés (#202). */
 async function loadReferentials() {
-  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie.
   const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
   const allSpecies = await BackendService.backendGet("/v1/referential/species");
   techniques.value = allTechniques.filter((t: any) => !t.archived);
   species.value = allSpecies.filter((s: any) => !s.archived);
 }
 
-function addAngler() {
-  anglers.value.push(newAngler());
+/** Session ouverte ou reprise : on y saisit les sorties. */
+function selectSession(selected: SurveySession) {
+  session.value = selected;
+  closing.value = false;
+  lastSaved.value = null;
+  closedSession.value = null;
 }
 
-function removeAngler(i: number) {
-  anglers.value.splice(i, 1);
-}
-
-function addCapture(angler: any) {
-  angler.captures.push(newCapture());
-}
-
-function removeCapture(angler: any, j: number) {
-  angler.captures.splice(j, 1);
-}
-
-function toIntOrNull(v: any): number | null {
-  if (v === "" || v === null || v === undefined) return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.trunc(n) : null;
-}
-
-function cleanCapture(c: any) {
-  const lot = isLot(c);
-  return {
-    speciesId: c.speciesId,
-    quantity: toIntOrNull(c.quantity),
-    size: lot ? null : toIntOrNull(c.size),
-    lotMinSize: lot ? toIntOrNull(c.lotMinSize) : null,
-    lotMaxSize: lot ? toIntOrNull(c.lotMaxSize) : null,
-    kept: !!c.kept
-  };
-}
-
-function cleanSouvenir(angler: any) {
-  if (!angler.hasSouvenir) return null;
-  const s = angler.souvenir;
-  return {
-    day: s.day || null,
-    dayPeriod: s.dayPeriod,
-    waterEntityId: s.waterEntityId,
-    latitude: s.position ? s.position.lat : null,
-    longitude: s.position ? s.position.lng : null,
-    fishingMode: s.fishingMode,
-    techniqueId: s.techniqueId,
-    rodCount: toIntOrNull(s.rodCount),
-    baitOrLure: s.baitOrLure || null,
-    expectedSpeciesId: s.noExpectedSpecies ? null : s.expectedSpeciesId,
-    noExpectedSpecies: !!s.noExpectedSpecies,
-    bredouille: !!s.bredouille,
-    capture: s.bredouille ? null : cleanCapture(s.capture)
-  };
-}
-
-function cleanAngler(angler: any) {
-  return {
-    origin: angler.origin || null,
-    fishingMode: angler.fishingMode,
-    techniqueId: angler.techniqueId,
-    rodCount: toIntOrNull(angler.rodCount),
-    baitOrLure: angler.baitOrLure || null,
-    expectedSpeciesId: angler.noExpectedSpecies ? null : angler.expectedSpeciesId,
-    noExpectedSpecies: !!angler.noExpectedSpecies,
-    bredouille: !!angler.bredouille,
-    captures: angler.bredouille ? [] : angler.captures.map(cleanCapture),
-    souvenir: cleanSouvenir(angler)
-  };
-}
-
-async function submit() {
-  if (hasTimeErrors.value) {
-    return;
-  }
-  loading.value = true;
-  success.value = null;
-  errors.value = [];
-  const payload = {
-    waterEntityId: sortie.value.waterEntityId,
-    latitude: sortie.value.position ? sortie.value.position.lat : null,
-    longitude: sortie.value.position ? sortie.value.position.lng : null,
-    secteur: null,
-    day: sortie.value.day || null,
-    controlTime: sortie.value.controlTime || null,
-    startTime: sortie.value.startTime || null,
-    endTime: sortie.value.endTime || null,
-    unsurveyedShoreAnglers: toIntOrNull(sortie.value.unsurveyedShoreAnglers),
-    unsurveyedBoatAnglers: toIntOrNull(sortie.value.unsurveyedBoatAnglers),
-    anglers: anglers.value.map(cleanAngler)
-  };
-  try {
-    const result = await BackendService.backendPost("/v1/admin/manual-entries/survey", payload);
-    success.value = result;
-    resetForm();
-  } catch (rejected: any) {
-    const content = rejected && rejected.content;
-    if (content && content.errors && content.errors.length) {
-      errors.value = content.errors;
-    } else {
-      errors.value = [{ index: null, field: null, message: "Échec de l'enregistrement (réessayer)." }];
-    }
-  } finally {
-    loading.value = false;
+/** Sortie enregistrée : rafraîchit les compteurs de la session. */
+async function onSaved(result: { tripIds: string[]; captures: number }) {
+  lastSaved.value = result;
+  if (session.value) {
+    session.value = await BackendService.backendGet(SURVEY_SESSIONS_URI + "/" + session.value.id);
   }
 }
 
-function resetForm() {
-  sortie.value = newSortie();
-  anglers.value = [newAngler()];
-  timeErrors.controlTime = "";
-  timeErrors.startTime = "";
-  timeErrors.endTime = "";
+/** Session clôturée : retour à la liste des sessions. */
+function onClosed(closed: SurveySession) {
+  closedSession.value = closed;
+  session.value = null;
+  closing.value = false;
+  lastSaved.value = null;
 }
 </script>
 
 <style scoped lang="less">
-.no-species-field {
-  display: flex;
-  align-items: center;
-}
-.angler-box {
-  border: 1px solid #e2e8ec;
-}
-.angler-header {
+.session-recap {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-}
-.capture-title {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-.capture-box {
-  box-shadow: none;
-  border: 1px solid #eef1f4;
-}
-.souvenir-toggle {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-.souvenir-box {
-  box-shadow: none;
-  border: 1px dashed #cbd5db;
+  gap: 1rem;
+  border: 1px solid #e2e8ec;
 }
 </style>

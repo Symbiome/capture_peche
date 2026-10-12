@@ -27,9 +27,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Saisie manuelle d'une sortie « enquête terrain » (#144) : une session (site + date) sur
- * laquelle un enquêteur interroge un ou plusieurs pêcheurs. {@code Code session} / {@code
- * Code sortie} sont générés côté serveur, jamais saisis (cf. issue #144).
+ * Saisie manuelle d'une sortie « enquête terrain » (#144), ajoutée à une session d'enquête
+ * ouverte (#236) : un ou plusieurs pêcheurs interrogés lors d'un même contrôle. Date et
+ * secteur reprennent ceux de la session s'ils sont absents. {@code Code sortie} est généré
+ * côté serveur, jamais saisi (cf. issue #144).
  */
 public class SurveySortieBean {
 
@@ -45,9 +46,6 @@ public class SurveySortieBean {
     public LocalTime startTime;
     public LocalDate endDay; // date de fin prévue (#237) : nulle = jour de l'enquête
     public LocalTime endTime;
-
-    public Integer unsurveyedShoreAnglers;
-    public Integer unsurveyedBoatAnglers;
 
     public List<SurveyAnglerBean> anglers;
 }
