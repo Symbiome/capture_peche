@@ -22,14 +22,19 @@ package fr.inrae.fishola.rest.imports.survey;
  */
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
-/** Une ligne validée de la feuille « Session d'enquête » (#144). */
+/** Une ligne validée de la feuille « Session d'enquête » (#144), ou une session du CSV plat (#242). */
 public class SurveyParsedSession {
 
     public String code;
     public UUID waterEntityId;
     public LocalDate day;
+    // Heures de session et enquêteur (#236), absents des classeurs antérieurs à #242.
+    public LocalTime startTime;
+    public LocalTime endTime;
+    public String operatorName;
     public Short unsurveyedShoreAnglers;
     public Short unsurveyedBoatAnglers;
 }

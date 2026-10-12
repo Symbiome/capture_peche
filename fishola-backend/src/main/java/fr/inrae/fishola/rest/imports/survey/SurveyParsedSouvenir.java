@@ -25,14 +25,16 @@ import fr.inrae.fishola.entities.enums.DayPeriod;
 import fr.inrae.fishola.entities.enums.FishingMode;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * Une ligne validée de la feuille facultative « Session souvenir » (#144) : une sortie
- * passée du même pêcheur enquêté, sans heures précises (seule la période de la journée est
- * connue). La feuille ne porte ni code session ni code sortie : chaque ligne devient sa
- * propre {@code Trip} indépendante, rattachée au seul {@code anglerCode} (déjà connu d'une
- * ligne de la feuille « Capture pêcheur », sans quoi la ligne est rejetée).
+ * Une sortie souvenir validée (#144) : une sortie passée du même pêcheur enquêté, sans
+ * heures précises (seule la période de la journée est connue), devenue sa propre {@code
+ * Trip} indépendante. Feuille « Session souvenir » : une ligne, une capture au plus, sans
+ * code session (déduit de la session où le pêcheur a été enquêté). CSV plat (#242) : les
+ * lignes souvenir d'un même (code session, code pêcheur), une capture chacune.
  */
 public class SurveyParsedSouvenir {
 
@@ -49,11 +51,9 @@ public class SurveyParsedSouvenir {
     public UUID expectedSpeciesId;
     public boolean bredouille;
 
-    public boolean hasCapture;
-    public UUID speciesId;
-    public Integer size;
-    public Integer quantity;
-    public boolean kept;
-    public Integer lotMinSize;
-    public Integer lotMaxSize;
+    /** Session où le pêcheur a été enquêté ; nul pour la feuille XLSX, qui ne la porte pas. */
+    public String sessionCode;
+
+    /** Captures de la sortie souvenir, vide si bredouille (#236). */
+    public List<SurveyParsedCatch> catches = new ArrayList<>();
 }
