@@ -368,7 +368,7 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static prepareCaches(): Promise<void> {
     const allPromises: Promise<void>[] = [
-      this.prepareCache("/v1/referential/waterEntities"),
+      this.prepareCache("/v1/referential/waterEntities/summary"),
       // Les favoris sont lus par le sélecteur de plan d'eau : sans cette mise
       // en cache, un appareil qui n'a jamais ouvert l'écran en ligne n'a aucune
       // entrée locale et le sélecteur restait vide hors ligne.
