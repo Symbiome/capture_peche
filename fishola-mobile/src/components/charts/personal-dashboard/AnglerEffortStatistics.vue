@@ -75,14 +75,11 @@
       </ul>
     </div>
 
-    <div class="section">
+    <div class="section" v-if="selectedLakeId">
       <div class="shrinked">
         <h2><i class="icon-lake" />Ma contribution sur ce secteur</h2>
       </div>
-      <div class="not-enough-data" v-if="!loading && !selectedLakeId">
-        <span>Sélectionnez un plan d'eau pour voir votre part des sorties et des prises déclarées.</span>
-      </div>
-      <div class="not-enough-data" v-else-if="!loading && stats && !stats.sectorContribution">
+      <div class="not-enough-data" v-if="!loading && stats && !stats.sectorContribution">
         <span>
           Pas encore assez de pêcheurs sur ce secteur (au moins {{ stats.sectorMinAnglers }})
           pour afficher votre contribution.

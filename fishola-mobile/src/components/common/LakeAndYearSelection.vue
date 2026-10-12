@@ -26,7 +26,7 @@
   -->
 <template>
     <div class="selects-holder">
-        <span class="lake-select-wrapper">
+        <span class="lake-select-wrapper" v-if="showLake">
             <input
               id="lake-and-year-search-input"
               type="text"
@@ -81,6 +81,7 @@ import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 export default class LakeAndYearSelection extends Vue {
   @Prop() years: number[];
   @Prop() showYears: boolean;
+  @Prop({ default: true }) showLake: boolean;
 
   selectedYear = 0;
   selectedLakeId = "";
@@ -105,7 +106,12 @@ export default class LakeAndYearSelection extends Vue {
         this.selectedYear = this.years[0];
       }
     }
-    this.loadFavorites();
+    if (this.showLake) {
+      this.loadFavorites();
+    } else {
+      this.$emit("lake-and-year", { lake: "", year: this.selectedYear });
+      this.doneLoading = true;
+    }
   }
 
   beforeDestroy() {
