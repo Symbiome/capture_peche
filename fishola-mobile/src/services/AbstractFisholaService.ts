@@ -35,6 +35,12 @@ export default abstract class AbstractFisholaService {
 
   static caches: Map<string, CacheEntry> = new Map();
 
+  // Requêtes en cours par URI : sans ce partage, N appelants simultanés (une
+  // carte par sortie dans MyTripsItem) relançaient chacun le même
+  // téléchargement du référentiel hydro (~35 Mo) avant que le cache mémoire
+  // ne soit rempli.
+  static pendingRequests: Map<string, Promise<any>> = new Map();
+
   static clearCache(uri: string) {
     this.caches.delete(uri);
   }
@@ -115,21 +121,32 @@ export default abstract class AbstractFisholaService {
       return Promise.resolve(entry.content);
     }
 
-    return new Promise<any>((resolve, reject) => {
-      // Repli hors ligne : le cache mémoire est vide au (re)démarrage de
-      // l'app. Sans repli sur le stockage local, tous les référentiels servis
-      // par cette méthode (météos, techniques, espèces…) rejetaient sans
-      // réseau, ce qui faisait échouer les `Promise.all` des formulaires de
-      // saisie — plus aucun plan d'eau ni espèce proposé hors ligne.
-      this.backendGetOrOfflineStorage(uri).then((content: any) => {
-        const newEntry: CacheEntry = new CacheEntry(
-          new Date().getTime(),
-          content
-        );
-        this.caches.set(uri, newEntry);
-        resolve(content);
-      }, reject);
-    });
+    return this.sharedBackendGetOrOfflineStorage(uri);
+  }
+
+  /**
+   * Charge `uri` (serveur, ou repli hors ligne) et remplit le cache mémoire,
+   * en réutilisant la requête déjà en cours pour la même URI.
+   */
+  static sharedBackendGetOrOfflineStorage(uri: string): Promise<any> {
+    const pending = this.pendingRequests.get(uri);
+    if (pending) {
+      return pending;
+    }
+
+    // Repli hors ligne : le cache mémoire est vide au (re)démarrage de
+    // l'app. Sans repli sur le stockage local, tous les référentiels servis
+    // par cette méthode (météos, techniques, espèces…) rejetaient sans
+    // réseau, ce qui faisait échouer les `Promise.all` des formulaires de
+    // saisie — plus aucun plan d'eau ni espèce proposé hors ligne.
+    const request = this.backendGetOrOfflineStorage(uri)
+      .then((content: any) => {
+        this.pushToCache(uri, content);
+        return content;
+      })
+      .finally(() => this.pendingRequests.delete(uri));
+    this.pendingRequests.set(uri, request);
+    return request;
   }
 
   static backendGetWithArgs(uri: string, args: any): Promise<any> {
@@ -408,13 +425,6 @@ export default abstract class AbstractFisholaService {
   }
 
   static prepareCache(uri: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const lakes = this.backendGetOrOfflineStorage(uri);
-      lakes.then((data) => {
-        this.pushToCache(uri, data);
-        resolve();
-      }, reject);
-    });
+    return this.sharedBackendGetOrOfflineStorage(uri).then(() => undefined);
   }
 }
-
