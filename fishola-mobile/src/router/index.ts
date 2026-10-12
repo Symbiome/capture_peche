@@ -163,6 +163,11 @@ const routes = [
     props: true,
   },
   {
+    // Onglet « Évolution » retiré de « Mes données » (calculé par plan d'eau).
+    path: "/dashboard-personal/evolution",
+    redirect: "/dashboard-personal/dashboard",
+  },
+  {
     path: "/dashboard-personal/:visualizationMode",
     name: "dashboard-personal",
     props: true,

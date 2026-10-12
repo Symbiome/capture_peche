@@ -28,28 +28,17 @@
             <span> Mes données </span>
             <LakeAndYearSelection 
                 :years="getDashboardYears()"
-                :showYears="visualizationMode !== 'evolution'"
+                :showYears="true"
+                :showLake="false"
                 @lake-and-year="yearAndLakeChangedChanged"
-                @lake="lakeChanged"
                 @year="yearChanged"
             />
-            <a v-bind:href="exportUrl" v-if="visualizationMode !== 'evolution' && !asyncExport" id="export-button"
+            <a v-bind:href="exportUrl" v-if="!asyncExport" id="export-button"
               class="export" title="Exporter" target="_blank">
               <span>Exporter</span>
               <i class="icon-download" />
             </a>
           </h1>
-
-          <div class="main-tabs">
-            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? '' : 'selected'"
-              v-on:click="showPersonalDashboard">
-              Tableau de bord
-            </div>
-            <div class="tab" v-bind:class="visualizationMode === 'evolution' ? 'selected' : ''"
-              v-on:click="changeVisualizationMode('evolution')">
-              Évolution
-            </div>
-          </div>
 
           <div class="spinner-wrapper" v-if="!ready">
             <div class="spinner"></div>
@@ -61,17 +50,10 @@
           </div>
 
           <PersonalDashboard
-            v-if="visualizationMode !== 'evolution' && personalDashboard" :year="year"
+            v-if="personalDashboard" :year="year"
             :dashboardData="personalDashboard"
             :selectedLakeId="selectedLakeId"
           />
-          <EvolutionMetrics
-            v-if="visualizationMode === 'evolution' && selectedLakeId"
-            :lakeId="selectedLakeId"
-            :onlyShowUserStats="true"
-            @loaded="ready = true"
-            >
-          </EvolutionMetrics>
         </div>
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
@@ -98,7 +80,6 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
-import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
 
 
 @Component({
@@ -107,8 +88,7 @@ import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue
     RunningOverlay,
     FisholaFooter,
     PersonalDashboard,
-    LakeAndYearSelection,
-    EvolutionMetrics
+    LakeAndYearSelection
   },
 })
 export default class DashboardPersonalView extends Vue {
@@ -126,14 +106,10 @@ export default class DashboardPersonalView extends Vue {
 
   hasRunningTrip: boolean = false;
   year: number = new Date().getFullYear();
-  selectedLakeId = "";
+  // « Mes données » montre les données tous plans d'eau confondus : plus de
+  // filtre par plan d'eau, ni d'onglet « Évolution » (calculée par plan d'eau).
+  readonly selectedLakeId = "";
   isFirstLoad = true;
-
-  changeVisualizationMode(newMode: string) {
-    if (this.visualizationMode !== newMode) {
-      this.$router.push({ params: { visualizationMode: newMode } });
-    }
-  }
 
   mounted() {
     TripsService.hasRunningTrip().then(
@@ -163,14 +139,8 @@ export default class DashboardPersonalView extends Vue {
     this.reloadDashboard();
   }
 
-  lakeChanged(selectedLake: string) {
-    this.selectedLakeId = selectedLake;
-    this.reloadDashboard();
-  }
-
   yearAndLakeChangedChanged(event: any) {
     this.year = event.year;
-    this.selectedLakeId = event.lake;
     this.reloadDashboard();
   }
 
@@ -213,13 +183,6 @@ export default class DashboardPersonalView extends Vue {
       RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
     this.ready = true;
-  }
-
-  showPersonalDashboard() {
-    this.changeVisualizationMode('dashboard')
-    if (this.personalDashboard) {
-      this.ready = true;
-    }
   }
 
   askForAsyncExport() {
