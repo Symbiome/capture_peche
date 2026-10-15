@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.AdminHiddenReferentialsDao;
 import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.StaffPerimeterDao;
@@ -87,6 +88,9 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     @Inject
     protected StaffPerimeterDao staffPerimeterDao;
+
+    @Inject
+    protected AdminHiddenReferentialsDao hiddenReferentialsDao;
 
     @GET
     @Path("/waterEntities")
@@ -196,9 +200,19 @@ public class ReferentialResource extends AbstractFisholaResource {
         return usersDao.getFavoriteWaterEntities(userIdOrRenew.userId());
     }
 
+    /**
+     * Techniques nationales.
+     *
+     * @param forCurrentAdmin vrai pour les listes de saisie du compte staff connecté (#239) :
+     *                        sans les techniques archivées ni celles qu'il a masquées
+     * @return techniques, archivées comprises (flag {@code archived}) sans {@code forCurrentAdmin}
+     */
     @GET
     @Path("/techniques")
-    public List<Technique> getTechniques() {
+    public List<Technique> getTechniques(@QueryParam("forCurrentAdmin") boolean forCurrentAdmin) {
+        if (forCurrentAdmin) {
+            return hiddenReferentialsDao.listVisibleTechniques(checkIsStaff().getId());
+        }
         List<Technique> result = referentialDao.listBuiltInTechniques();
         return result;
     }
@@ -309,10 +323,19 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    /**
+     * Espèces nationales.
+     *
+     * @param forCurrentAdmin vrai pour les listes de saisie du compte staff connecté (#239) :
+     *                        sans les espèces archivées ni celles qu'il a masquées
+     * @return espèces, archivées comprises (flag {@code archived}) sans {@code forCurrentAdmin}
+     */
     @GET
     @Path("/species")
-    public List<SpeciesWithAlias> getSpecies() {
-        List<Species> species = referentialDao.listBuiltInSpecies();
+    public List<SpeciesWithAlias> getSpecies(@QueryParam("forCurrentAdmin") boolean forCurrentAdmin) {
+        List<Species> species = forCurrentAdmin
+                ? hiddenReferentialsDao.listVisibleSpecies(checkIsStaff().getId())
+                : referentialDao.listBuiltInSpecies();
         List<SpeciesWithAlias> result = species.stream()
                 .map(SpeciesWithAlias::of)
                 .toList();

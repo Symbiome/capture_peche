@@ -37,18 +37,11 @@
               label="Espèce corrigée"
               class="column"
             >
-              <b-select
+              <ReferentialSelect
                 placeholder="Sélectionnez une espèce"
                 v-model="aCatch.editedSpeciesId"
-              >
-                <option
-                  v-for="specie in sortedSpeciesNames"
-                  :value="speciesNamesMap.get(specie)"
-                  :key="specie"
-                >
-                  {{ specie }}
-                </option>
-              </b-select>
+                :referential="correctableSpecies"
+              />
             </b-field>
 
             <b-field
@@ -283,6 +276,7 @@
 </template>
 
 <script setup lang="ts">
+import ReferentialSelect from "@/components/ReferentialSelect.vue";
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
@@ -290,6 +284,7 @@ import UtilityServices from "@/services/UtilityServices";
 import router from "@/router";
 import { computed, onMounted, reactive, ref, Ref } from "vue";
 import { useToast } from "buefy";
+import { EntryReferential, SPECIES_URI, loadEntryReferential } from "@/utils/entryReferentials";
 
 const Toast = useToast();
 
@@ -313,6 +308,12 @@ const techniquesIdMap = reactive(new Map<string, string>());
 const lakesIdMap = reactive(new Map<string, string>());
 const speciesNamesMap = reactive(new Map<string, string>());
 const sortedSpeciesNames: Ref<Array<string>> = ref([]);
+// Espèces masquées par le compte (#239) : repliées dans la liste « Espèce corrigée ».
+const hiddenSpeciesIds: Ref<Set<string>> = ref(new Set());
+const correctableSpecies = computed<EntryReferential>(() => ({
+  all: sortedSpeciesNames.value.map((name) => ({ id: speciesNamesMap.get(name) as string, name })),
+  hiddenIds: hiddenSpeciesIds.value
+}));
 const measurementPicURL = ref("");
 const otherPicsUrls: Ref<Array<string>> = ref([]);
 const catchMapURL = ref("");
@@ -340,12 +341,14 @@ async function loadCatch() {
 }
 
 async function loadReferentials() {
-  const [loggedAdmin, species, techniques] = await Promise.all([
+  const [loggedAdmin, species, techniques, entrySpecies] = await Promise.all([
     BackendService.backendGet("/v1/admin/check"),
     BackendService.backendGet("/v1/referential/raw-species"),
-    BackendService.backendGet("/v1/referential/techniques")
+    BackendService.backendGet("/v1/referential/techniques"),
+    loadEntryReferential(SPECIES_URI)
   ]);
   isOperator.value = loggedAdmin.isOperator;
+  hiddenSpeciesIds.value = entrySpecies.hiddenIds;
   species.forEach((specie: { id: string; name: string }) => {
     speciesIdMap.set(specie.id, specie.name);
     speciesNamesMap.set(specie.name, specie.id);

@@ -37,9 +37,7 @@
         </b-select>
       </b-field>
       <b-field label="Technique" class="column is-4">
-        <b-select v-model="angler.techniqueId" expanded>
-          <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-        </b-select>
+        <ReferentialSelect v-model="angler.techniqueId" :referential="techniques" expanded />
       </b-field>
 
       <b-field label="Nombre de lignes" class="column is-3">
@@ -84,9 +82,7 @@
           </b-select>
         </b-field>
         <b-field label="Technique" class="column is-4">
-          <b-select v-model="angler.souvenir.techniqueId" expanded>
-            <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-          </b-select>
+          <ReferentialSelect v-model="angler.souvenir.techniqueId" :referential="techniques" expanded />
         </b-field>
         <b-field label="Nombre de lignes" class="column is-4">
           <b-input type="number" min="1" v-model.number="angler.souvenir.rodCount"></b-input>
@@ -111,17 +107,19 @@
 
 <script setup lang="ts">
 import ExpectedSpeciesSelect from "@/components/survey/ExpectedSpeciesSelect.vue";
+import ReferentialSelect from "@/components/ReferentialSelect.vue";
 import SurveyCatchList from "@/components/survey/SurveyCatchList.vue";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import { DAY_PERIODS, FISHING_MODES } from "@/components/survey/surveyForm";
+import type { EntryReferential } from "@/utils/entryReferentials";
 
 interface Props {
   /** Pêcheur interrogé (cf. newAngler), modifié sur place. */
   angler: any;
   index: number;
   removable: boolean;
-  species: { id: string; name: string }[];
-  techniques: { id: string; name: string }[];
+  species: EntryReferential;
+  techniques: EntryReferential;
   todayIso: string;
 }
 

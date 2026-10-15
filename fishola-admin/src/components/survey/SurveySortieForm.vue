@@ -69,6 +69,7 @@ import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import {
   SURVEY_SESSIONS_URI, SurveyError, SurveySession, cleanAngler, errorsOf, newAngler
 } from "@/components/survey/surveyForm";
+import type { EntryReferential } from "@/utils/entryReferentials";
 import { isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
 import { computed, ref } from "vue";
 
@@ -78,8 +79,8 @@ const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'h
 
 interface Props {
   session: SurveySession;
-  species: { id: string; name: string }[];
-  techniques: { id: string; name: string }[];
+  species: EntryReferential;
+  techniques: EntryReferential;
 }
 
 const props = defineProps<Props>();

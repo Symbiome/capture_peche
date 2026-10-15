@@ -37,9 +37,12 @@
           Techniques de pêche
         </b-navbar-item>
       </b-navbar-dropdown>
-      <b-navbar-dropdown label="Paramétrage" v-if="!loggedAdmin.isOperator">
-        <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }">
+      <b-navbar-dropdown label="Paramétrage">
+        <b-navbar-item tag="router-link" :to="{ name: 'authorized-samples' }" v-if="!loggedAdmin.isOperator">
           Maillages et tailles maximales
+        </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'my-referentials' }" v-if="!loggedAdmin.isNationalAdmin">
+          Mes référentiels
         </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-dropdown label="Documentations" v-if="loggedAdmin.isNationalAdmin">
