@@ -57,7 +57,7 @@
       <div>
         <FormInput
           name="date"
-          label="Date"
+          v-bind:label="readonly && !multiDay ? 'Date' : 'Date de début'"
           type="date"
           v-model="date"
           v-bind:error="dateError"
@@ -69,6 +69,15 @@
           type="time"
           v-model="startedAt"
           v-bind:error="startedAtError"
+          v-bind:readonly="readonly"
+        />
+        <FormInput
+          v-if="!readonly || multiDay"
+          name="endDate"
+          label="Date de fin"
+          type="date"
+          v-model="endDate"
+          v-bind:error="endDateError"
           v-bind:readonly="readonly"
         />
         <FormInput
@@ -140,6 +149,8 @@ import {
 } from "@/pojos/BackendPojos";
 
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
+import TripsService from "@/services/TripsService";
 import { WeathersTripTypesSpeciesAndTechniques } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 
@@ -149,8 +160,7 @@ import FormMultiValues from "@/components/common/FormMultiValues.vue";
 import LakeSelection from "@/components/common/LakeSelection.vue";
 import TripPositionsMap from "@/components/trip/TripPositionsMap.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
-import moment from "moment";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   components: {
@@ -171,10 +181,13 @@ export default class SomeTripSummary extends Vue {
 
   date: string = "";
   startedAt: string = "";
+  endDate: string = "";
   finishedAt: string = "";
+  multiDay: boolean = false;
 
   dateError: string = "";
   startedAtError: string = "";
+  endDateError: string = "";
   finishedAtError: string = "";
   nameError: string = "";
   lakeIdError: string = "";
@@ -270,11 +283,15 @@ export default class SomeTripSummary extends Vue {
       someTrip.weatherId = "__none__";
     }
 
+    this.multiDay = TripDates.isMultiDay(someTrip);
+    const endIsoDate = TripDates.endIsoDate(someTrip);
     if (someTrip.date) {
       if (this.readonly) {
         this.date = Helpers.formatToLongDate(someTrip.date);
+        this.endDate = endIsoDate ? Helpers.formatToLongDate(TripDates.parseIsoDate(endIsoDate)) : "";
       } else {
         this.date = Helpers.formatToDate(someTrip.date);
+        this.endDate = endIsoDate || this.date;
       }
     }
     if (someTrip.startedAt) {
@@ -323,6 +340,14 @@ export default class SomeTripSummary extends Vue {
     this.ready = true;
   }
 
+  // Date de fin pré-remplie avec la date de début (#237), qu'elle suit tant qu'elle lui est égale.
+  @Watch("date")
+  onDateChanged(newDate: string, oldDate: string) {
+    if (!this.readonly && (!this.endDate || this.endDate == oldDate)) {
+      this.endDate = newDate;
+    }
+  }
+
   emitUpdatedTrip() {
     let hasError = false;
 
@@ -340,62 +365,34 @@ export default class SomeTripSummary extends Vue {
         "toaster-error",
         "Vous devez renseigner les champs obligatoires"
       );
-    } else {
+      return;
+    }
+    TripsService.confirmPlausibleTripDuration(this.$modal, this.trip!).then((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
       if (this.trip!.weatherId == "__none__") {
         delete this.trip!.weatherId;
       }
       // On émet au parent le modèle mis à jour
       this.$emit("trip-modified", this.trip!);
-    }
+    });
   }
 
   private verifyDate(hasError: boolean) {
-    if (this.date) {
-      this.dateError = "";
-      const newDate = new Date(this.date);
-      this.trip!.date = newDate;
-
-      const newDateSOD = moment(newDate).startOf("day");
-      const nowSOD = moment().startOf("day");
-      if (newDateSOD.isAfter(nowSOD)) {
-        this.dateError = "La date ne peut être dans le futur";
-        hasError = true;
-      }
-
-      if (this.startedAt) {
-        this.startedAtError = "";
-        this.trip!.startedAt = this.startedAt;
-      } else {
-        this.startedAtError = "Vous devez renseigner l'heure de début";
-        hasError = true;
-      }
-
-      if (this.finishedAt) {
-        const startedAtMoment = moment(
-          this.startedAt,
-          moment.HTML5_FMT.TIME_SECONDS
-        );
-        const finishedAtMoment = moment(
-          this.finishedAt,
-          moment.HTML5_FMT.TIME_SECONDS
-        );
-
-        if (finishedAtMoment.isAfter(startedAtMoment)) {
-          this.finishedAtError = "";
-          this.trip!.finishedAt = this.finishedAt;
-        } else {
-          this.finishedAtError = "Doit être après l'heure de début";
-          hasError = true;
-        }
-      } else {
-        this.finishedAtError = "Vous devez renseigner l'heure de fin";
-        hasError = true;
-      }
-    } else {
-      this.dateError = "Vous devez renseigner la date";
-      hasError = true;
-    }
-    return hasError;
+    const period = {
+      date: this.date ? TripDates.parseIsoDate(this.date) : undefined,
+      startedAt: this.startedAt,
+      endDate: this.endDate,
+      finishedAt: this.finishedAt,
+    };
+    const errors = TripDates.validatePeriod(period, (this.trip as any).catchs);
+    this.dateError = errors.dateError;
+    this.startedAtError = errors.startedAtError;
+    this.endDateError = errors.endDateError;
+    this.finishedAtError = errors.finishedAtError;
+    Object.assign(this.trip!, period);
+    return hasError || Object.values(errors).some((error) => !!error);
   }
 }
 </script>

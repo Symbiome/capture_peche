@@ -52,6 +52,17 @@ export const DATA_ORIGIN_LABELS: Record<string, string> = {
   carnet_obligatoire: "Carnet obligatoire",
 };
 
+/**
+ * Fin d'une sortie postérieure à son début (#237) ; une date de fin vide vaut la date de
+ * début (sortie d'une journée). Null tant que les heures ne sont pas des HH:mm valides.
+ */
+export function isEndAfterStart(day: string, startTime: string, endDay: string, endTime: string): boolean | null {
+  if (!isValidTimeString(startTime) || !isValidTimeString(endTime)) {
+    return null;
+  }
+  return `${endDay || day}T${endTime}` > `${day}T${startTime}`;
+}
+
 // Minuscules, sans accents, tirets et apostrophes remplacés par des espaces,
 // article initial retiré : « Saône » et « saone », « Chalon-sur-Saône » et
 // « chalon sur saone », « le Rhône » et « rhone » se valent (#197).

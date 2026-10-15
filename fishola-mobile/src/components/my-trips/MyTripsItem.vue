@@ -67,6 +67,7 @@ import LocalTripLight from "@/pojos/LocalTripLight";
 
 import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
@@ -91,6 +92,12 @@ export default class MyTripItem extends Vue {
       year: "numeric",
     };
     this.date = this.trip.date.toLocaleDateString("fr-FR", dayOptions);
+    // Sortie de plusieurs jours (#237) : « du 12 septembre au samedi 14 septembre 2026 ».
+    const endDate: string | undefined = (this.trip as any).endDate;
+    if (endDate && endDate != TripDates.toIsoDate(this.trip.date)) {
+      this.date = `du ${Helpers.formatToDateWithoutYear(this.trip.date)} `
+        + `au ${Helpers.formatToLongDate(TripDates.parseIsoDate(endDate))}`;
+    }
 
     this.duration = Helpers.formatSecondsDuration(this.trip.durationInSeconds);
   }

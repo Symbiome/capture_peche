@@ -84,6 +84,7 @@ import { TripBean } from "@/pojos/BackendPojos";
 import TripsService from "@/services/TripsService";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import BackButton from "@/components/common/BackButton.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -151,10 +152,7 @@ export default class EditTripView extends Vue {
       );
     }
     this.ready = true;
-    this.duration = Helpers.renderDuration(
-      this.trip.startedAt,
-      this.trip.finishedAt
-    );
+    this.duration = TripDates.formatDuration(this.trip as any, true);
   }
 
   startSave() {

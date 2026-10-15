@@ -34,6 +34,7 @@ export default interface CatchSummary {
     techniqueId?: string;
     description?: string;
     caughtAt?: string;
+    caughtOn?: string; // AAAA-MM-JJ (#237)
     sampleId?: string;
     hasPicture?: boolean;
     latitude?:number;

@@ -27,7 +27,7 @@
         message="Code de la session inscrit sur le carnet papier">
         <b-input v-model="trip.sessionCode" maxlength="64"></b-input>
       </b-field>
-      <b-field label="Date" class="column is-2">
+      <b-field label="Date de début" class="column is-2">
         <input type="date" class="input" v-model="trip.day" :max="todayIso" />
       </b-field>
       <b-field label="Heure de début" class="column is-2" :type="startTimeError ? 'is-danger' : ''"
@@ -35,7 +35,10 @@
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.startTime"
           @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
-      <b-field label="Heure de fin" class="column is-2" :type="endTimeError ? 'is-danger' : ''" :message="endTimeError">
+      <b-field label="Date de fin" class="column is-2">
+        <input type="date" class="input" v-model="trip.endDay" :min="trip.day" :max="todayIso" />
+      </b-field>
+      <b-field label="Heure de fin" class="column is-2" :type="endMessage ? 'is-danger' : ''" :message="endMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.endTime"
           @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
@@ -175,8 +178,8 @@ import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
 import {
   EMPTY_REFERENTIAL, EntryReferential, SPECIES_URI, TECHNIQUES_URI, loadEntryReferential
 } from "@/utils/entryReferentials";
-import { maskTimeInput, isValidTimeString } from "@/utils/utils";
-import { ref, computed } from "vue";
+import { maskTimeInput, isValidTimeString, isEndAfterStart, localDateIso } from "@/utils/utils";
+import { ref, computed, watch } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 
@@ -193,6 +196,7 @@ function newTrip() {
     sessionCode: "",
     day: "",
     startTime: "",
+    endDay: "",
     endTime: "",
     waterEntityId: null,
     position: null as MapPosition | null,
@@ -218,7 +222,24 @@ const errors = ref<any[]>([]);
 const startTimeError = ref("");
 const endTimeError = ref("");
 
-const todayIso = computed(() => new Date().toISOString().slice(0, 10));
+const todayIso = computed(() => localDateIso());
+
+const END_NOT_AFTER_START_ERROR = "La fin doit être postérieure au début";
+
+const endMessage = computed(() => {
+  if (endTimeError.value) {
+    return endTimeError.value;
+  }
+  const { day, startTime, endDay, endTime } = trip.value;
+  return isEndAfterStart(day, startTime, endDay, endTime) === false ? END_NOT_AFTER_START_ERROR : "";
+});
+
+// Date de fin pré-remplie avec la date de début (#237), qu'elle suit tant qu'elle lui est égale.
+watch(() => trip.value.day, (newDay: string, oldDay: string) => {
+  if (!trip.value.endDay || trip.value.endDay === oldDay) {
+    trip.value.endDay = newDay;
+  }
+});
 
 function isLot(c: any): boolean {
   return Number(c.quantity) > 1;
@@ -312,6 +333,7 @@ async function submit() {
   const { position, ...tripFields } = trip.value;
   const payload = {
     ...tripFields,
+    endDay: trip.value.endDay || null,
     latitude: position ? position.lat : null,
     longitude: position ? position.lng : null,
     rodCount: toIntOrNull(trip.value.rodCount),
