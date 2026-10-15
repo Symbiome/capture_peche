@@ -20,8 +20,7 @@
   -->
 <template>
   <div
-    class="my-trips shifted-background"
-    :class="visualizationMode === 'list' ? 'page-with-header-and-footer' : 'page-with-header'"
+    class="my-trips shifted-background page-with-header-and-footer"
   >
     <FisholaHeader />
     <div class="page my-trips-page">
@@ -44,8 +43,8 @@
           </div>
           <div class="bottom">
             <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip && visualizationMode === 'list'" />
-           
           </div>
+          <BottomNav v-if="visualizationMode !== 'list'" />
         </div>
       </div>
     </div>
@@ -60,6 +59,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
 import TripsService from "@/services/TripsService";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 @Component({
   components: {
@@ -67,7 +67,8 @@ import RunningOverlay from "@/components/layout/RunningOverlay.vue";
     MyTrips,
     MyTripsMapView,
     NewsView,
-    RunningOverlay
+    RunningOverlay,
+    BottomNav
   },
 })
 export default class TripsListAndMapView extends Vue {

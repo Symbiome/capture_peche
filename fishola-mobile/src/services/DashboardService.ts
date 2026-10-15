@@ -58,7 +58,7 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static loadDashboard(
-    year: number,
+    year: number | undefined,
     lake: string
   ): Promise<DashboardAndSpecies> {
     const params = {
@@ -85,7 +85,7 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static loadDashboardOrTimeout(
-    year: number,
+    year: number | undefined,
     lake: string
   ): Promise<DashboardAndSpecies> {
     const promise = this.loadDashboard(year, lake);
@@ -117,7 +117,7 @@ export default class DashboardService extends AbstractFisholaService {
   // Sessions / heures par mois, temps par technique, CPUE et contribution au
   // secteur (#210), mêmes filtres que le tableau de bord personnel.
   static loadEffortStatisticsOrTimeout(
-    year: number,
+    year: number | undefined,
     lake: string
   ): Promise<AnglerEffortStatistics> {
     const promise = this.backendGetWithArgs("/v1/dashboard/effort", {

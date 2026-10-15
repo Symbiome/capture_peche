@@ -22,6 +22,8 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 
 import Dispatcher from "@/views/Dispatcher.vue";
+import HomeView from "@/views/Home.vue";
+import AccountView from "@/views/Account.vue";
 
 import About from "@/views/About.vue";
 import OfflineHome from "@/views/OfflineHome.vue";
@@ -108,6 +110,16 @@ const routes = [
     name: "register",
     meta: { public: true },
     component: Register,
+  },
+  {
+    path: "/home",
+    name: "home",
+    component: HomeView,
+  },
+  {
+    path: "/account",
+    name: "account",
+    component: AccountView,
   },
   {
     path: "/my-trips/:visualizationMode",

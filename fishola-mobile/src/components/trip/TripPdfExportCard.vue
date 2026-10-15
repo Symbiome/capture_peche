@@ -529,7 +529,7 @@ export default class TripPdfExportCard extends Vue {
 
 .trip-pdf-export-generating {
   text-align: center;
-  color: @pelorous;
+  color: @accent-text;
   margin-top: @vertical-margin-small;
 
   i {

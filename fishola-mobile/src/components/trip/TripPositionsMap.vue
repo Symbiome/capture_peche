@@ -51,6 +51,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
@@ -65,9 +66,9 @@ import {
   setBaseLayer,
 } from '@/components/common/maplibreStyle';
 
-const BEGIN_COLOR = '#44BD32';
-const END_COLOR = '#D62137';
-const CATCH_COLOR = '#1e9bc4';
+const BEGIN_COLOR = CARNET_MAP_COLORS.tripStart;
+const END_COLOR = CARNET_MAP_COLORS.tripEnd;
+const CATCH_COLOR = CARNET_MAP_COLORS.catchPin;
 const CATCH_PIN_ID = 'trip-positions-catch-pin';
 // Encombrement à l'écran du pin de capture (68×92 px en pixelRatio 2, ancré en
 // bas) et des marqueurs début/fin : réservé dans les marges de cadrage pour
@@ -531,15 +532,15 @@ export default class TripPositionsMap extends Vue {
   }
 
   .legend-dot-begin {
-    background-color: #44bd32;
+    background-color: @carnet-green;
   }
 
   .legend-dot-end {
-    background-color: #d62137;
+    background-color: @carnet-red;
   }
 
   .legend-dot-catch {
-    background-color: #1e9bc4;
+    background-color: @carnet-blue;
   }
 }
 

@@ -349,7 +349,7 @@ export default class NearbyList extends Vue {
 
         &.active {
             background: @pelorous;
-            border-color: @pelorous;
+            border-color: @accent-text;
             color: white;
         }
     }
@@ -374,7 +374,7 @@ export default class NearbyList extends Vue {
         color: @gunmetal;
         i {
             font-size: 2rem;
-            color: @terra-cotta;
+            color: @accent-text;
         }
     }
 
@@ -429,7 +429,7 @@ export default class NearbyList extends Vue {
     .item-distance {
         flex-shrink: 0;
         font-weight: 600;
-        color: @pelorous;
+        color: @accent-text;
         white-space: nowrap;
     }
 }
@@ -438,8 +438,8 @@ export default class NearbyList extends Vue {
     display: block;
     margin: 15px auto 0;
     background: transparent;
-    border: 1px solid @pelorous;
-    color: @pelorous;
+    border: 1px solid @accent-text;
+    color: @accent-text;
     border-radius: 20px;
     padding: 8px 20px;
     cursor: pointer;

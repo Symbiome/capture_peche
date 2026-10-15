@@ -40,11 +40,7 @@
               </div>
               <div class="badge-card-description" v-else>{{ badge.description }}</div>
               <div class="badge-card-pseudo" v-if="pseudo">{{ pseudo }}</div>
-              <img
-                class="badge-card-logo"
-                src="/img/logo-FISHOLA-nom.svg"
-                alt="FISHOLA"
-              />
+              <CarnetLogo class="badge-card-logo" />
             </div>
           </div>
 
@@ -75,6 +71,7 @@
 </template>
 
 <script lang="ts">
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
 import { BadgeBean } from "@/pojos/BackendPojos";
@@ -90,6 +87,7 @@ const TARGET_SIZE_PX = 1080;
 
 @Component({
   components: {
+    CarnetLogo,
     FisholaFooter,
   },
 })
@@ -203,7 +201,6 @@ export default class BadgeShareCard extends Vue {
 
   .badge-card-logo {
     margin-top: @vertical-margin-small;
-    width: 90px;
   }
 }
 </style>

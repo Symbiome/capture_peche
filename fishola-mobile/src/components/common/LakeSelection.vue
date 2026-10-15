@@ -566,7 +566,7 @@ export default class LakeSelection extends Vue {
     i {
       cursor: pointer;
       &:hover {
-        color: @terra-cotta;
+        color: @accent-text;
       }
     }
     i.icon-chevron {
@@ -583,7 +583,7 @@ export default class LakeSelection extends Vue {
     align-items: center;
     cursor: pointer;
     &:hover {
-      color: @terra-cotta;
+      color: @accent-text;
     }
   }
 
@@ -600,7 +600,7 @@ export default class LakeSelection extends Vue {
 
     color: @gunmetal;
     font-size: @fontsize-form-input;
-    font-family: 'Open Sans', sans-serif;
+    font-family: @font-family;
 
     &.isSearching {
       font-style: italic;
@@ -647,7 +647,7 @@ export default class LakeSelection extends Vue {
         position: absolute;
         left: 15px;
         padding-top: 2px;
-        color: @pelorous;
+        color: @accent-text;
         font-weight: bold;
       }
       &:hover {
@@ -655,7 +655,7 @@ export default class LakeSelection extends Vue {
         background-color: #0001;
       }
       &.selected {
-        background-color: #1e9bc422;
+        background-color: @carnet-blue-soft;
       }
     }
   }
@@ -671,7 +671,7 @@ export default class LakeSelection extends Vue {
       display: flex;
       align-items: center;
       border-radius: 20px;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
       padding: 5px 10px;
       i {
         margin-left: 5px;

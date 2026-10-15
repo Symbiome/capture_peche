@@ -281,11 +281,11 @@ export default class ProfileView extends Vue {
 
   .safe-delete-button {
     font-weight: bold;
-    color: @pelorous;
+    color: @accent-text;
     cursor: pointer;
 
     &:hover {
-      color: @terra-cotta;
+      color: @accent-text;
     }
   }
 

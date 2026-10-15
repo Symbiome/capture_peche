@@ -86,7 +86,7 @@
         @getSamplesCollectionPoints="getSamplesCollectionPoints"
         />
     </div>
-    <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
+    <BottomNav />
   </div>
 </template>
 
@@ -96,7 +96,7 @@ import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormRadio from '@/components/common/FormRadio.vue'
 import ThemeService, { ThemePreference } from '@/services/ThemeService';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import { UserSettings } from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
@@ -113,7 +113,7 @@ import ScaleSampling from '@/services/ScaleSampling';
     FisholaHeader,
     FormToggle,
     FormRadio,
-    FisholaFooter,
+    BottomNav,
     BottomInducementView
   }
 })
@@ -260,8 +260,8 @@ export default class SettingsView extends Vue {
       height: 60px;
       width: 60px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation: spin 2s linear infinite;
     }
   }
@@ -318,7 +318,7 @@ export default class SettingsView extends Vue {
         align-items: center;
 
         i.icon-map {
-          color: @pelorous;
+          color: @accent-text;
           margin-right: 8px;
         }
       }

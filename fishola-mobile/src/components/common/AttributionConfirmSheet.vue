@@ -210,8 +210,8 @@ export default class AttributionConfirmSheet extends Vue {
     cursor: pointer;
 
     &.selected {
-        border-color: @pelorous;
-        background: #1e9bc422;
+        border-color: @accent-text;
+        background: @carnet-blue-soft;
     }
     &.proposal .candidate-name {
         font-weight: bold;
@@ -228,7 +228,7 @@ export default class AttributionConfirmSheet extends Vue {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: @terra-cotta;
+    color: @accent-text;
     font-size: 0.9rem;
     margin: 4px 0 12px;
 }

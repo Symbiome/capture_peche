@@ -142,7 +142,7 @@ export default class PictureSourceChoice extends Vue {
   }
 
   .title {
-    color: @pelorous;
+    color: @accent-text;
   }
   .transparent-background {
     height: 68vh;

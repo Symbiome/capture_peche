@@ -74,10 +74,12 @@ export default class FooterButton extends Vue {
   button {
     height: 100%;
     width: 100%;
-    border-radius: 22px;
+    border-radius: 10px;
 
+    font-family: @font-family;
+    letter-spacing: @letter-spacing;
     font-style: normal;
-    font-weight: bold;
+    font-weight: 600;
     font-size: @fontsize-button;
     line-height: calc(@fontsize-button + @line-height-padding-x-large);
 

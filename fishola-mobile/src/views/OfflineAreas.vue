@@ -174,13 +174,13 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
+    <BottomNav />
   </div>
 </template>
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 import OfflinePacksMap from "@/components/common/OfflinePacksMap.vue";
 
 import OfflineAreasService, {
@@ -195,7 +195,7 @@ import { Component, Vue } from "vue-property-decorator";
 @Component({
   components: {
     FisholaHeader,
-    FisholaFooter,
+    BottomNav,
     OfflinePacksMap,
   },
 })
@@ -339,8 +339,8 @@ export default class OfflineAreasView extends Vue {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    background: #fff4e5;
-    border: 1px solid @carrot-orange;
+    background: @warning-soft;
+    border: 1px solid @warning;
     border-radius: 6px;
     padding: 10px 12px;
     margin-bottom: @vertical-margin-small;
@@ -378,7 +378,7 @@ export default class OfflineAreasView extends Vue {
       background: transparent;
       color: @gunmetal;
       font-size: @fontsize-form-input;
-      font-family: "Open Sans", sans-serif;
+      font-family: @font-family;
     }
   }
 
@@ -394,8 +394,8 @@ export default class OfflineAreasView extends Vue {
     height: 18px;
     width: 18px;
     border-radius: 50%;
-    border-top: 2px solid @pelorous;
-    border-left: 2px solid @pelorous;
+    border-top: 2px solid @accent-text;
+    border-left: 2px solid @accent-text;
     border-right: 2px solid transparent;
     border-bottom: 2px solid transparent;
     animation: spin 1s linear infinite;
@@ -407,8 +407,8 @@ export default class OfflineAreasView extends Vue {
     padding: 1px 6px;
     margin-right: 6px;
     border-radius: 4px;
-    background: #1e9bc422;
-    color: @pelorous;
+    background: @carnet-blue-soft;
+    color: @accent-text;
     font-weight: 700;
     font-size: 0.8rem;
     text-align: center;
@@ -462,7 +462,7 @@ export default class OfflineAreasView extends Vue {
   .link-btn {
     background: none;
     border: none;
-    color: @pelorous;
+    color: @accent-text;
     cursor: pointer;
     font-size: 0.85rem;
     padding: 4px;
@@ -495,8 +495,8 @@ export default class OfflineAreasView extends Vue {
     }
     &.installed {
       background: transparent;
-      color: @pelorous;
-      border: 1px solid @pelorous;
+      color: @accent-text;
+      border: 1px solid @accent-text;
     }
   }
 

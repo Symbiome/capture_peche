@@ -46,6 +46,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -133,14 +134,14 @@ export default class OfflinePacksMap extends Vue {
                     type: 'fill',
                     source: 'hydro-offline',
                     filter: ['==', ['get', 'kind'], 'STILL'],
-                    paint: { 'fill-color': '#1e9bc4', 'fill-opacity': 0.35, 'fill-outline-color': '#1478a0' },
+                    paint: { 'fill-color': CARNET_MAP_COLORS.water, 'fill-opacity': 0.35, 'fill-outline-color': CARNET_MAP_COLORS.waterOutline },
                 });
                 this.map.addLayer({
                     id: 'hydro-offline-line',
                     type: 'line',
                     source: 'hydro-offline',
                     paint: {
-                        'line-color': '#1e9bc4',
+                        'line-color': CARNET_MAP_COLORS.water,
                         'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 3],
                     },
                 });
@@ -311,8 +312,8 @@ export default class OfflinePacksMap extends Vue {
 /* Étiquette de département (élément DOM custom MapLibre, hors du scope Vue). */
 .department-label {
     background: @surface;
-    border: 1px solid @pelorous;
-    color: @pelorous;
+    border: 1px solid @accent-text;
+    color: @accent-text;
     border-radius: 12px;
     padding: 2px 10px;
     font-size: 0.78rem;

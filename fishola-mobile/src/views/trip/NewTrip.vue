@@ -151,7 +151,7 @@ export default class NewTripView extends Vue {
           img {
             width: 60px;
             height: 60px;
-            color: @pelorous;
+            color: @accent-text;
           }
         }
 
@@ -168,7 +168,7 @@ export default class NewTripView extends Vue {
             line-height: calc(
               @fontsize-span-big + @line-height-padding-x-large
             );
-            color: @pelorous;
+            color: @accent-text;
             margin-bottom: @vertical-margin-small;
           }
 

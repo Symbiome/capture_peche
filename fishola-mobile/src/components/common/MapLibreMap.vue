@@ -53,6 +53,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { WaterEntity as Lake, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
@@ -277,9 +278,9 @@ export default class MapLibreMap extends Vue {
                 source: 'hydro',
                 'source-layer': 'water_surface',
                 paint: {
-                    'fill-color': '#1e9bc4',
+                    'fill-color': CARNET_MAP_COLORS.water,
                     'fill-opacity': 0.35,
-                    'fill-outline-color': '#1478a0',
+                    'fill-outline-color': CARNET_MAP_COLORS.waterOutline,
                 },
             },
             {
@@ -289,7 +290,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'water_surface',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'fill-color': '#e2725b',
+                    'fill-color': CARNET_MAP_COLORS.selected,
                     'fill-opacity': 0.55,
                 },
             },
@@ -301,7 +302,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['==', ['to-boolean', ['get', 'persistent']], true],
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 3],
                 },
             },
@@ -313,7 +314,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['!=', ['to-boolean', ['get', 'persistent']], true],
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.5],
                     'line-dasharray': [2, 2],
                 },
@@ -325,7 +326,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'line-color': '#e2725b',
+                    'line-color': CARNET_MAP_COLORS.selected,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 3, 16, 6],
                 },
             },
@@ -367,9 +368,9 @@ export default class MapLibreMap extends Vue {
                 source: 'hydro-offline',
                 filter: ['==', ['get', 'kind'], 'STILL'],
                 paint: {
-                    'fill-color': '#1e9bc4',
+                    'fill-color': CARNET_MAP_COLORS.water,
                     'fill-opacity': 0.35,
-                    'fill-outline-color': '#1478a0',
+                    'fill-outline-color': CARNET_MAP_COLORS.waterOutline,
                 },
             },
             {
@@ -378,7 +379,7 @@ export default class MapLibreMap extends Vue {
                 source: 'hydro-offline',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'fill-color': '#e2725b',
+                    'fill-color': CARNET_MAP_COLORS.selected,
                     'fill-opacity': 0.55,
                 },
             },
@@ -387,7 +388,7 @@ export default class MapLibreMap extends Vue {
                 type: 'line',
                 source: 'hydro-offline',
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 16, 3],
                 },
             },
@@ -397,7 +398,7 @@ export default class MapLibreMap extends Vue {
                 source: 'hydro-offline',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'line-color': '#e2725b',
+                    'line-color': CARNET_MAP_COLORS.selected,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 16, 6],
                 },
             },
@@ -534,7 +535,7 @@ export default class MapLibreMap extends Vue {
         } else {
             // Goutte terra cotta = point de départ CHOISI (distinct de la pastille
             // « Ma position », #18).
-            this.pinMarker = new maplibregl.Marker({ color: '#e2725b' })
+            this.pinMarker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected })
                 .setLngLat([lng, lat])
                 .addTo(this.map);
             this.pinMarker.getElement().setAttribute('title', 'Point de départ');
@@ -763,8 +764,8 @@ export default class MapLibreMap extends Vue {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #fff4e5;
-    border: 1px solid @carrot-orange;
+    background: @warning-soft;
+    border: 1px solid @warning;
     color: @gunmetal;
     border-radius: 20px;
     padding: 8px 16px;
@@ -772,7 +773,7 @@ export default class MapLibreMap extends Vue {
     box-shadow: 0 1px 4px #0003;
 
     i {
-        color: @carrot-orange;
+        color: @warning;
         flex-shrink: 0;
     }
 }
@@ -814,18 +815,18 @@ export default class MapLibreMap extends Vue {
 .user-position-marker {
     width: 16px;
     height: 16px;
-    background: #1e9bc4;
+    background: @carnet-blue;
     border: 3px solid white;
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5);
+    box-shadow: 0 0 0 0 rgba(0, 0, 224, 0.5);
     animation: user-position-pulse 2s infinite;
     cursor: default;
 }
 
 @keyframes user-position-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5); }
-    70% { box-shadow: 0 0 0 12px rgba(30, 155, 196, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(0, 0, 224, 0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(0, 0, 224, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 224, 0); }
 }
 
 /* L'infobulle de survol des entités hydro (.hydro-hover-popup) est désormais

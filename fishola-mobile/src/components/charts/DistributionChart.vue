@@ -105,7 +105,7 @@ export default class DistributionChart extends Vue {
 
       .percent {
         font-weight: bold;
-        color: @pelorous;
+        color: @accent-text;
         .green-label {
           color: @lime-green;
 
@@ -148,7 +148,7 @@ export default class DistributionChart extends Vue {
   }
 
   .legend {
-    color: @pelorous;
+    color: @accent-text;
     text-align: right;
     font-weight: bold;
     font-style: italic;

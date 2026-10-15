@@ -28,8 +28,8 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 // Couleurs des textes et quadrillages Chart.js, qui ne lisent pas le CSS.
 const CHART_COLORS: Record<Theme, { text: string; grid: string }> = {
-  light: { text: "#636E72", grid: "rgba(0, 0, 0, 0.1)" },
-  dark: { text: "#A9B4B9", grid: "rgba(255, 255, 255, 0.12)" },
+  light: { text: "#5B6B78", grid: "rgba(20, 38, 52, 0.1)" },
+  dark: { text: "#A7B4BF", grid: "rgba(255, 255, 255, 0.12)" },
 };
 
 /**
@@ -84,6 +84,7 @@ export default class ThemeService {
   private static apply() {
     const theme = ThemeService.resolve(ThemeService.getPreference());
     document.documentElement.setAttribute("data-theme", theme);
+    Chart.defaults.font.family = "Poppins, sans-serif";
     Chart.defaults.color = CHART_COLORS[theme].text;
     Chart.defaults.borderColor = CHART_COLORS[theme].grid;
   }

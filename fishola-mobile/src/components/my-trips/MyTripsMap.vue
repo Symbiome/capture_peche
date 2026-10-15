@@ -51,7 +51,7 @@
         <div class="legend" v-if="validMarkers.length > 0">
             <div class="legend-item">
                 <svg class="legend-swatch" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
-                    <circle cx="10" cy="10" r="9" fill="#1e9bc4" />
+                    <circle cx="10" cy="10" r="9" fill="#0000E0" />
                     <path d="M13.3 9.9c0 1.5-1.6 2.8-3.5 2.8-1.4 0-2.6-.6-3.2-1.5-.1-.2-.1-.4 0-.6.6-.9 1.8-1.5 3.2-1.5 1.9 0 3.5 1.3 3.5 2.8z" fill="#fff" />
                     <path d="M13.5 8.5c.3-.2.6 0 .6.3v2c0 .3-.3.5-.6.3l-1.4-.8c-.2-.2-.2-.5 0-.7l1.4-1.1z" fill="#fff" />
                 </svg>
@@ -59,7 +59,7 @@
             </div>
             <div class="legend-item">
                 <svg class="legend-swatch" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
-                    <circle cx="10" cy="10" r="9" fill="#8a8f98" />
+                    <circle cx="10" cy="10" r="9" fill="#5B6B78" />
                     <path d="M6 14 L14 6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" />
                     <path d="M12.8 7.2 Q10 10.5 9.5 13.5" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round" />
                     <circle cx="9.5" cy="14" r="0.9" fill="#fff" />
@@ -77,6 +77,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
 import Helpers from '@/services/Helpers';
@@ -205,9 +206,9 @@ export default class MyTripsMapView extends Vue {
                 return;
             }
             if (e.id === CATCH_PIN_AVEC_CAPTURE) {
-                addCatchPinIcon(this.map, CATCH_PIN_AVEC_CAPTURE, '#1e9bc4', 'fish');
+                addCatchPinIcon(this.map, CATCH_PIN_AVEC_CAPTURE, CARNET_MAP_COLORS.catchPin, 'fish');
             } else if (e.id === CATCH_PIN_SANS_CAPTURE) {
-                addCatchPinIcon(this.map, CATCH_PIN_SANS_CAPTURE, '#8a8f98', 'rod');
+                addCatchPinIcon(this.map, CATCH_PIN_SANS_CAPTURE, CARNET_MAP_COLORS.emptyPin, 'rod');
             }
         });
         this.map.on('load', () => {
@@ -427,7 +428,7 @@ export default class MyTripsMapView extends Vue {
 .catch-marker {
     .title {
         font-size: 18px;
-        color: @pelorous;
+        color: @accent-text;
     }
 
     .trip-date {
@@ -435,7 +436,7 @@ export default class MyTripsMapView extends Vue {
     }
 
     .fish {
-        color: @pelorous;
+        color: @accent-text;
     }
 
     .infos {
@@ -455,8 +456,8 @@ export default class MyTripsMapView extends Vue {
 
         &:hover {
             background-color: @surface;
-            color: @terra-cotta;
-            border: 2px solid @terra-cotta;
+            color: @accent-text;
+            border: 2px solid @accent-text;
         }
     }
 }

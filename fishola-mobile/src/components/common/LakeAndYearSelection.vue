@@ -304,14 +304,14 @@ export default class LakeAndYearSelection extends Vue {
     background: transparent;
     padding: 0 10px;
     min-height: 35px;
-    border: 1px solid @pelorous;
+    border: 1px solid @accent-text;
     border-radius: 20px;
     margin-left: 10px;
     max-width: 150px;
     font-weight: bold;
     font-size: 16px;
     font-family: inherit;
-    color: @pelorous;
+    color: @accent-text;
     cursor: pointer;
 
     option {
@@ -332,14 +332,14 @@ export default class LakeAndYearSelection extends Vue {
     background: transparent;
     padding: 0 10px;
     min-height: 35px;
-    border: 1px solid @pelorous;
+    border: 1px solid @accent-text;
     border-radius: 20px;
     margin-left: 10px;
     width: 150px;
     font-weight: bold;
     font-size: 16px;
     font-family: inherit;
-    color: @pelorous;
+    color: @accent-text;
 
     &:hover {
       background-color: @surface;
@@ -370,7 +370,7 @@ export default class LakeAndYearSelection extends Vue {
         font-family: "Fishola-Icons";
         content: '\f114';
         margin-right: 6px;
-        color: @pelorous;
+        color: @accent-text;
         font-weight: bold;
       }
       &:hover {
@@ -378,7 +378,7 @@ export default class LakeAndYearSelection extends Vue {
         background-color: #0001;
       }
       &.selected {
-        background-color: #1e9bc422;
+        background-color: @carnet-blue-soft;
       }
     }
   }

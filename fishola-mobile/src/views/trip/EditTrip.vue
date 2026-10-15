@@ -292,9 +292,9 @@ export default class EditTripView extends Vue {
 
     button {
       background: none;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
       border-radius: 20px;
-      color: @pelorous;
+      color: @accent-text;
       padding: 6px 16px;
       font-size: @fontsize-small-paragraph;
       cursor: pointer;
@@ -311,7 +311,7 @@ export default class EditTripView extends Vue {
     justify-content: center;
     align-items: center;
 
-    color: @terra-cotta;
+    color: @accent-text;
     margin-bottom: @vertical-margin-large;
 
     @media (max-height: 579px) {

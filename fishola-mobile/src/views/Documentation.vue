@@ -78,14 +78,14 @@
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation" selected="documentation" />
+    <BottomNav />
   </div>
 </template>
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import DocumentationService from "@/services/DocumentationService";
 import TripsService from "@/services/TripsService";
@@ -98,7 +98,7 @@ import { RouterUtils } from "@/router/RouterUtils";
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter,
+    BottomNav,
   },
 })
 export default class DocumentationView extends Vue {
@@ -191,7 +191,7 @@ export default class DocumentationView extends Vue {
     }
 
     a {
-      color: @pelorous;
+      color: @accent-text;
       font-size: @fontsize-paragraph;
     }
 
@@ -269,7 +269,7 @@ export default class DocumentationView extends Vue {
       a,
       a:visited {
         text-decoration: none;
-        color: @summer-sky;
+        color: @accent-text;
       }
 
       button {

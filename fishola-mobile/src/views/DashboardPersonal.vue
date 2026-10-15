@@ -58,14 +58,14 @@
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" />
+    <BottomNav />
   </div>
 </template>
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import PersonalDashboard from "@/components/charts/PersonalDashboard.vue";
 
@@ -86,7 +86,7 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter,
+    BottomNav,
     PersonalDashboard,
     LakeAndYearSelection
   },
@@ -235,8 +235,8 @@ export default class DashboardPersonalView extends Vue {
       height: 60px;
       width: 60px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation: spin 2s linear infinite;
     }
   }
@@ -338,7 +338,7 @@ export default class DashboardPersonalView extends Vue {
 
     h2 {
       i {
-        color: @pelorous;
+        color: @accent-text;
         margin-right: @margin-small;
       }
 

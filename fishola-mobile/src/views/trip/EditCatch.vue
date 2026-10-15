@@ -1203,7 +1203,7 @@ export default class EditCatchView extends Vue {
       flex: 1 1 auto;
 
       &.pic-selected {
-        border: 4px solid @pelorous;
+        border: 4px solid @accent-text;
         -webkit-transform: scale(1.05);
         -moz-transform: scale(1.05);
         -o-transform: scale(1.05);
@@ -1296,8 +1296,8 @@ export default class EditCatchView extends Vue {
       height: 40px;
       width: 40px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation: spin 2s linear infinite;
     }
 
