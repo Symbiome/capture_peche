@@ -38,13 +38,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -371,6 +376,54 @@ class SurveyImportFlatCsvTest {
         post(filled.getBytes(StandardCharsets.UTF_8), "flat-test-template.csv")
                 .body("status", equalTo("DONE"))
                 .body("inserted", equalTo(3))
+                .body("rejected", equalTo(0));
+    }
+
+    // --- Archive des gabarits ----------------------------------------------------
+
+    private Map<String, byte[]> downloadTemplateBundle() throws IOException {
+        byte[] zip = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(URI + "/template?format=zip")
+                .then().statusCode(200)
+                .contentType("application/zip")
+                .extract().asByteArray();
+        Map<String, byte[]> entries = new LinkedHashMap<>();
+        try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(zip))) {
+            for (ZipEntry entry = in.getNextEntry(); entry != null; entry = in.getNextEntry()) {
+                entries.put(entry.getName(), in.readAllBytes());
+            }
+        }
+        return entries;
+    }
+
+    @Test
+    void templateBundleHoldsBothFormatsTheExampleAndAReadmePresentingThem() throws IOException {
+        Map<String, byte[]> entries = downloadTemplateBundle();
+
+        Assertions.assertEquals(Set.of(SurveyTemplateBundle.README_NAME, SurveyTemplate.FILE_NAME,
+                SurveyFlatTemplate.FILE_NAME, SurveyTemplateBundle.EXAMPLE_NAME), entries.keySet());
+        Assertions.assertArrayEquals(SurveyFlatTemplate.build(), entries.get(SurveyFlatTemplate.FILE_NAME));
+        String readme = new String(entries.get(SurveyTemplateBundle.README_NAME), StandardCharsets.UTF_8);
+        Assertions.assertTrue(readme.contains(SurveyTemplate.FILE_NAME), readme);
+        Assertions.assertTrue(readme.contains(SurveyFlatTemplate.FILE_NAME), readme);
+        Assertions.assertTrue(readme.contains(SurveyTemplateBundle.EXAMPLE_NAME), readme);
+    }
+
+    /** Exemple du ZIP : 2 sessions, 18 lignes, 10 sorties (dont 3 souvenirs, 2 bredouilles, 3 lots). */
+    @Test
+    void exampleOfTheTemplateBundleImportsWithoutError() throws IOException {
+        String example = new String(downloadTemplateBundle().get(SurveyTemplateBundle.EXAMPLE_NAME),
+                StandardCharsets.UTF_8);
+        Assertions.assertTrue(example.contains(String.join(";", SurveySchema.FLAT_HEADER)));
+
+        // Seules les valeurs propres à la base de test changent : secteurs et codes.
+        String filled = example.replace("ENQ-", "FLAT-TEST-EX-").replace("P-ANN-", "FLAT-P-EX-ANN-")
+                .replace("P-LEM-", "FLAT-P-EX-LEM-").replace("Lac d'Annecy", annecy)
+                .replace("Lac Léman", "Léman");
+        post(filled.getBytes(StandardCharsets.UTF_8), "flat-test-example.csv")
+                .body("status", equalTo("DONE"))
+                .body("total", equalTo(18))
+                .body("inserted", equalTo(10))
                 .body("rejected", equalTo(0));
     }
 }

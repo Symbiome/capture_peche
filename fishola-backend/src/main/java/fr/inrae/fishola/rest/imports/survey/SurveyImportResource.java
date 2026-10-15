@@ -37,6 +37,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,6 +54,7 @@ public class SurveyImportResource extends AbstractFisholaResource {
 
     private static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String CSV_MEDIA_TYPE = "text/csv; charset=UTF-8";
+    private static final String ZIP_MEDIA_TYPE = "application/zip";
 
     @Inject
     protected SurveyImportService importService;
@@ -81,20 +83,27 @@ public class SurveyImportResource extends AbstractFisholaResource {
 
     /**
      * Gabarit à remplir : classeur XLSX à quatre feuilles avec une ligne d'exemple chacune
-     * (#207), ou CSV plat avec des lignes d'exemple ({@code format=csv}, #242).
+     * (#207), CSV plat avec des lignes d'exemple ({@code format=csv}, #242), ou archive ZIP
+     * des deux gabarits avec un exemple CSV complet et un LISEZ-MOI ({@code format=zip}).
      *
-     * @param format {@code xlsx} (défaut) ou {@code csv}
+     * @param format {@code xlsx} (défaut), {@code csv} ou {@code zip}
      * @return le gabarit en pièce jointe
      */
     @GET
     @Path("/template")
-    @Produces({XLSX_MEDIA_TYPE, CSV_MEDIA_TYPE})
+    @Produces({XLSX_MEDIA_TYPE, CSV_MEDIA_TYPE, ZIP_MEDIA_TYPE})
     public Response template(@QueryParam("format") @DefaultValue("xlsx") String format) {
         checkIsStaff();
-        boolean csv = "csv".equalsIgnoreCase(format);
-        String fileName = csv ? SurveyFlatTemplate.FILE_NAME : SurveyTemplate.FILE_NAME;
-        return Response.ok(csv ? SurveyFlatTemplate.build() : SurveyTemplate.build())
-                .type(csv ? CSV_MEDIA_TYPE : XLSX_MEDIA_TYPE)
+        return switch (format.toLowerCase(Locale.ROOT)) {
+            case "csv" -> attachment(SurveyFlatTemplate.build(), CSV_MEDIA_TYPE, SurveyFlatTemplate.FILE_NAME);
+            case "zip" -> attachment(SurveyTemplateBundle.build(), ZIP_MEDIA_TYPE, SurveyTemplateBundle.FILE_NAME);
+            default -> attachment(SurveyTemplate.build(), XLSX_MEDIA_TYPE, SurveyTemplate.FILE_NAME);
+        };
+    }
+
+    private static Response attachment(byte[] content, String mediaType, String fileName) {
+        return Response.ok(content)
+                .type(mediaType)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
     }

@@ -28,29 +28,21 @@
           « Session souvenir » facultatif. Ou fichier CSV plat (.csv) : une ligne par capture,
           informations de session, de sortie et de pêcheur répétées sur chaque ligne.
         </p>
+        <p class="subtitle is-6">
+          Les gabarits (.zip) contiennent les deux formats, un exemple CSV rempli et un
+          LISEZ-MOI qui explique quand choisir l'un ou l'autre.
+        </p>
       </div>
       <!-- Mis en valeur (#205), comme pour l'import carnet volontaire. -->
-      <div class="buttons">
-        <b-button
-          type="is-primary"
-          size="is-medium"
-          icon-left="file-download-outline"
-          :loading="downloadingTemplate === 'xlsx'"
-          @click="downloadTemplate('xlsx')"
-        >
-          Gabarit XLSX
-        </b-button>
-        <b-button
-          type="is-primary"
-          size="is-medium"
-          outlined
-          icon-left="file-download-outline"
-          :loading="downloadingTemplate === 'csv'"
-          @click="downloadTemplate('csv')"
-        >
-          Gabarit CSV
-        </b-button>
-      </div>
+      <b-button
+        type="is-primary"
+        size="is-medium"
+        icon-left="file-download-outline"
+        :loading="downloadingTemplates"
+        @click="downloadTemplates"
+      >
+        Télécharger les gabarits
+      </b-button>
     </header>
 
     <b-collapse class="card format-help" animation="slide" :open="false">
@@ -200,7 +192,7 @@ import { ref, computed } from "vue";
 const Toast = useToast();
 const file = ref<File | null>(null);
 const loading = ref(false);
-const downloadingTemplate = ref<"xlsx" | "csv" | null>(null);
+const downloadingTemplates = ref(false);
 const result = ref<any>(null);
 
 // Reflète SurveySchema.HEADER_* côté backend (fr.inrae.fishola.rest.imports.survey).
@@ -280,21 +272,24 @@ function stageTagType(stage: string): string {
   }
 }
 
-/** Gabarit XLSX (#207) ou CSV plat (#242), généré par le backend depuis le schéma d'import. */
-async function downloadTemplate(format: "xlsx" | "csv") {
-  downloadingTemplate.value = format;
+/**
+ * Archive ZIP générée par le backend : gabarits XLSX (#207) et CSV plat (#242), exemple CSV
+ * rempli et LISEZ-MOI présentant les deux formats.
+ */
+async function downloadTemplates() {
+  downloadingTemplates.value = true;
   try {
-    const blob = await BackendService.backendGetBlob("/v1/admin/imports/survey/template?format=" + format);
+    const blob = await BackendService.backendGetBlob("/v1/admin/imports/survey/template?format=zip");
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "gabarit-enquete-terrain." + format;
+    link.download = "gabarits-enquete-terrain.zip";
     link.click();
     URL.revokeObjectURL(url);
   } catch (err) {
-    Toast.open({ message: "Impossible de télécharger le gabarit, réessayez.", type: "is-danger" });
+    Toast.open({ message: "Impossible de télécharger les gabarits, réessayez.", type: "is-danger" });
   } finally {
-    downloadingTemplate.value = null;
+    downloadingTemplates.value = false;
   }
 }
 
