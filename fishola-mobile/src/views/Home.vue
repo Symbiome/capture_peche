@@ -49,9 +49,9 @@
 
       <h2 class="home-section-title">Résumé</h2>
       <div class="home-tiles">
-        <SummaryTile icon="img/carnet/stat-trips.svg" :value="tripsCount" label="Sorties" />
-        <SummaryTile icon="img/carnet/stat-hours.svg" :value="hoursCount" label="Heures" />
-        <SummaryTile icon="img/carnet/stat-catches.svg" :value="catchesCount" label="Prises" />
+        <SummaryTile icon="img/carnet/stat-trips.svg" :value="tripsCount" label="Sorties" v-on:clicked="goActivitySummary" />
+        <SummaryTile icon="img/carnet/stat-hours.svg" :value="hoursCount" label="Heures" v-on:clicked="goActivitySummary" />
+        <SummaryTile icon="img/carnet/stat-catches.svg" :value="catchesCount" label="Prises" v-on:clicked="goActivitySummary" />
       </div>
 
       <h2 class="home-section-title">Progression</h2>
@@ -194,6 +194,10 @@ export default class HomeView extends Vue {
 
   goBadges() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/badges");
+  }
+
+  goActivitySummary() {
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/dashboard-personal/dashboard");
   }
 }
 </script>
