@@ -30,6 +30,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, Popup, LngLatBounds } from 'maplibre-gl';
@@ -98,7 +99,7 @@ export default class MapLibreMarkersMap extends Vue {
         this.clearMarkers();
         const valid = (this.markers || []).filter((m) => m.lat != null && m.lng != null);
         valid.forEach((m) => {
-            const marker = new maplibregl.Marker({ color: '#1e9bc4' }).setLngLat([m.lng, m.lat]);
+            const marker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.catchPin }).setLngLat([m.lng, m.lat]);
             if (m.title) {
                 marker.getElement().setAttribute('title', m.title);
             }

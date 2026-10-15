@@ -156,7 +156,7 @@ export default class FishingLicenceItem extends Vue {
     height: 80px;
     border-radius: 5px;
     object-fit: cover;
-    border: 2px solid @pelorous;
+    border: 2px solid @accent-text;
   }
 
   .item-selection {
@@ -169,13 +169,13 @@ export default class FishingLicenceItem extends Vue {
   }
 
   .edit {
-    color: @pelorous;
+    color: @accent-text;
   }
 
   .pdf-img {
     font-size: @pastille-size;
     line-height: calc(@pastille-size);
-    color: @pelorous;
+    color: @accent-text;
     background: @surface;
     margin: auto;
     text-align: center;
@@ -212,7 +212,7 @@ export default class FishingLicenceItem extends Vue {
       .right-part {
         i {
           margin-left: @margin-small;
-          color: @pelorous;
+          color: @accent-text;
         }
       }
     }
@@ -287,7 +287,7 @@ export default class FishingLicenceItem extends Vue {
       font-size: 20px;
 
       &:hover {
-        color: @terra-cotta;
+        color: @accent-text;
       }
     }
 

@@ -221,7 +221,7 @@ export default class FishingLicenceFullScreen extends Vue {
 }
 
 .icon-news-back {
-    color: @pelorous;
+    color: @accent-text;
     cursor: pointer;
     display: inline-block;
     font-size: 22px;

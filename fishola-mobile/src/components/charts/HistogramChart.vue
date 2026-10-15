@@ -198,7 +198,7 @@ export default class HistogramChart extends Vue {
         color: @orange-odd !important;
       }
       &.maillee {
-        color: @pelorous;
+        color: @accent-text;
       }
 
       &.non-maillee {
@@ -250,7 +250,7 @@ export default class HistogramChart extends Vue {
     .bar-average {
       position: absolute;
       width: 100%;
-      border-bottom: 1px dotted @terra-cotta;
+      border-bottom: 1px dotted @accent-text;
     }
   }
   .average {
@@ -258,7 +258,7 @@ export default class HistogramChart extends Vue {
     line-height: @average-header-height;
     font-weight: bold;
     font-size: @fontsize-header-paragraph;
-    color: @terra-cotta;
+    color: @accent-text;
     margin: @margin-small auto 0 auto;
     padding-right: @margin-medium;
 

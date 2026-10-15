@@ -259,7 +259,7 @@ export default class NewFishingLicence extends Vue {
 
       color: @gunmetal;
       font-size: @fontsize-form-input;
-      font-family: "Open Sans", sans-serif;
+      font-family: @font-family;
 
       &::placeholder {
         font-style: italic;

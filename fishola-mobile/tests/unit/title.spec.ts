@@ -28,7 +28,7 @@ import Title from "@/components/layout/Title.vue";
 describe("Title", () => {
   it("affiche le logo de l'application", () => {
     const wrapper = shallowMount(Title);
-    expect(wrapper.find("img").attributes("alt")).toBe("FISHOLA");
+    expect(wrapper.find("img").attributes("alt")).toBe("Carnet de pêche");
   });
 
   it("affiche le nom d'environnement issu de la configuration Vite", () => {
@@ -45,6 +45,6 @@ describe("Title", () => {
     const push = vi.fn().mockResolvedValue(undefined);
     const wrapper = shallowMount(Title, { mocks: { $router: { push } } });
     await wrapper.find(".header-title").trigger("click");
-    expect(push).toHaveBeenCalledWith("/my-trips/list");
+    expect(push).toHaveBeenCalledWith("/home");
   });
 });

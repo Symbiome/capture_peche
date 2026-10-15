@@ -514,7 +514,7 @@ export default class PersonalDashboard extends Vue {
     width: calc(100% + 2 * @margin-large);
     left: calc(-1 * @margin-large);
     height: 0px;
-    border: 1px solid @terra-cotta;
+    border: 1px solid @accent-text;
 
     @media screen and (min-width: @desktop-min-width) and (max-width: 1073px) {
       width: calc(100% + 2 * @margin-large-desktop);
@@ -530,7 +530,7 @@ export default class PersonalDashboard extends Vue {
     .count {
       font-weight: bold;
       font-size: @fontsize-small-paragraph;
-      color: @pelorous;
+      color: @accent-text;
     }
 
     .average-row-bar {

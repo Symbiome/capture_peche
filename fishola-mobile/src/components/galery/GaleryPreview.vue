@@ -164,7 +164,7 @@ export default class GaleryPreview extends Vue {
       font-size: @fontsize-span-big;
       margin-left: @margin-medium;
       i {
-        color: @pelorous;
+        color: @accent-text;
         margin-right: @margin-small;
       }
     }

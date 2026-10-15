@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="header-title" v-on:click="goHome">
-    <img src="img/logo-small.svg" alt="FISHOLA" />
+    <img src="img/carnet/logo-mark.svg" alt="Carnet de pêche" />
     <span v-if="envName" class="env">({{ envName }})</span>
   </div>
 </template>
@@ -35,7 +35,7 @@ export default class Title extends Vue {
   envName?: string = import.meta.env.VITE__ENV_NAME;
 
   goHome() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
+    RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
   }
 }
 </script>
@@ -45,26 +45,19 @@ export default class Title extends Vue {
 
 
 .header-title {
-  font-size: @fontsize-header-title;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 
   img {
-    height: calc(@fontsize-header-title + 6px);
+    display: block;
   }
 
   span.env {
-    color: @terra-cotta;
-    font-size: @fontsize-paragraph;
-  }
-
-  @media (max-width: 340px) {
-    img {
-      height: 20px;
-      margin-top: 5px;
-    }
-
-    span.env {
-      font-size: @fontsize-small-paragraph;
-    }
+    margin-left: @margin-small;
+    color: @accent-text;
+    font-size: @fontsize-small-paragraph;
+    font-weight: 600;
   }
 }
 </style>

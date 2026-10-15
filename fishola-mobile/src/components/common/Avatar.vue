@@ -41,8 +41,14 @@ export default class Avatar extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
   .pastille.color0 {
-    color: @gunmetal;
+    color: @accent-text;
     background: @avatar-background;
+    font-weight: 600;
+  }
+
+  :root[data-theme="dark"] .pastille.color0 {
+    color: @white;
+    background: @carnet-blue;
   }
 
 </style>

@@ -259,7 +259,7 @@ export default class TripCatchsView extends Vue {
         background-color: @pelorous;
         box-shadow: 0 2px 6px #0003;
 
-        border: 1px solid @pelorous;
+        border: 1px solid @accent-text;
         border-radius: 22px;
         padding-left: @margin-medium;
         padding-right: @margin-medium;
@@ -275,7 +275,7 @@ export default class TripCatchsView extends Vue {
   @media screen and (min-width: @desktop-min-width) {
     .pane {
       h1 {
-        color: @pelorous;
+        color: @accent-text;
       }
 
       .pane-content {

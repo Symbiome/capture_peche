@@ -186,7 +186,7 @@ export default class NewsView extends Vue {
     justify-content: end;
     gap: 10px;
     width: 100%;
-    color: @pelorous;
+    color: @accent-text;
     font-weight: bold;
     padding: 10px;
     i {

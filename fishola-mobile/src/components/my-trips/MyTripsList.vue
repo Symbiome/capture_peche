@@ -190,7 +190,7 @@ export default class MyTripsList extends Vue {
     .sync-queue-header {
       margin: @margin-small @margin-medium 0 @margin-medium;
       padding: @margin-small @margin-medium;
-      border-left: 4px solid @terra-cotta;
+      border-left: 4px solid @accent-text;
       border-radius: 8px;
       background-color: @white;
 
@@ -199,7 +199,7 @@ export default class MyTripsList extends Vue {
         align-items: center;
         gap: @margin-x-small;
         font-weight: bold;
-        color: @terra-cotta;
+        color: @accent-text;
       }
 
       .sync-queue-hint {
@@ -211,10 +211,10 @@ export default class MyTripsList extends Vue {
       .sync-queue-button {
         margin-top: @margin-x-small;
         padding: 4px 12px;
-        border: 1px solid @pelorous;
+        border: 1px solid @accent-text;
         border-radius: 16px;
         background: none;
-        color: @pelorous;
+        color: @accent-text;
         font-size: @fontsize-small-paragraph;
         cursor: pointer;
       }
@@ -270,12 +270,12 @@ export default class MyTripsList extends Vue {
       text-align: center;
 
       span {
-        color: @pelorous;
+        color: @accent-text;
         font-size: @fontsize-span-big;
         line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
-        color: @terra-cotta;
+        color: @accent-text;
         font-size: @fontsize-small-paragraph;
         margin-top: @vertical-margin-small;
       }
@@ -357,12 +357,12 @@ export default class MyTripsList extends Vue {
       text-align: center;
 
       span {
-        color: @pelorous;
+        color: @accent-text;
         font-size: @fontsize-span-big;
         line-height: calc(@fontsize-span-big + @line-height-padding-x-large);
       }
       i {
-        color: @terra-cotta;
+        color: @accent-text;
         font-size: @fontsize-small-paragraph;
         margin-top: @vertical-margin-small;
       }
@@ -435,8 +435,8 @@ export default class MyTripsList extends Vue {
       height: 60px;
       width: 60px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation:spin 2s linear infinite;
     }
 

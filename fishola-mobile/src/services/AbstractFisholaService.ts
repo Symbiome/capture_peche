@@ -155,6 +155,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
 
       const queryString = Object.keys(args)
+        .filter((k) => args[k] !== undefined)
         .map((k) => encodeURIComponent(k) + "=" + encodeURIComponent(args[k]))
         .join("&");
       apiUrl += "?" + queryString;

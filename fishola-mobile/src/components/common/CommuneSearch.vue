@@ -312,7 +312,7 @@ export default class CommuneSearch extends Vue {
         background: transparent;
         color: @gunmetal;
         font-size: @fontsize-form-input;
-        font-family: 'Open Sans', sans-serif;
+        font-family: @font-family;
     }
 
     .cs-clear {
@@ -323,7 +323,7 @@ export default class CommuneSearch extends Vue {
         display: flex;
         align-items: center;
         cursor: pointer;
-        &:hover { color: @terra-cotta; }
+        &:hover { color: @accent-text; }
     }
 }
 
@@ -366,7 +366,7 @@ export default class CommuneSearch extends Vue {
 
     &.error {
         color: @gunmetal;
-        i { font-size: 2rem; color: @terra-cotta; }
+        i { font-size: 2rem; color: @accent-text; }
     }
 }
 
@@ -406,7 +406,7 @@ export default class CommuneSearch extends Vue {
     .item-distance {
         flex-shrink: 0;
         font-weight: 600;
-        color: @pelorous;
+        color: @accent-text;
         white-space: nowrap;
     }
 }

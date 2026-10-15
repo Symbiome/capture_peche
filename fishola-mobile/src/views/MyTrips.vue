@@ -60,13 +60,10 @@
       v-on:trip-unselected="tripUnselected"
       v-on:sync-now="syncNow"
     />
-     <FisholaFooter 
-              shortcuts="logout,dashboard,home" 
-              selected="dashboard"
-              :buttonText="getButtonText()"
-              :buttonIcon="getButtonIcon()"
-              @buttonClicked="footerButtonClicked"
-         />
+    <BottomNav
+      :deleteMode="selectedTripIds.length > 0"
+      @delete="footerButtonClicked"
+    />
   </div>
 </template>
 
@@ -83,7 +80,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTripsHeader from "@/components/my-trips/MyTripsHeader.vue";
 import MyTripsSearch from "@/components/my-trips/MyTripsSearch.vue";
 import MyTripsList from "@/components/my-trips/MyTripsList.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import { Component, Watch, Vue, Prop } from "vue-property-decorator";
 
@@ -93,7 +90,7 @@ import { Component, Watch, Vue, Prop } from "vue-property-decorator";
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
-    FisholaFooter,
+    BottomNav,
   },
 })
 export default class MyTripsView extends Vue {
@@ -235,18 +232,7 @@ export default class MyTripsView extends Vue {
   }
 
   newTrip() {
-    Helpers.getDeviceType().then((source) => {
-      if (source == "web") {
-        TripsService.newAfterwardsTrip().then((id: string) => {
-          RouterUtils.pushRouteNoDuplicate(this.$router, {
-            name: "trip-meta",
-            params: { id: id },
-          });
-        });
-      } else {
-        RouterUtils.pushRouteNoDuplicate(this.$router, "/trips/new");
-      }
-    });
+    RouterUtils.startNewTrip(this.$router);
   }
 
   tripSelected(tripId: string) {
@@ -324,7 +310,7 @@ export default class MyTripsView extends Vue {
       font-style: normal;
       font-weight: normal;
 
-      color: @pelorous;
+      color: @accent-text;
       margin-top: @margin-medium;
       font-size: @fontsize-title-desktop;
       height: calc(@fontsize-title-desktop + @line-height-padding-xx-large);
@@ -338,7 +324,7 @@ export default class MyTripsView extends Vue {
     }
 
     .my-trips-top {
-      color: @pelorous;
+      color: @accent-text;
       display: flex;
       flex-direction: row-reverse;
       justify-content: space-between;

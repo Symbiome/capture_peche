@@ -1,7 +1,25 @@
-@terra-cotta: #E17055;
-@pelorous: #1E9BC4;
-@summer-sky: #1AB7DA;
-@cyprus: #0A3C4D;
+// Charte « Carnet de pêche » (maquettes Figma, oct. 2026), complétée par les
+// couleurs des pictogrammes ; mêmes valeurs que services/CarnetPalette.ts.
+@carnet-blue: #0000E0;
+@carnet-blue-soft: rgba(0, 0, 224, 0.1);
+@carnet-navy: #142634;
+@carnet-sand: #F9F4F2;
+@carnet-sky: #0FAFFF;
+@carnet-deep-blue: #0067BF;
+@carnet-orange: #FE8401;
+@carnet-orange-light: #FF921F;
+@carnet-green: #62BE55;
+@carnet-dark-green: #1E794A;
+@carnet-red: #CA2134;
+@carnet-yellow: #FFCD0F;
+@carnet-purple: #7A41DC;
+@carnet-magenta: #D7257D;
+
+// Anciens noms Fishola, conservés comme alias pour propager la charte.
+@terra-cotta: @carnet-blue;
+@pelorous: @carnet-blue;
+@summer-sky: #4D4DFF;
+@cyprus: @carnet-navy;
 
 @black: #000000;
 @gunmetal: var(--fishola-gunmetal);
@@ -21,17 +39,27 @@
 @gainsboro: var(--fishola-gainsboro);
 @zircon: var(--fishola-zircon);
 @solitude: var(--fishola-solitude);
+@divider: var(--fishola-divider);
+@accent-text: var(--fishola-accent-text);
 
-@cardinal: #D62137;
-@lime-green: #44BD32;
-@carrot-orange: #E67E22;
-@orange-odd: #E18755;
-@orange-even: #D6743D;
+@cardinal: @carnet-red;
+@lime-green: @carnet-green;
+@carrot-orange: @carnet-orange;
+@orange-odd: @carnet-orange;
+@orange-even: @carnet-orange-light;
+
+// Messages et états
+@error: @carnet-red;
+@warning: @carnet-orange;
+@success: @carnet-dark-green;
+@info: @carnet-deep-blue;
+@warning-soft: fade(@carnet-orange, 12%);
+@error-soft: fade(@carnet-red, 10%);
 
 @galery-background : #181818;
-@galery-pick-background : #062028;
+@galery-pick-background : @carnet-navy;
 
-@avatar-background: #81ECEC;
+@avatar-background: @carnet-blue-soft;
 
 @black-alpha-50: rgba(0, 0, 0, 0.5);
 @black-alpha-60: rgba(0, 0, 0, 0.6);

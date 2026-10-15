@@ -32,6 +32,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker } from 'maplibre-gl';
@@ -101,7 +102,7 @@ export default class MapLibrePositionMap extends Vue {
             this.marker.setLngLat([lng, lat]);
             return;
         }
-        this.marker = new maplibregl.Marker({ color: '#e2725b', draggable: this.editable })
+        this.marker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected, draggable: this.editable })
             .setLngLat([lng, lat])
             .addTo(this.map);
         if (this.editable) {

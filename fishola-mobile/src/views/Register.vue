@@ -210,7 +210,7 @@ export default class RegisterView extends Vue {
     font-weight: normal;
     font-size: @fontsize-title;
     line-height: calc(@fontsize-title + @line-height-padding-xx-large);
-    color: @pelorous;
+    color: @accent-text;
     text-align: center;
 
     // &.keyboardShowing {
@@ -272,7 +272,7 @@ export default class RegisterView extends Vue {
       font-weight: 300;
 
       a {
-        color: @pelorous;
+        color: @accent-text;
         font-weight: bold;
         text-decoration: none;
       }
@@ -336,12 +336,12 @@ export default class RegisterView extends Vue {
         font-size: @fontsize-button;
         line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-        border: 1px solid @pelorous;
+        border: 1px solid @accent-text;
         padding-left: @margin-medium;
         padding-right: @margin-medium;
 
         background-color: transparent;
-        color: @pelorous;
+        color: @accent-text;
       }
     }
   }

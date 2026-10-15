@@ -99,7 +99,7 @@ export default class BottomInducementView extends Vue {
         margin-bottom: 0;
     }
 
-    background: linear-gradient(-45deg, #0A3C4D, #0F5A6F, #0A3C4D, #06333F);
+    background: linear-gradient(-45deg, @carnet-navy, @carnet-blue, @carnet-navy, @carnet-navy);
     background-size: 300% 300%;
     animation: gradientAnimation 6s ease infinite;
 }

@@ -20,6 +20,9 @@
  */
 import VueRouter from "vue-router";
 
+import Helpers from "@/services/Helpers";
+import TripsService from "@/services/TripsService";
+
 export class RouterUtils {
   static async pushRouteNoDuplicate(router: VueRouter, route: any) {
     try {
@@ -33,6 +36,25 @@ export class RouterUtils {
   }
 
   static homeRoute() : string {
-    return "/my-trips/list";
+    return "/home";
+  }
+
+  /**
+   * Démarre une nouvelle sortie : saisie a posteriori sur le web, choix
+   * « en direct / a posteriori » sur l'application.
+   */
+  static startNewTrip(router: VueRouter) {
+    Helpers.getDeviceType().then((source) => {
+      if (source == "web") {
+        TripsService.newAfterwardsTrip().then((id: string) => {
+          RouterUtils.pushRouteNoDuplicate(router, {
+            name: "trip-meta",
+            params: { id: id },
+          });
+        });
+      } else {
+        RouterUtils.pushRouteNoDuplicate(router, "/trips/new");
+      }
+    });
   }
 }

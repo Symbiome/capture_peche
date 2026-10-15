@@ -111,8 +111,8 @@ export default class OfflineBanner extends Vue {
   gap: @margin-x-small;
 
   padding: 6px @margin-medium;
-  background-color: @carrot-orange;
-  color: @white;
+  background-color: @warning;
+  color: @carnet-navy;
   font-size: @fontsize-small-paragraph;
   line-height: 1.3;
   text-align: center;

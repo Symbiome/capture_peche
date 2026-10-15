@@ -26,11 +26,11 @@
     <div class="header-buttons">
       <Avatar
         v-if="avatar && initials"
+        class="header-avatar"
         v-bind:initials="initials"
         v-on:goProfile="goProfile"
       />
-      <FeedbackAnchor />
-      <MenuAnchor v-if="menu" />
+      <MenuAnchor v-if="menu && !initials" />
     </div>
   </div>
 </template>
@@ -38,7 +38,6 @@
 <script lang="ts">
 import Title from "@/components/layout/Title.vue";
 import Avatar from "@/components/common/Avatar.vue";
-import FeedbackAnchor from "@/components/common/FeedbackAnchor.vue";
 import MenuAnchor from "@/components/common/MenuAnchor.vue";
 
 import UserProfile from "@/pojos/UserProfile";
@@ -53,7 +52,6 @@ import { Component, Prop, Vue } from "vue-property-decorator";
   components: {
     Title,
     Avatar,
-    FeedbackAnchor,
     MenuAnchor,
   },
 })
@@ -76,7 +74,7 @@ export default class FisholaHeader extends Vue {
 
   goProfile() {
     this.$root.$emit("close-feedback");
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/account");
   }
 }
 </script>
@@ -86,23 +84,28 @@ export default class FisholaHeader extends Vue {
 .header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 
   height: @header-height;
-  padding-left: @margin-medium;
-  padding-right: @margin-medium;
-  padding-top: @margin-header-top;
-  padding-bottom: 0px;
-  line-height: @average-header-height;
+  padding-left: 14px;
+  padding-right: 14px;
 
   z-index: 10;
 
   .header-buttons {
     display: flex;
     flex-direction: row;
+    align-items: center;
 
     * {
       margin-left: @margin-small;
       margin-right: 0px;
+    }
+
+    .header-avatar {
+      width: 48px;
+      height: 48px;
+      font-size: @fontsize-paragraph;
     }
   }
 }

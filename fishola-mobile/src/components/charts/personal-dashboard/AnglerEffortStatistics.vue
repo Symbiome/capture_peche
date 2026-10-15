@@ -118,6 +118,7 @@ import {
   Technique,
 } from "@/pojos/BackendPojos";
 import AnglerEffortHelpers, { CpueRow, TechniqueSlice } from "@/services/AnglerEffortHelpers";
+import { CARNET_CHART_PALETTE, CARNET_COLORS } from "@/services/CarnetPalette";
 import Constants from "@/services/Constants";
 import DashboardService from "@/services/DashboardService";
 import ReferentialService from "@/services/ReferentialService";
@@ -141,10 +142,7 @@ const MONTHS: Month[] = [
   "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
 ];
 
-const PIE_COLORS = [
-  "#1E9BC4", "#E17055", "#1AB7DA", "#69db7c", "#ffd43b",
-  "#cc5de8", "#faa2c1", "#1971c2", "#2f9e44", "#f08c00",
-];
+const PIE_COLORS = CARNET_CHART_PALETTE;
 
 @Component({
   components: { Bar, Pie },
@@ -202,8 +200,8 @@ export default class AnglerEffortStatistics extends Vue {
     return {
       labels: Constants.MONTHS,
       datasets: [
-        { label: "Sessions", data: series.trips, backgroundColor: "#1E9BC4", yAxisID: "trips" },
-        { label: "Heures", data: series.hours, backgroundColor: "#E17055", yAxisID: "hours" },
+        { label: "Sessions", data: series.trips, backgroundColor: CARNET_COLORS.blue, yAxisID: "trips" },
+        { label: "Heures", data: series.hours, backgroundColor: CARNET_COLORS.orange, yAxisID: "hours" },
       ],
     };
   }
@@ -311,7 +309,7 @@ export default class AnglerEffortStatistics extends Vue {
   }
 
   .cpue-value {
-    color: @pelorous;
+    color: @accent-text;
     font-weight: bold;
   }
 

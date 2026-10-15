@@ -179,11 +179,11 @@ export default class MyTripItem extends Vue {
       .right-part {
         i {
           margin-left: @margin-small;
-          color: @pelorous;
+          color: @accent-text;
         }
 
         .warning {
-          color: @terra-cotta;
+          color: @accent-text;
         }
 
         .pending-badge {

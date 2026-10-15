@@ -47,7 +47,7 @@
       </div>
       <div class="bottom">
         <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
-        <FisholaFooter shortcuts="logout,dashboard,home" selected="dashboard" />
+        <BottomNav />
       </div>
     </div>
   </div>
@@ -62,7 +62,7 @@ import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";
 import { NewsBean } from "@/pojos/BackendPojos";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import TripsService from "@/services/TripsService";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
@@ -71,7 +71,7 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
     MyTrips,
     FisholaHeader,
     NewsView,
-    FisholaFooter,
+    BottomNav,
     RunningOverlay,
     LakeAndYearSelection
   },
@@ -186,7 +186,7 @@ export default class SocialAndNewsView extends Vue {
 
     &.selected {
       color: @gunmetal;
-      border-bottom: 2px solid @pelorous;
+      border-bottom: 2px solid @accent-text;
     }
   }
 }

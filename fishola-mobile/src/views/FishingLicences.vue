@@ -106,8 +106,8 @@ export default class FishingLicencesView extends Vue {
 }
 
 .new-button {
-  border: 1px solid @pelorous !important;
-  color: @pelorous;
+  border: 1px solid @accent-text !important;
+  color: @accent-text;
   background-color: @surface;
 
   &:hover {
@@ -151,7 +151,7 @@ export default class FishingLicencesView extends Vue {
       font-style: normal;
       font-weight: normal;
 
-      color: @pelorous;
+      color: @accent-text;
       margin-top: @margin-medium;
       margin-bottom: @margin-xx-large;
       font-size: @fontsize-title-desktop;
