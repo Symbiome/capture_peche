@@ -27,8 +27,9 @@
 
 <script setup lang="ts">
 import { ALL_SPECIES, NO_SPECIES } from "@/components/survey/surveyForm";
+import { EntryReferential, SHOW_ALL, hiddenCount, proposedItems } from "@/utils/entryReferentials";
 import { normalizeSearchText } from "@/utils/utils";
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 interface SpeciesOption {
   id: string;
@@ -38,7 +39,7 @@ interface SpeciesOption {
 interface Props {
   /** Identifiant d'espèce, ou ALL_SPECIES / NO_SPECIES. */
   modelValue: string;
-  species: { id: string; name: string }[];
+  species: EntryReferential;
 }
 
 const props = defineProps<Props>();
@@ -47,12 +48,21 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
 }>();
 
-// « Toutes espèces » (défaut) et « Aucune » en tête, puis les espèces (#236).
+const showAll = ref(false);
+
+// « Toutes espèces » (défaut) et « Aucune » en tête, puis les espèces (#236) affichées
+// pour le compte connecté (#239).
 const options = computed<SpeciesOption[]>(() => [
   { id: ALL_SPECIES, label: "Toutes espèces" },
   { id: NO_SPECIES, label: "Aucune" },
-  ...props.species.map((s) => ({ id: s.id, label: s.name }))
+  ...proposedItems(props.species, props.modelValue, showAll.value).map((s) => ({ id: s.id, label: s.name }))
 ]);
+
+/** Option « Afficher tout le référentiel », proposée tant que des espèces sont masquées. */
+const showAllOption = computed<SpeciesOption[]>(() => {
+  const hidden = showAll.value ? 0 : hiddenCount(props.species, props.modelValue);
+  return hidden > 0 ? [{ id: SHOW_ALL, label: "Afficher tout le référentiel (" + hidden + " masquée(s))" }] : [];
+});
 
 const search = ref("");
 
@@ -60,9 +70,9 @@ const suggestions = computed(() => {
   const term = normalizeSearchText(search.value);
   const selected = labelOf(props.modelValue);
   if (!term || search.value === selected) {
-    return options.value;
+    return [...options.value, ...showAllOption.value];
   }
-  return options.value.filter((o) => normalizeSearchText(o.label).includes(term));
+  return [...options.value.filter((o) => normalizeSearchText(o.label).includes(term)), ...showAllOption.value];
 });
 
 /** Libellé de la valeur courante. */
@@ -72,16 +82,21 @@ function labelOf(id: string): string {
 }
 
 watch(
-  () => [props.modelValue, props.species.length],
+  () => [props.modelValue, props.species.all.length],
   () => {
     search.value = labelOf(props.modelValue);
   },
   { immediate: true }
 );
 
-/** Émet l'espèce choisie ; un champ vidé revient à « Toutes espèces ». */
+/** Émet l'espèce choisie ; « Afficher tout le référentiel » déplie la liste sans changer la valeur. */
 function onSelect(option: SpeciesOption | null) {
-  if (option) {
+  if (option && option.id === SHOW_ALL) {
+    showAll.value = true;
+    nextTick(() => {
+      search.value = labelOf(props.modelValue);
+    });
+  } else if (option) {
     emit("update:modelValue", option.id);
   }
 }

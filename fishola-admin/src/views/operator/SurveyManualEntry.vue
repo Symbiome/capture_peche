@@ -67,10 +67,13 @@ import SurveySessionClose from "@/components/survey/SurveySessionClose.vue";
 import SurveySessionPicker from "@/components/survey/SurveySessionPicker.vue";
 import SurveySortieForm from "@/components/survey/SurveySortieForm.vue";
 import { SURVEY_SESSIONS_URI, SurveySession, frenchDate } from "@/components/survey/surveyForm";
+import {
+  EMPTY_REFERENTIAL, EntryReferential, SPECIES_URI, TECHNIQUES_URI, loadEntryReferential
+} from "@/utils/entryReferentials";
 import { ref } from "vue";
 
-const techniques = ref<any[]>([]);
-const species = ref<any[]>([]);
+const techniques = ref<EntryReferential>(EMPTY_REFERENTIAL);
+const species = ref<EntryReferential>(EMPTY_REFERENTIAL);
 
 const session = ref<SurveySession | null>(null);
 const closing = ref(false);
@@ -79,12 +82,12 @@ const closedSession = ref<SurveySession | null>(null);
 
 loadReferentials();
 
-/** Techniques et espèces proposées à la saisie, hors éléments archivés (#202). */
+/** Techniques et espèces proposées à la saisie : hors archivées (#202), masquées repliées (#239). */
 async function loadReferentials() {
-  const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
-  const allSpecies = await BackendService.backendGet("/v1/referential/species");
-  techniques.value = allTechniques.filter((t: any) => !t.archived);
-  species.value = allSpecies.filter((s: any) => !s.archived);
+  [techniques.value, species.value] = await Promise.all([
+    loadEntryReferential(TECHNIQUES_URI),
+    loadEntryReferential(SPECIES_URI)
+  ]);
 }
 
 /** Session ouverte ou reprise : on y saisit les sorties. */

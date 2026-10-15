@@ -24,9 +24,7 @@
     <div v-for="(c, j) in captures" :key="j" class="box capture-box">
       <div class="columns is-multiline is-vcentered">
         <b-field label="Espèce" class="column is-3">
-          <b-select v-model="c.speciesId" expanded>
-            <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </b-select>
+          <ReferentialSelect v-model="c.speciesId" :referential="species" expanded />
         </b-field>
         <b-field label="Nombre" class="column is-2">
           <b-input type="number" min="1" v-model.number="c.quantity"></b-input>
@@ -61,12 +59,14 @@
 </template>
 
 <script setup lang="ts">
+import ReferentialSelect from "@/components/ReferentialSelect.vue";
 import { isLot, newCapture } from "@/components/survey/surveyForm";
+import type { EntryReferential } from "@/utils/entryReferentials";
 
 interface Props {
   /** Captures du pêcheur ou du souvenir, modifiées sur place. */
   captures: any[];
-  species: { id: string; name: string }[];
+  species: EntryReferential;
 }
 
 defineProps<Props>();
