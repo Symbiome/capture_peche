@@ -131,7 +131,7 @@ class SurveyImportXlsxTest {
                             String tailleNombre, String tailleMin, String tailleMax, List<String[]> souvenirRows) {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             writeSheet(wb, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, List.<String[]>of(
-                    new String[] {sessionCode, waterEntityName, "01/07/2026", "", ""}));
+                    sessionRow(sessionCode)));
             writeSheet(wb, SurveySchema.SHEET_SORTIE, sortieHeader, List.<String[]>of(sortieRow));
             writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.<String[]>of(
                     new String[] {sortieCode, "P1", "74", "Aucune", "bord statique", "Pêche au coup", "1", "",
@@ -146,6 +146,11 @@ class SurveyImportXlsxTest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Session du 01/07/2026, de 07:00 à 12:00, enquêtée par J. Dupont (#242). */
+    private String[] sessionRow(String sessionCode) {
+        return new String[] {sessionCode, waterEntityName, "01/07/2026", "07:00", "12:00", "J. Dupont", "", ""};
     }
 
     /** Sortie de la session du 01/07/2026, contrôlée à 09:00, commencée à 08:00, fin prévue à 10:00 le {@code endDay}. */
@@ -194,8 +199,13 @@ class SurveyImportXlsxTest {
 
         Assertions.assertEquals(1, countJobs(file), "le job d'import doit être persisté");
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        int sessions = ctx.fetchOne("SELECT count(*) FROM survey_session WHERE code = 'SURVEY-TEST-S1'").get(0, Integer.class);
-        Assertions.assertEquals(1, sessions, "la session d'enquête doit être persistée");
+        var session = ctx.fetchOne("SELECT start_time, end_time, operator_name, status FROM survey_session "
+                + "WHERE code = 'SURVEY-TEST-S1'");
+        Assertions.assertNotNull(session, "la session d'enquête doit être persistée");
+        Assertions.assertEquals(java.time.LocalTime.of(7, 0), session.get("start_time", java.time.LocalTime.class));
+        Assertions.assertEquals(java.time.LocalTime.of(12, 0), session.get("end_time", java.time.LocalTime.class));
+        Assertions.assertEquals("J. Dupont", session.get("operator_name", String.class));
+        Assertions.assertEquals("cloturee", session.get("status", String.class));
         int anglerLinkedToTrip = ctx.fetchOne("SELECT count(*) FROM trip t JOIN surveyed_angler sa ON sa.id = t.surveyed_angler_id "
                 + "WHERE t.external_ref = 'SURVEY-TEST-SO1/P1' AND sa.code = 'P1'").get(0, Integer.class);
         Assertions.assertEquals(1, anglerLinkedToTrip, "le pêcheur enquêté (code P1) doit être persisté et rattaché à la sortie");
@@ -247,7 +257,7 @@ class SurveyImportXlsxTest {
     void sortieWithControlTimeBeforeStartTimeIsRejected() {
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             writeSheet(wb, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, List.<String[]>of(
-                    new String[] {"SURVEY-TEST-CTRL", waterEntityName, "01/07/2026", "", ""}));
+                    sessionRow("SURVEY-TEST-CTRL")));
             writeSheet(wb, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, List.<String[]>of(
                     new String[] {"SURVEY-TEST-CTRL", "SURVEY-TEST-SOCTRL", "07:30", "08:00", "11:00"}));
             writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.of());
@@ -409,5 +419,65 @@ class SurveyImportXlsxTest {
                 .then().statusCode(200)
                 .body("status", equalTo("DONE"))
                 .body("inserted", equalTo(1));
+    }
+
+    private byte[] workbookWithSession(List<String> sessionHeader, String[] sessionRow, String sortieCode) {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            writeSheet(wb, SurveySchema.SHEET_SESSION, sessionHeader, List.<String[]>of(sessionRow));
+            writeSheet(wb, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, List.<String[]>of(
+                    new String[] {sessionRow[0], sortieCode, "09:00", "08:00", "11:00", ""}));
+            writeSheet(wb, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, List.<String[]>of(
+                    new String[] {sortieCode, "P1", "74", "Aucune", "bord statique", "Pêche au coup", "1", "",
+                            "oui", "", "", "", "", "", ""}));
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /** #242 : un classeur sans heures de session ni opérateur (modèle antérieur) reste accepté. */
+    @Test
+    void legacySessionHeaderIsStillAccepted() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbookWithSession(SurveySchema.LEGACY_HEADER_SESSION,
+                        new String[] {"SURVEY-TEST-LEGSESS", waterEntityName, "01/07/2026", "", ""},
+                        "SURVEY-TEST-SOLEGSESS"))
+                .when().post(URI + "?filename=survey-test-legacy-session.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE"))
+                .body("inserted", equalTo(1));
+    }
+
+    /** #242 : avec le nouvel en-tête, heure de début de session et opérateur sont obligatoires. */
+    @Test
+    void sessionWithoutStartTimeOrOperatorIsRejected() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbookWithSession(SurveySchema.HEADER_SESSION,
+                        new String[] {"SURVEY-TEST-NOOP", waterEntityName, "01/07/2026", "", "", "", "", ""},
+                        "SURVEY-TEST-SONOOP"))
+                .when().post(URI + "?filename=survey-test-no-operator.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE_WITH_ERRORS"))
+                .body("errors.column", hasItem(SurveySchema.SHEET_SESSION + " / " + SurveySchema.COL_SESSION_START))
+                .body("errors.column", hasItem(SurveySchema.SHEET_SESSION + " / " + SurveySchema.COL_OPERATOR));
+    }
+
+    /** #236 : l'heure du contrôle ne peut pas suivre la fin de pêche prévue. */
+    @Test
+    void sortieWithControlTimeAfterPlannedEndIsRejected() {
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/octet-stream")
+                .body(workbook("SURVEY-TEST-LATE", "SURVEY-TEST-SOLATE", SurveySchema.HEADER_SORTIE,
+                        new String[] {"SURVEY-TEST-LATE", "SURVEY-TEST-SOLATE", "11:30", "08:00", "11:00", ""},
+                        "1", "", "", null))
+                .when().post(URI + "?filename=survey-test-control-late.xlsx&mode=partial")
+                .then().statusCode(200)
+                .body("status", equalTo("DONE_WITH_ERRORS"))
+                .body("errors.code", hasItem("STRUCT_TIME_ORDER"))
+                .body("errors.column", hasItem(SurveySchema.SHEET_SORTIE + " / Heure du contrôle"));
     }
 }

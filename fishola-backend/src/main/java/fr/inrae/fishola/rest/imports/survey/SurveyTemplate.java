@@ -48,7 +48,7 @@ public final class SurveyTemplate {
     private static final int MIN_COLUMN_CHARS = 12;
 
     static final List<String> EXAMPLE_SESSION = List.of(
-            "ENQ-001", "Lac d'Annecy", "01/07/2026", "2", "0");
+            "ENQ-001", "Lac d'Annecy", "01/07/2026", "08:00", "12:00", "J. Dupont", "2", "0");
 
     static final List<String> EXAMPLE_SORTIE = List.of(
             "ENQ-001", "ENQ-001-01", "09:00", "07:30", "11:00", "");

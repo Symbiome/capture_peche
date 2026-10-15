@@ -42,7 +42,8 @@ import java.util.UUID;
 
 /**
  * Import de masse opérateur, format « enquête terrain » (#144) — classeur XLSX
- * multi-feuilles en corps brut, nom/mode en query params, staff uniquement, cloisonné
+ * multi-feuilles, ou CSV plat d'une ligne par capture si le nom du fichier finit par
+ * « .csv » (#242), en corps brut, nom/mode en query params, staff uniquement, cloisonné
  * par périmètre, journalisé. Même contrat que {@link
  * fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireImportResource} (#143).
  */
@@ -51,6 +52,7 @@ import java.util.UUID;
 public class SurveyImportResource extends AbstractFisholaResource {
 
     private static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String CSV_MEDIA_TYPE = "text/csv; charset=UTF-8";
 
     @Inject
     protected SurveyImportService importService;
@@ -58,7 +60,7 @@ public class SurveyImportResource extends AbstractFisholaResource {
     @POST
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Audited(value = "import.xlsx.survey", entityType = "import_job")
-    public Response importXlsx(byte[] fileBytes,
+    public Response importFile(byte[] fileBytes,
                                @QueryParam("filename") @DefaultValue("enquete.xlsx") String filename,
                                @QueryParam("mode") @DefaultValue(SurveyImportService.MODE_PARTIAL) String mode) {
         FisholaAdmin admin = checkIsStaff();
@@ -77,14 +79,23 @@ public class SurveyImportResource extends AbstractFisholaResource {
         return Response.status(httpStatus).entity(result).build();
     }
 
-    /** Gabarit XLSX à remplir (#207) : les quatre feuilles et une ligne d'exemple chacune. */
+    /**
+     * Gabarit à remplir : classeur XLSX à quatre feuilles avec une ligne d'exemple chacune
+     * (#207), ou CSV plat avec des lignes d'exemple ({@code format=csv}, #242).
+     *
+     * @param format {@code xlsx} (défaut) ou {@code csv}
+     * @return le gabarit en pièce jointe
+     */
     @GET
     @Path("/template")
-    @Produces(XLSX_MEDIA_TYPE)
-    public Response template() {
+    @Produces({XLSX_MEDIA_TYPE, CSV_MEDIA_TYPE})
+    public Response template(@QueryParam("format") @DefaultValue("xlsx") String format) {
         checkIsStaff();
-        return Response.ok(SurveyTemplate.build())
-                .header("Content-Disposition", "attachment; filename=\"" + SurveyTemplate.FILE_NAME + "\"")
+        boolean csv = "csv".equalsIgnoreCase(format);
+        String fileName = csv ? SurveyFlatTemplate.FILE_NAME : SurveyTemplate.FILE_NAME;
+        return Response.ok(csv ? SurveyFlatTemplate.build() : SurveyTemplate.build())
+                .type(csv ? CSV_MEDIA_TYPE : XLSX_MEDIA_TYPE)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
     }
 }

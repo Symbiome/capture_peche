@@ -34,6 +34,7 @@ import fr.inrae.fishola.entities.enums.TroutOrigin;
 import fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireParsedRow;
 import fr.inrae.fishola.rest.imports.survey.SurveyAnglerOrigin;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedCapture;
+import fr.inrae.fishola.rest.imports.survey.SurveyParsedCatch;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSession;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSortie;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSouvenir;
@@ -366,8 +367,10 @@ public class ImportDao extends AbstractFisholaDao {
             for (SurveyParsedSession s : sessions.values()) {
                 UUID id = ctx.insertInto(SURVEY_SESSION,
                                 SURVEY_SESSION.CODE, SURVEY_SESSION.WATER_ENTITY_ID, SURVEY_SESSION.DAY,
-                                SURVEY_SESSION.UNSURVEYED_SHORE_ANGLERS, SURVEY_SESSION.UNSURVEYED_BOAT_ANGLERS)
-                        .values(s.code, s.waterEntityId, s.day, s.unsurveyedShoreAnglers, s.unsurveyedBoatAnglers)
+                                SURVEY_SESSION.UNSURVEYED_SHORE_ANGLERS, SURVEY_SESSION.UNSURVEYED_BOAT_ANGLERS,
+                                SURVEY_SESSION.START_TIME, SURVEY_SESSION.END_TIME, SURVEY_SESSION.OPERATOR_NAME)
+                        .values(s.code, s.waterEntityId, s.day, s.unsurveyedShoreAnglers, s.unsurveyedBoatAnglers,
+                                s.startTime, s.endTime, s.operatorName)
                         .returning(SURVEY_SESSION.ID)
                         .fetchOne()
                         .getId();
@@ -422,21 +425,22 @@ public class ImportDao extends AbstractFisholaDao {
                 LocalTime[] nominal = NOMINAL_TIMES_BY_PERIOD.get(s.dayPeriod);
 
                 String name = "Enquête souvenir " + s.anglerCode + " " + s.day.format(DAY_FMT);
+                String sessionCode = s.sessionCode != null ? s.sessionCode : sessionCodeByAngler.get(s.anglerCode);
                 TripExtras extras = new TripExtras(s.expectedSpeciesId, null, s.baitOrLure,
                         s.rodCount == null ? null : s.rodCount.shortValue(), s.fishingMode, null,
-                        s.dayPeriod, s.anglerCode, null, anglerId, sessionCodeByAngler.get(s.anglerCode));
+                        s.dayPeriod, s.anglerCode, null, anglerId, sessionCode);
                 UUID tripId = insertTrip(ctx, "enquete_souvenir", s.day, nominal[0], null, nominal[1],
                         s.waterEntityId, name, now, extras);
 
-                if (s.hasCapture) {
-                    String sizeClass = (s.lotMinSize != null && s.lotMaxSize != null)
-                            ? (s.lotMinSize + "-" + s.lotMaxSize) : null;
+                for (SurveyParsedCatch c : s.catches) {
+                    String sizeClass = (c.lotMinSize != null && c.lotMaxSize != null)
+                            ? (c.lotMinSize + "-" + c.lotMaxSize) : null;
                     CatchExtras catchExtras = new CatchExtras(null,
-                            s.lotMinSize == null ? null : s.lotMinSize.shortValue(),
-                            s.lotMaxSize == null ? null : s.lotMaxSize.shortValue(),
+                            c.lotMinSize == null ? null : c.lotMinSize.shortValue(),
+                            c.lotMaxSize == null ? null : c.lotMaxSize.shortValue(),
                             null, null, s.baitOrLure, null);
-                    insertCatch(ctx, tripId, s.speciesId, s.techniqueId, s.size, null, s.kept,
-                            s.quantity == null ? 1 : s.quantity, sizeClass, null, now, catchExtras);
+                    insertCatch(ctx, tripId, c.speciesId, s.techniqueId, c.size, null, c.kept,
+                            c.quantity == null ? 1 : c.quantity, sizeClass, null, now, catchExtras);
                 }
                 stampDepartment(ctx, tripId);
             }
