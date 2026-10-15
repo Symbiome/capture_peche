@@ -161,17 +161,21 @@ export default class AttributionConfirmSheet extends Vue {
     }
 }
 
+@sheet-footer-space: calc(@footer-height + @footer-button-overhang + @margin-small);
+
 .attribution-sheet {
     width: 100%;
     max-width: 520px;
-    // Mobile : la feuille s'arrête au-dessus de la barre de navigation de l'app
-    // — sinon sa ligne d'actions Annuler/Confirmer passe derrière (#138).
+    // Mobile : la feuille descend jusqu'en bas de l'écran (fond plein, la carte
+    // ne se voit plus sous les actions). La barre de navigation de l'app et son
+    // bouton flottant (Suivant, Modifier…) se posent dessus : la marge
+    // intérieure basse garde la ligne Annuler/Confirmer au-dessus (#138).
     // Le backdrop, lui, couvre toujours `inset: 0` (taps interceptés).
-    margin-bottom: @footer-height;
+    padding-bottom: @sheet-footer-space;
     // `vh` ignore les barres dynamiques du navigateur mobile (#97/#138) : la
     // feuille dépassait la zone réellement visible. Unités dynamiques, repli `vh`.
-    max-height: 60vh;
-    max-height: min(50svh, calc(100dvh - @footer-height));
+    max-height: calc(60vh + @sheet-footer-space);
+    max-height: calc(50svh + @sheet-footer-space);
     background: @surface;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -183,7 +187,7 @@ export default class AttributionConfirmSheet extends Vue {
 
     @media screen and (min-width: @desktop-min-width) {
         border-radius: 12px;
-        margin-bottom: 0;
+        padding-bottom: 0;
         max-height: 80vh;
     }
 
@@ -264,7 +268,7 @@ export default class AttributionConfirmSheet extends Vue {
         border: none;
     }
     .btn-cancel {
-        background: #eee;
+        background: @gainsboro;
         color: @gunmetal;
     }
     .btn-confirm {

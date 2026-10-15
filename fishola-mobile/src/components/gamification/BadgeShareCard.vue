@@ -40,7 +40,7 @@
               </div>
               <div class="badge-card-description" v-else>{{ badge.description }}</div>
               <div class="badge-card-pseudo" v-if="pseudo">{{ pseudo }}</div>
-              <CarnetLogo class="badge-card-logo" />
+              <CarnetLogo class="badge-card-logo" :onDark="true" />
             </div>
           </div>
 
@@ -200,6 +200,7 @@ export default class BadgeShareCard extends Vue {
   }
 
   .badge-card-logo {
+    width: 96px;
     margin-top: @vertical-margin-small;
   }
 }

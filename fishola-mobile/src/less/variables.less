@@ -6,6 +6,11 @@
 @secondary-header-height: 40px;
 @average-header-height: 30px;
 @footer-height: calc(73px + env(safe-area-inset-bottom));
+// Bouton flottant du pied de page (Suivant, Modifier…) : chevauche le pied de
+// @footer-button-overlap et dépasse au-dessus de @footer-button-overhang.
+@footer-button-height: 41px;
+@footer-button-overlap: 13px;
+@footer-button-overhang: @footer-button-height - @footer-button-overlap;
 @reduced-footer-height: calc(0px + env(safe-area-inset-bottom));
 @feedback-top: calc(50px + env(safe-area-inset-top));
 

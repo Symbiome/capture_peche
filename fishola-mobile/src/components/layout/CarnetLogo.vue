@@ -21,24 +21,34 @@
 <template>
   <div class="carnet-logo" role="img" aria-label="Carnet de pêche">
     <img class="logo-mark" src="img/carnet/logo-wordmark-mark.svg" alt="" />
-    <img class="logo-text logo-text-light" src="img/carnet/logo-wordmark-text.svg" alt="" />
-    <img class="logo-text logo-text-dark" src="img/carnet/logo-wordmark-text-dark.svg" alt="" />
+    <img v-if="onDark" class="logo-text" src="img/carnet/logo-wordmark-text-dark.svg" alt="" />
+    <template v-else>
+      <img class="logo-text logo-text-light" src="img/carnet/logo-wordmark-text.svg" alt="" />
+      <img class="logo-text logo-text-dark" src="img/carnet/logo-wordmark-text-dark.svg" alt="" />
+    </template>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
-/** Logo « Carnet de pêche » (pictogramme + nom), décliné selon le thème. */
+/**
+ * Logo « Carnet de pêche » (pictogramme + nom), décliné selon le thème.
+ * `onDark` force le nom en blanc, pour un fond sombre quel que soit le thème.
+ * Largeur par défaut : 180 px ; le parent peut la réduire, les proportions
+ * suivent.
+ */
 @Component
-export default class CarnetLogo extends Vue {}
+export default class CarnetLogo extends Vue {
+  @Prop({ default: false }) onDark: boolean;
+}
 </script>
 
 <style scoped lang="less">
 .carnet-logo {
   position: relative;
   width: 180px;
-  height: 56px;
+  aspect-ratio: 180 / 56;
   overflow: hidden;
   flex-shrink: 0;
 
@@ -46,12 +56,16 @@ export default class CarnetLogo extends Vue {}
     position: absolute;
     top: 0;
     left: 0;
+    width: 26.59%;
+    height: auto;
   }
 
   .logo-text {
     position: absolute;
     top: 3.26%;
     left: 32.7%;
+    width: 67.3%;
+    height: auto;
   }
 
   .logo-text-dark {

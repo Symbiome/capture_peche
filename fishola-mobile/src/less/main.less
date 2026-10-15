@@ -228,10 +228,35 @@ button:active {
 .maplibregl-popup {
   max-width: 80vw !important;
   .maplibregl-popup-content {
-    max-width: calc(100% - 44px);
+    background-color: @white-smoke;
+    color: @gunmetal;
     button {
       width: auto;
     }
+  }
+
+  &.maplibregl-popup-anchor-top,
+  &.maplibregl-popup-anchor-top-left,
+  &.maplibregl-popup-anchor-top-right {
+    .maplibregl-popup-tip {
+      border-bottom-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-bottom,
+  &.maplibregl-popup-anchor-bottom-left,
+  &.maplibregl-popup-anchor-bottom-right {
+    .maplibregl-popup-tip {
+      border-top-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+    border-right-color: @white-smoke;
+  }
+
+  &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+    border-left-color: @white-smoke;
   }
 }
 
@@ -365,6 +390,7 @@ body {
     strong {
       color: @gunmetal;
       font-size: 0.9rem;
+      overflow-wrap: anywhere;
     }
     span {
       color: @pale-sky;

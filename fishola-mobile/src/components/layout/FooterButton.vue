@@ -53,13 +53,13 @@ export default class FooterButton extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .footer-button {
-  height: 41px;
+  height: @footer-button-height;
   width: fit-content;
   position: absolute;
-  bottom: calc(@footer-height - 13px);
+  bottom: calc(@footer-height - @footer-button-overlap);
 
   &.keyboardShowing {
-    bottom: min(calc(@reduced-footer-height - 13px), 2px);
+    bottom: min(calc(@reduced-footer-height - @footer-button-overlap), 2px);
   }
 
   display: flex;
@@ -68,7 +68,7 @@ export default class FooterButton extends Vue {
   z-index: 10;
 
   div {
-    height: 41px;
+    height: @footer-button-height;
   }
 
   button {
