@@ -50,9 +50,11 @@
                 v-bind:error="typeError" />
             </div>
             <div v-if="trip.mode == 'Afterwards'" class="form-block">
-              <FormInput name="date" label="Date" type="date" v-model="date" v-bind:error="dateError" />
+              <FormInput name="date" label="Date de début" type="date" v-model="date" v-bind:error="dateError" />
               <FormInput name="startAt" label="Heure de début" type="time" v-model="startedAt"
                 v-bind:error="startedAtError" />
+              <FormInput name="endDate" label="Date de fin" type="date" v-model="endDate"
+                v-bind:error="endDateError" />
               <FormInput name="finishedat" label="Heure de fin" type="time" v-model="finishedAt"
                 v-bind:error="finishedAtError" />
             </div>
@@ -81,6 +83,7 @@ import TripMeta from "@/pojos/TripMeta";
 import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 import TripsService from "@/services/TripsService";
 import ReferentialService from "@/services/ReferentialService";
 import GeolocationService from "@/services/GeolocationService";
@@ -94,7 +97,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import ProfileService from "@/services/ProfileService";
@@ -117,12 +120,14 @@ export default class TripMetaView extends Vue {
 
   date: string = "";
   startedAt: string = "";
+  endDate: string = "";
   finishedAt: string = "";
 
   hereIAmError: string = "";
 
   dateError: string = "";
   startedAtError: string = "";
+  endDateError: string = "";
   finishedAtError: string = "";
   nameError: string = "";
   lakeIdError: string = "";
@@ -146,6 +151,7 @@ export default class TripMetaView extends Vue {
       if (someTrip.startedAt) {
         this.startedAt = someTrip.startedAt;
       }
+      this.endDate = TripDates.endIsoDate(someTrip) || this.date;
       if (someTrip.finishedAt) {
         this.finishedAt = someTrip.finishedAt;
       }
@@ -183,6 +189,15 @@ export default class TripMetaView extends Vue {
           }
         }
       );
+    }
+  }
+
+  // Date de fin pré-remplie avec la date de début (#237) : une sortie d'une journée
+  // se saisit comme avant. Elle suit la date de début tant qu'elle lui est égale.
+  @Watch("date")
+  onDateChanged(newDate: string, oldDate: string) {
+    if (!this.endDate || this.endDate == oldDate) {
+      this.endDate = newDate;
     }
   }
 
@@ -224,46 +239,31 @@ export default class TripMetaView extends Vue {
         "toaster-error",
         "Vous devez renseigner les champs obligatoires"
       );
+    } else if (this.trip!.mode == "Afterwards") {
+      TripsService.confirmPlausibleTripDuration(this.$modal, this.trip!).then((confirmed) => {
+        if (confirmed) {
+          TripsService.saveTripMeta(this.trip!, this.tripSaved);
+        }
+      });
     } else {
-      // this.trip!.name = this.name;
-      // this.trip!.lakeId = this.lakeId;
-      // this.trip!.type = this.type;
-
       TripsService.saveTripMeta(this.trip!, this.tripSaved);
     }
   }
 
   handleAfterwards(): boolean {
-    let hasError = false;
-    if (this.date) {
-        this.dateError = "";
-        const newDate = new Date(this.date);
-        this.trip!.date = newDate;
-
-        if (this.startedAt) {
-          this.startedAtError = "";
-
-          // let startedAt = Helpers.parseDateTime(newDate, this.startedAt);
-          this.trip!.startedAt = this.startedAt;
-        } else {
-          this.startedAtError = "Vous devez renseigner l'heure de début";
-          hasError = true;
-        }
-
-        if (this.finishedAt) {
-          this.finishedAtError = "";
-
-          // let finishedAt = Helpers.parseDateTime(newDate, this.finishedAt);
-          this.trip!.finishedAt = this.finishedAt;
-        } else {
-          this.finishedAtError = "Vous devez renseigner l'heure de fin";
-          hasError = true;
-        }
-      } else {
-        this.dateError = "Vous devez renseigner la date";
-        hasError = true;
-      }
-      return hasError;
+    const period = {
+      date: this.date ? TripDates.parseIsoDate(this.date) : undefined,
+      startedAt: this.startedAt,
+      endDate: this.endDate,
+      finishedAt: this.finishedAt,
+    };
+    const errors = TripDates.validatePeriod(period, (this.trip as any).catchs);
+    this.dateError = errors.dateError;
+    this.startedAtError = errors.startedAtError;
+    this.endDateError = errors.endDateError;
+    this.finishedAtError = errors.finishedAtError;
+    Object.assign(this.trip!, period);
+    return Object.values(errors).some((error) => !!error);
   }
 
   tripSaved() {

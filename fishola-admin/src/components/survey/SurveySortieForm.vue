@@ -28,6 +28,9 @@
       <TimeField v-model="sortie.controlTime" label="Heure du contrôle" class="column is-2"
         :error="controlTimeError" />
       <TimeField v-model="sortie.startTime" label="Heure de début" class="column is-2" />
+      <b-field label="Date de fin prévue" class="column is-2">
+        <input type="date" class="input" v-model="sortie.endDay" :min="sortie.day" />
+      </b-field>
       <TimeField v-model="sortie.endTime" label="Heure de fin prévue" class="column is-2" :error="endTimeError" />
       <b-field label="Secteur" class="column is-4">
         <WaterEntitySearchSelect v-model="sortie.waterEntityId" v-model:position="sortie.position"
@@ -70,12 +73,12 @@ import {
   SURVEY_SESSIONS_URI, SurveyError, SurveySession, cleanAngler, errorsOf, newAngler
 } from "@/components/survey/surveyForm";
 import type { EntryReferential } from "@/utils/entryReferentials";
-import { isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
-import { computed, ref } from "vue";
+import { isEndAfterStart, isValidTimeString, localDateIso, localTimeHHmm } from "@/utils/utils";
+import { computed, ref, watch } from "vue";
 
 const CONTROL_BEFORE_START_ERROR = "L'heure du contrôle ne peut pas être antérieure à l'heure de début";
-const CONTROL_AFTER_END_ERROR = "L'heure du contrôle ne peut pas être postérieure à l'heure de fin prévue";
-const END_NOT_AFTER_START_ERROR = "L'heure de fin doit être postérieure à l'heure de début";
+const CONTROL_AFTER_END_ERROR = "L'heure du contrôle ne peut pas être postérieure à la fin prévue";
+const END_NOT_AFTER_START_ERROR = "La fin doit être postérieure au début";
 
 interface Props {
   session: SurveySession;
@@ -97,6 +100,8 @@ function newSortie() {
     day: props.session.day,
     controlTime: localTimeHHmm(new Date()),
     startTime: "",
+    // Date de fin prévue (#237) : carpiste contrôlé pendant une session de plusieurs jours.
+    endDay: props.session.day,
     endTime: "",
     waterEntityId: props.session.waterEntityId as string | null,
     position: null as MapPosition | null
@@ -112,21 +117,30 @@ function areValidTimes(...values: string[]): boolean {
   return values.every((value) => !!value && isValidTimeString(value));
 }
 
-// Heure du contrôle comprise entre le début et la fin prévue (#236), même règle que le backend.
+// Heure du contrôle comprise entre le début et la fin prévue, date de fin comprise (#236, #237),
+// même règle que le backend.
 const controlTimeError = computed(() => {
-  const { controlTime, startTime, endTime } = sortie.value;
+  const { day, controlTime, startTime, endDay, endTime } = sortie.value;
   if (areValidTimes(controlTime, startTime) && controlTime < startTime) {
     return CONTROL_BEFORE_START_ERROR;
   }
-  if (areValidTimes(controlTime, startTime, endTime) && endTime > startTime && controlTime > endTime) {
+  if (areValidTimes(controlTime) && isEndAfterStart(day, startTime, endDay, endTime)
+      && `${day}T${controlTime}` > `${endDay || day}T${endTime}`) {
     return CONTROL_AFTER_END_ERROR;
   }
   return "";
 });
 
 const endTimeError = computed(() => {
-  const { endTime, startTime } = sortie.value;
-  return areValidTimes(endTime, startTime) && endTime <= startTime ? END_NOT_AFTER_START_ERROR : "";
+  const { day, startTime, endDay, endTime } = sortie.value;
+  return isEndAfterStart(day, startTime, endDay, endTime) === false ? END_NOT_AFTER_START_ERROR : "";
+});
+
+// Date de fin prévue pré-remplie avec la date (#237), qu'elle suit tant qu'elle lui est égale.
+watch(() => sortie.value.day, (newDay: string, oldDay: string) => {
+  if (!sortie.value.endDay || sortie.value.endDay === oldDay) {
+    sortie.value.endDay = newDay;
+  }
 });
 
 const timesValid = computed(() => {
@@ -145,6 +159,7 @@ async function submit() {
     day: sortie.value.day || null,
     controlTime: sortie.value.controlTime,
     startTime: sortie.value.startTime,
+    endDay: sortie.value.endDay || null,
     endTime: sortie.value.endTime,
     anglers: anglers.value.map(cleanAngler)
   };

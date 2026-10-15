@@ -80,6 +80,7 @@ import ReferentialService from "@/services/ReferentialService";
 import Constants from "@/services/Constants";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
+import moment from "moment";
 
 @Component({
   components: {
@@ -94,6 +95,7 @@ export default class CatchPreview extends Vue {
 
   @Prop({ default: "size" }) metaMode: string;
   @Prop({ default: "species" }) bottom: string;
+  @Prop({ default: false }) showCatchDay: boolean;
 
   caughtAtLabel: string = "";
   techniqueLabel: string = "";
@@ -105,6 +107,9 @@ export default class CatchPreview extends Vue {
   created() {
     if (this.aCatch.caughtAt) {
       this.caughtAtLabel = this.aCatch.caughtAt;
+      if (this.showCatchDay && this.aCatch.caughtOn) {
+        this.caughtAtLabel = `${moment(this.aCatch.caughtOn).format("DD/MM")} ${this.aCatch.caughtAt}`;
+      }
     }
 
     ReferentialService.getSpeciesAndTechniques().then(

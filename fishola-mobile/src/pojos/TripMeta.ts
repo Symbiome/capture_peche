@@ -30,6 +30,7 @@ export default interface TripMeta {
     type?: TripType;
     date?:Date;
     startedAt?: string;
+    endDate?: string; // AAAA-MM-JJ (#237)
     finishedAt?: string;
     beginLatitude?: number;
     beginLongitude?: number;
