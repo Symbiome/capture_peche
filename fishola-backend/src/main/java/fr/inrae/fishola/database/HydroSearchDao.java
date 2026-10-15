@@ -268,6 +268,18 @@ public class HydroSearchDao extends AbstractFisholaDao {
      * @param departmentCodes empty means unrestricted (national admin)
      */
     public List<WaterEntityName> searchWaterEntityNames(String query, Set<String> departmentCodes, int limit) {
+        return searchWaterEntityNames(query, departmentCodes, limit, null);
+    }
+
+    /**
+     * Same as {@link #searchWaterEntityNames(String, Set, int)}, with the matching
+     * favorites of a staff account ranked first (#236).
+     *
+     * @param departmentCodes empty means unrestricted (national admin)
+     * @param favoritesOfAdminId staff account whose favorites come first, null for none
+     */
+    public List<WaterEntityName> searchWaterEntityNames(String query, Set<String> departmentCodes, int limit,
+                                                        UUID favoritesOfAdminId) {
         String q = forSearch(query);
         boolean scoped = !departmentCodes.isEmpty();
         String departmentClause = scoped
@@ -284,13 +296,18 @@ public class HydroSearchDao extends AbstractFisholaDao {
                 + "    AND ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
                 + "  LIMIT 1 "
                 + ") com ON true "
+                + "LEFT JOIN fishola_admin_favorite_water_entity fav "
+                + "  ON fav.water_entity_id = we.id AND fav.fishola_admin_id = ?::uuid "
                 + "WHERE (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
                 + "       OR f_unaccent(we.name) % f_unaccent(?)) "
                 + departmentClause
-                + relevanceOrderBy("we.name")
+                + relevanceOrderBy("we.name").replaceFirst("ORDER BY ", "ORDER BY (fav.water_entity_id IS NULL), ")
                 + "LIMIT ?";
+        List<Object> binds = new ArrayList<>();
+        binds.add(favoritesOfAdminId);
+        binds.addAll(Arrays.asList(searchBinds(q, new ArrayList<>(departmentCodes), limit)));
         return withContext(context -> context
-                .fetch(sql, searchBinds(q, new ArrayList<>(departmentCodes), limit))
+                .fetch(sql, binds.toArray())
                 .map(rec -> (WaterEntityName) ImmutableWaterEntityName.builder()
                         .id(rec.get("id", UUID.class))
                         .name(rec.get("name", String.class))

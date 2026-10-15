@@ -20,21 +20,29 @@
   -->
 <template>
   <div class="water-entity-search-select">
-    <b-field :addons="withMap">
+    <b-field :addons="withMap || withFavorites">
       <b-autocomplete
         v-model="search"
         :data="suggestions"
         field="label"
         :placeholder="placeholder"
         :loading="loading"
+        :open-on-focus="withFavorites"
         icon="magnify"
         clearable
         expanded
         @typing="onTyping"
         @select="onSelect"
       >
+        <template #default="{ option }">
+          <span v-if="isFavorite(option.id)" class="favorite-mark">★ </span>{{ option.label }}
+        </template>
         <template #empty>Aucun résultat</template>
       </b-autocomplete>
+      <p v-if="withFavorites" class="control">
+        <b-button :icon-left="isFavorite(modelValue) ? 'star' : 'star-outline'" :disabled="!modelValue"
+          :title="isFavorite(modelValue) ? 'Retirer des favoris' : 'Ajouter aux favoris'" @click="toggleFavorite" />
+      </p>
       <p v-if="withMap" class="control">
         <b-button icon-left="map-marker" @click="mapOpen = true">Carte</b-button>
       </p>
@@ -73,6 +81,10 @@ interface Props {
   position?: MapPosition | null;
   /** Affiche le bouton « Carte » pour saisir la position de la pêche. */
   withMap?: boolean;
+  /** Secteurs favoris du compte (#236) : étoile, et favoris proposés avant toute saisie. */
+  withFavorites?: boolean;
+  /** Libellé de l'entité quand le parent impose modelValue (ex. secteur pré-rempli depuis la session). */
+  initialLabel?: string | null;
   placeholder?: string;
 }
 
@@ -84,6 +96,8 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
   position: null,
   withMap: false,
+  withFavorites: false,
+  initialLabel: null,
   placeholder: "Rechercher un plan d'eau, une rivière..."
 });
 
@@ -97,7 +111,7 @@ const mapOpen = ref(false);
 // alors select(null) (texte ≠ ancienne sélection), à ne pas confondre avec une désélection.
 let applyingMapPick = false;
 
-const search = ref("");
+const search = ref(props.modelValue && props.initialLabel ? props.initialLabel : "");
 // Dernière valeur émise : distingue nos propres émissions d'un changement imposé par le parent.
 let emittedValue: string | null = props.modelValue ?? null;
 
@@ -112,12 +126,58 @@ watch(
     emittedValue = normalized;
     if (normalized === null) {
       search.value = "";
-      suggestions.value = [];
+      suggestions.value = favoriteOptions();
+    } else if (props.initialLabel) {
+      search.value = props.initialLabel;
     }
   }
 );
 const suggestions = ref<WaterEntityOption[]>([]);
 const loading = ref(false);
+const favorites = ref<WaterEntityName[]>([]);
+
+const FAVORITES_URI = "/v1/admin/favorite-water-entities";
+
+/** Le secteur fait-il partie des favoris du compte ? */
+function isFavorite(id: string | null | undefined): boolean {
+  return !!id && favorites.value.some((favorite) => favorite.id === id);
+}
+
+/** Favoris proposés avant toute saisie, vide sans withFavorites. */
+function favoriteOptions(): WaterEntityOption[] {
+  return props.withFavorites ? withLabels(favorites.value) : [];
+}
+
+/** Charge les favoris du compte ; une erreur laisse simplement la liste vide. */
+async function loadFavorites() {
+  try {
+    favorites.value = await BackendService.backendGet(FAVORITES_URI);
+  } catch {
+    favorites.value = [];
+  }
+  if ((search.value || "").trim().length < 2) {
+    suggestions.value = favoriteOptions();
+  }
+}
+
+/** Ajoute ou retire des favoris le secteur sélectionné. */
+async function toggleFavorite() {
+  const id = props.modelValue;
+  if (!id) {
+    return;
+  }
+  if (isFavorite(id)) {
+    await BackendService.backendDelete(FAVORITES_URI + "/" + id);
+    favorites.value = favorites.value.filter((favorite) => favorite.id !== id);
+  } else {
+    await BackendService.backendPut(FAVORITES_URI + "/" + id, null);
+    favorites.value = [...favorites.value, { id, name: search.value }];
+  }
+}
+
+if (props.withFavorites) {
+  loadFavorites();
+}
 
 // Le référentiel hydro national (~181 000 lignes) ne doit jamais être chargé ni
 // rendu en une fois ici : au-delà d'un plan d'eau déjà sélectionné (v-for sur un
@@ -135,7 +195,7 @@ function onTyping(term: string) {
 
   const trimmed = (term || "").trim();
   if (trimmed.length < 2) {
-    suggestions.value = [];
+    suggestions.value = favoriteOptions();
     loading.value = false;
     return;
   }
@@ -198,6 +258,9 @@ async function onMapPicked(pick: MapPick) {
 </script>
 
 <style scoped lang="less">
+.favorite-mark {
+  color: #e0a800;
+}
 .position-label {
   font-size: 0.85rem;
   margin-top: 0.25rem;

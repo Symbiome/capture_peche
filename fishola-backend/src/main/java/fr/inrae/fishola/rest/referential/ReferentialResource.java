@@ -174,7 +174,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     // minimal id+nom, même scoping départemental que getAllWaterEntityNames() :
     // alimente l'autocomplete "Entité hydrographique" des formulaires de saisie
     // opérateur, à la place du <select> exhaustif qui fait planter l'onglet pour
-    // un national (~181 000 <option> à monter).
+    // un national (~181 000 <option> à monter). Les secteurs favoris du compte
+    // passent en tête (#236).
     @GET
     @Path("/waterEntities/names/search")
     public List<WaterEntityName> searchWaterEntityNames(@QueryParam("q") String q,
@@ -185,7 +186,7 @@ public class ReferentialResource extends AbstractFisholaResource {
                 "limit doit être dans l'intervalle [1, 50].");
         FisholaAdmin fisholaAdmin = this.checkIsStaff();
         Set<String> allowedDepartments = fisholaAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
-        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit);
+        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit, fisholaAdmin.getId());
     }
 
     @GET

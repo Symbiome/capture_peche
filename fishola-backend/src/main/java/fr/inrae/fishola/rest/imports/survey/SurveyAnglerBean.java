@@ -39,9 +39,8 @@ public class SurveyAnglerBean {
     public Integer rodCount;
     public String baitOrLure;
 
-    /** Espèce recherchée ; ignoré si {@code noExpectedSpecies}. */
+    /** Espèce recherchée ; nulle pour « Toutes espèces » (défaut) ou « Aucune » (#236). */
     public UUID expectedSpeciesId;
-    public boolean noExpectedSpecies;
 
     public boolean bredouille;
     public List<SurveyCatchBean> captures;
