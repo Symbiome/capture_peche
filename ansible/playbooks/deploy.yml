@@ -19,7 +19,7 @@
 # Usage :
 #   cd ansible && ansible-playbook playbooks/deploy.yml
 
-- name: Déployer Fishola (dev)
+- name: Déployer Carnet-peche (dev)
   hosts: dev
   connection: local
   gather_facts: false
