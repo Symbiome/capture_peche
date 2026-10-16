@@ -28,6 +28,7 @@
 
         <button 
             v-for="action in actions"
+            :key="action.action"
             class="button"
             @click="$emit(action.action)">
           {{ action.name }}

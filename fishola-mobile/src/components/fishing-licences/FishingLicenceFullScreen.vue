@@ -58,6 +58,9 @@ export default class FishingLicenceFullScreen extends Vue {
 
     async mounted() {
         if (this.type === "PDF" && import.meta.env.VITE__REMOVE_PDF_VIEWER !== "true") {
+            // vue-pdf-embed épinglé en 2.1.4 (pdf.js 4.10) : à partir de la 2.1.5,
+            // pdf.js 5+ exige Promise.withResolvers jusque dans son worker, absent
+            // avant iOS 17.4 / Chrome 119, alors que .browserslistrc vise iOS 15.
             const module = await import("vue-pdf-embed");
             this.pdfComponent = markRaw(module.default);
         }

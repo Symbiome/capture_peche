@@ -380,15 +380,15 @@ export default class LakeSelection extends Vue {
     }, "500");
   }
 
-  updateSuggestions(event:Event) {
+  updateSuggestions(event:KeyboardEvent) {
     // Hide suggestions when the Esc or Enter key is pressed
-    if (event.keyCode == 27 || event.keyCode == 13) {
+    if (event.key == "Escape" || event.key == "Enter") {
       this.displaySuggestions = false;
       if (this.allowMultipleSelection) {
         this.clearSelection();
       }
       // Hide suggestions and select the matching lake, it there is only one, when the Enter key is pressed
-      if (event.keyCode == 13 && (this.suggestedLakes.length + this.suggestedFavorites.length) == 1) {
+      if (event.key == "Enter" && (this.suggestedLakes.length + this.suggestedFavorites.length) == 1) {
         const selectedLake = this.suggestedLakes.length ? this.suggestedLakes[0] : this.suggestedFavorites[0]
         this.$emit("updated", selectedLake);
         if (!this.allowMultipleSelection) {

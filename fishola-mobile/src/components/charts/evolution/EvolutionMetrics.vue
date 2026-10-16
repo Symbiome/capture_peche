@@ -33,7 +33,7 @@
         </h2>
         <div class="select-wrapper">
           <select v-model="displayMode" @change="switchMode" ref="select">
-            <option v-for="modeLabel, modeId in displayModeChoices" :value="modeId"> {{ modeLabel }}</option>
+            <option v-for="modeLabel, modeId in displayModeChoices" :key="modeId" :value="modeId"> {{ modeLabel }}</option>
           </select>
           <span>Modifier</span>
         </div>

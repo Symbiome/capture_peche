@@ -145,7 +145,6 @@ export default class ProfileView extends Vue {
 
   @Watch("profile")
   profileLoaded(profile: UserProfile) {
-    this.profile = profile;
     this.birthYear = "" + (profile.birthYear || 0);
     this.gender = profile.gender || "EMPTY";
   }

@@ -18,12 +18,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import Dexie from "dexie";
+import Dexie, { DBCore, DBCoreMutateRequest, DBCoreTable } from "dexie";
 import { TripBean, Feedback } from "@/pojos/BackendPojos";
 import StoredPicture from "@/pojos/StoredPicture";
 import OfflineEntry from "@/pojos/OfflineEntry";
 import OfflineArea from "@/pojos/OfflineArea";
 import CachedTile from "@/pojos/CachedTile";
+import { toStorable } from "@/services/Storable";
+
+/**
+ * Tables alimentées par des objets venant des écrans, donc potentiellement
+ * réactifs (#284). Les autres reçoivent des données réseau, parfois
+ * volumineuses (packs hydro, tuiles), qu'il est inutile de recopier.
+ */
+const TABLES_FED_BY_SCREENS = new Set([
+  "onCreationTrip",
+  "dirtyTrips",
+  "dirtyPictures",
+  "toDeletePictures",
+  "offlineFeedbacks",
+  "lastMeasurementPic",
+]);
+
+/**
+ * Enveloppe une table Dexie pour retirer les Proxy Vue des valeurs écrites.
+ *
+ * @param downlevelTable table Dexie de niveau inférieur
+ * @returns la table, dont les add/put écrivent des copies sans Proxy
+ */
+function withStorableValues(downlevelTable: DBCoreTable): DBCoreTable {
+  return {
+    ...downlevelTable,
+    mutate: (request: DBCoreMutateRequest) =>
+      downlevelTable.mutate(
+        request.type === "add" || request.type === "put"
+          ? { ...request, values: request.values.map(toStorable) }
+          : request
+      ),
+  };
+}
 
 export default class FisholaDatabase extends Dexie {
   static instance: FisholaDatabase = new FisholaDatabase();
@@ -157,6 +190,18 @@ export default class FisholaDatabase extends Dexie {
     this.lastMeasurementPic = this.table("lastMeasurementPic");
     this.offlineAreas = this.table("offlineAreas");
     this.tileCache = this.table("tileCache");
+
+    this.use({
+      stack: "dbcore",
+      name: "storableValues",
+      create: (downlevelDatabase: DBCore) => ({
+        ...downlevelDatabase,
+        table: (tableName: string) => {
+          const downlevelTable = downlevelDatabase.table(tableName);
+          return TABLES_FED_BY_SCREENS.has(tableName) ? withStorableValues(downlevelTable) : downlevelTable;
+        },
+      }),
+    });
 
     console.info("Base Fishola prête");
   }
