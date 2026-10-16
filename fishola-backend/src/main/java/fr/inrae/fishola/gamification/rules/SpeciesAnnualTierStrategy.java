@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -38,12 +40,16 @@ import java.util.UUID;
  * sur la ligne {@code gamification_badge}, le millésime est géré par
  * {@link fr.inrae.fishola.gamification.GamificationEngine}. {@code rule_params.speciesNames}
  * porte la ou les espèces couvertes (plusieurs pour les groupes, ex. "Cyprins"/"Alose").
+ * Preuve (#275) : la capture qui a franchi le palier, puis la plus grande de l'année.
  */
 @Singleton
 public class SpeciesAnnualTierStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -53,13 +59,30 @@ public class SpeciesAnnualTierStrategy implements BadgeRuleStrategy {
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
         List<String> speciesNames = RuleParams.stringListParam(badge.ruleParams(), "speciesNames");
-        int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
+        int threshold = threshold(badge);
         if (speciesNames.isEmpty()) {
             return Optional.empty();
         }
-        int count = dao.countCatchesForSpeciesInYear(userId, speciesNames, Year.now().getValue());
+        int year = Year.now().getValue();
+        int count = dao.countCatchesForSpeciesInYear(userId, speciesNames, year);
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("catchCount", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("catchCount", count),
+                        proofDao.findSpeciesTierCatches(userId, speciesNames, year, threshold).orElse(UnlockProof.NONE)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        List<String> speciesNames = RuleParams.stringListParam(badge.ruleParams(), "speciesNames");
+        if (speciesNames.isEmpty()) {
+            return Optional.empty();
+        }
+        int year = unlock.periodYear() == 0 ? Year.now().getValue() : unlock.periodYear();
+        return proofDao.findSpeciesTierCatches(userId, speciesNames, year, threshold(badge));
+    }
+
+    private int threshold(GamificationDao.BadgeRow badge) {
+        return RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
     }
 }

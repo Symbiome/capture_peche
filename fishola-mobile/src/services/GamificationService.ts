@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import { BadgeBean } from "@/pojos/BackendPojos";
+import { BadgeBean, BadgeSouvenirBean } from "@/pojos/BackendPojos";
 import AbstractFisholaService from "@/services/AbstractFisholaService";
 
 export default class GamificationService extends AbstractFisholaService {
@@ -28,5 +28,10 @@ export default class GamificationService extends AbstractFisholaService {
 
   static getMyBadges(): Promise<BadgeBean[]> {
     return this.backendGet("/v1/gamification/me/badges");
+  }
+
+  /** Carte souvenir (#275) : les prises qui ont débloqué ce badge, chargées au clic. */
+  static getBadgeSouvenir(unlockId: string): Promise<BadgeSouvenirBean> {
+    return this.backendGet(`/v1/gamification/me/badges/unlocks/${unlockId}/souvenir`);
   }
 }

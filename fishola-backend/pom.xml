@@ -446,6 +446,7 @@
                         <class>fr.inrae.fishola.rest.hydro.AttributionResponse</class>
                         <class>fr.inrae.fishola.rest.commune.CommuneResult</class>
                         <class>fr.inrae.fishola.rest.gamification.BadgeBean</class>
+                        <class>fr.inrae.fishola.rest.gamification.BadgeSouvenirBean</class>
                     </classes>
                     <outputKind>module</outputKind>
                     <outputFileType>implementationFile</outputFileType>

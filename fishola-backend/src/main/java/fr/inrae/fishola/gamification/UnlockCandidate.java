@@ -28,18 +28,19 @@ import java.util.Map;
  * conserver pour l'affichage/partage. {@code updateIfExists} distingue les badges
  * "record" (dont le contexte doit être rafraîchi à chaque nouveau record, cf.
  * {@code metric_record}) des autres (déblocage une seule fois, jamais réécrit).
+ * Depuis #275, le contexte porte aussi les prises « preuves » ({@link UnlockProof}).
  */
 public record UnlockCandidate(Map<String, Object> context, boolean updateIfExists) {
-
-    public static UnlockCandidate unlocked() {
-        return new UnlockCandidate(Map.of(), false);
-    }
 
     public static UnlockCandidate unlocked(Map<String, Object> context) {
         return new UnlockCandidate(context, false);
     }
 
-    public static UnlockCandidate recordUpdate(Map<String, Object> context) {
-        return new UnlockCandidate(context, true);
+    public static UnlockCandidate unlocked(Map<String, Object> context, UnlockProof proof) {
+        return new UnlockCandidate(proof.addTo(context), false);
+    }
+
+    public static UnlockCandidate recordUpdate(Map<String, Object> context, UnlockProof proof) {
+        return new UnlockCandidate(proof.addTo(context), true);
     }
 }

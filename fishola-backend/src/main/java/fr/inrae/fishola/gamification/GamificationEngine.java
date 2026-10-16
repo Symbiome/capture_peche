@@ -97,4 +97,24 @@ public class GamificationEngine {
                     badge.id(), fishowaUserId, periodYear, c.context(), c.updateIfExists(), null));
         }
     }
+
+    /**
+     * Prises « preuves » d'un déblocage, pour la carte souvenir (#275). Un déblocage
+     * antérieur à leur mémorisation les voit recalculées par sa stratégie, puis persistées
+     * dans son contexte (pas de migration de données figée). {@link UnlockProof#NONE} pour
+     * un badge sans prise associée (attribution manuelle, concours, percentile) ou si
+     * aucune prise n'est retrouvée.
+     */
+    public UnlockProof proofOf(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock, UUID fishowaUserId) {
+        if (UnlockProof.isRecordedIn(unlock.context())) {
+            return UnlockProof.readFrom(unlock.context());
+        }
+        BadgeRuleStrategy strategy = strategiesByRuleType.get(badge.ruleType());
+        if (strategy == null) {
+            return UnlockProof.NONE;
+        }
+        Optional<UnlockProof> proof = strategy.findProof(badge, unlock, fishowaUserId);
+        proof.ifPresent(p -> dao.addUnlockProof(unlock.id(), p));
+        return proof.orElse(UnlockProof.NONE);
+    }
 }

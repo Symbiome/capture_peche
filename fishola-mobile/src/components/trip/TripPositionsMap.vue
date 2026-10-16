@@ -27,9 +27,16 @@
   marqueur ; la nouvelle position est émise via `end-position-picked`
   ({ lat, lng }). Le point de début n'est jamais déplaçable ici (il est fixé
   à la création de la sortie).
+  En mode `approximate` (#275, carte souvenir partagée), aucun marqueur précis :
+  les positions sont ramenées sur une grille de 0,1° et dessinées en zones
+  floues, à un zoom plafonné, pour ne pas dévoiler le coin de pêche.
   -->
 <template>
-  <div v-if="hasAnyPosition || editable" class="trip-positions-map" :class="{ 'capture-mode': captureMode }">
+  <div
+    v-if="hasAnyPosition || editable"
+    class="trip-positions-map"
+    :class="{ 'capture-mode': captureMode, approximate: approximate }"
+  >
     <div ref="mapContainer" class="trip-positions-map-container" />
     <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBase" />
     <ul v-if="showLegend" class="trip-positions-map-legend">
@@ -80,6 +87,11 @@ const FRAMING_MARGIN_RATIO = 0.12;
 const MAX_FIT_ZOOM = 15;
 // Sécurité : une capture ne doit pas bloquer l'export si `idle` n'arrive pas.
 const CAPTURE_TIMEOUT_MS = 10000;
+// Mode approximatif (#275) : grille de 0,1° (~10 km), zoom plafonné et zones
+// d'un rayon fixe à l'écran plutôt que des pins.
+const APPROXIMATE_GRID_STEPS_PER_DEGREE = 10;
+const APPROXIMATE_MAX_ZOOM = 10;
+const ZONE_RADIUS_PX = 28;
 
 export interface TripPositionsCatchPoint {
   lat: number;
@@ -101,6 +113,8 @@ export default class TripPositionsMap extends Vue {
   @Prop({ default: () => [] }) catches: TripPositionsCatchPoint[];
   /** #173 : préserve le tampon WebGL pour permettre `captureImage()` (export PDF). */
   @Prop({ default: false }) captureMode: boolean;
+  /** #275 : zones approximatives sans marqueur précis (carte souvenir partagée). */
+  @Prop({ default: false }) approximate: boolean;
 
   private map: MlMap | null = null;
   private beginMarker: Marker | null = null;
@@ -133,7 +147,7 @@ export default class TripPositionsMap extends Vue {
   }
 
   get showLegend(): boolean {
-    return this.hasBeginPosition || this.hasEndPosition || this.editable;
+    return !this.approximate && (this.hasBeginPosition || this.hasEndPosition || this.editable);
   }
 
   mounted() {
@@ -173,7 +187,11 @@ export default class TripPositionsMap extends Vue {
     if (!this.map) {
       return;
     }
-    this.refreshCatchLayer();
+    if (this.approximate) {
+      this.refreshZoneLayer();
+    } else {
+      this.refreshCatchLayer();
+    }
     this.fitToMarkers();
   }
 
@@ -195,14 +213,12 @@ export default class TripPositionsMap extends Vue {
     // (`styleimagemissing`), il pouvait manquer à la capture PDF (#193).
     this.ready = new Promise((resolve) => {
       map.once('load', () => {
-        addCatchPinIcon(map, CATCH_PIN_ID, CATCH_COLOR, 'fish').then(() => {
+        this.loadCatchPinIcon(map).then(() => {
           if (this.map !== map) {
             return;
           }
           map.resize();
-          this.addEndpointLayer();
-          this.refreshMarkers();
-          this.addCatchLayer();
+          this.addPositionLayers();
           this.fitToMarkers();
           resolve();
         });
@@ -214,6 +230,21 @@ export default class TripPositionsMap extends Vue {
         this.emitEndPosition(e.lngLat.lng, e.lngLat.lat);
       });
     }
+  }
+
+  /** Mode approximatif (#275) : aucun pin dessiné, rien à charger. */
+  private loadCatchPinIcon(map: MlMap): Promise<void> {
+    return this.approximate ? Promise.resolve() : addCatchPinIcon(map, CATCH_PIN_ID, CATCH_COLOR, 'fish');
+  }
+
+  private addPositionLayers() {
+    if (this.approximate) {
+      this.addZoneLayer();
+      return;
+    }
+    this.addEndpointLayer();
+    this.refreshMarkers();
+    this.addCatchLayer();
   }
 
   private catchesGeoJson(): any {
@@ -257,7 +288,7 @@ export default class TripPositionsMap extends Vue {
     }
   }
 
-  /** Début, fin et captures : l'emprise de la zone pêchée (#193). */
+  /** Début, fin et captures : l'emprise de la zone pêchée (#193), arrondie en mode approximatif (#275). */
   private allPoints(): [number, number][] {
     const points: [number, number][] = [];
     if (this.hasBeginPosition) {
@@ -267,7 +298,55 @@ export default class TripPositionsMap extends Vue {
       points.push([this.endLongitude!, this.endLatitude!]);
     }
     (this.catches || []).forEach((c) => points.push([c.lng, c.lat]));
-    return points;
+    return this.approximate ? this.snapToGrid(points) : points;
+  }
+
+  /** Positions ramenées sur la grille approximative, sans doublon (#275). */
+  private snapToGrid(points: [number, number][]): [number, number][] {
+    const snap = (value: number) =>
+      Math.round(value * APPROXIMATE_GRID_STEPS_PER_DEGREE) / APPROXIMATE_GRID_STEPS_PER_DEGREE;
+    const byKey = new Map<string, [number, number]>();
+    points.forEach(([lng, lat]) => {
+      const snapped: [number, number] = [snap(lng), snap(lat)];
+      byKey.set(snapped.join(','), snapped);
+    });
+    return Array.from(byKey.values());
+  }
+
+  private zonesGeoJson(): any {
+    return {
+      type: 'FeatureCollection',
+      features: this.allPoints().map((point) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: point },
+        properties: {},
+      })),
+    };
+  }
+
+  private addZoneLayer() {
+    if (!this.map || this.map.getSource('trip-zones')) {
+      return;
+    }
+    this.map.addSource('trip-zones', { type: 'geojson', data: this.zonesGeoJson() });
+    this.map.addLayer({
+      id: 'trip-zone-halos',
+      type: 'circle',
+      source: 'trip-zones',
+      paint: {
+        'circle-radius': ZONE_RADIUS_PX,
+        'circle-color': CATCH_COLOR,
+        'circle-opacity': 0.25,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': CATCH_COLOR,
+        'circle-stroke-opacity': 0.6,
+      },
+    });
+  }
+
+  private refreshZoneLayer() {
+    const source = this.map?.getSource('trip-zones') as GeoJSONSource | undefined;
+    source?.setData(this.zonesGeoJson());
   }
 
   private pointsBounds(points: [number, number][]): [[number, number], [number, number]] {
@@ -292,6 +371,9 @@ export default class TripPositionsMap extends Vue {
   }
 
   private initialZoom(): number {
+    if (this.approximate) {
+      return APPROXIMATE_MAX_ZOOM;
+    }
     if (this.hasBeginPosition && this.hasEndPosition) {
       return 12;
     }
@@ -302,7 +384,7 @@ export default class TripPositionsMap extends Vue {
   }
 
   private refreshMarkers() {
-    if (!this.map) {
+    if (!this.map || this.approximate) {
       return;
     }
     if (this.captureMode) {
@@ -396,6 +478,10 @@ export default class TripPositionsMap extends Vue {
   // 40 px fixes), plus la place des pins ancrés par le bas (#193).
   private framingPadding(width: number, height: number) {
     const margin = Math.round(FRAMING_MARGIN_RATIO * Math.min(width, height));
+    if (this.approximate) {
+      const padding = margin + ZONE_RADIUS_PX;
+      return { top: padding, bottom: padding, left: padding, right: padding };
+    }
     return {
       top: margin + PIN_HEIGHT_PX,
       bottom: margin,
@@ -417,11 +503,12 @@ export default class TripPositionsMap extends Vue {
       return;
     }
     const animate = !this.captureMode;
+    const maxZoom = this.approximate ? APPROXIMATE_MAX_ZOOM : MAX_FIT_ZOOM;
     if (points.length === 1) {
       this.map.easeTo({
         center: points[0],
-        zoom: MAX_FIT_ZOOM,
-        offset: [0, PIN_HEIGHT_PX / 2],
+        zoom: maxZoom,
+        offset: this.approximate ? [0, 0] : [0, PIN_HEIGHT_PX / 2],
         duration: animate ? 500 : 0,
       });
       return;
@@ -429,7 +516,7 @@ export default class TripPositionsMap extends Vue {
     const bounds: LngLatBoundsLike = this.pointsBounds(points);
     this.map.fitBounds(bounds, {
       padding: this.framingPadding(width, height),
-      maxZoom: MAX_FIT_ZOOM,
+      maxZoom,
       animate,
     });
   }
@@ -494,6 +581,18 @@ export default class TripPositionsMap extends Vue {
   @supports (aspect-ratio: 3 / 2) {
     height: auto;
     aspect-ratio: 3 / 2;
+  }
+}
+
+// Carte souvenir (#275) : carrée, sans cadre, à la largeur fixée par le parent.
+.trip-positions-map.capture-mode.approximate {
+  max-width: none;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+
+  @supports (aspect-ratio: 1 / 1) {
+    aspect-ratio: 1 / 1;
   }
 }
 
