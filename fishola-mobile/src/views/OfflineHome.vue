@@ -57,7 +57,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import About from "@/views/About.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import DocumentationService from "../services/DocumentationService";
 import { NewsBean } from "@/pojos/BackendPojos";
 import { RouterUtils } from "@/router/RouterUtils";

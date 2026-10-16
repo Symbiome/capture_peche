@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { Maillage } from "@/pojos/BackendPojos";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component
 export default class MaillageLegend extends Vue {

@@ -69,7 +69,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 
 import { SpeciesWithAlias, Month, Maillage } from "@/pojos/BackendPojos";
 import { GlobalDashboardAndSpecies } from "@/services/DashboardService";
@@ -171,7 +172,7 @@ export default class GlobalDashboardComponent extends Vue {
           this.dashboardData.dashboard.monthlySizesPerMaillage[speciesId],
       });
     });
-    this.monthlySizesOptions = Vue.lodash.orderBy(
+    this.monthlySizesOptions = orderBy(
       this.monthlySizesOptions,
       "name"
     );

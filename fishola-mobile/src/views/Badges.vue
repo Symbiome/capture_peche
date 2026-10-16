@@ -82,7 +82,8 @@ import GamificationService from "@/services/GamificationService";
 import { BadgeBean } from "@/pojos/BackendPojos";
 import moment from "moment";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
@@ -149,7 +150,7 @@ export default class BadgesView extends Vue {
 
   badgeClicked(badge: BadgeBean) {
     if (badge.unlocked) {
-      this.$root.$emit("open-badge-share", badge);
+      EventBus.emit("open-badge-share", badge);
     }
   }
 }

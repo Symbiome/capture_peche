@@ -26,6 +26,7 @@
 // (couches de sélection en plus).
 
 import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
+import { markRaw } from "vue";
 import Constants from '@/services/Constants';
 import TileCacheService from '@/services/TileCacheService';
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
@@ -126,7 +127,8 @@ export function createFisholaMap(
         preserveDrawingBuffer: opts.preserveDrawingBuffer || false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
-    return map;
+    // Jamais de proxy réactif Vue 3 sur une carte MapLibre (#284).
+    return markRaw(map);
 }
 
 // ─── Marqueur « sortie » (pin poisson / canne à pêche) ───────────────────────

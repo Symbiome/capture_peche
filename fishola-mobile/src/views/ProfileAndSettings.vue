@@ -56,7 +56,8 @@
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import ProfileView from "./Profile.vue";
 import SettingsView from "./Settings.vue";
 import { RouterUtils } from "@/router/RouterUtils";
@@ -98,7 +99,7 @@ export default class ProfileAndSettingsView extends Vue {
             this.profile = profile
             this.fullName = UserProfile.fullName(profile);
         }), () => {
-            this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+            EventBus.emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
             RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
         };
     }

@@ -54,11 +54,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import PictureTakerService from "@/services/PictureTakerService";
 import { Device } from "@capacitor/device";
 
-@Component({})
+@Component({ emits: ["close", "pictureTaken"] })
 export default class PictureSourceChoice extends Vue {
   @Prop({ default: false }) directlyOpenGaleryInWebMode: boolean;
   @Prop({ default: false }) visible: boolean;

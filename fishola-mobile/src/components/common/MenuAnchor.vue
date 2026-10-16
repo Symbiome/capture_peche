@@ -25,12 +25,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component
 export default class MenuAnchor extends Vue {
   openMenu() {
-    this.$root.$emit("open-menu");
+    EventBus.emit("open-menu");
   }
 }
 </script>

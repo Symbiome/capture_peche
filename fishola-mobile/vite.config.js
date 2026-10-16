@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import { fileURLToPath, URL } from 'node:url';
-import vue from '@vitejs/plugin-vue2';
+import vue from '@vitejs/plugin-vue';
 import path from "path";
 import packageJson from "./package.json";
 import { visualizer } from "rollup-plugin-visualizer";
@@ -66,7 +66,7 @@ export default defineConfig( ({mode}) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules/vue-pdf-app")) {
+            if (id.includes("node_modules/vue-pdf-embed") || id.includes("node_modules/pdfjs-dist")) {
               return "pdf-lib";
             }
             if (id.includes("maplibre-gl")) {

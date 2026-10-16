@@ -57,7 +57,7 @@ import { CARNET_CHART_PALETTE } from "@/services/CarnetPalette";
 import { EvolutionMetricsForWaterEntity as EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
 import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import chartjsPluginDatalables from 'chartjs-plugin-datalabels'
 import chartjsPluginZoom from 'chartjs-plugin-zoom'
 
@@ -75,6 +75,7 @@ import { Bar } from 'vue-chartjs'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables, chartjsPluginZoom)
 
 @Component({
+  emits: ["loaded"],
   components: {
     Bar,
   },

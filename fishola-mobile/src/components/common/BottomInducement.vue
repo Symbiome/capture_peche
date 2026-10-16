@@ -36,14 +36,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 interface Action {
     action: string;
     name: string;
 }
 
-@Component
+@Component({ emits: ["becomeScaleCollector", "getSamplesCollectionPoints"] })
 export default class BottomInducementView extends Vue {
     @Prop() icon: string;
     @Prop() title: string;

@@ -190,7 +190,8 @@ import OfflineArea from "@/pojos/OfflineArea";
 import NetworkStatusService from "@/services/NetworkStatusService";
 import Helpers from "@/services/Helpers";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
@@ -223,7 +224,7 @@ export default class OfflineAreasView extends Vue {
     });
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
     }
@@ -271,12 +272,12 @@ export default class OfflineAreasView extends Vue {
     try {
       const area = await OfflineAreasService.downloadPack(code, name);
       await this.loadPacks();
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         `${name} téléchargé (${area.entityCount} entités)`
       );
     } catch (e) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Échec du téléchargement. Vérifiez votre connexion et réessayez."
       );
@@ -288,7 +289,6 @@ export default class OfflineAreasView extends Vue {
   async remove(pack: OfflineArea) {
     try {
       await Helpers.confirm(
-        this.$modal,
         `Supprimer le pack hors-ligne « ${pack.name} » ? Vous pourrez le retélécharger plus tard.`,
         "Supprimer la zone",
         "Annuler",
@@ -299,7 +299,7 @@ export default class OfflineAreasView extends Vue {
     }
     await OfflineAreasService.deletePack(pack.code);
     await this.loadPacks();
-    this.$root.$emit("toaster-success", `${pack.name} supprimé`);
+    EventBus.emit("toaster-success", `${pack.name} supprimé`);
   }
 
   formatBytes(bytes: number): string {

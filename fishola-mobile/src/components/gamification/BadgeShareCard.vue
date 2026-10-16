@@ -141,7 +141,8 @@ import ShareService from "@/services/ShareService";
 
 import html2canvas from "html2canvas";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 const TARGET_SIZE_PX = 1080;
 // Garde-fou : une carte qui ne se charge pas ne doit pas bloquer le partage.
@@ -170,11 +171,11 @@ export default class BadgeShareCard extends Vue {
   session = 0;
 
   mounted() {
-    this.$root.$on("open-badge-share", this.open);
+    EventBus.on("open-badge-share", this.open);
   }
 
-  beforeDestroy() {
-    this.$root.$off("open-badge-share", this.open);
+  beforeUnmount() {
+    EventBus.off("open-badge-share", this.open);
   }
 
   open(badge: BadgeBean) {

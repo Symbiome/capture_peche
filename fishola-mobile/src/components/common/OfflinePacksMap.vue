@@ -47,8 +47,9 @@
 
 <script lang="ts">
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { attachHydroHover, createFisholaMap } from '@/components/common/maplibreStyle';
 import OfflineArea from '@/pojos/OfflineArea';
@@ -89,13 +90,13 @@ export default class OfflinePacksMap extends Vue {
         }
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         this.destroyMap();
     }
 
     // Ajout/suppression d'un pack pendant que l'onglet est ouvert (#180) : la
     // carte (re)construit sa source et se recadre sur la nouvelle emprise.
-    @Watch('packs')
+    @Watch('packs', { deep: true })
     onPacksChange() {
         if (!this.packs.length) {
             this.destroyMap();
@@ -179,7 +180,7 @@ export default class OfflinePacksMap extends Vue {
             const el = document.createElement('div');
             el.className = 'department-label';
             el.textContent = d.name;
-            const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+            const marker = markRaw(new maplibregl.Marker({ element: el, anchor: 'center' }))
                 .setLngLat(d.center)
                 .addTo(this.map!);
             this.labelMarkers.push(marker);

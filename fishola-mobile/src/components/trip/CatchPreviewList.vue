@@ -54,9 +54,10 @@ import CatchSummary from "@/pojos/CatchSummary";
 
 import CatchPreview from "@/components/trip/CatchPreview.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component({
+  emits: ["newCatch", "openCatchFromId"],
   components: {
     CatchPreview,
   },

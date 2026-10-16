@@ -90,7 +90,9 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
@@ -134,7 +136,7 @@ export default class TripSpeciesView extends Vue {
 
   sortedSpecies(): SpeciesWithAlias[] {
     const manualSpecies = localStorage.getItem("manual-species") ?? "";
-    return Vue.lodash.orderBy(this.species, "name").filter(s => s.present || manualSpecies.indexOf(s.id) > -1);
+    return orderBy(this.species, "name").filter(s => s.present || manualSpecies.indexOf(s.id) > -1);
   }
 
   speciesLoaded(species: SpeciesWithAlias[]) {
@@ -233,7 +235,7 @@ export default class TripSpeciesView extends Vue {
     if (this.hasOtherSpecies) {
       if (!this.trip.otherSpecies) {
         hasError = true;
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Vous devez saisir le nom de l'espèce"
         );
@@ -243,7 +245,7 @@ export default class TripSpeciesView extends Vue {
     }
     if (this.trip.speciesIds.length == 0 && !this.hasOtherSpecies) {
       hasError = true;
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Vous devez sélectionner au moins une espèce"
       );
@@ -271,7 +273,6 @@ export default class TripSpeciesView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

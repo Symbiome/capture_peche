@@ -100,13 +100,12 @@ export default class TripsService extends AbstractFisholaService {
    *
    * @return true si la durée est plausible ou confirmée, false si le pêcheur veut corriger
    */
-  static confirmPlausibleTripDuration(modal: any, trip: TripPeriodFields): Promise<boolean> {
+  static confirmPlausibleTripDuration(trip: TripPeriodFields): Promise<boolean> {
     return ReferentialService.getTripSettings().then((settings) => {
       if (!TripDates.exceedsPlausibleDuration(trip, settings.maxPlausibleTripDays)) {
         return true;
       }
       return Helpers.confirm(
-        modal,
         `La sortie dure plus de ${settings.maxPlausibleTripDays} jours (${TripDates.formatMultiDayPeriod(trip)}).`,
         "Êtes-vous sûr des dates de la sortie ?",
         "Corriger",

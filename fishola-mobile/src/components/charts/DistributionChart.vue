@@ -57,7 +57,8 @@
 
 import DistributionEntry from '@/pojos/DistributionEntry';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 
 @Component
 export default class DistributionChart extends Vue {
@@ -67,7 +68,7 @@ export default class DistributionChart extends Vue {
   @Prop() greenLegend?:string;
 
   orderedCaughtSpeciesDistribution() {
-    return Vue.lodash.orderBy(this.distribution, 'name');
+    return orderBy(this.distribution, 'name');
   }
 
 }

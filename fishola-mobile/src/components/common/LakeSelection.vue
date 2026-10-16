@@ -126,7 +126,7 @@
 <script lang="ts">
 
 import { WaterEntity as Lake, AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import MapLibreMap from "@/components/common/MapLibreMap.vue";
 import NearbyList from "@/components/common/NearbyList.vue";
 import CommuneSearch from "@/components/common/CommuneSearch.vue";
@@ -137,6 +137,7 @@ import NetworkStatusService from '@/services/NetworkStatusService';
 import Helpers from '@/services/Helpers';
 
 @Component({
+  emits: ["favoriteLakesChanged", "positionPicked", "updated"],
   components: {
     MapLibreMap,
     NearbyList,
@@ -176,7 +177,7 @@ export default class LakeSelection extends Vue {
     this.loadLakes();
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     // Évite qu'un debounce en vol ne déclenche une requête et ne mute l'état
     // d'un composant détruit.
     if (this.searchTimer) {
@@ -212,13 +213,13 @@ export default class LakeSelection extends Vue {
       }
   }
 
-  @Watch("favoriteLakes")
+  @Watch("favoriteLakes", { deep: true })
   favoriteLakesChanged() {
     this.suggestedLakes = [];
     this.updateSuggestedLakes();
   }
 
-  @Watch("selectedLakes")
+  @Watch("selectedLakes", { deep: true })
   updateSelectedLakeLabel() {
     this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
     if (this.selectedLakesId.length == 1) {
@@ -426,7 +427,7 @@ export default class LakeSelection extends Vue {
         // vers le téléchargement d'un pack, la recherche par nom étant tout
         // aussi bloquée sans données locales.
         this.pendingPin = null;
-        Helpers.offlineAttributionAlert(this.$modal, () => this.$router.push({ name: "offline-areas" }));
+        Helpers.offlineAttributionAlert(() => this.$router.push({ name: "offline-areas" }));
       });
   }
 

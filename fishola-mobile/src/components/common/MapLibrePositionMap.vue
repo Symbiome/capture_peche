@@ -33,13 +33,14 @@
 
 <script lang="ts">
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
-@Component({ components: { BaseLayerToggle } })
+@Component({ emits: ["dragend", "position"], components: { BaseLayerToggle } })
 export default class MapLibrePositionMap extends Vue {
     @Prop({ default: null }) lat: number | null;
     @Prop({ default: null }) lng: number | null;
@@ -58,7 +59,7 @@ export default class MapLibrePositionMap extends Vue {
         this.$nextTick(() => this.init());
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         this.marker?.remove();
         this.marker = null;
         this.detachHydroHover?.();
@@ -102,7 +103,7 @@ export default class MapLibrePositionMap extends Vue {
             this.marker.setLngLat([lng, lat]);
             return;
         }
-        this.marker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected, draggable: this.editable })
+        this.marker = markRaw(new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected, draggable: this.editable }))
             .setLngLat([lng, lat])
             .addTo(this.map);
         if (this.editable) {

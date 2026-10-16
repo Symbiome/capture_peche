@@ -39,7 +39,8 @@
 import Helpers from "@/services/Helpers";
 import { CARNET_COLORS } from "@/services/CarnetPalette";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { StatusBar } from "@capacitor/status-bar";
 
 @Component
@@ -49,25 +50,25 @@ export default class Toaster extends Vue {
   message: string = "";
 
   mounted() {
-    this.$root.$on("toaster-error", (text: string, durationArg?: number) => {
+    EventBus.on("toaster-error", (text: string, durationArg?: number) => {
       const duration = durationArg || 2000;
       this.newError(text, duration);
     });
-    this.$root.$on("toaster-warning", (text: string, durationArg?: number) => {
+    EventBus.on("toaster-warning", (text: string, durationArg?: number) => {
       const duration = durationArg || 2000;
       this.newWarning(text, duration);
     });
-    this.$root.$on("toaster-success", (text: string, durationArg?: number) => {
+    EventBus.on("toaster-success", (text: string, durationArg?: number) => {
       const duration = durationArg || 2000;
       this.newSuccess(text, duration);
     });
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     console.debug("Destroy toaster");
-    this.$root.$off("toaster-error");
-    this.$root.$off("toaster-warning");
-    this.$root.$off("toaster-success");
+    EventBus.off("toaster-error");
+    EventBus.off("toaster-warning");
+    EventBus.off("toaster-success");
   }
 
   newError(text: string, duration: number) {

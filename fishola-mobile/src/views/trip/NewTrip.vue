@@ -75,7 +75,7 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 

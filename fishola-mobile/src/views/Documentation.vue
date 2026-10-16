@@ -91,7 +91,8 @@ import DocumentationService from "@/services/DocumentationService";
 import TripsService from "@/services/TripsService";
 import { DocumentationLight, Editorial } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
@@ -129,7 +130,7 @@ export default class DocumentationView extends Vue {
   }
 
   documentationsLoaded(docs: DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, "name");
+    const sortedDocs = orderBy(docs, "name");
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 

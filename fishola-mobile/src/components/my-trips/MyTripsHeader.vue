@@ -50,9 +50,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component
+@Component({ emits: ["exportSelectedTrips", "reverseSortOrder"] })
 export default class MyTripsHeader extends Vue {
   @Prop() offline!: boolean;
   @Prop() count!: number;

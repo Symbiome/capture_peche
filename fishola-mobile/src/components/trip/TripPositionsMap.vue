@@ -59,9 +59,10 @@
 
 <script lang="ts">
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   addCatchPinIcon,
@@ -98,7 +99,7 @@ export interface TripPositionsCatchPoint {
   lng: number;
 }
 
-@Component({ components: { BaseLayerToggle } })
+@Component({ emits: ["end-position-picked"], components: { BaseLayerToggle } })
 export default class TripPositionsMap extends Vue {
   @Prop() beginLatitude?: number;
   @Prop() beginLongitude?: number;
@@ -156,7 +157,7 @@ export default class TripPositionsMap extends Vue {
     }
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.beginMarker?.remove();
     this.endMarker?.remove();
     this.detachHydroHover?.();
@@ -182,7 +183,7 @@ export default class TripPositionsMap extends Vue {
     this.refreshMarkers();
   }
 
-  @Watch('catches')
+  @Watch('catches', { deep: true })
   onCatchesChanged() {
     if (!this.map) {
       return;
@@ -395,7 +396,7 @@ export default class TripPositionsMap extends Vue {
       if (this.beginMarker) {
         this.beginMarker.setLngLat([this.beginLongitude!, this.beginLatitude!]);
       } else {
-        this.beginMarker = new maplibregl.Marker({ color: BEGIN_COLOR })
+        this.beginMarker = markRaw(new maplibregl.Marker({ color: BEGIN_COLOR }))
           .setLngLat([this.beginLongitude!, this.beginLatitude!])
           .addTo(this.map);
         this.beginMarker.getElement().setAttribute('title', 'Point de départ');
@@ -414,7 +415,7 @@ export default class TripPositionsMap extends Vue {
       this.endMarker.setLngLat([lng, lat]);
       return;
     }
-    this.endMarker = new maplibregl.Marker({ color: END_COLOR, draggable: this.editable })
+    this.endMarker = markRaw(new maplibregl.Marker({ color: END_COLOR, draggable: this.editable }))
       .setLngLat([lng, lat])
       .addTo(this.map);
     this.endMarker.getElement().setAttribute('title', 'Point de fin');

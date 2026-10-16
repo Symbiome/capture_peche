@@ -264,7 +264,9 @@ import FormTextarea from "@/components/common/FormTextarea.vue";
 import PicturePreview from "@/components/trip/PicturePreview.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
+import EventBus from "@/services/EventBus";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import Constants from "../../services/Constants";
@@ -472,7 +474,6 @@ export default class EditCatchView extends Vue {
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
-                this.$modal,
                 "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
                 "La position n'est pas activée"
               );
@@ -599,7 +600,7 @@ export default class EditCatchView extends Vue {
         this.allSpeciesWithAliases.push(customSpecies);
       });
     }
-    this.allSpeciesWithAliases = Vue.lodash.orderBy(
+    this.allSpeciesWithAliases = orderBy(
       this.allSpeciesWithAliases,
       "name"
     );
@@ -853,7 +854,7 @@ export default class EditCatchView extends Vue {
       this.newTakenPictures.unshift(pictureInDb);
       this.focusedPicSrc = pictureInDb.content;
     } else {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Cette photo est déjà dans votre gallerie"
       );
@@ -1007,7 +1008,7 @@ export default class EditCatchView extends Vue {
     }
 
     if (hasError) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         this.caughtAtError || "Vous devez renseigner les champs obligatoires"
       );
@@ -1042,7 +1043,7 @@ export default class EditCatchView extends Vue {
       return true;
     }
     const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-    return Helpers.confirmSizeAboveMax(this.$modal, this.aCatch.size, maxSize);
+    return Helpers.confirmSizeAboveMax(this.aCatch.size, maxSize);
   }
 
   focusSizeField() {
@@ -1088,12 +1089,12 @@ export default class EditCatchView extends Vue {
       (s) => s.id === this.aCatch.speciesId
     );
     if (species && species.mandatoryReport) {
-      await Helpers.declareCatchAlert(this.$modal, species.reportLink);
+      await Helpers.declareCatchAlert(species.reportLink);
     }
   }
 
   deleteCatch() {
-    Helpers.confirm(this.$modal, "Voulez-vous supprimer la capture ?").then(
+    Helpers.confirm("Voulez-vous supprimer la capture ?").then(
       () => {
         TripsService.deleteCatch(this.tripId, this.catchId, this.leavePage);
       }

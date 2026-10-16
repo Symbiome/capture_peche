@@ -25,9 +25,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component
+@Component({ emits: ["goProfile"] })
 export default class Avatar extends Vue {
 
   @Prop() initials:string;

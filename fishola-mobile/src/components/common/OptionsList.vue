@@ -39,9 +39,9 @@
 <script lang="ts">
 import OptionItem from "@/pojos/OptionItem";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
-@Component
+@Component({ emits: ["item-selected"] })
 export default class OptionsList extends Vue {
   @Prop() items: OptionItem[];
   itemSelected: OptionItem | null = null;
@@ -51,7 +51,7 @@ export default class OptionsList extends Vue {
     this.selectFirstItem();
   }
 
-  @Watch("items")
+  @Watch("items", { deep: true })
   selectFirstItem() {
     this.isLoading = true;
     if (this.items) {

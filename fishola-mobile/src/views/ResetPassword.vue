@@ -53,7 +53,7 @@
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import ProfileService from "@/services/ProfileService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import router from "../router";
 import { RouterUtils } from "../router/RouterUtils";
 

@@ -4,7 +4,7 @@ module.exports = {
     node: true,
     es2022: true
   },
-  extends: ["plugin:vue/essential", "eslint:recommended", "@vue/typescript"],
+  extends: ["plugin:vue/vue3-essential", "eslint:recommended", "@vue/typescript"],
   rules: {
     "no-console": "off",
     "no-unused-vars": "off",

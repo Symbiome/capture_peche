@@ -47,7 +47,8 @@ import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.v
 import FishingLicenceService from "@/services/FishingLicenceService";
 import TripsService from "@/services/TripsService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
 
 @Component({
@@ -82,7 +83,7 @@ export default class FishingLicencesView extends Vue {
 
   loadLicences(licences: LicenceResponseBean[]) {
     this.licences = [];
-    const sortedLicences = Vue.lodash.orderBy(licences, "name");
+    const sortedLicences = orderBy(licences, "name");
     sortedLicences.forEach(licence => this.licences.push(licence));
   }
 

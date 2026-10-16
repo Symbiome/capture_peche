@@ -76,7 +76,7 @@ import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import router from "../../router";
 
 @Component({
@@ -128,7 +128,7 @@ export default class TripCatchsView extends Vue {
     this.ready = true;
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     clearInterval(this.interval);
   }
 
@@ -167,7 +167,6 @@ export default class TripCatchsView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

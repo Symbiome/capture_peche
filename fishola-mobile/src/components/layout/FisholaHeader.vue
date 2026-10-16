@@ -46,7 +46,8 @@ import ProfileService from "@/services/ProfileService";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
@@ -73,7 +74,7 @@ export default class FisholaHeader extends Vue {
   }
 
   goProfile() {
-    this.$root.$emit("close-feedback");
+    EventBus.emit("close-feedback");
     RouterUtils.pushRouteNoDuplicate(this.$router, "/account");
   }
 }

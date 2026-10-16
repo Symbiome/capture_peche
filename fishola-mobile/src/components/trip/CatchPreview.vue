@@ -79,10 +79,11 @@ import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 import Constants from "@/services/Constants";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import moment from "moment";
 
 @Component({
+  emits: ["openCatch"],
   components: {
     PicturePreview,
     Top,

@@ -21,7 +21,7 @@
 <!--
   Export PDF d'une ou plusieurs sorties (#173) : carte (début/fin/captures),
   liste des prises et leurs photos, technique(s), durée. Ouvert via
-  l'évènement `$root` `open-trip-pdf-export` (même pattern que
+  l'évènement `open-trip-pdf-export` de l'`EventBus` (même pattern que
   BadgeShareCard.vue, #146) avec la liste des identifiants de sorties à
   exporter, depuis EditTrip.vue (une sortie) ou MyTrips.vue (une sélection).
   La génération se fait entièrement côté client (jsPDF), sans nouvel appel
@@ -108,7 +108,8 @@ import TripDates from "@/services/TripDates";
 
 import { jsPDF } from "jspdf";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 interface NormalizedImage {
   dataUrl: string;
@@ -142,11 +143,11 @@ export default class TripPdfExportCard extends Vue {
   private cursorY = MARGIN_MM;
 
   mounted() {
-    this.$root.$on("open-trip-pdf-export", this.open);
+    EventBus.on("open-trip-pdf-export", this.open);
   }
 
-  beforeDestroy() {
-    this.$root.$off("open-trip-pdf-export", this.open);
+  beforeUnmount() {
+    EventBus.off("open-trip-pdf-export", this.open);
   }
 
   /** @param tripIds Identifiants des sorties à exporter (une seule = export simple, plusieurs = fusionnées en un PDF, #173). */
@@ -186,7 +187,7 @@ export default class TripPdfExportCard extends Vue {
       await this.generatePdf();
     } catch (error) {
       console.error("Erreur lors de la génération du PDF", error);
-      this.$root.$emit("toaster-error", "Impossible de générer le PDF");
+      EventBus.emit("toaster-error", "Impossible de générer le PDF");
     } finally {
       this.generating = false;
       this.currentTrip = null;

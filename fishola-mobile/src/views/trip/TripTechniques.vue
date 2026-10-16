@@ -70,7 +70,8 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
@@ -138,7 +139,7 @@ export default class TripTechniquesView extends Vue {
 
     if (this.trip.techniqueIds.length == 0) {
       hasError = true;
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Vous devez sélectionner au moins une technique"
       );
@@ -165,7 +166,6 @@ export default class TripTechniquesView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

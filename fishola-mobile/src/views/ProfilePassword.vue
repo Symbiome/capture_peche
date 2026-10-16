@@ -81,7 +81,8 @@ import { UpdatePasswordBean } from "@/pojos/BackendPojos";
 
 import ProfileService from "../services/ProfileService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import router from "../router";
@@ -124,7 +125,7 @@ export default class ProfilePasswordView extends Vue {
   }
 
   saved() {
-    this.$root.$emit("toaster-success", "Mot de passe mis à jour");
+    EventBus.emit("toaster-success", "Mot de passe mis à jour");
     this.backToProfile();
   }
 
@@ -136,7 +137,7 @@ export default class ProfilePasswordView extends Vue {
     if (response.status == 400) {
       this.validationErrors = response.content;
     } else {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Erreur technique, merci de réessayer plus tard"
       );

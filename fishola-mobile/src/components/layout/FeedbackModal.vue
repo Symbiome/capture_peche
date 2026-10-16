@@ -113,7 +113,8 @@ import FeedbackService from "@/services/FeedbackService";
 
 import html2canvas from "html2canvas";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { Device } from "@capacitor/device";
 
 @Component({
@@ -154,13 +155,13 @@ export default class FeedbackModal extends Vue {
   }
 
   mounted() {
-    this.$root.$on("open-feedback", event => this.openFeedback(event));
-    this.$root.$on("close-feedback", this.closeFeedback);
+    EventBus.on("open-feedback", event => this.openFeedback(event));
+    EventBus.on("close-feedback", this.closeFeedback);
   }
 
-  beforeDestroy() {
-    this.$root.$off("open-feedback");
-    this.$root.$off("close-feedback");
+  beforeUnmount() {
+    EventBus.off("open-feedback");
+    EventBus.off("close-feedback");
   }
 
   openFeedback(feedbackType: string) {
@@ -276,7 +277,7 @@ export default class FeedbackModal extends Vue {
     this.model.location = window.location.href;
     this.model.device = this.device;
     FeedbackService.sendFeedback(this.model).then(() => {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         "Votre retour a été enregistré, merci"
       );

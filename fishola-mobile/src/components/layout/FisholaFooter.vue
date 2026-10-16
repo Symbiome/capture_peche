@@ -97,9 +97,11 @@ import Helpers from "@/services/Helpers";
 import { RouterUtils } from "@/router/RouterUtils";
 import FooterButton from "@/components/layout/FooterButton.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
+  emits: ["backButtonClicked", "buttonClicked", "deleteClicked", "onBackButton"],
   components: {
     FooterButton,
   },
@@ -158,7 +160,6 @@ export default class FisholaFooter extends Vue {
 
   logout() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vous déconnecter ?",
       "Déconnexion"
     ).then(() => {
@@ -168,7 +169,6 @@ export default class FisholaFooter extends Vue {
 
   promptLogoutWithRunningTrip() {
     Helpers.confirm(
-      this.$modal,
       "Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?",
       "Déconnexion"
     ).then(() => {
@@ -192,7 +192,7 @@ export default class FisholaFooter extends Vue {
 
   logguedOut() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
-    this.$root.$emit("loggued-out");
+    EventBus.emit("loggued-out");
   }
 
   goBack() {
@@ -209,7 +209,7 @@ export default class FisholaFooter extends Vue {
 
   goCredits() {
     RouterUtils.pushRouteNoDuplicate(this.$router, "/credits");
-    this.$root.$emit("close-feedback");
+    EventBus.emit("close-feedback");
   }
 
   goDocumentation() {
@@ -229,12 +229,11 @@ export default class FisholaFooter extends Vue {
   }
 
   openFeedback() {
-    this.$root.$emit("open-feedback");
+    EventBus.emit("open-feedback");
   }
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }
