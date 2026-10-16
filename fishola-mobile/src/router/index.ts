@@ -323,20 +323,17 @@ const router = createRouter({
 });
 
 // Protect routes according to authentication status
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   if (to.meta && to.meta.public) {
-    next();
-  } else {
-    ProfileService.getProfile().then(
-      (_profile) => {
-        next();
-      },
-      (_status) => {
-        console.error("Route non autorisée : ", to.name);
-        next("/login");
-      }
-    );
+    return true;
   }
+  return ProfileService.getProfile().then(
+    (_profile) => true,
+    (_status) => {
+      console.error("Route non autorisée : ", to.name);
+      return "/login";
+    }
+  );
 });
 
 export default router;

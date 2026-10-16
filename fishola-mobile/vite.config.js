@@ -49,11 +49,11 @@ export default defineConfig( ({mode}) => {
     },
     build: {
       // Cible de compilation explicite, tenue à la main avec .browserslistrc :
-      // esbuild ne lit PAS browserslist, les deux se règlent séparément et
+      // Oxc (transpileur de Vite 8) ne lit PAS browserslist, les deux se règlent séparément et
       // divergeraient sans cette note. Les versions ci-dessous sont le plancher
       // du parc visé (cf. l'en-tête de .browserslistrc pour le raisonnement).
       //
-      // On liste des navigateurs plutôt qu'un millésime `esNNNN` : esbuild prend
+      // On liste des navigateurs plutôt qu'un millésime `esNNNN` : Oxc prend
       // l'intersection de la liste, donc « safari15 » dit exactement ce qu'on
       // supporte, là où « es2020 » forcerait une transpilation plus basse que
       // nécessaire sans dire pour qui.

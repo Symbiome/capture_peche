@@ -1084,8 +1084,8 @@ export default class AboutView extends Vue {
 .contribute-editable {
   margin-top: 50px;
 
-  /** /deep/ permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
-  /deep/ .cards {
+  /** :deep() permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
+  :deep(.cards) {
     display: flex;
     flex-direction: row;
     justify-content: center;
