@@ -21,21 +21,27 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** « Grimpeur » (#146) : session sur un plan d'eau d'altitude moyenne supérieure au seuil. */
+/**
+ * « Grimpeur » (#146) : session sur un plan d'eau d'altitude moyenne supérieure au seuil.
+ * Preuve (#275) : la première de ces sessions (le lac et son altitude sur la carte souvenir).
+ */
 @Singleton
 public class AltitudeThresholdStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -44,7 +50,17 @@ public class AltitudeThresholdStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
+        return proof(badge, userId).map(proof -> UnlockCandidate.unlocked(Map.of(), proof));
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proof(badge, userId);
+    }
+
+    private Optional<UnlockProof> proof(GamificationDao.BadgeRow badge, UUID userId) {
         double minAltitude = RuleParams.doubleParam(badge.ruleParams(), "minAltitude", Double.MAX_VALUE);
-        return dao.hasTripAboveAltitude(userId, minAltitude) ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
+        return proofDao.findFirstTripAboveAltitude(userId, minAltitude);
     }
 }

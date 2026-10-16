@@ -17,6 +17,14 @@ sur les ports que vous aurez alignés avec leur mapping (voir §2).
   `pipx install ansible-core`).
 - Ce dépôt cloné sur le serveur.
 
+- Installer pip & ansible sur le serveur sans droit sudo.
+bash```
+curl -o get-pip.py https://bootstrap.pypa.io/get-pip.py
+python3 -m venv ~/.venvs/ansible
+bash .venvs/ansible/bin/python3 get-pip.py
+bash .venvs/ansible/bin/pip install ansible-core
+```
+
 ## 1. Récupérer le mot de passe du vault
 
 Les secrets (mots de passe DB, clé JWT, clé Django...) sont dans

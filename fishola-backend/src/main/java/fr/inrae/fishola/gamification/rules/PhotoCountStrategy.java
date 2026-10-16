@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -31,12 +33,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** « Photographe » (#146) : au moins {@code threshold} captures avec au moins une photo. */
+/**
+ * « Photographe » (#146) : au moins {@code threshold} captures avec au moins une photo.
+ * Preuve (#275) : les {@code threshold} premières captures avec photo (mosaïque).
+ */
 @Singleton
 public class PhotoCountStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -45,10 +53,21 @@ public class PhotoCountStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
+        int threshold = threshold(badge);
         int count = dao.countCatchesWithPhoto(userId);
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("photoCount", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("photoCount", count),
+                        proofDao.findCatchesWithPhoto(userId, threshold)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proofDao.findCatchesWithPhoto(userId, threshold(badge)).nonEmpty();
+    }
+
+    private int threshold(GamificationDao.BadgeRow badge) {
+        return RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
     }
 }

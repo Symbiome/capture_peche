@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -36,13 +38,17 @@ import java.util.UUID;
  * « Navigateur » (#146) : sorties en bateau (trip.type = 'Craft') sur l'un des grands
  * cours d'eau listés. Liste explicitement « à cadrer avec le MO » -- livré {@code active
  * = false} avec {@code rule_params.waterEntityNames} vide (cf. migration V2.2.0) ; cette
- * stratégie reste fonctionnelle, prête pour l'activation.
+ * stratégie reste fonctionnelle, prête pour l'activation. Preuve (#275) : la première
+ * sortie en bateau sur chacun de ces cours d'eau.
  */
 @Singleton
 public class BoatRiverSessionsStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -58,7 +64,18 @@ public class BoatRiverSessionsStrategy implements BadgeRuleStrategy {
         }
         int count = dao.countBoatTripsOnWaterEntities(userId, waterEntityNames);
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessionCount", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessionCount", count),
+                        proofDao.findFirstBoatTripPerWaterEntity(userId, waterEntityNames)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        List<String> waterEntityNames = RuleParams.stringListParam(badge.ruleParams(), "waterEntityNames");
+        if (waterEntityNames.isEmpty()) {
+            return Optional.empty();
+        }
+        return proofDao.findFirstBoatTripPerWaterEntity(userId, waterEntityNames).nonEmpty();
     }
 }

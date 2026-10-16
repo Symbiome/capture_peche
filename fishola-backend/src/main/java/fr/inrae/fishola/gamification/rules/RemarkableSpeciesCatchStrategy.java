@@ -21,13 +21,16 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,13 +38,14 @@ import java.util.UUID;
  * « Espèce remarquable » (#146) : capture d'une espèce de la liste {@code
  * rule_params.speciesNames}. Liste explicitement « à cadrer avec le MO » -- le badge est
  * livré {@code active = false} (cf. migration V2.2.0) tant qu'elle n'est pas validée ;
- * cette stratégie reste fonctionnelle, prête pour l'activation.
+ * cette stratégie reste fonctionnelle, prête pour l'activation. Preuve (#275) : la
+ * première capture d'une de ces espèces.
  */
 @Singleton
 public class RemarkableSpeciesCatchStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -50,10 +54,20 @@ public class RemarkableSpeciesCatchStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
+        return proof(badge, userId).map(proof -> UnlockCandidate.unlocked(Map.of(), proof));
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proof(badge, userId);
+    }
+
+    private Optional<UnlockProof> proof(GamificationDao.BadgeRow badge, UUID userId) {
         List<String> speciesNames = RuleParams.stringListParam(badge.ruleParams(), "speciesNames");
         if (speciesNames.isEmpty()) {
             return Optional.empty();
         }
-        return dao.hasCatchOfSpecies(userId, speciesNames) ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
+        return proofDao.findFirstCatchOfSpecies(userId, speciesNames);
     }
 }

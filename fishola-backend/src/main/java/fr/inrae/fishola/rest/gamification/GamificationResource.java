@@ -21,12 +21,17 @@ package fr.inrae.fishola.rest.gamification;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeSouvenirDao;
 import fr.inrae.fishola.gamification.GamificationDao;
+import fr.inrae.fishola.gamification.GamificationEngine;
+import fr.inrae.fishola.gamification.UnlockProof;
 import fr.inrae.fishola.rest.AbstractFisholaResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -45,6 +50,12 @@ public class GamificationResource extends AbstractFisholaResource {
 
     @Inject
     protected GamificationDao gamificationDao;
+
+    @Inject
+    protected GamificationEngine gamificationEngine;
+
+    @Inject
+    protected BadgeSouvenirDao badgeSouvenirDao;
 
     @GET
     @Path("/me/badges")
@@ -66,6 +77,7 @@ public class GamificationResource extends AbstractFisholaResource {
             return unlocks.stream().map(unlock -> {
                 BadgeBean bean = toBean(badge);
                 bean.unlocked = true;
+                bean.unlockId = unlock.id();
                 bean.unlockedAt = unlock.unlockedAt();
                 bean.context = unlock.context();
                 bean.competitionId = unlock.competitionId();
@@ -76,6 +88,25 @@ public class GamificationResource extends AbstractFisholaResource {
         }).toList();
 
         return wrapEntity(badges, userIdAndRenewal);
+    }
+
+    /**
+     * Carte souvenir d'un déblocage (#275), appelée au clic sur un badge débloqué plutôt
+     * que d'alourdir {@link #myBadges} : les captures et sorties qui ont valu le badge.
+     * 404 si le déblocage n'existe pas ou appartient à un autre pêcheur ; seules les
+     * données dont le pêcheur connecté est propriétaire sont renvoyées.
+     */
+    @GET
+    @Path("/me/badges/unlocks/{unlockId}/souvenir")
+    public Response mySouvenir(@PathParam("unlockId") UUID unlockId) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        GamificationDao.UnlockRow unlock = gamificationDao.findUnlockOfUser(unlockId, userId)
+                .orElseThrow(() -> new NotFoundException("Déblocage inconnu"));
+        UnlockProof proof = gamificationDao.findBadge(unlock.badgeId())
+                .map(badge -> gamificationEngine.proofOf(badge, unlock, userId))
+                .orElse(UnlockProof.NONE);
+        return wrapEntity(badgeSouvenirDao.resolve(unlockId, userId, proof), userIdAndRenewal);
     }
 
     static BadgeBean toBean(GamificationDao.BadgeRow badge) {

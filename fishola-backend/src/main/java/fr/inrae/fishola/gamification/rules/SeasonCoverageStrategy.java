@@ -21,21 +21,27 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** « Quatre saisons » (#146) : au moins une sortie dans chacune des 4 saisons. */
+/**
+ * « Quatre saisons » (#146) : au moins une sortie dans chacune des 4 saisons. Preuve
+ * (#275) : la première sortie de chaque saison.
+ */
 @Singleton
 public class SeasonCoverageStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -45,6 +51,16 @@ public class SeasonCoverageStrategy implements BadgeRuleStrategy {
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
         int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", 4);
-        return dao.countDistinctSeasons(userId) >= threshold ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
+        UnlockProof firstTripPerSeason = proofDao.findFirstTripPerSeason(userId);
+        int seasonCount = firstTripPerSeason.tripIds().size();
+        return seasonCount >= threshold
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("seasonCount", seasonCount), firstTripPerSeason))
+                : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proofDao.findFirstTripPerSeason(userId).nonEmpty();
     }
 }

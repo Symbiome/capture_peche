@@ -41,6 +41,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -52,6 +55,10 @@ import java.util.UUID;
  * réévaluation est idempotente (aucun doublon, mise à jour en place pour les badges
  * "record"). Auto-suffisant : provisionne son propre pêcheur pour ne pas être perturbé
  * par les sorties créées par d'autres suites de test dans le même conteneur.
+ *
+ * <p>Prises « preuves » (#275) : un test par famille de badges vérifie que le contexte du
+ * déblocage désigne les bonnes sorties/captures ; chacun provisionne son propre pêcheur
+ * ({@link #newAngler}) pour ne pas dépendre de l'ordre d'exécution.
  */
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -81,6 +88,8 @@ class GamificationEngineTest {
     private UUID sandreId;
     private UUID carpeCommuneId;
     private UUID ombreCommunId;
+    private UUID altitudeLakeId;
+    private final List<UUID> anglerIds = new ArrayList<>();
 
     @BeforeAll
     @Transactional
@@ -97,33 +106,57 @@ class GamificationEngineTest {
         sandreId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Sandre'").get("id", UUID.class);
         carpeCommuneId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Carpe commune'").get("id", UUID.class);
         ombreCommunId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Ombre commun'").get("id", UUID.class);
+        altitudeLakeId = ctx.fetchOne("INSERT INTO water_entity (name, export_as, water_entity_code, kind, altitude_moyenne, geom) "
+                        + "VALUES ('Lac d''altitude #275', 'LACALT275', 'LALT', 'STILL', 1500, "
+                        + "ST_SetSRID(ST_MakePoint(6.9, 45.9), 4326)) RETURNING id")
+                .get("id", UUID.class);
     }
 
     @AfterAll
     @Transactional
     void cleanup() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        ctx.execute("DELETE FROM gamification_badge_unlock WHERE fishola_user_id = ?", userId);
-        ctx.execute("DELETE FROM catch WHERE trip_id IN (SELECT id FROM trip WHERE owner_id = ?)", userId);
-        ctx.execute("DELETE FROM trip WHERE owner_id = ?", userId);
-        ctx.execute("DELETE FROM fishola_user WHERE id = ?", userId);
+        List<UUID> owners = new ArrayList<>(anglerIds);
+        owners.add(userId);
+        for (UUID owner : owners) {
+            ctx.execute("DELETE FROM gamification_badge_unlock WHERE fishola_user_id = ?", owner);
+            ctx.execute("DELETE FROM catch WHERE trip_id IN (SELECT id FROM trip WHERE owner_id = ?)", owner);
+            ctx.execute("DELETE FROM trip WHERE owner_id = ?", owner);
+            ctx.execute("DELETE FROM fishola_user WHERE id = ?", owner);
+        }
+        ctx.execute("DELETE FROM water_entity WHERE id = ?", altitudeLakeId);
+    }
+
+    /** Pêcheur dédié à un test (#275), supprimé avec ses sorties dans {@link #cleanup}. */
+    private UUID newAngler() {
+        UUID anglerId = UUID.randomUUID();
+        DSL.using(dataSource, SQLDialect.POSTGRES).execute(
+                "INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
+                        + "VALUES (?, 'Souvenir', 'Test', ?, 'x', now(), ?)",
+                anglerId, "souvenir-" + anglerId + "@fishola.test", "souvenir-" + anglerId);
+        anglerIds.add(anglerId);
+        return anglerId;
     }
 
     private UUID createTrip(LocalDateTime begin, LocalDateTime end) {
+        return createTrip(userId, waterEntityId, begin, end);
+    }
+
+    private UUID createTrip(UUID ownerId, UUID onWaterEntityId, LocalDateTime begin, LocalDateTime end) {
         Trip trip = new Trip();
         trip.setCreatedOn(LocalDateTime.now());
-        trip.setOwnerId(userId);
+        trip.setOwnerId(ownerId);
         trip.setMode(TripMode.Afterwards);
         trip.setName("Sortie de test #146");
         trip.setType(TripType.Border);
-        trip.setWaterEntityId(waterEntityId);
+        trip.setWaterEntityId(onWaterEntityId);
         trip.setSource(DeviceType.web);
         trip.setBeginTimestamp(begin);
         trip.setEndTimestamp(end);
         return tripsDao.create(trip);
     }
 
-    private void addCatch(UUID tripId, UUID speciesId, LocalDateTime catchTimestamp, Integer size) {
+    private UUID addCatch(UUID tripId, UUID speciesId, LocalDateTime catchTimestamp, Integer size) {
         Catch aCatch = new Catch();
         aCatch.setTripId(tripId);
         aCatch.setCreatedOn(LocalDateTime.now());
@@ -131,8 +164,9 @@ class GamificationEngineTest {
         aCatch.setSpeciesId(speciesId);
         aCatch.setTechniqueId(techniqueCoupId);
         aCatch.setSize(size);
+        aCatch.setQuantity(1);
         aCatch.setKept(true);
-        catchsDao.create(aCatch);
+        return catchsDao.create(aCatch);
     }
 
     @Test
@@ -205,6 +239,171 @@ class GamificationEngineTest {
         Optional<Integer> newSize = dao.findUnlock(recordBadgeId, userId, (short) 0)
                 .map(u -> u.context().get("sizeCm").asInt());
         Assertions.assertEquals(Optional.of(30), newSize, "le contexte du badge record doit refléter la nouvelle meilleure taille");
+    }
+
+    @Test
+    @Transactional
+    void timeWindowBadgeRemembersTheTripAndItsFirstCatch() {
+        UUID angler = newAngler();
+        LocalDateTime begin = LocalDateTime.of(2026, 6, 10, 8, 0);
+        UUID tripId = createTrip(angler, waterEntityId, begin, begin.plusHours(3));
+        UUID firstCatchId = addCatch(tripId, perceId, begin.plusMinutes(5), 25);
+        addCatch(tripId, brochetId, begin.plusMinutes(40), 60);
+
+        engine.evaluateForUser(angler);
+
+        UnlockProof proof = proofOf("PRISE_ECLAIR", angler, (short) 0);
+        Assertions.assertEquals(List.of(tripId), proof.tripIds());
+        Assertions.assertEquals(List.of(firstCatchId), proof.catchIds(), "la 1ère capture, pas la plus belle");
+    }
+
+    @Test
+    @Transactional
+    void recordBadgeRemembersTheRecordCatchAndRefreshesIt() {
+        UUID angler = newAngler();
+        LocalDateTime begin = LocalDateTime.of(2026, 6, 11, 9, 0);
+        UUID firstTripId = createTrip(angler, waterEntityId, begin, begin.plusHours(2));
+        UUID firstRecordId = addCatch(firstTripId, sandreId, begin.plusMinutes(30), 40);
+        engine.evaluateForUser(angler);
+        Assertions.assertEquals(List.of(firstRecordId), proofOf("RECORD_TAILLE", angler, (short) 0).catchIds());
+
+        UUID secondTripId = createTrip(angler, waterEntityId, begin.plusDays(1), begin.plusDays(1).plusHours(2));
+        UUID newRecordId = addCatch(secondTripId, sandreId, begin.plusDays(1).plusMinutes(30), 52);
+        engine.evaluateForUser(angler);
+
+        UnlockProof proof = proofOf("RECORD_TAILLE", angler, (short) 0);
+        Assertions.assertEquals(List.of(newRecordId), proof.catchIds(), "la preuve suit le nouveau record");
+        Assertions.assertEquals(List.of(secondTripId), proof.tripIds());
+    }
+
+    @Test
+    @Transactional
+    void speciesTierRemembersTheCrossingCatchThenTheBiggestOfTheYear() {
+        UUID angler = newAngler();
+        int year = Year.now().getValue();
+        int[] sizes = {40, 70, 50, 45, 55};
+        List<UUID> catchIds = new ArrayList<>();
+        for (int i = 0; i < sizes.length; i++) {
+            LocalDateTime begin = LocalDateTime.of(year, 1, 10 + i, 9, 0);
+            UUID tripId = createTrip(angler, waterEntityId, begin, begin.plusHours(2));
+            catchIds.add(addCatch(tripId, brochetId, begin.plusMinutes(30), sizes[i]));
+        }
+
+        engine.evaluateForUser(angler);
+
+        UnlockProof proof = proofOf("ESPECE_BROCHET_1", angler, (short) year);
+        Assertions.assertEquals(List.of(catchIds.get(4), catchIds.get(1)), proof.catchIds(),
+                "la 5e capture (franchit le palier) puis la plus grande de l'année (70 cm)");
+        Assertions.assertEquals(2, proof.tripIds().size());
+    }
+
+    @Test
+    @Transactional
+    void collectorMosaicHasOneCatchPerSpecies() {
+        UUID angler = newAngler();
+        LocalDateTime begin = LocalDateTime.of(2026, 6, 12, 8, 0);
+        UUID tripId = createTrip(angler, waterEntityId, begin, begin.plusHours(4));
+        addCatch(tripId, perceId, begin.plusMinutes(10), 20);
+        UUID biggestPerchId = addCatch(tripId, perceId, begin.plusMinutes(20), 32);
+        addCatch(tripId, brochetId, begin.plusMinutes(30), 60);
+        addCatch(tripId, truiteFarioId, begin.plusMinutes(40), 30);
+        addCatch(tripId, sandreId, begin.plusMinutes(50), 45);
+        addCatch(tripId, carpeCommuneId, begin.plusMinutes(60), 50);
+
+        engine.evaluateForUser(angler);
+
+        UnlockProof proof = proofOf("COLLECTIONNEUR_1", angler, (short) 0);
+        Assertions.assertEquals(5, proof.catchIds().size(), "une capture par espèce");
+        Assertions.assertTrue(proof.catchIds().contains(biggestPerchId), "la plus grande perche représente l'espèce");
+    }
+
+    @Test
+    @Transactional
+    void techniqueTierRemembersTheCrossingTripAndItsBestCatch() {
+        UUID angler = newAngler();
+        UUID crossingTripId = null;
+        UUID bestCatchId = null;
+        for (int i = 0; i < 5; i++) {
+            LocalDateTime begin = LocalDateTime.of(2026, 5, 1 + i, 9, 0);
+            crossingTripId = createTrip(angler, waterEntityId, begin, begin.plusHours(2));
+            addCatch(crossingTripId, perceId, begin.plusMinutes(20), 20);
+            bestCatchId = addCatch(crossingTripId, brochetId, begin.plusMinutes(50), 65);
+        }
+
+        engine.evaluateForUser(angler);
+
+        UnlockProof proof = proofOf("TECHNIQUE_COUP_1", angler, (short) 0);
+        Assertions.assertEquals(List.of(crossingTripId), proof.tripIds(), "la 5e sortie franchit le palier");
+        Assertions.assertEquals(List.of(bestCatchId), proof.catchIds(), "sa plus belle prise");
+    }
+
+    @Test
+    @Transactional
+    void fidelityBadgesRememberTheTriggeringTrip() {
+        UUID angler = newAngler();
+        UUID tenthTripId = null;
+        for (int i = 0; i < 10; i++) {
+            LocalDateTime begin = LocalDateTime.of(2026, 3, 10 + i, 9, 0);
+            tenthTripId = createTrip(angler, waterEntityId, begin, begin.plusHours(1));
+        }
+        UUID openingDayTripId = tripIdStartingAt(angler, LocalDateTime.of(2026, 3, 14, 9, 0));
+
+        engine.evaluateForUser(angler);
+
+        Assertions.assertEquals(List.of(tenthTripId), proofOf("FIDELITE_1", angler, (short) 0).tripIds());
+        Assertions.assertEquals(List.of(tenthTripId), proofOf("PERSEVERANT", angler, (short) 0).tripIds(),
+                "10 sorties sans capture : la 10e bredouille franchit le seuil");
+        UnlockProof openingDay = proofOf("JOUR_J", angler, (short) 0);
+        Assertions.assertEquals(List.of(openingDayTripId), openingDay.tripIds(), "la sortie du jour d'ouverture");
+        Assertions.assertTrue(openingDay.catchIds().isEmpty());
+    }
+
+    @Test
+    @Transactional
+    void altitudeBadgeRemembersTheHighLakeTrip() {
+        UUID angler = newAngler();
+        LocalDateTime begin = LocalDateTime.of(2026, 8, 1, 7, 0);
+        createTrip(angler, waterEntityId, begin, begin.plusHours(2));
+        UUID highLakeTripId = createTrip(angler, altitudeLakeId, begin.plusDays(1), begin.plusDays(1).plusHours(2));
+
+        engine.evaluateForUser(angler);
+
+        Assertions.assertEquals(List.of(highLakeTripId), proofOf("GRIMPEUR", angler, (short) 0).tripIds());
+    }
+
+    @Test
+    @Transactional
+    void legacyUnlockWithoutProofIsRecomputedAndPersisted() {
+        UUID angler = newAngler();
+        LocalDateTime begin = LocalDateTime.of(2026, 6, 13, 8, 0);
+        UUID tripId = createTrip(angler, waterEntityId, begin, begin.plusHours(3));
+        UUID firstCatchId = addCatch(tripId, perceId, begin.plusMinutes(5), 25);
+        engine.evaluateForUser(angler);
+        GamificationDao.BadgeRow badge = dao.findBadgeByCode("PRISE_ECLAIR").orElseThrow();
+        DSL.using(dataSource, SQLDialect.POSTGRES).execute(
+                "UPDATE gamification_badge_unlock SET context = '{}'::jsonb WHERE badge_id = ? AND fishola_user_id = ?",
+                badge.id(), angler);
+
+        GamificationDao.UnlockRow legacyUnlock = dao.findUnlock(badge.id(), angler, (short) 0).orElseThrow();
+        UnlockProof recomputed = engine.proofOf(badge, legacyUnlock, angler);
+
+        Assertions.assertEquals(List.of(firstCatchId), recomputed.catchIds());
+        Assertions.assertEquals(List.of(firstCatchId), proofOf("PRISE_ECLAIR", angler, (short) 0).catchIds(),
+                "la preuve recalculée est persistée dans le contexte");
+    }
+
+    private UUID tripIdStartingAt(UUID ownerId, LocalDateTime begin) {
+        return DSL.using(dataSource, SQLDialect.POSTGRES).fetchOne(
+                        "SELECT id FROM trip WHERE owner_id = ? AND begin_timestamp = ?", ownerId, begin)
+                .get("id", UUID.class);
+    }
+
+    private UnlockProof proofOf(String badgeCode, UUID ownerId, short periodYear) {
+        UUID badgeId = dao.findBadgeByCode(badgeCode).orElseThrow().id();
+        GamificationDao.UnlockRow unlock = dao.findUnlock(badgeId, ownerId, periodYear)
+                .orElseThrow(() -> new AssertionError(badgeCode + " aurait dû être débloqué"));
+        Assertions.assertTrue(UnlockProof.isRecordedIn(unlock.context()), badgeCode + " : preuve absente du contexte");
+        return UnlockProof.readFrom(unlock.context());
     }
 
     private long countUnlockRows(UUID badgeId) {

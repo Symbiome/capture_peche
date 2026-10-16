@@ -22,9 +22,13 @@ package fr.inrae.fishola.gamification.rules;
  */
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fr.inrae.fishola.gamification.BadgeProofDao;
+import fr.inrae.fishola.gamification.BadgeProofDao.CatchMetric;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
+import fr.inrae.fishola.gamification.GamificationEngine;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -39,13 +43,17 @@ import java.util.UUID;
  * toutes espèces confondues pour ce badge unique) et {@code session_catch_count} (record
  * du nombre de captures en une session). Contrairement aux autres stratégies, celle-ci est
  * réévaluée même déjà débloquée : le contexte est mis à jour à chaque nouveau record battu
- * (cf. {@link GamificationEngine#evaluateForUser}).
+ * (cf. {@link GamificationEngine#evaluateForUser}). Preuve (#275), rafraîchie avec le
+ * record : la capture record, ou la sortie record et sa plus belle prise.
  */
 @Singleton
 public class MetricRecordStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -54,17 +62,32 @@ public class MetricRecordStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        String scope = RuleParams.stringParam(badge.ruleParams(), "scope", "species_size");
-        return switch (scope) {
-            case "species_weight" -> evaluatePerSpecies(badge, userId, dao.maxWeightPerSpecies(userId), "weightG");
+        return switch (scope(badge)) {
+            case "species_weight" -> evaluatePerSpecies(badge, userId, dao.maxWeightPerSpecies(userId), "weightG",
+                    CatchMetric.WEIGHT);
             case "session_catch_count" -> evaluateSessionCatchCount(badge, userId);
-            default -> evaluatePerSpecies(badge, userId, dao.maxSizePerSpecies(userId), "sizeCm");
+            default -> evaluatePerSpecies(badge, userId, dao.maxSizePerSpecies(userId), "sizeCm", CatchMetric.SIZE);
         };
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return switch (scope(badge)) {
+            case "species_weight" -> findRecordCatch(unlock, userId, CatchMetric.WEIGHT);
+            case "session_catch_count" -> proofDao.findTripWithMostCatches(userId);
+            default -> findRecordCatch(unlock, userId, CatchMetric.SIZE);
+        };
+    }
+
+    private String scope(GamificationDao.BadgeRow badge) {
+        return RuleParams.stringParam(badge.ruleParams(), "scope", "species_size");
     }
 
     /** Cherche, parmi toutes les espèces, celle dont le record vient d'être amélioré. */
     private Optional<UnlockCandidate> evaluatePerSpecies(GamificationDao.BadgeRow badge, UUID userId,
-                                                          Map<String, Integer> currentMaxPerSpecies, String valueKey) {
+                                                          Map<String, Integer> currentMaxPerSpecies, String valueKey,
+                                                          CatchMetric metric) {
         JsonNode previousContext = dao.findUnlock(badge.id(), userId, (short) 0)
                 .map(GamificationDao.UnlockRow::context).orElse(null);
         Map<String, Integer> previousPerSpecies = readPerSpeciesMap(previousContext);
@@ -87,7 +110,8 @@ public class MetricRecordStrategy implements BadgeRuleStrategy {
         newContext.put("perSpeciesMax", currentMaxPerSpecies);
         newContext.put("species", improvedSpecies);
         newContext.put(valueKey, improvedValue);
-        return Optional.of(UnlockCandidate.recordUpdate(newContext));
+        UnlockProof proof = proofDao.findRecordCatch(userId, improvedSpecies, metric).orElse(UnlockProof.NONE);
+        return Optional.of(UnlockCandidate.recordUpdate(newContext, proof));
     }
 
     private Optional<UnlockCandidate> evaluateSessionCatchCount(GamificationDao.BadgeRow badge, UUID userId) {
@@ -101,7 +125,14 @@ public class MetricRecordStrategy implements BadgeRuleStrategy {
         if (currentMax.get() <= previousValue) {
             return Optional.empty();
         }
-        return Optional.of(UnlockCandidate.recordUpdate(Map.of("catchCount", currentMax.get())));
+        UnlockProof proof = proofDao.findTripWithMostCatches(userId).orElse(UnlockProof.NONE);
+        return Optional.of(UnlockCandidate.recordUpdate(Map.of("catchCount", currentMax.get()), proof));
+    }
+
+    /** Capture record de l'espèce mémorisée dans le contexte du déblocage. */
+    private Optional<UnlockProof> findRecordCatch(GamificationDao.UnlockRow unlock, UUID userId, CatchMetric metric) {
+        String species = RuleParams.stringParam(unlock.context(), "species", null);
+        return species == null ? Optional.empty() : proofDao.findRecordCatch(userId, species, metric);
     }
 
     private Map<String, Integer> readPerSpeciesMap(JsonNode context) {

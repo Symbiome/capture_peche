@@ -21,25 +21,30 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.Basins;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-/** « Explorateur » (#146) : pêche sur au moins {@code threshold} bassins hydrographiques différents. */
+/**
+ * « Explorateur » (#146) : pêche sur au moins {@code threshold} bassins hydrographiques
+ * différents. Preuve (#275) : la première sortie dans chaque bassin (carte des milieux pêchés).
+ */
 @Singleton
 public class BasinDiversityStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -49,12 +54,28 @@ public class BasinDiversityStrategy implements BadgeRuleStrategy {
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
         int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
-        Set<String> basins = dao.distinctDepartments(userId).stream()
-                .map(Basins::basinOf)
-                .filter(java.util.Objects::nonNull)
-                .collect(Collectors.toSet());
-        return basins.size() >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("basinCount", basins.size())))
+        Map<String, UUID> firstTripPerBasin = firstTripPerBasin(userId);
+        return firstTripPerBasin.size() >= threshold
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("basinCount", firstTripPerBasin.size()),
+                        UnlockProof.ofTrips(List.copyOf(firstTripPerBasin.values()))))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return UnlockProof.ofTrips(List.copyOf(firstTripPerBasin(userId).values())).nonEmpty();
+    }
+
+    /** Première sortie dans chaque bassin, par ordre chronologique ; départements hors bassin connu ignorés. */
+    private Map<String, UUID> firstTripPerBasin(UUID userId) {
+        Map<String, UUID> result = new LinkedHashMap<>();
+        proofDao.findFirstTripPerDepartment(userId).forEach((department, tripId) -> {
+            String basin = Basins.basinOf(department);
+            if (basin != null) {
+                result.putIfAbsent(basin, tripId);
+            }
+        });
+        return result;
     }
 }

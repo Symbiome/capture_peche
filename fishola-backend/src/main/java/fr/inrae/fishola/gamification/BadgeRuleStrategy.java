@@ -40,4 +40,16 @@ public interface BadgeRuleStrategy {
      * n'est pas (encore) débloqué.
      */
     Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID fishowaUserId);
+
+    /**
+     * Recalcule les prises « preuves » (#275) d'un déblocage mémorisé avant qu'elles ne
+     * soient enregistrées dans son contexte : même requête que {@link #evaluate}, rejouée
+     * sur le millésime du déblocage ({@code unlock.periodYear()}) et, pour les records,
+     * sur l'espèce mémorisée. Vide pour les règles sans prise associée (percentile,
+     * attribution manuelle) ou si ces données ont disparu depuis.
+     */
+    default Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                            UUID fishowaUserId) {
+        return Optional.empty();
+    }
 }

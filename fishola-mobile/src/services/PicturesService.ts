@@ -23,6 +23,8 @@ import AbstractFisholaService from "@/services/AbstractFisholaService";
 import StoredPicture from "@/pojos/StoredPicture";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import TripsService from "./TripsService";
+import ShareService from "@/services/ShareService";
+import Constants from "@/services/Constants";
 
 export default class PicturesService extends AbstractFisholaService {
   constructor() {
@@ -147,6 +149,26 @@ export default class PicturesService extends AbstractFisholaService {
       return pic2.order - pic1.order;
     });
     return storedPictures as PictureContentWithOrder[];
+  }
+
+  /**
+   * Photo d'une capture en data URL (#275, comme l'export PDF #173) : photo locale si
+   * présente, sinon aperçu serveur. Une data URL n'entache pas le canvas de html2canvas.
+   */
+  static async getCatchPictureDataUrl(catchId: string, hasPicture: boolean): Promise<string | null> {
+    try {
+      const localPics = await PicturesService.getPicturesFromLocalDB(catchId);
+      if (localPics.length && localPics[0].content) {
+        return localPics[0].content;
+      }
+      if (hasPicture) {
+        const base64 = await ShareService.getBase64FromUrl(Constants.apiUrl(`/v1/pictures/${catchId}/preview`));
+        return `data:image/jpeg;base64,${base64}`;
+      }
+    } catch (e) {
+      console.error(`Impossible de charger la photo de la capture ${catchId}`, e);
+    }
+    return null;
   }
 
   static checkForPicturesToRename(map: any) {

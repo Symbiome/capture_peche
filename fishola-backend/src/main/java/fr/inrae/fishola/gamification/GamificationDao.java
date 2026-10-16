@@ -41,7 +41,8 @@ import java.util.stream.Collectors;
 /**
  * Accès base du socle de gamification (#7, construit à l'occasion de #146) : catalogue
  * des badges, déblocages, et petites requêtes d'agrégat partagées par les stratégies de
- * {@link fr.inrae.fishola.gamification.rules}. {@code rule_params}/{@code context} (jsonb)
+ * {@link fr.inrae.fishola.gamification.rules} (les sorties/captures qui justifient un
+ * déblocage, elles, relèvent de {@link BadgeProofDao}, #275). {@code rule_params}/{@code context} (jsonb)
  * sont lus/écrits en texte brut plutôt que via le type jOOQ {@code JSONB}, comme
  * {@code AuditLogDao} le fait déjà pour {@code audit_log.details}.
  */
@@ -55,7 +56,7 @@ public class GamificationDao extends AbstractFisholaDao {
                            String icon, String ruleType, JsonNode ruleParams, Integer tier,
                            boolean annualReset, boolean active) {}
 
-    public record UnlockRow(UUID badgeId, short periodYear, java.time.LocalDateTime unlockedAt,
+    public record UnlockRow(UUID id, UUID badgeId, short periodYear, java.time.LocalDateTime unlockedAt,
                             JsonNode context, UUID attributedBy, UUID competitionId,
                             String competitionName, LocalDate competitionDate) {}
 
@@ -108,7 +109,7 @@ public class GamificationDao extends AbstractFisholaDao {
 
     // --- Déblocages --------------------------------------------------------------
 
-    private static final String UNLOCK_COLUMNS = "u.badge_id, u.period_year, u.unlocked_at, "
+    private static final String UNLOCK_COLUMNS = "u.id, u.badge_id, u.period_year, u.unlocked_at, "
             + "u.context::text AS context, u.attributed_by, u.competition_id, "
             + "c.name AS competition_name, c.competition_date";
 
@@ -116,7 +117,7 @@ public class GamificationDao extends AbstractFisholaDao {
             "FROM gamification_badge_unlock u LEFT JOIN competition c ON c.id = u.competition_id";
 
     private UnlockRow toUnlockRow(Record r) {
-        return new UnlockRow(r.get("badge_id", UUID.class), r.get("period_year", Short.class),
+        return new UnlockRow(r.get("id", UUID.class), r.get("badge_id", UUID.class), r.get("period_year", Short.class),
                 r.get("unlocked_at", java.time.LocalDateTime.class),
                 parseJson(r.get("context", String.class)), r.get("attributed_by", UUID.class),
                 r.get("competition_id", UUID.class), r.get("competition_name", String.class),
@@ -136,6 +137,27 @@ public class GamificationDao extends AbstractFisholaDao {
                         badgeId, userId, periodYear)
                 .map(this::toUnlockRow))
                 .stream().findFirst();
+    }
+
+    /** Un déblocage par son identifiant (#275), uniquement s'il appartient à ce pêcheur. */
+    public Optional<UnlockRow> findUnlockOfUser(UUID unlockId, UUID userId) {
+        return withContext(ctx -> ctx.fetch(
+                        "SELECT " + UNLOCK_COLUMNS + " " + UNLOCK_FROM_JOIN_COMPETITION
+                                + " WHERE u.id = ? AND u.fishola_user_id = ?",
+                        unlockId, userId)
+                .map(this::toUnlockRow))
+                .stream().findFirst();
+    }
+
+    /**
+     * Ajoute au contexte d'un déblocage existant ses prises « preuves » recalculées après
+     * coup (#275), sans toucher aux compteurs déjà mémorisés.
+     */
+    @Transactional
+    public void addUnlockProof(UUID unlockId, UnlockProof proof) {
+        newContext().execute("UPDATE gamification_badge_unlock "
+                        + "SET context = coalesce(context, '{}'::jsonb) || ?::jsonb WHERE id = ?",
+                toJson(proof.addTo(Map.of())), unlockId);
     }
 
     public Set<UUID> unlockedBadgeIds(UUID userId, short periodYear) {
@@ -232,37 +254,6 @@ public class GamificationDao extends AbstractFisholaDao {
                 .stream().collect(Collectors.toMap(r -> r.get("species_name", String.class), r -> r.get("m", Integer.class)));
     }
 
-    /** Vrai si le premier poisson d'au moins une sortie a été capturé dans les {@code windowMinutes} suivant le début. */
-    public boolean hasFirstCatchWithinStart(UUID userId, int windowMinutes) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 FROM ("
-                        + "  SELECT t.id, min(c.catch_timestamp) AS first_catch, t.begin_timestamp "
-                        + "  FROM catch c JOIN trip t ON t.id = c.trip_id "
-                        + "  WHERE t.owner_id = ? AND c.catch_timestamp IS NOT NULL "
-                        + "  GROUP BY t.id, t.begin_timestamp"
-                        + ") x WHERE first_catch <= begin_timestamp + (?::text || ' minutes')::interval",
-                userId, windowMinutes).isNotEmpty());
-    }
-
-    /** Vrai si le premier poisson d'au moins une sortie a été capturé dans les {@code windowMinutes} avant la fin. */
-    public boolean hasFirstCatchWithinEnd(UUID userId, int windowMinutes) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 FROM ("
-                        + "  SELECT t.id, min(c.catch_timestamp) AS first_catch, t.end_timestamp "
-                        + "  FROM catch c JOIN trip t ON t.id = c.trip_id "
-                        + "  WHERE t.owner_id = ? AND c.catch_timestamp IS NOT NULL "
-                        + "  GROUP BY t.id, t.end_timestamp"
-                        + ") x WHERE first_catch >= end_timestamp - (?::text || ' minutes')::interval",
-                userId, windowMinutes).isNotEmpty());
-    }
-
-    public boolean hasCatchBeforeHour(UUID userId, int hour) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 " + OWNED_TRIP_JOIN_CATCH + " AND c.catch_timestamp IS NOT NULL "
-                        + "AND c.catch_timestamp::time < (?::text || ':00')::time",
-                userId, hour).isNotEmpty());
-    }
-
     public Optional<Integer> maxCatchCountInSingleTrip(UUID userId) {
         Integer max = withContext(ctx -> ctx.fetchOne(
                         "SELECT max(cnt) AS m FROM (SELECT count(*) AS cnt " + OWNED_TRIP_JOIN_CATCH
@@ -311,12 +302,6 @@ public class GamificationDao extends AbstractFisholaDao {
                 .get("n", Integer.class);
     }
 
-    public boolean hasCatchOfSpecies(UUID userId, List<String> speciesNames) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 " + OWNED_TRIP_JOIN_CATCH + " AND c.species_id IN (SELECT id FROM species WHERE name = ANY(?))",
-                userId, speciesNames.toArray(new String[0])).isNotEmpty());
-    }
-
     public int countCatchesWithPhoto(UUID userId) {
         return withContext(ctx -> ctx.fetchOne(
                         "SELECT count(DISTINCT c.id) AS n " + OWNED_TRIP_JOIN_CATCH
@@ -336,24 +321,6 @@ public class GamificationDao extends AbstractFisholaDao {
     public int countTotalTrips(UUID userId) {
         return withContext(ctx -> ctx.fetchOne("SELECT count(*) AS n FROM trip WHERE owner_id = ?", userId))
                 .get("n", Integer.class);
-    }
-
-    /** Nombre de saisons distinctes (hiver/printemps/été/automne, dérivées du mois) parmi les sorties. */
-    public int countDistinctSeasons(UUID userId) {
-        return withContext(ctx -> ctx.fetchOne(
-                        "SELECT count(DISTINCT CASE "
-                                + "  WHEN extract(month FROM begin_timestamp) IN (12,1,2) THEN 'hiver' "
-                                + "  WHEN extract(month FROM begin_timestamp) IN (3,4,5) THEN 'printemps' "
-                                + "  WHEN extract(month FROM begin_timestamp) IN (6,7,8) THEN 'ete' "
-                                + "  ELSE 'automne' END) AS n "
-                                + "FROM trip WHERE owner_id = ?", userId))
-                .get("n", Integer.class);
-    }
-
-    public boolean hasTripOnDate(UUID userId, List<LocalDate> dates) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 FROM trip WHERE owner_id = ? AND begin_timestamp::date = ANY(?)",
-                userId, dates.toArray(new LocalDate[0])).isNotEmpty());
     }
 
     /** Sorties sans aucune capture ("bredouille"). */
@@ -384,25 +351,6 @@ public class GamificationDao extends AbstractFisholaDao {
                         + "        WHERE owner_id IS NOT NULL GROUP BY owner_id) counts"
                         + ") ranked WHERE owner_id = ?", userId));
         return r == null ? Optional.empty() : Optional.ofNullable(r.get("percent_rank", Double.class));
-    }
-
-    public int countDistinctDepartments(UUID userId) {
-        return withContext(ctx -> ctx.fetchOne(
-                        "SELECT count(DISTINCT department) AS n FROM trip WHERE owner_id = ? AND department IS NOT NULL",
-                        userId))
-                .get("n", Integer.class);
-    }
-
-    public Set<String> distinctDepartments(UUID userId) {
-        return withContext(ctx -> ctx.fetch(
-                        "SELECT DISTINCT department FROM trip WHERE owner_id = ? AND department IS NOT NULL", userId))
-                .stream().map(r -> r.get("department", String.class)).collect(Collectors.toSet());
-    }
-
-    public boolean hasTripAboveAltitude(UUID userId, double minAltitude) {
-        return withContext(ctx -> ctx.fetch(
-                "SELECT 1 FROM trip t JOIN water_entity w ON w.id = t.water_entity_id "
-                        + "WHERE t.owner_id = ? AND w.altitude_moyenne > ?", userId, minAltitude).isNotEmpty());
     }
 
     /** Sorties en bateau (trip.type = 'Craft') sur l'un des cours d'eau nommés. */
