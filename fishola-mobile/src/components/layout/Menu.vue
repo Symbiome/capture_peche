@@ -21,20 +21,23 @@
 <template>
   <div class="menu" :class="visibility">
     <div class="menu-title" v-on:click="goDispatcher">
-      <div>
-        <img src="img/logo-small.svg" alt="FISHOLA" />
-        <span v-if="envName" class="env">({{ envName }})</span>
-      </div>
+      <CarnetLogo />
+      <span v-if="envName" class="env">({{ envName }})</span>
     </div>
     <div class="close hide-on-desktop" v-on:click="closeMenu">
       <div class="plus">+</div>
     </div>
     <div class="items">
+      <div class="new-trip hide-on-mobile" v-if="connected">
+        <div class="button button-primary">
+          <button v-on:click="startNewTrip">+ Nouvelle sortie</button>
+        </div>
+      </div>
       <div
         class="item"
         v-if="connected"
-        v-on:click="goProfile"
-        :class="isActive('profile') ? 'active' : ''"
+        v-on:click="goAccount"
+        :class="isActive('account') ? 'active' : ''"
       >
         <span>
           {{ fullName }}
@@ -64,12 +67,13 @@
 
 <script lang="ts">
 import ProfileService from "@/services/ProfileService";
-import TripsService from "@/services/TripsService";
 
 import Helpers from "@/services/Helpers";
 
 import Avatar from "@/components/common/Avatar.vue";
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import UserProfile from "@/pojos/UserProfile";
+import LogoutService from "@/services/LogoutService";
 
 import { RouterUtils } from "@/router/RouterUtils";
 
@@ -83,13 +87,15 @@ export class MenuItem {
     public iconName: string,
     public clickHandler: any,
     public onlyConnected: boolean,
-    public onlyUnlogged: boolean
+    public onlyUnlogged: boolean,
+    public path?: string
   ) {}
 }
 
 @Component({
   components: {
     Avatar,
+    CarnetLogo,
   },
 })
 export default class Menu extends Vue {
@@ -237,9 +243,18 @@ export default class Menu extends Vue {
     }
   }
 
-  goProfile() {
+  goAccount() {
     this.closeMenu();
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/profile/profile");
+    RouterUtils.pushRouteNoDuplicate(this.$router, "/account");
+  }
+
+  goPath(path: string) {
+    this.closeMenu();
+    RouterUtils.pushRouteNoDuplicate(this.$router, path);
+  }
+
+  startNewTrip() {
+    RouterUtils.startNewTrip(this.$router);
   }
 
   goDashboardPersonal() {
@@ -274,43 +289,8 @@ export default class Menu extends Vue {
   }
 
   logout() {
-    Helpers.confirm(
-      this.$modal,
-      "Voulez-vous vous déconnecter ?",
-      "Déconnexion"
-    ).then(() => {
-      this.logoutConfirmed(false);
-    });
-  }
-
-  promptLogoutWithRunningTrip() {
-    Helpers.confirm(
-      this.$modal,
-      "Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr\u00B7e ?",
-      "Déconnexion"
-    ).then(() => {
-      this.logoutConfirmed(true);
-    });
-  }
-
-  logoutConfirmed(ignoreRunningTrip: boolean) {
     this.closeMenu();
-    if (ignoreRunningTrip) {
-      ProfileService.logout().then(this.logguedOut);
-    } else {
-      TripsService.hasRunningTrip().then((hasRunningTrip: boolean) => {
-        if (hasRunningTrip) {
-          this.promptLogoutWithRunningTrip();
-        } else {
-          ProfileService.logout().then(this.logguedOut);
-        }
-      });
-    }
-  }
-
-  logguedOut() {
-    RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
-    this.onLogguedOut();
+    LogoutService.confirmAndLogout(this);
   }
 
   onLogguedOut() {
@@ -321,6 +301,10 @@ export default class Menu extends Vue {
   }
 
   isActive(name: string): boolean {
+    const item = this.menuItems.find((i) => i.name == name);
+    if (item && item.path) {
+      return this.$route.path == item.path;
+    }
     return this.$route.name == name;
   }
 
@@ -337,12 +321,31 @@ export default class Menu extends Vue {
         onlyUnlogged: true,
       },
       {
-        name: "trips",
-        label: homeShouldBeNameMyTrips ? "Mes sorties" : "Accueil",
-        iconName: "fish",
-        clickHandler: this.goTrips,
+        name: "home",
+        label: "Accueil",
+        iconName: "home",
+        clickHandler: () => this.goPath("/home"),
         onlyConnected: true,
         onlyUnlogged: false,
+        path: "/home",
+      },
+      {
+        name: "map",
+        label: "Carte",
+        iconName: "map",
+        clickHandler: () => this.goPath("/my-trips/map"),
+        onlyConnected: true,
+        onlyUnlogged: false,
+        path: "/my-trips/map",
+      },
+      {
+        name: "trips",
+        label: "Mes prises",
+        iconName: "fish",
+        clickHandler: () => this.goPath("/my-trips/list"),
+        onlyConnected: true,
+        onlyUnlogged: false,
+        path: "/my-trips/list",
       },
       {
         name: "offline-home",
@@ -456,12 +459,21 @@ export default class Menu extends Vue {
 }
 
 .menu {
-  background-color: @pelorous;
+  height: 100vh;
+  z-index: 998; // Very high to avoid the map being over the menu
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 
   @media screen and (max-width: @mobile-max-width) {
     position: fixed;
     top: 0px;
     width: 100vw;
+    padding: @margin-menu-item;
+
+    background-color: @carnet-blue;
+    color: @white;
 
     .menu-title {
       display: none;
@@ -470,42 +482,31 @@ export default class Menu extends Vue {
 
   @media screen and (min-width: @desktop-min-width) {
     width: @desktop-menu-width;
+    flex-shrink: 0;
+    padding: 0 0 @margin-medium 0;
+    overflow-y: auto;
+
+    background-color: @white-smoke;
+    border-right: 2px solid @divider;
+    color: @gunmetal;
 
     .menu-title {
-      height: 96px;
-      width: 100%;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: @margin-x-small;
 
+      width: 100%;
+      min-height: 112px;
       cursor: pointer;
 
-      img {
-        height: calc(@fontsize-header-title + 20px);
-      }
-
       span.env {
-        color: @terra-cotta;
-        font-size: @fontsize-paragraph;
+        color: @accent-text;
+        font-size: @fontsize-small-paragraph;
+        font-weight: 600;
       }
     }
-  }
-
-  height: 100vh;
-  z-index: 998; // Very high to avoid the map being over the menu
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-
-  color: @white;
-
-  padding: @margin-menu-item;
-
-  @media screen and (min-width: @desktop-min-width) {
-    padding: 0px;
   }
 
   .close {
@@ -524,110 +525,105 @@ export default class Menu extends Vue {
     }
   }
 
+  .new-trip {
+    width: 100%;
+    padding: 0 @margin-medium @margin-small @margin-medium;
+
+    .button {
+      width: 100%;
+      margin: 0;
+    }
+  }
+
   .items {
     width: 100%;
 
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    padding-right: @margin-menu-item;
 
     @media screen and (min-width: @desktop-min-width) {
-      align-items: flex-start;
+      align-items: stretch;
+      padding: 0 12px;
     }
-
-    padding-right: @margin-menu-item;
 
     .item {
       height: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: fit-content;
+      cursor: pointer;
 
       @media (max-height: 600px) {
         height: 45px;
       }
 
-      display: flex;
-      flex-direction: row;
-      // justify-content: center;
-      align-items: center;
-
-      cursor: pointer;
-
-      width: fit-content;
-
-      .active-marker {
-        height: 100%;
-        width: 4px;
-        border-top-right-radius: 4px;
-        border-bottom-right-radius: 4px;
-        margin-right: 23px;
-
-        @media screen and (max-width: @mobile-max-width) {
-          display: none;
-        }
-      }
-
-      @media screen and (min-width: @desktop-min-width) {
-        flex-direction: row-reverse;
-        height: 72px;
-
-        .pastille {
-          width: 40px;
-          height: 40px;
-        }
-
-        &.active {
-          .active-marker {
-            background-color: @white;
-          }
-
-          .pastille {
-            color: @pelorous;
-            background: @white;
-          }
-        }
-
-        &.is-back {
-          background-color: #0f3845;
-          width: @desktop-menu-width;
-          justify-items: flex-start;
-
-          span {
-            width: 100%;
-          }
-        }
-
-        &:hover {
-          span {
-            font-weight: bold;
-          }
-        }
-      }
-
       span {
         margin-right: @margin-medium;
-
         font-size: @fonsize-menu-item-span;
-        font-weight: bold;
-
-        @media screen and (min-width: @desktop-min-width) {
-          margin-left: 13px;
-          margin-right: unset;
-          font-size: 18px;
-          font-weight: normal;
-        }
-
+        font-weight: 600;
         line-height: calc(@fonsize-menu-item + @line-height-padding-large);
       }
 
       i {
         font-size: @fonsize-menu-item;
         width: 30px;
-
-        @media screen and (min-width: @desktop-min-width) {
-          width: 40px;
-        }
-
         text-align: center;
       }
+
+      .active-marker {
+        display: none;
+      }
+
+      @media screen and (min-width: @desktop-min-width) {
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 12px;
+        width: 100%;
+        height: 48px;
+        padding: 0 12px;
+        border-radius: 10px;
+
+        span {
+          margin: 0;
+          font-size: 15px;
+        }
+
+        .pastille {
+          width: 30px;
+          height: 30px;
+          background: transparent;
+          color: @accent-text;
+        }
+
+        i {
+          font-size: 20px;
+        }
+
+        &:hover,
+        &.active {
+          background-color: @carnet-blue-soft;
+        }
+
+        &.active span {
+          color: @accent-text;
+        }
+
+        &.is-back {
+          background-color: @carnet-navy;
+          color: @white;
+        }
+      }
+    }
+  }
+}
+
+:root[data-theme="dark"] .menu {
+  @media screen and (min-width: @desktop-min-width) {
+    .item.active span {
+      color: @white;
     }
   }
 }

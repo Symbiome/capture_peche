@@ -32,8 +32,10 @@ import java.util.UUID;
  */
 public class CarnetVolontaireTripBean {
 
+    public String sessionCode; // code session du carnet papier, facultatif (#235)
     public LocalDate day;
     public LocalTime startTime;
+    public LocalDate endDay; // date de fin (#237) : nulle = même jour que le début
     public LocalTime endTime;
 
     // Localisation : id prioritaire (clic-carte), repli par nom.

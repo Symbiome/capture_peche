@@ -1,0 +1,82 @@
+IMPORT « ENQUÊTE TERRAIN » — GABARITS
+=====================================
+
+Vous pouvez importer en masse vos données d'enquête dans Fishola admin
+(menu Import > Enquête terrain) sous DEUX FORMATS AU CHOIX. Les deux formats
+contiennent les mêmes informations et passent par les mêmes contrôles :
+choisissez celui qui correspond à la façon dont vos données sont déjà tenues.
+
+
+Contenu de ce dossier
+---------------------
+  gabarit-enquete-terrain.xlsx   Option 1 : classeur Excel à plusieurs feuilles
+  gabarit-enquete-terrain.csv    Option 2 : fichier CSV plat
+  exemple-enquete-terrain.csv    Exemple complet au format CSV plat
+                                 (2 sessions d'enquête, 7 pêcheurs, captures,
+                                 lots, sorties bredouilles, sorties souvenir)
+  LISEZ-MOI.txt                  Ce fichier
+
+
+Option 1 — Classeur Excel multi-feuilles (.xlsx)
+------------------------------------------------
+Une feuille par niveau, reliées entre elles par des codes :
+
+  Session d'enquête   une ligne par session (secteur, date, enquêteur)
+  Sortie de pêche     une ligne par sortie, rattachée à sa session (Code session)
+  Capture pêcheur     une ligne par capture, ou une ligne par sortie bredouille,
+                      rattachée à sa sortie (Code sortie) et à un pêcheur
+                      (Code pêcheur)
+  Session souvenir    facultative : dernière sortie passée d'un pêcheur déjà
+                      présent dans « Capture pêcheur »
+
+Pour qui : vous saisissez directement dans Excel. Chaque information n'est
+saisie qu'une seule fois.
+« Espèce recherchée » est obligatoire : une espèce, « Aucune » ou
+« Toutes espèces ».
+
+
+Option 2 — CSV plat (.csv)
+--------------------------
+Une seule table : une ligne par capture, ou une ligne par sortie bredouille.
+Les informations de session, de sortie et de pêcheur sont répétées sur chaque
+ligne ; l'import reconstruit la hiérarchie session > sortie > pêcheur >
+captures en regroupant les lignes sur code_session, code_sortie et
+code_pecheur.
+
+  type_sortie = en_cours    sortie en cours, contrôlée par l'enquêteur
+  type_sortie = souvenir    dernière sortie passée du pêcheur (code_sortie et
+                            heures de sortie vides) ; le pêcheur doit figurer
+                            sur une ligne en_cours de la même session
+
+Pour qui : vos données sont déjà dans un seul tableau (export de tableur,
+saisie terrain, script).
+Les valeurs répétées doivent être identiques dans leur groupe (espaces,
+majuscules et accents ignorés), sinon la ligne divergente est rejetée.
+espece_recherchee vide = « Toutes espèces ».
+Séparateur « ; », encodage UTF-8.
+
+
+Règles communes aux deux formats
+--------------------------------
+  Dates                 JJ/MM/AAAA
+  Heures                HH:mm
+  Oui / non             oui ou non
+  Secteur / site pêché  nom d'un milieu connu de Fishola et compris dans votre
+                        périmètre : remplacez les lacs des exemples par vos
+                        propres sites
+  Espèces, techniques   libellés du référentiel Fishola
+  Mode de pêche         bateau, float tube/canoe, bord itinérant, bord statique
+  Période de la journée matin, après-midi, journée entière, soirée
+                        (sorties souvenir)
+  Lot                   plusieurs poissons d'une même espèce sur une ligne :
+                        nombre > 1, avec taille min et taille max
+  Sortie bredouille     une seule ligne, colonnes de capture vides
+  Sortie sur plusieurs  date de fin prévue renseignée (ex. pêche de la carpe)
+  jours
+
+Chaque ligne est contrôlée (format, référentiel, règles métier). Les lignes
+valides sont importées, les autres sont listées dans le rapport d'erreurs.
+Un même fichier ne peut être importé qu'une seule fois.
+
+Le détail de chaque colonne est affiché sur la page d'import de Fishola admin,
+encart « Format attendu ».

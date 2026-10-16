@@ -161,7 +161,7 @@ export default class FormInput extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   input {
@@ -177,7 +177,7 @@ export default class FormInput extends Vue {
 
     color: @gunmetal;
     font-size: @fontsize-form-input;
-    font-family: 'Open Sans', sans-serif;
+    font-family: @font-family;
 
     &::placeholder {
       font-style: italic;
@@ -230,7 +230,7 @@ export default class FormInput extends Vue {
   margin-top: 30px;
 
   &.white-background {
-    color: @pelorous;
+    color: @accent-text;
   }
 
   @media screen and (min-width: @desktop-min-width) {
@@ -241,7 +241,7 @@ export default class FormInput extends Vue {
 
   &:hover {
     font-weight: bolder;
-    color: @pelorous;
+    color: @accent-text;
 
     &.white-background {
       color: white;

@@ -1,5 +1,51 @@
 @import "_icons";
 
+/* ========== Thème clair / sombre (#208) ========== */
+// Valeurs des neutres de _colors.less. Le thème est porté par
+// <html data-theme="light|dark"> (ThemeService) ; un conteneur peut forcer le
+// thème clair avec la classe .force-light-theme (visuels exportés, page vitrine).
+:root,
+.force-light-theme {
+  --fishola-gunmetal: @carnet-navy;
+  --fishola-pale-sky: #5B6B78;
+  --fishola-very-light-grey: #D5D9DC;
+  --fishola-link-water: #D2DAE2;
+  --fishola-white-smoke: #FFFFFF;
+  --fishola-gainsboro: #ECE6E3;
+  --fishola-zircon: #F3EEEB;
+  --fishola-solitude: #E8EAEC;
+  --fishola-surface: @carnet-sand;
+  --fishola-surface-overlay: rgba(255, 255, 255, 0.92);
+  --fishola-text-strong: @carnet-navy;
+  --fishola-divider: rgba(20, 38, 52, 0.1);
+  --fishola-accent-text: @carnet-blue;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --fishola-gunmetal: #FFFFFF;
+  --fishola-pale-sky: #A7B4BF;
+  --fishola-very-light-grey: #33485A;
+  --fishola-link-water: #2C4253;
+  --fishola-white-smoke: @carnet-navy;
+  --fishola-gainsboro: #22394B;
+  --fishola-zircon: #1B3142;
+  --fishola-solitude: #22394B;
+  --fishola-surface: #1D3446;
+  --fishola-surface-overlay: rgba(20, 38, 52, 0.92);
+  --fishola-text-strong: #FFFFFF;
+  --fishola-divider: rgba(255, 255, 255, 0.1);
+  --fishola-accent-text: #8F8FFF;
+  color-scheme: dark;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: @font-family;
+}
+
 button {
   cursor: pointer;
 }
@@ -33,7 +79,7 @@ button {
   background: @pelorous;
 }
 .pastille.unfilled {
-  color: @pelorous;
+  color: @accent-text;
   background: transparent;
 }
 
@@ -45,7 +91,7 @@ button {
 }
 .pelorous-checkbox + label {
   background-color: transparent;
-  border: 1px solid @pelorous;
+  border: 1px solid @accent-text;
   // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
   // padding: 9px;
   border-radius: 1px;
@@ -61,7 +107,7 @@ button {
 // }
 .pelorous-checkbox:checked + label {
   background-color: @pelorous;
-  border: 1px solid @pelorous;
+  border: 1px solid @accent-text;
   border-radius: 1px;
   // color: @white;
 }
@@ -82,7 +128,7 @@ button {
 }
 .pelorous-radio + label {
   background-color: transparent;
-  border: 1px solid @pelorous;
+  border: 1px solid @accent-text;
   // box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
   // padding: 9px;
   border-radius: 8px;
@@ -97,7 +143,7 @@ button {
 // }
 .pelorous-radio:checked + label {
   background-color: @pelorous;
-  border: 1px solid @pelorous;
+  border: 1px solid @accent-text;
   border-radius: 8px;
   // color: @white;
 }
@@ -182,10 +228,35 @@ button:active {
 .maplibregl-popup {
   max-width: 80vw !important;
   .maplibregl-popup-content {
-    max-width: calc(100% - 44px);
+    background-color: @white-smoke;
+    color: @gunmetal;
     button {
       width: auto;
     }
+  }
+
+  &.maplibregl-popup-anchor-top,
+  &.maplibregl-popup-anchor-top-left,
+  &.maplibregl-popup-anchor-top-right {
+    .maplibregl-popup-tip {
+      border-bottom-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-bottom,
+  &.maplibregl-popup-anchor-bottom-left,
+  &.maplibregl-popup-anchor-bottom-right {
+    .maplibregl-popup-tip {
+      border-top-color: @white-smoke;
+    }
+  }
+
+  &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+    border-right-color: @white-smoke;
+  }
+
+  &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+    border-left-color: @white-smoke;
   }
 }
 
@@ -237,10 +308,12 @@ body {
   button {
     height: 100%;
     width: 100%;
-    border-radius: 38px;
+    border-radius: 10px;
 
+    font-family: @font-family;
+    letter-spacing: @letter-spacing;
     font-style: normal;
-    font-weight: bold;
+    font-weight: 600;
     font-size: @fontsize-button;
     line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
@@ -260,8 +333,8 @@ body {
   &.button-secondary {
     button {
       background-color: transparent;
-      color: @pelorous;
-      border: 1px solid @pelorous;
+      color: @accent-text;
+      border: 1px solid @accent-text;
     }
   }
 
@@ -317,6 +390,7 @@ body {
     strong {
       color: @gunmetal;
       font-size: 0.9rem;
+      overflow-wrap: anywhere;
     }
     span {
       color: @pale-sky;

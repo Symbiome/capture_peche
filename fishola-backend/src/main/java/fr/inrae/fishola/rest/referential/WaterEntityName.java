@@ -24,6 +24,7 @@ package fr.inrae.fishola.rest.referential;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.inrae.fishola.ImmutableObject;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -41,4 +42,16 @@ public interface WaterEntityName {
     UUID id();
 
     String name();
+
+    /**
+     * Département de l'entité, affiché à côté du nom des homonymes (#230).
+     * Empty si inconnu.
+     */
+    Optional<String> department();
+
+    /**
+     * Commune contenant le centroïde, pour départager des homonymes d'un même
+     * département (#230). Renseignée par la recherche uniquement.
+     */
+    Optional<String> commune();
 }

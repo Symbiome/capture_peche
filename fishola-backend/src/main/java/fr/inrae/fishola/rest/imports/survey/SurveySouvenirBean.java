@@ -22,13 +22,13 @@ package fr.inrae.fishola.rest.imports.survey;
  */
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Bloc facultatif « Session souvenir » saisi manuellement pour un pêcheur enquêté (#144) :
  * sa dernière sortie passée, sans heures précises (période de la journée seulement). Une
- * seule capture (ou bredouille), comme sur la feuille XLSX du même nom — pas de notion de
- * lot de sorties, la « session souvenir » désigne un seul souvenir de sortie passée.
+ * ou plusieurs captures (#236), ou bredouille.
  */
 public class SurveySouvenirBean {
 
@@ -47,9 +47,9 @@ public class SurveySouvenirBean {
     public Integer rodCount;
     public String baitOrLure;
 
+    /** Espèce recherchée ; nulle pour « Toutes espèces » (défaut) ou « Aucune » (#236). */
     public UUID expectedSpeciesId;
-    public boolean noExpectedSpecies;
 
     public boolean bredouille;
-    public SurveyCatchBean capture;
+    public List<SurveyCatchBean> captures;
 }

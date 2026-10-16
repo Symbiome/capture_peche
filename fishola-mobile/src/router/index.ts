@@ -22,6 +22,8 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 
 import Dispatcher from "@/views/Dispatcher.vue";
+import HomeView from "@/views/Home.vue";
+import AccountView from "@/views/Account.vue";
 
 import About from "@/views/About.vue";
 import OfflineHome from "@/views/OfflineHome.vue";
@@ -54,7 +56,6 @@ import Credits from "@/views/Credits.vue";
 
 import GaleryFull from "@/components/galery/GaleryFull.vue";
 
-import OpenCVSizeComputation from "@/components/opencv/OpenCVSizeComputation.vue";
 import MapLibreMapTest from "@/views/dev/MapLibreMapTest.vue";
 
 import Settings from "@/views/Settings.vue";
@@ -111,6 +112,16 @@ const routes = [
     component: Register,
   },
   {
+    path: "/home",
+    name: "home",
+    component: HomeView,
+  },
+  {
+    path: "/account",
+    name: "account",
+    component: AccountView,
+  },
+  {
     path: "/my-trips/:visualizationMode",
     name: "my-trips",
     props: true,
@@ -162,6 +173,11 @@ const routes = [
     name: "trip",
     component: EditTrip,
     props: true,
+  },
+  {
+    // Onglet « Évolution » retiré de « Mes données » (calculé par plan d'eau).
+    path: "/dashboard-personal/evolution",
+    redirect: "/dashboard-personal/dashboard",
   },
   {
     path: "/dashboard-personal/:visualizationMode",
@@ -272,14 +288,6 @@ const routes = [
     name: "galery",
     component: GaleryFull,
     props: true,
-  },
-  {
-    path: "/fish-measure-test",
-    name: "fish-measure-test",
-    meta: {
-      public: true,
-    },
-    component: OpenCVSizeComputation,
   },
   {
     // Banc de test isolé de la carte MapLibre (#8), consommé par l'e2e Cypress.

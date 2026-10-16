@@ -37,6 +37,7 @@ import DocumentationVue from "@/views/referentials/Documentation.vue";
 import NewsVue from "@/views/referentials/News.vue";
 
 import AuthorizedSamples from "@/views/customize/AuthorizedSamples.vue";
+import MyReferentials from "@/views/customize/MyReferentials.vue";
 import Admins from "@/views/Admins.vue";
 import Operators from "@/views/Operators.vue";
 import OperatorCarnetVolontaireImport from "@/views/operator/CarnetVolontaireImport.vue";
@@ -89,6 +90,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/customize/authorized-samples",
     name: "authorized-samples",
     component: AuthorizedSamples
+  },
+  {
+    path: "/customize/my-referentials",
+    name: "my-referentials",
+    component: MyReferentials
   },
   {
     path: "/trips",

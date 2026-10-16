@@ -184,7 +184,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // q (% where), kind, kind, q x RELEVANCE_BINDS, limit.
     private static final String SEARCH_ENTITIES_SQL = ""
             + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
-            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "       we.department, com.name AS commune, com.code_postal AS code_postal "
             + "FROM water_entity we "
             // Commune contenant le centroïde de l'entité (#6/#15, désambiguïsation
             // des homonymes) ; NULL si le référentiel commune ne couvre pas la zone.
@@ -207,7 +207,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
     // le bean, et une entité tapable/proche a toujours une géométrie).
     private static final String FIND_BY_ID_SQL = ""
             + "SELECT we.id, we.name, we.kind::text AS kind, we.latitude, we.longitude, "
-            + "       com.name AS commune, com.code_postal AS code_postal "
+            + "       we.department, com.name AS commune, com.code_postal AS code_postal "
             + "FROM water_entity we "
             + "LEFT JOIN LATERAL ( "
             + "  SELECT c.name, c.code_postal FROM commune c "
@@ -240,6 +240,7 @@ public class HydroSearchDao extends AbstractFisholaDao {
                         .build())
                 .commune(Optional.ofNullable(rec.get("commune", String.class)))
                 .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
+                .department(Optional.ofNullable(rec.get("department", String.class)))
                 .build();
     }
 
@@ -253,22 +254,12 @@ public class HydroSearchDao extends AbstractFisholaDao {
         String kindFilter = kind.orElse(null);
         return withContext(context -> context
                 .fetch(SEARCH_ENTITIES_SQL, searchBinds(q, Arrays.<Object>asList(kindFilter, kindFilter), limit))
-                .map(rec -> (WaterEntitySearchResult) ImmutableWaterEntitySearchResult.builder()
-                        .waterEntityId(rec.get("id", UUID.class))
-                        .name(rec.get("name", String.class))
-                        .kind(rec.get("kind", String.class))
-                        .centroid(ImmutableGeoPoint.builder()
-                                .lat(rec.get("latitude", Double.class))
-                                .lng(rec.get("longitude", Double.class))
-                                .build())
-                        .commune(Optional.ofNullable(rec.get("commune", String.class)))
-                        .codePostal(Optional.ofNullable(rec.get("code_postal", String.class)))
-                        .build()));
+                .map(HydroSearchDao::toSearchResult));
     }
 
     /**
      * Minimal (id + name only) variant of {@link #searchWaterEntities}, optionally
-     * scoped to a set of departments (staff perimeter, #159). Backs the operator
+     * scoped to a set of departments (staff perimeter, #159, buffered #231). Backs the operator
      * back-office trip/catch entry forms, which reference the entity only by id
      * and never read kind/centroid/commune — unlike the mobile search, no
      * {@code geom IS NOT NULL} requirement either, for consistency with
@@ -277,23 +268,51 @@ public class HydroSearchDao extends AbstractFisholaDao {
      * @param departmentCodes empty means unrestricted (national admin)
      */
     public List<WaterEntityName> searchWaterEntityNames(String query, Set<String> departmentCodes, int limit) {
+        return searchWaterEntityNames(query, departmentCodes, limit, null);
+    }
+
+    /**
+     * Same as {@link #searchWaterEntityNames(String, Set, int)}, with the matching
+     * favorites of a staff account ranked first (#236).
+     *
+     * @param departmentCodes empty means unrestricted (national admin)
+     * @param favoritesOfAdminId staff account whose favorites come first, null for none
+     */
+    public List<WaterEntityName> searchWaterEntityNames(String query, Set<String> departmentCodes, int limit,
+                                                        UUID favoritesOfAdminId) {
         String q = forSearch(query);
         boolean scoped = !departmentCodes.isEmpty();
         String departmentClause = scoped
-                ? "AND we.department IN (" + departmentCodes.stream().map(d -> "?").collect(Collectors.joining(",")) + ") "
+                ? "AND EXISTS (SELECT 1 FROM water_entity_department wed WHERE wed.water_entity_id = we.id "
+                        + "AND wed.department_code IN ("
+                        + departmentCodes.stream().map(d -> "?").collect(Collectors.joining(",")) + ")) "
                 : "";
-        String sql = "SELECT we.id, we.name "
+        String sql = "SELECT we.id, we.name, we.department, com.name AS commune "
                 + "FROM water_entity we "
+                // Commune du centroïde : départage les homonymes d'un même département (#230).
+                + "LEFT JOIN LATERAL ( "
+                + "  SELECT c.name FROM commune c "
+                + "  WHERE we.latitude IS NOT NULL AND we.longitude IS NOT NULL "
+                + "    AND ST_Contains(c.geom, ST_SetSRID(ST_MakePoint(we.longitude, we.latitude), 4326)) "
+                + "  LIMIT 1 "
+                + ") com ON true "
+                + "LEFT JOIN fishola_admin_favorite_water_entity fav "
+                + "  ON fav.water_entity_id = we.id AND fav.fishola_admin_id = ?::uuid "
                 + "WHERE (f_unaccent(we.name) ILIKE '%' || f_unaccent(?) || '%' "
                 + "       OR f_unaccent(we.name) % f_unaccent(?)) "
                 + departmentClause
-                + relevanceOrderBy("we.name")
+                + relevanceOrderBy("we.name").replaceFirst("ORDER BY ", "ORDER BY (fav.water_entity_id IS NULL), ")
                 + "LIMIT ?";
+        List<Object> binds = new ArrayList<>();
+        binds.add(favoritesOfAdminId);
+        binds.addAll(Arrays.asList(searchBinds(q, new ArrayList<>(departmentCodes), limit)));
         return withContext(context -> context
-                .fetch(sql, searchBinds(q, new ArrayList<>(departmentCodes), limit))
+                .fetch(sql, binds.toArray())
                 .map(rec -> (WaterEntityName) ImmutableWaterEntityName.builder()
                         .id(rec.get("id", UUID.class))
                         .name(rec.get("name", String.class))
+                        .department(Optional.ofNullable(rec.get("department", String.class)))
+                        .commune(Optional.ofNullable(rec.get("commune", String.class)))
                         .build()));
     }
 

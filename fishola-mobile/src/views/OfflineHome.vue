@@ -126,7 +126,7 @@ export default class OfflineHome extends Vue {
 
     &.selected {
       color: @gunmetal;
-      border-bottom: 2px solid @pelorous;
+      border-bottom: 2px solid @accent-text;
     }
   }
 }

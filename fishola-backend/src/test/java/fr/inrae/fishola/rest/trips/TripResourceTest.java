@@ -225,6 +225,9 @@ class TripResourceTest extends AbstractFisholaTest {
         TripBean trip = buildValidTripBean();
         trip.source = DeviceType.application;
         trip.weatherId = this.weathers.stream().limit(1).map(Weather::getId).findAny();
+        // La capture de 21:05 doit tomber dans la sortie, sinon elle est refusée (#237).
+        trip.startedAt = "21:00";
+        trip.finishedAt = "21:30";
         CatchBean c = new CatchBean();
         c.id = "abc";
         c.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
@@ -295,8 +298,8 @@ class TripResourceTest extends AbstractFisholaTest {
                 .body("date[0]", equalTo(trip.date.getYear()))
                 .body("date[1]", equalTo(trip.date.getMonthValue()))
                 .body("date[2]", equalTo(trip.date.getDayOfMonth()))
-                .body("startedAt", equalTo("00:00"))
-                .body("finishedAt", equalTo("00:01"))
+                .body("startedAt", equalTo("21:00"))
+                .body("finishedAt", equalTo("21:30"))
                 .body("mode", equalTo(trip.mode.getLiteral()))
                 .body("type", equalTo(trip.type.getLiteral()))
                 .body("source", nullValue()) // La source n'est pas renvoyée au client. Sinon : equalTo(DeviceType.application.getLiteral())
@@ -459,6 +462,45 @@ class TripResourceTest extends AbstractFisholaTest {
      * d'une taille exacte. La taille exacte est alors vidée, pour que records et statistiques
      * de taille ne prennent pas une borne pour une mesure ; une classe min > max est refusée.
      */
+    /**
+     * La première classe d'un maillage (#196) commence à 0 cm : « 10 perches entre 0 et 10 cm ».
+     */
+    @Test
+    void testCatchLotSizeClassStartingAtZero() {
+        TripBean trip = buildValidTripBean();
+
+        CatchBean lotCatch = new CatchBean();
+        lotCatch.id = "lot-size-class-zero";
+        lotCatch.speciesId = Optional.of(trip.speciesIds.iterator().next().toString());
+        lotCatch.techniqueId = trip.techniqueIds.iterator().next();
+        lotCatch.keep = true;
+        lotCatch.quantity = 10;
+        lotCatch.lotMinSize = Optional.of(0);
+        lotCatch.lotMaxSize = Optional.of(10);
+        trip.catchs = List.of(lotCatch);
+
+        String tripId = given()
+            .when()
+                .contentType(MediaType.APPLICATION_JSON)
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .body(trip)
+                .post("/api/v1/trips")
+            .then()
+                .statusCode(201)
+            .extract()
+                .body()
+                .path(trip.id);
+
+        given()
+            .when()
+                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .get("/api/v1/trips/" + tripId)
+            .then()
+                .statusCode(200)
+                .body("catchs[0].lotMinSize", equalTo(0))
+                .body("catchs[0].lotMaxSize", equalTo(10));
+    }
+
     @Test
     void testCatchLotSizeClass() {
         TripBean trip = buildValidTripBean();
@@ -1186,8 +1228,8 @@ class TripResourceTest extends AbstractFisholaTest {
         String adminToken = loginAsAdmin();
         UUID waterEntityId = this.waterEntities.iterator().next().getId();
         UUID seededTripId = importDao.saveManualEntry("enquete", LocalDate.now(),
-                LocalTime.of(8, 0), LocalTime.of(10, 0), waterEntityId,
-                "Sortie de recette #82", null, Collections.emptyList());
+                LocalTime.of(8, 0), null, LocalTime.of(10, 0), waterEntityId,
+                "Sortie de recette #82", null, null, Collections.emptyList());
         try {
             int totalSansFiltre = exportTotal(adminToken, "date_de_la_sortie", "desc", null, null);
             Assertions.assertTrue(totalSansFiltre >= 1, "la vue d'export doit contenir la sortie semée");
@@ -1200,6 +1242,13 @@ class TripResourceTest extends AbstractFisholaTest {
             // Filtre sans correspondance possible : aucune ligne.
             Assertions.assertEquals(0,
                     exportTotal(adminToken, "date_de_la_sortie", "desc", "nom_du_projet", "zzzz-aucune-correspondance"));
+
+            // Origine (#235) filtrée à l'égalité : « enquet » ne ramène rien, « enquete »
+            // ramène la sortie semée sans englober « enquete_souvenir ».
+            Assertions.assertTrue(
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "origine_donnee", "enquete") >= 1);
+            Assertions.assertEquals(0,
+                    exportTotal(adminToken, "date_de_la_sortie", "desc", "origine_donnee", "enquet"));
 
             // Tautologie : la valeur est traitée comme une VALEUR, pas comme un prédicat.
             // Le code vulnérable renvoyait ici totalSansFiltre.

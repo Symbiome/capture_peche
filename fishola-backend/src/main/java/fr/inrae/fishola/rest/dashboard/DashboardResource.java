@@ -22,6 +22,8 @@ package fr.inrae.fishola.rest.dashboard;
  */
 
 import com.google.common.base.Preconditions;
+import fr.inrae.fishola.database.AnglerStatisticsDao;
+import fr.inrae.fishola.database.AnglerStatisticsDao.TripFilter;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
@@ -44,6 +46,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +66,9 @@ public class DashboardResource extends AbstractFisholaResource {
 
     @Inject
     protected TripsDao tripsDao;
+
+    @Inject
+    protected AnglerStatisticsDao anglerStatisticsDao;
 
     @Inject
     protected FisholaCache cache;
@@ -87,6 +93,50 @@ public class DashboardResource extends AbstractFisholaResource {
         Dashboard result = dashboardDao.getPersonalDashboard(userId, yearFilter, waterEntitiesFilter);
         Response response = wrapEntity(result, userIdAndRenewal);
         return response;
+    }
+
+    /**
+     * Statistiques d'effort de pêche du pêcheur connecté (#210), mêmes filtres
+     * que {@code /dashboard} : sessions et heures par mois, temps par
+     * technique, CPUE par espèce, part de contribution au secteur.
+     */
+    @GET
+    @Path("/dashboard/effort")
+    public Response getPersonalEffortStatistics(
+            @QueryParam("year") Integer year,
+            @QueryParam("waterEntity") String waterEntityId
+    ) {
+        UserIdAndRenewal userIdAndRenewal = getUserIdOrRenew();
+        UUID userId = userIdAndRenewal.userId();
+        TripFilter filter = new TripFilter(Optional.ofNullable(year),
+                Optional.ofNullable(waterEntityId).filter(id -> !id.isEmpty()).map(UUID::fromString));
+        Map<Month, AnglerEffortStatistics.MonthlyEffort> monthlyEffort = anglerStatisticsDao.monthlyEffort(userId, filter);
+        double totalHours = monthlyEffort.values().stream().mapToDouble(AnglerEffortStatistics.MonthlyEffort::hours).sum();
+        AnglerEffortStatistics result = ImmutableAnglerEffortStatistics.builder()
+                .monthlyEffort(monthlyEffort)
+                .totalHours(totalHours)
+                .hoursPerTechnique(anglerStatisticsDao.hoursPerTechnique(userId, filter))
+                .cpueMinCatches(config.cpueMinCatches())
+                .cpuePerSpecies(toCpuePerSpecies(anglerStatisticsDao.catchesPerSpecies(userId, filter), totalHours))
+                .sectorMinAnglers(config.sectorContributionMinAnglers())
+                .sectorContribution(anglerStatisticsDao.sectorContribution(userId, filter,
+                        config.sectorContributionMinAnglers()))
+                .build();
+        return wrapEntity(result, userIdAndRenewal);
+    }
+
+    protected List<AnglerEffortStatistics.SpeciesCpue> toCpuePerSpecies(Map<UUID, Integer> catchesPerSpecies,
+                                                                        double totalHours) {
+        return catchesPerSpecies.entrySet().stream()
+                .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
+                .map(entry -> (AnglerEffortStatistics.SpeciesCpue) ImmutableSpeciesCpue.builder()
+                        .speciesId(entry.getKey())
+                        .catchesCount(entry.getValue())
+                        .catchesPerHour(entry.getValue() >= config.cpueMinCatches() && totalHours > 0
+                                ? Optional.of(entry.getValue() / totalHours)
+                                : Optional.empty())
+                        .build())
+                .toList();
     }
 
     @GET

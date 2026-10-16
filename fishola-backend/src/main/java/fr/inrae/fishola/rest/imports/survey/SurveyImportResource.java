@@ -37,12 +37,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
 /**
  * Import de masse opérateur, format « enquête terrain » (#144) — classeur XLSX
- * multi-feuilles en corps brut, nom/mode en query params, staff uniquement, cloisonné
+ * multi-feuilles, ou CSV plat d'une ligne par capture si le nom du fichier finit par
+ * « .csv » (#242), en corps brut, nom/mode en query params, staff uniquement, cloisonné
  * par périmètre, journalisé. Même contrat que {@link
  * fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireImportResource} (#143).
  */
@@ -51,6 +53,8 @@ import java.util.UUID;
 public class SurveyImportResource extends AbstractFisholaResource {
 
     private static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String CSV_MEDIA_TYPE = "text/csv; charset=UTF-8";
+    private static final String ZIP_MEDIA_TYPE = "application/zip";
 
     @Inject
     protected SurveyImportService importService;
@@ -58,7 +62,7 @@ public class SurveyImportResource extends AbstractFisholaResource {
     @POST
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
     @Audited(value = "import.xlsx.survey", entityType = "import_job")
-    public Response importXlsx(byte[] fileBytes,
+    public Response importFile(byte[] fileBytes,
                                @QueryParam("filename") @DefaultValue("enquete.xlsx") String filename,
                                @QueryParam("mode") @DefaultValue(SurveyImportService.MODE_PARTIAL) String mode) {
         FisholaAdmin admin = checkIsStaff();
@@ -77,14 +81,30 @@ public class SurveyImportResource extends AbstractFisholaResource {
         return Response.status(httpStatus).entity(result).build();
     }
 
-    /** Gabarit XLSX à remplir (#207) : les quatre feuilles et une ligne d'exemple chacune. */
+    /**
+     * Gabarit à remplir : classeur XLSX à quatre feuilles avec une ligne d'exemple chacune
+     * (#207), CSV plat avec des lignes d'exemple ({@code format=csv}, #242), ou archive ZIP
+     * des deux gabarits avec un exemple CSV complet et un LISEZ-MOI ({@code format=zip}).
+     *
+     * @param format {@code xlsx} (défaut), {@code csv} ou {@code zip}
+     * @return le gabarit en pièce jointe
+     */
     @GET
     @Path("/template")
-    @Produces(XLSX_MEDIA_TYPE)
-    public Response template() {
+    @Produces({XLSX_MEDIA_TYPE, CSV_MEDIA_TYPE, ZIP_MEDIA_TYPE})
+    public Response template(@QueryParam("format") @DefaultValue("xlsx") String format) {
         checkIsStaff();
-        return Response.ok(SurveyTemplate.build())
-                .header("Content-Disposition", "attachment; filename=\"" + SurveyTemplate.FILE_NAME + "\"")
+        return switch (format.toLowerCase(Locale.ROOT)) {
+            case "csv" -> attachment(SurveyFlatTemplate.build(), CSV_MEDIA_TYPE, SurveyFlatTemplate.FILE_NAME);
+            case "zip" -> attachment(SurveyTemplateBundle.build(), ZIP_MEDIA_TYPE, SurveyTemplateBundle.FILE_NAME);
+            default -> attachment(SurveyTemplate.build(), XLSX_MEDIA_TYPE, SurveyTemplate.FILE_NAME);
+        };
+    }
+
+    private static Response attachment(byte[] content, String mediaType, String fileName) {
+        return Response.ok(content)
+                .type(mediaType)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
     }
 }

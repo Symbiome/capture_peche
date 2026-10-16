@@ -23,7 +23,11 @@
     <h1 class="title">Nouvelle saisie — Carnet volontaire</h1>
 
     <div class="columns is-multiline">
-      <b-field label="Date" class="column is-2">
+      <b-field label="Code session (facultatif)" class="column is-12"
+        message="Code de la session inscrit sur le carnet papier">
+        <b-input v-model="trip.sessionCode" maxlength="64"></b-input>
+      </b-field>
+      <b-field label="Date de début" class="column is-2">
         <input type="date" class="input" v-model="trip.day" :max="todayIso" />
       </b-field>
       <b-field label="Heure de début" class="column is-2" :type="startTimeError ? 'is-danger' : ''"
@@ -31,7 +35,10 @@
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.startTime"
           @input="onTimeInput($event, 'startTime')" @blur="onTimeBlur('startTime')" />
       </b-field>
-      <b-field label="Heure de fin" class="column is-2" :type="endTimeError ? 'is-danger' : ''" :message="endTimeError">
+      <b-field label="Date de fin" class="column is-2">
+        <input type="date" class="input" v-model="trip.endDay" :min="trip.day" :max="todayIso" />
+      </b-field>
+      <b-field label="Heure de fin" class="column is-2" :type="endMessage ? 'is-danger' : ''" :message="endMessage">
         <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:mm" class="input" :value="trip.endTime"
           @input="onTimeInput($event, 'endTime')" @blur="onTimeBlur('endTime')" />
       </b-field>
@@ -48,15 +55,12 @@
         <WaterEntitySearchSelect v-model="trip.waterEntityId" v-model:position="trip.position" with-map />
       </b-field>
       <b-field label="Technique principale" class="column is-6">
-        <b-select v-model="trip.techniqueId" expanded>
-          <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-        </b-select>
+        <ReferentialSelect v-model="trip.techniqueId" :referential="techniques" expanded />
       </b-field>
 
       <b-field label="Espèce recherchée" class="column is-6">
-        <b-select v-model="trip.expectedSpeciesId" expanded :disabled="trip.noExpectedSpecies">
-          <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-        </b-select>
+        <ReferentialSelect v-model="trip.expectedSpeciesId" :referential="species" expanded
+          :disabled="trip.noExpectedSpecies" />
       </b-field>
       <b-field class="column is-6 no-species-field">
         <b-switch v-model="trip.noExpectedSpecies">Aucune espèce recherchée</b-switch>
@@ -79,10 +83,8 @@
       <div class="card-content">
         <div class="columns is-multiline">
           <b-field label="Technique secondaire" class="column is-6">
-            <b-select v-model="trip.secondaryTechniqueId" expanded>
-              <option :value="null">—</option>
-              <option v-for="t in techniques" :key="t.id" :value="t.id">{{ t.name }}</option>
-            </b-select>
+            <ReferentialSelect v-model="trip.secondaryTechniqueId" :referential="techniques" null-label="—"
+              expanded />
           </b-field>
           <b-field label="Appât / type de leurre" class="column is-6">
             <b-input v-model="trip.baitOrLure"></b-input>
@@ -100,9 +102,7 @@
       <div v-for="(c, i) in captures" :key="i" class="box">
         <div class="columns is-multiline is-vcentered">
           <b-field label="Espèce" class="column is-3">
-            <b-select v-model="c.speciesId" expanded>
-              <option v-for="s in species" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </b-select>
+            <ReferentialSelect v-model="c.speciesId" :referential="species" expanded />
           </b-field>
           <b-field label="Nombre" class="column is-2">
             <b-input type="number" min="1" v-model.number="c.quantity"></b-input>
@@ -144,7 +144,8 @@
           </b-field>
         </div>
       </div>
-      <b-button type="is-light" icon-left="plus" @click="addCapture">Ajouter une capture</b-button>
+      <!-- Mis en valeur (#206) ; contour seul pour rester distinct d'« Enregistrer ». -->
+      <b-button type="is-primary" size="is-medium" outlined icon-left="plus" @click="addCapture">Ajouter une capture</b-button>
     </div>
 
     <div class="mt-5">
@@ -171,10 +172,14 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
+import ReferentialSelect from "@/components/ReferentialSelect.vue";
 import WaterEntitySearchSelect from "@/components/WaterEntitySearchSelect.vue";
 import type { MapPosition } from "@/components/WaterEntityMapPicker.vue";
-import { maskTimeInput, isValidTimeString } from "@/utils/utils";
-import { ref, computed } from "vue";
+import {
+  EMPTY_REFERENTIAL, EntryReferential, SPECIES_URI, TECHNIQUES_URI, loadEntryReferential
+} from "@/utils/entryReferentials";
+import { maskTimeInput, isValidTimeString, isEndAfterStart, localDateIso } from "@/utils/utils";
+import { ref, computed, watch } from "vue";
 
 const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 
@@ -183,13 +188,15 @@ const TIME_FORMAT_ERROR = "Heure invalide (format 24h HH:mm, ex. 13:45)";
 const FISHING_MODES = ["bateau", "float tube/canoë", "bord itinérant", "bord statique"];
 const TROUT_ORIGINS = ["naturelle", "déversement", "inconnue"];
 
-const techniques = ref<any[]>([]);
-const species = ref<any[]>([]);
+const techniques = ref<EntryReferential>(EMPTY_REFERENTIAL);
+const species = ref<EntryReferential>(EMPTY_REFERENTIAL);
 
 function newTrip() {
   return {
+    sessionCode: "",
     day: "",
     startTime: "",
+    endDay: "",
     endTime: "",
     waterEntityId: null,
     position: null as MapPosition | null,
@@ -215,7 +222,24 @@ const errors = ref<any[]>([]);
 const startTimeError = ref("");
 const endTimeError = ref("");
 
-const todayIso = computed(() => new Date().toISOString().slice(0, 10));
+const todayIso = computed(() => localDateIso());
+
+const END_NOT_AFTER_START_ERROR = "La fin doit être postérieure au début";
+
+const endMessage = computed(() => {
+  if (endTimeError.value) {
+    return endTimeError.value;
+  }
+  const { day, startTime, endDay, endTime } = trip.value;
+  return isEndAfterStart(day, startTime, endDay, endTime) === false ? END_NOT_AFTER_START_ERROR : "";
+});
+
+// Date de fin pré-remplie avec la date de début (#237), qu'elle suit tant qu'elle lui est égale.
+watch(() => trip.value.day, (newDay: string, oldDay: string) => {
+  if (!trip.value.endDay || trip.value.endDay === oldDay) {
+    trip.value.endDay = newDay;
+  }
+});
 
 function isLot(c: any): boolean {
   return Number(c.quantity) > 1;
@@ -243,11 +267,12 @@ function onTimeBlur(field: "startTime" | "endTime") {
 loadReferentials();
 
 async function loadReferentials() {
-  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie.
-  const allTechniques = await BackendService.backendGet("/v1/referential/techniques");
-  const allSpecies = await BackendService.backendGet("/v1/referential/species");
-  techniques.value = allTechniques.filter((t: any) => !t.archived);
-  species.value = allSpecies.filter((s: any) => !s.archived);
+  // Éléments archivés (#202) : conservés pour l'historique, plus proposés à la saisie ;
+  // éléments masqués par le compte (#239) : repliés derrière « Afficher tout le référentiel ».
+  [techniques.value, species.value] = await Promise.all([
+    loadEntryReferential(TECHNIQUES_URI),
+    loadEntryReferential(SPECIES_URI)
+  ]);
 }
 
 function newCapture() {
@@ -308,6 +333,7 @@ async function submit() {
   const { position, ...tripFields } = trip.value;
   const payload = {
     ...tripFields,
+    endDay: trip.value.endDay || null,
     latitude: position ? position.lat : null,
     longitude: position ? position.lng : null,
     rodCount: toIntOrNull(trip.value.rodCount),

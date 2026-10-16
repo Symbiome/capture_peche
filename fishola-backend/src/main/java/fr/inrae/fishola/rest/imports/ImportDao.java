@@ -34,9 +34,11 @@ import fr.inrae.fishola.entities.enums.TroutOrigin;
 import fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireParsedRow;
 import fr.inrae.fishola.rest.imports.survey.SurveyAnglerOrigin;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedCapture;
+import fr.inrae.fishola.rest.imports.survey.SurveyParsedCatch;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSession;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSortie;
 import fr.inrae.fishola.rest.imports.survey.SurveyParsedSouvenir;
+import fr.inrae.fishola.rest.trips.TripTimestamps;
 import jakarta.inject.Singleton;
 import org.jooq.Condition;
 import jakarta.transaction.Transactional;
@@ -88,9 +90,14 @@ public class ImportDao extends AbstractFisholaDao {
     public record TripExtras(UUID expectedSpeciesId, UUID secondaryTechniqueId, String baitOrLure,
                              Short rodCount, FishingMode fishingMode, String[] observations,
                              DayPeriod dayPeriod, String externalRef, UUID surveySessionId,
-                             UUID surveyedAnglerId) {
+                             UUID surveyedAnglerId, String sessionCode) {
         public static final TripExtras NONE =
-                new TripExtras(null, null, null, null, null, null, null, null, null, null);
+                new TripExtras(null, null, null, null, null, null, null, null, null, null, null);
+
+        /** Seul le code de la session d'origine (#235) est renseigné. */
+        public static TripExtras sessionCodeOnly(String sessionCode) {
+            return new TripExtras(null, null, null, null, null, null, null, null, null, null, sessionCode);
+        }
     }
 
     /**
@@ -230,8 +237,8 @@ public class ImportDao extends AbstractFisholaDao {
                 ParsedRow s = rows.get(0);
                 String name = "Import " + sref + " " + s.day.format(DAY_FMT);
 
-                UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, s.end, s.waterEntityId, name, now,
-                        TripExtras.NONE);
+                UUID tripId = insertTrip(ctx, s.collectionMethod, s.day, s.start, null, s.end, s.waterEntityId, name, now,
+                        TripExtras.sessionCodeOnly(sref));
 
                 for (ParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -287,7 +294,8 @@ public class ImportDao extends AbstractFisholaDao {
                 CarnetVolontaireParsedRow s = rows.get(0);
                 String name = "Carnet volontaire " + sref + " " + s.day.format(DAY_FMT);
 
-                UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.end, s.waterEntityId, name, now);
+                UUID tripId = insertTrip(ctx, "carnet_volontaire", s.day, s.start, s.endDay, s.end, s.waterEntityId, name, now,
+                        TripExtras.sessionCodeOnly(sref));
 
                 for (CarnetVolontaireParsedRow p : rows) {
                     if (!p.hasCapture) {
@@ -359,8 +367,10 @@ public class ImportDao extends AbstractFisholaDao {
             for (SurveyParsedSession s : sessions.values()) {
                 UUID id = ctx.insertInto(SURVEY_SESSION,
                                 SURVEY_SESSION.CODE, SURVEY_SESSION.WATER_ENTITY_ID, SURVEY_SESSION.DAY,
-                                SURVEY_SESSION.UNSURVEYED_SHORE_ANGLERS, SURVEY_SESSION.UNSURVEYED_BOAT_ANGLERS)
-                        .values(s.code, s.waterEntityId, s.day, s.unsurveyedShoreAnglers, s.unsurveyedBoatAnglers)
+                                SURVEY_SESSION.UNSURVEYED_SHORE_ANGLERS, SURVEY_SESSION.UNSURVEYED_BOAT_ANGLERS,
+                                SURVEY_SESSION.START_TIME, SURVEY_SESSION.END_TIME, SURVEY_SESSION.OPERATOR_NAME)
+                        .values(s.code, s.waterEntityId, s.day, s.unsurveyedShoreAnglers, s.unsurveyedBoatAnglers,
+                                s.startTime, s.endTime, s.operatorName)
                         .returning(SURVEY_SESSION.ID)
                         .fetchOne()
                         .getId();
@@ -389,8 +399,8 @@ public class ImportDao extends AbstractFisholaDao {
                 String name = "Enquête " + first.sortieCode + "/" + first.anglerCode + " " + session.day.format(DAY_FMT);
                 TripExtras extras = new TripExtras(first.expectedSpeciesId, null, first.baitOrLure,
                         first.rodCount == null ? null : first.rodCount.shortValue(), first.fishingMode, null,
-                        null, first.sortieCode + "/" + first.anglerCode, sessionId, anglerId);
-                UUID tripId = insertTrip(ctx, "enquete", session.day, sortie.startTime, sortie.endTime,
+                        null, first.sortieCode + "/" + first.anglerCode, sessionId, anglerId, sortie.sessionCode);
+                UUID tripId = insertTrip(ctx, "enquete", session.day, sortie.startTime, sortie.endDay, sortie.endTime,
                         session.waterEntityId, name, now, extras);
 
                 for (SurveyParsedCapture row : rows) {
@@ -409,26 +419,28 @@ public class ImportDao extends AbstractFisholaDao {
                 stampDepartment(ctx, tripId);
             }
 
+            Map<String, String> sessionCodeByAngler = sessionCodeByAngler(sorties, tripsByKey);
             for (SurveyParsedSouvenir s : souvenirs) {
                 UUID anglerId = anglerIds.get(s.anglerCode);
                 LocalTime[] nominal = NOMINAL_TIMES_BY_PERIOD.get(s.dayPeriod);
 
                 String name = "Enquête souvenir " + s.anglerCode + " " + s.day.format(DAY_FMT);
+                String sessionCode = s.sessionCode != null ? s.sessionCode : sessionCodeByAngler.get(s.anglerCode);
                 TripExtras extras = new TripExtras(s.expectedSpeciesId, null, s.baitOrLure,
                         s.rodCount == null ? null : s.rodCount.shortValue(), s.fishingMode, null,
-                        s.dayPeriod, s.anglerCode, null, anglerId);
-                UUID tripId = insertTrip(ctx, "enquete_souvenir", s.day, nominal[0], nominal[1],
+                        s.dayPeriod, s.anglerCode, null, anglerId, sessionCode);
+                UUID tripId = insertTrip(ctx, "enquete_souvenir", s.day, nominal[0], null, nominal[1],
                         s.waterEntityId, name, now, extras);
 
-                if (s.hasCapture) {
-                    String sizeClass = (s.lotMinSize != null && s.lotMaxSize != null)
-                            ? (s.lotMinSize + "-" + s.lotMaxSize) : null;
+                for (SurveyParsedCatch c : s.catches) {
+                    String sizeClass = (c.lotMinSize != null && c.lotMaxSize != null)
+                            ? (c.lotMinSize + "-" + c.lotMaxSize) : null;
                     CatchExtras catchExtras = new CatchExtras(null,
-                            s.lotMinSize == null ? null : s.lotMinSize.shortValue(),
-                            s.lotMaxSize == null ? null : s.lotMaxSize.shortValue(),
+                            c.lotMinSize == null ? null : c.lotMinSize.shortValue(),
+                            c.lotMaxSize == null ? null : c.lotMaxSize.shortValue(),
                             null, null, s.baitOrLure, null);
-                    insertCatch(ctx, tripId, s.speciesId, s.techniqueId, s.size, null, s.kept,
-                            s.quantity == null ? 1 : s.quantity, sizeClass, null, now, catchExtras);
+                    insertCatch(ctx, tripId, c.speciesId, s.techniqueId, c.size, null, c.kept,
+                            c.quantity == null ? 1 : c.quantity, sizeClass, null, now, catchExtras);
                 }
                 stampDepartment(ctx, tripId);
             }
@@ -466,20 +478,23 @@ public class ImportDao extends AbstractFisholaDao {
      * La technique d'une capture retombe sur celle de la sortie si absente.
      */
     @Transactional
-    public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
-                                UUID waterEntityId, String name, UUID tripTechniqueId, List<ManualCatch> catches) {
-        return saveManualEntry(collectionMethod, day, start, end, waterEntityId, name, tripTechniqueId, catches, null);
+    public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalDate endDay,
+                                LocalTime end, UUID waterEntityId, String name, String sessionCode,
+                                UUID tripTechniqueId, List<ManualCatch> catches) {
+        return saveManualEntry(collectionMethod, day, start, endDay, end, waterEntityId, name, sessionCode,
+                tripTechniqueId, catches, null);
     }
 
     /** Idem, avec la position saisie sur la carte ({@code position} nul : aucune position). */
     @Transactional
-    public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
-                                UUID waterEntityId, String name, UUID tripTechniqueId, List<ManualCatch> catches,
-                                ManualPosition position) {
+    public UUID saveManualEntry(String collectionMethod, LocalDate day, LocalTime start, LocalDate endDay,
+                                LocalTime end, UUID waterEntityId, String name, String sessionCode,
+                                UUID tripTechniqueId, List<ManualCatch> catches, ManualPosition position) {
         // Atomicité JTA (cf. remarque sur persist()).
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
-        UUID tripId = insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now);
+        UUID tripId = insertTrip(ctx, collectionMethod, day, start, endDay, end, waterEntityId, name, now,
+                TripExtras.sessionCodeOnly(sessionCode));
         applyPosition(ctx, tripId, position);
         for (ManualCatch c : catches) {
             UUID technique = c.techniqueId() != null ? c.techniqueId() : tripTechniqueId;
@@ -519,35 +534,32 @@ public class ImportDao extends AbstractFisholaDao {
                                      Short rodCount, String baitOrLure, UUID expectedSpeciesId,
                                      List<SurveyManualCatch> catches, SurveyManualSouvenir souvenir) {}
 
-    /** Bloc « session souvenir » facultatif d'un pêcheur, saisi manuellement (#144). {@code catch_} nul = bredouille. */
+    /** Bloc « session souvenir » facultatif d'un pêcheur, saisi manuellement (#144) ; sans capture = bredouille (#236). */
     public record SurveyManualSouvenir(LocalDate day, DayPeriod dayPeriod, UUID waterEntityId, FishingMode fishingMode,
                                        UUID techniqueId, Short rodCount, String baitOrLure, UUID expectedSpeciesId,
-                                       SurveyManualCatch catch_, ManualPosition position) {}
+                                       List<SurveyManualCatch> catches, ManualPosition position) {}
+
+    /** Session d'enquête ouverte à laquelle on ajoute une sortie (#236). */
+    public record SurveySessionRef(UUID id, String code) {}
+
+    /** Sortie enquêtée saisie manuellement (#144) : jour, heures et secteur, pré-renseignés depuis la session (#236). */
+    public record SurveyManualSortie(UUID waterEntityId, LocalDate day, LocalTime startTime, LocalDate endDay,
+                                     LocalTime endTime, ManualPosition position) {}
 
     public record ManualSurveyResult(UUID sessionId, List<UUID> tripIds) {}
 
     /**
-     * Persiste une saisie manuelle « enquête terrain » (#144) en une transaction : une
-     * {@code survey_session} et, par pêcheur interrogé, un {@code surveyed_angler}, une
+     * Persiste en une transaction une sortie « enquête terrain » saisie manuellement dans une
+     * session ouverte (#236) : par pêcheur interrogé, un {@code surveyed_angler}, une
      * {@code Trip} (+ ses captures) et, si renseignée, une {@code Trip} « session souvenir »
-     * indépendante. Codes session / pêcheur générés ici (jamais saisis, cf. issue #144).
+     * indépendante. Codes sortie / pêcheur générés ici (jamais saisis, cf. issue #144).
      */
     @Transactional
-    public ManualSurveyResult saveManualEntrySurvey(UUID waterEntityId, LocalDate day, LocalTime controlTime,
-                                                     LocalTime startTime, LocalTime endTime,
-                                                     Short unsurveyedShoreAnglers, Short unsurveyedBoatAnglers,
-                                                     List<SurveyManualAngler> anglers, ManualPosition position) {
+    public ManualSurveyResult saveSurveySortie(SurveySessionRef session, SurveyManualSortie sortie,
+                                               List<SurveyManualAngler> anglers) {
         DSLContext ctx = newContext();
         LocalDateTime now = LocalDateTime.now();
-
-        String sessionCode = "MANUEL-" + UUID.randomUUID();
-        UUID sessionId = ctx.insertInto(SURVEY_SESSION,
-                        SURVEY_SESSION.CODE, SURVEY_SESSION.WATER_ENTITY_ID, SURVEY_SESSION.DAY,
-                        SURVEY_SESSION.UNSURVEYED_SHORE_ANGLERS, SURVEY_SESSION.UNSURVEYED_BOAT_ANGLERS)
-                .values(sessionCode, waterEntityId, day, unsurveyedShoreAnglers, unsurveyedBoatAnglers)
-                .returning(SURVEY_SESSION.ID)
-                .fetchOne()
-                .getId();
+        String sortieCode = "MANUEL-" + UUID.randomUUID();
 
         List<UUID> tripIds = new java.util.ArrayList<>();
         int anglerIndex = 0;
@@ -561,12 +573,14 @@ public class ImportDao extends AbstractFisholaDao {
                     .fetchOne()
                     .getId();
 
-            String externalRef = sessionCode + "/angler-" + anglerIndex;
-            String name = "Enquête " + externalRef + " " + day.format(DAY_FMT);
+            String externalRef = sortieCode + "/angler-" + anglerIndex;
+            String name = "Enquête " + externalRef + " " + sortie.day().format(DAY_FMT);
             TripExtras extras = new TripExtras(angler.expectedSpeciesId(), null, angler.baitOrLure(),
-                    angler.rodCount(), angler.fishingMode(), null, null, externalRef, sessionId, anglerId);
-            UUID tripId = insertTrip(ctx, "enquete", day, startTime, endTime, waterEntityId, name, now, extras);
-            applyPosition(ctx, tripId, position);
+                    angler.rodCount(), angler.fishingMode(), null, null, externalRef, session.id(), anglerId,
+                    session.code());
+            UUID tripId = insertTrip(ctx, "enquete", sortie.day(), sortie.startTime(), sortie.endDay(),
+                    sortie.endTime(), sortie.waterEntityId(), name, now, extras);
+            applyPosition(ctx, tripId, sortie.position());
             tripIds.add(tripId);
 
             for (SurveyManualCatch c : angler.catches()) {
@@ -574,25 +588,29 @@ public class ImportDao extends AbstractFisholaDao {
             }
             stampDepartment(ctx, tripId);
 
-            SurveyManualSouvenir souvenir = angler.souvenir();
-            if (souvenir != null) {
-                LocalTime[] nominal = NOMINAL_TIMES_BY_PERIOD.get(souvenir.dayPeriod());
-                String souvenirName = "Enquête souvenir " + anglerCode + " " + souvenir.day().format(DAY_FMT);
-                TripExtras souvenirExtras = new TripExtras(souvenir.expectedSpeciesId(), null, souvenir.baitOrLure(),
-                        souvenir.rodCount(), souvenir.fishingMode(), null, souvenir.dayPeriod(), anglerCode,
-                        null, anglerId);
-                UUID souvenirTripId = insertTrip(ctx, "enquete_souvenir", souvenir.day(), nominal[0], nominal[1],
-                        souvenir.waterEntityId(), souvenirName, now, souvenirExtras);
-                applyPosition(ctx, souvenirTripId, souvenir.position());
-                tripIds.add(souvenirTripId);
-                if (souvenir.catch_() != null) {
-                    insertSurveyManualCatch(ctx, souvenirTripId, souvenir.catch_(), souvenir.techniqueId(),
-                            souvenir.baitOrLure(), now);
-                }
-                stampDepartment(ctx, souvenirTripId);
+            if (angler.souvenir() != null) {
+                tripIds.add(insertSurveyManualSouvenir(ctx, angler.souvenir(), anglerCode, anglerId, session.code(),
+                        now));
             }
         }
-        return new ManualSurveyResult(sessionId, tripIds);
+        return new ManualSurveyResult(session.id(), tripIds);
+    }
+
+    private UUID insertSurveyManualSouvenir(DSLContext ctx, SurveyManualSouvenir souvenir, String anglerCode,
+                                            UUID anglerId, String sessionCode, LocalDateTime now) {
+        LocalTime[] nominal = NOMINAL_TIMES_BY_PERIOD.get(souvenir.dayPeriod());
+        String name = "Enquête souvenir " + anglerCode + " " + souvenir.day().format(DAY_FMT);
+        TripExtras extras = new TripExtras(souvenir.expectedSpeciesId(), null, souvenir.baitOrLure(),
+                souvenir.rodCount(), souvenir.fishingMode(), null, souvenir.dayPeriod(), anglerCode,
+                null, anglerId, sessionCode);
+        UUID tripId = insertTrip(ctx, "enquete_souvenir", souvenir.day(), nominal[0], null, nominal[1],
+                souvenir.waterEntityId(), name, now, extras);
+        applyPosition(ctx, tripId, souvenir.position());
+        for (SurveyManualCatch c : souvenir.catches()) {
+            insertSurveyManualCatch(ctx, tripId, c, souvenir.techniqueId(), souvenir.baitOrLure(), now);
+        }
+        stampDepartment(ctx, tripId);
+        return tripId;
     }
 
     private void insertSurveyManualCatch(DSLContext ctx, UUID tripId, SurveyManualCatch c, UUID fallbackTechniqueId,
@@ -605,31 +623,49 @@ public class ImportDao extends AbstractFisholaDao {
                 c.quantity() == null ? 1 : c.quantity(), sizeClass, null, now, extras);
     }
 
-    // --- Inserts partagés import / saisie manuelle ---------------------------
-
-    private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
-                            UUID waterEntityId, String name, LocalDateTime now) {
-        return insertTrip(ctx, collectionMethod, day, start, end, waterEntityId, name, now, TripExtras.NONE);
+    /**
+     * Code de la session où chaque pêcheur a été enquêté, pour rattacher sa sortie souvenir
+     * à cette session (#235) sans la compter parmi les sorties de la session.
+     */
+    private static Map<String, String> sessionCodeByAngler(Map<String, SurveyParsedSortie> sorties,
+                                                          Map<String, List<SurveyParsedCapture>> tripsByKey) {
+        Map<String, String> result = new java.util.HashMap<>();
+        for (List<SurveyParsedCapture> rows : tripsByKey.values()) {
+            SurveyParsedCapture first = rows.get(0);
+            SurveyParsedSortie sortie = sorties.get(first.sortieCode);
+            if (sortie != null) {
+                result.putIfAbsent(first.anglerCode, sortie.sessionCode);
+            }
+        }
+        return result;
     }
 
-    private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start, LocalTime end,
-                            UUID waterEntityId, String name, LocalDateTime now, TripExtras extras) {
+    // --- Inserts partagés import / saisie manuelle ---------------------------
+
+    private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start,
+                            LocalDate endDay, LocalTime end, UUID waterEntityId, String name, LocalDateTime now) {
+        return insertTrip(ctx, collectionMethod, day, start, endDay, end, waterEntityId, name, now, TripExtras.NONE);
+    }
+
+    /** {@code endDay} nul : règle historique « fin avant début → lendemain » (cf. {@link TripTimestamps}). */
+    private UUID insertTrip(DSLContext ctx, String collectionMethod, LocalDate day, LocalTime start,
+                            LocalDate endDay, LocalTime end, UUID waterEntityId, String name, LocalDateTime now,
+                            TripExtras extras) {
         LocalDateTime beginTimestamp = LocalDateTime.of(day, start);
-        LocalDateTime endTimestamp = LocalDateTime.of(day, end);
-        if (endTimestamp.isBefore(beginTimestamp)) {
-            endTimestamp = endTimestamp.plusDays(1);
-        }
+        LocalDateTime endTimestamp = TripTimestamps.endTimestamp(day, start, endDay, end);
         return ctx.insertInto(TRIP,
                         TRIP.COLLECTION_METHOD, TRIP.BEGIN_TIMESTAMP, TRIP.END_TIMESTAMP,
                         TRIP.WATER_ENTITY_ID, TRIP.NAME, TRIP.TYPE, TRIP.MODE, TRIP.SOURCE,
                         TRIP.HIDDEN, TRIP.CREATED_ON, TRIP.EXPECTED_SPECIES_ID, TRIP.SECONDARY_TECHNIQUE_ID,
                         TRIP.BAIT_OR_LURE, TRIP.ROD_COUNT, TRIP.FISHING_MODE, TRIP.TRIP_OBSERVATIONS,
-                        TRIP.DAY_PERIOD, TRIP.EXTERNAL_REF, TRIP.SURVEY_SESSION_ID, TRIP.SURVEYED_ANGLER_ID)
+                        TRIP.DAY_PERIOD, TRIP.EXTERNAL_REF, TRIP.SURVEY_SESSION_ID, TRIP.SURVEYED_ANGLER_ID,
+                        TRIP.SESSION_CODE)
                 .values(CollectionMethod.valueOf(collectionMethod), beginTimestamp, endTimestamp,
                         waterEntityId, name, TripType.Border, TripMode.Afterwards, DeviceType.web,
                         false, now, extras.expectedSpeciesId(), extras.secondaryTechniqueId(),
                         extras.baitOrLure(), extras.rodCount(), extras.fishingMode(), extras.observations(),
-                        extras.dayPeriod(), extras.externalRef(), extras.surveySessionId(), extras.surveyedAnglerId())
+                        extras.dayPeriod(), extras.externalRef(), extras.surveySessionId(), extras.surveyedAnglerId(),
+                        extras.sessionCode())
                 .returning(TRIP.ID)
                 .fetchOne()
                 .getId();

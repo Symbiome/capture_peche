@@ -27,6 +27,8 @@ import 'moment/dist/locale/fr';
 
 export default class Helpers {
   static readonly TIME_24H_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+  // Taille maximale par défaut (cm) quand l'administrateur n'en a pas défini.
+  static readonly DEFAULT_MAX_SIZE = 1000;
 
   // Masque de saisie HH:mm indépendant de la locale du navigateur/OS : les
   // champs <input type="time"> natifs affichent AM/PM selon la locale de
@@ -63,6 +65,47 @@ export default class Helpers {
       .replace(/^(le|la|les|l) /, "");
   }
 
+  /**
+   * Libellés des milieux d'une liste de résultats (#230) : les homonymes
+   * (même nom à la casse et aux accents près) sont suffixés de leur
+   * département, « La Bourbre (38) », et de la commune s'ils partagent le même
+   * département, « Étang Neuf (01 – Bourg-en-Bresse) ». Sans département connu,
+   * ou sans homonyme, le nom seul. Renvoie le libellé par id de milieu.
+   */
+  static waterEntityLabels(
+    entities: { id: string; name: string; department?: string; commune?: string }[]
+  ): Map<string, string> {
+    const uniqueById = new Map(entities.map((entity) => [entity.id, entity]));
+    const homonymsByName = new Map<string, typeof entities>();
+    uniqueById.forEach((entity) => {
+      const key = Helpers.unaccent(entity.name || "").trim();
+      homonymsByName.set(key, [...(homonymsByName.get(key) || []), entity]);
+    });
+    const labels = new Map<string, string>();
+    homonymsByName.forEach((homonyms) => {
+      homonyms.forEach((entity) => {
+        labels.set(entity.id, Helpers.homonymLabel(entity, homonyms));
+      });
+    });
+    return labels;
+  }
+
+  private static homonymLabel(
+    entity: { id: string; name: string; department?: string; commune?: string },
+    homonyms: { id: string; department?: string }[]
+  ): string {
+    if (homonyms.length < 2 || !entity.department) {
+      return entity.name;
+    }
+    const sameDepartment = homonyms.some(
+      (other) => other.id !== entity.id && other.department === entity.department
+    );
+    const suffix = sameDepartment && entity.commune
+      ? `${entity.department} – ${entity.commune}`
+      : entity.department;
+    return `${entity.name} (${suffix})`;
+  }
+
   // Classement d'un libellé pour une recherche (#197, même règle que l'admin
   // #203 et que le backend) : égalité exacte, puis préfixe, puis début de mot,
   // puis simple inclusion. null si le libellé ne correspond pas.
@@ -87,6 +130,22 @@ export default class Helpers {
   // Éléments correspondant à la recherche sur l'un de leurs libellés, les plus
   // pertinents d'abord (meilleur rang parmi les libellés), ordre d'origine
   // conservé à rang égal.
+  /**
+   * Classes de taille d'un lot (#196) découpées selon le maillage défini par
+   * l'administrateur : [0–m], [m–2m]… jusqu'à la taille maximale de l'espèce,
+   * la dernière classe étant tronquée à cette taille maximale.
+   */
+  static sizeClasses(meshSize: number, maxSize: number): { min: number; max: number }[] {
+    const classes: { min: number; max: number }[] = [];
+    if (!meshSize || meshSize <= 0 || !maxSize || maxSize <= 0) {
+      return classes;
+    }
+    for (let min = 0; min < maxSize; min += meshSize) {
+      classes.push({ min, max: Math.min(min + meshSize, maxSize) });
+    }
+    return classes;
+  }
+
   static rankBySearch<T>(
     items: T[],
     query: string,
@@ -359,6 +418,29 @@ export default class Helpers {
       };
       modal.show("dialog", params);
     });
+  }
+
+  /**
+   * Taille d'une prise au-delà de la taille maximale définie par
+   * l'administrateur pour (milieu, espèce) (#229) : demande confirmation au
+   * lieu de bloquer l'enregistrement. Sans taille maximale définie (borne
+   * par défaut), aucune confirmation. Résout `true` pour enregistrer,
+   * `false` pour revenir corriger la taille.
+   */
+  static confirmSizeAboveMax(modal: any, size: number | undefined, maxSize: number): Promise<boolean> {
+    if (!size || maxSize >= Helpers.DEFAULT_MAX_SIZE || size <= maxSize) {
+      return Promise.resolve(true);
+    }
+    return Helpers.confirm(
+      modal,
+      `Taille saisie : ${size} cm, supérieure à la taille maximale de l'espèce sur ce milieu (${maxSize} cm).`,
+      "Êtes-vous sûr de la taille de la prise ?",
+      "Corriger",
+      "Confirmer"
+    ).then(
+      () => true,
+      () => false
+    );
   }
 
   static alert(modal: any, text: string, title?: string): Promise<void> {

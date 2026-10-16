@@ -133,7 +133,7 @@ export default class PictureSourceChoice extends Vue {
   height: 100vh;
   width: 100%;
   z-index: 99;
-  color: black;
+  color: @text-strong;
   background-color: rgba(0, 0, 0, 0.6);
 
   @media screen and (min-width: @desktop-min-width) {
@@ -142,7 +142,7 @@ export default class PictureSourceChoice extends Vue {
   }
 
   .title {
-    color: @pelorous;
+    color: @accent-text;
   }
   .transparent-background {
     height: 68vh;

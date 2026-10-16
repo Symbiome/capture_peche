@@ -20,13 +20,15 @@
   -->
 <template>
   <div class="referential-aCatch">
+    <!-- #204 : sans indicateur, la fiche semblait vide pendant le chargement. -->
+    <b-loading v-model="loading" :is-full-page="false" />
     <h1 v-if="trip.name">
       {{ trip.name }} -
       <span>
         {{ speciesIdMap.get(aCatch.editedSpeciesId) }}
       </span>
     </h1>
-    <div>
+    <fieldset :disabled="loading">
       <div class="columns">
         <section class="section column">
           <h2 class="title">Informations éditables</h2>
@@ -35,18 +37,11 @@
               label="Espèce corrigée"
               class="column"
             >
-              <b-select
+              <ReferentialSelect
                 placeholder="Sélectionnez une espèce"
                 v-model="aCatch.editedSpeciesId"
-              >
-                <option
-                  v-for="specie in sortedSpeciesNames"
-                  :value="speciesNamesMap.get(specie)"
-                  :key="specie"
-                >
-                  {{ specie }}
-                </option>
-              </b-select>
+                :referential="correctableSpecies"
+              />
             </b-field>
 
             <b-field
@@ -138,7 +133,7 @@
               <b-numberinput
                 v-model="aCatch.lotMinSize"
                 type="numeric"
-                min="1"
+                min="0"
                 class="number-input"
               />
             </b-field>
@@ -252,7 +247,7 @@
           </b-field>
         </section>
       </div>
-    </div>
+    </fieldset>
 
     <p v-if="aCatch.id && canEdit && !aCatch.validatedAt" class="validation-notice">
       Enregistrer marque cette prise comme validée.
@@ -264,6 +259,7 @@
       <button
         v-if="aCatch.id && canEdit"
         class="button is-primary"
+        :disabled="loading"
         @click="save()"
       >
         Enregistrer
@@ -280,6 +276,7 @@
 </template>
 
 <script setup lang="ts">
+import ReferentialSelect from "@/components/ReferentialSelect.vue";
 import BackendService from "@/services/BackendService";
 import Constants from "@/services/Constants";
 import UtilityServices from "@/services/UtilityServices";
@@ -287,6 +284,7 @@ import UtilityServices from "@/services/UtilityServices";
 import router from "@/router";
 import { computed, onMounted, reactive, ref, Ref } from "vue";
 import { useToast } from "buefy";
+import { EntryReferential, SPECIES_URI, loadEntryReferential } from "@/utils/entryReferentials";
 
 const Toast = useToast();
 
@@ -310,43 +308,79 @@ const techniquesIdMap = reactive(new Map<string, string>());
 const lakesIdMap = reactive(new Map<string, string>());
 const speciesNamesMap = reactive(new Map<string, string>());
 const sortedSpeciesNames: Ref<Array<string>> = ref([]);
+// Espèces masquées par le compte (#239) : repliées dans la liste « Espèce corrigée ».
+const hiddenSpeciesIds: Ref<Set<string>> = ref(new Set());
+const correctableSpecies = computed<EntryReferential>(() => ({
+  all: sortedSpeciesNames.value.map((name) => ({ id: speciesNamesMap.get(name) as string, name })),
+  hiddenIds: hiddenSpeciesIds.value
+}));
 const measurementPicURL = ref("");
 const otherPicsUrls: Ref<Array<string>> = ref([]);
 const catchMapURL = ref("");
+// Formulaire désactivé et indicateur affiché jusqu'à l'arrivée des données (#204).
+const loading = ref(true);
 
 onMounted(loadCatch);
 
 async function loadCatch() {
-  if (speciesIdMap.size == 0) {
-    const loggedAdmin = await BackendService.backendGet("/v1/admin/check");
-    isOperator.value = loggedAdmin.isOperator;
-    const species = await BackendService.backendGet(
-      "/v1/referential/raw-species"
-    );
-    species.forEach((specie: { id: string; name: string }) => {
-      speciesIdMap.set(specie.id, specie.name);
-      speciesNamesMap.set(specie.name, specie.id);
-      sortedSpeciesNames.value.push(specie.name);
-    });
-    sortedSpeciesNames.value = sortedSpeciesNames.value.sort();
-
-    const techniques = await BackendService.backendGet(
-      "/v1/referential/techniques"
-    );
-    techniques.forEach((technique: { id: string; name: string }) => {
-      techniquesIdMap.set(technique.id, technique.name);
-    });
-    const lakes = await BackendService.backendGet("/v1/referential/waterEntities/names");
-    lakes.forEach((lake: { id: string; name: string }) => {
-      lakesIdMap.set(lake.id, lake.name);
-    });
+  loading.value = true;
+  try {
+    // #204 : requêtes lancées en parallèle (elles étaient enchaînées).
+    const [loadedTrip] = await Promise.all([
+      BackendService.backendGet("/v1/trips/catches/" + catchId),
+      speciesIdMap.size == 0 ? loadReferentials() : Promise.resolve()
+    ]);
+    await loadWaterEntityName(loadedTrip.waterEntityId);
+    showCatch(loadedTrip);
+  } catch (e) {
+    console.error(e);
+    Toast.open({ message: "Impossible de charger la prise, réessayez.", type: "is-danger" });
+  } finally {
+    loading.value = false;
   }
+}
+
+async function loadReferentials() {
+  const [loggedAdmin, species, techniques, entrySpecies] = await Promise.all([
+    BackendService.backendGet("/v1/admin/check"),
+    BackendService.backendGet("/v1/referential/raw-species"),
+    BackendService.backendGet("/v1/referential/techniques"),
+    loadEntryReferential(SPECIES_URI)
+  ]);
+  isOperator.value = loggedAdmin.isOperator;
+  hiddenSpeciesIds.value = entrySpecies.hiddenIds;
+  species.forEach((specie: { id: string; name: string }) => {
+    speciesIdMap.set(specie.id, specie.name);
+    speciesNamesMap.set(specie.name, specie.id);
+    sortedSpeciesNames.value.push(specie.name);
+  });
+  sortedSpeciesNames.value = sortedSpeciesNames.value.sort();
+  techniques.forEach((technique: { id: string; name: string }) => {
+    techniquesIdMap.set(technique.id, technique.name);
+  });
+}
+
+// #204 : seul le nom du plan d'eau de la sortie est chargé, et non plus tout
+// le référentiel (~181 000 entités pour un admin national).
+async function loadWaterEntityName(waterEntityId?: string) {
+  if (!waterEntityId || lakesIdMap.has(waterEntityId)) {
+    return;
+  }
+  try {
+    const waterEntity = await BackendService.backendGet(
+      "/v1/referential/waterEntities/names/" + encodeURIComponent(waterEntityId)
+    );
+    lakesIdMap.set(waterEntity.id, waterEntity.name);
+  } catch (e) {
+    console.error("Nom du plan d'eau indisponible", e);
+  }
+}
+
+function showCatch(loadedTrip: any) {
   measurementPicURL.value = "";
   otherPicsUrls.value = [];
   catchMapURL.value = "";
-  trip.value = await BackendService.backendGet(
-    "/v1/trips/catches/" + catchId
-  );
+  trip.value = loadedTrip;
   aCatch.value = trip.value.catchs.find((c: any) => c.id == catchId);
   if (aCatch.value.latitude != null && aCatch.value.longitude != null) {
     catchMapURL.value = buildCatchMapURL(
@@ -370,6 +404,8 @@ async function loadCatch() {
 
 async function save() {
   const url = "/v1/trips/catches/" + catchId;
+  // Pas de double envoi : le formulaire reste désactivé jusqu'au rechargement.
+  loading.value = true;
   try {
     await BackendService.backendPut(url, aCatch.value);
     emit("referentialUpdated");
@@ -380,6 +416,7 @@ async function save() {
     loadCatch();
   } catch (e) {
     console.error(e);
+    loading.value = false;
     Toast.open({
       message:
         "Erreur lors de la modification de la prise. Veuillez vérifier vos modifications.",
@@ -426,13 +463,21 @@ function certaintyLabel(certainty: string): string {
 
 <style lang="less">
 .referential-aCatch {
+  position: relative;
   padding: 10px;
+
+  fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
 
   h2 {
     font-size: 24px;
   }
 
-  background-color: @white;
+  background-color: var(--bulma-scheme-main);
 
   .number-input {
     max-width: 250px;
@@ -454,7 +499,7 @@ function certaintyLabel(certainty: string): string {
   }
 
   .validation-notice {
-    color: @pale-sky;
+    color: var(--bulma-text-weak);
     font-style: italic;
   }
 }

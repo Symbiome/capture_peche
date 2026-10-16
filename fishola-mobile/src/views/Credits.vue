@@ -55,7 +55,7 @@
       </div>
       <RunningOverlay class="hiddenWhenKeyboardShows" v-if="hasRunningTrip" />
     </div>
-    <FisholaFooter shortcuts="back,credits,documentation" selected="credits" />
+    <BottomNav />
   </div>
 </template>
 
@@ -63,7 +63,7 @@
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue';
 import RunningOverlay from '@/components/layout/RunningOverlay.vue';
-import FisholaFooter from '@/components/layout/FisholaFooter.vue';
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import { Editorial } from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
@@ -75,7 +75,7 @@ import { Component, Vue } from 'vue-property-decorator';
   components: {
     FisholaHeader,
     RunningOverlay,
-    FisholaFooter
+    BottomNav
   }
 })
 export default class CreditsView extends Vue {
@@ -130,7 +130,7 @@ export default class CreditsView extends Vue {
     a,
     a:visited {
       text-decoration: none;
-      color: @summer-sky;
+      color: @accent-text;
     }
 
     button {

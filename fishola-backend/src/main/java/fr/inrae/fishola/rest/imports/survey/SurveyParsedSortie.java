@@ -21,6 +21,7 @@ package fr.inrae.fishola.rest.imports.survey;
  * #L%
  */
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 /** Une ligne validée de la feuille « Sortie de pêche » (#144), rattachée à une session. */
@@ -30,5 +31,6 @@ public class SurveyParsedSortie {
     public String sortieCode;
     public LocalTime controlTime;
     public LocalTime startTime;
+    public LocalDate endDay; // « Date de fin de pêche prévue » facultative (#237)
     public LocalTime endTime;
 }

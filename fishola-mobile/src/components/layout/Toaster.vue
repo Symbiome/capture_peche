@@ -37,6 +37,7 @@
 
 <script lang="ts">
 import Helpers from "@/services/Helpers";
+import { CARNET_COLORS } from "@/services/CarnetPalette";
 
 import { Component, Vue } from "vue-property-decorator";
 import { StatusBar } from "@capacitor/status-bar";
@@ -85,11 +86,11 @@ export default class Toaster extends Vue {
     this.message = text;
     this.level = level;
     this.visibility = "toaster-visible";
-    let statusBarColor = "#44BD32";
+    let statusBarColor = CARNET_COLORS.darkGreen;
     if (level === "warning") {
-      statusBarColor = "#E67E22";
+      statusBarColor = CARNET_COLORS.orange;
     } else if (level === "error") {
-      statusBarColor = "#D62137";
+      statusBarColor = CARNET_COLORS.red;
     }
     Helpers.ifApplication(() => {
       StatusBar.setBackgroundColor({ color: statusBarColor });
@@ -100,7 +101,7 @@ export default class Toaster extends Vue {
   resetToaster() {
     this.visibility = "toaster-disappears";
     Helpers.ifApplication(() => {
-      StatusBar.setBackgroundColor({ color: "#1E9BC4" });
+      StatusBar.setBackgroundColor({ color: CARNET_COLORS.blue });
     });
   }
 }
@@ -157,6 +158,7 @@ export default class Toaster extends Vue {
 
   .toaster-box {
     width: 100%;
+    font-weight: 600;
     height: 100%;
 
     display: flex;
@@ -176,17 +178,17 @@ export default class Toaster extends Vue {
 
   .toaster-box.error {
     color: @white;
-    background: @cardinal;
+    background: @error;
   }
 
   .toaster-box.warning {
-    color: @white;
-    background: @carrot-orange;
+    color: @carnet-navy;
+    background: @warning;
   }
 
   .toaster-box.success {
     color: @white;
-    background: @lime-green;
+    background: @success;
   }
 }
 

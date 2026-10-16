@@ -70,6 +70,12 @@
         </div>
     </div>
 
+    <AnglerEffortStatistics
+      :year="year"
+      :selectedLakeId="selectedLakeId"
+      :species="dashboardData.species"
+    />
+
     <div class="section">
       <div class="shrinked avg-size">
         <h2>
@@ -165,6 +171,7 @@ import OptionsList from "@/components/common/OptionsList.vue";
 
 import DistributionChart from "@/components/charts/DistributionChart.vue";
 import HistogramChart from "@/components/charts/HistogramChart.vue";
+import AnglerEffortStatistics from "@/components/charts/personal-dashboard/AnglerEffortStatistics.vue";
 
 import Constants from "@/services/Constants";
 import TripsService from "@/services/TripsService";
@@ -195,7 +202,8 @@ export class TopEntry {
     HistogramChart,
     CatchPreviewList,
     GaleryPreviewList,
-    MaillageLegend
+    MaillageLegend,
+    AnglerEffortStatistics,
   },
 })
 export default class PersonalDashboard extends Vue {
@@ -506,7 +514,7 @@ export default class PersonalDashboard extends Vue {
     width: calc(100% + 2 * @margin-large);
     left: calc(-1 * @margin-large);
     height: 0px;
-    border: 1px solid @terra-cotta;
+    border: 1px solid @accent-text;
 
     @media screen and (min-width: @desktop-min-width) and (max-width: 1073px) {
       width: calc(100% + 2 * @margin-large-desktop);
@@ -522,7 +530,7 @@ export default class PersonalDashboard extends Vue {
     .count {
       font-weight: bold;
       font-size: @fontsize-small-paragraph;
-      color: @pelorous;
+      color: @accent-text;
     }
 
     .average-row-bar {

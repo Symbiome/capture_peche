@@ -245,7 +245,7 @@ export default class CommuneSearch extends Vue {
     max-height: 70vh; // fallback si dvh non supporté
     max-height: calc(100dvh - @header-height - @secondary-header-height - @footer-height - 10px);
     left: 0;
-    background-color: white;
+    background-color: @surface;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -312,7 +312,7 @@ export default class CommuneSearch extends Vue {
         background: transparent;
         color: @gunmetal;
         font-size: @fontsize-form-input;
-        font-family: 'Open Sans', sans-serif;
+        font-family: @font-family;
     }
 
     .cs-clear {
@@ -323,7 +323,7 @@ export default class CommuneSearch extends Vue {
         display: flex;
         align-items: center;
         cursor: pointer;
-        &:hover { color: @terra-cotta; }
+        &:hover { color: @accent-text; }
     }
 }
 
@@ -337,7 +337,7 @@ export default class CommuneSearch extends Vue {
     margin: 2px 0 0;
     padding: 0;
     list-style: none;
-    background: white;
+    background: @surface;
     box-shadow: 0 0 5px #0002;
     z-index: 10;
 
@@ -366,7 +366,7 @@ export default class CommuneSearch extends Vue {
 
     &.error {
         color: @gunmetal;
-        i { font-size: 2rem; color: @terra-cotta; }
+        i { font-size: 2rem; color: @accent-text; }
     }
 }
 
@@ -406,7 +406,7 @@ export default class CommuneSearch extends Vue {
     .item-distance {
         flex-shrink: 0;
         font-weight: 600;
-        color: @pelorous;
+        color: @accent-text;
         white-space: nowrap;
     }
 }

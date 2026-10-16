@@ -35,11 +35,16 @@ public final class CarnetVolontaireSchema {
     /** En-tête attendu, dans l'ordre (séparateur « ; », UTF-8). */
     public static final List<String> EXPECTED_HEADER = List.of(
             "session_ref", "eau_nom", "commune", "date", "mode_peche",
-            "heure_debut", "heure_fin", "technique_principale", "technique_secondaire",
+            "heure_debut", "date_fin", "heure_fin", "technique_principale", "technique_secondaire",
             "nombre_lignes", "appat_leurre", "espece_recherchee", "observations_diverses", "bredouille",
             "capture_espece", "capture_origine_trf", "capture_technique", "capture_appat_leurre",
             "capture_heure", "capture_taille", "capture_poids", "capture_nombre", "capture_conservee",
             "capture_taille_min", "capture_taille_max", "capture_marque", "capture_marque_numero");
+
+    /** En-tête antérieur à #237, sans la colonne facultative « date_fin » : toujours accepté. */
+    public static final List<String> LEGACY_HEADER = EXPECTED_HEADER.stream()
+            .filter(column -> !"date_fin".equals(column))
+            .toList();
 
     /** Modalité acceptant l'absence d'espèce recherchée. */
     public static final String ESPECE_RECHERCHEE_AUCUNE = "aucune";

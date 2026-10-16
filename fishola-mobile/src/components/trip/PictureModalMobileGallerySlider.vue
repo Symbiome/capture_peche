@@ -211,9 +211,9 @@ class GallerySlide {
         height: 13px;
         width: 13px;
         margin: 15px 2px 10px 10px;
-        background-color: white;
+        background-color: @surface;
         border-radius: 50%;
-        border: 2px solid @pelorous;
+        border: 2px solid @accent-text;
         display: inline-block;
         transition: background-color 0.6s ease;
 

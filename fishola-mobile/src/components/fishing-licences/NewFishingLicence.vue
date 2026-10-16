@@ -234,7 +234,7 @@ export default class NewFishingLicence extends Vue {
 
     label {
       font-weight: 300;
-      color: @black;
+      color: @text-strong;
     }
 
     input:not([type="file"]) {
@@ -259,7 +259,7 @@ export default class NewFishingLicence extends Vue {
 
       color: @gunmetal;
       font-size: @fontsize-form-input;
-      font-family: "Open Sans", sans-serif;
+      font-family: @font-family;
 
       &::placeholder {
         font-style: italic;

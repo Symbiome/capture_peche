@@ -84,6 +84,7 @@ import { TripBean } from "@/pojos/BackendPojos";
 import TripsService from "@/services/TripsService";
 import Constants from "@/services/Constants";
 import Helpers from "@/services/Helpers";
+import TripDates from "@/services/TripDates";
 
 import BackButton from "@/components/common/BackButton.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
@@ -151,10 +152,7 @@ export default class EditTripView extends Vue {
       );
     }
     this.ready = true;
-    this.duration = Helpers.renderDuration(
-      this.trip.startedAt,
-      this.trip.finishedAt
-    );
+    this.duration = TripDates.formatDuration(this.trip as any, true);
   }
 
   startSave() {
@@ -292,9 +290,9 @@ export default class EditTripView extends Vue {
 
     button {
       background: none;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
       border-radius: 20px;
-      color: @pelorous;
+      color: @accent-text;
       padding: 6px 16px;
       font-size: @fontsize-small-paragraph;
       cursor: pointer;
@@ -311,7 +309,7 @@ export default class EditTripView extends Vue {
     justify-content: center;
     align-items: center;
 
-    color: @terra-cotta;
+    color: @accent-text;
     margin-bottom: @vertical-margin-large;
 
     @media (max-height: 579px) {

@@ -205,7 +205,7 @@ export default class ForgottenPassword extends Vue {
   font-weight: normal;
   font-size: @fontsize-title;
   line-height: calc(@fontsize-title + @line-height-padding-xx-large);
-  color: @pelorous;
+  color: @accent-text;
   text-align: center;
 
   @media(max-height:579px) {
@@ -248,10 +248,10 @@ export default class ForgottenPassword extends Vue {
 
     &.cancel {
 
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
 
       background-color: @white-smoke;
-      color: @pelorous;
+      color: @accent-text;
     }
   }
 }

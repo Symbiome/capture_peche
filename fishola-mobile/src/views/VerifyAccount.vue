@@ -25,11 +25,7 @@
         class="verify-account-title keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly"
       >
         <div class="welcome keyboardSensitive">Bienvenue sur</div>
-        <img
-          class="logo keyboardSensitive"
-          src="img/logo-big.svg"
-          alt="FISHOLA"
-        />
+        <CarnetLogo class="carnet-logo-centered keyboardSensitive" />
       </div>
       <div class="pending" v-if="pending">
         <p>Validation de votre compte en cours, veuillez patientier...</p>
@@ -51,13 +47,16 @@
 </template>
 
 <script lang="ts">
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import ProfileService from "@/services/ProfileService";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
 import router from "../router";
 import { RouterUtils } from "../router/RouterUtils";
 
-@Component
+@Component({
+  components: { CarnetLogo },
+})
 export default class VerifyAccount extends Vue {
   @Prop() token!: string;
 

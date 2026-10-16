@@ -1,0 +1,19 @@
+﻿type_sortie;code_session;secteur;date_session;heure_debut_session;heure_fin_session;nom_operateur;nb_bord_non_enquetes;nb_bateau_non_enquetes;code_sortie;heure_controle;heure_debut;heure_fin_prevue;date_fin_prevue;code_pecheur;departement_origine;site_peche;date_souvenir;periode_journee;espece_recherchee;mode_peche;technique;nombre_lignes;appat_leurre;bredouille;capture_espece;capture_taille;capture_nombre;capture_conservee;capture_taille_min;capture_taille_max
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-01;08:15;06:00;11:00;;P-ANN-001;74;;;;Perche;bateau;Pêche aux leurres;2;leurre souple;non;Perche;24;1;oui;;
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-01;08:15;06:00;11:00;;P-ANN-001;74;;;;Perche;bateau;Pêche aux leurres;2;leurre souple;non;Perche;;5;non;14;19
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-01;08:15;06:00;11:00;;P-ANN-001;74;;;;Perche;bateau;Pêche aux leurres;2;leurre souple;non;Brochet;52;1;non;;
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-02;09:00;07:30;12:00;;P-ANN-002;69;;;;Corégone (féra);bateau;Pêche à la traîne;1;nymphe;non;Corégone (féra);38;1;oui;;
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-02;09:00;07:30;12:00;;P-ANN-002;69;;;;Corégone (féra);bateau;Pêche à la traîne;1;nymphe;non;Corégone (féra);41;1;oui;;
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-02;09:00;07:30;12:00;;P-ANN-003;Suisse;;;;Omble chevalier;bateau;Pêche à la traîne;2;cuiller;oui;;;;;;
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-03;10:30;09:45;12:30;;P-ANN-004;74;;;;;bord statique;Pêche au coup;1;asticot;non;Gardon;;12;non;10;18
+en_cours;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;ENQ-ANN-0704-03;10:30;09:45;12:30;;P-ANN-004;74;;;;;bord statique;Pêche au coup;1;asticot;non;Perche;21;1;non;;
+souvenir;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;;;;;;P-ANN-001;74;Lac d'Annecy;27/06/2026;matin;Brochet;bateau;Pêche aux leurres;2;leurre souple;non;Brochet;68;1;non;;
+souvenir;ENQ-ANN-0704;Lac d'Annecy;04/07/2026;07:00;13:00;M. Martin;3;1;;;;;;P-ANN-004;74;Lac Léman;21/06/2026;après-midi;Perche;bord statique;Pêche au coup;1;asticot;oui;;;;;;
+en_cours;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;ENQ-LEM-0711-01;06:45;05:00;10:00;;P-LEM-001;74;;;;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Perche;27;1;oui;;
+en_cours;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;ENQ-LEM-0711-01;06:45;05:00;10:00;;P-LEM-001;74;;;;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Perche;25;1;oui;;
+en_cours;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;ENQ-LEM-0711-01;06:45;05:00;10:00;;P-LEM-001;74;;;;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Perche;;8;non;15;20
+en_cours;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;ENQ-LEM-0711-02;09:15;06:00;10:00;13/07/2026;P-LEM-002;01;;;;Carpe commune;bord statique;Pêche de la carpe de nuit;3;bouillette;non;Carpe commune;74;1;non;;
+en_cours;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;ENQ-LEM-0711-03;10:00;08:30;11:30;;P-LEM-003;38;;;;Brochet;bord itinérant;Pêche aux leurres;1;leurre souple;oui;;;;;;
+souvenir;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;;;;;;P-LEM-001;74;Lac Léman;04/07/2026;soirée;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Perche;23;1;oui;;
+souvenir;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;;;;;;P-LEM-001;74;Lac Léman;04/07/2026;soirée;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Perche;26;1;oui;;
+souvenir;ENQ-LEM-0711;Lac Léman;11/07/2026;05:30;11:30;M. Martin;5;2;;;;;;P-LEM-001;74;Lac Léman;04/07/2026;soirée;Perche;float tube/canoe;Pêche aux leurres;1;drop shot;non;Sandre;48;1;non;;

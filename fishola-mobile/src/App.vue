@@ -25,6 +25,7 @@
     <BadgeShareCard />
     <BadgeUnlockNotification />
     <TripPdfExportCard />
+    <OfflineBanner />
     <component :is="layout()" class="layout">
       <router-view />
     </component>
@@ -39,6 +40,7 @@ import Toaster from "@/components/layout/Toaster.vue";
 import BadgeShareCard from "@/components/gamification/BadgeShareCard.vue";
 import BadgeUnlockNotification from "@/components/gamification/BadgeUnlockNotification.vue";
 import TripPdfExportCard from "@/components/trip/TripPdfExportCard.vue";
+import OfflineBanner from "@/components/layout/OfflineBanner.vue";
 
 import TripsService from "@/services/TripsService";
 import PicturesService from "@/services/PicturesService";
@@ -61,6 +63,7 @@ import { App } from "@capacitor/app";
     BadgeShareCard,
     BadgeUnlockNotification,
     TripPdfExportCard,
+    OfflineBanner,
   },
 })
 export default class AppView extends Vue {
@@ -84,7 +87,7 @@ export default class AppView extends Vue {
     // Configure Keyboard & Status bar
     Helpers.ifApplication(() => {
       KeyboardManager.setupKeyboardConfiguration();
-      StatusBar.setBackgroundColor({ color: "#1E9BC4" });
+      StatusBar.setBackgroundColor({ color: "#0000E0" });
     });
 
     // If app is opened externally (typically from mails when validating account or password forgotten)
@@ -203,7 +206,7 @@ export default class AppView extends Vue {
 @import "less/main";
 
 body {
-  background-color: @pelorous;
+  background-color: @white-smoke;
   margin: 0px;
   height: 100%;
   width: 100vw;
@@ -222,7 +225,7 @@ html {
 }
 
 #app {
-  font-family: "Open Sans", sans-serif;
+  font-family: @font-family;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: @white;
@@ -297,22 +300,7 @@ html {
 }
 
 .shifted-background {
-  background-image: url("img/background.png");
-  background-repeat: no-repeat;
-  background-size: 100% auto;
-  background-position: top;
-  // Very small resolution: scale down kacground to make it fit widht
-  background-position-y: -1vw;
-
-  @media (min-width: 200px) {
-    background-position-y: -3vw;
-  }
-
-  // Resolutions larger than background: strech background width
-  @media (min-width: 350px) {
-    background-size: cover;
-    background-position-y: -4vw;
-  }
+  background-color: @white-smoke;
 }
 
 .secondary-header {
@@ -332,8 +320,6 @@ html {
   justify-content: flex-start;
 
   background-color: @white-smoke;
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
   padding-top: 0px;
   margin-top: @vertical-margin-small;
 
@@ -356,11 +342,16 @@ html {
     margin-bottom: @margin-x-small;
     height: calc(@fontsize-title + @line-height-padding-xx-large);
     font-style: normal;
-    font-weight: normal;
+    font-weight: 700;
     font-size: @fontsize-title;
     line-height: calc(@fontsize-title + @line-height-padding-xx-large);
-    color: @pelorous;
-    text-align: center;
+    color: @accent-text;
+    text-align: left;
+
+    @media screen and (max-width: @mobile-max-width) {
+      margin-left: @margin-medium;
+      margin-right: @margin-medium;
+    }
 
     @media screen and (min-width: @desktop-min-width) {
       margin-top: @margin-medium;
@@ -400,9 +391,9 @@ html {
       text-align: center;
 
       &.selected {
-        color: @gunmetal;
-        border-bottom: 2px solid @pelorous;
-        font-weight: bold;
+        color: @accent-text;
+        border-bottom: 2px solid @accent-text;
+        font-weight: 600;
       }
     }
 
@@ -425,8 +416,7 @@ html {
     }
 
     &.rounded {
-      border-top-left-radius: 30px;
-      border-top-right-radius: 30px;
+      border-radius: 0px;
     }
 
     &.no-scroll {
@@ -499,7 +489,7 @@ html {
   background-color: @black-alpha-50 !important;
 
   .v--modal {
-    border-radius: 14px;
+    border-radius: 13px;
     background-color: @white-smoke;
   }
 
@@ -545,7 +535,7 @@ html {
     }
 
     .vue-dialog-buttons {
-      color: @pelorous;
+      color: @accent-text;
       border-top: 1px solid @very-light-grey;
 
       button.vue-dialog-button {

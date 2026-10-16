@@ -20,7 +20,8 @@
   -->
 <template>
   <!-- \\ Begin Holder \\ -->
-  <div class="DesignHolder" v-on:scroll="scrolled" id="about-scroll-container">
+  <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
+  <div class="DesignHolder force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
     <!-- \\ Begin Frame \\ -->
     <div class="LayoutFrame" id="top">
       <!-- \\ Begin Header \\ -->
@@ -782,7 +783,7 @@ export default class AboutView extends Vue {
       line-height: 34px;
 
       span {
-        color: @terra-cotta;
+        color: @accent-text;
         font-weight: 600;
         display: block;
       }
@@ -882,7 +883,7 @@ export default class AboutView extends Vue {
       margin-right: 50px;
 
       .kf-number {
-        color: @terra-cotta;
+        color: @accent-text;
         font-size: 50px;
         font-weight: 530;
         height: 59px;
@@ -945,10 +946,10 @@ export default class AboutView extends Vue {
 
   .Center {
     h3 {
-      color: @pelorous;
+      color: @accent-text;
       font-size: 57px;
-      font-family: "Oswald", sans-serif;
-      font-weight: 400;
+      font-family: @font-family;
+      font-weight: 700;
       margin: 0px;
       text-transform: uppercase;
       line-height: 60px;
@@ -1024,7 +1025,7 @@ export default class AboutView extends Vue {
     h3 {
       text-align: center;
       font-weight: lighter;
-      color: @pelorous;
+      color: @accent-text;
     }
 
     .credits-logos {
@@ -1066,7 +1067,7 @@ export default class AboutView extends Vue {
   }
 
   .Line {
-    border: solid 1px #e17055;
+    border: solid 1px @accent-text;
     height: 2px;
     width: 252px;
     margin: 30px;
@@ -1091,7 +1092,7 @@ export default class AboutView extends Vue {
       padding: 30px;
       min-height: 300px;
       background-color: @white-smoke-alpha-20;
-      border: 1px solid #1e9bc4;
+      border: 1px solid @accent-text;
 
       h4 {
         margin: 5px;
@@ -1127,7 +1128,7 @@ export default class AboutView extends Vue {
 }
 
 footer {
-  background: #0c2b34;
+  background: @carnet-navy;
 }
 
 .consult-faq {
@@ -1139,8 +1140,8 @@ footer {
 
   .consult-faq-button {
     background-color: white;
-    color: #e17055;
-    border: 1px solid #e17055;
+    color: @accent-text;
+    border: 1px solid @accent-text;
     width: 200px;
     font-weight: bolder;
     padding: 10px;
@@ -1148,7 +1149,7 @@ footer {
 
     &:hover {
       color: white;
-      background-color: #e17055;
+      background-color: @carnet-blue;
       border: 1px solid white;
     }
   }

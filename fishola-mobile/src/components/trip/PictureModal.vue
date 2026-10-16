@@ -287,7 +287,7 @@ export default class PictureModal extends Vue {
       flex: 1 1 auto;
 
       &.pic-selected {
-        border: 4px solid @pelorous;
+        border: 4px solid @accent-text;
         -webkit-transform: scale(1.05);
         -moz-transform: scale(1.05);
         -o-transform: scale(1.05);
@@ -303,7 +303,7 @@ export default class PictureModal extends Vue {
 
     .add-pic-button {
       cursor: pointer;
-      background-color: white;
+      background-color: @surface;
       border: 2px solid @gainsboro;
       border-radius: 2px;
       img {
@@ -324,7 +324,7 @@ export default class PictureModal extends Vue {
   background-color: rgba(0, 0, 0, 0.6);
 
   .title {
-    color: @pelorous;
+    color: @accent-text;
     font-weight: normal;
     font-size: calc(@fontsize-title + 5px);
     text-align: center;

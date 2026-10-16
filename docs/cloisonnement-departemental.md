@@ -27,6 +27,35 @@ périmètres sont repris via `water_entity.department`).
   `GET /v1/referential/departments` (`[{code, name}]`, les 101 départements) ; ne
   charge plus le référentiel hydro complet (antipattern OOM #154).
 
+## Périmètre élargi : buffer autour des départements (#231)
+
+Un staff non national gère tout **milieu** (cours d'eau, plan d'eau) dont la
+géométrie intersecte ses départements **élargis d'un buffer** — 1 km par défaut,
+paramètre `fishola.staff-perimeter-buffer-m` (variable d'environnement
+`FISHOLA_STAFF_PERIMETER_BUFFER_M`). Un étang à cheval sur une limite ou un
+cours d'eau frontière relève ainsi des deux fédérations voisines.
+
+- Table précalculée `water_entity_department (water_entity_id, department_code)`
+  (migration `V2.11.0`) : tous les départements dont le contour élargi
+  (`departement_buffer`, découpé par `ST_Subdivide`) intersecte le milieu, plus
+  son département principal `water_entity.department` (repli si les contours
+  ne sont pas chargés).
+- Maintenue par trigger à chaque insertion / modification de `geom` ou
+  `department` d'un milieu (import hydro compris) ; recalcul complet par
+  `SELECT refresh_staff_perimeter()`, appelé par
+  `import_departements_parquet.sql` et au démarrage du backend quand le buffer
+  configuré change (`StaffPerimeterDao.syncBufferDistance`).
+- Points d'appel : `AdminDao.getAllowedWaterEntityIds` (imports, saisies
+  manuelles), recherche / listings admin des milieux, maillages et tailles
+  autorisées, attribution carte staff, actualités, concours.
+- `water_entity.department` reste le département « principal » (affichage,
+  exports, `trip.department` / `catch.department`).
+- **Données non concernées** : sorties, prises et exports restent cloisonnés par
+  `trip.department` / `catch.department` ; un point saisi sur la carte doit
+  toujours tomber dans un département du périmètre (`ManualPositionService`).
+- Un grand cours d'eau devient gérable par toutes les fédérations qu'il
+  traverse (pas de découpage par tronçon).
+
 ## Département d'une sortie / d'une prise
 
 `trip.department` et `catch.department` (`varchar(3)`, indexés) mémorisent le

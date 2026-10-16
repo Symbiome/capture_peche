@@ -29,7 +29,8 @@ import java.util.Set;
 /**
  * Constantes du format d'import opérateur « enquête terrain » (#144) : classeur XLSX
  * multi-feuilles, un onglet par table (session d'enquête, sortie, capture pêcheur,
- * session souvenir facultative). Distinct du format générique ({@link
+ * session souvenir facultative), ou CSV plat d'une ligne par capture (#242), qui alimente
+ * le même pipeline. Distinct du format générique ({@link
  * fr.inrae.fishola.rest.imports.ImportSchema}, #71) et du carnet volontaire ({@link
  * CarnetVolontaireSchema}, #143), dont on réutilise cependant le vocabulaire fermé
  * {@code mode_peche} / {@code origine TRF} : {@code fishing_mode} est un enum partagé
@@ -45,14 +46,28 @@ public final class SurveySchema {
     /** Feuille facultative : peut être absente du classeur, ou vide. */
     public static final String SHEET_SOUVENIR = "Session souvenir";
 
+    public static final String COL_SESSION_START = "Heure de début de session";
+    public static final String COL_SESSION_END = "Heure de fin de session";
+    public static final String COL_OPERATOR = "Nom de l'opérateur";
+
+    /** Heures de session et opérateur (#236, #242) : obligatoires dès que l'en-tête les porte. */
     public static final List<String> HEADER_SESSION = List.of(
+            "Code session", "Secteur", "Date", COL_SESSION_START, COL_SESSION_END, COL_OPERATOR,
+            "Nb pêcheurs carnassiers du bord observés non-enquêtés",
+            "Nb pêcheurs carnassiers en bateau observés non-enquêtés");
+
+    /** En-tête antérieur à #242, sans heures de session ni opérateur : toujours accepté. */
+    public static final List<String> LEGACY_HEADER_SESSION = List.of(
             "Code session", "Secteur", "Date",
             "Nb pêcheurs carnassiers du bord observés non-enquêtés",
             "Nb pêcheurs carnassiers en bateau observés non-enquêtés");
 
     public static final List<String> HEADER_SORTIE = List.of(
             "Code session", "Code sortie", "Heure du contrôle",
-            "Heure de début de pêche", "Heure de fin de pêche prévue");
+            "Heure de début de pêche", "Heure de fin de pêche prévue", "Date de fin de pêche prévue");
+
+    /** En-tête antérieur à #237, sans la colonne facultative « Date de fin de pêche prévue » : toujours accepté. */
+    public static final List<String> LEGACY_HEADER_SORTIE = HEADER_SORTIE.subList(0, HEADER_SORTIE.size() - 1);
 
     public static final List<String> HEADER_CAPTURE = List.of(
             "Code sortie", "Code pêcheur", "Département origine", "Espèce recherchée",
@@ -65,6 +80,26 @@ public final class SurveySchema {
             "Espèce recherchée", "Mode de pêche", "Technique", "Nombre de lignes",
             "Appât / type de leurre", "Bredouille", "Espèce (capture)", "Taille",
             "Nombre", "Poisson conservé", "Taille min", "Taille max");
+
+    /**
+     * CSV plat (#242) : une ligne par capture, ou une ligne « bredouille », informations de
+     * session, de sortie et de pêcheur répétées sur chaque ligne. Séparateur « ; », UTF-8,
+     * mêmes conventions que le carnet volontaire (#143).
+     */
+    public static final List<String> FLAT_HEADER = List.of(
+            "type_sortie", "code_session", "secteur", "date_session", "heure_debut_session", "heure_fin_session",
+            "nom_operateur", "nb_bord_non_enquetes", "nb_bateau_non_enquetes", "code_sortie", "heure_controle",
+            "heure_debut", "heure_fin_prevue", "date_fin_prevue", "code_pecheur", "departement_origine",
+            "site_peche", "date_souvenir", "periode_journee", "espece_recherchee", "mode_peche", "technique",
+            "nombre_lignes", "appat_leurre", "bredouille", "capture_espece", "capture_taille", "capture_nombre",
+            "capture_conservee", "capture_taille_min", "capture_taille_max");
+
+    /** {@code type_sortie} : sortie enquêtée, ou dernière sortie passée du pêcheur. */
+    public static final String TYPE_EN_COURS = "en_cours";
+    public static final String TYPE_SOUVENIR = "souvenir";
+
+    /** Pseudo-feuille des erreurs du CSV plat, dont les colonnes sont celles du fichier. */
+    public static final String FLAT_FILE = "CSV";
 
     /** Modalités de « Espèce recherchée » sans espèce résolue (#144, cf. commentaire trip.expected_species_id). */
     public static final String ESPECE_RECHERCHEE_AUCUNE = "aucune";
@@ -104,4 +139,10 @@ public final class SurveySchema {
     public static final String METIER_SIZE_REQUIRED = "METIER_SIZE_REQUIRED";
     public static final String METIER_LOT_BOUNDS = "METIER_LOT_BOUNDS";
     public static final String METIER_BREDOUILLE = "METIER_BREDOUILLE";
+    // CSV plat (#242) : valeur répétée divergente au sein de son groupe, type de ligne inconnu.
+    public static final String STRUCT_TYPE_SORTIE = "STRUCT_TYPE_SORTIE";
+    public static final String STRUCT_INCONSISTENT_SESSION = "STRUCT_INCONSISTENT_SESSION";
+    public static final String STRUCT_INCONSISTENT_SORTIE = "STRUCT_INCONSISTENT_SORTIE";
+    public static final String STRUCT_INCONSISTENT_TRIP = "STRUCT_INCONSISTENT_TRIP";
+    public static final String STRUCT_INCONSISTENT_ANGLER = "STRUCT_INCONSISTENT_ANGLER";
 }

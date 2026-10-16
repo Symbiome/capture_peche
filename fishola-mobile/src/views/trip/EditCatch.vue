@@ -117,33 +117,17 @@
                   v-bind:readonly="!modifiable" />
               </div>
 
-              <FormToggle v-if="isLot" label="Indiquer une classe de taille (min – max)"
+              <FormToggle v-if="isLot && hasLotSizeClasses" label="Indiquer une classe de taille (min – max)"
                 v-model="lotSizeClassEnabled" v-bind:readonly="!modifiable" />
 
-              <div class="lot-size-class-row" v-if="useLotSizeClass">
-                <FormInput name="lotMinSize" label="Taille min en cm" type="number" :min="1"
-                  placeholder="Ex. 40" v-model="aCatch.lotMinSize" v-bind:error="lotMinSizeError"
-                  v-bind:readonly="!modifiable" />
-                <FormInput name="lotMaxSize" label="Taille max en cm" type="number" :min="1"
-                  placeholder="Ex. 50" v-model="aCatch.lotMaxSize" v-bind:error="lotMaxSizeError"
-                  v-bind:readonly="!modifiable" />
-              </div>
+              <FormSelect v-if="useLotSizeClass" name="lotSizeClass"
+                label="Classe de taille" v-bind:options="lotSizeClassOptions"
+                v-model="selectedLotSizeClass" v-bind:error="lotSizeClassError"
+                v-bind:readonly="!modifiable" />
 
-              <div v-else :class="{ 'measure-row': automaticMeasureEnabled }">
-                <div class="button button-secondary-no-outline automatic-measure"
-                  v-if="modifiable && automaticMeasureEnabled">
-                  <button @click="
-                    displayMeasurementPicturePopup =
-                    !displayMeasurementPicturePopup
-                    ">
-                    <i class="icon-size measure-button-icon" />
-                    <span id="measure-button-text"></span>
-                  </button>
-                </div>
-                <FormInput name="size" :label="sizeLabel" type="number" :min="1"
-                  placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
-                  v-bind:readonly="!modifiable" />
-              </div>
+              <FormInput v-else name="size" :label="sizeLabel" type="number" :min="1"
+                placeholder="Entrez une taille en centimètres" v-model="aCatch.size" v-bind:error="sizeError"
+                v-bind:readonly="!modifiable" />
 
               <div class="two-columns-row-on-desktop">
                 <div class="multiple-catchs-info" v-if="multipleCatchsAllowed">
@@ -171,22 +155,20 @@
                             v-bind:readonly="!modifiable"/-->
                 <FormSelect name="technique" label="Technique de pêche" v-bind:options="allTechniques"
                   v-model="aCatch.techniqueId" v-bind:error="techniqueIdError" v-bind:readonly="!modifiable" />
+                <FormInput v-if="multiDayTrip" name="caughtOn" label="Date de la capture" type="date"
+                  v-model="caughtOn" v-bind:readonly="!modifiable" />
                 <FormInput name="caughtAt" label="Heure de la capture (optionnelle)" type="time" v-model="caughtAt"
-                  v-bind:readonly="!modifiable" />
+                  v-bind:error="caughtAtError" v-bind:readonly="!modifiable" />
               </div>
               <div>
                 <FormTextarea name="description" label="Observation (optionnelle)"
                   placeholder="Écrivez une description, une observation, une remarque à propos de votre capture"
                   v-model="aCatch.description" v-bind:readonly="!modifiable" />
               </div>
-              <FormToggle v-if="withSample ||
-                (settings &&
-                  settings.promptSamples
-                  && aCatch.speciesId
-                  && authorizedSampleSpeciesIds.indexOf(aCatch.speciesId) != -1)
-              " label="Prélèvement (optionnel)" v-model="withSample" v-bind:readonly="!modifiable" />
+              <FormToggle v-if="showSampleToggle" label="Prélèvement (optionnel)" v-model="withSample"
+                v-bind:readonly="!modifiable" />
               <div class="sample two-columns-row-on-desktop" v-if="withSample">
-                <div class="info" v-if="samplesDocumentationUrl">
+                <div class="info" v-if="samplesDocumentationUrl && scaleSamplingEnabled">
                   Pour pouvoir effectuer des prélèvements, vous devez vous munir
                   d'un kit dans un des points de collecte :
                   <a :href="samplesDocumentationUrl" target="_blank">consulter la liste</a>
@@ -240,20 +222,12 @@
         </div>
       </div>
     </div>
-    <MeasurementPicturePopup v-if="displayMeasurementPicturePopup" :measurementPicture="measurementPictureToDispatch"
-      @close="displayMeasurementPicturePopup = false" @measurementPictureTaken="measurementPictureTaken" />
     <PictureSourceChoice :visible="requestNewPicture" @close="requestNewPicture = false" @pictureTaken="pictureTaken"
       :directlyOpenGaleryInWebMode="true" />
     <FisholaFooter v-if="ready && modifiable" v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
       button-icon="icon-fish" v-on:buttonClicked="validateClicked" v-on:deleteClicked="deleteCatch"
       v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut" />
     <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
-    <!-- Invisible marker & pic (required for silent size computation) -->
-    <img id="markerAutomatic" v-show="false" :src="markerSourceSRC" alt="marqueur" />
-    <!-- To enable silent automatic size computation, simply add this to the following img
-      @load="launchSilentAutomaticMeasureIfRequired" -->
-    <img alt="Msure automatique" id="sourcePictureAutomatic" :src="measurementPictureCandidateSrc"
-      v-show="false" />
   </div>
 </template>
 
@@ -272,6 +246,7 @@ import TripsService from "@/services/TripsService";
 import { SpeciesWithAliasAndTechnique } from "@/services/ReferentialService";
 import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";
+import TripDates, { TripPeriodFields } from "@/services/TripDates";
 import GeolocationService from "@/services/GeolocationService";
 
 import { UserSettings } from "@/pojos/BackendPojos";
@@ -279,8 +254,6 @@ import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import ProfileService from "@/services/ProfileService";
 
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import MeasurementPicturePopup from "@/components/trip/MeasurementPicturePopup.vue";
-import { MeasureAndPic } from "@/services/opencv/MeasureAndPic";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -296,11 +269,9 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import Constants from "../../services/Constants";
 import DocumentationService from "@/services/DocumentationService";
+import ScaleSampling from "@/services/ScaleSampling";
 
 import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
-import FisholaOpenCVService from "@/services/opencv/FisholaOpenCVService";
-import { OpenCVDetectionConfig } from "@/services/opencv/OpenCVDetectionConfig";
-import { DetectedShape } from "@/services/opencv/DetectedShape";
 
 @Component({
   components: {
@@ -313,7 +284,6 @@ import { DetectedShape } from "@/services/opencv/DetectedShape";
     FormToggle,
     PicturePreview,
     MapLibrePositionMap,
-    MeasurementPicturePopup,
     PictureSourceChoice,
     FisholaFooter,
   },
@@ -329,6 +299,8 @@ export default class EditCatchView extends Vue {
   ready: boolean = false;
 
   tripDate?: Date;
+  tripPeriod: TripPeriodFields = {};
+  multiDayTrip: boolean = false;
   lakeId: string = "";
   tripMode: TripMode = "Live";
   tripSpeciesIds: string[] = [];
@@ -337,7 +309,6 @@ export default class EditCatchView extends Vue {
 
   allNonMeasurePictures: PictureContentWithOrder[] = [];
   measurementPictureSrc: string = "";
-  measurementPictureCandidateSrc: string = "";
   focusedPicSrc: string = "";
   // Pictures that have just been taken and hence should be saved in local DB when validating
   newTakenPictures: PictureContentWithOrder[] = [];
@@ -345,7 +316,8 @@ export default class EditCatchView extends Vue {
   picturesToDelete: PictureContentWithOrder[] = [];
 
   caughtAt: string = "";
-  markerSourceSRC = "";
+  caughtOn: string = "";
+  caughtAtError: string = "";
 
   defaultSizeLabel: string = "Taille en cm";
   sizeLabel: string = this.defaultSizeLabel;
@@ -358,8 +330,13 @@ export default class EditCatchView extends Vue {
   weightError: string = "";
   quantityError: string = "";
   lotSizeClassEnabled: boolean = false;
-  lotMinSizeError: string = "";
-  lotMaxSizeError: string = "";
+  lotSizeClassError: string = "";
+  // Maillage et taille maximale de l'espèce sur le milieu (#196) : bornes des
+  // classes de taille proposées pour un lot. Maillage absent (non défini par
+  // l'administrateur, ou hors-ligne) → pas de classe de taille.
+  meshSize: number | null = null;
+  speciesMaxSize: number = 1000;
+  private sizeLimitsSeq: number = 0;
   keepError: string = "";
   releasedStateIdError: string = "";
   techniqueIdError: string = "";
@@ -386,20 +363,14 @@ export default class EditCatchView extends Vue {
   samplesDocumentationUrl: string = "";
   sampleIdReady: boolean = false;
   authorizedSampleSpeciesIds: string[] = [];
+  scaleSamplingEnabled: boolean = ScaleSampling.isEnabled();
 
   gpsLocation: { lat: number; lng: number } | null = null;
 
-  displayMeasurementPicturePopup = false;
-  // Mesure automatique par photo masquée tant qu'elle n'est pas fonctionnelle
-  // (#195) ; réactivable par VITE__AUTOMATIC_MEASURE_ENABLED=true au build.
-  automaticMeasureEnabled = import.meta.env.VITE__AUTOMATIC_MEASURE_ENABLED === "true";
   requestNewPicture = false;
-  shouldLaunchAutomaticMeasure = false;
 
   lastUsedPicOrder = 0;
   watchingGPS = false;
-  lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
-  measurementPictureToDispatch = "";
 
   created() {
     TripsService.getTripAndCatch(
@@ -409,8 +380,6 @@ export default class EditCatchView extends Vue {
     );
     this.inCreation = this.catchId == Constants.NEW_CATCH_ID;
     this.loadSettings();
-    this.markerSourceSRC = new OpenCVDetectionConfig().defaultMarkerSrc;
-    FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded();
   }
 
   mounted() {
@@ -429,6 +398,14 @@ export default class EditCatchView extends Vue {
   async tripAndCatchLoaded(someTrip: TripBean, someCatch: CatchSummary) {
     this.lakeId = someTrip.lakeId;
     this.tripDate = someTrip.date;
+    this.tripPeriod = {
+      date: someTrip.date,
+      startedAt: someTrip.startedAt,
+      endDate: (someTrip as any).endDate,
+      finishedAt: someTrip.finishedAt,
+    };
+    // Sortie de plusieurs jours (#237) : la capture se saisit avec sa date et son heure.
+    this.multiDayTrip = TripDates.isMultiDay(this.tripPeriod);
     this.tripSpeciesIds = someTrip.speciesIds;
     this.tripOtherSpecies = someTrip.otherSpecies;
     if (!someCatch.speciesId && someCatch.otherSpecies) {
@@ -453,14 +430,15 @@ export default class EditCatchView extends Vue {
       this.aCatch.size = this.aCatch.automaticMeasure;
     }
 
+    const caughtMoment = TripDates.catchMoment(this.tripPeriod, someCatch);
+    this.caughtOn = someCatch.caughtOn
+      || (caughtMoment ? caughtMoment.format("YYYY-MM-DD") : "")
+      || (someTrip.date ? TripDates.toIsoDate(someTrip.date) : "");
     if (someCatch.caughtAt) {
       this.caughtAt = Helpers.truncateTimeToMinutes(someCatch.caughtAt);
 
-      if (this.inCreation && this.inTripCreation && this.tripMode == "Live") {
-        const seconds: number = Helpers.computeDurationInSeconds(
-          someTrip.startedAt,
-          someCatch.caughtAt!
-        );
+      if (this.inCreation && this.inTripCreation && this.tripMode == "Live" && caughtMoment) {
+        const seconds: number = caughtMoment.diff(TripDates.begin(this.tripPeriod), "seconds");
         this.rightShortcut = "timer-" + seconds;
       }
     }
@@ -568,73 +546,6 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  async launchSilentAutomaticMeasureIfRequired() {
-    if (this.shouldLaunchAutomaticMeasure && !this.aCatch.automaticMeasure) {
-      this.shouldLaunchAutomaticMeasure = false;
-      // Launch a silent measure
-      console.info("[Silent automatic measure] Loading opencv...");
-      FisholaOpenCVService.INSTANCE.loadOpenCVIfNeeded().then(async () => {
-        if (FisholaOpenCVService.INSTANCE.isOpenCVReady()) {
-          try {
-            const imageElement = document.getElementById(
-              "sourcePictureAutomatic"
-            );
-            const markerElement = document.getElementById("markerAutomatic");
-            console.info(
-              "[Silent automatic measure] Launching automatic measure...",
-              imageElement,
-              markerElement
-            );
-            if (imageElement && markerElement) {
-              const openCVConfig = new OpenCVDetectionConfig();
-              openCVConfig.drawDebugCanvas = false;
-              openCVConfig.maxRetries = -1;
-              const detectedShapes: Array<DetectedShape> =
-                await FisholaOpenCVService.INSTANCE.calculateAndDrawFishSizes(
-                  imageElement,
-                  markerElement,
-                  openCVConfig,
-                  ""
-                );
-
-              const markers = detectedShapes.filter(
-                (shape: DetectedShape) => shape.isMarker
-              ).length;
-              const markerFound = markers === 1;
-              const fishes = detectedShapes.filter(
-                (shape: DetectedShape) => shape.isFish
-              );
-              let fishSizeAutomatedInMm = 0;
-              if (fishes.length === 1) {
-                fishSizeAutomatedInMm = fishes[0].calculatedLenght;
-              }
-              console.info(
-                "[Silent automatic measure] Success : " +
-                markers +
-                " markers and fish of " +
-                fishSizeAutomatedInMm +
-                "mm"
-              );
-              if (markerFound && fishSizeAutomatedInMm) {
-                const measureAndPic = new MeasureAndPic(
-                  fishSizeAutomatedInMm,
-                  fishSizeAutomatedInMm,
-                  this.measurementPictureSrc
-                );
-                this.gotAutomaticMeasure(measureAndPic);
-                this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery =
-                  true;
-              }
-            }
-            // Step 2: launch calculation
-          } catch (error) {
-            console.error("[Silent automatic measure] Failure ", error);
-          }
-        }
-      });
-    }
-  }
-
   embedAlias(s: SpeciesWithAlias): SpeciesWithAlias {
     const result: SpeciesWithAlias = {
       id: s.id,
@@ -716,6 +627,16 @@ export default class EditCatchView extends Vue {
     }
   }
 
+  get showSampleToggle(): boolean {
+    const speciesId = this.aCatch.speciesId;
+    return ScaleSampling.showSampleToggle(
+      this.scaleSamplingEnabled,
+      this.withSample,
+      !!(this.settings && this.settings.promptSamples),
+      !!speciesId && this.authorizedSampleSpeciesIds.indexOf(speciesId) != -1
+    );
+  }
+
   // Une photo aide l'opérateur/expert à trancher sur une identification non
   // certaine (#87, file "Prises à valider") : on le rappelle au pêcheur tant
   // qu'aucune photo (galerie ou mesure) n'a encore été prise.
@@ -747,12 +668,6 @@ export default class EditCatchView extends Vue {
           // On force pour stocker uniquement la valeur tronquée
           this.aCatch.size = Math.floor(this.aCatch.size);
           this.sizeError = "";
-
-          const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-          if (this.aCatch.size > maxSize) {
-            hasError = true;
-            this.sizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
-          }
         }
       } else {
         this.sizeError = "";
@@ -762,40 +677,53 @@ export default class EditCatchView extends Vue {
   }
 
   /**
-   * Contrôle de la classe de taille d'un lot (#196) : bornes entières, strictement
-   * positives, min ≤ max, et max ≤ taille maximale de l'espèce. Renvoie `true` en cas d'erreur.
+   * Classe de taille choisie parmi celles du maillage (#196) ; renvoie `true`
+   * en cas d'erreur.
    */
-  async validateLotSizeClass(): Promise<boolean> {
-    this.lotMinSizeError = this.lotSizeBoundError(this.aCatch.lotMinSize);
-    this.lotMaxSizeError = this.lotSizeBoundError(this.aCatch.lotMaxSize);
-    if (this.lotMinSizeError || this.lotMaxSizeError) {
-      return true;
-    }
-    const lotMinSize = this.aCatch.lotMinSize as number;
-    const lotMaxSize = this.aCatch.lotMaxSize as number;
-    if (lotMinSize > lotMaxSize) {
-      this.lotMaxSizeError = "La taille max doit être supérieure ou égale à la taille min";
-      return true;
-    }
-    const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
-    if (lotMaxSize > maxSize) {
-      this.lotMaxSizeError = "Cette taille est supérieure à la taille maximale de l'espèce pêchée";
-      return true;
-    }
-    return false;
+  validateMeshSizeClass(): boolean {
+    this.lotSizeClassError = this.selectedLotSizeClass ? "" : "Classe de taille obligatoire";
+    return !!this.lotSizeClassError;
   }
 
-  lotSizeBoundError(bound?: number): string {
-    if (!bound) {
-      return "Taille obligatoire";
+  get lotSizeClassOptions(): { id: string; name: string }[] {
+    const classes = this.meshSize ? Helpers.sizeClasses(this.meshSize, this.speciesMaxSize) : [];
+    const current = this.selectedLotSizeClass;
+    // Lot saisi avant le maillage actuel : sa classe reste proposée pour ne
+    // pas la perdre en réouvrant la capture.
+    if (current && !classes.some((c) => `${c.min}-${c.max}` === current)) {
+      classes.push({ min: this.aCatch.lotMinSize as number, max: this.aCatch.lotMaxSize as number });
     }
-    if (bound <= 0) {
-      return "La taille doit être strictement positive";
+    return classes.map((c) => ({ id: `${c.min}-${c.max}`, name: `${c.min} – ${c.max} cm` }));
+  }
+
+  get selectedLotSizeClass(): string {
+    const { lotMinSize, lotMaxSize } = this.aCatch;
+    return lotMinSize != null && lotMaxSize != null ? `${lotMinSize}-${lotMaxSize}` : "";
+  }
+
+  set selectedLotSizeClass(value: string) {
+    const [min, max] = (value || "").split("-").map(Number);
+    this.aCatch.lotMinSize = value ? min : undefined;
+    this.aCatch.lotMaxSize = value ? max : undefined;
+  }
+
+  /** Charge maillage et taille maximale de l'espèce sur le milieu de la sortie (#196). */
+  async loadSizeLimits(speciesId?: string) {
+    const seq = ++this.sizeLimitsSeq;
+    let meshSize: number | null = null;
+    if (speciesId && this.lakeId && speciesId != "__other__") {
+      try {
+        meshSize = (await ReferentialService.getAuthorizedSampleMeshSize(this.lakeId, speciesId)) || null;
+      } catch (e) {
+        console.error("Maillage indisponible, pas de classe de taille proposée", e);
+      }
     }
-    if (bound != Math.floor(bound)) {
-      return "La taille doit être un nombre entier";
+    const maxSize = await this.getMaxSize(this.lakeId, speciesId);
+    if (seq === this.sizeLimitsSeq) {
+      this.meshSize = meshSize;
+      this.speciesMaxSize = maxSize;
+      this.lotSizeClassError = "";
     }
-    return "";
   }
 
   get isLot(): boolean {
@@ -804,7 +732,13 @@ export default class EditCatchView extends Vue {
 
   // Classe de taille d'un lot (#196) : remplace la taille exacte, ex. « 10 truites de 40 à 50 cm ».
   get useLotSizeClass(): boolean {
-    return this.isLot && this.lotSizeClassEnabled;
+    return this.isLot && this.lotSizeClassEnabled && this.hasLotSizeClasses;
+  }
+
+  // Classes proposées seulement si l'administrateur a défini un maillage, ou
+  // pour réafficher la classe d'un lot déjà saisi.
+  get hasLotSizeClasses(): boolean {
+    return !!this.meshSize || !!this.selectedLotSizeClass;
   }
 
   isMandatorySize(speciesId?: string): boolean {
@@ -841,6 +775,7 @@ export default class EditCatchView extends Vue {
 
   @Watch("aCatch.speciesId")
   speciesChanged(newValue: string, _oldValue: string) {
+    this.loadSizeLimits(newValue);
     this.sizeLabel = this.defaultSizeLabel;
     this.multipleCatchsAllowed = false;
     if (newValue && this.isMandatorySize(newValue) === false) {
@@ -851,7 +786,6 @@ export default class EditCatchView extends Vue {
 
   async takePicture() {
     if (this.modifiable) {
-      this.shouldLaunchAutomaticMeasure = true;
       this.requestNewPicture = true;
     }
   }
@@ -891,67 +825,44 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  pictureTaken(pictureContent: string, isMeasurementPicture: boolean) {
-    this.measurementPictureToDispatch = "";
-    // Make sure the received pictures does not come from measurement popup (can happen due to cancel bugs)
-    if (!this.displayMeasurementPicturePopup) {
-      this.requestNewPicture = false;
-
-      // First check that we do not already have the picture in the gallery
-      let alreadyInGalery = false;
-      this.allNonMeasurePictures.forEach((pic) => {
-        alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
-      });
-      if (!alreadyInGalery) {
-        let  maxOrder = Math.max(
-          this.lastUsedPicOrder,
-          Math.max.apply(
-            Math,
-            this.allNonMeasurePictures.map(function (o) {
-              return o.order;
-            })
-          )
-        );
-        maxOrder += 1;
-        this.lastUsedPicOrder = maxOrder;
-        const pictureInDb: PictureContentWithOrder = {
-          order: maxOrder,
-          content: pictureContent,
-          isMeasurementPicture: isMeasurementPicture,
-        };
-        this.allNonMeasurePictures.unshift(pictureInDb);
-        this.newTakenPictures.unshift(pictureInDb);
-        this.focusedPicSrc = pictureInDb.content;
-
-        // If no automatic measure has been determined yet, let's try with this new picture
-        if (isMeasurementPicture || !this.aCatch.automaticMeasure) {
-          this.measurementPictureCandidateSrc = pictureContent;
-        }
-      } else {
-        this.$root.$emit(
-          "toaster-error",
-          "Cette photo est déjà dans votre gallerie"
-        );
-      }
+  pictureTaken(pictureContent: string) {
+    this.requestNewPicture = false;
+    // First check that we do not already have the picture in the gallery
+    let alreadyInGalery = false;
+    this.allNonMeasurePictures.forEach((pic) => {
+      alreadyInGalery = alreadyInGalery || pic.content == pictureContent;
+    });
+    if (!alreadyInGalery) {
+      let  maxOrder = Math.max(
+        this.lastUsedPicOrder,
+        Math.max.apply(
+          Math,
+          this.allNonMeasurePictures.map(function (o) {
+            return o.order;
+          })
+        )
+      );
+      maxOrder += 1;
+      this.lastUsedPicOrder = maxOrder;
+      const pictureInDb: PictureContentWithOrder = {
+        order: maxOrder,
+        content: pictureContent,
+        isMeasurementPicture: false,
+      };
+      this.allNonMeasurePictures.unshift(pictureInDb);
+      this.newTakenPictures.unshift(pictureInDb);
+      this.focusedPicSrc = pictureInDb.content;
     } else {
-      // Dispatching measurement pic to expected target
-      this.measurementPictureToDispatch = pictureContent;
+      this.$root.$emit(
+        "toaster-error",
+        "Cette photo est déjà dans votre gallerie"
+      );
     }
-  }
-
-  measurementPictureTaken(measureAndPic: MeasureAndPic) {
-    console.error("measurementPictureTaken", measureAndPic.measurePicSrc);
-    this.displayMeasurementPicturePopup = false;
-    this.shouldLaunchAutomaticMeasure = false;
-    this.measurementPictureSrc = measureAndPic.measurePicSrc;
-    this.pictureTaken(measureAndPic.measurePicSrc, true);
-    this.focusedPicSrc = this.measurementPictureSrc;
-    this.gotAutomaticMeasure(measureAndPic);
   }
 
   @Watch("withSample")
   onWithSampleChanged(value: boolean, _oldValue: boolean) {
-    if (value && !this.aCatch.sampleId) {
+    if (value && !this.aCatch.sampleId && this.scaleSamplingEnabled) {
       TripsService.newSampleId().then(this.onNewSampleId);
     }
   }
@@ -994,7 +905,7 @@ export default class EditCatchView extends Vue {
     if (this.useLotSizeClass) {
       this.aCatch.size = undefined;
       this.sizeError = "";
-      hasError = (await this.validateLotSizeClass()) || hasError;
+      hasError = this.validateMeshSizeClass() || hasError;
     } else {
       this.aCatch.lotMinSize = undefined;
       this.aCatch.lotMaxSize = undefined;
@@ -1080,16 +991,25 @@ export default class EditCatchView extends Vue {
       this.techniqueIdError = "Technique de pêche obligatoire";
     }
 
+    this.caughtAtError = "";
     if (this.caughtAt && this.caughtAt.length > 0) {
       this.aCatch.caughtAt = this.caughtAt;
+      if (this.multiDayTrip && this.caughtOn) {
+        this.aCatch.caughtOn = this.caughtOn;
+      }
+      if (!TripDates.isCatchWithinTrip(this.tripPeriod, this.aCatch)) {
+        hasError = true;
+        this.caughtAtError = TripDates.catchOutOfTripMessage(this.tripPeriod);
+      }
     } else {
       delete this.aCatch.caughtAt;
+      delete this.aCatch.caughtOn;
     }
 
     if (hasError) {
       this.$root.$emit(
         "toaster-error",
-        "Vous devez renseigner les champs obligatoires"
+        this.caughtAtError || "Vous devez renseigner les champs obligatoires"
       );
     } else {
       const aCatchBean: CatchBean = this.castToBean(this.aCatch);
@@ -1105,8 +1025,33 @@ export default class EditCatchView extends Vue {
         aCatchBean.latitude = this.gpsLocation.lat;
         aCatchBean.longitude = this.gpsLocation.lng;
       }
+      if (!(await this.confirmSizeAboveMax())) {
+        this.focusSizeField();
+        return;
+      }
       TripsService.saveCatch(this.tripId, aCatchBean, this.catchSaved);
     }
+  }
+
+  /**
+   * Taille exacte supérieure à la taille maximale admin (#229) : confirmation
+   * plutôt qu'erreur bloquante ; `false` si le pêcheur choisit de corriger.
+   */
+  async confirmSizeAboveMax(): Promise<boolean> {
+    if (this.useLotSizeClass || !this.aCatch.size) {
+      return true;
+    }
+    const maxSize = await this.getMaxSize(this.lakeId, this.aCatch.speciesId);
+    return Helpers.confirmSizeAboveMax(this.$modal, this.aCatch.size, maxSize);
+  }
+
+  focusSizeField() {
+    this.$nextTick(() => {
+      const sizeInput = document.getElementById("field-size") as HTMLInputElement | null;
+      if (sizeInput) {
+        sizeInput.focus();
+      }
+    });
   }
 
   castToBean(input: any): CatchBean {
@@ -1171,49 +1116,6 @@ export default class EditCatchView extends Vue {
         params: { id: this.tripId },
       });
     }
-  }
-
-  gotAutomaticMeasure(measure: MeasureAndPic) {
-    this.displayMeasurementPicturePopup = false;
-    this.aCatch.automaticMeasure = Math.round(
-      measure.fishSizeAutomatedInMm / 10
-    );
-    // Override manual size, but user will still be able to modify it later on
-    this.aCatch.size = Math.round(measure.fishSizeManualInMm / 10);
-
-    // If we had a measure, means that latest taken picture is a measurement pic
-    if (this.newTakenPictures.length) {
-      if (this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery) {
-        // Keep measurement pic as it was automatic and should be kept in gallery
-        const automaticMeasurePic = this.newTakenPictures.filter(
-          (pic) =>
-            pic.isMeasurementPicture &&
-            pic.order != this.newTakenPictures[0].order
-        );
-        if (automaticMeasurePic.length) {
-          this.allNonMeasurePictures.unshift(automaticMeasurePic[0]);
-        }
-        this.newTakenPictures.forEach(
-          (pic) => (pic.isMeasurementPicture = false)
-        );
-        this.lastMeasurePictureWasAutomaticAndShouldBeKeptInGallery = false;
-      } else {
-        // Remove all measurement pic to only keep the last
-        this.newTakenPictures = this.newTakenPictures.filter(
-          (pic) =>
-            !pic.isMeasurementPicture ||
-            pic.order == this.newTakenPictures[0].order
-        );
-      }
-      // All previously taken pictures should not be considered as measurement
-
-      this.measurementPictureSrc = this.newTakenPictures[0].content;
-      this.newTakenPictures[0].isMeasurementPicture = true;
-      this.allNonMeasurePictures = this.allNonMeasurePictures.filter(
-        (pic) => !pic.isMeasurementPicture
-      );
-    }
-    this.$forceUpdate();
   }
 
   // #92 : recherche d'espèce sur le nom usuel/alias ET le nom scientifique,
@@ -1291,20 +1193,6 @@ export default class EditCatchView extends Vue {
     padding-bottom: @margin-xx-large;
   }
 
-  .automatic-measure {
-    margin-left: 0px;
-    margin-top: 20px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: block;
-    overflow: hidden;
-
-    @media screen and (max-width: @desktop-min-width) {
-      margin-top: 0px;
-      padding-right: 0px;
-      width: 100%;
-    }
-  }
 
   .catch-picture {
     height: calc(165px + env(safe-area-inset-top));
@@ -1340,7 +1228,7 @@ export default class EditCatchView extends Vue {
       flex: 1 1 auto;
 
       &.pic-selected {
-        border: 4px solid @pelorous;
+        border: 4px solid @accent-text;
         -webkit-transform: scale(1.05);
         -moz-transform: scale(1.05);
         -o-transform: scale(1.05);
@@ -1418,7 +1306,7 @@ export default class EditCatchView extends Vue {
     .description {
       font-size: @fontsize-header-paragraph;
       line-height: calc(@fontsize-header-paragraph + @line-height-padding-small );
-      color: @black;
+      color: @text-strong;
       margin: @vertical-margin-small;
     }
 
@@ -1433,8 +1321,8 @@ export default class EditCatchView extends Vue {
       height: 40px;
       width: 40px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation: spin 2s linear infinite;
     }
 
@@ -1482,87 +1370,9 @@ export default class EditCatchView extends Vue {
     }
   }
 
-  .lot-size-class-row {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
 
-    > * {
-      flex: 1;
-    }
-  }
 
-  .measure-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
 
-    > :nth-child(1) {
-      width: calc(100% - 200px);
-      margin-top: 20px;
-      min-width: 150px;
-    }
-
-    > :nth-child(2) {
-      width: 200px;
-    }
-
-    @media screen and (min-width: 515px) {
-      > :nth-child(1) {
-        width: 300px;
-      }
-
-      > :nth-child(2) {
-        width: calc(100% - 300px);
-      }
-    }
-
-    @media screen and (min-width: @desktop-min-width) {
-      > :nth-child(1) {
-        width: calc(100% - 200px);
-        margin-top: 20px;
-      }
-
-      > :nth-child(2) {
-        width: 200px;
-      }
-    }
-
-    @media screen and (min-width: 880px) {
-      > :nth-child(1) {
-        width: 300px;
-      }
-
-      > :nth-child(2) {
-        width: calc(100% - 300px);
-      }
-    }
-  }
-
-  .measure-button-icon {
-    margin-left: -4px;
-  }
-
-  #measure-button-text {
-    padding-left: 8px;
-  }
-
-  #measure-button-text:after {
-    content: "Mesure";
-
-    @media screen and (min-width: 515px) {
-      content: "Mesure automatique";
-    }
-
-    @media screen and (min-width: @desktop-min-width) {
-      content: "Mesure";
-    }
-
-    @media screen and (min-width: 880px) {
-      content: "Mesure automatique";
-    }
-  }
 
   @media screen and (min-width: @desktop-min-width) {
     &.picture-background .edit-catch-page {

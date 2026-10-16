@@ -69,6 +69,11 @@ public interface FisholaConfiguration {
     @WithDefault("168")
     int tripModifiableHours();
 
+    // Sortie de plusieurs jours (#237) : durée au-delà de laquelle les formulaires
+    // demandent confirmation à la saisie.
+    @WithDefault("7")
+    int maxPlausibleTripDays();
+
     @WithDefault("168") // Délai avant que les sorties soient disponibles dans le fichier d'export. En théorie ce chiffre doit être le même que #getTripModifiableHours()
     int exportSafeHours();
 
@@ -80,6 +85,20 @@ public interface FisholaConfiguration {
     // Au moment du check, un unique courriel regroupant toutes les nouvelles actualités publiques est envoyé
     @WithDefault("168")
     int newsMailSendingDelayHours();
+
+    // Buffer (mètres) autour des départements d'un compte staff : il gère tout
+    // milieu intersectant ses départements élargis de cette distance (#231).
+    @WithDefault("1000")
+    double staffPerimeterBufferM();
+    // Statistiques pêcheur (#210) : CPUE d'une espèce affichée à partir de ce
+    // nombre de prises de l'espèce.
+    @WithDefault("10")
+    int cpueMinCatches();
+
+    // Statistiques pêcheur (#210) : part de contribution au secteur affichée
+    // seulement à partir de ce nombre de pêcheurs distincts sur le secteur (RGPD).
+    @WithDefault("5")
+    int sectorContributionMinAnglers();
 
     default String computeBackendBaseUrl(HttpServletRequest httpServletRequest) {
         Optional<String> backendBaseUrl = backendBaseUrl();

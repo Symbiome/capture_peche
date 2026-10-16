@@ -25,8 +25,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import fr.inrae.fishola.database.AdminHiddenReferentialsDao;
 import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.AuthorizedSample;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
@@ -47,6 +49,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -65,6 +68,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +85,12 @@ public class ReferentialResource extends AbstractFisholaResource {
     protected ReferentialDao referentialDao;
     @Inject
     protected HydroSearchDao hydroSearchDao;
+
+    @Inject
+    protected StaffPerimeterDao staffPerimeterDao;
+
+    @Inject
+    protected AdminHiddenReferentialsDao hiddenReferentialsDao;
 
     @GET
     @Path("/waterEntities")
@@ -125,6 +135,19 @@ public class ReferentialResource extends AbstractFisholaResource {
     }
 
     /**
+     * Nom d'une seule entité hydrographique (#204) : la fiche d'une prise
+     * chargeait l'intégralité de /waterEntities/names (~181 000 entités pour un
+     * national) pour n'en afficher qu'un nom. 404 si l'entité n'existe pas.
+     */
+    @GET
+    @Path("/waterEntities/names/{waterEntityId}")
+    public WaterEntityName getWaterEntityName(@PathParam("waterEntityId") UUID waterEntityId) {
+        checkIsStaff();
+        return referentialDao.findWaterEntityName(waterEntityId)
+                .orElseThrow(NotFoundException::new);
+    }
+
+    /**
      * Attribution hydro d'un point cliqué sur la carte des saisies manuelles (#189) :
      * entité la plus proche + alternatives, comme {@code GET /api/v1/waterEntities/attribution}
      * côté pêcheur, mais ouverte au staff et, hors national, limitée aux entités de son
@@ -139,10 +162,10 @@ public class ReferentialResource extends AbstractFisholaResource {
         List<WaterEntityAttribution> candidates = hydroSearchDao.attribution(lat, lng, STAFF_ATTRIBUTION_LIMIT);
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         if (!allowedDepartments.isEmpty()) {
-            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(
-                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList());
+            Set<UUID> inPerimeter = staffPerimeterDao.filterInPerimeter(
+                    candidates.stream().map(WaterEntityAttribution::waterEntityId).toList(), allowedDepartments);
             candidates = candidates.stream()
-                    .filter(c -> allowedDepartments.contains(departmentByEntity.get(c.waterEntityId())))
+                    .filter(c -> inPerimeter.contains(c.waterEntityId()))
                     .toList();
         }
         return ImmutableAttributionResponse.builder()
@@ -155,7 +178,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     // minimal id+nom, même scoping départemental que getAllWaterEntityNames() :
     // alimente l'autocomplete "Entité hydrographique" des formulaires de saisie
     // opérateur, à la place du <select> exhaustif qui fait planter l'onglet pour
-    // un national (~181 000 <option> à monter).
+    // un national (~181 000 <option> à monter). Les secteurs favoris du compte
+    // passent en tête (#236).
     @GET
     @Path("/waterEntities/names/search")
     public List<WaterEntityName> searchWaterEntityNames(@QueryParam("q") String q,
@@ -166,7 +190,7 @@ public class ReferentialResource extends AbstractFisholaResource {
                 "limit doit être dans l'intervalle [1, 50].");
         FisholaAdmin fisholaAdmin = this.checkIsStaff();
         Set<String> allowedDepartments = fisholaAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
-        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit);
+        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit, fisholaAdmin.getId());
     }
 
     @GET
@@ -176,9 +200,19 @@ public class ReferentialResource extends AbstractFisholaResource {
         return usersDao.getFavoriteWaterEntities(userIdOrRenew.userId());
     }
 
+    /**
+     * Techniques nationales.
+     *
+     * @param forCurrentAdmin vrai pour les listes de saisie du compte staff connecté (#239) :
+     *                        sans les techniques archivées ni celles qu'il a masquées
+     * @return techniques, archivées comprises (flag {@code archived}) sans {@code forCurrentAdmin}
+     */
     @GET
     @Path("/techniques")
-    public List<Technique> getTechniques() {
+    public List<Technique> getTechniques(@QueryParam("forCurrentAdmin") boolean forCurrentAdmin) {
+        if (forCurrentAdmin) {
+            return hiddenReferentialsDao.listVisibleTechniques(checkIsStaff().getId());
+        }
         List<Technique> result = referentialDao.listBuiltInTechniques();
         return result;
     }
@@ -289,10 +323,19 @@ public class ReferentialResource extends AbstractFisholaResource {
         return Response.noContent().build();
     }
 
+    /**
+     * Espèces nationales.
+     *
+     * @param forCurrentAdmin vrai pour les listes de saisie du compte staff connecté (#239) :
+     *                        sans les espèces archivées ni celles qu'il a masquées
+     * @return espèces, archivées comprises (flag {@code archived}) sans {@code forCurrentAdmin}
+     */
     @GET
     @Path("/species")
-    public List<SpeciesWithAlias> getSpecies() {
-        List<Species> species = referentialDao.listBuiltInSpecies();
+    public List<SpeciesWithAlias> getSpecies(@QueryParam("forCurrentAdmin") boolean forCurrentAdmin) {
+        List<Species> species = forCurrentAdmin
+                ? hiddenReferentialsDao.listVisibleSpecies(checkIsStaff().getId())
+                : referentialDao.listBuiltInSpecies();
         List<SpeciesWithAlias> result = species.stream()
                 .map(SpeciesWithAlias::of)
                 .toList();
@@ -375,15 +418,15 @@ public class ReferentialResource extends AbstractFisholaResource {
 
     // Résout le périmètre du back-office « Maillages et tailles maximales »
     // (#154) : une liste explicite d'entités l'emporte sur le département ;
-    // dans les deux cas, l'admin régional reste borné à ses départements (#159).
+    // dans les deux cas, l'admin régional reste borné à ses départements (#159),
+    // élargis du buffer staff (#231).
     private Set<UUID> resolvePerimeter(String department, List<UUID> waterEntityIdParams) {
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         Set<UUID> perimeter;
         if (waterEntityIdParams != null && !waterEntityIdParams.isEmpty()) {
             perimeter = new HashSet<>(waterEntityIdParams);
             if (!allowedDepartments.isEmpty()) {
-                Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(perimeter);
-                perimeter.removeIf(id -> !allowedDepartments.contains(departmentByEntity.get(id)));
+                perimeter.retainAll(staffPerimeterDao.filterInPerimeter(perimeter, allowedDepartments));
             }
         } else if (StringUtils.isNotBlank(department)) {
             if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(department)) {
@@ -508,10 +551,8 @@ public class ReferentialResource extends AbstractFisholaResource {
         if (fisholaAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
             waterEntityScope = new HashSet<>(authorizedSamples.targetWaterEntities);
         } else {
-            Map<UUID, String> departmentByEntity = referentialDao.departmentByWaterEntityId(authorizedSamples.targetWaterEntities);
-            waterEntityScope = authorizedSamples.targetWaterEntities.stream()
-                .filter(id -> allowedDepartments.contains(departmentByEntity.get(id)))
-                .collect(Collectors.toSet());
+            waterEntityScope = new HashSet<>(
+                    staffPerimeterDao.filterInPerimeter(authorizedSamples.targetWaterEntities, allowedDepartments));
         }
         
         // On transforme la map pour avoir un Set des clé waterEntityId+speciesId autorisées
@@ -627,6 +668,14 @@ public class ReferentialResource extends AbstractFisholaResource {
     }
 
     @GET
+    @Path("/trip-settings")
+    public TripSettings getTripSettings() {
+        return ImmutableTripSettings.builder()
+                .maxPlausibleTripDays(config.maxPlausibleTripDays())
+                .build();
+    }
+
+    @GET
     @Path("/weathers")
     public List<Weather> getWeathers() {
         List<Weather> result = referentialDao.listWeathers();
@@ -683,6 +732,64 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/authorized-samples/max-size")
     public Integer getMaxSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
         return referentialDao.getMaxSize(waterEntityId, speciesId);
+    }
+
+    /**
+     * Maillage d'une espèce sur un milieu (#196) : largeur des classes de taille proposées
+     * au pêcheur pour saisir un lot. 204 si aucun maillage n'est défini.
+     */
+    @GET
+    @Path("/authorized-samples/mesh-size")
+    public Integer getMeshSize(@QueryParam("waterEntityId") UUID waterEntityId, @QueryParam("speciesId") UUID speciesId) {
+        return referentialDao.getMeshSize(waterEntityId, speciesId).orElse(null);
+    }
+
+    /**
+     * Maillages et tailles maximales par défaut d'un département (#246) : ils
+     * s'appliquent à toutes ses entités hydrographiques, sauf valeur propre à
+     * l'entité (cf. ReferentialDao.getMaxSize / getMeshSize).
+     */
+    @GET
+    @Path("/authorized-samples/department/{department}")
+    public List<DepartmentSizeDefaultBean> getDepartmentSizeDefaults(@PathParam("department") String department) {
+        checkIsStaff();
+        if (!isDepartmentAllowed(department)) {
+            return List.of();
+        }
+        return referentialDao.listDepartmentAuthorizedSamples(department).stream()
+                .map(DepartmentSizeDefaultBean::of)
+                .toList();
+    }
+
+    /** Remplace l'ensemble des valeurs par défaut du département (#246). */
+    @PUT
+    @Path("/authorized-samples/department/{department}")
+    @Audited(value = "departmentAuthorizedSamples.save", entityType = "department_authorized_samples")
+    public Response saveDepartmentSizeDefaults(@PathParam("department") String department,
+                                               List<DepartmentSizeDefaultBean> defaults) {
+        checkIsAdmin();
+        if (!isDepartmentAllowed(department)) {
+            return Response.status(Response.Status.FORBIDDEN).entity("Département hors de votre périmètre").build();
+        }
+        List<DepartmentSizeDefaultBean> values = defaults == null ? List.of() : defaults;
+        Optional<String> error = values.stream()
+                .map(DepartmentSizeDefaultBean::validationError)
+                .filter(Objects::nonNull)
+                .findFirst();
+        if (error.isPresent()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(error.get()).build();
+        }
+        referentialDao.replaceDepartmentAuthorizedSamples(department,
+                values.stream().map(value -> value.toEntity(department)).toList());
+        return Response.noContent().build();
+    }
+
+    // Un admin régional reste borné à ses départements (#159) ; un national
+    // (aucune restriction) peut configurer tous les départements.
+    private boolean isDepartmentAllowed(String department) {
+        Set<String> allowedDepartments = getAllowedAdminDepartments();
+        return StringUtils.isNotBlank(department)
+                && (allowedDepartments.isEmpty() || allowedDepartments.contains(department));
     }
 
 }

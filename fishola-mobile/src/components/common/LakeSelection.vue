@@ -59,7 +59,7 @@
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
           >
-            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-html="highlightMatchingText(labelOf(lake))" />
             <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
           </li>
           <li
@@ -68,7 +68,7 @@
             :class="selectedLakesId.includes(lake.id) ? 'selected' : ''"
             @click="selectLake(lake)"
           >
-            <span v-html="highlightMatchingText(lake.name)" />
+            <span v-html="highlightMatchingText(labelOf(lake))" />
             <span v-if="formatCommune(lake)" class="suggestion-commune">{{ formatCommune(lake) }}</span>
           </li>
         </ul>
@@ -132,6 +132,8 @@ import NearbyList from "@/components/common/NearbyList.vue";
 import CommuneSearch from "@/components/common/CommuneSearch.vue";
 import AttributionConfirmSheet from "@/components/common/AttributionConfirmSheet.vue";
 import ReferentialService from '@/services/ReferentialService';
+import OfflineAreasService from '@/services/OfflineAreasService';
+import NetworkStatusService from '@/services/NetworkStatusService';
 import Helpers from '@/services/Helpers';
 
 @Component({
@@ -158,6 +160,9 @@ export default class LakeSelection extends Vue {
   selectedLabel: string = "";
   selectedCommuneLabel: string = "";
   selectedLakesId: string[] = [];
+  // Libellé suffixé (#230) du milieu choisi parmi des homonymes, conservé
+  // dans le champ après la sélection.
+  private chosenLabel: { id: string; label: string } | null = null;
   private searchSeq: number = 0;
   private communeSeq: number = 0;
   private searchTimer: any = null;
@@ -217,7 +222,10 @@ export default class LakeSelection extends Vue {
   updateSelectedLakeLabel() {
     this.selectedLakesId = this.selectedLakes.map(lake => { return lake.id });
     if (this.selectedLakesId.length == 1) {
-      this.selectedLabel = this.selectedLakes[0].name || '';
+      const selected = this.selectedLakes[0];
+      this.selectedLabel = this.chosenLabel && this.chosenLabel.id === selected.id
+        ? this.chosenLabel.label
+        : selected.name || '';
       this.updateSuggestedLakes();
     }
   }
@@ -287,7 +295,10 @@ export default class LakeSelection extends Vue {
   selectLake(selected: Lake) {
     const seq = ++this.communeSeq;
     if (!this.allowMultipleSelection) {
-      this.search = selected.name;
+      const label = this.labelOf(selected);
+      this.chosenLabel = { id: selected.id, label };
+      this.selectedLabel = label;
+      this.search = label;
       this.selectedCommuneLabel = this.formatCommune(selected);
       // Entité choisie hors recherche (tap carte, mode liste, attribution) : les
       // objets du référentiel ne portent pas la commune → on la résout par id
@@ -311,9 +322,20 @@ export default class LakeSelection extends Vue {
 
   clearSelection() {
     this.communeSeq++;
+    this.chosenLabel = null;
     this.search = "";
     this.selectedCommuneLabel = "";
     this.$emit("updated", null);
+  }
+
+  // Homonymes des suggestions affichées (favoris compris) suffixés du
+  // département (#230).
+  get suggestionLabels(): Map<string, string> {
+    return Helpers.waterEntityLabels([...this.suggestedFavorites, ...this.suggestedLakes] as any[]);
+  }
+
+  labelOf(lake: Lake): string {
+    return this.suggestionLabels.get(lake.id) || lake.name;
   }
 
   // « 74000 Annecy » (CP + commune), le cas échéant (#6/#15). Champs portés par
@@ -389,25 +411,40 @@ export default class LakeSelection extends Vue {
   onMapClick(coords: { lng: number; lat: number; offlineAttribution?: WaterEntityAttribution | null }) {
     this.pendingPin = { lat: coords.lat, lng: coords.lng };
     if (coords.offlineAttribution) {
-      // Résolution locale depuis un pack hors-ligne téléchargé (#174) : le
-      // point tapé couvre une entité connue localement, pas d'appel réseau.
-      this.attributionResult = { proposal: coords.offlineAttribution, alternatives: [] };
-      this.showAttributionSheet = true;
+      // Entité tapée directement sur la couche du pack hors-ligne (#174).
+      this.showAttribution({ proposal: coords.offlineAttribution, alternatives: [] });
       return;
     }
-    ReferentialService.getAttribution(coords.lat, coords.lng)
-      .then((res) => {
-        this.attributionResult = res;
-        this.showAttributionSheet = true;
-      })
+    const attribution = NetworkStatusService.isOffline()
+      ? this.attributeFromOfflinePacks(coords.lat, coords.lng)
+      : ReferentialService.getAttribution(coords.lat, coords.lng)
+        .catch(() => this.attributeFromOfflinePacks(coords.lat, coords.lng));
+    attribution
+      .then((res) => this.showAttribution(res))
       .catch(() => {
-        // Attribution indisponible (hors ligne / erreur serveur) ET aucune
-        // donnée locale couvrant ce point (#174) : on prévient l'utilisateur
-        // et on l'oriente vers le téléchargement d'un pack hors-ligne plutôt
-        // que vers la recherche par nom, tout aussi bloquée hors-ligne.
+        // Ni réseau ni pack hors-ligne couvrant ce point (#174) : on oriente
+        // vers le téléchargement d'un pack, la recherche par nom étant tout
+        // aussi bloquée sans données locales.
         this.pendingPin = null;
         Helpers.offlineAttributionAlert(this.$modal, () => this.$router.push({ name: "offline-areas" }));
       });
+  }
+
+  // Attribution locale par proximité sur les packs téléchargés (#174) : un tap
+  // à côté d'un cours d'eau fin doit aboutir comme en ligne, pas seulement un
+  // tap pile sur le trait. Rejette si aucune entité locale n'est dans le rayon.
+  private attributeFromOfflinePacks(lat: number, lng: number): Promise<AttributionResponse> {
+    return OfflineAreasService.attributeLocally(lat, lng).then((res) => {
+      if (!res.proposal) {
+        throw new Error("Aucune entité hors-ligne à proximité");
+      }
+      return res;
+    });
+  }
+
+  private showAttribution(res: AttributionResponse) {
+    this.attributionResult = res;
+    this.showAttributionSheet = true;
   }
 
   onAttributionConfirm(entity: WaterEntityAttribution) {
@@ -502,7 +539,7 @@ export default class LakeSelection extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   .input-wrapper {
@@ -529,7 +566,7 @@ export default class LakeSelection extends Vue {
     i {
       cursor: pointer;
       &:hover {
-        color: @terra-cotta;
+        color: @accent-text;
       }
     }
     i.icon-chevron {
@@ -546,7 +583,7 @@ export default class LakeSelection extends Vue {
     align-items: center;
     cursor: pointer;
     &:hover {
-      color: @terra-cotta;
+      color: @accent-text;
     }
   }
 
@@ -563,7 +600,7 @@ export default class LakeSelection extends Vue {
 
     color: @gunmetal;
     font-size: @fontsize-form-input;
-    font-family: 'Open Sans', sans-serif;
+    font-family: @font-family;
 
     &.isSearching {
       font-style: italic;
@@ -586,7 +623,7 @@ export default class LakeSelection extends Vue {
     margin: 0;
     padding: 0;
     list-style: none;
-    background-color: white;
+    background-color: @surface;
     box-shadow: 0 0 5px #0002;
     z-index: 100;
 
@@ -610,7 +647,7 @@ export default class LakeSelection extends Vue {
         position: absolute;
         left: 15px;
         padding-top: 2px;
-        color: @pelorous;
+        color: @accent-text;
         font-weight: bold;
       }
       &:hover {
@@ -618,7 +655,7 @@ export default class LakeSelection extends Vue {
         background-color: #0001;
       }
       &.selected {
-        background-color: #1e9bc422;
+        background-color: @carnet-blue-soft;
       }
     }
   }
@@ -634,7 +671,7 @@ export default class LakeSelection extends Vue {
       display: flex;
       align-items: center;
       border-radius: 20px;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
       padding: 5px 10px;
       i {
         margin-left: 5px;

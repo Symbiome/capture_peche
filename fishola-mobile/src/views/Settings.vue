@@ -24,6 +24,17 @@
       <div class="spinner"></div>
     </div>
 
+    <!-- Mode nuit (#208) : réglage local à l'appareil, disponible hors-ligne. -->
+    <div class="rounded theme-setting" v-if="!loading">
+      <FormRadio
+        name="theme"
+        label="Apparence"
+        v-bind:options="themeOptions"
+        v-bind:value="themePreference"
+        v-on:input="themeChanged"
+      />
+    </div>
+
     <div class="offline" v-if="!loading && offline">
       <span>Les paramètres ne sont pas disponible sans connexion internet</span>
       <div class="settings-row nav-row offline-nav" @click="goToOfflineAreas">
@@ -40,7 +51,7 @@
         <FormToggle v-model="settings.promptWeight" />
       </div>
 
-      <div class="settings-row" v-if="settings">
+      <div class="settings-row" v-if="settings && scaleSamplingEnabled">
         <span>Effectuer des prélèvements</span>
         <FormToggle v-model="settings.promptSamples" />
       </div>
@@ -66,6 +77,7 @@
       </div>
 
       <BottomInducementView
+        v-if="scaleSamplingEnabled"
         icon="/img/fish-blue.svg"
         title="Devenez collecteur d'écailles salmonidés"
         text="Pour pouvoir effectuer des prélèvements, vous devez vous munir d'un kit de collectes d'écailles. À récupérer dans un des points de collecte ou en nous contactant pour le recevoir à votre adresse."
@@ -74,7 +86,7 @@
         @getSamplesCollectionPoints="getSamplesCollectionPoints"
         />
     </div>
-    <FisholaFooter shortcuts="back,settings,profile" selected="settings" />
+    <BottomNav />
   </div>
 </template>
 
@@ -82,7 +94,9 @@
 
 import FisholaHeader from '@/components/layout/FisholaHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
-import FisholaFooter from '@/components/layout/FisholaFooter.vue'
+import FormRadio from '@/components/common/FormRadio.vue'
+import ThemeService, { ThemePreference } from '@/services/ThemeService';
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import { UserSettings } from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
@@ -92,12 +106,14 @@ import DocumentationService from '../services/DocumentationService';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
 import BottomInducementView from '@/components/common/BottomInducement.vue';
+import ScaleSampling from '@/services/ScaleSampling';
 
 @Component({
   components: {
     FisholaHeader,
     FormToggle,
-    FisholaFooter,
+    FormRadio,
+    BottomNav,
     BottomInducementView
   }
 })
@@ -111,6 +127,13 @@ export default class SettingsView extends Vue {
   availableAppVersion = "";
 
   samplesDocumentationUrl: string = '';
+  scaleSamplingEnabled: boolean = ScaleSampling.isEnabled();
+  themePreference: ThemePreference = ThemeService.getPreference();
+  themeOptions = [
+    { id: "light", name: "Clair" },
+    { id: "dark", name: "Sombre" },
+    { id: "system", name: "Selon le système" },
+  ];
   bottomInducementActions = [
     {
       name: "Voir les points de collecte",
@@ -121,6 +144,11 @@ export default class SettingsView extends Vue {
       action: "becomeScaleCollector"
     },
   ];
+
+  themeChanged(preference: ThemePreference) {
+    this.themePreference = preference;
+    ThemeService.setPreference(preference);
+  }
 
   constructor() {
     super();
@@ -232,8 +260,8 @@ export default class SettingsView extends Vue {
       height: 60px;
       width: 60px;
       border-radius: 50%;
-      border-top: 3px solid @pelorous;
-      border-left: 3px solid @pelorous;
+      border-top: 3px solid @accent-text;
+      border-left: 3px solid @accent-text;
       animation: spin 2s linear infinite;
     }
   }
@@ -290,7 +318,7 @@ export default class SettingsView extends Vue {
         align-items: center;
 
         i.icon-map {
-          color: @pelorous;
+          color: @accent-text;
           margin-right: 8px;
         }
       }

@@ -91,7 +91,7 @@ export default class FormToggle extends Vue {
 
     label {
       font-weight: 300;
-      color: @black;
+      color: @text-strong;
     }
 
     img {

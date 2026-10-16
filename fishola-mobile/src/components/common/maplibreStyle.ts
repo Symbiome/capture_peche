@@ -27,6 +27,8 @@
 
 import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
 import Constants from '@/services/Constants';
+import TileCacheService from '@/services/TileCacheService';
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 
 export const IGN_ATTRIBUTION =
     '© <a href="https://www.ign.fr/" target="_blank" rel="noopener">IGN</a>';
@@ -51,11 +53,11 @@ export function buildFisholaStyle(baseLayer: BaseLayer = 'plan'): StyleSpecifica
         version: 8,
         sources: {
             'ign-plan': {
-                type: 'raster', tiles: [IGN_PLAN_URL], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)], tileSize: 256, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             'ign-ortho': {
-                type: 'raster', tiles: [IGN_ORTHO_URL], tileSize: 256, maxzoom: 19,
+                type: 'raster', tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)], tileSize: 256, maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             hydro: {
@@ -74,18 +76,18 @@ export function buildFisholaStyle(baseLayer: BaseLayer = 'plan'): StyleSpecifica
             },
             {
                 id: 'hydro-surface', type: 'fill', source: 'hydro', 'source-layer': 'water_surface',
-                paint: { 'fill-color': '#1e9bc4', 'fill-opacity': 0.35, 'fill-outline-color': '#1478a0' },
+                paint: { 'fill-color': CARNET_MAP_COLORS.water, 'fill-opacity': 0.35, 'fill-outline-color': CARNET_MAP_COLORS.waterOutline },
             },
             {
                 id: 'hydro-river-persistent', type: 'line', source: 'hydro', 'source-layer': 'river_section',
                 filter: ['==', ['to-boolean', ['get', 'persistent']], true],
-                paint: { 'line-color': '#1e9bc4', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 3] },
+                paint: { 'line-color': CARNET_MAP_COLORS.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 3] },
             },
             {
                 id: 'hydro-river-intermittent', type: 'line', source: 'hydro', 'source-layer': 'river_section',
                 filter: ['!=', ['to-boolean', ['get', 'persistent']], true],
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.5],
                     'line-dasharray': [2, 2],
                 },

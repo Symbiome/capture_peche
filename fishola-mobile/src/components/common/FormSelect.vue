@@ -121,7 +121,7 @@ export default class FormSelect extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   select {
@@ -137,7 +137,7 @@ export default class FormSelect extends Vue {
 
     color: @gunmetal;
     font-size: @fontsize-form-input;
-    font-family: 'Open Sans', sans-serif;
+    font-family: @font-family;
   }
 
   select.field-error {

@@ -74,7 +74,7 @@ export default class MyTripsSearch extends Vue {
   }
 
   div {
-    background-color: @white;
+    background-color: @surface;
 
     height: 40px;
     padding-left: @margin-medium;
@@ -85,7 +85,7 @@ export default class MyTripsSearch extends Vue {
       border-radius: 20px;
     }
     .icon-magnifying-glass {
-      color: @pelorous;
+      color: @accent-text;
       margin-right: @margin-small;
     }
 

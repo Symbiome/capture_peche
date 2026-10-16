@@ -22,25 +22,33 @@
   <section class="operator-page">
     <header class="page-header">
       <div>
-        <h1 class="title">Import XLSX — Enquête terrain</h1>
+        <h1 class="title">Import — Enquête terrain</h1>
         <p class="subtitle is-6">
           Classeur Excel (.xlsx) multi-feuilles : une feuille par table, un onglet
-          « Session souvenir » facultatif.
+          « Session souvenir » facultatif. Ou fichier CSV plat (.csv) : une ligne par capture,
+          informations de session, de sortie et de pêcheur répétées sur chaque ligne.
+        </p>
+        <p class="subtitle is-6">
+          Les gabarits (.zip) contiennent les deux formats, un exemple CSV rempli et un
+          LISEZ-MOI qui explique quand choisir l'un ou l'autre.
         </p>
       </div>
+      <!-- Mis en valeur (#205), comme pour l'import carnet volontaire. -->
       <b-button
+        type="is-primary"
+        size="is-medium"
         icon-left="file-download-outline"
-        :loading="downloadingTemplate"
-        @click="downloadTemplate"
+        :loading="downloadingTemplates"
+        @click="downloadTemplates"
       >
-        Télécharger le gabarit
+        Télécharger les gabarits
       </b-button>
     </header>
 
     <b-collapse class="card format-help" animation="slide" :open="false">
       <template #trigger="props">
         <div class="card-header" role="button">
-          <p class="card-header-title">Format attendu — 4 feuilles</p>
+          <p class="card-header-title">Format attendu — XLSX à 4 feuilles ou CSV plat</p>
           <a class="card-header-icon">
             <b-icon :icon="props.open ? 'menu-up' : 'menu-down'"></b-icon>
           </a>
@@ -72,15 +80,38 @@
           <code>Code sortie</code> / <code>Code pêcheur</code>. Dates au format
           <code>JJ/MM/AAAA</code>, heures <code>HH:mm</code>.
         </p>
+
+        <div class="col-group flat-format">
+          <div class="col-group-head">
+            <strong>CSV plat (.csv)</strong>
+            <span class="col-group-hint">Séparateur « ; », UTF-8, une ligne par capture ou une ligne « bredouille ».</span>
+          </div>
+          <div class="col-tags">
+            <b-tag v-for="c in FLAT_COLUMNS" :key="c" type="is-primary">{{ c }}</b-tag>
+          </div>
+          <ul class="help-note flat-rules">
+            <li><code>type_sortie</code> : <code>en_cours</code> (sortie enquêtée) ou <code>souvenir</code>
+              (dernière sortie du pêcheur, sans code ni heures de sortie).</li>
+            <li>Les lignes de même <code>code_session</code> forment une session, celles de même
+              <code>code_sortie</code> une sortie, celles de même <code>code_sortie</code> +
+              <code>code_pecheur</code> la sortie d'un pêcheur. Les souvenirs d'un même
+              <code>code_session</code> + <code>code_pecheur</code> forment une seule sortie souvenir ;
+              le pêcheur doit figurer sur une ligne <code>en_cours</code> de la session.</li>
+            <li>Les valeurs répétées doivent être identiques dans leur groupe (espaces, majuscules et accents
+              ignorés), sinon la ligne divergente est rejetée.</li>
+            <li><code>espece_recherchee</code> vide = « Toutes espèces ». Sortie bredouille : une seule ligne,
+              colonnes <code>capture_*</code> vides.</li>
+          </ul>
+        </div>
       </div>
     </b-collapse>
 
     <div class="box">
       <b-field>
-        <b-upload v-model="file" drag-drop expanded accept=".xlsx">
+        <b-upload v-model="file" drag-drop expanded accept=".xlsx,.csv">
           <section class="ex-drop">
             <p><b-icon icon="upload" size="is-large"></b-icon></p>
-            <p class="drop-label">Déposez un classeur XLSX ou cliquez pour en choisir un</p>
+            <p class="drop-label">Déposez un classeur XLSX ou un fichier CSV, ou cliquez pour en choisir un</p>
             <p class="drop-hint">Un même fichier ne peut être importé qu'une fois.</p>
           </section>
         </b-upload>
@@ -138,7 +169,7 @@
         <b-table-column field="stage" label="Étape" v-slot="props">
           <b-tag :type="stageTagType(props.row.stage)">{{ stageLabel(props.row.stage) }}</b-tag>
         </b-table-column>
-        <b-table-column field="column" label="Feuille / colonne" v-slot="props">
+        <b-table-column field="column" label="Colonne" v-slot="props">
           <code v-if="props.row.column">{{ props.row.column }}</code>
           <span v-else class="muted">—</span>
         </b-table-column>
@@ -161,7 +192,7 @@ import { ref, computed } from "vue";
 const Toast = useToast();
 const file = ref<File | null>(null);
 const loading = ref(false);
-const downloadingTemplate = ref(false);
+const downloadingTemplates = ref(false);
 const result = ref<any>(null);
 
 // Reflète SurveySchema.HEADER_* côté backend (fr.inrae.fishola.rest.imports.survey).
@@ -169,15 +200,15 @@ const SHEETS = [
   {
     nom: "Session d'enquête", obligatoire: true,
     aide: "Une ligne par session (enquêteur + site + date).",
-    colonnes: ["Code session", "Secteur", "Date",
-      "Nb pêcheurs carnassiers du bord observés non-enquêtés",
+    colonnes: ["Code session", "Secteur", "Date", "Heure de début de session", "Heure de fin de session",
+      "Nom de l'opérateur", "Nb pêcheurs carnassiers du bord observés non-enquêtés",
       "Nb pêcheurs carnassiers en bateau observés non-enquêtés"],
   },
   {
     nom: "Sortie de pêche", obligatoire: true,
     aide: "Une ligne par sortie, rattachée à une session (Code session).",
     colonnes: ["Code session", "Code sortie", "Heure du contrôle",
-      "Heure de début de pêche", "Heure de fin de pêche prévue"],
+      "Heure de début de pêche", "Heure de fin de pêche prévue", "Date de fin de pêche prévue"],
   },
   {
     nom: "Capture pêcheur", obligatoire: true,
@@ -193,6 +224,16 @@ const SHEETS = [
       "Mode de pêche", "Technique", "Nombre de lignes", "Appât / type de leurre", "Bredouille",
       "Espèce (capture)", "Taille", "Nombre", "Poisson conservé", "Taille min", "Taille max"],
   },
+];
+
+// Reflète SurveySchema.FLAT_HEADER côté backend (#242).
+const FLAT_COLUMNS = [
+  "type_sortie", "code_session", "secteur", "date_session", "heure_debut_session", "heure_fin_session",
+  "nom_operateur", "nb_bord_non_enquetes", "nb_bateau_non_enquetes", "code_sortie", "heure_controle",
+  "heure_debut", "heure_fin_prevue", "date_fin_prevue", "code_pecheur", "departement_origine",
+  "site_peche", "date_souvenir", "periode_journee", "espece_recherchee", "mode_peche", "technique",
+  "nombre_lignes", "appat_leurre", "bredouille", "capture_espece", "capture_taille", "capture_nombre",
+  "capture_conservee", "capture_taille_min", "capture_taille_max"
 ];
 
 const notificationType = computed(() => {
@@ -231,21 +272,24 @@ function stageTagType(stage: string): string {
   }
 }
 
-/** Gabarit XLSX généré par le backend depuis le schéma d'import (#207). */
-async function downloadTemplate() {
-  downloadingTemplate.value = true;
+/**
+ * Archive ZIP générée par le backend : gabarits XLSX (#207) et CSV plat (#242), exemple CSV
+ * rempli et LISEZ-MOI présentant les deux formats.
+ */
+async function downloadTemplates() {
+  downloadingTemplates.value = true;
   try {
-    const blob = await BackendService.backendGetBlob("/v1/admin/imports/survey/template");
+    const blob = await BackendService.backendGetBlob("/v1/admin/imports/survey/template?format=zip");
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "gabarit-enquete-terrain.xlsx";
+    link.download = "gabarits-enquete-terrain.zip";
     link.click();
     URL.revokeObjectURL(url);
   } catch (err) {
-    Toast.open({ message: "Impossible de télécharger le gabarit, réessayez.", type: "is-danger" });
+    Toast.open({ message: "Impossible de télécharger les gabarits, réessayez.", type: "is-danger" });
   } finally {
-    downloadingTemplate.value = false;
+    downloadingTemplates.value = false;
   }
 }
 
@@ -333,6 +377,13 @@ async function doImport() {
     font-size: 0.85rem;
     margin: 0.75rem 0 0;
   }
+  .flat-format {
+    margin-top: 1.5rem;
+  }
+  .flat-rules {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
 }
 
 .ex-drop {
@@ -364,7 +415,7 @@ async function doImport() {
 
   .stat {
     flex: 1 1 160px;
-    background: #fff;
+    background: var(--bulma-scheme-main);
     border: 1px solid #e2e8ec;
     border-left: 4px solid #c9d3da;
     border-radius: 8px;

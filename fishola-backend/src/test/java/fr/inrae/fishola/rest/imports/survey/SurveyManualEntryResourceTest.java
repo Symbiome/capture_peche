@@ -38,10 +38,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,10 +55,11 @@ import static org.hamcrest.Matchers.empty;
 
 /**
  * Saisie manuelle opérateur « enquête terrain » de bout en bout (#144), pendant REST de
- * {@link SurveyImportXlsxTest} pour le formulaire assistant : une sortie enquêtée valide
- * doit créer une {@code Trip} par pêcheur (+ une par session souvenir facultative), les
- * erreurs structurel/référentiel/métier doivent être renvoyées sans rien persister, et le
- * périmètre départemental de l'opérateur doit être respecté (même règle que l'import).
+ * {@link SurveyImportXlsxTest} pour le formulaire assistant : une sortie enquêtée valide,
+ * ajoutée à une session ouverte (#236), doit créer une {@code Trip} par pêcheur (+ une par
+ * session souvenir facultative), les erreurs structurel/référentiel/métier doivent être
+ * renvoyées sans rien persister, et le périmètre départemental de l'opérateur doit être
+ * respecté (même règle que l'import).
  *
  * <p>Auto-suffisant : provisionne son opérateur (scope Annecy uniquement) et nettoie, à
  * l'issue de la classe, exactement les lignes créées par ses propres appels (identifiées
@@ -66,7 +70,7 @@ import static org.hamcrest.Matchers.empty;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SurveyManualEntryResourceTest {
 
-    private static final String URI = "/api/v1/admin/manual-entries/survey";
+    private static final String SESSIONS_URI = "/api/v1/admin/manual-entries/survey/sessions";
 
     @Inject
     JwtHelper jwtHelper;
@@ -84,6 +88,9 @@ class SurveyManualEntryResourceTest {
     private UUID techniqueId;
 
     private final List<UUID> createdTripIds = new ArrayList<>();
+    private final List<UUID> createdSessionIds = new ArrayList<>();
+    /** Session ouverte réutilisée par compte, pour les tests qui ne portent pas sur la session elle-même. */
+    private final Map<String, UUID> sessionByToken = new HashMap<>();
     /** Surfaces en eau ajoutées par ce test (#189) : l'attribution hydro s'appuie sur water_surface. */
     private final List<UUID> seededSurfaceEntityIds = new ArrayList<>();
 
@@ -155,6 +162,7 @@ class SurveyManualEntryResourceTest {
         for (UUID anglerId : anglerIds) {
             ctx.execute("DELETE FROM surveyed_angler WHERE id = ?", anglerId);
         }
+        sessionIds.addAll(createdSessionIds);
         for (UUID sessionId : sessionIds) {
             ctx.execute("DELETE FROM survey_session WHERE id = ?", sessionId);
         }
@@ -168,8 +176,6 @@ class SurveyManualEntryResourceTest {
         sortie.controlTime = LocalTime.of(9, 0);
         sortie.startTime = LocalTime.of(8, 0);
         sortie.endTime = LocalTime.of(11, 0);
-        sortie.unsurveyedShoreAnglers = 0;
-        sortie.unsurveyedBoatAnglers = 0;
         sortie.anglers = List.of(validAngler());
         return sortie;
     }
@@ -180,7 +186,6 @@ class SurveyManualEntryResourceTest {
         angler.fishingMode = "bord statique";
         angler.techniqueId = techniqueId;
         angler.rodCount = 1;
-        angler.noExpectedSpecies = true;
         angler.bredouille = false;
         angler.captures = List.of(validCatch());
         return angler;
@@ -204,12 +209,7 @@ class SurveyManualEntryResourceTest {
 
     @Test
     void validSubmissionCreatesTripAndCatch() {
-        var response = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
-                .contentType("application/json")
-                .body(validSortie())
-                .when().post(URI)
-                .then().statusCode(201)
+        var response = submitAs(operatorToken, validSortie()).statusCode(201)
                 .body("tripIds.size()", equalTo(1))
                 .body("captures", equalTo(1))
                 .body("errors", empty())
@@ -233,17 +233,11 @@ class SurveyManualEntryResourceTest {
         souvenir.fishingMode = "bord statique";
         souvenir.techniqueId = techniqueId;
         souvenir.rodCount = 1;
-        souvenir.noExpectedSpecies = true;
         souvenir.bredouille = false;
-        souvenir.capture = validCatch();
+        souvenir.captures = List.of(validCatch());
         sortie.anglers.get(0).souvenir = souvenir;
 
-        var response = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
-                .contentType("application/json")
-                .body(sortie)
-                .when().post(URI)
-                .then().statusCode(201)
+        var response = submitAs(operatorToken, sortie).statusCode(201)
                 .body("tripIds.size()", equalTo(2))
                 .body("captures", equalTo(2))
                 .extract().response();
@@ -257,6 +251,15 @@ class SurveyManualEntryResourceTest {
                         .get(0, Integer.class) == 1)
                 .count();
         Assertions.assertEquals(1, souvenirTrips, "la session souvenir doit produire sa propre trip");
+
+        // #235 : les deux sorties portent le code de la session d'enquête générée.
+        List<String> sessionCodes = response.jsonPath().getList("tripIds", String.class).stream()
+                .map(id -> ctx.fetchOne("SELECT session_code FROM trip WHERE id = ?", UUID.fromString(id))
+                        .get(0, String.class))
+                .distinct()
+                .toList();
+        Assertions.assertEquals(1, sessionCodes.size(), "un seul code session pour les deux sorties");
+        Assertions.assertTrue(sessionCodes.get(0).startsWith("MANUEL-"), sessionCodes.get(0));
     }
 
     @Test
@@ -265,14 +268,10 @@ class SurveyManualEntryResourceTest {
         sortie.waterEntityId = annecyId;
         sortie.anglers = List.of();
 
-        given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
-                .contentType("application/json")
-                .body(sortie)
-                .when().post(URI)
-                .then().statusCode(400)
+        submitAs(operatorToken, sortie).statusCode(400)
                 .body("tripIds", empty())
-                .body("errors.field", hasItem("day"))
+                .body("errors.field", hasItem("controlTime"))
+                .body("errors.field", hasItem("startTime"))
                 .body("errors.field", hasItem("anglers"));
     }
 
@@ -285,12 +284,7 @@ class SurveyManualEntryResourceTest {
         lot.kept = true;
         sortie.anglers.get(0).captures = List.of(lot);
 
-        given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
-                .contentType("application/json")
-                .body(sortie)
-                .when().post(URI)
-                .then().statusCode(400)
+        submitAs(operatorToken, sortie).statusCode(400)
                 .body("tripIds", empty())
                 .body("errors.field", hasItem("captures[0].lotMinSize"));
     }
@@ -305,17 +299,41 @@ class SurveyManualEntryResourceTest {
                 .body("errors.field", hasItem("controlTime"));
     }
 
+    /**
+     * #237 : carpiste contrôlé le 01/07, fin de pêche prévue le 03/07 à 10:00. Une fin prévue
+     * peut être dans le futur : seul l'ordre début / fin est contrôlé.
+     */
+    @Test
+    void plannedEndDayCreatesMultiDayTrip() {
+        SurveySortieBean sortie = validSortie();
+        sortie.endDay = LocalDate.of(2026, 7, 3);
+        sortie.endTime = LocalTime.of(10, 0);
+
+        var response = submitAs(operatorToken, sortie).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        UUID tripId = UUID.fromString(response.jsonPath().getList("tripIds", String.class).get(0));
+        var trip = DSL.using(dataSource, SQLDialect.POSTGRES)
+                .fetchOne("SELECT end_timestamp FROM trip WHERE id = ?", tripId);
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0), trip.get("end_timestamp", LocalDateTime.class));
+    }
+
+    @Test
+    void plannedEndDayBeforeStartIsRejectedWithoutPersisting() {
+        SurveySortieBean sortie = validSortie();
+        sortie.endDay = LocalDate.of(2026, 6, 30);
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.field", hasItem("endDay"));
+    }
+
     @Test
     void waterEntityOutsideOperatorScopeIsRejectedWithoutPersisting() {
         SurveySortieBean sortie = validSortie();
         sortie.waterEntityId = bourgetId;
 
-        given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
-                .contentType("application/json")
-                .body(sortie)
-                .when().post(URI)
-                .then().statusCode(400)
+        submitAs(operatorToken, sortie).statusCode(400)
                 .body("tripIds", empty())
                 .body("errors.field", hasItem("waterEntityId"));
     }
@@ -337,18 +355,48 @@ class SurveyManualEntryResourceTest {
         souvenir.fishingMode = "bord statique";
         souvenir.techniqueId = techniqueId;
         souvenir.rodCount = 1;
-        souvenir.noExpectedSpecies = true;
         souvenir.bredouille = true;
         return souvenir;
     }
 
     private io.restassured.response.ValidatableResponse submitAs(String token, SurveySortieBean sortie) {
+        return submitTo(sessionFor(token), token, sortie);
+    }
+
+    private io.restassured.response.ValidatableResponse submitTo(UUID sessionId, String token, SurveySortieBean sortie) {
         return given()
                 .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType("application/json")
                 .body(sortie)
-                .when().post(URI)
+                .when().post(SESSIONS_URI + "/" + sessionId + "/sorties")
                 .then();
+    }
+
+    private UUID sessionFor(String token) {
+        return sessionByToken.computeIfAbsent(token, this::openSession);
+    }
+
+    private SurveySessionBean validSession() {
+        SurveySessionBean session = new SurveySessionBean();
+        session.day = LocalDate.of(2026, 7, 1);
+        session.startTime = LocalTime.of(7, 0);
+        session.waterEntityId = annecyId;
+        session.operatorName = "J. Dupont";
+        return session;
+    }
+
+    private UUID openSession(String token) {
+        String id = given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .contentType("application/json")
+                .body(validSession())
+                .when().post(SESSIONS_URI)
+                .then().statusCode(201)
+                .body("session.status", equalTo("ouverte"))
+                .extract().path("session.id");
+        UUID sessionId = UUID.fromString(id);
+        createdSessionIds.add(sessionId);
+        return sessionId;
     }
 
     @Test
@@ -436,5 +484,198 @@ class SurveyManualEntryResourceTest {
                 .when().get(uri + "?lat=" + LAT_73 + "&lng=" + LNG_73)
                 .then().statusCode(200)
                 .body("proposal.name", equalTo("Bourget"));
+    }
+
+    // --- #236 : saisie pyramidale session -> sorties -> pêcheurs -> captures. ---
+
+    private io.restassured.response.ValidatableResponse getSession(String token, UUID sessionId) {
+        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .when().get(SESSIONS_URI + "/" + sessionId)
+                .then();
+    }
+
+    private io.restassured.response.ValidatableResponse closeSession(String token, UUID sessionId,
+                                                                     SurveySessionCloseBean close) {
+        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .contentType("application/json")
+                .body(close)
+                .when().post(SESSIONS_URI + "/" + sessionId + "/close")
+                .then();
+    }
+
+    private SurveySessionCloseBean validClose() {
+        SurveySessionCloseBean close = new SurveySessionCloseBean();
+        close.endTime = LocalTime.of(12, 0);
+        close.unsurveyedShoreAnglers = 2;
+        close.unsurveyedBoatAnglers = 1;
+        return close;
+    }
+
+    @Test
+    void sessionReceivesSeveralSorties() {
+        UUID sessionId = openSession(operatorToken);
+        trackTripIds(submitTo(sessionId, operatorToken, validSortie()).statusCode(201).extract().response());
+        trackTripIds(submitTo(sessionId, operatorToken, validSortie()).statusCode(201).extract().response());
+
+        getSession(operatorToken, sessionId).statusCode(200)
+                .body("sortiesCount", equalTo(2))
+                .body("anglersCount", equalTo(2))
+                .body("operatorName", equalTo("J. Dupont"))
+                .body("startTime", equalTo("07:00"))
+                .body("day", equalTo("2026-07-01"));
+    }
+
+    @Test
+    void sortieInheritsDayAndSectorFromSession() {
+        SurveySortieBean sortie = validSortie();
+        sortie.day = null;
+        sortie.waterEntityId = null;
+
+        var response = submitAs(operatorToken, sortie).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        UUID tripId = UUID.fromString(response.jsonPath().getList("tripIds", String.class).get(0));
+        var trip = DSL.using(dataSource, SQLDialect.POSTGRES)
+                .fetchOne("SELECT begin_timestamp, water_entity_id FROM trip WHERE id = ?", tripId);
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 1, 8, 0), trip.get("begin_timestamp", LocalDateTime.class));
+        Assertions.assertEquals(annecyId, trip.get("water_entity_id", UUID.class));
+    }
+
+    @Test
+    void openSessionIsListedUntilClosed() {
+        UUID sessionId = openSession(operatorToken);
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(SESSIONS_URI)
+                .then().statusCode(200)
+                .body("id", hasItem(sessionId.toString()));
+
+        closeSession(operatorToken, sessionId, validClose()).statusCode(200)
+                .body("session.status", equalTo("cloturee"))
+                .body("session.endTime", equalTo("12:00"))
+                .body("session.unsurveyedShoreAnglers", equalTo(2))
+                .body("session.unsurveyedBoatAnglers", equalTo(1));
+
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .when().get(SESSIONS_URI)
+                .then().statusCode(200)
+                .body("id", org.hamcrest.Matchers.not(hasItem(sessionId.toString())));
+    }
+
+    @Test
+    void closedSessionRefusesNewSorties() {
+        UUID sessionId = openSession(operatorToken);
+        closeSession(operatorToken, sessionId, validClose()).statusCode(200);
+
+        submitTo(sessionId, operatorToken, validSortie()).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.message", hasItem(SurveySessionService.SESSION_CLOSED));
+        closeSession(operatorToken, sessionId, validClose()).statusCode(400);
+    }
+
+    @Test
+    void sessionEndBeforeStartIsRejected() {
+        UUID sessionId = openSession(operatorToken);
+        SurveySessionCloseBean close = validClose();
+        close.endTime = LocalTime.of(6, 0);
+        close.unsurveyedShoreAnglers = -1;
+
+        closeSession(operatorToken, sessionId, close).statusCode(400)
+                .body("errors.field", hasItem("endTime"))
+                .body("errors.field", hasItem("unsurveyedShoreAnglers"));
+        getSession(operatorToken, sessionId).statusCode(200).body("status", equalTo("ouverte"));
+    }
+
+    @Test
+    void sessionOfAnotherAccountIsNotAccessible() {
+        UUID sessionId = openSession(operatorToken);
+
+        getSession(nationalToken, sessionId).statusCode(404);
+        submitTo(sessionId, nationalToken, validSortie()).statusCode(404);
+        closeSession(nationalToken, sessionId, validClose()).statusCode(404);
+    }
+
+    @Test
+    void incompleteSessionIsRejectedWithoutPersisting() {
+        SurveySessionBean session = validSession();
+        session.startTime = null;
+        session.operatorName = " ";
+        session.waterEntityId = bourgetId;
+
+        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(session)
+                .when().post(SESSIONS_URI)
+                .then().statusCode(400)
+                .body("session", org.hamcrest.Matchers.nullValue())
+                .body("errors.field", hasItem("startTime"))
+                .body("errors.field", hasItem("operatorName"))
+                .body("errors.field", hasItem("waterEntityId"));
+    }
+
+    @Test
+    void controlTimeAfterPlannedEndIsRejectedWithoutPersisting() {
+        SurveySortieBean sortie = validSortie();
+        sortie.controlTime = LocalTime.of(11, 30);
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("tripIds", empty())
+                .body("errors.message", hasItem(SurveyManualEntryService.CONTROL_AFTER_END));
+    }
+
+    @Test
+    void controlTimeDuringMultiDayTripIsAccepted() {
+        SurveySortieBean sortie = validSortie();
+        sortie.controlTime = LocalTime.of(23, 0);
+        sortie.endDay = LocalDate.of(2026, 7, 3);
+        sortie.endTime = LocalTime.of(10, 0);
+
+        trackTripIds(submitAs(operatorToken, sortie).statusCode(201).extract().response());
+    }
+
+    @Test
+    void souvenirAcceptsSeveralCaptures() {
+        SurveySortieBean sortie = validSortie();
+        SurveySouvenirBean souvenir = validSouvenir();
+        souvenir.bredouille = false;
+        SurveyCatchBean pike = validCatch();
+        pike.size = 30;
+        souvenir.captures = List.of(validCatch(), pike);
+        sortie.anglers.get(0).souvenir = souvenir;
+
+        var response = submitAs(operatorToken, sortie).statusCode(201)
+                .body("tripIds.size()", equalTo(2))
+                .body("captures", equalTo(3))
+                .extract().response();
+        trackTripIds(response);
+
+        var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
+        int souvenirCatches = response.jsonPath().getList("tripIds", String.class).stream()
+                .mapToInt(id -> ctx.fetchOne("SELECT count(*) FROM catch c JOIN trip t ON t.id = c.trip_id "
+                        + "WHERE t.collection_method = 'enquete_souvenir' AND t.id = ?", UUID.fromString(id))
+                        .get(0, Integer.class))
+                .sum();
+        Assertions.assertEquals(2, souvenirCatches);
+    }
+
+    @Test
+    void souvenirWithoutCaptureMustBeBredouille() {
+        SurveySortieBean sortie = validSortie();
+        SurveySouvenirBean souvenir = validSouvenir();
+        souvenir.bredouille = false;
+        sortie.anglers.get(0).souvenir = souvenir;
+
+        submitAs(operatorToken, sortie).statusCode(400)
+                .body("errors.field", hasItem("souvenir.captures"));
+    }
+
+    @Test
+    void expectedSpeciesDefaultsToAllSpecies() {
+        var response = submitAs(operatorToken, validSortie()).statusCode(201).extract().response();
+        trackTripIds(response);
+
+        UUID tripId = UUID.fromString(response.jsonPath().getList("tripIds", String.class).get(0));
+        Assertions.assertNull(DSL.using(dataSource, SQLDialect.POSTGRES)
+                .fetchOne("SELECT expected_species_id FROM trip WHERE id = ?", tripId)
+                .get("expected_species_id", UUID.class));
     }
 }

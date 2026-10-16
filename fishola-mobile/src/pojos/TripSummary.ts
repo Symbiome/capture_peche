@@ -29,6 +29,7 @@ export default interface TripSummary {
     date: Date;
     type: TripType;
     startedAt: string;
+    endDate?: string; // AAAA-MM-JJ (#237)
     finishedAt?: string;
     modifiableUntil?: Date;
     speciesIds: string[];

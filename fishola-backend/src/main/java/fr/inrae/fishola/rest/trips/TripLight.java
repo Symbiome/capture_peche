@@ -39,6 +39,8 @@ public interface TripLight {
 
     LocalDate date();
 
+    LocalDate endDate();
+
     long durationInSeconds();
 
     int catchsCount();

@@ -123,7 +123,7 @@ onMounted(async () => {
   padding: 2rem 1.5rem;
   border: 1px solid #e2e8ec;
   border-radius: 12px;
-  background: #fff;
+  background: var(--bulma-scheme-main);
   color: inherit;
   text-decoration: none;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);

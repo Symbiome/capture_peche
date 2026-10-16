@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,5 +144,60 @@ class CarnetVolontaireManualEntryResourceTest {
                 .when().post(URI)
                 .then().statusCode(400)
                 .body("errors.field", hasItem("position"));
+    }
+
+    /** #237 : sortie du 01/07 08:00 au 03/07 10:00 saisie avec sa date de fin. */
+    @Test
+    void endDayCreatesMultiDayTrip() {
+        CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
+        trip.endDay = LocalDate.of(2026, 7, 3);
+        trip.endTime = LocalTime.of(10, 0);
+        String tripId = given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(trip)
+                .when().post(URI)
+                .then().statusCode(201)
+                .extract().jsonPath().getString("tripId");
+        createdTripIds.add(UUID.fromString(tripId));
+
+        var saved = DSL.using(dataSource, SQLDialect.POSTGRES)
+                .fetchOne("SELECT end_timestamp FROM trip WHERE id = ?", UUID.fromString(tripId));
+        Assertions.assertEquals(LocalDateTime.of(2026, 7, 3, 10, 0), saved.get("end_timestamp", LocalDateTime.class));
+    }
+
+    /** #237 : une date de fin dans le futur est refusée. */
+    @Test
+    void endDayInFutureIsRejected() {
+        CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
+        trip.endDay = LocalDate.now().plusDays(2);
+        given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(trip)
+                .when().post(URI)
+                .then().statusCode(400)
+                .body("errors.field", hasItem("endDay"));
+    }
+
+    /** #235 : le code session saisi à la main est conservé et exposé dans l'export. */
+    @Test
+    void sessionCodeIsStoredAndExported() {
+        CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
+        trip.sessionCode = "  CARNET-PAPIER-42 ";
+        String tripId = given()
+                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .contentType("application/json")
+                .body(trip)
+                .when().post(URI)
+                .then().statusCode(201)
+                .extract().jsonPath().getString("tripId");
+        createdTripIds.add(UUID.fromString(tripId));
+
+        var row = DSL.using(dataSource, SQLDialect.POSTGRES).fetchOne(
+                "SELECT origine_donnee, code_session FROM catchs_openadom_export WHERE id_sortie = ?",
+                UUID.fromString(tripId));
+        Assertions.assertEquals("carnet_volontaire", row.get("origine_donnee", String.class));
+        Assertions.assertEquals("CARNET-PAPIER-42", row.get("code_session", String.class));
     }
 }

@@ -25,7 +25,7 @@
         <div class="meta-row" v-if="metaMode == 'size' && aCatch.size">
           <i class="icon-size" /> {{ aCatch.size }} cm<br />
         </div>
-        <div class="meta-row" v-if="metaMode == 'size' && !aCatch.size && aCatch.lotMinSize">
+        <div class="meta-row" v-if="metaMode == 'size' && !aCatch.size && aCatch.lotMaxSize">
           <i class="icon-size" /> {{ aCatch.lotMinSize }}–{{ aCatch.lotMaxSize }} cm<br />
         </div>
         <div class="meta-row" v-if="metaMode == 'weight'">
@@ -80,6 +80,7 @@ import ReferentialService from "@/services/ReferentialService";
 import Constants from "@/services/Constants";
 
 import { Component, Prop, Vue } from "vue-property-decorator";
+import moment from "moment";
 
 @Component({
   components: {
@@ -94,6 +95,7 @@ export default class CatchPreview extends Vue {
 
   @Prop({ default: "size" }) metaMode: string;
   @Prop({ default: "species" }) bottom: string;
+  @Prop({ default: false }) showCatchDay: boolean;
 
   caughtAtLabel: string = "";
   techniqueLabel: string = "";
@@ -105,6 +107,9 @@ export default class CatchPreview extends Vue {
   created() {
     if (this.aCatch.caughtAt) {
       this.caughtAtLabel = this.aCatch.caughtAt;
+      if (this.showCatchDay && this.aCatch.caughtOn) {
+        this.caughtAtLabel = `${moment(this.aCatch.caughtOn).format("DD/MM")} ${this.aCatch.caughtAt}`;
+      }
     }
 
     ReferentialService.getSpeciesAndTechniques().then(
@@ -243,7 +248,7 @@ export default class CatchPreview extends Vue {
     justify-content: space-between;
 
     height: 50px;
-    background-color: @white;
+    background-color: @surface;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 
@@ -253,7 +258,7 @@ export default class CatchPreview extends Vue {
       font-size: @fontsize-span-big;
       margin-left: @margin-medium;
       i {
-        color: @pelorous;
+        color: @accent-text;
         margin-right: @margin-small;
       }
     }

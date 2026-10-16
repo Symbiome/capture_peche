@@ -154,7 +154,7 @@ export default class GaleryPreview extends Vue {
     justify-content: space-between;
 
     height: 50px;
-    background-color: @white;
+    background-color: @surface;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 
@@ -164,7 +164,7 @@ export default class GaleryPreview extends Vue {
       font-size: @fontsize-span-big;
       margin-left: @margin-medium;
       i {
-        color: @pelorous;
+        color: @accent-text;
         margin-right: @margin-small;
       }
     }

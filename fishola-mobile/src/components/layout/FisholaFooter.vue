@@ -270,7 +270,7 @@ export default class FisholaFooter extends Vue {
   bottom:0;
   left:0;
   background-color: @zircon;
-  color: @pelorous;
+  color: @accent-text;
   z-index: 10;
 
   .footer-element {
@@ -299,7 +299,7 @@ export default class FisholaFooter extends Vue {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
 
       margin-left: @margin-x-small;
       margin-right: @margin-x-small;

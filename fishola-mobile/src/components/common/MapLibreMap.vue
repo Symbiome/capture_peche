@@ -36,10 +36,8 @@
 <div class="map">
     <i class="icon-error close-button" @click="closeMap" />
     <div ref="mapContainer" class="maplibre-container" />
+    <BaseLayerToggle :baseLayer="baseLayer" @toggle="toggleBaseLayer" />
     <div class="map-controls">
-        <button type="button" class="map-btn" @click="toggleBaseLayer">
-            {{ baseLayer === 'plan' ? 'Satellite' : 'Plan' }}
-        </button>
         <button type="button" class="map-btn" @click="locateMe" title="Ma position">
             Ma position
         </button>
@@ -55,12 +53,15 @@
 </template>
 
 <script lang="ts">
+import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { WaterEntity as Lake, WaterEntityAttribution } from '@/pojos/BackendPojos';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
+import TileCacheService from '@/services/TileCacheService';
 
 import maplibregl, { Map as MlMap, MapMouseEvent, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -89,7 +90,7 @@ const DEFAULT_ZOOM = 10;
 
 type BaseLayer = 'plan' | 'satellite';
 
-@Component
+@Component({ components: { BaseLayerToggle } })
 export default class MapLibreMap extends Vue {
     @Prop() favoriteLakes: Lake[];
     @Prop() selectedLake: Lake;
@@ -107,11 +108,12 @@ export default class MapLibreMap extends Vue {
     // Mode hors-ligne (#54) : quand la connexion manque à l'ouverture, on rend le
     // réseau hydro depuis les packs départementaux téléchargés (source GeoJSON
     // locale) au lieu des tuiles vectorielles du backend, injoignables. Le fond
-    // IGN reste, lui, indisponible (non téléchargé, hors périmètre) → carte nue.
+    // IGN n'est disponible que sur la dernière zone consultée (cache léger #53).
     private useOffline = false;
     private offlineData: any = null;
     // Bannière d'info affichée hors-ligne (aucun pack, ou rappel fond absent).
     offlineHint = '';
+    private unsubscribeNetwork: (() => void) | null = null;
 
     mounted() {
         if (this.isVisible) {
@@ -120,6 +122,8 @@ export default class MapLibreMap extends Vue {
     }
 
     beforeDestroy() {
+        this.unsubscribeNetwork?.();
+        this.unsubscribeNetwork = null;
         this.destroyMarkers();
         this.detachHydroHover?.();
         this.detachHydroHover = null;
@@ -166,19 +170,17 @@ export default class MapLibreMap extends Vue {
             return;
         }
 
-        // Décision online/offline figée à l'ouverture : hors-ligne, on précharge
-        // les entités hydro téléchargées pour les injecter en source GeoJSON.
+        // Hors-ligne à l'ouverture : on précharge les entités hydro téléchargées
+        // pour les injecter en source GeoJSON ; une coupure ultérieure les
+        // injecte à chaud (switchToOffline).
+        this.unsubscribeNetwork = NetworkStatusService.subscribe((online) => {
+            if (!online) {
+                this.switchToOffline();
+            }
+        });
         this.useOffline = NetworkStatusService.isOffline();
         if (this.useOffline) {
-            try {
-                this.offlineData = await OfflineAreasService.mergedFeatureCollection();
-            } catch (e) {
-                this.offlineData = { type: 'FeatureCollection', features: [] };
-            }
-            const count = (this.offlineData.features || []).length;
-            this.offlineHint = count > 0
-                ? "Hors-ligne : réseau téléchargé affiché (fond de carte indisponible)."
-                : "Hors-ligne : aucune zone téléchargée. Réglages → Zones hors-ligne.";
+            await this.loadOfflineData();
             // Le conteneur a pu être détruit pendant l'attente (fermeture rapide).
             if (!this.$refs.mapContainer || this.map) {
                 return;
@@ -234,14 +236,14 @@ export default class MapLibreMap extends Vue {
         const sources: any = {
             'ign-plan': {
                 type: 'raster',
-                tiles: [IGN_PLAN_URL],
+                tiles: [TileCacheService.cachedUrl(IGN_PLAN_URL)],
                 tileSize: 256,
                 maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
             },
             'ign-ortho': {
                 type: 'raster',
-                tiles: [IGN_ORTHO_URL],
+                tiles: [TileCacheService.cachedUrl(IGN_ORTHO_URL)],
                 tileSize: 256,
                 maxzoom: 19,
                 attribution: IGN_ATTRIBUTION,
@@ -276,9 +278,9 @@ export default class MapLibreMap extends Vue {
                 source: 'hydro',
                 'source-layer': 'water_surface',
                 paint: {
-                    'fill-color': '#1e9bc4',
+                    'fill-color': CARNET_MAP_COLORS.water,
                     'fill-opacity': 0.35,
-                    'fill-outline-color': '#1478a0',
+                    'fill-outline-color': CARNET_MAP_COLORS.waterOutline,
                 },
             },
             {
@@ -288,7 +290,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'water_surface',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'fill-color': '#e2725b',
+                    'fill-color': CARNET_MAP_COLORS.selected,
                     'fill-opacity': 0.55,
                 },
             },
@@ -300,7 +302,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['==', ['to-boolean', ['get', 'persistent']], true],
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 3],
                 },
             },
@@ -312,7 +314,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['!=', ['to-boolean', ['get', 'persistent']], true],
                 paint: {
-                    'line-color': '#1e9bc4',
+                    'line-color': CARNET_MAP_COLORS.water,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.5],
                     'line-dasharray': [2, 2],
                 },
@@ -324,7 +326,7 @@ export default class MapLibreMap extends Vue {
                 'source-layer': 'river_section',
                 filter: ['==', ['get', 'water_entity_id'], '__none__'],
                 paint: {
-                    'line-color': '#e2725b',
+                    'line-color': CARNET_MAP_COLORS.selected,
                     'line-width': ['interpolate', ['linear'], ['zoom'], 10, 3, 16, 6],
                 },
             },
@@ -337,58 +339,108 @@ export default class MapLibreMap extends Vue {
         // avec leurs variantes « sélection ». `generateId` évite l'avertissement
         // MapLibre sur les id non entiers : la sélection passe, comme en ligne,
         // par un filtre sur la propriété `water_entity_id`.
-        if (this.offlineData && (this.offlineData.features || []).length > 0) {
-            sources['hydro-offline'] = {
-                type: 'geojson',
-                data: this.offlineData,
-                generateId: true,
-                attribution: IGN_ATTRIBUTION,
-            };
-            layers.push(
-                {
-                    id: 'hydro-offline-fill',
-                    type: 'fill',
-                    source: 'hydro-offline',
-                    filter: ['==', ['get', 'kind'], 'STILL'],
-                    paint: {
-                        'fill-color': '#1e9bc4',
-                        'fill-opacity': 0.35,
-                        'fill-outline-color': '#1478a0',
-                    },
-                },
-                {
-                    id: 'hydro-offline-fill-selected',
-                    type: 'fill',
-                    source: 'hydro-offline',
-                    filter: ['==', ['get', 'water_entity_id'], '__none__'],
-                    paint: {
-                        'fill-color': '#e2725b',
-                        'fill-opacity': 0.55,
-                    },
-                },
-                {
-                    id: 'hydro-offline-line',
-                    type: 'line',
-                    source: 'hydro-offline',
-                    paint: {
-                        'line-color': '#1e9bc4',
-                        'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 16, 3],
-                    },
-                },
-                {
-                    id: 'hydro-offline-line-selected',
-                    type: 'line',
-                    source: 'hydro-offline',
-                    filter: ['==', ['get', 'water_entity_id'], '__none__'],
-                    paint: {
-                        'line-color': '#e2725b',
-                        'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 16, 6],
-                    },
-                }
-            );
+        if (this.hasOfflineData()) {
+            sources['hydro-offline'] = this.offlineSource();
+            layers.push(...this.offlineLayers());
         }
 
         return { version: 8, sources, layers };
+    }
+
+    private hasOfflineData(): boolean {
+        return !!this.offlineData && (this.offlineData.features || []).length > 0;
+    }
+
+    private offlineSource(): any {
+        return {
+            type: 'geojson',
+            data: this.offlineData,
+            generateId: true,
+            attribution: IGN_ATTRIBUTION,
+        };
+    }
+
+    private offlineLayers(): any[] {
+        return [
+            {
+                id: 'hydro-offline-fill',
+                type: 'fill',
+                source: 'hydro-offline',
+                filter: ['==', ['get', 'kind'], 'STILL'],
+                paint: {
+                    'fill-color': CARNET_MAP_COLORS.water,
+                    'fill-opacity': 0.35,
+                    'fill-outline-color': CARNET_MAP_COLORS.waterOutline,
+                },
+            },
+            {
+                id: 'hydro-offline-fill-selected',
+                type: 'fill',
+                source: 'hydro-offline',
+                filter: ['==', ['get', 'water_entity_id'], '__none__'],
+                paint: {
+                    'fill-color': CARNET_MAP_COLORS.selected,
+                    'fill-opacity': 0.55,
+                },
+            },
+            {
+                id: 'hydro-offline-line',
+                type: 'line',
+                source: 'hydro-offline',
+                paint: {
+                    'line-color': CARNET_MAP_COLORS.water,
+                    'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 16, 3],
+                },
+            },
+            {
+                id: 'hydro-offline-line-selected',
+                type: 'line',
+                source: 'hydro-offline',
+                filter: ['==', ['get', 'water_entity_id'], '__none__'],
+                paint: {
+                    'line-color': CARNET_MAP_COLORS.selected,
+                    'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 16, 6],
+                },
+            },
+        ];
+    }
+
+    // Connexion perdue APRÈS l'ouverture de la carte : la décision online/
+    // offline n'est plus figée, on injecte à chaud le réseau des packs
+    // téléchargés pour qu'il reste visible et tapable sans tuiles serveur.
+    private async switchToOffline() {
+        if (!this.map || this.useOffline) {
+            return;
+        }
+        this.useOffline = true;
+        await this.loadOfflineData();
+        if (!this.map || !this.hasOfflineData() || this.map.getSource('hydro-offline')) {
+            return;
+        }
+        const addLayers = () => {
+            if (!this.map || this.map.getSource('hydro-offline')) {
+                return;
+            }
+            this.map.addSource('hydro-offline', this.offlineSource());
+            this.offlineLayers().forEach((layer) => this.map!.addLayer(layer));
+            this.applySelectionHighlight();
+        };
+        if (this.map.isStyleLoaded()) {
+            addLayers();
+        } else {
+            this.map.once('load', addLayers);
+        }
+    }
+
+    private async loadOfflineData() {
+        try {
+            this.offlineData = await OfflineAreasService.mergedFeatureCollection();
+        } catch (e) {
+            this.offlineData = { type: 'FeatureCollection', features: [] };
+        }
+        this.offlineHint = this.hasOfflineData()
+            ? "Hors-ligne : réseau téléchargé affiché (fond de carte limité aux dernières zones consultées)."
+            : "Hors-ligne : aucune zone téléchargée. Réglages → Zones hors-ligne.";
     }
 
     // Met en évidence toutes les géométries de l'entité sélectionnée (un plan
@@ -483,7 +535,7 @@ export default class MapLibreMap extends Vue {
         } else {
             // Goutte terra cotta = point de départ CHOISI (distinct de la pastille
             // « Ma position », #18).
-            this.pinMarker = new maplibregl.Marker({ color: '#e2725b' })
+            this.pinMarker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected })
                 .setLngLat([lng, lat])
                 .addTo(this.map);
             this.pinMarker.getElement().setAttribute('title', 'Point de départ');
@@ -703,7 +755,8 @@ export default class MapLibreMap extends Vue {
 
 .offline-hint {
     position: absolute;
-    bottom: 12px;
+    // Au-dessus de la bascule Plan/Satellite, posée en bas à gauche (#199).
+    bottom: 68px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;
@@ -711,8 +764,8 @@ export default class MapLibreMap extends Vue {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #fff4e5;
-    border: 1px solid @carrot-orange;
+    background: @warning-soft;
+    border: 1px solid @warning;
     color: @gunmetal;
     border-radius: 20px;
     padding: 8px 16px;
@@ -720,7 +773,7 @@ export default class MapLibreMap extends Vue {
     box-shadow: 0 1px 4px #0003;
 
     i {
-        color: @carrot-orange;
+        color: @warning;
         flex-shrink: 0;
     }
 }
@@ -762,18 +815,18 @@ export default class MapLibreMap extends Vue {
 .user-position-marker {
     width: 16px;
     height: 16px;
-    background: #1e9bc4;
+    background: @carnet-blue;
     border: 3px solid white;
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5);
+    box-shadow: 0 0 0 0 rgba(0, 0, 224, 0.5);
     animation: user-position-pulse 2s infinite;
     cursor: default;
 }
 
 @keyframes user-position-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0.5); }
-    70% { box-shadow: 0 0 0 12px rgba(30, 155, 196, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(30, 155, 196, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(0, 0, 224, 0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(0, 0, 224, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 224, 0); }
 }
 
 /* L'infobulle de survol des entités hydro (.hydro-hover-popup) est désormais

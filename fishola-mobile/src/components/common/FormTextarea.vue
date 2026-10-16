@@ -102,7 +102,7 @@ export default class FormTextarea extends Vue {
 
   label {
     font-weight: 300;
-    color: @black;
+    color: @text-strong;
   }
 
   textarea {
@@ -118,7 +118,7 @@ export default class FormTextarea extends Vue {
 
     color: @gunmetal;
     font-size: @fontsize-form-input;
-    font-family: 'Open Sans', sans-serif;
+    font-family: @font-family;
 
     &::placeholder {
       font-style: italic;

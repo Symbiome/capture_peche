@@ -82,14 +82,14 @@ export default class FormMultiValues extends Vue {
 
     label {
       font-weight: 300;
-      color: @black;
+      color: @text-strong;
     }
 
     a {
       font-weight: bold;
       font-size: @fontsize-form-header;
       line-height: calc(@fontsize-form-header + @line-height-padding-large);
-      color: @pelorous;
+      color: @accent-text;
       cursor: pointer;
     }
   }

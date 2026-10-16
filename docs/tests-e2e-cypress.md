@@ -5,17 +5,14 @@ Base commune des tests end-to-end Cypress pour **fishola-mobile** (app pêcheur)
 les commandes ; il correspond au socle posé par l'issue #76 (cadrage + nettoyage +
 amorce CI), **avant** la refonte complète des scénarios.
 
-## Principe : deux familles de tests
+## Principe
 
 | Dossier | Contenu | Gating CI |
 | --- | --- | --- |
 | `tests/cypress/e2e/` | Parcours **fonctionnels** (régression métier) | Oui (bloquant) |
-| `tests/cypress/bench/` | **Bancs** de mesure CV / perf (précision détection, stress) | Non (outillage local) |
 
-Les bancs (`fish-detection`, `marker-detection`, `stress-test`) mesurent un **algorithme**
-(détection de poisson / marqueur, tenue en charge) : ce ne sont pas des tests de
-non-régression fonctionnelle, ils ne doivent donc pas bloquer la CI. Ils restent utiles
-pour le réglage de la vision par ordinateur et produisent un rapport dédié (voir plus bas).
+Les bancs de vision par ordinateur (mesure automatique par photo) ont été retirés
+avec la fonctionnalité côté front (#195).
 
 ## Arborescence
 
@@ -27,11 +24,6 @@ tests/cypress/
 │   ├── offline-revalidation.cypress.js   # mode offline & re-validation (#10)
 │   ├── maplibre-map.cypress.js           # smoke carte MapLibre (#33)
 │   └── lake-autocomplete.cypress.js      # autocomplétion « Plan d'eau » (#98)
-├── bench/
-│   ├── fish-detection.cypress.js         # banc mesure poisson
-│   ├── marker-detection.cypress.js       # banc détection marqueur
-│   ├── stress-test.cypress.js            # banc perf
-│   └── cypress-test-utils.js             # helpers partagés des bancs
 ├── support/
 │   ├── index.js                          # charge commands + reporter + ignore 401
 │   └── commands.js                       # cy.loginAngler()
@@ -126,12 +118,10 @@ seed #67. Ne jamais committer de secret réel — surcharger via `--env` ou `CYP
 npm run serve          # serveur de dev (port 8081), requis pour les e2e
 npm run cypress        # ouvre l'UI Cypress
 npm run cypress:run    # e2e headless (dossier e2e/ uniquement)
-npm run cypress:bench  # bancs CV/perf (dossier bench/)
-npm run cypress-report # bancs + rapport HTML mochawesome (tests/cypress/reports/)
 ```
 
 Depuis la racine du dépôt, `./run_tests.sh e2e` enveloppe `npm run cypress:run` : c'est
-le point d'entrée de la suite fonctionnelle (les bancs gardent leurs scripts dédiés).
+le point d'entrée de la suite fonctionnelle.
 
 ### Admin
 
@@ -142,13 +132,6 @@ npm run cypress:open   # ouvre l'UI Cypress
 npm run cypress:run    # e2e headless
 ```
 
-## Rapport mochawesome (bancs)
-
-Le plugin `cypress-mochawesome-reporter` n'est enregistré **que** si le run utilise ce
-reporter (`plugins/index.js` teste `config.reporter`). Sans ce garde-fou, le hook
-`after:run` échoue sur un run en reporter `spec` (`cypress:run`) faute de JSON à fusionner.
-Le rapport HTML n'est donc produit que par `cypress-report`, dans `tests/cypress/reports/`
-(dossier gitignoré).
 
 ## Choix techniques notables
 
@@ -157,8 +140,6 @@ Le rapport HTML n'est donc produit que par `cypress-report`, dans `tests/cypress
   déprécié → erreur). Les fichiers Cypress admin sont donc en `.js`, ce qui est aussi
   cohérent avec la suite mobile (100 % `.js`). Le typage de `cy.loginStaff` est conservé
   via `support/index.d.ts`.
-- **Séparation e2e / bench** portée par `specPattern` : la config par défaut ne discovers
-  que `tests/cypress/e2e/**` ; les bancs se lancent via un script dédié (`--spec bench/**`).
 
 ## Prérequis d'exécution
 

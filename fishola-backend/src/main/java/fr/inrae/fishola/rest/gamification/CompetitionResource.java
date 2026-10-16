@@ -23,6 +23,7 @@ package fr.inrae.fishola.rest.gamification;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.ReferentialDao;
+import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.gamification.CompetitionDao;
 import fr.inrae.fishola.gamification.GamificationDao;
@@ -69,6 +70,9 @@ public class CompetitionResource extends AbstractFisholaResource {
     @Inject
     protected ReferentialDao referentialDao;
 
+    @Inject
+    protected StaffPerimeterDao staffPerimeterDao;
+
     @GET
     public List<CompetitionBean> listCompetitions() {
         checkIsStaff();
@@ -80,7 +84,7 @@ public class CompetitionResource extends AbstractFisholaResource {
     public CompetitionBean getCompetition(@PathParam("competitionId") UUID competitionId) {
         checkIsStaff();
         CompetitionDao.CompetitionRow row = findCompetitionOrThrow(competitionId);
-        assertInPerimeter(row.department());
+        assertInPerimeter(row.waterEntityId());
         return toBean(row);
     }
 
@@ -93,11 +97,10 @@ public class CompetitionResource extends AbstractFisholaResource {
                 || bean.federationName == null || bean.federationName.isBlank()) {
             throw new BadRequestException("Nom, date, plan d'eau/cours d'eau et fédération organisatrice sont obligatoires");
         }
-        String department = referentialDao.departmentByWaterEntityId(List.of(bean.waterEntityId)).get(bean.waterEntityId);
-        if (department == null) {
+        if (referentialDao.findWaterEntityName(bean.waterEntityId).isEmpty()) {
             throw new NotFoundException("Plan d'eau ou cours d'eau inconnu");
         }
-        assertInPerimeter(department);
+        assertInPerimeter(bean.waterEntityId);
 
         UUID id = competitionDao.createCompetition(bean.name, bean.date, bean.waterEntityId, bean.federationName, admin.getId());
         return toBean(competitionDao.findCompetition(id).orElseThrow());
@@ -108,7 +111,7 @@ public class CompetitionResource extends AbstractFisholaResource {
     public List<CompetitionParticipantBean> listParticipants(@PathParam("competitionId") UUID competitionId) {
         checkIsStaff();
         CompetitionDao.CompetitionRow row = findCompetitionOrThrow(competitionId);
-        assertInPerimeter(row.department());
+        assertInPerimeter(row.waterEntityId());
         return competitionDao.listParticipants(competitionId).stream().map(p -> {
             CompetitionParticipantBean participant = new CompetitionParticipantBean();
             participant.userId = p.userId();
@@ -131,7 +134,7 @@ public class CompetitionResource extends AbstractFisholaResource {
             throw new BadRequestException("Pêcheur manquant");
         }
         CompetitionDao.CompetitionRow competition = findCompetitionOrThrow(competitionId);
-        assertInPerimeter(competition.department());
+        assertInPerimeter(competition.waterEntityId());
         if (!gamificationDao.existsUser(bean.userId)) {
             throw new NotFoundException("Pêcheur inconnu");
         }
@@ -167,10 +170,12 @@ public class CompetitionResource extends AbstractFisholaResource {
     }
 
     // Un opérateur/admin régional ne peut créer/consulter qu'un concours dont le plan
-    // d'eau relève de son périmètre départemental (#159). Un national (périmètre vide) passe.
-    private void assertInPerimeter(String waterEntityDepartment) {
+    // d'eau relève de son périmètre départemental (#159), buffer staff compris (#231).
+    // Un national (périmètre vide) passe.
+    private void assertInPerimeter(UUID waterEntityId) {
         Set<String> allowedDepartments = getAllowedAdminDepartments();
-        if (!allowedDepartments.isEmpty() && !allowedDepartments.contains(waterEntityDepartment)) {
+        if (!allowedDepartments.isEmpty()
+                && !staffPerimeterDao.allInPerimeter(List.of(waterEntityId), allowedDepartments)) {
             throw new ForbiddenException("Ce concours est hors de votre périmètre départemental");
         }
     }

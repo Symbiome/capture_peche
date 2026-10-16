@@ -20,6 +20,7 @@
  */
 import Constants from "@/services/Constants";
 import {
+  AnglerEffortStatistics,
   Dashboard,
   SpeciesWithAlias,
   GlobalDashboard,
@@ -57,7 +58,7 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static loadDashboard(
-    year: number,
+    year: number | undefined,
     lake: string
   ): Promise<DashboardAndSpecies> {
     const params = {
@@ -84,7 +85,7 @@ export default class DashboardService extends AbstractFisholaService {
   }
 
   static loadDashboardOrTimeout(
-    year: number,
+    year: number | undefined,
     lake: string
   ): Promise<DashboardAndSpecies> {
     const promise = this.loadDashboard(year, lake);
@@ -111,6 +112,19 @@ export default class DashboardService extends AbstractFisholaService {
         resolve(result);
       }, reject);
     });
+  }
+
+  // Sessions / heures par mois, temps par technique, CPUE et contribution au
+  // secteur (#210), mêmes filtres que le tableau de bord personnel.
+  static loadEffortStatisticsOrTimeout(
+    year: number | undefined,
+    lake: string
+  ): Promise<AnglerEffortStatistics> {
+    const promise = this.backendGetWithArgs("/v1/dashboard/effort", {
+      year: year,
+      waterEntity: lake,
+    });
+    return this.timeout(5000, promise);
   }
 
   static async loadGlobalEvolutionOrTimeout(lakeId: string) {

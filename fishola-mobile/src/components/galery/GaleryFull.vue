@@ -149,7 +149,7 @@
         <div class="bottom-page-spacer"></div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,dashboard,home" selected="dashboard" />
+    <BottomNav />
   </div>
 </template>
 
@@ -163,7 +163,7 @@ import PicturesService from "@/services/PicturesService";
 import ShareService from "@/services/ShareService";
 import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
@@ -175,7 +175,7 @@ import PictureModal from "../trip/PictureModal.vue";
     GaleryPreview,
     FisholaHeader,
     PictureModal,
-    FisholaFooter,
+    BottomNav,
   },
 })
 export default class GaleryFull extends Vue {
@@ -395,7 +395,7 @@ export default class GaleryFull extends Vue {
     max-width: 100vw;
 
     .lake-gallery-select {
-      background-color: white;
+      background-color: @surface;
       margin-top: 10px;
       margin-bottom: 10px;
       padding: 10px;
@@ -608,11 +608,11 @@ export default class GaleryFull extends Vue {
       font-size: @fontsize-button;
       line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-      color: @pelorous;
+      color: @accent-text;
       background-color: #dadada;
 
       border: 0px;
-      border: 1px solid @pelorous;
+      border: 1px solid @accent-text;
       padding-left: @margin-medium;
       padding-right: @margin-medium;
 
@@ -635,7 +635,7 @@ export default class GaleryFull extends Vue {
     justify-content: space-between;
     gap: 25px;
     .icon-news-back {
-      color: @pelorous;
+      color: @accent-text;
       cursor: pointer;
       display: inline-block;
       font-size: 22px;
@@ -643,7 +643,7 @@ export default class GaleryFull extends Vue {
     }
     .back-text {
       cursor: pointer;
-      color: @pelorous;
+      color: @accent-text;
       padding-left: 20px;
       font-size: 18px;
     }

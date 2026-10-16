@@ -29,10 +29,7 @@
           <div class="welcome keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly">
             Bienvenue sur
           </div>
-          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-desktop"
-            src="img/logo-big.svg" alt="FISHOLA" />
-          <img class="logo keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly hide-on-mobile"
-            src="img/logo-big-positif.svg" alt="FISHOLA" />
+          <CarnetLogo class="carnet-logo-centered keyboardSensitive hiddenWhenKeyboardShows_SmallScreensOnly" />
         </div>
         <div class="login-form">
           <FormInput name="email" type="email" label="E-mail" placeholder="Renseignez votre E-mail" v-model="email"
@@ -58,6 +55,7 @@
 </template>
 
 <script lang="ts">
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
@@ -68,6 +66,7 @@ import { Component, Vue } from "vue-property-decorator";
 
 @Component({
   components: {
+    CarnetLogo,
     FisholaHeader,
     FormInput,
     ForgottenPassword,
@@ -333,12 +332,12 @@ export default class LoginView extends Vue {
           font-size: @fontsize-button;
           line-height: calc(@fontsize-button + @line-height-padding-x-large);
 
-          border: 1px solid @pelorous;
+          border: 1px solid @accent-text;
           padding-left: @margin-medium;
           padding-right: @margin-medium;
 
           background-color: @white-smoke;
-          color: @pelorous;
+          color: @accent-text;
         }
       }
     }
@@ -350,7 +349,7 @@ export default class LoginView extends Vue {
     justify-content: space-evenly;
 
     .login-title {
-      color: @pelorous;
+      color: @accent-text;
 
       .welcome {
         font-size: @fontsize-header-title-desktop;
@@ -362,10 +361,10 @@ export default class LoginView extends Vue {
     .login-form {
       margin-left: @margin-xx-large-desktop;
       margin-right: @margin-xx-large-desktop;
-      color: @pelorous;
+      color: @accent-text;
 
       .form-input label {
-        color: @black;
+        color: @text-strong;
       }
     }
 
@@ -392,7 +391,7 @@ export default class LoginView extends Vue {
     cursor: pointer;
     top: 20px;
     left: 20px;
-    color: @pelorous;
+    color: @accent-text;
     font-size: 30px;
     font-size: @fontsize-header-title;
   }

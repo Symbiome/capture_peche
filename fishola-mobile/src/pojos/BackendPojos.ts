@@ -16,6 +16,7 @@ export interface CatchBean {
     techniqueId: string;
     description?: string;
     caughtAt?: string;
+    caughtOn?: Date;
     sampleId?: string;
     latitude?: number;
     longitude?: number;
@@ -43,6 +44,7 @@ export interface TripBean {
     otherSpecies: string;
     date: Date;
     startedAt: string;
+    endDate?: Date;
     finishedAt: string;
     weatherId?: string;
     catchs: CatchBean[];
@@ -66,9 +68,14 @@ export interface TripLight {
     name: string;
     waterEntityId: string;
     date: Date;
+    endDate: Date;
     durationInSeconds: number;
     catchsCount: number;
     modifiable: boolean;
+}
+
+export interface TripSettings {
+    maxPlausibleTripDays: number;
 }
 
 export interface SpeciesWithAlias {
@@ -243,6 +250,16 @@ export interface EvolutionMetricsForWaterEntity {
     evolutionPerMonthAndSpecie: { [index: string]: EvolutionMetricForSpecieAndMonth[] };
 }
 
+export interface AnglerEffortStatistics {
+    monthlyEffort: { [P in Month]?: MonthlyEffort };
+    totalHours: number;
+    hoursPerTechnique: { [index: string]: number };
+    cpueMinCatches: number;
+    cpuePerSpecies: SpeciesCpue[];
+    sectorMinAnglers: number;
+    sectorContribution?: SectorContribution;
+}
+
 export interface LicenceFromClientBean {
     name: string;
     expirationDate: Date;
@@ -296,6 +313,7 @@ export interface WaterEntitySearchResult {
     centroid: GeoPoint;
     commune?: string;
     codePostal?: string;
+    department?: string;
 }
 
 export interface WaterEntityAttribution {
@@ -358,6 +376,25 @@ export interface EvolutionMetricForSpecieAndMonth {
     monthYear: string;
     tripsCount: number;
     keptCatchesCount: number;
+    totalCatchesCount: number;
+}
+
+export interface MonthlyEffort {
+    tripsCount: number;
+    hours: number;
+}
+
+export interface SpeciesCpue {
+    speciesId: string;
+    catchesCount: number;
+    catchesPerHour?: number;
+}
+
+export interface SectorContribution {
+    anglersCount: number;
+    myTripsCount: number;
+    totalTripsCount: number;
+    myCatchesCount: number;
     totalCatchesCount: number;
 }
 

@@ -2,7 +2,6 @@ import { defineConfig, loadEnv } from "vite";
 import { fileURLToPath, URL } from 'node:url';
 import vue from '@vitejs/plugin-vue2';
 import path from "path";
-import fs from "fs";
 import packageJson from "./package.json";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -13,30 +12,7 @@ const excludeLibrariesInDevModePlugin = (mode) => {
     apply: "build",
     buildStart() {
       const removePDFView = env.VITE__REMOVE_PDF_VIEWER === "true";
-      const removeOpenCV = env.VITE__REMOVE_OPENCV === "true";
       console.warn("Build for environment " + mode + " : ", env);
-      const filePath = path.resolve(__dirname, "public/js/opencv.js");
-      if (removeOpenCV) {
-        if (mode === "mobile" || mode === "web") {
-          throw new Error(
-            "This is a production build, you must set VITE__REMOVE_OPENCV to false"
-          );
-        }
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.warn("🔧 public/opencv.js will be removed from build");
-        } else {
-          console.warn("🔧 public/opencv.js will be removed from build (already ignored)");
-        }
-      } else {
-        if (fs.existsSync(filePath)) {
-          console.warn("🔧 public/opencv.js is included in build");
-        } else {
-          throw new Error(
-            "Missing public/js/opencv.js file"
-          );
-        }
-      }
       console.warn(
         "🔧 PDFViewer library is " +
           (removePDFView ? "removed from" : "included in") +

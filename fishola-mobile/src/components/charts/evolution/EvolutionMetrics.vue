@@ -52,6 +52,7 @@
 </template>
 
 <script lang="ts">
+import { CARNET_CHART_PALETTE } from "@/services/CarnetPalette";
 
 import { EvolutionMetricsForWaterEntity as EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
 import DashboardService from '@/services/DashboardService';
@@ -194,23 +195,7 @@ export default class EvolutionMetricsView extends Vue {
   initChartData() {
     let labels : any[] = this.getLabels();
     let datasets : any[] = [];
-    let colors = [
-      '#69db7c', // light green
-      '#4dabf7', // light blue
-      '#ffd43b', // light orange
-      '#faa2c1', // light pink
-      '#cc5de8', // light purple
-      '#1971c2', // dark blue
-      '#c2255c', // dark pink
-      '#2f9e44', // dark green
-      '#f08c00', // dark orange
-      '#862e9c', // dark purple
-      '#99e9f2', // light cyan
-      '#c0eb75', // light lime
-      '#03045e', // Various colors then
-      '#99582a', '#bb9457', '#cfbaf0', '#9e0059', '#390099',
-      '#6a994e', '#7b2cbf', '#daddd8', '#fed766', '#5e6472'
-    ];
+    let colors = CARNET_CHART_PALETTE;
     let colorIndex = 0;
 
     if (this.evolutionMetrics && this.evolutionMetrics.evolutionPerMonthAndSpecie) {
@@ -328,7 +313,8 @@ export default class EvolutionMetricsView extends Vue {
           stacked: true,
           max: this.max[this.displayMode],
           grid: {
-              color: '#DFE6E9'
+              // Quadrillage selon le thème clair / sombre (#208, ThemeService).
+              color: ChartJS.defaults.borderColor as string
           },
           border: {
               color: '#999'
@@ -487,7 +473,7 @@ select {
   text-indent: -999px;
   background: transparent;
   padding: 5px 10px;
-  border: 1px solid @pelorous;
+  border: 1px solid @accent-text;
   border-radius: 20px;
   font-weight: bold;
   font-size: 14px;
@@ -502,8 +488,8 @@ select {
   }
 
   option {
-    color: black;
-    background-color: white;
+    color: @text-strong;
+    background-color: @surface;
   }
 
   &:hover {

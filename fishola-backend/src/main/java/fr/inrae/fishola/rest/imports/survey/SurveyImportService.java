@@ -28,6 +28,7 @@ import fr.inrae.fishola.rest.imports.ImportDao;
 import fr.inrae.fishola.rest.imports.ImportError;
 import fr.inrae.fishola.rest.imports.ImportResultBean;
 import fr.inrae.fishola.rest.imports.ImportService;
+import fr.inrae.fishola.rest.trips.TripTimestamps;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jooq.exception.DataAccessException;
@@ -36,7 +37,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -92,7 +95,7 @@ public class SurveyImportService {
     }
 
     /** Minuscule, sans accents, tirets assimilés à des espaces : sert aux valeurs figées. */
-    private static String normalize(String v) {
+    static String normalize(String v) {
         String s = Normalizer.normalize(v.strip().toLowerCase(), Normalizer.Form.NFD);
         s = s.replaceAll("\\p{M}", "");
         return s.replace('-', ' ').replaceAll("\\s+", " ").strip();
@@ -149,19 +152,51 @@ public class SurveyImportService {
 
         s.unsurveyedShoreAnglers = tryParseShort(get(rec, "Nb pêcheurs carnassiers du bord observés non-enquêtés"));
         s.unsurveyedBoatAnglers = tryParseShort(get(rec, "Nb pêcheurs carnassiers en bateau observés non-enquêtés"));
+        if (rec.containsKey(SurveySchema.COL_SESSION_START)) {
+            validateSessionHoursAndOperator(line, rec, s, errors);
+        }
 
         return new SessionRowResult(errors, errors.isEmpty() ? s : null);
     }
 
-    private record SessionsResult(List<ImportError> errors, LinkedHashMap<String, SurveyParsedSession> sessions) {}
+    /** Heures de session et opérateur (#236, #242) : début et opérateur obligatoires, fin facultative. */
+    private static void validateSessionHoursAndOperator(int line, Map<String, String> rec, SurveyParsedSession s,
+                                                        List<ImportError> errors) {
+        String rawStart = get(rec, SurveySchema.COL_SESSION_START);
+        try {
+            s.startTime = CsvSupport.parseTime(rawStart);
+        } catch (RuntimeException e) {
+            errors.add(err(SurveySchema.SHEET_SESSION, line, SurveySchema.COL_SESSION_START, SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME, "heure invalide (HH:MM) : « " + rawStart + " »"));
+        }
+        String rawEnd = get(rec, SurveySchema.COL_SESSION_END);
+        if (!CsvSupport.isBlank(rawEnd)) {
+            try {
+                s.endTime = CsvSupport.parseTime(rawEnd);
+            } catch (RuntimeException e) {
+                errors.add(err(SurveySchema.SHEET_SESSION, line, SurveySchema.COL_SESSION_END, SurveySchema.STRUCTUREL,
+                        SurveySchema.STRUCT_TIME, "heure invalide (HH:MM) : « " + rawEnd + " »"));
+            }
+        }
+        if (s.startTime != null && s.endTime != null && !s.endTime.isAfter(s.startTime)) {
+            errors.add(err(SurveySchema.SHEET_SESSION, line, SurveySchema.COL_SESSION_END, SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME_ORDER, "l'heure de fin de session doit être postérieure à son heure de début"));
+        }
+        s.operatorName = emptyToNull(get(rec, SurveySchema.COL_OPERATOR).strip());
+        if (s.operatorName == null) {
+            errors.add(err(SurveySchema.SHEET_SESSION, line, SurveySchema.COL_OPERATOR, SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_CODE_MISSING, "nom de l'opérateur obligatoire"));
+        }
+    }
 
-    private SessionsResult validateSessions(List<Map<String, String>> records, Set<UUID> allowedWaterEntities) {
+    record SessionsResult(List<ImportError> errors, LinkedHashMap<String, SurveyParsedSession> sessions) {}
+
+    SessionsResult validateSessions(List<SurveyRow> rows, Set<UUID> allowedWaterEntities) {
         List<ImportError> errors = new ArrayList<>();
         LinkedHashMap<String, SurveyParsedSession> sessions = new LinkedHashMap<>();
-        int line = 1;
-        for (Map<String, String> rec : records) {
-            line++;
-            SessionRowResult rv = validateSessionRow(line, rec, allowedWaterEntities);
+        for (SurveyRow row : rows) {
+            int line = row.line();
+            SessionRowResult rv = validateSessionRow(line, row.values(), allowedWaterEntities);
             if (!rv.errors().isEmpty()) {
                 errors.addAll(rv.errors());
                 continue;
@@ -223,30 +258,52 @@ public class SurveyImportService {
                     SurveySchema.STRUCT_TIME,
                     "heure invalide (HH:MM) : « " + get(rec, "Heure de fin de pêche prévue") + " »"));
         }
-        if (timesOk && !s.endTime.isAfter(s.startTime)) {
+        String rawEndDay = get(rec, "Date de fin de pêche prévue");
+        if (!CsvSupport.isBlank(rawEndDay)) {
+            try {
+                s.endDay = CsvSupport.parseDate(rawEndDay);
+            } catch (RuntimeException e) {
+                errors.add(err(SurveySchema.SHEET_SORTIE, line, "Date de fin de pêche prévue", SurveySchema.STRUCTUREL,
+                        SurveySchema.STRUCT_DATE, "date invalide (JJ/MM/AAAA) : « " + rawEndDay + " »"));
+            }
+        }
+        SurveyParsedSession session = sessions.get(s.sessionCode);
+        if (timesOk && s.endDay == null && CsvSupport.isBlank(rawEndDay) && !s.endTime.isAfter(s.startTime)) {
             errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure de fin de pêche prévue", SurveySchema.STRUCTUREL,
                     SurveySchema.STRUCT_TIME_ORDER,
                     "l'heure de fin prévue doit être postérieure à l'heure de début"));
+        }
+        if (timesOk && s.endDay != null && session != null && session.day != null
+                && !LocalDateTime.of(s.endDay, s.endTime).isAfter(LocalDateTime.of(session.day, s.startTime))) {
+            errors.add(err(SurveySchema.SHEET_SORTIE, line, "Date de fin de pêche prévue", SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME_ORDER,
+                    "la fin de pêche prévue doit être postérieure au début de pêche (date de la session "
+                            + session.day.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ")"));
         }
         if (timesOk && s.controlTime.isBefore(s.startTime)) {
             errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure du contrôle", SurveySchema.STRUCTUREL,
                     SurveySchema.STRUCT_TIME_ORDER,
                     "l'heure du contrôle (" + s.controlTime + ") ne peut pas être antérieure à l'heure de début de pêche ("
                             + s.startTime + ")"));
+        } else if (timesOk && errors.isEmpty() && session != null && session.day != null
+                && LocalDateTime.of(session.day, s.controlTime)
+                        .isAfter(TripTimestamps.endTimestamp(session.day, s.startTime, s.endDay, s.endTime))) {
+            errors.add(err(SurveySchema.SHEET_SORTIE, line, "Heure du contrôle", SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_TIME_ORDER,
+                    "l'heure du contrôle (" + s.controlTime + ") ne peut pas être postérieure à la fin de pêche prévue"));
         }
 
         return new SortieRowResult(errors, errors.isEmpty() ? s : null);
     }
 
-    private record SortiesResult(List<ImportError> errors, LinkedHashMap<String, SurveyParsedSortie> sorties) {}
+    record SortiesResult(List<ImportError> errors, LinkedHashMap<String, SurveyParsedSortie> sorties) {}
 
-    private SortiesResult validateSorties(List<Map<String, String>> records, Map<String, SurveyParsedSession> sessions) {
+    SortiesResult validateSorties(List<SurveyRow> rows, Map<String, SurveyParsedSession> sessions) {
         List<ImportError> errors = new ArrayList<>();
         LinkedHashMap<String, SurveyParsedSortie> sorties = new LinkedHashMap<>();
-        int line = 1;
-        for (Map<String, String> rec : records) {
-            line++;
-            SortieRowResult rv = validateSortieRow(line, rec, sessions);
+        for (SurveyRow row : rows) {
+            int line = row.line();
+            SortieRowResult rv = validateSortieRow(line, row.values(), sessions);
             if (!rv.errors().isEmpty()) {
                 errors.addAll(rv.errors());
                 continue;
@@ -448,22 +505,20 @@ public class SurveyImportService {
         return new CaptureRowResult(List.of(), c);
     }
 
-    private record CapturesResult(List<ImportError> errors,
+    record CapturesResult(List<ImportError> errors,
                                   LinkedHashMap<String, List<SurveyParsedCapture>> byTripKey,
                                   LinkedHashMap<String, SurveyAnglerOrigin> anglerOrigins) {}
 
-    private static String tripKey(String sortieCode, String anglerCode) {
+    static String tripKey(String sortieCode, String anglerCode) {
         return sortieCode + " " + anglerCode;
     }
 
-    private CapturesResult validateCaptures(List<Map<String, String>> records, Map<String, SurveyParsedSortie> sorties) {
+    CapturesResult validateCaptures(List<SurveyRow> rows, Map<String, SurveyParsedSortie> sorties) {
         List<ImportError> errors = new ArrayList<>();
         LinkedHashMap<String, List<SurveyParsedCapture>> byTripKey = new LinkedHashMap<>();
         LinkedHashMap<String, SurveyAnglerOrigin> anglerOrigins = new LinkedHashMap<>();
-        int line = 1;
-        for (Map<String, String> rec : records) {
-            line++;
-            CaptureRowResult rv = validateCaptureRow(line, rec, sorties);
+        for (SurveyRow row : rows) {
+            CaptureRowResult rv = validateCaptureRow(row.line(), row.values(), sorties);
             if (!rv.errors().isEmpty()) {
                 errors.addAll(rv.errors());
                 continue;
@@ -478,9 +533,9 @@ public class SurveyImportService {
 
     // --- Étage « Session souvenir » (facultatif) ------------------------------
 
-    private record SouvenirRowResult(List<ImportError> errors, SurveyParsedSouvenir parsed) {}
+    record SouvenirRowResult(List<ImportError> errors, SurveyParsedSouvenir parsed) {}
 
-    private SouvenirRowResult validateSouvenirRow(int line, Map<String, String> rec, Set<String> knownAnglerCodes,
+    SouvenirRowResult validateSouvenirRow(int line, Map<String, String> rec, Set<String> knownAnglerCodes,
                                                    Set<UUID> allowedWaterEntities) {
         List<ImportError> errors = new ArrayList<>();
         SurveyParsedSouvenir s = new SurveyParsedSouvenir();
@@ -533,10 +588,14 @@ public class SurveyImportService {
             return new SouvenirRowResult(errors, null);
         }
 
-        s.hasCapture = !s.bredouille && !CsvSupport.isBlank(get(rec, "Espèce (capture)"));
-        validateCatchFields(SurveySchema.SHEET_SOUVENIR, line, rec, s.bredouille, s.hasCapture, errors,
-                sp -> s.speciesId = sp, q -> s.quantity = q, sz -> s.size = sz,
-                min -> s.lotMinSize = min, max -> s.lotMaxSize = max, k -> s.kept = k);
+        boolean hasCapture = !s.bredouille && !CsvSupport.isBlank(get(rec, "Espèce (capture)"));
+        SurveyParsedCatch c = new SurveyParsedCatch();
+        validateCatchFields(SurveySchema.SHEET_SOUVENIR, line, rec, s.bredouille, hasCapture, errors,
+                sp -> c.speciesId = sp, q -> c.quantity = q, sz -> c.size = sz,
+                min -> c.lotMinSize = min, max -> c.lotMaxSize = max, k -> c.kept = k);
+        if (hasCapture) {
+            s.catches.add(c);
+        }
 
         if (!errors.isEmpty()) {
             return new SouvenirRowResult(errors, null);
@@ -544,16 +603,14 @@ public class SurveyImportService {
         return new SouvenirRowResult(List.of(), s);
     }
 
-    private record SouvenirsResult(List<ImportError> errors, List<SurveyParsedSouvenir> souvenirs) {}
+    record SouvenirsResult(List<ImportError> errors, List<SurveyParsedSouvenir> souvenirs) {}
 
-    private SouvenirsResult validateSouvenirs(List<Map<String, String>> records, Set<String> knownAnglerCodes,
+    private SouvenirsResult validateSouvenirs(List<SurveyRow> rows, Set<String> knownAnglerCodes,
                                               Set<UUID> allowedWaterEntities) {
         List<ImportError> errors = new ArrayList<>();
         List<SurveyParsedSouvenir> souvenirs = new ArrayList<>();
-        int line = 1;
-        for (Map<String, String> rec : records) {
-            line++;
-            SouvenirRowResult rv = validateSouvenirRow(line, rec, knownAnglerCodes, allowedWaterEntities);
+        for (SurveyRow row : rows) {
+            SouvenirRowResult rv = validateSouvenirRow(row.line(), row.values(), knownAnglerCodes, allowedWaterEntities);
             if (!rv.errors().isEmpty()) {
                 errors.addAll(rv.errors());
             } else {
@@ -565,77 +622,115 @@ public class SurveyImportService {
 
     // --- Exécution complète ----------------------------------------------------
 
+    /**
+     * Importe un fichier d'enquête terrain : CSV plat (#242) si son nom finit par « .csv »,
+     * classeur XLSX multi-feuilles (#144) sinon. Un fichier déjà importé (même empreinte)
+     * est signalé comme doublon sans être relu.
+     *
+     * @param fileBytes contenu du fichier
+     * @param filename nom du fichier, qui détermine le format
+     * @param mode {@code partial} (lignes valides importées) ou {@code all_or_nothing}
+     * @param createdBy compte staff à l'origine de l'import
+     * @param allowedWaterEntities secteurs du périmètre, null pour un national
+     * @return résultat de l'import, erreurs comprises
+     */
     public ImportResultBean run(byte[] fileBytes, String filename, String mode, UUID createdBy,
                                 Set<UUID> allowedWaterEntities) {
         String fileHash = sha256Hex(fileBytes);
-
         var existing = importDao.findByHash(fileHash);
         if (existing.isPresent()) {
             ImportDao.JobSummary j = existing.get();
             return new ImportResultBean(j.id(), j.status(), j.total(), j.inserted(), j.rejected(), true, List.of());
         }
+        ImportFile file = new ImportFile(filename, fileHash, mode, createdBy, allowedWaterEntities);
+        if (filename.toLowerCase().endsWith(".csv")) {
+            return new SurveyFlatImport(this).run(fileBytes, file);
+        }
+        return runXlsx(fileBytes, file);
+    }
 
+    /** Fichier en cours d'import : identité, mode et périmètre de l'opérateur. */
+    record ImportFile(String filename, String fileHash, String mode, UUID createdBy, Set<UUID> allowedWaterEntities) {}
+
+    /** Données validées, prêtes à persister, et erreurs de toutes les lignes. */
+    record Validated(List<ImportError> errors, Map<String, SurveyParsedSession> sessions,
+                     Map<String, SurveyParsedSortie> sorties, Map<String, List<SurveyParsedCapture>> tripsByKey,
+                     Map<String, SurveyAnglerOrigin> anglerOrigins, List<SurveyParsedSouvenir> souvenirs) {}
+
+    private ImportResultBean runXlsx(byte[] fileBytes, ImportFile file) {
         Map<String, XlsxSupport.SheetData> sheets;
         try {
             sheets = XlsxSupport.readWorkbook(fileBytes);
         } catch (IllegalArgumentException e) {
-            ImportError headerErr = new ImportError(1, null, SurveySchema.STRUCTUREL,
-                    SurveySchema.STRUCT_HEADER, "classeur XLSX illisible ou corrompu");
-            return persistFailed(filename, fileHash, createdBy, headerErr);
+            return persistFailed(file, new ImportError(1, null, SurveySchema.STRUCTUREL,
+                    SurveySchema.STRUCT_HEADER, "classeur XLSX illisible ou corrompu"));
         }
 
         List<ImportError> headerErrors = new ArrayList<>();
-        checkSheet(sheets, SurveySchema.SHEET_SESSION, SurveySchema.HEADER_SESSION, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_SORTIE, SurveySchema.HEADER_SORTIE, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_CAPTURE, SurveySchema.HEADER_CAPTURE, true, headerErrors);
-        checkSheet(sheets, SurveySchema.SHEET_SOUVENIR, SurveySchema.HEADER_SOUVENIR, false, headerErrors);
-
+        checkSheet(sheets, SurveySchema.SHEET_SESSION,
+                List.of(SurveySchema.HEADER_SESSION, SurveySchema.LEGACY_HEADER_SESSION), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_SORTIE,
+                List.of(SurveySchema.HEADER_SORTIE, SurveySchema.LEGACY_HEADER_SORTIE), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_CAPTURE, List.of(SurveySchema.HEADER_CAPTURE), true, headerErrors);
+        checkSheet(sheets, SurveySchema.SHEET_SOUVENIR, List.of(SurveySchema.HEADER_SOUVENIR), false, headerErrors);
         if (!headerErrors.isEmpty()) {
-            return persistFailed(filename, fileHash, createdBy, headerErrors);
+            return persistFailed(file, headerErrors);
         }
 
-        List<Map<String, String>> sessionRecords = sheets.get(SurveySchema.SHEET_SESSION).records();
-        List<Map<String, String>> sortieRecords = sheets.get(SurveySchema.SHEET_SORTIE).records();
-        List<Map<String, String>> captureRecords = sheets.get(SurveySchema.SHEET_CAPTURE).records();
-        List<Map<String, String>> souvenirRecords = sheets.containsKey(SurveySchema.SHEET_SOUVENIR)
-                ? sheets.get(SurveySchema.SHEET_SOUVENIR).records() : List.of();
-        int total = sessionRecords.size() + sortieRecords.size() + captureRecords.size() + souvenirRecords.size();
+        List<SurveyRow> sessionRows = SurveyRow.ofSheet(sheets.get(SurveySchema.SHEET_SESSION).records());
+        List<SurveyRow> sortieRows = SurveyRow.ofSheet(sheets.get(SurveySchema.SHEET_SORTIE).records());
+        List<SurveyRow> captureRows = SurveyRow.ofSheet(sheets.get(SurveySchema.SHEET_CAPTURE).records());
+        List<SurveyRow> souvenirRows = sheets.containsKey(SurveySchema.SHEET_SOUVENIR)
+                ? SurveyRow.ofSheet(sheets.get(SurveySchema.SHEET_SOUVENIR).records()) : List.of();
+        int total = sessionRows.size() + sortieRows.size() + captureRows.size() + souvenirRows.size();
 
         List<ImportError> allErrors = new ArrayList<>();
-
-        SessionsResult sessionsResult = validateSessions(sessionRecords, allowedWaterEntities);
+        SessionsResult sessionsResult = validateSessions(sessionRows, file.allowedWaterEntities());
         allErrors.addAll(sessionsResult.errors());
-
-        SortiesResult sortiesResult = validateSorties(sortieRecords, sessionsResult.sessions());
+        SortiesResult sortiesResult = validateSorties(sortieRows, sessionsResult.sessions());
         allErrors.addAll(sortiesResult.errors());
-
-        CapturesResult capturesResult = validateCaptures(captureRecords, sortiesResult.sorties());
+        CapturesResult capturesResult = validateCaptures(captureRows, sortiesResult.sorties());
         allErrors.addAll(capturesResult.errors());
-
         SouvenirsResult souvenirsResult = validateSouvenirs(
-                souvenirRecords, capturesResult.anglerOrigins().keySet(), allowedWaterEntities);
+                souvenirRows, capturesResult.anglerOrigins().keySet(), file.allowedWaterEntities());
         allErrors.addAll(souvenirsResult.errors());
 
+        return persist(file, total, new Validated(allErrors, sessionsResult.sessions(), sortiesResult.sorties(),
+                capturesResult.byTripKey(), capturesResult.anglerOrigins(), souvenirsResult.souvenirs()));
+    }
+
+    /**
+     * Persiste le job d'import, ses erreurs et, sauf rejet global en mode {@code
+     * all_or_nothing}, les sessions, sorties et captures valides.
+     *
+     * @param file fichier importé
+     * @param total nombre de lignes lues
+     * @param validated données validées et erreurs
+     * @return résultat de l'import
+     */
+    ImportResultBean persist(ImportFile file, int total, Validated validated) {
+        List<ImportError> allErrors = validated.errors();
         Set<Integer> rejectedLines = new LinkedHashSet<>();
         for (ImportError e : allErrors) {
             rejectedLines.add(e.line());
         }
         int rejected = rejectedLines.size();
-        boolean doInsert = !(MODE_ALL_OR_NOTHING.equals(mode) && !allErrors.isEmpty());
+        boolean doInsert = !(MODE_ALL_OR_NOTHING.equals(file.mode()) && !allErrors.isEmpty());
         String status = allErrors.isEmpty() ? "DONE" : "DONE_WITH_ERRORS";
-
         try {
-            ImportDao.SurveyPersisted p = importDao.persistSurvey(filename, fileHash, status, total, rejected,
-                    createdBy, allErrors, doInsert, sessionsResult.sessions(), sortiesResult.sorties(),
-                    capturesResult.byTripKey(), capturesResult.anglerOrigins(), souvenirsResult.souvenirs());
+            ImportDao.SurveyPersisted p = importDao.persistSurvey(file.filename(), file.fileHash(), status, total,
+                    rejected, file.createdBy(), allErrors, doInsert, validated.sessions(), validated.sorties(),
+                    validated.tripsByKey(), validated.anglerOrigins(), validated.souvenirs());
             return new ImportResultBean(p.jobId(), status, total, p.inserted(), rejected, false, allErrors);
         } catch (DataAccessException e) {
-            return concurrentDuplicate(fileHash, e);
+            return concurrentDuplicate(file.fileHash(), e);
         }
     }
 
-    private void checkSheet(Map<String, XlsxSupport.SheetData> sheets, String sheetName, List<String> expectedHeader,
-                            boolean mandatory, List<ImportError> errors) {
+    /** {@code acceptedHeaders} : en-tête attendu en premier, puis éventuels en-têtes antérieurs encore acceptés. */
+    private void checkSheet(Map<String, XlsxSupport.SheetData> sheets, String sheetName,
+                            List<List<String>> acceptedHeaders, boolean mandatory, List<ImportError> errors) {
+        List<String> expectedHeader = acceptedHeaders.get(0);
         XlsxSupport.SheetData data = sheets.get(sheetName);
         if (data == null) {
             if (mandatory) {
@@ -653,7 +748,7 @@ public class SurveyImportService {
             }
             return;
         }
-        if (!data.header().equals(expectedHeader)) {
+        if (!acceptedHeaders.contains(data.header())) {
             errors.add(new ImportError(1, sheetName, SurveySchema.STRUCTUREL,
                     SurveySchema.STRUCT_HEADER,
                     "en-tête non conforme au modèle attendu pour « " + sheetName + " » ("
@@ -661,19 +756,20 @@ public class SurveyImportService {
         }
     }
 
-    private ImportResultBean persistFailed(String filename, String fileHash, UUID createdBy, ImportError error) {
-        return persistFailed(filename, fileHash, createdBy, List.of(error));
+    ImportResultBean persistFailed(ImportFile file, ImportError error) {
+        return persistFailed(file, List.of(error));
     }
 
-    private ImportResultBean persistFailed(String filename, String fileHash, UUID createdBy, List<ImportError> errors) {
+    ImportResultBean persistFailed(ImportFile file, List<ImportError> errors) {
         try {
             // Sessions/sorties/captures/souvenirs vides : rien à persister, on réutilise
             // persistSurvey() plutôt que de dupliquer l'insertion du job échoué.
-            ImportDao.SurveyPersisted p = importDao.persistSurvey(filename, fileHash, "FAILED", errors.size(), errors.size(),
-                    createdBy, errors, false, Map.of(), Map.of(), Map.of(), Map.of(), List.of());
+            ImportDao.SurveyPersisted p = importDao.persistSurvey(file.filename(), file.fileHash(), "FAILED",
+                    errors.size(), errors.size(), file.createdBy(), errors, false, Map.of(), Map.of(), Map.of(),
+                    Map.of(), List.of());
             return new ImportResultBean(p.jobId(), "FAILED", errors.size(), 0, 0, false, errors);
         } catch (DataAccessException e) {
-            return concurrentDuplicate(fileHash, e);
+            return concurrentDuplicate(file.fileHash(), e);
         }
     }
 

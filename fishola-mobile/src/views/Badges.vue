@@ -70,13 +70,13 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="logout,dashboard,home" selected="badges" />
+    <BottomNav />
   </div>
 </template>
 
 <script lang="ts">
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import BottomNav from "@/components/layout/BottomNav.vue";
 
 import GamificationService from "@/services/GamificationService";
 import { BadgeBean } from "@/pojos/BackendPojos";
@@ -87,7 +87,7 @@ import { Component, Vue } from "vue-property-decorator";
 @Component({
   components: {
     FisholaHeader,
-    FisholaFooter,
+    BottomNav,
   },
 })
 export default class BadgesView extends Vue {
@@ -160,10 +160,12 @@ export default class BadgesView extends Vue {
 .badges-summary {
   color: @pale-sky;
   margin-bottom: @vertical-margin-medium;
+  padding: 0 @margin-medium;
 }
 
 .badges-category {
   margin-bottom: @vertical-margin-medium;
+  padding: 0 @margin-medium;
 
   h2 {
     font-size: @fontsize-header-title-small;
@@ -207,7 +209,7 @@ export default class BadgesView extends Vue {
 
   .badge-unlocked-at {
     font-size: @fontsize-small-paragraph;
-    color: @pelorous;
+    color: @accent-text;
     margin-top: @vertical-margin-x-small;
   }
 

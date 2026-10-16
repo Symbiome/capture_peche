@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN;
 import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_DEPARTMENTS;
-import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
+import static fr.inrae.fishola.entities.Tables.WATER_ENTITY_DEPARTMENT;
 
 @Singleton
 public class AdminDao extends AbstractFisholaDao {
@@ -140,16 +140,18 @@ public class AdminDao extends AbstractFisholaDao {
 
     /**
      * Entités hydro couvertes par le périmètre départemental d'un compte staff
-     * (#159) : résolues via water_entity.department. Sert au cloisonnement de
-     * l'import / de la saisie manuelle, qui raisonnent encore par entité.
+     * (#159), départements élargis du buffer staff (#231, water_entity_department).
+     * Sert au cloisonnement de l'import / de la saisie manuelle, qui raisonnent
+     * encore par entité.
      */
     public Set<UUID> getAllowedWaterEntityIds(UUID adminID) {
         return withContext(context -> context
-                .select(WATER_ENTITY.ID)
-                .from(WATER_ENTITY)
-                .join(FISHOLA_ADMIN_DEPARTMENTS).on(FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(WATER_ENTITY.DEPARTMENT))
+                .selectDistinct(WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID)
+                .from(WATER_ENTITY_DEPARTMENT)
+                .join(FISHOLA_ADMIN_DEPARTMENTS)
+                    .on(FISHOLA_ADMIN_DEPARTMENTS.DEPARTMENT_CODE.eq(WATER_ENTITY_DEPARTMENT.DEPARTMENT_CODE))
                 .where(FISHOLA_ADMIN_DEPARTMENTS.FISHOLA_ADMIN_ID.eq(adminID))
-                .fetchSet(WATER_ENTITY.ID));
+                .fetchSet(WATER_ENTITY_DEPARTMENT.WATER_ENTITY_ID));
     }
 
     public AdminProfileForAdmin toUserProfileForAdmin(FisholaAdmin input) {

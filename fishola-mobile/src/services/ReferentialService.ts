@@ -18,9 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity} from '@/pojos/BackendPojos';
+import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity, TripSettings} from '@/pojos/BackendPojos';
 import AbstractFisholaService from '@/services/AbstractFisholaService';
 import Helpers from '@/services/Helpers';
+import NetworkStatusService from '@/services/NetworkStatusService';
+import OfflineAreasService from '@/services/OfflineAreasService';
+import TripDates from '@/services/TripDates';
 
 export class SpeciesWithAliasAndTechnique {
     constructor (
@@ -82,6 +85,9 @@ export default class ReferentialService extends AbstractFisholaService {
   // consommateurs existants ; seuls id/name/kind/latitude/longitude sont
   // renseignés (le centroïde sert au centrage carte).
   static searchWaterEntities(q: string): Promise<Lake[]> {
+    if (NetworkStatusService.isOffline()) {
+      return ReferentialService.searchWaterEntitiesOffline(q);
+    }
     return this.backendGet(`/v1/waterEntities/search?q=${encodeURIComponent(q)}`)
       .then((results: any[]) => (results || []).map((r) => ({
         id: r.waterEntityId,
@@ -92,6 +98,8 @@ export default class ReferentialService extends AbstractFisholaService {
         // Commune + code postal (#6/#15) — désambiguïsation dans l'autocomplete.
         commune: r.commune,
         codePostal: r.codePostal,
+        // Département (#230) — suffixe des homonymes dans l'autocomplete.
+        department: r.department,
         exportAs: r.name,
         waterEntityCode: "",
         nature: "",
@@ -113,9 +121,16 @@ export default class ReferentialService extends AbstractFisholaService {
       });
   }
 
-  private static searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
+  // Hors-ligne, la source de vérité est le réseau hydro des packs
+  // départementaux téléchargés (#54) ; le référentiel léger en cache n'est
+  // qu'un dernier recours (rarement présent : il n'est jamais préchargé).
+  private static async searchWaterEntitiesOffline(q: string): Promise<Lake[]> {
     if (!q.trim()) {
-      return Promise.resolve([]);
+      return [];
+    }
+    const fromPacks = await OfflineAreasService.searchByName(q).catch(() => [] as Lake[]);
+    if (fromPacks.length) {
+      return fromPacks;
     }
     return ReferentialService.getLakes()
       .then((lakes) => Helpers.rankBySearch(lakes, q, (l) => [l.name]).slice(0, 50))
@@ -167,6 +182,8 @@ export default class ReferentialService extends AbstractFisholaService {
         longitude: r.centroid ? r.centroid.lng : undefined,
         commune: r.commune,
         codePostal: r.codePostal,
+        // Département (#230) — suffixe des homonymes dans l'autocomplete.
+        department: r.department,
         exportAs: r.name,
         waterEntityCode: "",
         nature: "",
@@ -199,7 +216,7 @@ export default class ReferentialService extends AbstractFisholaService {
     return this.backendGet(`/v1/waterEntities/attribution?lat=${lat}&lng=${lng}`);
   }
 
-  // #131 : taille maximale réglementaire d'une espèce pour UN plan d'eau,
+  // #131 : taille maximale (contrôle de cohérence) d'une espèce pour UN plan d'eau,
   // scopée côté backend (referentialDao.getMaxSize) au lieu de charger la map
   // species-per-waterEntity du bassin RM&C entier pour n'en lire qu'une valeur.
   // Pas de cache offline dédié : l'appelant (EditCatch.getMaxSize) retombe déjà
@@ -208,6 +225,15 @@ export default class ReferentialService extends AbstractFisholaService {
   static getAuthorizedSampleMaxSize(waterEntityId: string, speciesId: string): Promise<number> {
     return this.backendGet(
       `/v1/referential/authorized-samples/max-size?waterEntityId=${encodeURIComponent(waterEntityId)}&speciesId=${encodeURIComponent(speciesId)}`
+    );
+  }
+
+  // Maillage (largeur des classes de taille) d'une espèce sur UN milieu (#196),
+  // pour proposer au pêcheur les classes de taille d'un lot. `undefined` si
+  // aucun maillage n'est défini (réponse 204).
+  static getAuthorizedSampleMeshSize(waterEntityId: string, speciesId: string): Promise<number | undefined> {
+    return this.backendGet(
+      `/v1/referential/authorized-samples/mesh-size?waterEntityId=${encodeURIComponent(waterEntityId)}&speciesId=${encodeURIComponent(speciesId)}`
     );
   }
 
@@ -257,6 +283,16 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static clearSpeciesCustomCache() {
     this.clearCache("/v1/referential/species-custom");
+  }
+
+  /**
+   * Paramètres de saisie des sorties (#237). Sans réseau ni cache, durée plausible par
+   * défaut : la saisie ne doit jamais être bloquée par ce paramètre.
+   */
+  static getTripSettings(): Promise<TripSettings> {
+    return this.backendGetWithCache("/v1/referential/trip-settings").catch(() => ({
+      maxPlausibleTripDays: TripDates.DEFAULT_MAX_PLAUSIBLE_TRIP_DAYS,
+    }));
   }
 
   static getWeathers(): Promise<Weather[]> {
@@ -343,7 +379,7 @@ export default class ReferentialService extends AbstractFisholaService {
 
   static prepareCaches(): Promise<void> {
     const allPromises: Promise<void>[] = [
-      this.prepareCache("/v1/referential/waterEntities"),
+      this.prepareCache("/v1/referential/waterEntities/summary"),
       // Les favoris sont lus par le sélecteur de plan d'eau : sans cette mise
       // en cache, un appareil qui n'a jamais ouvert l'écran en ligne n'a aucune
       // entrée locale et le sélecteur restait vide hors ligne.
