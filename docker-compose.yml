@@ -15,14 +15,34 @@ services:
   # Nommé docker_pg pour matcher l'hôte JDBC déjà codé en dur dans les profils
   # %dev/%demo de fishola-backend/src/main/resources/application.properties —
   # évite de surcharger QUARKUS_DATASOURCE_JDBC_URL.
+  #
+  # Sauvegardes (#279) : image PostGIS + pgBackRest (docker/postgres), WAL
+  # archivés en continu dans le volume fishola_pgbackrest (restauration à un
+  # instant donné). Les sauvegardes complètes/différentielles sont lancées par
+  # le cron de l'hôte (ansible/playbooks/deploy.yml). archive_mode ne prend
+  # effet qu'au redémarrage du conteneur.
   docker_pg:
-    image: ${POSTGRES_IMAGE:-postgis/postgis:18-3.6}
+    build:
+      context: ./docker/postgres
+      args:
+        POSTGRES_IMAGE: ${POSTGRES_IMAGE:-postgis/postgis:18-3.6}
     restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - archive_mode=on
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_command=pgbackrest --stanza=fishola archive-push %p
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-fishola}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      PGBACKREST_REPO1_CIPHER_PASS: ${PGBACKREST_REPO1_CIPHER_PASS:?PGBACKREST_REPO1_CIPHER_PASS manquant dans .env}
     volumes:
       - fishola_pgdata:/var/lib/postgresql
+      - fishola_pgbackrest:/var/lib/pgbackrest
+      - ./docker/postgres/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -85,6 +105,7 @@ services:
 
 volumes:
   fishola_pgdata:
+  fishola_pgbackrest:
 
 networks:
   fishola:
