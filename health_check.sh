@@ -91,8 +91,9 @@ check "Front pêcheur" "${APP_DOMAIN}"        "${MOBILE_PORT:-8081}"     "/"    
 check "Front admin"   "${ADMIN_DOMAIN}"      "${ADMIN_PORT:-8082}"      "/"              || status=1
 
 # Maildev n'est pas exposé derrière le reverse proxy (outil dev interne uniquement) :
-# on ne peut le vérifier qu'en local, directement sur le port du conteneur.
-if [ "${LOCAL_MODE}" -eq 1 ]; then
+# on ne peut le vérifier qu'en local, directement sur le port du conteneur. Il
+# ne tourne qu'avec le profil compose « recette » (absent en production).
+if [ "${LOCAL_MODE}" -eq 1 ] && [[ ",${COMPOSE_PROFILES:-}," == *",recette,"* ]]; then
   check "Maildev" "" "${MAILDEV_PORT:-41080}" "/" || status=1
 fi
 
