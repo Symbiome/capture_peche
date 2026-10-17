@@ -220,6 +220,10 @@ export default class LakeAndYearSelection extends Vue {
     if (query.lakeId && query.lakeId !== this.selectedLakeId) {
       this.resolveAndApplySelection(query.lakeId as string, false);
     }
+    const yearFromURL = parseInt(query.currentYear as string);
+    if (yearFromURL && yearFromURL !== this.selectedYear && this.years && this.years.indexOf(yearFromURL) > -1) {
+      this.selectedYear = yearFromURL;
+    }
   }
 
   @Watch("search")

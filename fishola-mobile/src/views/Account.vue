@@ -82,7 +82,7 @@ export default class AccountView extends Vue {
         title: "Mon espace",
         items: [
           { label: "Mon profil", icon: "img/carnet/account-profile.svg", action: () => this.go("/profile/profile") },
-          { label: "Résumé de mon activité", icon: "img/carnet/account-activity.svg", action: () => this.go("/dashboard-personal/dashboard") },
+          { label: "Résumé de mon activité", icon: "img/carnet/account-activity.svg", action: () => this.go("/dashboard-global/dashboard") },
           { label: "Mes badges", fontIcon: "icon-star", action: () => this.go("/badges") },
           { label: "Données et confidentialité", icon: "img/carnet/account-privacy.svg", action: this.openCgu },
           { label: "Mode hors ligne", icon: "img/carnet/account-offline.svg", action: () => this.go("/offline-areas") },

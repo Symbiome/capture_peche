@@ -215,7 +215,7 @@ public class DashboardDao  extends AbstractFisholaDao {
                 .filter(predicate);
         Stream<UUID> catchSpeciesStream = null;
         if (useEditedInBoInformation) {
-            catchSpeciesStream = catchStream.map(Catch::getEditedSpeciesId);
+            catchSpeciesStream = catchStream.map(DashboardDao::editedOrDeclaredSpeciesId);
         } else {
             catchSpeciesStream = catchStream.map(Catch::getSpeciesId);
         }
@@ -266,7 +266,7 @@ public class DashboardDao  extends AbstractFisholaDao {
             List<Catch> catchs = catchsWithSize.stream()
                     .filter(c -> {
                         if (useEditedInBoInformation) {
-                           return Objects.equals(c.getEditedSpeciesId(),speciesId);
+                           return Objects.equals(editedOrDeclaredSpeciesId(c), speciesId);
                         } else {
                             return  Objects.equals(c.getSpeciesId(), speciesId);
                         }
@@ -305,7 +305,7 @@ public class DashboardDao  extends AbstractFisholaDao {
             OptionalLong count;
             if (useEditedInBoInformation) {
                 count = OptionalLong.of(filteredCatch.size());
-                average = filteredCatch.stream().mapToInt((Catch c) -> c.getEditedSize() / 10).average();
+                average = filteredCatch.stream().mapToInt((Catch c) -> editedOrDeclaredSizeMm(c) / 10).average();
             } else {
                 count = OptionalLong.of(filteredCatch.size());
                 average = filteredCatch.stream().mapToInt(Catch::getSize).average();
@@ -315,6 +315,26 @@ public class DashboardDao  extends AbstractFisholaDao {
         if (!averagePerMaillage.isEmpty()) {
             speciesMonthlySizes.put(month, averagePerMaillage);
         }
+    }
+
+    /**
+     * Espèce corrigée par un opérateur, sinon espèce déclarée. Les captures
+     * importées (enquêtes, carnets volontaires) n'ont pas d'espèce corrigée (#277).
+     */
+    private static UUID editedOrDeclaredSpeciesId(Catch c) {
+        return c.getEditedSpeciesId() != null ? c.getEditedSpeciesId() : c.getSpeciesId();
+    }
+
+    /**
+     * Taille corrigée (mm), sinon taille déclarée (cm) convertie, comme à la
+     * création d'une capture ({@link CatchsDao#create}). La capture doit avoir une taille.
+     */
+    private static int editedOrDeclaredSizeMm(Catch c) {
+        Integer editedSize = c.getEditedSize();
+        if (editedSize != null && editedSize != 0) {
+            return editedSize;
+        }
+        return c.getSize() * 10;
     }
 
     /**

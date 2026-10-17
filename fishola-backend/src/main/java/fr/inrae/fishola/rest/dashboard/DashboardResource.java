@@ -143,14 +143,17 @@ public class DashboardResource extends AbstractFisholaResource {
     @Path("/global-dashboard")
     public GlobalDashboard getGlobalDashboard(
         @QueryParam("year") Integer year,
-        @QueryParam("waterEntity") UUID waterEntityId
+        @QueryParam("waterEntity") String waterEntityId
     ) {
-        if (year == null || waterEntityId == null) {
-            throw new IllegalArgumentException("Dashboard need a year and a waterEntityId to be computed, got " + year + " and " + waterEntityId);
+        if (year == null) {
+            throw new IllegalArgumentException("Dashboard need a year to be computed");
         }
         Optional<Integer> yearFilter = Optional.of(year);
-        Optional<List<UUID>> waterEntitiesFilter = Optional.of(List.of(waterEntityId));
-        String cacheKey = year + "_" + waterEntityId;
+        Optional<UUID> waterEntity = Optional.ofNullable(waterEntityId)
+                .filter(id -> !id.isEmpty())
+                .map(UUID::fromString);
+        Optional<List<UUID>> waterEntitiesFilter = waterEntity.map(List::of);
+        String cacheKey = waterEntity.map(id -> year + "_" + id).orElse(String.valueOf(year));
         return cache.globalDashboard.get(cacheKey, key -> this.dashboardDao.computeGlobalDashboard(yearFilter, waterEntitiesFilter));
     }
 
