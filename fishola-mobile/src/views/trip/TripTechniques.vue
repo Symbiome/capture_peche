@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-techniques page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-techniques-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Enregistrer" v-on:buttonClicked="saveTechniques" shortcuts="back,step-4-4,giveup" />
+    <CarnetFooter button-text="Enregistrer" v-on:buttonClicked="saveTechniques" shortcuts="back,step-4-4,giveup" />
   </div>
 </template>
 
@@ -66,9 +66,9 @@ import TripsService from "@/services/TripsService";
 import ReferentialService from "@/services/ReferentialService";
 
 import BackButton from "@/components/common/BackButton.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { Component, Prop, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
@@ -77,10 +77,10 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripTechniquesView extends Vue {

@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
 import { UserSettings, UpdatePasswordBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
@@ -29,7 +29,7 @@ export class Credentials {
   constructor(public email: string, public password: string) {}
 }
 
-export default class ProfileService extends AbstractFisholaService {
+export default class ProfileService extends AbstractCarnetService {
   static settings?: UserSettings;
 
   constructor() {

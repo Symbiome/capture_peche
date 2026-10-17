@@ -2,7 +2,7 @@ package fr.inrae.fishola.exceptions;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.exceptions;
 
 import jakarta.ws.rs.core.Response;
 
-public class NotAuthenticatedException extends AbstractFisholaRuntimeException {
+public class NotAuthenticatedException extends AbstractCarnetRuntimeException {
 
     public NotAuthenticatedException(String message) {
         super(message);

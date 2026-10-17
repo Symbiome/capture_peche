@@ -2,7 +2,7 @@ package fr.inrae.fishola.mails;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -26,7 +26,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.scheduler.Scheduled;
@@ -50,36 +50,36 @@ public class MailService {
     protected Logger log;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
     @Inject
     protected Mailer mailer;
 
-    protected static final ConcurrentLinkedQueue<FisholaMail> PENDING_EMAILS = new ConcurrentLinkedQueue<>();
+    protected static final ConcurrentLinkedQueue<CarnetMail> PENDING_EMAILS = new ConcurrentLinkedQueue<>();
 
-    public ImmutableFisholaMail.Builder newMail(String body) {
-        ImmutableFisholaMail.Builder builder = ImmutableFisholaMail.builder().body(body);
+    public ImmutableCarnetMail.Builder newMail(String body) {
+        ImmutableCarnetMail.Builder builder = ImmutableCarnetMail.builder().body(body);
         return builder;
     }
 
-    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath,
+    public ImmutableCarnetMail.Builder newMailFromTemplate(String templatePath,
                                                             Map<String, Object> templateParameters) {
         MustacheFactory mf = new DefaultMustacheFactory();
         Mustache mustache = mf.compile(templatePath);
         StringWriter stringWriter = new StringWriter();
         mustache.execute(stringWriter, templateParameters);
         String body = stringWriter.toString();
-        ImmutableFisholaMail.Builder builder = newMail(body);
+        ImmutableCarnetMail.Builder builder = newMail(body);
         return builder;
     }
 
-    public ImmutableFisholaMail.Builder newMailFromTemplate(String templatePath, String arg1Name, Object arg1,
+    public ImmutableCarnetMail.Builder newMailFromTemplate(String templatePath, String arg1Name, Object arg1,
                                                             String arg2Name, Object arg2) {
         ImmutableMap<String, Object> args = ImmutableMap.of(arg1Name, arg1, arg2Name, arg2);
-        ImmutableFisholaMail.Builder builder = newMailFromTemplate(templatePath, args);
+        ImmutableCarnetMail.Builder builder = newMailFromTemplate(templatePath, args);
         return builder;
     }
 
-    public void sendMail(FisholaMail mail) {
+    public void sendMail(CarnetMail mail) {
 
         if (config.asyncEmails()) {
             sendMailAsync(mail);
@@ -89,13 +89,13 @@ public class MailService {
 
     }
 
-    public void sendMailAsync(FisholaMail mail) {
+    public void sendMailAsync(CarnetMail mail) {
 
         if (log.isInfoEnabled()) {
             log.infof("Saving email to send to '%s': « %s »", mail.getTos(), mail.getSubject());
         }
 
-        FisholaMail safeMail = mail.pendingSince().isPresent() ? mail : ImmutableFisholaMail.builder()
+        CarnetMail safeMail = mail.pendingSince().isPresent() ? mail : ImmutableCarnetMail.builder()
                                                                                             .fromInstance(mail)
                                                                                             .pendingSince(LocalDateTime.now())
                                                                                             .build();
@@ -116,46 +116,46 @@ public class MailService {
                 pendingEmailsCount == 0 || config.asyncEmails(),
                 "On ne devrait pas avoir de mails pending vu qu'on est pas en async");
 
-        Iterator<FisholaMail> iterator = PENDING_EMAILS.iterator();
+        Iterator<CarnetMail> iterator = PENDING_EMAILS.iterator();
         while (iterator.hasNext()) {
-            FisholaMail fisholaMail = iterator.next();
+            CarnetMail carnetMail = iterator.next();
             try {
-                sendMail0(fisholaMail);
+                sendMail0(carnetMail);
                 // Envoi de mail OK, on le supprime de la liste
                 iterator.remove();
             } catch (Exception eee) {
-                Preconditions.checkState(fisholaMail.pendingSince().isPresent(),
-                        "FisholaMail sans pendingSince: " + fisholaMail);
-                Duration pendingDuration = Duration.between(fisholaMail.pendingSince().get(), LocalDateTime.now());
+                Preconditions.checkState(carnetMail.pendingSince().isPresent(),
+                        "CarnetMail sans pendingSince: " + carnetMail);
+                Duration pendingDuration = Duration.between(carnetMail.pendingSince().get(), LocalDateTime.now());
                 log.warnf("Unable to send mail for the last %d seconds", pendingDuration.toSeconds(), eee);
                 log.warnf("Mail exception was " + eee.getClass().getName() +" : "  + eee.getMessage());
                 int retentionMinutes = config.asyncEmailsRetentionMinutes();
                 if (pendingDuration.toMinutes() > retentionMinutes) {
                     log.errorf("Email could be send for more than %d minutes, now stop trying: %s", retentionMinutes,
-                            fisholaMail);
+                            carnetMail);
                     iterator.remove();
                 }
             }
         }
     }
 
-    protected void sendMail0(FisholaMail fisholaMail) {
+    protected void sendMail0(CarnetMail carnetMail) {
 
         if (log.isInfoEnabled()) {
-            log.infof("Trying to send an email to '%s': « %s »", fisholaMail.getTos(), fisholaMail.getSubject());
+            log.infof("Trying to send an email to '%s': « %s »", carnetMail.getTos(), carnetMail.getSubject());
         }
 
-        for (String recipient : fisholaMail.getTos()) {
+        for (String recipient : carnetMail.getTos()) {
             Mail mail = Mail
-                    .withHtml(recipient, fisholaMail.getSubject(), fisholaMail.getBody());
-            for (FisholaMailAttachment attachment : fisholaMail.getAttachments()) {
+                    .withHtml(recipient, carnetMail.getSubject(), carnetMail.getBody());
+            for (CarnetMailAttachment attachment : carnetMail.getAttachments()) {
                 mail.addAttachment(attachment.getName(), attachment.getBytes(), attachment.getType().toString());
             }
             mailer.send(mail);
         }
 
         if (log.isInfoEnabled()) {
-            log.infof("Email sent to '%s': « %s »", fisholaMail.getTos(), fisholaMail.getSubject());
+            log.infof("Email sent to '%s': « %s »", carnetMail.getTos(), carnetMail.getSubject());
         }
     }
 

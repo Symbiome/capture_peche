@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.mapper;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest.mapper;
  */
 
 import fr.inrae.fishola.database.ReferentialDao;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -42,7 +42,7 @@ import static io.restassured.RestAssured.given;
  * Ce test doit rester tel quel à moins de changer le code du front !
  */
 @QuarkusTest
-class LocalDateTimeFormatterTest extends AbstractFisholaTest {
+class LocalDateTimeFormatterTest extends AbstractCarnetTest {
 
     @Inject
     ReferentialDao referentialDao;

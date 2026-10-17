@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.gamification;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * {@code AuditLogDao} le fait déjà pour {@code audit_log.details}.
  */
 @Singleton
-public class GamificationDao extends AbstractFisholaDao {
+public class GamificationDao extends AbstractCarnetDao {
 
     @Inject
     ObjectMapper objectMapper;

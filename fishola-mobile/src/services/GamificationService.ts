@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -19,9 +19,9 @@
  * #L%
  */
 import { BadgeBean, BadgeSouvenirBean } from "@/pojos/BackendPojos";
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 
-export default class GamificationService extends AbstractFisholaService {
+export default class GamificationService extends AbstractCarnetService {
   constructor() {
     super();
   }

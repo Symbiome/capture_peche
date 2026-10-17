@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.referential;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -28,7 +28,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -91,9 +91,9 @@ class ReferentialArchiveTest {
     void seed() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", adminId, "archive-test-national@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", adminId, "archive-test-national@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
-                + "VALUES (?, 'Archive', 'Test', 'archive-test@fishola.test', 'x', now(), 'archive-test')", userId);
+                + "VALUES (?, 'Archive', 'Test', 'archive-test@carnet-peche.test', 'x', now(), 'archive-test')", userId);
         insertSpecies(ctx, usedSpeciesId, "Espèce archivage utilisée");
         ctx.execute("INSERT INTO technique (id, name, export_as, built_in) VALUES (?, ?, ?, true)",
                 usedTechniqueId, "Technique archivage", "TechniqueArchivageTest");
@@ -157,7 +157,7 @@ class ReferentialArchiveTest {
     }
 
     private RequestSpecification asAdmin() {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken);
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken);
     }
 
     @Test

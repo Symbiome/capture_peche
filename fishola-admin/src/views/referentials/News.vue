@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -105,7 +105,7 @@ function computeIsPublicAndMiniatureURLs(actualites: any[]) {
 function sendNotification(actualite: any) {
   Dialog.confirm({
     title: "Envoi de notification mail",
-    message: `Confirmez-vous souhaiter vouloir envoyer immédiatement un courriel aux utilisateurs de Fishola avec le contenu de l'actualité <i><b>${actualite["name"]}</b></i> ?`,
+    message: `Confirmez-vous souhaiter vouloir envoyer immédiatement un courriel aux utilisateurs de Carnet de pêche avec le contenu de l'actualité <i><b>${actualite["name"]}</b></i> ?`,
     cancelText: "Annuler",
     confirmText: "Envoyer notification immédiatement",
     type: "is-success",

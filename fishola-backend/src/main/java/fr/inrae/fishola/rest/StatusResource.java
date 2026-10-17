@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest;
  * #L%
  */
 
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -48,7 +48,7 @@ public class StatusResource {
     protected static final double ONE_BYTE_AS_DOUBLE = 1024d;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
 
     public static String asReadableSize(Long bytes) {
         Iterator<String> iterator = READABLE_SIZE_UNITS.iterator();

@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -53,7 +53,7 @@ import static io.restassured.RestAssured.given;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NominativeAdminAuthTest {
 
-    private static final String EMAIL = "nominative-auth-test@fishola.test";
+    private static final String EMAIL = "nominative-auth-test@carnet-peche.test";
     private static final String NOMINATIVE_PASSWORD = "N0minative-r3cette!";
     /** Anciennes valeurs du secret partagé (application.properties %dev / %test) : ne doivent plus authentifier. */
     private static final String[] FORMER_SHARED_SECRETS = {"whatever", "azerty"};

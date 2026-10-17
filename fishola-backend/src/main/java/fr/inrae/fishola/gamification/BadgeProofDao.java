@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.gamification;
  * #L%
  */
 
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import jakarta.inject.Singleton;
 import org.jooq.Record;
 
@@ -40,7 +40,7 @@ import java.util.UUID;
  * leur heure de capture, à défaut par le début de leur sortie ({@link #CATCH_DATE}).
  */
 @Singleton
-public class BadgeProofDao extends AbstractFisholaDao {
+public class BadgeProofDao extends AbstractCarnetDao {
 
     /** Métrique d'un record personnel : la colonne SQL vient d'ici, jamais de l'appelant. */
     public enum CatchMetric {

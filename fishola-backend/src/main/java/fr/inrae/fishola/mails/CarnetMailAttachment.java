@@ -2,7 +2,7 @@ package fr.inrae.fishola.mails;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -26,7 +26,7 @@ import fr.inrae.fishola.ImmutableObject;
 import org.immutables.value.Value;
 
 @ImmutableObject
-public interface FisholaMailAttachment {
+public interface CarnetMailAttachment {
 
     @Value.Auxiliary // exclu des equals/hashCode/toString
     byte[] getBytes();

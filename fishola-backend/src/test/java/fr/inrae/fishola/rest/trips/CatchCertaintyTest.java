@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -30,7 +30,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -89,7 +89,7 @@ class CatchCertaintyTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "certainty-test-operator@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "certainty-test-operator@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         speciesId = ctx.fetchOne("SELECT id FROM species ORDER BY name LIMIT 1").get("id", UUID.class);
@@ -194,7 +194,7 @@ class CatchCertaintyTest {
 
         // Visible dans la file « Prises à valider » (#87), ouverte à l'opérateur.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
                 .then().statusCode(200)
                 .body("elements.catchId", hasItem(catchId.toString()));
@@ -203,7 +203,7 @@ class CatchCertaintyTest {
         CatchBean updatedCatch = new CatchBean();
         updatedCatch.editedSpeciesId = Optional.of(otherSpeciesId);
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedCatch)
                 .when().put("/api/v1/trips/catches/" + catchId)
@@ -222,7 +222,7 @@ class CatchCertaintyTest {
 
         // Plus dans la file : déjà validée.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
                 .then().statusCode(200)
                 .body("elements.catchId", org.hamcrest.CoreMatchers.not(hasItem(catchId.toString())));
@@ -240,7 +240,7 @@ class CatchCertaintyTest {
         UUID catchId = createTripWithCatch("CERTAINTY-TEST-FRESH", IdentificationCertainty.UNCERTAIN, LocalDateTime.now());
 
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/trips/catches/pending-validation/0/date_de_la_sortie/desc")
                 .then().statusCode(200)
                 .body("elements.catchId", hasItem(catchId.toString()));

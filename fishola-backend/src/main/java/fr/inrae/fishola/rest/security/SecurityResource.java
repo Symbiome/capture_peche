@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -25,11 +25,11 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import fr.inrae.fishola.exceptions.NotAuthenticatedException;
 import fr.inrae.fishola.exceptions.NotFoundException;
-import fr.inrae.fishola.mails.FisholaMail;
-import fr.inrae.fishola.mails.ImmutableFisholaMail;
+import fr.inrae.fishola.mails.CarnetMail;
+import fr.inrae.fishola.mails.ImmutableCarnetMail;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.department.Departments;
 import jakarta.inject.Inject;
@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
 
 @Path("/api/v1/security")
 @Produces(MediaType.APPLICATION_JSON)
-public class SecurityResource extends AbstractSecurityFisholaResource {
+public class SecurityResource extends AbstractSecurityCarnetResource {
 
     public static final String UNKNOWN_USER_ERR_MESSAGE = "Utilisateur inconnu";
 
@@ -159,13 +159,13 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             String apiBaseUrl = config.getApiUrl("/api/v1/security/verify", request);
             String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
-            ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+            ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/email-validation.html",
                     "verifyLink", verifyUrl,
                     CLAIM_FIRST_NAME, bean.firstName);
-            FisholaMail mail = builder
+            CarnetMail mail = builder
                     .addTos(email)
-                    .subject("FISHOLA - Validation de votre e-mail")
+                    .subject("Carnet de pêche - Validation de votre e-mail")
                     .build();
 
             mailService.sendMail(mail);
@@ -242,9 +242,9 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
             log.warn("Password reset fail : DataAccesException", dae);
-        }  catch (FisholaTechnicalException fte) {
+        }  catch (CarnetTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
-            log.warn("Password reset fail : FisholaTechnicalException", fte);
+            log.warn("Password reset fail : CarnetTechnicalException", fte);
         }  catch (JWTDecodeException jde) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : JWTDecodeException", jde);
@@ -318,13 +318,13 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
             String resetUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
             // Step 4: send mail
-            ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+            ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/password_reset.html",
                     "resetLink", resetUrl,
                     CLAIM_FIRST_NAME, correspondingUser.get().getFirstName());
-            FisholaMail mail = builder
+            CarnetMail mail = builder
                     .addTos(reset.email)
-                    .subject("FISHOLA - Réinitialisation de votre mot de passe")
+                    .subject("Carnet de pêche - Réinitialisation de votre mot de passe")
                     .build();
 
             mailService.sendMail(mail);
@@ -386,9 +386,9 @@ public class SecurityResource extends AbstractSecurityFisholaResource {
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
             log.warn("Password reset fail : DataAccesException", dae);
-        }  catch (FisholaTechnicalException fte) {
+        }  catch (CarnetTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
-            log.warn("Password reset fail : FisholaTechnicalException", fte);
+            log.warn("Password reset fail : CarnetTechnicalException", fte);
         } catch (JWTDecodeException jde) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : JWTDecodeException", jde);

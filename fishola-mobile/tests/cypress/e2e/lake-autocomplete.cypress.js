@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -41,7 +41,7 @@
 describe("Autocomplétion du champ « Plan d'eau » (#98)", () => {
   // Profil de recette. `acceptsMailNotifications` à true et
   // `lastNewsSeenDate` récente : sinon Menu.vue ouvre la modale « Du nouveau sur
-  // FISHOLA » au premier lancement, qui bloque toute interaction.
+  // Carnet de pêche » au premier lancement, qui bloque toute interaction.
   const PROFILE = {
     id: "00000000-0000-0000-0000-000000000001",
     firstName: "Pêcheur",

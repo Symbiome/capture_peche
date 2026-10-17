@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
  * the angler.
  */
 @Singleton
-public class HydroSearchDao extends AbstractFisholaDao {
+public class HydroSearchDao extends AbstractCarnetDao {
 
     // Nearby search: candidate river sections and water surfaces within the
     // metric radius, aggregated to the closest one per water entity (DISTINCT ON

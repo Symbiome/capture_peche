@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -87,7 +87,7 @@ import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { addCatchPinIcon, attachHydroHover, BaseLayer, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM, setBaseLayer } from '@/components/common/maplibreStyle';
+import { addCatchPinIcon, attachHydroHover, BaseLayer, buildCarnetStyle, DEFAULT_CENTER, DEFAULT_ZOOM, setBaseLayer } from '@/components/common/maplibreStyle';
 
 // Zoom minimal de la carte « Mes sorties » (#136). Cohérent avec une emprise
 // nationale : à ce niveau la France entière tient à l'écran et le fond IGN
@@ -185,7 +185,7 @@ export default class MyTripsMapView extends Vue {
             this.mapIsLoading = false;
             return;
         }
-        const style = buildFisholaStyle(this.baseLayer);
+        const style = buildCarnetStyle(this.baseLayer);
         this.map = markRaw(new maplibregl.Map({
             container,
             style,

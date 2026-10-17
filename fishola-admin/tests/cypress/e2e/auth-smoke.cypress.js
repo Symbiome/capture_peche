@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Admin
+ * Carnet de pêche :: Admin
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -29,7 +29,7 @@
  * C'est l'amorce demandée par #76 : un parcours de connexion + la commande réutilisable
  * `cy.loginStaff()`. La refonte complète des scénarios viendra dans une issue dédiée.
  */
-const HOME_MARKER = "Bienvenue sur l'interface d'administration de FISHOLA";
+const HOME_MARKER = "Bienvenue sur l'interface d'administration de Carnet de pêche";
 
 describe("Smoke — connexion staff (back-office admin)", () => {
 

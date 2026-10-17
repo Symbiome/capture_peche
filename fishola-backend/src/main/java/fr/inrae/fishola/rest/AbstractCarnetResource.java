@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.google.common.collect.Sets;
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
@@ -45,7 +45,7 @@ import static jakarta.transaction.Transactional.TxType.REQUIRED;
 import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
 
 @Transactional(REQUIRED)
-public abstract class AbstractFisholaResource {
+public abstract class AbstractCarnetResource {
 
     public static final String USER_AUTHENTICATION_COOKIE_NAME = "X-Fishola-Token";
 
@@ -63,7 +63,7 @@ public abstract class AbstractFisholaResource {
     protected AdminDao adminDao;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
 
     @Inject
     protected Logger log;
@@ -111,7 +111,7 @@ public abstract class AbstractFisholaResource {
 
     /**
      * Vérifie le token contenu dans le cookie et tente un renouvellement le cas échéant. Le cookie utilisé est celui
-     * injecté dans {@link AbstractFisholaResource#userToken} : X-Fishola-Token
+     * injecté dans {@link AbstractCarnetResource#userToken} : X-Fishola-Token
      * @return L'identifiant de l'utilisateur et éventuellement le nouveau token s'il y a eu renouvellement
      */
     protected UserIdAndRenewal getUserIdOrRenew() {
@@ -223,11 +223,11 @@ public abstract class AbstractFisholaResource {
             return Sets.newLinkedHashSet();
         }
         try {
-            FisholaAdmin fisholaAdmin = this.checkIsStaff();
-            if (fisholaAdmin.getIsNationalAdmin()) {
+            FisholaAdmin currentAdmin = this.checkIsStaff();
+            if (currentAdmin.getIsNationalAdmin()) {
                 return Sets.newLinkedHashSet();
             }
-            Set<String> departments = adminDao.getAllowedDepartments(fisholaAdmin.getId());
+            Set<String> departments = adminDao.getAllowedDepartments(currentAdmin.getId());
             return departments.isEmpty() ? Sets.newLinkedHashSet(Set.of(NO_DEPARTMENT_PERIMETER)) : departments;
         } catch (NotAuthenticatedException | AccessDeniedException e) {
             return Sets.newLinkedHashSet();

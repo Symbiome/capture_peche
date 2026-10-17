@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.gamification;
  * #L%
  */
 
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import fr.inrae.fishola.rest.department.Departments;
 import fr.inrae.fishola.rest.gamification.BadgeSouvenirBean;
 import fr.inrae.fishola.rest.gamification.SouvenirCatchBean;
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * sortie supprimée depuis le déblocage disparaît simplement du résultat.
  */
 @Singleton
-public class BadgeSouvenirDao extends AbstractFisholaDao {
+public class BadgeSouvenirDao extends AbstractCarnetDao {
 
     private static final String CATCHES_SQL = "SELECT c.id, c.trip_id, s.name AS species_name, c.size, c.weight, "
             + "c.quantity, c.catch_timestamp, c.latitude, c.longitude, "

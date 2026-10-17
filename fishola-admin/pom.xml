@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -33,7 +33,7 @@
   </parent>
 
   <artifactId>fishola-admin</artifactId>
-  <name>Fishola :: Admin</name>
+  <name>Carnet de pêche :: Admin</name>
   <packaging>pom</packaging>
 
   <properties>

@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%

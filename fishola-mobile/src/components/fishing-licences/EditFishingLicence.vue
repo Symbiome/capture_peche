@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -21,7 +21,7 @@
 
 <template>
   <div class="new-licence page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page new-licence-page keyboardSensitive">
       <div class="pane pane-only">
         <h1 class="no-margin-pane">
@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <FisholaFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()"
+    <CarnetFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()"
       v-on:buttonClicked="saveLicence" />
   </div>
 </template>
@@ -58,8 +58,8 @@
 <script lang="ts">
 import { RouterUtils } from "@/router/RouterUtils";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 import BackButton from "@/components/common/BackButton.vue";
 
 import FishingLicenceService from "@/services/FishingLicenceService";
@@ -71,8 +71,8 @@ import Helpers from "@/services/Helpers";
 
 @Component({
   components: {
-    FisholaHeader,
-    FisholaFooter,
+    CarnetHeader,
+    CarnetFooter,
     BackButton,
     NewFishingLicence,
     RouterUtils,

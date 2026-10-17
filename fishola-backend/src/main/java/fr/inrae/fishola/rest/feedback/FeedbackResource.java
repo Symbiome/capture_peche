@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.feedback;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,13 +21,13 @@ package fr.inrae.fishola.rest.feedback;
  * #L%
  */
 
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import fr.inrae.fishola.mails.FisholaMail;
-import fr.inrae.fishola.mails.FisholaMailAttachment;
-import fr.inrae.fishola.mails.ImmutableFisholaMail;
-import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
+import fr.inrae.fishola.mails.CarnetMail;
+import fr.inrae.fishola.mails.CarnetMailAttachment;
+import fr.inrae.fishola.mails.ImmutableCarnetMail;
+import fr.inrae.fishola.mails.ImmutableCarnetMailAttachment;
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/v1/feedback")
-public class FeedbackResource extends AbstractFisholaResource {
+public class FeedbackResource extends AbstractCarnetResource {
 
     @Inject
     protected MailService mailService;
@@ -76,7 +76,7 @@ public class FeedbackResource extends AbstractFisholaResource {
                 screenshotBytes = Optional.of(pngBytes);
 
             } catch (IOException ioe) {
-                throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
+                throw new CarnetTechnicalException("Impossible de lire l'image", ioe);
             }
         }
 
@@ -85,12 +85,12 @@ public class FeedbackResource extends AbstractFisholaResource {
                 .backendVersion(config.getFullVersion())
                 .build();
 
-        FisholaMail fisholaMail = toFisholaMail(feedback, screenshotBytes);
-        mailService.sendMail(fisholaMail);
+        CarnetMail carnetMail = toCarnetMail(feedback, screenshotBytes);
+        mailService.sendMail(carnetMail);
 
     }
 
-    protected FisholaMail toFisholaMail(Feedback feedback, Optional<byte[]> screenshotBytes) {
+    protected CarnetMail toCarnetMail(Feedback feedback, Optional<byte[]> screenshotBytes) {
         String description = feedback.description().orElse("Pas de description");
         String screenshot = screenshotBytes.map(file -> "L'utilisateur a fournit une capture d'écran (cf PJ)")
                 .orElse("L'utilisation n'a pas fournit de capture d'écran");
@@ -101,21 +101,21 @@ public class FeedbackResource extends AbstractFisholaResource {
                 "screenshotText", screenshot
                                          );
 
-        ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+        ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/new-feedback.html",
                 args);
         builder.subject("Nouveau feedback : " + feedback.category());
         builder.addTos(config.feedbackMailTo());
         if (screenshotBytes.isPresent()) {
             byte[] bytes = screenshotBytes.get();
-            FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
+            CarnetMailAttachment attachment = ImmutableCarnetMailAttachment.builder()
                     .bytes(bytes)
                     .name(String.format("feedback-%s.png", feedback.id().toString()))
                     .type(com.google.common.net.MediaType.PNG)
                     .build();
             builder.addAttachments(attachment);
         }
-        FisholaMail result = builder.build();
+        CarnetMail result = builder.build();
         return result;
     }
 

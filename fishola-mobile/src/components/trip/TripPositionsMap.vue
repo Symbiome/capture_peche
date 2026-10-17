@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -68,7 +68,7 @@ import {
   addCatchPinIcon,
   attachHydroHover,
   BaseLayer,
-  createFisholaMap,
+  createCarnetMap,
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
   setBaseLayer,
@@ -201,7 +201,7 @@ export default class TripPositionsMap extends Vue {
     if (!container || this.map) {
       return;
     }
-    this.map = createFisholaMap(container, {
+    this.map = createCarnetMap(container, {
       center: this.initialCenter(),
       zoom: this.initialZoom(),
       baseLayer: this.baseLayer,

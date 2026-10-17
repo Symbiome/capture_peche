@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.security;
 
 import fr.inrae.fishola.database.AdminDao;
 import fr.inrae.fishola.database.StaffPerimeterDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -88,9 +88,9 @@ class StaffPerimeterBufferTest {
     @BeforeAll
     @Transactional
     void seed() {
-        insertAdmin(nationalId, "perimeter-national@fishola.test", true, false, null);
-        insertAdmin(regional74Id, "perimeter-regional74@fishola.test", false, false, "74");
-        insertAdmin(operator73Id, "perimeter-operator73@fishola.test", false, true, "73");
+        insertAdmin(nationalId, "perimeter-national@carnet-peche.test", true, false, null);
+        insertAdmin(regional74Id, "perimeter-regional74@carnet-peche.test", false, false, "74");
+        insertAdmin(operator73Id, "perimeter-operator73@carnet-peche.test", false, true, "73");
 
         nearId = insertWaterEntity("IT Perim Proche", "IT_PPROCHE", "73", "POINT(5.995 45.72)");
         farId = insertWaterEntity("IT Perim Loin", "IT_PLOIN", "73", "POINT(5.97 45.72)");
@@ -134,7 +134,7 @@ class StaffPerimeterBufferTest {
 
     private List<String> searchNames(String token) {
         return given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "IT Perim")
                 .when().get(NAMES_SEARCH)
                 .then().statusCode(200)
@@ -171,7 +171,7 @@ class StaffPerimeterBufferTest {
     @Test
     void waterEntityListingUsesTheBuffer() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .when().get("/api/v1/referential/waterEntities/names")
                 .then().statusCode(200)
                 .body("name", hasItems("Annecy", "IT Perim Proche", "IT Perim Frontiere"))

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
   %%
@@ -643,7 +643,7 @@ export default class LakeSelection extends Vue {
       }
 
       &.favorite:before {
-        font-family: "Fishola-Icons";
+        font-family: "Carnet-Icons";
         content: '\f114';
         position: absolute;
         left: 15px;

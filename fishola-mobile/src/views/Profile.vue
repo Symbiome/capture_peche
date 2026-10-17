@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -50,7 +50,7 @@
         <input type="checkbox" id="receive-mail" class="pelorous-checkbox" v-model="profile.acceptsMailNotifications" />
         <label for="receive-mail"></label>
         <label for="receive-mail" class="real-label">
-          Je souhaite être informé des communications Fishola par mail
+          Je souhaite être informé des communications Carnet de pêche par mail
         </label>
       </div>
       <br />
@@ -63,7 +63,7 @@
         </div>
       </div>
       <!--  It was decided to hide it until the ambassador program is up and running
-        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
+        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur Carnet de pêche"
         text="Vous pouvez vous inscrire à notre nouveau programme d'ambassadeur." actionText="Je m'inscris"
         @click="becomeAmbassador" /> -->
 
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
+    <CarnetFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
       selected="profile" />
   </div>
 </template>
@@ -86,7 +86,7 @@ import LakeSelection from "@/components/common/LakeSelection.vue";
 import UserProfile from "@/pojos/UserProfile";
 import ProfileService from "@/services/ProfileService";
 
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { RouterUtils } from "@/router/RouterUtils";
 
@@ -104,7 +104,7 @@ import { WaterEntity as Lake } from "@/pojos/BackendPojos";
     FormSelect,
     FormMultiValues,
     FishingLicencesView,
-    FisholaFooter,
+    CarnetFooter,
     BottomInducementView,
     LakeSelection
   },

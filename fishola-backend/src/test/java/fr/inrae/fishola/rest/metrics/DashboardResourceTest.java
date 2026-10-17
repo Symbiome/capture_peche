@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.metrics;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.metrics;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import fr.inrae.fishola.database.CatchsDao;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.ReferentialDao;
@@ -40,7 +40,7 @@ import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
 import io.quarkus.test.junit.QuarkusTest;
@@ -59,7 +59,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @QuarkusTest
-class DashboardResourceTest  extends AbstractFisholaTest {
+class DashboardResourceTest  extends AbstractCarnetTest {
     @Inject
     protected ReferentialDao referentialDao;
     @Inject
@@ -71,7 +71,7 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     @Inject
     protected DashboardDao dashboardDao;
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
     @Inject
     protected Logger log;
 
@@ -95,18 +95,18 @@ class DashboardResourceTest  extends AbstractFisholaTest {
     @Transactional
     void login() {
         this.token = login("thimel@codelutin.com", "sispea");
-        FisholaUser fisholaUser = this.usersDao.findByEmail("thimel@codelutin.com").get();
-        this.userId = fisholaUser.getId();
-        fisholaUser.setExcludeFromExports(false);
-        this.usersDao.updateUser(fisholaUser);
+        FisholaUser user = this.usersDao.findByEmail("thimel@codelutin.com").get();
+        this.userId = user.getId();
+        user.setExcludeFromExports(false);
+        this.usersDao.updateUser(user);
     }
 
     @AfterEach
     @Transactional
     void teardown() {
-        FisholaUser fisholaUser = this.usersDao.findById(this.userId).get();
-        fisholaUser.setExcludeFromExports(true);
-        this.usersDao.updateUser(fisholaUser);
+        FisholaUser user = this.usersDao.findById(this.userId).get();
+        user.setExcludeFromExports(true);
+        this.usersDao.updateUser(user);
     }
 
     @Test

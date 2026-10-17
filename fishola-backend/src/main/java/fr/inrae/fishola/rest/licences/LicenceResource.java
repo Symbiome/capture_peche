@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.licences;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
@@ -24,7 +24,7 @@ package fr.inrae.fishola.rest.licences;
 import fr.inrae.fishola.database.FishingLicencesDao;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
@@ -47,7 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/licences")
-public class LicenceResource extends AbstractFisholaResource {
+public class LicenceResource extends AbstractCarnetResource {
 
     public static final String ERROR_KEY = "error";
     @Inject

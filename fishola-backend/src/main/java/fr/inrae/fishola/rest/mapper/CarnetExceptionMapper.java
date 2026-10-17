@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.mapper;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.mapper;
  * #L%
  */
 
-import fr.inrae.fishola.exceptions.AbstractFisholaRuntimeException;
+import fr.inrae.fishola.exceptions.AbstractCarnetRuntimeException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -33,13 +33,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Provider
-public class FisholaExceptionMapper implements ExceptionMapper<AbstractFisholaRuntimeException> {
+public class CarnetExceptionMapper implements ExceptionMapper<AbstractCarnetRuntimeException> {
 
     @Inject
     protected Logger log;
 
     @Override
-    public Response toResponse(AbstractFisholaRuntimeException exception) {
+    public Response toResponse(AbstractCarnetRuntimeException exception) {
         Response.ResponseBuilder responseBuilder = Response.status(exception.getStatus());
         Map<String, String> entity = new LinkedHashMap<>();
         if (StringUtils.isNotEmpty(exception.getMessage())) {

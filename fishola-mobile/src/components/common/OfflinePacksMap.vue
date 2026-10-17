@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -21,7 +21,7 @@
 <!--
   Onglet « Carte » de l'écran Zones hors-ligne (#180) : visualise l'étendue
   géographique de tous les packs hydro départementaux téléchargés (#54), sans
-  connexion. Réutilise le fond de carte partagé (createFisholaMap,
+  connexion. Réutilise le fond de carte partagé (createCarnetMap,
   maplibreStyle.ts) ; le fond IGN ne se charge pas hors-ligne (packs =
   entités hydro uniquement, pas de tuiles), la géométrie téléchargée reste
   visible. Aucun appel réseau : les données viennent du prop `packs`, déjà
@@ -51,7 +51,7 @@ import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import maplibregl, { Map as MlMap, Marker, GeoJSONSource, LngLatBoundsLike } from 'maplibre-gl';
 import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { attachHydroHover, createFisholaMap } from '@/components/common/maplibreStyle';
+import { attachHydroHover, createCarnetMap } from '@/components/common/maplibreStyle';
 import OfflineArea from '@/pojos/OfflineArea';
 
 interface DepartmentLabel {
@@ -120,7 +120,7 @@ export default class OfflinePacksMap extends Vue {
             if (!container) {
                 return;
             }
-            this.map = createFisholaMap(container, {});
+            this.map = createCarnetMap(container, {});
             this.map.on('load', () => {
                 if (!this.map) {
                     return;

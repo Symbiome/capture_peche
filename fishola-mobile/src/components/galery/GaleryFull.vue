@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <PictureModal
       class="picture-modal-gallery-full"
       :forceMobileMode="true"
@@ -164,7 +164,7 @@ import ShareService from "@/services/ShareService";
 import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
 import BottomNav from "@/components/layout/BottomNav.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
 import { RouterUtils } from "../../router/RouterUtils";
@@ -173,7 +173,7 @@ import PictureModal from "../trip/PictureModal.vue";
 @Component({
   components: {
     GaleryPreview,
-    FisholaHeader,
+    CarnetHeader,
     PictureModal,
     BottomNav,
   },

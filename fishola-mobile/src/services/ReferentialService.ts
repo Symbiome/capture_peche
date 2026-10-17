@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -19,7 +19,7 @@
  * #L%
  */
 import {WaterEntity as Lake, Weather, SpeciesWithAlias, Technique, ReleasedFishState, AttributionResponse, NearbyWaterEntity, TripSettings} from '@/pojos/BackendPojos';
-import AbstractFisholaService from '@/services/AbstractFisholaService';
+import AbstractCarnetService from '@/services/AbstractCarnetService';
 import Helpers from '@/services/Helpers';
 import NetworkStatusService from '@/services/NetworkStatusService';
 import OfflineAreasService from '@/services/OfflineAreasService';
@@ -41,7 +41,7 @@ export class WeathersTripTypesSpeciesAndTechniques {
     }
 }
 
-export default class ReferentialService extends AbstractFisholaService {
+export default class ReferentialService extends AbstractCarnetService {
   constructor() {
     super();
   }
@@ -111,7 +111,7 @@ export default class ReferentialService extends AbstractFisholaService {
         // Repli hors-ligne (#174) : filtrage local du référentiel léger déjà en
         // cache (getLakes(), backendGetWithCache -> stockage hors-ligne). Une
         // erreur de transport (réseau absent) est un objet {networkError:
-        // true, ...} (cf. AbstractFisholaService.rejectOnTransportFailure) ;
+        // true, ...} (cf. AbstractCarnetService.rejectOnTransportFailure) ;
         // une erreur HTTP numérique (ex. session expirée) est propagée telle
         // quelle, sans masquer le problème derrière un repli silencieux.
         if (err && err.networkError) {

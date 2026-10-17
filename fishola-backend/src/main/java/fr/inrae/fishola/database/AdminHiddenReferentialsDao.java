@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -47,7 +47,7 @@ import static fr.inrae.fishola.entities.Tables.TECHNIQUE;
  * défaut. Le masquage n'est qu'une aide à la saisie, jamais une règle de validation.
  */
 @Singleton
-public class AdminHiddenReferentialsDao extends AbstractFisholaDao {
+public class AdminHiddenReferentialsDao extends AbstractCarnetDao {
 
     /**
      * Éléments masqués par un compte pour un référentiel.

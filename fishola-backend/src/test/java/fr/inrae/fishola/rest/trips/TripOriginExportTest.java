@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -26,8 +26,8 @@ import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Species;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -53,7 +53,7 @@ import static io.restassured.RestAssured.given;
  * l'embargo de 7 jours de catchs_openadom_export sur les saisies pêcheur.
  */
 @QuarkusTest
-class TripOriginExportTest extends AbstractFisholaTest {
+class TripOriginExportTest extends AbstractCarnetTest {
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -106,7 +106,7 @@ class TripOriginExportTest extends AbstractFisholaTest {
 
         String tripId = given()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, login("thimel@codelutin.com", "sispea"))
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, login("thimel@codelutin.com", "sispea"))
                 .body(trip)
                 .when().post("/api/v1/trips")
                 .then().statusCode(201)

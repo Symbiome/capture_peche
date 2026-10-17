@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   #%L
-  Fishola
+  Carnet de pêche
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -36,7 +36,7 @@
     <artifactId>fishola</artifactId>
     <version>3.0.2-SNAPSHOT</version>
 
-    <name>Fishola</name>
+    <name>Carnet de pêche</name>
     <description>Application smartphone en sciences participatives pour la pêche amateur sur les les plans d'eau français
     </description>
     <url>${projectUrl}</url>

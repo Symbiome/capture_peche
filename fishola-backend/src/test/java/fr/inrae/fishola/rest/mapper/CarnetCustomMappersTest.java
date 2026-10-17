@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.mapper;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -28,11 +28,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 
-class FisholaCustomMappersTest {
+class CarnetCustomMappersTest {
 
     @Test
     void readIso8601AtZone() {
-        Optional<LocalDateTime> parsed = FisholaCustomMappers.readIso8601AtZone("2020-05-06T15:49:02.640Z", ZoneId.of("Europe/Paris"));
+        Optional<LocalDateTime> parsed = CarnetCustomMappers.readIso8601AtZone("2020-05-06T15:49:02.640Z", ZoneId.of("Europe/Paris"));
         Assertions.assertNotNull(parsed);
         Assertions.assertTrue(parsed.isPresent());
         Assertions.assertEquals(6, parsed.get().getDayOfMonth());

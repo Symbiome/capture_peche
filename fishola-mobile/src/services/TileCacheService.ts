@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -19,7 +19,7 @@
  * #L%
  */
 import maplibregl, { GetResourceResponse, RequestParameters } from "maplibre-gl";
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import NetworkStatusService from "@/services/NetworkStatusService";
 
 /**
@@ -33,7 +33,7 @@ import NetworkStatusService from "@/services/NetworkStatusService";
  * Passer par un protocole MapLibre plutôt qu'un service worker fonctionne à
  * l'identique dans le navigateur et dans la WebView Capacitor.
  */
-export default class TileCacheService extends AbstractFisholaService {
+export default class TileCacheService extends AbstractCarnetService {
   static readonly PROTOCOL = "fishola-tile";
   /** ~800 tuiles 256 px ≈ 15 à 25 Mo : quelques niveaux de zoom d'une zone. */
   static readonly MAX_TILES = 800;

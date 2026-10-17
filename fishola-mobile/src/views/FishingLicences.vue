@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -37,9 +37,9 @@
 <script lang="ts">
 import { RouterUtils } from "@/router/RouterUtils";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import FishingLicenceList from "@/components/fishing-licences/FishingLicenceList.vue";
 import NewFishingLicence from "@/components/fishing-licences/NewFishingLicence.vue";
@@ -53,9 +53,9 @@ import { LicenceResponseBean } from "@/pojos/BackendPojos";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     RunningOverlay,
-    FisholaFooter,
+    CarnetFooter,
     FishingLicencesView,
     FishingLicenceList,
     NewFishingLicence,

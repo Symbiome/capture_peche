@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.about;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -27,8 +27,8 @@ import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.FisholaCache;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.CarnetCache;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -43,7 +43,7 @@ import java.util.UUID;
 
 @Path("/api/v1/about")
 @Produces(MediaType.APPLICATION_JSON)
-public class AboutResource extends AbstractFisholaResource {
+public class AboutResource extends AbstractCarnetResource {
     @Inject
     protected ReferentialDao referentialDao;
     @Inject
@@ -53,7 +53,7 @@ public class AboutResource extends AbstractFisholaResource {
     @Inject
     protected EditorialAndDocumentationDao editorialAndDocumentationDao;
     @Inject
-    protected FisholaCache cache;
+    protected CarnetCache cache;
 
     /**
      * Procède au calcul d'une nouvelle instance de KeyFigures

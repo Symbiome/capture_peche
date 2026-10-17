@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -46,7 +46,7 @@ import static fr.inrae.fishola.entities.Tables.FISHOLA_ADMIN_DEPARTMENTS;
 import static fr.inrae.fishola.entities.Tables.WATER_ENTITY_DEPARTMENT;
 
 @Singleton
-public class AdminDao extends AbstractFisholaDao {
+public class AdminDao extends AbstractCarnetDao {
 
     @Inject
     protected Logger log;

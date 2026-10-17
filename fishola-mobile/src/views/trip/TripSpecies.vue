@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-species page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-species-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -71,7 +71,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter v-bind:button-text="buttonLabel" v-on:buttonClicked="next"
+    <CarnetFooter v-bind:button-text="buttonLabel" v-on:buttonClicked="next"
       :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage
         " shortcuts="back,step-2-4,giveup" />
   </div>
@@ -86,9 +86,9 @@ import TripsService from "@/services/TripsService";
 import ReferentialService from "@/services/ReferentialService";
 
 import BackButton from "@/components/common/BackButton.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { Component, Prop, Vue } from "vue-facing-decorator";
 import orderBy from "lodash/orderBy";
@@ -99,9 +99,9 @@ import { RouterUtils } from "@/router/RouterUtils";
 @Component({
   components: {
     BackButton,
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripSpeciesView extends Vue {

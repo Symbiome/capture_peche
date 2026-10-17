@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -38,8 +38,8 @@ import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
@@ -80,7 +80,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
-class TripResourceTest extends AbstractFisholaTest {
+class TripResourceTest extends AbstractCarnetTest {
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -133,7 +133,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips?pageNumber=0&pageSize=-1&desc=false")
             .then()
                 .statusCode(200)
@@ -165,7 +165,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -205,7 +205,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -244,7 +244,7 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -278,7 +278,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -324,7 +324,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
                 .put("/api/v1/pictures/" + catchId)
             .then()
@@ -365,7 +365,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // {id='70d6bed0-72e4-49c4-8e1d-8c1278c94e17', createdOn=Optional[2021-11-03T19:08:34.338806], mode=Live, type=Craft, name='Whatever', waterEntityId=658c488f-b982-4f4c-8610-527a1684b3be, speciesIds=[d0176668-c2b5-4182-863c-f950b908d96a], otherSpecies='null', date=2021-11-03, startedAt=00:00, finishedAt=00:01, weatherId=Optional.empty, catchs=1, techniqueIds=[9929f857-ecc1-40a9-859f-91b897cdb12c], beginLatitude=Optional.empty, beginLongitude=Optional.empty, endLatitude=Optional.empty, endLongitude=Optional.empty, source=null, saveDelayMarker=Optional.empty, modifiableUntil=Optional[2021-11-10T19:08:34.338806]}
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -375,7 +375,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Supprime l'image
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("/api/v1/pictures/" + catchId + "/0")
             .then()
                 .statusCode(204);
@@ -383,7 +383,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Vérifie que l'image est bien supprimée
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -422,7 +422,7 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -439,7 +439,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // conserve les 15 poissons annoncés.
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -482,7 +482,7 @@ class TripResourceTest extends AbstractFisholaTest {
         String tripId = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -493,7 +493,7 @@ class TripResourceTest extends AbstractFisholaTest {
 
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -520,7 +520,7 @@ class TripResourceTest extends AbstractFisholaTest {
         String tripId = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -531,7 +531,7 @@ class TripResourceTest extends AbstractFisholaTest {
 
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -554,7 +554,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(invalidTrip)
                 .post("/api/v1/trips")
             .then()
@@ -576,7 +576,7 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -600,7 +600,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -625,7 +625,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
                 .put("/api/v1/pictures/" + catchId + "/0")
             .then()
@@ -634,7 +634,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Vérifie qu'elle est bien listée ...
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -670,7 +670,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
                 .put("/api/v1/pictures/" + catchId + "/12")
             .then()
@@ -679,7 +679,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Vérifie qu'elle est bien listée ...
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -698,14 +698,14 @@ class TripResourceTest extends AbstractFisholaTest {
         // Supprime l'image '0'
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("/api/v1/pictures/" + catchId + "/0")
             .then()
                 .statusCode(204);
 
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -740,14 +740,14 @@ class TripResourceTest extends AbstractFisholaTest {
         // Supprime l'image
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("/api/v1/pictures/" + catchId + "/12")
             .then()
                 .statusCode(204);
 
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -796,7 +796,7 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -820,7 +820,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // {"id":"0986edd8-a9c0-4d55-9c77-66d34438612a","createdOn":[2021,11,4,9,44,17,432989000],"mode":"Live","type":"Craft","name":"Whatever","waterEntityId":"95077a6a-09c7-4dd0-a200-439feb9dd9c4","speciesIds":["f52b832c-f336-47cb-8d4d-09ef85c2a3ef"],"otherSpecies":null,"date":[2021,11,4],"startedAt":"00:00","finishedAt":"00:01","weatherId":"35659df6-5244-4571-bd3f-da37464b3463","catchs":[{"id":"bcf2687f-bcc8-486f-864b-4c63737c3d72","speciesId":"f52b832c-f336-47cb-8d4d-09ef85c2a3ef","otherSpecies":null,"size":21,"automaticMeasure":null,"weight":666,"keep":true,"releasedStateId":null,"techniqueId":"3f82a047-56c6-412a-b817-8835b465dbfa","description":"Poisson taiste","caughtAt":"21:05","sampleId":null,"latitude":41.1,"longitude":3.3,"hasPicture":false,"tripId":"0986edd8-a9c0-4d55-9c77-66d34438612a"}],"techniqueIds":["3f82a047-56c6-412a-b817-8835b465dbfa"],"beginLatitude":null,"beginLongitude":null,"endLatitude":null,"endLongitude":null,"source":null,"saveDelayMarker":null,"modifiableUntil":[2021,11,11,9,44,17,432989000]}
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -854,7 +854,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
                 .put("/api/v1/pictures/measure/" + catchId)
             .then()
@@ -863,7 +863,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Vérifie qu'elle est bien listée ...
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -890,7 +890,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Supprime la sortie
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(204);
@@ -912,7 +912,7 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips")
             .then()
@@ -944,7 +944,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + base64Content)
                 .put("/api/v1/pictures/measure/" + catchId)
             .then()
@@ -953,7 +953,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Vérifie qu'elle est bien listée ...
         given()
             .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/trips/" + tripId)
             .then()
                 .statusCode(200)
@@ -1011,7 +1011,7 @@ class TripResourceTest extends AbstractFisholaTest {
         given()
             .when()
                 .contentType(MediaType.TEXT_PLAIN)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body("data:image/jpeg;base64," + replacementBase64Content)
                 .put("/api/v1/pictures/measure/" + catchId)
             .then()
@@ -1104,14 +1104,14 @@ class TripResourceTest extends AbstractFisholaTest {
         ResponseBodyExtractionOptions body = given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .post("/api/v1/trips");
         String catchId = body.path(catchBean.id);
         // Make sur current user is not excluded from exports
-        FisholaUser fisholaUser = this.usersDao.findById(userId).get();
-        fisholaUser.setExcludeFromExports(false);
-        this.usersDao.updateUser(fisholaUser);
+        FisholaUser user = this.usersDao.findById(userId).get();
+        user.setExcludeFromExports(false);
+        this.usersDao.updateUser(user);
 
 
         // Both personnal and global Dashboard should include this catch
@@ -1127,13 +1127,13 @@ class TripResourceTest extends AbstractFisholaTest {
         given().when()
             .body(catchBean)
             .contentType(MediaType.APPLICATION_JSON)
-            .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+            .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
             .put("/api/v1/trips/catches/" + catchId)
             .then().statusCode(401);
 
         // List all catches as admin : should be a 200
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/trips/export/0/longueur_totale_du_poisson/desc")
                 .then().statusCode(200);
 
@@ -1142,7 +1142,7 @@ class TripResourceTest extends AbstractFisholaTest {
         catchBean.editedWeight = editedWeightInBo;
         catchBean.editedSize = editedSizeInBo;
         given().when()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(catchBean)
                 .put("/api/v1/trips/catches/" + catchId)
@@ -1157,7 +1157,7 @@ class TripResourceTest extends AbstractFisholaTest {
         // Exclude catch from export
         catchBean.excludeFromExport = true;
         given().when()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(catchBean)
                 .put("/api/v1/trips/catches/" + catchId)
@@ -1286,7 +1286,7 @@ class TripResourceTest extends AbstractFisholaTest {
 
     private RequestSpecification exportRequest(String adminToken, String filterKey, String filterValue) {
         RequestSpecification result = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken);
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken);
         if (filterKey != null) {
             result = result.queryParam(filterKey, filterValue);
         }

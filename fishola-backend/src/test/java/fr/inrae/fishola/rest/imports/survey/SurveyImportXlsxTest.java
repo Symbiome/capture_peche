@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.survey;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -89,7 +89,7 @@ class SurveyImportXlsxTest {
         String department = rec.get("department", String.class);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "survey-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "survey-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, department);
 
@@ -187,7 +187,7 @@ class SurveyImportXlsxTest {
     void importCreatesSessionAnglerAndTrip() {
         String file = "survey-test-ok.xlsx";
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(simpleWorkbook("SURVEY-TEST-S1", "SURVEY-TEST-SO1"))
                 .when().post(URI + "?filename=" + file + "&mode=partial")
@@ -218,12 +218,12 @@ class SurveyImportXlsxTest {
         String file = "survey-test-dup.xlsx";
         byte[] bytes = simpleWorkbook("SURVEY-TEST-DUP", "SURVEY-TEST-SODUP");
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream").body(bytes)
                 .when().post(URI + "?filename=" + file + "&mode=partial")
                 .then().statusCode(200);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream").body(bytes)
                 .when().post(URI + "?filename=" + file + "&mode=partial")
                 .then().statusCode(409)
@@ -242,7 +242,7 @@ class SurveyImportXlsxTest {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
 
-            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+            given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                     .contentType("application/octet-stream").body(out.toByteArray())
                     .when().post(URI + "?filename=survey-test-orphan.xlsx&mode=partial")
                     .then().statusCode(200)
@@ -264,7 +264,7 @@ class SurveyImportXlsxTest {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
 
-            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+            given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                     .contentType("application/octet-stream").body(out.toByteArray())
                     .when().post(URI + "?filename=survey-test-control-time.xlsx&mode=partial")
                     .then().statusCode(200)
@@ -278,7 +278,7 @@ class SurveyImportXlsxTest {
 
     @Test
     void lotWithoutBoundsIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbook("SURVEY-TEST-LOT", "SURVEY-TEST-SOLOT", "2", "", "", null))
                 .when().post(URI + "?filename=survey-test-lot.xlsx&mode=partial")
@@ -296,7 +296,7 @@ class SurveyImportXlsxTest {
                 "P1", waterEntityName, "15/06/2026", "matin", "Aucune", "bord statique", "Pêche au coup", "1",
                 "", "non", "Perche", "22", "1", "oui", "", ""});
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbook("SURVEY-TEST-SOUV", "SURVEY-TEST-SOSOUV", "1", "", "", souvenir))
                 .when().post(URI + "?filename=" + file + "&mode=partial")
@@ -325,7 +325,7 @@ class SurveyImportXlsxTest {
 
     @Test
     void templateFilledWithItsExampleRowsImportsWithoutError() throws IOException {
-        byte[] template = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        byte[] template = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(URI + "/template")
                 .then().statusCode(200)
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -349,7 +349,7 @@ class SurveyImportXlsxTest {
             filled = out.toByteArray();
         }
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(filled)
                 .when().post(URI + "?filename=survey-test-template.xlsx&mode=partial")
@@ -380,7 +380,7 @@ class SurveyImportXlsxTest {
     /** #237 : un carpiste contrôlé en début de session de 3 jours, fin prévue le 03/07 à 10:00. */
     @Test
     void sortieWithPlannedEndDayCreatesMultiDayTrip() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbookWithPlannedEndDay("SURVEY-TEST-MULTIDAY", "SURVEY-TEST-SOMULTIDAY", "03/07/2026"))
                 .when().post(URI + "?filename=survey-test-multiday.xlsx&mode=partial")
@@ -397,7 +397,7 @@ class SurveyImportXlsxTest {
     /** #237 : une fin prévue avant la date de la session est rejetée. */
     @Test
     void plannedEndDayBeforeSessionDayIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbookWithPlannedEndDay("SURVEY-TEST-ENDBEFORE", "SURVEY-TEST-SOENDBEFORE", "30/06/2026"))
                 .when().post(URI + "?filename=survey-test-endbefore.xlsx&mode=partial")
@@ -410,7 +410,7 @@ class SurveyImportXlsxTest {
     /** #237 : un classeur rempli avec l'ancien modèle, sans la colonne de date de fin prévue, reste accepté. */
     @Test
     void legacySortieHeaderIsStillAccepted() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbook("SURVEY-TEST-LEGACY", "SURVEY-TEST-SOLEGACY", SurveySchema.LEGACY_HEADER_SORTIE,
                         new String[] {"SURVEY-TEST-LEGACY", "SURVEY-TEST-SOLEGACY", "09:00", "08:00", "11:00"},
@@ -440,7 +440,7 @@ class SurveyImportXlsxTest {
     /** #242 : un classeur sans heures de session ni opérateur (modèle antérieur) reste accepté. */
     @Test
     void legacySessionHeaderIsStillAccepted() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbookWithSession(SurveySchema.LEGACY_HEADER_SESSION,
                         new String[] {"SURVEY-TEST-LEGSESS", waterEntityName, "01/07/2026", "", ""},
@@ -454,7 +454,7 @@ class SurveyImportXlsxTest {
     /** #242 : avec le nouvel en-tête, heure de début de session et opérateur sont obligatoires. */
     @Test
     void sessionWithoutStartTimeOrOperatorIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbookWithSession(SurveySchema.HEADER_SESSION,
                         new String[] {"SURVEY-TEST-NOOP", waterEntityName, "01/07/2026", "", "", "", "", ""},
@@ -469,7 +469,7 @@ class SurveyImportXlsxTest {
     /** #236 : l'heure du contrôle ne peut pas suivre la fin de pêche prévue. */
     @Test
     void sortieWithControlTimeAfterPlannedEndIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(workbook("SURVEY-TEST-LATE", "SURVEY-TEST-SOLATE", SurveySchema.HEADER_SORTIE,
                         new String[] {"SURVEY-TEST-LATE", "SURVEY-TEST-SOLATE", "11:30", "08:00", "11:00", ""},

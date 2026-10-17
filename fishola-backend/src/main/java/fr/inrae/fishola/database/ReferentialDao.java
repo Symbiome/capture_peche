@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -64,7 +64,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Singleton
-public class ReferentialDao extends AbstractFisholaDao {
+public class ReferentialDao extends AbstractCarnetDao {
 
     /** Taille maximale « non définie » renvoyée au mobile (sentinelle historique). */
     public static final int UNSET_MAX_SIZE = 1000;
@@ -528,7 +528,7 @@ public class ReferentialDao extends AbstractFisholaDao {
 
     /**
      * Remplace toutes les valeurs par défaut d'un département (#246), dans la
-     * transaction JTA de la ressource appelante (cf. AbstractFisholaDao).
+     * transaction JTA de la ressource appelante (cf. AbstractCarnetDao).
      */
     public void replaceDepartmentAuthorizedSamples(String department, List<DepartmentAuthorizedSample> samples) {
         withContextNoResult(context -> {

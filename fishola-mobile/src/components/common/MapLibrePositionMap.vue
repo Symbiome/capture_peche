@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -38,7 +38,7 @@ import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker } from 'maplibre-gl';
 import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
+import { attachHydroHover, BaseLayer, createCarnetMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
 @Component({ emits: ["dragend", "position"], components: { BaseLayerToggle } })
 export default class MapLibrePositionMap extends Vue {
@@ -80,7 +80,7 @@ export default class MapLibrePositionMap extends Vue {
         const center: [number, number] | undefined = this.hasCoords()
             ? [this.lng as number, this.lat as number]
             : undefined;
-        this.map = createFisholaMap(container, { center, zoom: this.zoom, baseLayer: this.baseLayer });
+        this.map = createCarnetMap(container, { center, zoom: this.zoom, baseLayer: this.baseLayer });
         this.map.on('load', () => this.map?.resize());
         // Informations du réseau hydro au survol, comme à la saisie.
         this.detachHydroHover = attachHydroHover(this.map);

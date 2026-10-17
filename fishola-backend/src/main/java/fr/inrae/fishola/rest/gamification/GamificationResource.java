@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -25,7 +25,7 @@ import fr.inrae.fishola.gamification.BadgeSouvenirDao;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.GamificationEngine;
 import fr.inrae.fishola.gamification.UnlockProof;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -46,7 +46,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/gamification")
 @Produces(MediaType.APPLICATION_JSON)
-public class GamificationResource extends AbstractFisholaResource {
+public class GamificationResource extends AbstractCarnetResource {
 
     @Inject
     protected GamificationDao gamificationDao;

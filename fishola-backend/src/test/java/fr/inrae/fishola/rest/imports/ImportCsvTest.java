@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -77,7 +77,7 @@ class ImportCsvTest {
         String department = rec.get("department", String.class);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "import-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "import-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, department);
 
@@ -121,7 +121,7 @@ class ImportCsvTest {
     void importCreatesTripsAndJob() {
         String file = "import-test-ok.csv";
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csv("IMPORT-TEST-1").getBytes(StandardCharsets.UTF_8))
                 .when().post("/api/v1/admin/imports?filename=" + file + "&mode=partial")

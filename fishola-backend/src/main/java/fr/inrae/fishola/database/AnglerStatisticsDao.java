@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * début de sortie, milieu.
  */
 @Singleton
-public class AnglerStatisticsDao extends AbstractFisholaDao {
+public class AnglerStatisticsDao extends AbstractCarnetDao {
 
     private static final String HOURS = "GREATEST(EXTRACT(EPOCH FROM (t.end_timestamp - t.begin_timestamp)) / 3600.0, 0)";
 

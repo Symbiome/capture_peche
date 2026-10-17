@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-catch page-with-header-and-footer picture-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="catch-picture keyboardSensitive hide-on-desktop">
       <!-- Show all gallery pics -->
       <PicturePreview v-if="allNonMeasurePictures.length" :key="allNonMeasurePictures[0].order"
@@ -224,10 +224,10 @@
     </div>
     <PictureSourceChoice :visible="requestNewPicture" @close="requestNewPicture = false" @pictureTaken="pictureTaken"
       :directlyOpenGaleryInWebMode="true" />
-    <FisholaFooter v-if="ready && modifiable" v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
+    <CarnetFooter v-if="ready && modifiable" v-bind:button-text="inCreation ? 'Valider' : 'Enregistrer'"
       button-icon="icon-fish" v-on:buttonClicked="validateClicked" v-on:deleteClicked="deleteCatch"
       v-bind:shortcuts="'back,' + middleShortcut + ',' + rightShortcut" />
-    <FisholaFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
+    <CarnetFooter v-if="ready && !modifiable" shortcuts="back,spacer,blank" />
   </div>
 </template>
 
@@ -253,7 +253,7 @@ import { UserSettings } from "@/pojos/BackendPojos";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import ProfileService from "@/services/ProfileService";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import PictureSourceChoice from "@/components/trip/PictureSourceChoice.vue";
 import BackButton from "@/components/common/BackButton.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
@@ -262,7 +262,7 @@ import FormInput from "@/components/common/FormInput.vue";
 import FormYesNo from "@/components/common/FormYesNo.vue";
 import FormTextarea from "@/components/common/FormTextarea.vue";
 import PicturePreview from "@/components/trip/PicturePreview.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import orderBy from "lodash/orderBy";
@@ -277,7 +277,7 @@ import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     BackButton,
     FormInput,
     FormYesNo,
@@ -287,7 +287,7 @@ import MapLibrePositionMap from "@/components/common/MapLibrePositionMap.vue";
     PicturePreview,
     MapLibrePositionMap,
     PictureSourceChoice,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class EditCatchView extends Vue {
@@ -474,7 +474,7 @@ export default class EditCatchView extends Vue {
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
-                "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
+                "Vous devez activer la localisation de l'appareil pour que Carnet de pêche puisse acquérir votre position",
                 "La position n'est pas activée"
               );
             }

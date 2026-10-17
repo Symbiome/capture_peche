@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -76,7 +76,7 @@ import TripsService from "@/services/TripsService";
 import { TripsAndCount } from "@/services/TripsService";
 import Helpers from "@/services/Helpers";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import MyTripsHeader from "@/components/my-trips/MyTripsHeader.vue";
 import MyTripsSearch from "@/components/my-trips/MyTripsSearch.vue";
 import MyTripsList from "@/components/my-trips/MyTripsList.vue";
@@ -88,7 +88,7 @@ import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,

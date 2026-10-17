@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -46,8 +46,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
  *
  * <p>Verrouille la règle de sécurité clé : un opérateur authentifié ({@code is_operator = true})
  * est cantonné à la saisie/import et ne doit atteindre AUCUN endpoint d'administration. La garde
- * {@link AbstractFisholaResource#checkIsAdmin()} rejette les opérateurs (403) ; seuls les endpoints
- * explicitement ouverts au staff via {@link AbstractFisholaResource#checkIsStaff()} leur restent
+ * {@link AbstractCarnetResource#checkIsAdmin()} rejette les opérateurs (403) ; seuls les endpoints
+ * explicitement ouverts au staff via {@link AbstractCarnetResource#checkIsStaff()} leur restent
  * accessibles.
  *
  * <p><b>Auto-suffisant</b> (patron repris de {@code AuditLogTest}) : le test provisionne ses propres
@@ -81,10 +81,10 @@ class OperatorAccessTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         // Admin national : témoin « autorisé » sur l'endpoint d'administration.
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "operator-test-admin@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "operator-test-admin@carnet-peche.test", "x");
         // Opérateur : is_operator = true, sans droit d'administration ni périmètre national.
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "operator-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "operator-test-op@carnet-peche.test", "x");
         // Périmètre non vide : un périmètre vide vaut « national » dans getAllowedAdminDepartments() (#188).
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
@@ -111,7 +111,7 @@ class OperatorAccessTest {
     void operatorIsForbiddenOnAdminEndpoint() {
         // #69 : cœur du correctif — l'opérateur est rejeté (403) par checkIsAdmin().
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(ADMIN_ONLY_ENDPOINT)
                 .then().statusCode(403);
     }
@@ -121,7 +121,7 @@ class OperatorAccessTest {
         // Témoin : le même endpoint répond bien 200 pour un administrateur — le 403 ci-dessus
         // tient au rôle, pas à un endpoint cassé.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalAdminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalAdminToken)
                 .when().get(ADMIN_ONLY_ENDPOINT)
                 .then().statusCode(200);
     }
@@ -131,7 +131,7 @@ class OperatorAccessTest {
         // L'opérateur garde l'accès aux endpoints ouverts au staff (checkIsStaff) : /admin/check
         // renvoie son profil, avec isOperator = true.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(STAFF_ENDPOINT)
                 .then().statusCode(200)
                 .body("isOperator", equalTo(true));
@@ -148,7 +148,7 @@ class OperatorAccessTest {
     // --- Matrice des droits (#188) : un endpoint représentatif par domaine, rôle opérateur. ---
 
     private io.restassured.specification.RequestSpecification asOperator() {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken);
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken);
     }
 
     @Test

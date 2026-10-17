@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.carnet;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.carnet;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -77,7 +77,7 @@ class CarnetVolontaireManualEntryResourceTest {
         annecyId = ctx.fetchOne("SELECT id FROM water_entity WHERE name = 'Annecy'").get("id", UUID.class);
         techniqueId = ctx.fetchOne("SELECT id FROM technique WHERE name = 'Pêche au coup'").get("id", UUID.class);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "carnet-manual-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "carnet-manual-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         ManagedContext requestContext = Arc.container().requestContext();
@@ -119,7 +119,7 @@ class CarnetVolontaireManualEntryResourceTest {
     @Test
     void mapPositionBecomesTheTripPosition() {
         String tripId = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(bredouilleTrip(45.86, 6.18))
                 .when().post(URI)
@@ -138,7 +138,7 @@ class CarnetVolontaireManualEntryResourceTest {
     @Test
     void positionOutsidePerimeterIsRejected() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(bredouilleTrip(45.71, 5.88))
                 .when().post(URI)
@@ -153,7 +153,7 @@ class CarnetVolontaireManualEntryResourceTest {
         trip.endDay = LocalDate.of(2026, 7, 3);
         trip.endTime = LocalTime.of(10, 0);
         String tripId = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(trip)
                 .when().post(URI)
@@ -172,7 +172,7 @@ class CarnetVolontaireManualEntryResourceTest {
         CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
         trip.endDay = LocalDate.now().plusDays(2);
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(trip)
                 .when().post(URI)
@@ -186,7 +186,7 @@ class CarnetVolontaireManualEntryResourceTest {
         CarnetVolontaireTripBean trip = bredouilleTrip(null, null);
         trip.sessionCode = "  CARNET-PAPIER-42 ";
         String tripId = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(trip)
                 .when().post(URI)

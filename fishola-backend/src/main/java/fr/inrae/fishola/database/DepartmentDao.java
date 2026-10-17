@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -39,7 +39,7 @@ import java.util.List;
  * over the public hydro referential, not an access-control boundary.
  */
 @Singleton
-public class DepartmentDao extends AbstractFisholaDao {
+public class DepartmentDao extends AbstractCarnetDao {
 
     // Department code derived from a commune INSEE code. Overseas (97x/98x) need
     // three characters; everything else two ("2A"/"2B" work with two).

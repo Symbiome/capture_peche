@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -496,7 +496,7 @@ function exportCsv() {
   hiddenElement.target = "_blank";
   const m = new Date();
   hiddenElement.download =
-    "Fishola_Export__" + m.getUTCFullYear() + "-" + (m.getUTCMonth() + 1) + "-" + m.getUTCDate() + ".csv";
+    "CarnetDePeche_Export__" + m.getUTCFullYear() + "-" + (m.getUTCMonth() + 1) + "-" + m.getUTCDate() + ".csv";
   hiddenElement.click();
 }
 </script>

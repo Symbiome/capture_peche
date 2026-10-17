@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.editorial;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
  * %%
@@ -25,13 +25,13 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.Lists;
-import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
-import fr.inrae.fishola.mails.ImmutableFisholaMail;
+import fr.inrae.fishola.mails.ImmutableCarnetMail;
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.inject.Inject;
@@ -55,15 +55,15 @@ import java.util.UUID;
 import static io.quarkus.scheduler.Scheduled.ConcurrentExecution.SKIP;
 
 /**
- * Service in charge of sending courriel notification for interested fishola users.
+ * Service in charge of sending courriel notification for interested users.
  */
 @Path("/api/v1/news-notifications/")
 @Produces(MediaType.APPLICATION_JSON)
 @Startup
-public class NewsCourrielNotificationService extends AbstractFisholaResource {
+public class NewsCourrielNotificationService extends AbstractCarnetResource {
 
    @Inject
-   protected NewsFisholaDao dao;
+   protected NewsCarnetDao dao;
 
     @Inject
     protected MailService mailService;
@@ -163,7 +163,7 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
 
     private void notifySingleUserByCourrielAboutNews(FisholaUser user, List<News> newsToNotifyByMail, StringBuilder htmlContent) {
         if (!newsToNotifyByMail.isEmpty()) {
-            String subject = "Fishola - " + newsToNotifyByMail.get(0).getName();
+            String subject = "Carnet de pêche - " + newsToNotifyByMail.get(0).getName();
             if (newsToNotifyByMail.size() > 1) {
                 subject += " et autres actualités";
             }
@@ -174,16 +174,13 @@ public class NewsCourrielNotificationService extends AbstractFisholaResource {
                 htmlContent.append(news.getContent());
                 dao.notifySent(news);
             }
-            htmlContent.append(" <br/>Retrouvez toutes les actualités de Fishola sur notre <a href=\"https://fishola.fr/\"> site internet </a>.");
+            htmlContent.append(" <br/>Retrouvez toutes les actualités dans l'application Carnet de pêche.");
 
 
-            String baseURL = "https://fishola.fr";
-            if (config.backendBaseUrl().isPresent()) {
-                baseURL = config.backendBaseUrl().get();
-            }
+            String baseURL = config.backendBaseUrl().orElse("");
             String unsubscribeURL = baseURL + "/api/v1/news-notifications/unsubscribe/" + user.getId();
-            String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Fishola par email</a>";
-            ImmutableFisholaMail mail = mailService.newMail(htmlContent + unsubscribeLink)
+            String unsubscribeLink = "<br/><a href=\"" + unsubscribeURL + "\">Ne plus recevoir les communications Carnet de pêche par email</a>";
+            ImmutableCarnetMail mail = mailService.newMail(htmlContent + unsubscribeLink)
                     .subject(subject)
                     .addTos(user.getEmail())
                     .build();

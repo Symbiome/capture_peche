@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -115,7 +115,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       shortcuts="back"
       button-icon="icon-share"
       button-text="Partager"
@@ -129,7 +129,7 @@
 
 <script lang="ts">
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 import TripPositionsMap from "@/components/trip/TripPositionsMap.vue";
 
 import { BadgeBean, BadgeSouvenirBean, SouvenirCatchBean } from "@/pojos/BackendPojos";
@@ -153,7 +153,7 @@ type CardBackground = "gradient" | "photo" | "mosaic" | "map";
 @Component({
   components: {
     CarnetLogo,
-    FisholaFooter,
+    CarnetFooter,
     TripPositionsMap,
   },
 })
