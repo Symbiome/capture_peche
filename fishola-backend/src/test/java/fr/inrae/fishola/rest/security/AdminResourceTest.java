@@ -39,7 +39,7 @@ class AdminResourceTest extends AbstractCarnetTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("amorel@codelutin.com", "whatever"))
+                .body(new LoginBean("admin.national@carnet-peche.test", "whatever"))
                 .post("/api/v1/admin/login")
             .then()
                 .statusCode(204)
@@ -63,7 +63,7 @@ class AdminResourceTest extends AbstractCarnetTest {
         given()
             .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new LoginBean("amorel@codelutin.com", "whatevor"))
+                .body(new LoginBean("admin.national@carnet-peche.test", "whatevor"))
                 .post("/api/v1/admin/login")
             .then()
                 .statusCode(401);

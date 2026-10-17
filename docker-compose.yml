@@ -64,6 +64,10 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
       FISHOLA_JWT_SECRET: ${FISHOLA_JWT_SECRET:?FISHOLA_JWT_SECRET manquant dans .env}
       FISHOLA_ADMIN_PASSWORD: ${FISHOLA_ADMIN_PASSWORD:?FISHOLA_ADMIN_PASSWORD manquant dans .env}
+      # Mode bêta-testeurs (#192) : true en production seulement.
+      FISHOLA_BETA_TESTERS_MODE: ${BETA_TESTERS_MODE:-false}
+      # Administrateurs nationaux créés au démarrage s'ils manquent (email:motdepasse,...).
+      FISHOLA_DEFAULT_NATIONAL_ADMINS: ${DEFAULT_NATIONAL_ADMINS:-}
       FISHOLA_BACKEND_BASE_URL: https://${API_DOMAIN}
       FISHOLA_SMTP_HOST: ${SMTP_HOST:-maildev}
       FISHOLA_SMTP_PORT: ${SMTP_PORT:-1025}

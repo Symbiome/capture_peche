@@ -430,6 +430,7 @@
                         <class>fr.inrae.fishola.rest.editorial.NewsBean</class>
                         <class>fr.inrae.fishola.rest.security.UserSettings</class>
                         <class>fr.inrae.fishola.rest.security.UpdatePasswordBean</class>
+                        <class>fr.inrae.fishola.rest.security.RegistrationStatus</class>
                         <class>fr.inrae.fishola.rest.about.KeyFigures</class>
                         <class>fr.inrae.fishola.rest.feedback.Feedback</class>
                         <class>fr.inrae.fishola.rest.dashboard.Dashboard</class>

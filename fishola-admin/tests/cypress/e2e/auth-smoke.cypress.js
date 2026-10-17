@@ -57,7 +57,7 @@ describe("Smoke — connexion staff (back-office admin)", () => {
     cy.intercept("POST", "**/v1/admin/login", { statusCode: 401, body: { error: "bad credentials" } }).as("login");
 
     cy.visit("/login");
-    cy.get('input[type="email"]').type("amorel@codelutin.com");
+    cy.get('input[type="email"]').type(Cypress.env("staffEmail"));
     cy.get('input[type="password"]').type("mauvais-mot-de-passe", { log: false });
     cy.contains("button", "Connexion").click();
 

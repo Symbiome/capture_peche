@@ -16,6 +16,18 @@ env_name: recette
 # Profils docker compose actifs (COMPOSE_PROFILES) : « recette » démarre Maildev.
 compose_profiles: recette
 
+# Mode bêta-testeurs (#192) : actif en production seulement, l'administrateur
+# national y ouvre ou ferme l'inscription libre (fermée par défaut) et importe
+# les comptes par CSV. Inactif, l'inscription libre reste toujours ouverte.
+beta_testers_mode: false
+
+# Administrateurs nationaux créés au démarrage du backend s'ils n'existent
+# pas encore (jamais modifiés ensuite) ; mots de passe générés aléatoirement
+# dans vault.yml (vault_default_national_admin_passwords).
+default_national_admins:
+  - maxime.oules@pechermc.fr
+  - fabien.chiri@pechermc.fr
+
 # --- Domaines --------------------------------------------------------------
 # Adventiel gère le reverse proxy et le mapping domaine -> port host : ces
 # valeurs doivent correspondre exactement à ce mapping (à leur demander avant
@@ -52,4 +64,4 @@ smtp_username: ""
 smtp_from: ""
 # Destinataire des retours pêcheurs : valeur actuelle de l'application,
 # capturée par Maildev en recette.
-feedback_mail_to: fishola-lutins@list.forge.codelutin.com
+feedback_mail_to: contact@carnet-peche.fr

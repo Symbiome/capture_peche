@@ -14,6 +14,18 @@ env_name: ""
 # Aucun profil docker compose : pas de Maildev en production.
 compose_profiles: ""
 
+# Mode bêta-testeurs (#192) : actif en production seulement, l'administrateur
+# national y ouvre ou ferme l'inscription libre (fermée par défaut) et importe
+# les comptes par CSV. Inactif, l'inscription libre reste toujours ouverte.
+beta_testers_mode: true
+
+# Administrateurs nationaux créés au démarrage du backend s'ils n'existent
+# pas encore (jamais modifiés ensuite) ; mots de passe générés aléatoirement
+# dans vault.yml (vault_default_national_admin_passwords).
+default_national_admins:
+  - maxime.oules@pechermc.fr
+  - fabien.chiri@pechermc.fr
+
 # --- Domaines --------------------------------------------------------------
 # À confirmer avec l'UFBRMC et Adventiel (CLAUDE.md §5.6), qui gère le
 # reverse proxy et le mapping domaine -> port host.
@@ -41,4 +53,4 @@ smtp_start_tls: REQUIRED
 smtp_ssl: false
 smtp_username: A_DEFINIR
 smtp_from: A_DEFINIR
-feedback_mail_to: A_DEFINIR
+feedback_mail_to: contact@carnet-peche.fr

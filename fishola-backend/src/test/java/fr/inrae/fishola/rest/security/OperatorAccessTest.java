@@ -51,7 +51,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
  * accessibles.
  *
  * <p><b>Auto-suffisant</b> (patron repris de {@code AuditLogTest}) : le test provisionne ses propres
- * comptes en base et forge leurs jetons — il ne dépend donc PAS du seed de recette ({@code amorel},
+ * comptes en base et forge leurs jetons — il ne dépend donc PAS du seed de recette ({@code admin.national},
  * cf. #67), et tourne au vert sur base propre. C'est le gabarit à suivre pour les nouveaux tests des
  * endpoints staff (import CSV #71, saisie manuelle #72, changement de mot de passe #55).
  */
