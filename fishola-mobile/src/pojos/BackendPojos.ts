@@ -187,6 +187,10 @@ export interface UpdatePasswordBean {
     newPassword: string;
 }
 
+export interface RegistrationStatus {
+    enabled: boolean;
+}
+
 export interface KeyFigures {
     tripsCount: number;
     catchsCount: number;

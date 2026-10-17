@@ -24,6 +24,10 @@
     <div class="page register-page keyboardSensitive">
       <div class="register-form keyboardSensitive">
         <h1 class="keyboardSensitive">Inscription</h1>
+        <p v-if="!registrationEnabled" class="registration-closed">
+          Les inscriptions sont fermées : les comptes sont créés par l'équipe du projet.
+        </p>
+        <template v-if="registrationEnabled">
 
         <FormInput name="firstName" label="Prénom" placeholder="Renseignez votre prénom" v-model="bean.firstName"
           v-bind:error="validationErrors['firstName']" />
@@ -58,13 +62,14 @@
             Je souhaite être informé des communications Carnet de pêche par mail
           </label>
         </div>
+        </template>
         <div class="bottom-page-spacer"></div>
       </div>
       <div class="register-buttons">
         <div class="register-button back">
           <button v-on:click="cancel">Retour</button>
         </div>
-        <div class="register-button register">
+        <div class="register-button register" v-if="registrationEnabled">
           <button v-on:click="register">S'enregistrer</button>
         </div>
       </div>
@@ -100,6 +105,7 @@ export default class RegisterView extends Vue {
     passwordConfirm: "",
   };
   cgu: boolean = false;
+  registrationEnabled: boolean = true;
   cguUrl: string = "";
 
   constructor() {
@@ -108,6 +114,7 @@ export default class RegisterView extends Vue {
 
   mounted() {
     this.cguUrl = DocumentationService.getCGUUrl();
+    ProfileService.isRegistrationEnabled().then((enabled) => (this.registrationEnabled = enabled));
   }
 
   cancel() {
@@ -158,7 +165,12 @@ export default class RegisterView extends Vue {
     EventBus.emit("toaster-error", "Veuillez corriger les erreurs");
   }
 
-  technicalError(_status: number) {
+  technicalError(status: number) {
+    if (status == 403) {
+      this.registrationEnabled = false;
+      EventBus.emit("toaster-error", "Les inscriptions sont fermées");
+      return;
+    }
     EventBus.emit(
       "toaster-error",
       "Erreur technique, merci de réessayer plus tard"

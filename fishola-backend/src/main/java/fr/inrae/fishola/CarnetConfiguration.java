@@ -27,6 +27,7 @@ import io.smallrye.config.SmallRyeConfig;
 import io.smallrye.config.WithDefault;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,4 +185,21 @@ public interface CarnetConfiguration {
 
     @WithDefault("400")
     long globalDashboardCacheSize();
+
+    /**
+     * Mode bêta-testeurs (#192), actif en production seulement : l'administrateur
+     * national ouvre ou ferme l'inscription libre et importe les comptes par CSV.
+     * Inactif, l'inscription libre reste toujours ouverte.
+     * Variable d'environnement : FISHOLA_BETA_TESTERS_MODE.
+     */
+    @WithDefault("false")
+    boolean betaTestersMode();
+
+    /**
+     * Administrateurs nationaux créés au démarrage s'ils n'existent pas encore,
+     * au format « email:motdepasse », séparés par des virgules (#192). Un compte
+     * existant n'est jamais modifié. Variable d'environnement :
+     * FISHOLA_DEFAULT_NATIONAL_ADMINS, générée par Ansible depuis le vault.
+     */
+    Optional<List<String>> defaultNationalAdmins();
 }

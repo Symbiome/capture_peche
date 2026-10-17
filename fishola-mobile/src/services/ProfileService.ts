@@ -21,7 +21,7 @@
 import AbstractCarnetService from "@/services/AbstractCarnetService";
 import UserProfile from "@/pojos/UserProfile";
 import TripsService from "./TripsService";
-import { UserSettings, UpdatePasswordBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
+import { UserSettings, UpdatePasswordBean, RegistrationStatus, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import UserRegister from "@/pojos/UserRegister";
 import ReferentialService from "./ReferentialService";
 
@@ -185,6 +185,20 @@ export default class ProfileService extends AbstractCarnetService {
         }
       }
     );
+  }
+
+  /**
+   * Indique si l'inscription libre est ouverte (#192). En cas d'échec (hors
+   * ligne), on la suppose ouverte : le backend refuse de toute façon une
+   * inscription fermée.
+   */
+  static async isRegistrationEnabled(): Promise<boolean> {
+    try {
+      const status: RegistrationStatus = await this.backendGet("/v1/security/registration");
+      return status.enabled;
+    } catch (e) {
+      return true;
+    }
   }
 
   static logout(): Promise<void> {

@@ -25,11 +25,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jooq.exception.DataAccessException;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalTime;
@@ -282,7 +277,7 @@ public class ImportService {
             return dup;
         }
 
-        String text = decode(fileBytes);
+        String text = CsvSupport.decode(fileBytes);
         CsvSupport.Parsed parsed = CsvSupport.readRows(text);
         int total = parsed.records().size();
 
@@ -355,22 +350,6 @@ public class ImportService {
      * UTF-8 strict, et à défaut Windows-1252 (export Excel FR par défaut) — sinon les accents
      * des libellés (« Brochet »…) seraient corrompus et casseraient la résolution référentielle.
      */
-    private static String decode(byte[] bytes) {
-        // BOM UTF-8 explicite → on le retire et on décode en UTF-8.
-        if (bytes.length >= 3 && (bytes[0] & 0xFF) == 0xEF && (bytes[1] & 0xFF) == 0xBB && (bytes[2] & 0xFF) == 0xBF) {
-            return new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
-        }
-        // UTF-8 strict ; si les octets ne sont pas de l'UTF-8 valide, repli Windows-1252.
-        try {
-            return StandardCharsets.UTF_8.newDecoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(bytes))
-                    .toString();
-        } catch (CharacterCodingException e) {
-            return new String(bytes, Charset.forName("windows-1252"));
-        }
-    }
 
     private static String sha256Hex(byte[] bytes) {
         try {

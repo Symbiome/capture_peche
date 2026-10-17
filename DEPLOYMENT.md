@@ -16,6 +16,8 @@ seules les variables Ansible changent (`ansible/inventories/<env>/`).
 | Mention dans l'app (`VITE__ENV_NAME`) | `recette` | aucune |
 | Mails | Maildev (profil compose `recette`), aucun mail réel | vrai SMTP, mot de passe dans le vault |
 | Secrets (DB, JWT, admin, pgBackRest) | propres à la recette | propres à la production |
+| Mode bêta-testeurs (`beta_testers_mode`, #192) | inactif : inscription libre toujours ouverte | actif : inscription fermée par défaut, réglable par l'admin national, import CSV des comptes |
+| Admins nationaux par défaut | `maxime.oules@pechermc.fr`, `fabien.chiri@pechermc.fr` | les mêmes, avec d'autres mots de passe |
 
 Le serveur cible a déjà Docker + le plugin `docker compose` installés. Le
 reverse proxy et le mapping domaine -> port sont gérés par **Adventiel** :
@@ -92,6 +94,38 @@ ansible-vault edit --vault-id prod@.vault_pass_prod inventories/production/group
 
 Ne jamais copier un secret d'un environnement à l'autre : un secret JWT
 commun rendrait un jeton de recette valable en production.
+
+### Administrateurs nationaux par défaut
+
+Au démarrage, le backend crée les comptes listés dans `default_national_admins`
+(`vars.yml`) s'ils n'existent pas encore, avec les mots de passe de
+`vault_default_national_admin_passwords` (`vault.yml`), générés aléatoirement
+et différents d'un environnement à l'autre. Un compte existant n'est jamais
+modifié : son titulaire peut changer son mot de passe depuis « Changer mon
+mot de passe » du back-office. Le playbook s'arrête si un compte listé n'a pas
+de mot de passe dans le vault.
+
+Pour transmettre son mot de passe initial à un administrateur (canal sûr,
+jamais par mail en clair) :
+
+```bash
+cd ansible
+ansible-vault view --vault-id prod@.vault_pass_prod inventories/production/group_vars/all/vault.yml
+```
+
+### Mode bêta-testeurs (#192)
+
+Actif en production seulement (`beta_testers_mode: true`). L'administrateur
+national y trouve, dans « Utilisateurs > Inscriptions et import de comptes » :
+
+- le réglage de l'inscription libre, **fermée par défaut** : l'app pêcheur
+  masque alors « Créer un compte » et l'API refuse toute inscription ;
+- l'import CSV des comptes des bêta-testeurs
+  (`email;prenom;nom;profil;perimetre;mot_de_passe`). Le fichier contient des
+  mots de passe en clair : ne jamais le verser dans le dépôt, le supprimer après
+  l'import.
+
+En recette, l'inscription libre reste ouverte et ces réglages sont inaccessibles.
 
 ## 3. Mettre à jour le code
 

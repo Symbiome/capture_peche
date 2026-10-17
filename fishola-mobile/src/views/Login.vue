@@ -43,7 +43,7 @@
           <div class="login-button signin keyboardSensitive">
             <button v-on:click="signIn">Connexion</button>
           </div>
-          <div class="login-button signup keyboardSensitive">
+          <div class="login-button signup keyboardSensitive" v-if="registrationEnabled">
             <button v-on:click="signUp">Créer un compte</button>
           </div>
           <ForgottenPassword v-bind:alreadTypedEmail="email" v-bind:tohideSelector="'.login-form,.signin,.signup'"
@@ -84,6 +84,7 @@ export default class LoginView extends Vue {
   }
 
   mounted() {
+    ProfileService.isRegistrationEnabled().then((enabled) => (this.registrationEnabled = enabled));
     this.email = "";
     this.emailError = "";
     this.password = "";

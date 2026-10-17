@@ -30,11 +30,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jooq.exception.DataAccessException;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
@@ -431,7 +426,7 @@ public class CarnetVolontaireImportService {
             return new ImportResultBean(j.id(), j.status(), j.total(), j.inserted(), j.rejected(), true, List.of());
         }
 
-        String text = decode(fileBytes);
+        String text = CsvSupport.decode(fileBytes);
         CsvSupport.Parsed parsed = CsvSupport.readRows(text);
         int total = parsed.records().size();
 
@@ -493,20 +488,6 @@ public class CarnetVolontaireImportService {
         return false;
     }
 
-    private static String decode(byte[] bytes) {
-        if (bytes.length >= 3 && (bytes[0] & 0xFF) == 0xEF && (bytes[1] & 0xFF) == 0xBB && (bytes[2] & 0xFF) == 0xBF) {
-            return new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
-        }
-        try {
-            return StandardCharsets.UTF_8.newDecoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(bytes))
-                    .toString();
-        } catch (CharacterCodingException e) {
-            return new String(bytes, Charset.forName("windows-1252"));
-        }
-    }
 
     private static String sha256Hex(byte[] bytes) {
         try {

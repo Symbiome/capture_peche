@@ -24,6 +24,7 @@ package fr.inrae.fishola;
 import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.database.StaffPerimeterDao;
+import fr.inrae.fishola.rest.security.admin.DefaultNationalAdmins;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import io.agroal.api.AgroalDataSource;
@@ -59,6 +60,9 @@ public class CarnetApplication {
     @Inject
     protected StaffPerimeterDao staffPerimeterDao;
 
+    @Inject
+    protected DefaultNationalAdmins defaultNationalAdmins;
+
     void onStart(@Observes StartupEvent ev) {
 
         if (log.isInfoEnabled()) {
@@ -79,6 +83,8 @@ public class CarnetApplication {
         if (staffPerimeterDao.syncBufferDistance(config.staffPerimeterBufferM()) && log.isInfoEnabled()) {
             log.infof("Périmètre staff recalculé avec un buffer de %s m", config.staffPerimeterBufferM());
         }
+
+        defaultNationalAdmins.createMissing(config.defaultNationalAdmins().orElse(List.of()));
 
         checkForDocumentations();
     }

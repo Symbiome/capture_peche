@@ -30,12 +30,16 @@ public class LoggedAdminBean {
     public final Boolean isOperator;
     /** Périmètre du staff : codes département INSEE ; vide pour un administrateur national (#159). */
     public final Set<String> departmentCodes;
+    /** Mode bêta-testeurs actif sur cet environnement (#192) : réglage d'inscription et import de comptes. */
+    public final Boolean betaTestersMode;
 
-    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins, Boolean isOperator, Set<String> departmentCodes) {
+    public LoggedAdminBean(String email, Boolean isNationalAdmin, Boolean canCreateAdmins, Boolean isOperator,
+                           Set<String> departmentCodes, Boolean betaTestersMode) {
         this.email = email;
         this.isNationalAdmin = isNationalAdmin;
         this.canCreateAdmins = canCreateAdmins;
         this.isOperator = isOperator;
         this.departmentCodes = departmentCodes;
+        this.betaTestersMode = betaTestersMode;
     }
 }
