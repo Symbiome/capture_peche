@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -68,12 +68,12 @@ describe("Settings — prélèvement d'écailles", () => {
     const wrapper = await mountSettings(false);
     expect(wrapper.text()).toContain("Renseigner le poids des captures");
     expect(wrapper.text()).not.toContain("Effectuer des prélèvements");
-    expect(wrapper.find("bottominducementview-stub").exists()).toBe(false);
+    expect(wrapper.find("bottom-inducement-view-stub").exists()).toBe(false);
   });
 
   it("affiche le réglage et l'encart collecteur quand la fonctionnalité est activée", async () => {
     const wrapper = await mountSettings(true);
     expect(wrapper.text()).toContain("Effectuer des prélèvements");
-    expect(wrapper.find("bottominducementview-stub").exists()).toBe(true);
+    expect(wrapper.find("bottom-inducement-view-stub").exists()).toBe(true);
   });
 });

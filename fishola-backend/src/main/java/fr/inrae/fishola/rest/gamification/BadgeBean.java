@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -35,6 +35,9 @@ import java.util.UUID;
  * concours) : {@link GamificationResource#myBadges} renvoie alors une entrée par
  * déblocage (même {@code id}/{@code code}, {@code competitionId} différent) plutôt qu'une
  * seule ligne fusionnée comme pour les autres badges.
+ *
+ * <p>{@code unlockId} (#275) identifie le déblocage pour charger sa carte souvenir
+ * ({@link GamificationResource#mySouvenir}).
  */
 public class BadgeBean {
 
@@ -49,6 +52,7 @@ public class BadgeBean {
     public boolean annualReset;
 
     public boolean unlocked;
+    public UUID unlockId;
     public LocalDateTime unlockedAt;
     public Object context;
 

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
   %%
@@ -22,8 +22,8 @@
   <div class="catches">
     <h1>Sorties</h1>
     <b-message type="is-info">
-      Liste de toutes les prises enregistrées sur Fishola (hors prises de
-      l'équipe Fishola exclues d'office). <br />Vous pouvez filtrer et trier
+      Liste de toutes les prises enregistrées sur Carnet de pêche (hors prises de
+      l'équipe Carnet de pêche exclues d'office). <br />Vous pouvez filtrer et trier
       selon chaque champ. Seules les lignes non exclues de l'export seront
       exportées dans le fichier CSV et incluses dans les tableaux de bords
       globaux.
@@ -329,7 +329,7 @@ async function exportCsv() {
     "-" +
     (dd > 9 ? "" : "0") +
     dd;
-  hiddenElement.download = "Fishola_Export_" + "_" + dateString + ".csv";
+  hiddenElement.download = "CarnetDePeche_Export_" + "_" + dateString + ".csv";
   hiddenElement.click();
 }
 

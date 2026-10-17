@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="profile-pasword page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="profile-pasword-page page">
       <div class="pane">
         <div class="pane-content rounded">
@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       button-text="Enregistrer"
       v-on:buttonClicked="save"
       shortcuts="back,spacer,spacer"
@@ -72,8 +72,8 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import FormInput from "@/components/common/FormInput.vue";
 
@@ -81,16 +81,17 @@ import { UpdatePasswordBean } from "@/pojos/BackendPojos";
 
 import ProfileService from "../services/ProfileService";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import router from "../router";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     FormInput,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class ProfilePasswordView extends Vue {
@@ -124,7 +125,7 @@ export default class ProfilePasswordView extends Vue {
   }
 
   saved() {
-    this.$root.$emit("toaster-success", "Mot de passe mis à jour");
+    EventBus.emit("toaster-success", "Mot de passe mis à jour");
     this.backToProfile();
   }
 
@@ -136,7 +137,7 @@ export default class ProfilePasswordView extends Vue {
     if (response.status == 400) {
       this.validationErrors = response.content;
     } else {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Erreur technique, merci de réessayer plus tard"
       );

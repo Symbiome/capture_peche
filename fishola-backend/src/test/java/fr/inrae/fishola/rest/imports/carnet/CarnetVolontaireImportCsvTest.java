@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.carnet;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.carnet;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -79,7 +79,7 @@ class CarnetVolontaireImportCsvTest {
         String department = rec.get("department", String.class);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "carnet-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "carnet-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, department);
 
@@ -148,7 +148,7 @@ class CarnetVolontaireImportCsvTest {
     void importCreatesTripsAndJob() {
         String file = "carnet-test-ok.csv";
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csv("CARNET-TEST-1").getBytes(StandardCharsets.UTF_8))
                 .when().post(URI + "?filename=" + file + "&mode=partial")
@@ -169,12 +169,12 @@ class CarnetVolontaireImportCsvTest {
         String file = "carnet-test-dup.csv";
         byte[] bytes = csv("CARNET-TEST-DUP").getBytes(StandardCharsets.UTF_8);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream").body(bytes)
                 .when().post(URI + "?filename=" + file + "&mode=partial")
                 .then().statusCode(200);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream").body(bytes)
                 .when().post(URI + "?filename=" + file + "&mode=partial")
                 .then().statusCode(409)
@@ -185,7 +185,7 @@ class CarnetVolontaireImportCsvTest {
 
     @Test
     void lotWithoutBoundsIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csvLotSansBornes("CARNET-TEST-LOT").getBytes(StandardCharsets.UTF_8))
                 .when().post(URI + "?filename=carnet-test-lot.csv&mode=partial")
@@ -198,7 +198,7 @@ class CarnetVolontaireImportCsvTest {
 
     @Test
     void taggedCatchWithoutReferenceIsRejected() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csvMarqueSansNumero("CARNET-TEST-TAG").getBytes(StandardCharsets.UTF_8))
                 .when().post(URI + "?filename=carnet-test-tag.csv&mode=partial")
@@ -212,7 +212,7 @@ class CarnetVolontaireImportCsvTest {
     /** #237 : une sortie du 01/07 18:00 au 03/07 10:00 est importée avec ses vraies dates. */
     @Test
     void importAcceptsMultiDayTripWithEndDay() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csvWithEndDay("CARNET-TEST-MULTIDAY", "03/07/2026").getBytes(StandardCharsets.UTF_8))
                 .when().post(URI + "?filename=carnet-test-multiday.csv&mode=partial")
@@ -237,7 +237,7 @@ class CarnetVolontaireImportCsvTest {
                 .get(0, String.class);
         ctx.execute("UPDATE species SET code_espece = 'PER' WHERE name = 'Perche'");
         try {
-            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+            given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                     .contentType("application/octet-stream")
                     .body(csv("CARNET-TEST-ORIGIN").getBytes(StandardCharsets.UTF_8))
                     .when().post(URI + "?filename=carnet-test-origin.csv&mode=partial")

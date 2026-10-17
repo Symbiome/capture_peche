@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.hydro;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.hydro;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.HydroSearchDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
@@ -40,7 +40,7 @@ import java.util.Arrays;
  * authenticated) and cacheable — MapLibre fetches them directly.
  */
 @Path("/api/v1/tiles")
-public class TileResource extends AbstractFisholaResource {
+public class TileResource extends AbstractCarnetResource {
 
     private static final String MVT_MEDIA_TYPE = "application/vnd.mapbox-vector-tile";
     private static final int MAX_ZOOM = 22;

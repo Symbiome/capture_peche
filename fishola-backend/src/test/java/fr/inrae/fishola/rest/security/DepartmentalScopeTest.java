@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -29,7 +29,7 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -101,13 +101,13 @@ class DepartmentalScopeTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "dept-scope-national@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "dept-scope-national@carnet-peche.test", "x");
         // can_create_admin=true : requis par regionalOperatorUpdateForcesCreatorDepartments (#164).
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, false, false)", regional74Id, "dept-scope-regional74@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, false, false)", regional74Id, "dept-scope-regional74@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", regional74Id);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operator74Id, "dept-scope-operator74@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operator74Id, "dept-scope-operator74@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operator74Id);
 
         UUID speciesId = ctx.fetchOne("SELECT id FROM species LIMIT 1").get("id", UUID.class);
@@ -187,7 +187,7 @@ class DepartmentalScopeTest {
     void regionalExportIsScopedToItsDepartments() {
         // catchs_openadom_export : nom_du_site = export_as de l'entité (Annecy = 74, Bourget = 73).
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .when().get("/api/v1/trips/export")
                 .then().statusCode(200)
                 .body(containsString("annecy"))
@@ -199,13 +199,13 @@ class DepartmentalScopeTest {
     void operatorExportIsScopedToItsDepartments() {
         // #188 (E5) : « Voir toutes les sessions / prises » et « Exporter (CSV) » : Oui (dép.).
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .when().get("/api/v1/trips/export")
                 .then().statusCode(200)
                 .body(containsString("annecy"))
                 .body(not(containsString("bourget")));
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .when().get("/api/v1/trips/export/0/date_de_la_sortie/desc")
                 .then().statusCode(200)
                 .body("elements.catchId", hasItem(catchIn74.toString()))
@@ -216,7 +216,7 @@ class DepartmentalScopeTest {
     @Order(3)
     void nationalExportSeesEverything() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                 .when().get("/api/v1/trips/export")
                 .then().statusCode(200)
                 .body(containsString("annecy"))
@@ -227,7 +227,7 @@ class DepartmentalScopeTest {
     @Order(5)
     void regionalCannotEditCatchOutsidePerimeter() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType("application/json")
                 .body("{\"excludeFromExport\": true}")
                 .when().put("/api/v1/trips/catches/" + catchIn73)
@@ -238,7 +238,7 @@ class DepartmentalScopeTest {
     @Order(6)
     void regionalCanEditCatchInsidePerimeter() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType("application/json")
                 .body("{\"excludeFromExport\": true}")
                 .when().put("/api/v1/trips/catches/" + catchIn74)
@@ -249,7 +249,7 @@ class DepartmentalScopeTest {
     @Order(4)
     void regionalWaterEntitiesAreScopedToItsDepartments() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .when().get("/api/v1/referential/waterEntities")
                 .then().statusCode(200)
                 .body("name", hasItem("Annecy"))
@@ -269,12 +269,12 @@ class DepartmentalScopeTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         UUID operatorId = UUID.randomUUID();
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "dept-scope-operator@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "dept-scope-operator@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         try {
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                     .contentType("application/json")
                     .body("{\"departmentCodes\":[\"73\"]}")
                     .when().put("/api/v1/admin/operators/" + operatorId)
@@ -295,7 +295,7 @@ class DepartmentalScopeTest {
     void operatorWaterEntitiesAreScopedToItsDepartments() {
         // Entités hydrographiques — « Voir les lacs / cours d'eau » (écran staff) : borné.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .when().get("/api/v1/referential/waterEntities")
                 .then().statusCode(200)
                 .body("name", hasItem("Annecy"))
@@ -307,7 +307,7 @@ class DepartmentalScopeTest {
     void operatorCannotOpenCatchOutsidePerimeter() {
         // Prises — « Voir toutes les prises » : borné à ses départements.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .when().get("/api/v1/trips/catches/" + catchIn73)
                 .then().statusCode(403);
     }
@@ -317,7 +317,7 @@ class DepartmentalScopeTest {
     void operatorCannotValidateCatchOutsidePerimeter() {
         // Prises — « Valider / corriger une prise incertaine » : borné à ses départements.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .contentType("application/json")
                 .body("{\"excludeFromExport\": true}")
                 .when().put("/api/v1/trips/catches/" + catchIn73)
@@ -342,7 +342,7 @@ class DepartmentalScopeTest {
 
         // Témoin : l'administrateur régional corrige toute prise de son périmètre.
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType("application/json")
                 .body("{\"excludeFromExport\": true}")
                 .when().put("/api/v1/trips/catches/" + catchIn74)
@@ -351,7 +351,7 @@ class DepartmentalScopeTest {
 
     private io.restassured.response.Response putCatchAsOperator74(UUID catchId) {
         return given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                 .contentType("application/json")
                 .body("{\"excludeFromExport\": true}")
                 .when().put("/api/v1/trips/catches/" + catchId);
@@ -364,7 +364,7 @@ class DepartmentalScopeTest {
     void regionalCannotEmptyItsOwnPerimeter() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType("application/json")
                 .body("{\"canCreateAdmin\":true,\"departmentCodes\":[]}")
                 .when().put("/api/v1/admin/" + regional74Id)
@@ -380,7 +380,7 @@ class DepartmentalScopeTest {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         UUID regionalWithoutDepartmentId = UUID.randomUUID();
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, false, false)", regionalWithoutDepartmentId, "dept-scope-empty@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, false, false)", regionalWithoutDepartmentId, "dept-scope-empty@carnet-peche.test", "x");
         ManagedContext requestContext = Arc.container().requestContext();
         requestContext.activate();
         String token;
@@ -392,17 +392,17 @@ class DepartmentalScopeTest {
 
         try {
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                     .when().get("/api/v1/trips/export")
                     .then().statusCode(200)
                     .body(not(containsString("annecy")))
                     .body(not(containsString("bourget")));
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                     .when().get("/api/v1/trips/catches/" + catchIn74)
                     .then().statusCode(403);
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                     .when().get("/api/v1/referential/waterEntities")
                     .then().statusCode(200)
                     .body("name", not(hasItem("Annecy")))
@@ -433,10 +433,10 @@ class DepartmentalScopeTest {
     @Order(14)
     void regionalCannotEditOperatorOutsidePerimeter() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        UUID operatorId = insertOperatorIn("73", "dept-scope-operator73@fishola.test");
+        UUID operatorId = insertOperatorIn("73", "dept-scope-operator73@carnet-peche.test");
         try {
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                     .contentType("application/json")
                     .body("{\"departmentCodes\":[\"74\"]}")
                     .when().put("/api/v1/admin/operators/" + operatorId)
@@ -445,7 +445,7 @@ class DepartmentalScopeTest {
 
             // Témoin : le national modifie ce même opérateur.
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                     .contentType("application/json")
                     .body("{\"departmentCodes\":[\"73\",\"74\"]}")
                     .when().put("/api/v1/admin/operators/" + operatorId)
@@ -454,7 +454,7 @@ class DepartmentalScopeTest {
 
             // Recouvrement partiel (73 + 74) : toujours refusé, le régional retirerait le 73.
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                     .contentType("application/json")
                     .body("{\"departmentCodes\":[\"74\"]}")
                     .when().put("/api/v1/admin/operators/" + operatorId)
@@ -469,7 +469,7 @@ class DepartmentalScopeTest {
     @Order(15)
     void regionalCannotEditNationalAdmin() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType("application/json")
                 .body("{\"canCreateAdmin\":true,\"departmentCodes\":[\"74\"]}")
                 .when().put("/api/v1/admin/" + nationalAdminId)
@@ -498,15 +498,15 @@ class DepartmentalScopeTest {
     @Order(16)
     void operatorFindsAnglersOfAllDepartmentsForCompetitions() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        UUID angler74 = insertAnglerOwning("DEPT-SCOPE-74", "recherchedept-74@fishola.test");
-        UUID angler73 = insertAnglerOwning("DEPT-SCOPE-73", "recherchedept-73@fishola.test");
+        UUID angler74 = insertAnglerOwning("DEPT-SCOPE-74", "recherchedept-74@carnet-peche.test");
+        UUID angler73 = insertAnglerOwning("DEPT-SCOPE-73", "recherchedept-73@carnet-peche.test");
         try {
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                     .when().get("/api/v1/admin/competitions/search-users?q=recherchedept")
                     .then().statusCode(200)
-                    .body("email", hasItem("recherchedept-74@fishola.test"))
-                    .body("email", hasItem("recherchedept-73@fishola.test"));
+                    .body("email", hasItem("recherchedept-74@carnet-peche.test"))
+                    .body("email", hasItem("recherchedept-73@carnet-peche.test"));
         } finally {
             ctx.execute("UPDATE trip SET owner_id = NULL WHERE owner_id IN (?, ?)", angler74, angler73);
             ctx.execute("DELETE FROM fishola_user WHERE id IN (?, ?)", angler74, angler73);
@@ -519,30 +519,30 @@ class DepartmentalScopeTest {
     @Order(17)
     void anglerListIsScopedToDepartments() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
-        UUID fishedIn74 = insertAngler("DEPT-SCOPE-74", "73000", "liste-fished74@fishola.test");
-        UUID livesIn74 = insertAngler(null, "74000", "liste-lives74@fishola.test");
-        UUID fishedAndLivesIn73 = insertAngler("DEPT-SCOPE-73", "73100", "liste-73@fishola.test");
-        UUID noDepartment = insertAngler(null, null, "liste-none@fishola.test");
+        UUID fishedIn74 = insertAngler("DEPT-SCOPE-74", "73000", "liste-fished74@carnet-peche.test");
+        UUID livesIn74 = insertAngler(null, "74000", "liste-lives74@carnet-peche.test");
+        UUID fishedAndLivesIn73 = insertAngler("DEPT-SCOPE-73", "73100", "liste-73@carnet-peche.test");
+        UUID noDepartment = insertAngler(null, null, "liste-none@carnet-peche.test");
         try {
             for (String token : new String[]{operator74Token, regional74Token}) {
                 given()
-                        .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                        .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                         .when().get("/api/v1/security/users")
                         .then().statusCode(200)
-                        .body("email", hasItem("liste-fished74@fishola.test"))
-                        .body("email", hasItem("liste-lives74@fishola.test"))
-                        .body("email", not(hasItem("liste-73@fishola.test")))
-                        .body("email", not(hasItem("liste-none@fishola.test")));
+                        .body("email", hasItem("liste-fished74@carnet-peche.test"))
+                        .body("email", hasItem("liste-lives74@carnet-peche.test"))
+                        .body("email", not(hasItem("liste-73@carnet-peche.test")))
+                        .body("email", not(hasItem("liste-none@carnet-peche.test")));
             }
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                     .when().get("/api/v1/security/users")
                     .then().statusCode(200)
-                    .body("email", hasItem("liste-73@fishola.test"))
-                    .body("email", hasItem("liste-none@fishola.test"));
+                    .body("email", hasItem("liste-73@carnet-peche.test"))
+                    .body("email", hasItem("liste-none@carnet-peche.test"));
             // Modification d'un pêcheur : toujours réservée au national.
             given()
-                    .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
+                    .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operator74Token)
                     .when().delete("/api/v1/security/users/" + livesIn74)
                     .then().statusCode(403);
         } finally {

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -40,10 +40,10 @@
                  v-on:input="valueChanged($event)"
                  v-bind:id="'field-' + name + '-' + option.id"
                  class="pelorous-radio"
-                 v-bind:checked="value == option.id ? 'checked' : ''"
+                 v-bind:checked="modelValue == option.id"
                  />
             <label v-bind:for="'field-' + name + '-' + option.id" ></label>
-          <span v-if="!readonly || (value == option.id)">{{ option.name }}</span>
+          <span v-if="!readonly || (modelValue == option.id)">{{ option.name }}</span>
         </label>
       </div>
       <div v-bind:class="error?'field-error':''" >
@@ -64,17 +64,18 @@ Il faut savoir que :
 `v-model="searchText"`
 
 est équivalent à
-`v-bind:value="searchText" v-on:input="searchText = $event"`
+`v-bind:modelValue="searchText" v-on:update:modelValue="searchText = $event"`
 
-Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut `value` du présent composant.
+Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans la prop `modelValue` du présent composant.
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component({
+  emits: ["update:modelValue"],
   components: {
     FormMultiValues
   }
@@ -82,7 +83,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 export default class FormRadio extends Vue {
   @Prop() name!: string;
   @Prop() label?: string;
-  @Prop() value?: boolean;
+  @Prop() modelValue?: boolean;
   @Prop() error?: string;
   @Prop() options?: any[];
   @Prop() readonly!: boolean;
@@ -92,7 +93,7 @@ export default class FormRadio extends Vue {
   created() {
     if (this.options) {
       this.options.forEach((option) => {
-        if (option.id == this.value) {
+        if (option.id == this.modelValue) {
           this.readonlyValues.push(option.name);
         }
       });
@@ -101,7 +102,7 @@ export default class FormRadio extends Vue {
 
   valueChanged(event:any) {
     const someValue = event.target.value;
-    this.$emit('input', someValue);
+    this.$emit('update:modelValue', someValue);
   }
 }
 </script>

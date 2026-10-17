@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.evolution;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -22,8 +22,8 @@ package fr.inrae.fishola.rest.evolution;
  */
 
 import fr.inrae.fishola.database.EvolutionDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.FisholaCache;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.CarnetCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity;
 import jakarta.inject.Inject;
@@ -38,13 +38,13 @@ import java.util.UUID;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
-public class EvolutionMetricsResource extends AbstractFisholaResource {
+public class EvolutionMetricsResource extends AbstractCarnetResource {
 
     @Inject
     private EvolutionDao evolutionDao;
 
     @Inject
-    private FisholaCache cache;
+    private CarnetCache cache;
 
     /**
      * Returns for the given waterEntity a map having :

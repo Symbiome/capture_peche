@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -69,11 +69,11 @@ import ReferentialService from "@/services/ReferentialService";
 import Helpers from "@/services/Helpers";
 import TripDates from "@/services/TripDates";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
-@Component
+@Component({ emits: ["selected", "unselected"] })
 export default class MyTripItem extends Vue {
   @Prop() trip!: LocalTripLight;
 

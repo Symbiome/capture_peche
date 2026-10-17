@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -39,7 +39,7 @@ export default class NetworkStatusService {
 
   /**
    * Abonne un callback aux transitions de connectivité. Retourne une fonction de
-   * désabonnement (à appeler dans beforeDestroy).
+   * désabonnement (à appeler dans beforeUnmount).
    */
   static subscribe(onChange: (online: boolean) => void): () => void {
     const onOnline = () => onChange(true);

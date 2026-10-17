@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -40,7 +40,7 @@ import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
 import fr.inrae.fishola.gamification.GamificationEngine;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
@@ -86,7 +86,7 @@ import java.util.stream.Collectors;
 @Path("/api/v1/trips")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TripResource extends AbstractFisholaResource {
+public class TripResource extends AbstractCarnetResource {
 
     private static final Ordering<CatchBean> CATCH_ORDERING_ON_CAUGHT_AT = Ordering.natural()
             .nullsFirst()
@@ -656,7 +656,7 @@ public class TripResource extends AbstractFisholaResource {
         checkIsStaff();
         String csv = tripsDao.getTripsCSV(getAllowedAdminDepartments());
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
+        String disposition = String.format("filename=\"CarnetDePeche_Export_%s.csv\"", dateFormatted);
         Response response = Response.ok(csv)
             .header("Content-Disposition", disposition)
             .build();

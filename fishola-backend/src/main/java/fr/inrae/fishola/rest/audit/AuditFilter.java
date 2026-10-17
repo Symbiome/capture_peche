@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.audit;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.inrae.fishola.database.AuditLogDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -84,8 +84,8 @@ public class AuditFilter implements ContainerResponseFilter {
             // Acteur : admin prioritaire, sinon utilisateur, sinon système.
             String actorType = "system";
             UUID actorId = null;
-            String adminToken = cookieValue(requestContext, AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME);
-            String userToken = cookieValue(requestContext, AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME);
+            String adminToken = cookieValue(requestContext, AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME);
+            String userToken = cookieValue(requestContext, AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME);
             if (adminToken != null && jwtHelper.isValidToken(adminToken)) {
                 actorType = "admin";
                 actorId = jwtHelper.verifyToken(adminToken);

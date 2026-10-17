@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -37,7 +37,7 @@ import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
  * recherche de secteur, sur le modèle des favoris pêcheur de {@link UsersDao}.
  */
 @Singleton
-public class AdminFavoritesDao extends AbstractFisholaDao {
+public class AdminFavoritesDao extends AbstractCarnetDao {
 
     /**
      * Favoris d'un compte, triés par nom.

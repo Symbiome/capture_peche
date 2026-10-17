@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,26 +21,30 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * « Jour J » (#146) : session le jour de l'ouverture. {@code rule_params.openingDates}
  * (liste de dates ISO) est à compléter chaque année -- aucun changement de code requis.
+ * Preuve (#275) : la première sortie d'un jour d'ouverture.
  */
 @Singleton
 public class OpeningDayStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -49,11 +53,21 @@ public class OpeningDayStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
+        return proof(badge, userId).map(proof -> UnlockCandidate.unlocked(Map.of(), proof));
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proof(badge, userId);
+    }
+
+    private Optional<UnlockProof> proof(GamificationDao.BadgeRow badge, UUID userId) {
         List<LocalDate> dates = RuleParams.stringListParam(badge.ruleParams(), "openingDates").stream()
                 .map(LocalDate::parse).toList();
         if (dates.isEmpty()) {
             return Optional.empty();
         }
-        return dao.hasTripOnDate(userId, dates) ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
+        return proofDao.findFirstTripOnDates(userId, dates);
     }
 }

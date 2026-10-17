@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="new-trip page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page new-trip-page">
       <SomeTripHeader />
       <div class="pane">
@@ -64,26 +64,26 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back,spacer,giveup" />
+    <CarnetFooter shortcuts="back,spacer,giveup" />
   </div>
 </template>
 
 <script lang="ts">
 import TripsService from "@/services/TripsService";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class NewTripView extends Vue {

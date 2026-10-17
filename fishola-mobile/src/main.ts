@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -18,53 +18,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import Vue from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-import VueLodash from "vue-lodash";
-import debounce from "lodash/debounce";
-import throttle from "lodash/throttle";
-import orderBy from "lodash/orderBy";
 import moment from "moment";
-import VModal from "vue-js-modal";
-import VueScrollTo from "vue-scrollto";
-import VueObserveVisibility from "vue-observe-visibility";
-import Vue2TouchEvents from "vue2-touch-events";
+import Vue3TouchEvents, { type Vue3TouchEventsOptions } from "vue3-touch-events";
 
 import NoMenuLayout from "@/layouts/NoMenuLayout.vue";
-Vue.component("no-menu-layout", NoMenuLayout);
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import ThemeService from "@/services/ThemeService";
-Vue.component("default-layout", DefaultLayout);
 
 moment.locale("fr");
-
-Vue.use(VueLodash, {
-  name: "custom",
-  lodash: { debounce, throttle, orderBy, moment },
-});
-Vue.use(VModal, { dialog: true });
-Vue.use(VueScrollTo, {
-  container: "body",
-  duration: 500,
-  easing: "ease",
-  offset: 0,
-  force: true,
-  cancelable: true,
-  onStart: false,
-  onDone: false,
-  onCancel: false,
-  x: false,
-  y: true,
-});
-Vue.use(VueObserveVisibility);
-Vue.use(Vue2TouchEvents);
-Vue.config.productionTip = false;
 
 // Thème appliqué avant le premier rendu (#208) : pas de flash en clair.
 ThemeService.init();
 
-new Vue({
-  router,
-  render: (h) => h(App),
-}).$mount("#app");
+const app = createApp(App);
+app.component("no-menu-layout", NoMenuLayout);
+app.component("default-layout", DefaultLayout);
+app.use(router);
+app.use<Partial<Vue3TouchEventsOptions>>(Vue3TouchEvents, {});
+app.mount("#app");

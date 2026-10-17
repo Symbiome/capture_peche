@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -18,13 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import { Feedback } from "@/pojos/BackendPojos";
 
 /**
  * Service allowing to create feedback (locally) and send them to server when connected to internet.
  */
-export default class FeedbackService extends AbstractFisholaService {
+export default class FeedbackService extends AbstractCarnetService {
   // Passed this delay (in MS), the feedback will be deleted (the service will not try to send it to server anymore)
   private static FEEDBACK_DELETION_DELAY_MS = 1000 * 60 * 60 * 24 * 14;
   constructor() {

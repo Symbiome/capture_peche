@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.hydro;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -25,8 +25,8 @@ import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.referential.WaterEntityName;
 import fr.inrae.fishola.rest.trips.TripBean;
 import io.agroal.api.AgroalDataSource;
@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class HydroResourceTest extends AbstractFisholaTest {
+class HydroResourceTest extends AbstractCarnetTest {
 
     private static final String NEARBY = "/api/v1/waterEntities/nearby";
 
@@ -199,7 +199,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void ordersByDistanceWithClosestPointAndPersistence() {
         // AC1 + AC2: Fier (permanent, ~38 m) before Lac (~756 m).
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.1005)
                 .queryParam("radiusM", 2000)
@@ -231,7 +231,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void intermittentSectionFlaggedNonPersistent() {
         // AC2: près du ruisseau intermittent, persistent=false.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.300)
                 .queryParam("radiusM", 500)
@@ -247,7 +247,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void emptyWhenNothingWithinRadius() {
         // AC3: aucune entité à moins de 100 m -> 200 + liste vide.
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 48.0)
                 .queryParam("lng", 2.0)
                 .queryParam("radiusM", 100)
@@ -260,7 +260,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void kindFilterRestrictsResults() {
         // Filtre kind=STILL : Fier (FLOWING) exclu, Lac (STILL) présent.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.1005)
                 .queryParam("radiusM", 2000)
@@ -277,7 +277,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void rejectsMissingLatitude() {
         // AC4: lat manquant -> 400.
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lng", 6.1005)
                 .when().get(NEARBY)
                 .then().statusCode(400);
@@ -287,7 +287,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void rejectsRadiusOutOfBounds() {
         // AC4: radiusM au-delà de la borne -> 400.
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.1005)
                 .queryParam("radiusM", 999999)
@@ -299,7 +299,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void byCommuneReturnsIntersectingEntities() {
         // AC1 + AC4: le Fier (traverse la commune) présent, le Ruisseau (loin) absent.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("insee", "99999")
                 .when().get("/api/v1/waterEntities/byCommune")
                 .then().statusCode(200)
@@ -317,7 +317,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void communeSearchIsTypoTolerant() {
         // AC2: recherche trigram tolérante à la faute de frappe.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "anneci")
                 .when().get("/api/v1/communes/search")
                 .then().statusCode(200)
@@ -351,7 +351,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         // #197 : même classement pour les milieux ; « IT Fier » avant
         // « IT Lac du Fier ».
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "it fier")
                 .when().get("/api/v1/waterEntities/search")
                 .then().statusCode(200)
@@ -362,7 +362,7 @@ class HydroResourceTest extends AbstractFisholaTest {
 
     private List<Map<String, Object>> searchCommunes(String query) {
         return given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", query)
                 .when().get("/api/v1/communes/search")
                 .then().statusCode(200)
@@ -373,7 +373,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void searchFindsEntityBySubstring() {
         // AC1: recherche par sous-chaîne du nom.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "fier")
                 .when().get("/api/v1/waterEntities/search")
                 .then().statusCode(200)
@@ -386,7 +386,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void searchIsAccentInsensitive() {
         // AC2: 'leman' (sans accent) doit retrouver 'IT Léman'.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "leman")
                 .when().get("/api/v1/waterEntities/search")
                 .then().statusCode(200)
@@ -399,7 +399,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void searchCarriesDepartmentOfHomonyms() {
         // #230 : le département permet de distinguer les homonymes côté mobile.
         List<Map<String, Object>> items = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "IT Bourbre")
                 .when().get("/api/v1/waterEntities/search")
                 .then().statusCode(200)
@@ -432,7 +432,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     void searchRejectsShortQuery() {
         // AC3: q d'un seul caractère -> 400.
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("q", "a")
                 .when().get("/api/v1/waterEntities/search")
                 .then().statusCode(400);
@@ -447,7 +447,7 @@ class HydroResourceTest extends AbstractFisholaTest {
                 .get("id", UUID.class);
 
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get("/api/v1/waterEntities/" + fierId)
                 .then().statusCode(200)
                 .body("name", equalTo("IT Fier"))
@@ -458,7 +458,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     @Test
     void getByIdUnknownReturns404() {
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get("/api/v1/waterEntities/" + UUID.randomUUID())
                 .then().statusCode(404);
     }
@@ -519,7 +519,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         // AC1 : près du Fier (permanent), la proposition = Fier, avec le tronçon
         // rattaché ; le Lac figure dans les alternatives (corriger sans re-chercher).
         var response = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.1005)
                 .when().get(ATTRIBUTION)
@@ -544,7 +544,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         // AC3 : près du ruisseau intermittent, la proposition porte persistent=false
         // (l'UI affiche l'avertissement, non bloquant).
         var response = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .queryParam("lng", 6.2995)
                 .when().get(ATTRIBUTION)
@@ -558,7 +558,7 @@ class HydroResourceTest extends AbstractFisholaTest {
     @Test
     void attributionRequiresLatLng() {
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("lat", 45.9025)
                 .when().get(ATTRIBUTION)
                 .then().statusCode(400);
@@ -616,7 +616,7 @@ class HydroResourceTest extends AbstractFisholaTest {
         try {
             String withPos = given()
                     .contentType("application/json")
-                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                     .body(trip)
                     .when().post("/api/v1/trips")
                     .then().statusCode(201)
@@ -624,7 +624,7 @@ class HydroResourceTest extends AbstractFisholaTest {
             created.add(withPos);
 
             given()
-                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                     .when().get("/api/v1/trips/" + withPos)
                     .then().statusCode(200)
                     .body("hydroValidation", equalTo("CONFIRMED"))
@@ -638,7 +638,7 @@ class HydroResourceTest extends AbstractFisholaTest {
             trip.name = "IT Sortie sans carte";
             String noPos = given()
                     .contentType("application/json")
-                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                     .body(trip)
                     .when().post("/api/v1/trips")
                     .then().statusCode(201)
@@ -646,7 +646,7 @@ class HydroResourceTest extends AbstractFisholaTest {
             created.add(noPos);
 
             given()
-                    .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                    .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                     .when().get("/api/v1/trips/" + noPos)
                     .then().statusCode(200)
                     .body("hydroValidation", nullValue())

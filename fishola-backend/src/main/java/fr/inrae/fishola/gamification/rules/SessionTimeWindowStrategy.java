@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,25 +21,28 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * « Prise éclair » / « Juste à temps ! » / « Lève-tôt » (#146) : trois badges distincts
  * partageant une même mécanique de fenêtre temporelle, distinguée par
- * {@code rule_params.mode}.
+ * {@code rule_params.mode}. Preuve (#275) : la sortie et la capture concernées.
  */
 @Singleton
 public class SessionTimeWindowStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -48,15 +51,23 @@ public class SessionTimeWindowStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        String mode = RuleParams.stringParam(badge.ruleParams(), "mode", "");
-        boolean matched = switch (mode) {
-            case "first_catch_after_start" ->
-                    dao.hasFirstCatchWithinStart(userId, RuleParams.intParam(badge.ruleParams(), "windowMinutes", 10));
-            case "first_catch_before_end" ->
-                    dao.hasFirstCatchWithinEnd(userId, RuleParams.intParam(badge.ruleParams(), "windowMinutes", 10));
-            case "before_hour" -> dao.hasCatchBeforeHour(userId, RuleParams.intParam(badge.ruleParams(), "hour", 7));
-            default -> false;
+        return proof(badge, userId).map(proof -> UnlockCandidate.unlocked(Map.of(), proof));
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proof(badge, userId);
+    }
+
+    private Optional<UnlockProof> proof(GamificationDao.BadgeRow badge, UUID userId) {
+        int windowMinutes = RuleParams.intParam(badge.ruleParams(), "windowMinutes", 10);
+        return switch (RuleParams.stringParam(badge.ruleParams(), "mode", "")) {
+            case "first_catch_after_start" -> proofDao.findFirstCatchWithinStart(userId, windowMinutes);
+            case "first_catch_before_end" -> proofDao.findFirstCatchWithinEnd(userId, windowMinutes);
+            case "before_hour" ->
+                    proofDao.findFirstCatchBeforeHour(userId, RuleParams.intParam(badge.ruleParams(), "hour", 7));
+            default -> Optional.empty();
         };
-        return matched ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
     }
 }

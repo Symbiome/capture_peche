@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
   %%
@@ -79,7 +79,7 @@
 import { DashboardLastTrip } from '@/pojos/BackendPojos';
 import { RouterUtils } from '@/router/RouterUtils';
 import { DashboardAndSpecies } from '@/services/DashboardService';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
 @Component
 export default class AverageCatchChart extends Vue {

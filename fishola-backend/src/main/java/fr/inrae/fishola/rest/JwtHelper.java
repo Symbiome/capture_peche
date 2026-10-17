@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -30,8 +30,8 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import fr.inrae.fishola.FisholaConfiguration;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.CarnetConfiguration;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
@@ -49,9 +49,9 @@ public class JwtHelper {
     protected Logger log;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
 
-    private static final String FISHOLA_BACKEND_ISSUER = "fishola-backend";
+    private static final String CARNET_BACKEND_ISSUER = "fishola-backend";
     private static final String MISSING_TOKEN_ERR_MESSAGE = "Token manquant";
     private static final String MISSING_SUBJECT_ERR_MESSAGE = "Subject manquant";
 
@@ -75,7 +75,7 @@ public class JwtHelper {
 
 //        iss issuer : qui a émis le token
 //        sub subject : identifiant unique métier
-//        aud audience : fishola mobile ?
+//        aud audience : carnet de pêche mobile ?
 //        exp date d'expritration
 //        nbf not before
 //        iat issued at
@@ -88,7 +88,7 @@ public class JwtHelper {
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         return JWT.create()
-                .withIssuer(FISHOLA_BACKEND_ISSUER)
+                .withIssuer(CARNET_BACKEND_ISSUER)
                 .withSubject(userId.toString())
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
@@ -101,7 +101,7 @@ public class JwtHelper {
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)
-                .withIssuer(FISHOLA_BACKEND_ISSUER)
+                .withIssuer(CARNET_BACKEND_ISSUER)
                 .build()
                 .verify(token);
         String subject = verify.getSubject();
@@ -120,7 +120,7 @@ public class JwtHelper {
 
         Algorithm algorithmHS = getJwtSecretAlgorithm();
         DecodedJWT verify = JWT.require(algorithmHS)
-                .withIssuer(FISHOLA_BACKEND_ISSUER)
+                .withIssuer(CARNET_BACKEND_ISSUER)
                 .acceptExpiresAt(seconds)
                 .build()
                 .verify(token);
@@ -142,7 +142,7 @@ public class JwtHelper {
         Algorithm algorithmHS = getJwtSecretAlgorithm();
 
         JWTCreator.Builder tokenBuilder = JWT.create()
-                .withIssuer(FISHOLA_BACKEND_ISSUER)
+                .withIssuer(CARNET_BACKEND_ISSUER)
                 .withSubject(subject)
                 .withIssuedAt(now)
                 .withExpiresAt(expiresAt)
@@ -157,7 +157,7 @@ public class JwtHelper {
         try {
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             DecodedJWT verify = JWT.require(algorithmHS)
-                    .withIssuer(FISHOLA_BACKEND_ISSUER)
+                    .withIssuer(CARNET_BACKEND_ISSUER)
                     .withSubject(subject)
                     .build()
                     .verify(token);
@@ -165,7 +165,7 @@ public class JwtHelper {
             Map<String, String> result = Maps.transformValues(claims, Claim::asString);
             return result;
         } catch (TokenExpiredException | InvalidClaimException tee) {
-            throw new FisholaTechnicalException("Unable to register", tee);
+            throw new CarnetTechnicalException("Unable to register", tee);
         }
     }
 
@@ -175,7 +175,7 @@ public class JwtHelper {
         try {
             Algorithm algorithmHS = getJwtSecretAlgorithm();
             JWT.require(algorithmHS)
-                    .withIssuer(FISHOLA_BACKEND_ISSUER)
+                    .withIssuer(CARNET_BACKEND_ISSUER)
                     .build()
                     .verify(token);
             return true;

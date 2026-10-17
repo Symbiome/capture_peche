@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div id="app">
-    <v-dialog :width="270" />
+    <AppDialog />
     <Toaster />
     <BadgeShareCard />
     <BadgeUnlockNotification />
@@ -36,6 +36,7 @@
 import Helpers from "@/services/Helpers";
 import { RouterUtils } from "@/router/RouterUtils";
 
+import AppDialog from "@/components/common/AppDialog.vue";
 import Toaster from "@/components/layout/Toaster.vue";
 import BadgeShareCard from "@/components/gamification/BadgeShareCard.vue";
 import BadgeUnlockNotification from "@/components/gamification/BadgeUnlockNotification.vue";
@@ -47,7 +48,8 @@ import PicturesService from "@/services/PicturesService";
 import FeedbackService from "@/services/FeedbackService";
 import KeyboardManager from "@/services/KeyboardManager";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import ReferentialService from "./services/ReferentialService";
 import DocumentationService from "./services/DocumentationService";
 import ProfileService from "./services/ProfileService";
@@ -59,6 +61,7 @@ import { App } from "@capacitor/app";
 
 @Component({
   components: {
+    AppDialog,
     Toaster,
     BadgeShareCard,
     BadgeUnlockNotification,
@@ -155,7 +158,7 @@ export default class AppView extends Vue {
     );
     this.interval = setInterval(this.checkOutOfSyncTrips, syncDelay);
 
-    this.$root.$on("ask-for-sync-check", this.checkOutOfSyncTrips);
+    EventBus.on("ask-for-sync-check", this.checkOutOfSyncTrips);
 
     // Sync immédiate au retour du réseau (#10), sans attendre le polling 30 s.
     this.unsubscribeNetwork = NetworkStatusService.subscribe((online) => {
@@ -166,8 +169,8 @@ export default class AppView extends Vue {
     });
   }
 
-  beforeDestroy() {
-    this.$root.$off("ask-for-sync-check");
+  beforeUnmount() {
+    EventBus.off("ask-for-sync-check");
     clearInterval(this.interval);
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
@@ -186,7 +189,7 @@ export default class AppView extends Vue {
   tripsSyncFinished(someTripsSaved: boolean) {
     this.checkOutOfSyncPicturesAndFeedbacks();
     if (someTripsSaved) {
-      this.$root.$emit("trips-saved");
+      EventBus.emit("trips-saved");
     }
   }
 
@@ -481,70 +484,6 @@ html {
 
     &.keyboardShowing {
       margin-top: 5px;
-    }
-  }
-}
-
-.v--modal-overlay {
-  background-color: @black-alpha-50 !important;
-
-  .v--modal {
-    border-radius: 13px;
-    background-color: @white-smoke;
-  }
-
-  .v--modal-box {
-    top: calc(100vh / 2 - 80px) !important;
-
-    @media screen and (min-width: @desktop-min-width) {
-      width: 350px !important;
-    }
-
-    .dialog-content {
-      text-align: center;
-
-      @media screen and (min-width: @desktop-min-width) {
-        padding: 20px;
-      }
-
-      .dialog-c-title {
-        color: @gunmetal;
-        font-size: @fontsize-dialog-title;
-        line-height: calc(@fontsize-dialog-title + @line-height-padding-large);
-
-        @media screen and (min-width: @desktop-min-width) {
-          font-size: calc(@fontsize-dialog-title-desktop);
-          line-height: calc(@fontsize-dialog-title-desktop + @line-height-padding-large );
-        }
-      }
-
-      .dialog-c-text {
-        color: @pale-sky;
-        font-size: calc(@fontsize-dialog-text);
-        line-height: calc(@fontsize-dialog-text + @line-height-padding-large);
-
-        @media screen and (min-width: @desktop-min-width) {
-          font-size: calc(@fontsize-dialog-text-desktop);
-          line-height: calc(@fontsize-dialog-text-desktop + @line-height-padding-large );
-        }
-      }
-
-      ul {
-        text-align: left;
-      }
-    }
-
-    .vue-dialog-buttons {
-      color: @accent-text;
-      border-top: 1px solid @very-light-grey;
-
-      button.vue-dialog-button {
-        font-size: @fontsize-dialog-button !important;
-
-        &:not(:first-of-type) {
-          border-left: 1px solid @very-light-grey;
-        }
-      }
     }
   }
 }

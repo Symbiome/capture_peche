@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -59,7 +59,7 @@
 <script lang="ts">
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 export interface BottomNavItem {
   name: string;
@@ -73,7 +73,7 @@ export interface BottomNavItem {
  * sortie, Mes prises, Compte. Le bouton central passe en suppression
  * quand la page appelante l'indique (sélection de sorties).
  */
-@Component
+@Component({ emits: ["delete"] })
 export default class BottomNav extends Vue {
   @Prop({ default: false }) deleteMode: boolean;
 

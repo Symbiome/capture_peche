@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -21,7 +21,7 @@
 <!--
   Export PDF d'une ou plusieurs sorties (#173) : carte (début/fin/captures),
   liste des prises et leurs photos, technique(s), durée. Ouvert via
-  l'évènement `$root` `open-trip-pdf-export` (même pattern que
+  l'évènement `open-trip-pdf-export` de l'`EventBus` (même pattern que
   BadgeShareCard.vue, #146) avec la liste des identifiants de sorties à
   exporter, depuis EditTrip.vue (une sortie) ou MyTrips.vue (une sélection).
   La génération se fait entièrement côté client (jsPDF), sans nouvel appel
@@ -80,7 +80,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       shortcuts="back"
       button-icon="icon-download"
       button-text="Générer le PDF"
@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 import TripPositionsMap, { TripPositionsCatchPoint } from "@/components/trip/TripPositionsMap.vue";
 
 import { CatchBean, TripBean } from "@/pojos/BackendPojos";
@@ -108,7 +108,8 @@ import TripDates from "@/services/TripDates";
 
 import { jsPDF } from "jspdf";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 interface NormalizedImage {
   dataUrl: string;
@@ -128,7 +129,7 @@ const MAP_MAX_HEIGHT_MM = CONTENT_WIDTH_MM / MAP_ASPECT_RATIO;
 @Component({
   components: {
     TripPositionsMap,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripPdfExportCard extends Vue {
@@ -142,11 +143,11 @@ export default class TripPdfExportCard extends Vue {
   private cursorY = MARGIN_MM;
 
   mounted() {
-    this.$root.$on("open-trip-pdf-export", this.open);
+    EventBus.on("open-trip-pdf-export", this.open);
   }
 
-  beforeDestroy() {
-    this.$root.$off("open-trip-pdf-export", this.open);
+  beforeUnmount() {
+    EventBus.off("open-trip-pdf-export", this.open);
   }
 
   /** @param tripIds Identifiants des sorties à exporter (une seule = export simple, plusieurs = fusionnées en un PDF, #173). */
@@ -186,7 +187,7 @@ export default class TripPdfExportCard extends Vue {
       await this.generatePdf();
     } catch (error) {
       console.error("Erreur lors de la génération du PDF", error);
-      this.$root.$emit("toaster-error", "Impossible de générer le PDF");
+      EventBus.emit("toaster-error", "Impossible de générer le PDF");
     } finally {
       this.generating = false;
       this.currentTrip = null;

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <PictureModal
       class="picture-modal-gallery-full"
       :forceMobileMode="true"
@@ -158,13 +158,13 @@ import GaleryPreview from "@/components/galery/GaleryPreview.vue";
 import { PicturePerTripBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import PicturesService from "@/services/PicturesService";
 import ShareService from "@/services/ShareService";
 import ReferentialService from "@/services/ReferentialService";
 import Constants from "../../services/Constants";
 import BottomNav from "@/components/layout/BottomNav.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import Helpers from "../../services/Helpers";
 import router from "../../router";
 import { RouterUtils } from "../../router/RouterUtils";
@@ -173,7 +173,7 @@ import PictureModal from "../trip/PictureModal.vue";
 @Component({
   components: {
     GaleryPreview,
-    FisholaHeader,
+    CarnetHeader,
     PictureModal,
     BottomNav,
   },
@@ -261,7 +261,7 @@ export default class GaleryFull extends Vue {
     });
   }
 
-  @Watch("picturesPerTrip")
+  @Watch("picturesPerTrip", { deep: true })
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
     try {
       this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
@@ -321,8 +321,8 @@ export default class GaleryFull extends Vue {
   async seeTrip(tripId: string) {
     RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
-      params: {
-        id: tripId,
+      params: { id: tripId },
+      query: {
         fromGallery: "true",
         lakeFilter: this.selectedLakeId,
       },

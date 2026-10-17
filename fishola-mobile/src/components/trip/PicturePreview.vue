@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -52,9 +52,10 @@
 import PictureModal from "@/components/trip/PictureModal.vue";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component({
+  emits: ["delete-picture", "load", "picture-clicked", "take-picture"],
   components: {
     PictureModal,
   },

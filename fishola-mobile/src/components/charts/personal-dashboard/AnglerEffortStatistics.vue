@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -122,7 +122,7 @@ import { CARNET_CHART_PALETTE, CARNET_COLORS } from "@/services/CarnetPalette";
 import Constants from "@/services/Constants";
 import DashboardService from "@/services/DashboardService";
 import ReferentialService from "@/services/ReferentialService";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
 import {
   Chart as ChartJS,

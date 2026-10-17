@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -101,10 +101,10 @@
 
 <script lang="ts">
 import { NearbyWaterEntity, CommuneResult } from '@/pojos/BackendPojos';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import ReferentialService from '@/services/ReferentialService';
 
-@Component
+@Component({ emits: ["close", "select"] })
 export default class CommuneSearch extends Vue {
     @Prop() isVisible: boolean;
 
@@ -124,7 +124,7 @@ export default class CommuneSearch extends Vue {
         }
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         if (this.searchTimer) {
             clearTimeout(this.searchTimer);
         }

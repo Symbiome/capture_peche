@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
@@ -24,7 +24,7 @@ package fr.inrae.fishola.database;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -42,7 +42,7 @@ import java.util.UUID;
 
 
 @QuarkusTest
-public class LicenceDaoTest extends AbstractFisholaTest {
+public class LicenceDaoTest extends AbstractCarnetTest {
 
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
@@ -91,7 +91,7 @@ public class LicenceDaoTest extends AbstractFisholaTest {
     @Test
     @Transactional
     void testAnonymisingUserDeletesLicencesAndPostalCode() {
-        String email = "anonymisation-" + UUID.randomUUID() + "@fishola.test";
+        String email = "anonymisation-" + UUID.randomUUID() + "@carnet-peche.test";
         usersDao.create("Prénom", "Nom", "pseudo-anonymisation", email, "x", true, "74000", 1980);
         FisholaUser user = usersDao.findByEmail(email).orElseThrow();
 

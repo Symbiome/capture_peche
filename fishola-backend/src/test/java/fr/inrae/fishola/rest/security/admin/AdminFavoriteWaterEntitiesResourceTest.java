@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.security.admin;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -83,9 +83,9 @@ class AdminFavoriteWaterEntitiesResourceTest {
         ctx.execute("INSERT INTO water_entity (id, name, export_as) VALUES (?, ?, ?), (?, ?, ?)",
                 exactMatchId, "Zzfavtest", "zzfavtest-exact", partialMatchId, "Zzfavtest du Nord",
                 "zzfavtest-partial");
-        insertAdmin(ctx, nationalAdminId, "fav-test-national@fishola.test", true);
-        insertAdmin(ctx, otherNationalAdminId, "fav-test-national-2@fishola.test", true);
-        insertAdmin(ctx, operatorId, "fav-test-op@fishola.test", false);
+        insertAdmin(ctx, nationalAdminId, "fav-test-national@carnet-peche.test", true);
+        insertAdmin(ctx, otherNationalAdminId, "fav-test-national-2@carnet-peche.test", true);
+        insertAdmin(ctx, operatorId, "fav-test-op@carnet-peche.test", false);
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, annecyDepartment);
 
@@ -115,13 +115,13 @@ class AdminFavoriteWaterEntitiesResourceTest {
     }
 
     private io.restassured.response.ValidatableResponse put(String token, UUID waterEntityId) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .when().put(URI + "/" + waterEntityId)
                 .then();
     }
 
     private io.restassured.response.ValidatableResponse search(String token) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get(NAMES_SEARCH + "?q=Zzfavtest")
                 .then().statusCode(200);
     }
@@ -135,7 +135,7 @@ class AdminFavoriteWaterEntitiesResourceTest {
             search(nationalToken).body("[0].id", equalTo(partialMatchId.toString()));
             search(otherNationalToken).body("[0].id", equalTo(exactMatchId.toString()));
         } finally {
-            given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+            given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                     .when().delete(URI + "/" + partialMatchId)
                     .then().statusCode(204);
         }
@@ -146,16 +146,16 @@ class AdminFavoriteWaterEntitiesResourceTest {
     void favoritesAreListedAndRemoved() {
         put(otherNationalToken, partialMatchId).statusCode(204);
         put(otherNationalToken, partialMatchId).statusCode(204);
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
                 .when().get(URI)
                 .then().statusCode(200)
                 .body("id", hasItem(partialMatchId.toString()))
                 .body("size()", equalTo(1));
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
                 .when().delete(URI + "/" + partialMatchId)
                 .then().statusCode(204);
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, otherNationalToken)
                 .when().get(URI)
                 .then().statusCode(200)
                 .body("", empty());
@@ -164,7 +164,7 @@ class AdminFavoriteWaterEntitiesResourceTest {
     @Test
     void operatorCannotFavoriteOutsideItsPerimeter() {
         put(operatorToken, bourgetId).statusCode(403);
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(URI)
                 .then().statusCode(200)
                 .body("id", not(hasItem(bourgetId.toString())));

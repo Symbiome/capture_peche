@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-meta page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -73,7 +73,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Suivant" v-on:buttonClicked="next" shortcuts="back,step-1-4,giveup" />
+    <CarnetFooter button-text="Suivant" v-on:buttonClicked="next" shortcuts="back,step-1-4,giveup" />
   </div>
 </template>
 
@@ -93,23 +93,24 @@ import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import LakeSelection from "@/components/common/LakeSelection.vue";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import ProfileService from "@/services/ProfileService";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
     FormInput,
     FormSelect,
-    FisholaFooter,
+    CarnetFooter,
     LakeSelection,
   },
 })
@@ -178,8 +179,7 @@ export default class TripMetaView extends Vue {
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
-                this.$modal,
-                "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
+                "Vous devez activer la localisation de l'appareil pour que Carnet de pêche puisse acquérir votre position",
                 "La position n'est pas activée"
               );
             }
@@ -235,12 +235,12 @@ export default class TripMetaView extends Vue {
     }
 
     if (hasError) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Vous devez renseigner les champs obligatoires"
       );
     } else if (this.trip!.mode == "Afterwards") {
-      TripsService.confirmPlausibleTripDuration(this.$modal, this.trip!).then((confirmed) => {
+      TripsService.confirmPlausibleTripDuration(this.trip!).then((confirmed) => {
         if (confirmed) {
           TripsService.saveTripMeta(this.trip!, this.tripSaved);
         }
@@ -278,7 +278,6 @@ export default class TripMetaView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

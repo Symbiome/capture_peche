@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
   %%
@@ -21,7 +21,7 @@
 <template>
   <div class="news-about">
     <div class="news-holder no-news" v-if="news.length == 0">
-      Pas de communications autour de Fishola pour le moment, revenez consultez
+      Pas de communications autour de Carnet de pêche pour le moment, revenez consultez
       cette page prochainement !
     </div>
     <div
@@ -56,14 +56,14 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import TripsService from "@/services/TripsService";
 import { NewsBean } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
 import router from "../router";
@@ -71,9 +71,9 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     RunningOverlay,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class CommunicationsOnAboutPage extends Vue {
@@ -91,7 +91,7 @@ export default class CommunicationsOnAboutPage extends Vue {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {
-      return "img/logo-small.svg";
+      return "img/carnet/logo-mark.svg";
     }
   }
 

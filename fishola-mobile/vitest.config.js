@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ import { defineConfig, mergeConfig } from "vite";
 import viteConfig from "./vite.config.js";
 
 // La configuration de test réutilise telle quelle celle de vite.config.js
-// (alias « @ », plugin Vue 2, préprocesseur Less, define des import.meta.env)
+// (alias « @ », plugin Vue 3, préprocesseur Less, define des import.meta.env)
 // afin de ne pas la dupliquer : les tests s'exécutent avec la même résolution
 // de modules que l'application.
 export default defineConfig((env) =>
@@ -30,7 +30,6 @@ export default defineConfig((env) =>
     test: {
       globals: true,
       environment: "jsdom",
-      setupFiles: ["tests/unit/vitest.setup.ts"],
       include: ["tests/unit/**/*.spec.ts"],
       // Une suite vide doit rester rouge : sans test exécuté, le récapitulatif
       // de run_tests.sh mentirait en annonçant « tout est vert ».

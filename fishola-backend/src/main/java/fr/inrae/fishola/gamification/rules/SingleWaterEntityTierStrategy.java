@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -31,12 +33,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** « Lacustre » (#146) : au moins {@code threshold} sessions concentrées sur un même plan d'eau. */
+/**
+ * « Lacustre » (#146) : au moins {@code threshold} sessions concentrées sur un même plan
+ * d'eau. Preuve (#275) : la sortie qui a fait atteindre le seuil sur ce plan d'eau.
+ */
 @Singleton
 public class SingleWaterEntityTierStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -45,11 +53,26 @@ public class SingleWaterEntityTierStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
-        String kind = RuleParams.stringParam(badge.ruleParams(), "kind", "STILL");
+        int threshold = threshold(badge);
+        String kind = kind(badge);
         int max = dao.maxTripsOnSingleWaterEntity(userId, kind);
         return max >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessionCount", max)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessionCount", max),
+                        proofDao.findNthTripOnSingleWaterEntity(userId, kind, threshold).orElse(UnlockProof.NONE)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proofDao.findNthTripOnSingleWaterEntity(userId, kind(badge), threshold(badge));
+    }
+
+    private int threshold(GamificationDao.BadgeRow badge) {
+        return RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
+    }
+
+    private String kind(GamificationDao.BadgeRow badge) {
+        return RuleParams.stringParam(badge.ruleParams(), "kind", "STILL");
     }
 }

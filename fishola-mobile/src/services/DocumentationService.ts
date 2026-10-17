@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -19,10 +19,10 @@
  * #L%
  */
 import { Editorial, DocumentationLight, NewsBean } from "@/pojos/BackendPojos";
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import Constants from "@/services/Constants";
 
-export default class DocumentationService extends AbstractFisholaService {
+export default class DocumentationService extends AbstractCarnetService {
   constructor() {
     super();
   }

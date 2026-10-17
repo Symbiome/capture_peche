@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue } from "vue-facing-decorator";
 import MapLibreMap from '@/components/common/MapLibreMap.vue';
 import AttributionConfirmSheet from '@/components/common/AttributionConfirmSheet.vue';
 import { AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';

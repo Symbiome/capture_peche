@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="login page-with-header full-background">
-    <FisholaHeader v-bind:title="false" v-bind:avatar="false" v-bind:menu="true" />
+    <CarnetHeader v-bind:title="false" v-bind:avatar="false" v-bind:menu="true" />
     <div class="page login-page">
       <div class="login-pane">
         <span @click="goHome" class="icon-home home hide-on-mobile">
@@ -59,15 +59,16 @@ import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 import ProfileService from "@/services/ProfileService";
 import FormInput from "@/components/common/FormInput.vue";
 import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
     CarnetLogo,
-    FisholaHeader,
+    CarnetHeader,
     FormInput,
     ForgottenPassword,
   },
@@ -114,7 +115,7 @@ export default class LoginView extends Vue {
           localStorage.latestPassword = this.password
         }
 
-        this.$root.$emit("profile-updated");
+        EventBus.emit("profile-updated");
         RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
 
         // Après login, on tente de télécharger les settings
@@ -131,11 +132,11 @@ export default class LoginView extends Vue {
         );
         break;
       case 401:
-        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        EventBus.emit("toaster-error", "E-mail ou mot de passe incorrect");
         this.passwordError = "Mot de passe erroné";
         break;
       case 404:
-        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        EventBus.emit("toaster-error", "E-mail ou mot de passe incorrect");
         this.emailError = "E-mail inconnu";
         break;
       default:

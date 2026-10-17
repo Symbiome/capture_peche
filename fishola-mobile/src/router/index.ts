@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -18,8 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHashHistory, RouteLocationNormalized, RouteRecordRaw } from "vue-router";
 
 import Dispatcher from "@/views/Dispatcher.vue";
 import HomeView from "@/views/Home.vue";
@@ -69,9 +68,18 @@ import VerifyAccount from "@/views/VerifyAccount.vue";
 
 import ProfileService from "@/services/ProfileService";
 
-Vue.use(VueRouter);
+/**
+ * Props d'un écran ouvert depuis la galerie (#284) : vue-router 4 ignore les
+ * `params` absents du chemin, ces valeurs passent donc par la query.
+ *
+ * @param route route courante
+ * @returns les paramètres du chemin et ceux de la query
+ */
+function paramsAndQueryProps(route: RouteLocationNormalized): Record<string, unknown> {
+  return { ...route.params, ...route.query };
+}
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: "/",
     name: "dispatcher",
@@ -166,13 +174,13 @@ const routes = [
     path: "/trips/:id/summary",
     name: "trip-summary",
     component: TripSummary,
-    props: true,
+    props: paramsAndQueryProps,
   },
   {
     path: "/trips/:id",
     name: "trip",
     component: EditTrip,
-    props: true,
+    props: paramsAndQueryProps,
   },
   {
     // Onglet « Évolution » retiré de « Mes données » (calculé par plan d'eau).
@@ -287,7 +295,7 @@ const routes = [
     path: "/galery",
     name: "galery",
     component: GaleryFull,
-    props: true,
+    props: paramsAndQueryProps,
   },
   {
     // Banc de test isolé de la carte MapLibre (#8), consommé par l'e2e Cypress.
@@ -309,25 +317,23 @@ const routes = [
   // }
 ];
 
-const router = new VueRouter({
+const router = createRouter({
+  history: createWebHashHistory(),
   routes,
 });
 
 // Protect routes according to authentication status
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   if (to.meta && to.meta.public) {
-    next();
-  } else {
-    ProfileService.getProfile().then(
-      (_profile) => {
-        next();
-      },
-      (_status) => {
-        console.error("Route non autorisée : ", to.name);
-        next("/login");
-      }
-    );
+    return true;
   }
+  return ProfileService.getProfile().then(
+    (_profile) => true,
+    (_status) => {
+      console.error("Route non autorisée : ", to.name);
+      return "/login";
+    }
+  );
 });
 
 export default router;

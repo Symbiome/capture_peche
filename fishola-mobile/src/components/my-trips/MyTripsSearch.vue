@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -26,20 +26,20 @@
         type="text"
         v-bind:placeholder="offline ? 'Recherche non disponible' : 'Rechercher'"
         name="search_term"
-        v-bind:value="value"
+        v-bind:value="modelValue"
         v-bind:disabled="offline"
-        v-on:input="$emit('input', $event.target.value)"
+        v-on:input="$emit('update:modelValue', $event.target.value)"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component
+@Component({ emits: ["update:modelValue"] })
 export default class MyTripsSearch extends Vue {
-  @Prop() value!: string;
+  @Prop() modelValue!: string;
   @Prop() offline!: boolean;
 }
 </script>

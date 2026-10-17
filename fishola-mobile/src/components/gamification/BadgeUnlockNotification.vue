@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -35,7 +35,8 @@
 import GamificationService from "@/services/GamificationService";
 import { BadgeBean } from "@/pojos/BackendPojos";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 const KNOWN_UNLOCKED_BADGES_KEY = "fishola.gamification.knownUnlockedBadgeIds";
 const DISPLAY_DURATION_MS = 4000;
@@ -47,11 +48,11 @@ export default class BadgeUnlockNotification extends Vue {
   private queue: BadgeBean[] = [];
 
   mounted() {
-    this.$root.$on("trips-saved", this.checkForNewBadges);
+    EventBus.on("trips-saved", this.checkForNewBadges);
   }
 
-  beforeDestroy() {
-    this.$root.$off("trips-saved", this.checkForNewBadges);
+  beforeUnmount() {
+    EventBus.off("trips-saved", this.checkForNewBadges);
   }
 
   checkForNewBadges() {
@@ -101,7 +102,7 @@ export default class BadgeUnlockNotification extends Vue {
 
   shareBadge() {
     if (this.badge) {
-      this.$root.$emit("open-badge-share", this.badge);
+      EventBus.emit("open-badge-share", this.badge);
     }
     this.hideCurrent();
   }

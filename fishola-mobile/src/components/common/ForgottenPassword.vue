@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -44,7 +44,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import FormInput from '@/components/common/FormInput.vue';
 import ProfileService from '@/services/ProfileService';
 import Helpers from '@/services/Helpers';
@@ -96,7 +97,7 @@ export default class ForgottenPassword extends Vue {
     this.passwordError = '';
     this.passwordConfirmationError = '';
     if (this.newPassword && this.newPassword.length > 2 && this.newPassword != this.newPasswordConfirmation) {
-      this.$root.$emit('toaster-error', 'Les mots de passe ne correspondent pas');
+      EventBus.emit('toaster-error', 'Les mots de passe ne correspondent pas');
       this.passwordConfirmationError = 'Les mots de passe ne correspondent pas';
     } else {
       const loginBean = { email: this.forgottenEmail || "", password: this.newPassword || "" };
@@ -116,24 +117,23 @@ export default class ForgottenPassword extends Vue {
   resetResult(status: number) {
     switch (status) {
       case 200:
-        Helpers.alert(this.$modal,
-          'Votre demande de réinitialisation de mot de passe a été envoyée. Merci de vérifier votre boîte e-mail',
+        Helpers.alert('Votre demande de réinitialisation de mot de passe a été envoyée. Merci de vérifier votre boîte e-mail',
           'Demande envoyée')
           .then(() => {
-            this.$root.$emit('toaster-success', 'Demande de changement de mot de passe envoyée', 10000);
+            EventBus.emit('toaster-success', 'Demande de changement de mot de passe envoyée', 10000);
             this.expandCollapse();
           });
         break;
       case 400:
-        this.$root.$emit('toaster-error', 'Mot de passe non valide');
+        EventBus.emit('toaster-error', 'Mot de passe non valide');
         this.passwordError = 'Mot de passe non valide';
         break;
       case 404:
-        this.$root.$emit('toaster-error', 'E-mail inconnu');
+        EventBus.emit('toaster-error', 'E-mail inconnu');
         this.emailError = 'E-mail inconnu';
         break;
       default:
-        this.$root.$emit('toaster-error', 'Erreur technique');
+        EventBus.emit('toaster-error', 'Erreur technique');
         this.emailError = 'Erreur technique, veuillez réessayer';
         console.error("Unexpected status: " + status);
     }

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
     <div class="my-trips  shifted-background">
-        <FisholaHeader />
+        <CarnetHeader />
 
         <div class="page-with-header">
             <div class="pane pane-only">
@@ -54,9 +54,10 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import ProfileView from "./Profile.vue";
 import SettingsView from "./Settings.vue";
 import { RouterUtils } from "@/router/RouterUtils";
@@ -66,9 +67,9 @@ import Avatar from "@/components/common/Avatar.vue";
 
 @Component({
     components: {
-        FisholaHeader,
+        CarnetHeader,
         ProfileView,
-        FisholaFooter,
+        CarnetFooter,
         SettingsView,
         Avatar
     },
@@ -98,7 +99,7 @@ export default class ProfileAndSettingsView extends Vue {
             this.profile = profile
             this.fullName = UserProfile.fullName(profile);
         }), () => {
-            this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+            EventBus.emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
             RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
         };
     }

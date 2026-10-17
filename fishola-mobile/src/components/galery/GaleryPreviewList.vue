@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
   %%
@@ -42,10 +42,11 @@ import CatchSummary from "@/pojos/CatchSummary";
 import GaleryPreview from "@/components/galery/GaleryPreview.vue";
 import { PicturePerTripBean } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import Constants from "../../services/Constants";
 
 @Component({
+  emits: ["newCatch", "openCatchFromId"],
   components: {
     GaleryPreview,
   },
@@ -64,7 +65,7 @@ export default class GaleryPreviewList extends Vue {
     }
   }
 
-  @Watch("picturesPerTrip")
+  @Watch("picturesPerTrip", { deep: true })
   picturesPerTripChanged() {
     let i = 0;
     this.firstPictures = [];

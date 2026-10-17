@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-page page">
       <SomeTripHeader v-if="ready" v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -70,10 +70,10 @@
         </div>
       </div>
     </div>
-    <FisholaFooter v-if="ready && modifiable" button-text="Enregistrer" v-on:buttonClicked="startSave"
+    <CarnetFooter v-if="ready && modifiable" button-text="Enregistrer" v-on:buttonClicked="startSave"
       v-on:deleteClicked="deleteTrip" back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips"
       shortcuts="back,spacer,delete" />
-    <FisholaFooter v-if="ready && !modifiable" v-on:deleteClicked="deleteTrip" back-event="onBackButton"
+    <CarnetFooter v-if="ready && !modifiable" v-on:deleteClicked="deleteTrip" back-event="onBackButton"
       v-on:onBackButton="backToGaleryOrTrips" shortcuts="back,spacer,delete" />
   </div>
 </template>
@@ -87,25 +87,26 @@ import Helpers from "@/services/Helpers";
 import TripDates from "@/services/TripDates";
 
 import BackButton from "@/components/common/BackButton.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import SomeTripSummary from "@/components/trip/SomeTripSummary.vue";
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
 export type ActionType = "UpdateTrip" | "EditSpecies" | "EditTechniques";
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
     SomeTripSummary,
     CatchPreviewList,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class EditTripView extends Vue {
@@ -183,7 +184,7 @@ export default class EditTripView extends Vue {
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
       RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
-      this.$root.$emit("ask-for-sync-check");
+      EventBus.emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
@@ -207,7 +208,7 @@ export default class EditTripView extends Vue {
   }
 
   openPdfExport() {
-    this.$root.$emit("open-trip-pdf-export", [this.id]);
+    EventBus.emit("open-trip-pdf-export", [this.id]);
   }
 
   openCatch(catchId: string) {
@@ -218,7 +219,7 @@ export default class EditTripView extends Vue {
   }
 
   deleteTrip() {
-    Helpers.confirm(this.$modal, "Voulez-vous supprimer la sortie ?").then(
+    Helpers.confirm("Voulez-vous supprimer la sortie ?").then(
       () => {
         TripsService.deleteTrip(this.id, this.tripDeleted);
       }
@@ -233,7 +234,7 @@ export default class EditTripView extends Vue {
     if (this.fromGallery) {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
-        params: {
+        query: {
           selectedDefaultPic: "",
           selectedLakeIdProp: this.lakeFilter,
         },

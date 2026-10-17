@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -34,7 +34,7 @@
           v-if="readonly"
           name="lake"
           label="Plan d'eau"
-          v-bind:value="selectedLakeName"
+          v-bind:modelValue="selectedLakeName"
           v-bind:readonly="true"
         />
         <LakeSelection
@@ -160,9 +160,11 @@ import FormMultiValues from "@/components/common/FormMultiValues.vue";
 import LakeSelection from "@/components/common/LakeSelection.vue";
 import TripPositionsMap from "@/components/trip/TripPositionsMap.vue";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
+  emits: ["goEditSpecies", "goEditTechniques", "trip-modified"],
   components: {
     FormInput,
     FormSelect,
@@ -233,8 +235,8 @@ export default class SomeTripSummary extends Vue {
   // mare / étang. Mutation directe du modèle ; la sauvegarde est déclenchée
   // par le parent au « Terminer ».
   onEndPositionPicked(coords: { lat: number; lng: number }) {
-    this.$set(this.trip, "endLatitude", coords.lat);
-    this.$set(this.trip, "endLongitude", coords.lng);
+    this.trip.endLatitude = coords.lat;
+    this.trip.endLongitude = coords.lng;
     this.snapEndPositionToNearestWaterEntity(coords);
   }
 
@@ -243,8 +245,8 @@ export default class SomeTripSummary extends Vue {
       .then((res) => {
         const snapped = res && res.proposal ? res.proposal.closestPoint : null;
         if (snapped) {
-          this.$set(this.trip, "endLatitude", snapped.lat);
-          this.$set(this.trip, "endLongitude", snapped.lng);
+          this.trip.endLatitude = snapped.lat;
+          this.trip.endLongitude = snapped.lng;
         }
       })
       // Hors ligne / erreur serveur : on conserve le point brut posé par
@@ -361,13 +363,13 @@ export default class SomeTripSummary extends Vue {
     hasError = this.verifyDate(hasError);
 
     if (hasError) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Vous devez renseigner les champs obligatoires"
       );
       return;
     }
-    TripsService.confirmPlausibleTripDuration(this.$modal, this.trip!).then((confirmed) => {
+    TripsService.confirmPlausibleTripDuration(this.trip!).then((confirmed) => {
       if (!confirmed) {
         return;
       }

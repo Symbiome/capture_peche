@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -20,6 +20,7 @@
  */
 import moment from "moment";
 import Helpers from "@/services/Helpers";
+import DialogService, { DialogParams } from "@/services/DialogService";
 
 // Fonctions pures de formatage de dates et de durées : ce sont elles qui
 // produisent tous les libellés de durée de sortie et d'heure de prise.
@@ -133,29 +134,14 @@ describe("Helpers — masque de saisie horaire 24h", () => {
 // Alerte de déclaration obligatoire (#91), déclenchée après l'enregistrement
 // d'une capture d'une espèce soumise à déclaration.
 describe("Helpers — alerte de déclaration obligatoire", () => {
-  function fakeModal() {
-    let shown: any = null;
-    return {
-      show: (name: string, params: any) => {
-        shown = params;
-      },
-      hide: () => {
-        shown = null;
-      },
-      get shown() {
-        return shown;
-      },
-    };
-  }
-
   it("propose d'ouvrir le lien officiel quand il est renseigné", async () => {
-    const modal = fakeModal();
     const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
 
-    const promise = Helpers.declareCatchAlert(modal, "https://federation.example/declarer");
-    expect(modal.shown.buttons).toHaveLength(2);
+    const promise = Helpers.declareCatchAlert("https://federation.example/declarer");
+    const shown = DialogService.state.params!;
+    expect(shown.buttons).toHaveLength(2);
 
-    const declareButton = modal.shown.buttons.find((b: any) => b.title === "Déclarer");
+    const declareButton = shown.buttons.find((b) => b.title === "Déclarer")!;
     declareButton.handler();
     await promise;
 
@@ -164,13 +150,13 @@ describe("Helpers — alerte de déclaration obligatoire", () => {
   });
 
   it("affiche un message générique et un seul bouton sans lien officiel", async () => {
-    const modal = fakeModal();
-    const promise = Helpers.declareCatchAlert(modal, undefined);
+    const promise = Helpers.declareCatchAlert(undefined);
+    const shown = DialogService.state.params!;
 
-    expect(modal.shown.buttons).toHaveLength(1);
-    expect(modal.shown.text).toContain("Contactez votre fédération");
+    expect(shown.buttons).toHaveLength(1);
+    expect(shown.text).toContain("Contactez votre fédération");
 
-    modal.shown.buttons[0].handler();
+    shown.buttons[0].handler();
     await promise;
   });
 });
@@ -227,43 +213,43 @@ describe("Helpers — classes de taille", () => {
 // #229 : une taille au-delà de la taille max admin demande confirmation au
 // lieu de bloquer l'enregistrement.
 describe("Helpers — confirmation de taille au-delà du maximum", () => {
-  function fakeModal(clickedButtonTitle?: string) {
-    const modal = {
-      shown: [] as any[],
-      show(_name: string, params: any) {
-        modal.shown.push(params);
-        const button = params.buttons.find((b: any) => b.title === clickedButtonTitle);
-        button.handler();
-      },
-      hide() {},
-    };
-    return modal;
+  function clickOnShow(clickedButtonTitle?: string): DialogParams[] {
+    const shown: DialogParams[] = [];
+    vi.spyOn(DialogService, "show").mockImplementation((params: DialogParams) => {
+      shown.push(params);
+      params.buttons.find((b) => b.title === clickedButtonTitle)!.handler();
+    });
+    return shown;
   }
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("n'affiche pas de confirmation quand la taille est inférieure ou égale au maximum", async () => {
-    const modal = fakeModal();
-    await expect(Helpers.confirmSizeAboveMax(modal, 60, 60)).resolves.toBe(true);
-    await expect(Helpers.confirmSizeAboveMax(modal, 40, 60)).resolves.toBe(true);
-    expect(modal.shown).toHaveLength(0);
+    const shown = clickOnShow();
+    await expect(Helpers.confirmSizeAboveMax(60, 60)).resolves.toBe(true);
+    await expect(Helpers.confirmSizeAboveMax(40, 60)).resolves.toBe(true);
+    expect(shown).toHaveLength(0);
   });
 
   it("n'affiche pas de confirmation sans taille maximale définie par l'administrateur", async () => {
-    const modal = fakeModal();
-    await expect(Helpers.confirmSizeAboveMax(modal, 1200, Helpers.DEFAULT_MAX_SIZE)).resolves.toBe(true);
-    expect(modal.shown).toHaveLength(0);
+    const shown = clickOnShow();
+    await expect(Helpers.confirmSizeAboveMax(1200, Helpers.DEFAULT_MAX_SIZE)).resolves.toBe(true);
+    expect(shown).toHaveLength(0);
   });
 
   it("enregistre la prise après « Confirmer »", async () => {
-    const modal = fakeModal("Confirmer");
-    await expect(Helpers.confirmSizeAboveMax(modal, 95, 80)).resolves.toBe(true);
-    expect(modal.shown).toHaveLength(1);
-    expect(modal.shown[0].title).toBe("Êtes-vous sûr de la taille de la prise ?");
-    expect(modal.shown[0].text).toContain("95 cm");
+    const shown = clickOnShow("Confirmer");
+    await expect(Helpers.confirmSizeAboveMax(95, 80)).resolves.toBe(true);
+    expect(shown).toHaveLength(1);
+    expect(shown[0].title).toBe("Êtes-vous sûr de la taille de la prise ?");
+    expect(shown[0].text).toContain("95 cm");
   });
 
   it("revient au formulaire après « Corriger »", async () => {
-    const modal = fakeModal("Corriger");
-    await expect(Helpers.confirmSizeAboveMax(modal, 95, 80)).resolves.toBe(false);
+    const shown = clickOnShow("Corriger");
+    await expect(Helpers.confirmSizeAboveMax(95, 80)).resolves.toBe(false);
     });
 });
 // #230 : homonymes suffixés du département (et de la commune s'ils partagent

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -77,7 +77,8 @@ import LogoutService from "@/services/LogoutService";
 
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { Device } from "@capacitor/device";
 
 export class MenuItem {
@@ -110,13 +111,13 @@ export default class Menu extends Vue {
   initials: string = "";
 
   created() {
-    this.$root.$on("profile-updated", this.loadProfile);
-    this.$root.$on("loggued-out", this.onLogguedOut);
+    EventBus.on("profile-updated", this.loadProfile);
+    EventBus.on("loggued-out", this.onLogguedOut);
     this.loadProfile();
   }
 
   mounted() {
-    this.$root.$on("open-menu", this.openMenu);
+    EventBus.on("open-menu", this.openMenu);
   }
 
   availableMenuItems() {
@@ -128,10 +129,10 @@ export default class Menu extends Vue {
     return result;
   }
 
-  beforeDestroy() {
-    this.$root.$off("profile-updated");
-    this.$root.$off("loggued-out");
-    this.$root.$off("open-menu");
+  beforeUnmount() {
+    EventBus.off("profile-updated");
+    EventBus.off("loggued-out");
+    EventBus.off("open-menu");
   }
 
   async loadProfile() {
@@ -162,9 +163,8 @@ export default class Menu extends Vue {
     let acceptsMailNotifications = false;
     try {
       await Helpers.confirm(
-        this.$modal,
-        `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-        "Du nouveau sur FISHOLA",
+        `Vous pouvez désormais suivre l'actualité Carnet de pêche par mail. Souhaitez-vous être informé par mail des communications autour de Carnet de pêche ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+        "Du nouveau sur Carnet de pêche",
         "Non",
         "Oui"
       );
@@ -201,13 +201,13 @@ export default class Menu extends Vue {
   }
 
   closeMenu() {
-    this.$root.$emit("close-feedback");
+    EventBus.emit("close-feedback");
     this.visibility = "menu-disappears";
   }
 
   openFeedback() {
     this.closeMenu();
-    this.$root.$emit("open-feedback");
+    EventBus.emit("open-feedback");
   }
 
   goDispatcher() {
@@ -290,7 +290,7 @@ export default class Menu extends Vue {
 
   logout() {
     this.closeMenu();
-    LogoutService.confirmAndLogout(this);
+    LogoutService.confirmAndLogout(this.$router);
   }
 
   onLogguedOut() {

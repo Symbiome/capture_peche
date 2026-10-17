@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,12 +21,15 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,12 +37,13 @@ import java.util.UUID;
 /**
  * « Baroudeur » (#146) : sorties sur au moins {@code threshold} départements différents.
  * Utilise {@code trip.department} déjà estampillé (#159), aucune jointure spatiale nécessaire.
+ * Preuve (#275) : la première sortie dans chaque département (carte des milieux pêchés).
  */
 @Singleton
 public class MultiDepartmentStrategy implements BadgeRuleStrategy {
 
     @Inject
-    GamificationDao dao;
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -49,9 +53,17 @@ public class MultiDepartmentStrategy implements BadgeRuleStrategy {
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
         int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
-        int count = dao.countDistinctDepartments(userId);
+        Map<String, UUID> firstTripPerDepartment = proofDao.findFirstTripPerDepartment(userId);
+        int count = firstTripPerDepartment.size();
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("departmentCount", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("departmentCount", count),
+                        UnlockProof.ofTrips(List.copyOf(firstTripPerDepartment.values()))))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return UnlockProof.ofTrips(List.copyOf(proofDao.findFirstTripPerDepartment(userId).values())).nonEmpty();
     }
 }

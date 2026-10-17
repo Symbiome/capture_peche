@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.carnet;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest.imports.carnet;
  */
 
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.imports.ImportResultBean;
 import jakarta.inject.Inject;
@@ -45,7 +45,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/imports/carnet-volontaire")
 @Produces(MediaType.APPLICATION_JSON)
-public class CarnetVolontaireImportResource extends AbstractFisholaResource {
+public class CarnetVolontaireImportResource extends AbstractCarnetResource {
 
     @Inject
     protected CarnetVolontaireImportService importService;

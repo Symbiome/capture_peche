@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.survey;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -87,7 +87,7 @@ class SurveyImportFlatCsvTest {
         var rec = ctx.fetchOne("SELECT name, department FROM water_entity WHERE name = 'Annecy' LIMIT 1");
         annecy = rec.get("name", String.class);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, "
-                + "is_operator) VALUES (?, ?, ?, now(), false, false, true)", operatorId, "flat-test-op@fishola.test", "x");
+                + "is_operator) VALUES (?, ?, ?, now(), false, false, true)", operatorId, "flat-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, rec.get("department", String.class));
 
@@ -169,7 +169,7 @@ class SurveyImportFlatCsvTest {
     }
 
     private ValidatableResponse post(byte[] body, String fileName, String mode) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(body)
                 .when().post(URI + "?filename=" + fileName + "&mode=" + mode)
@@ -362,7 +362,7 @@ class SurveyImportFlatCsvTest {
 
     @Test
     void csvTemplateFilledWithItsExampleRowsImportsWithoutError() {
-        String template = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        String template = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(URI + "/template?format=csv")
                 .then().statusCode(200)
                 .contentType("text/csv")
@@ -382,7 +382,7 @@ class SurveyImportFlatCsvTest {
     // --- Archive des gabarits ----------------------------------------------------
 
     private Map<String, byte[]> downloadTemplateBundle() throws IOException {
-        byte[] zip = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        byte[] zip = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(URI + "/template?format=zip")
                 .then().statusCode(200)
                 .contentType("application/zip")

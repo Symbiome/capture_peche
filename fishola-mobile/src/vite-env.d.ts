@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -36,7 +36,7 @@ interface ImportMetaEnv {
   // Uniquement renseignée par les builds web et mobile (.env.web, .env.mobile) :
   // en dev et en démo, Constants.baseDeeplinkSafeApiUrl() retombe sur baseApiUrl().
   readonly VITE__DEEPLINK_SAFE_API_URL: string | undefined;
-  // Prélèvement d'écailles hérité de Fishola, masqué par défaut (#240, #241).
+  // Prélèvement d'écailles hérité de l'application d'origine, masqué par défaut (#240, #241).
   readonly VITE__SCALE_SAMPLING_ENABLED: string | undefined;
 }
 

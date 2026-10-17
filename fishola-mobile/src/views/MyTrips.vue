@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -76,17 +76,19 @@ import TripsService from "@/services/TripsService";
 import { TripsAndCount } from "@/services/TripsService";
 import Helpers from "@/services/Helpers";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import MyTripsHeader from "@/components/my-trips/MyTripsHeader.vue";
 import MyTripsSearch from "@/components/my-trips/MyTripsSearch.vue";
 import MyTripsList from "@/components/my-trips/MyTripsList.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 
-import { Component, Watch, Vue, Prop } from "vue-property-decorator";
+import { Component, Watch, Vue, Prop } from "vue-facing-decorator";
+import debounce from "lodash/debounce";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     MyTripsHeader,
     MyTripsSearch,
     MyTripsList,
@@ -116,7 +118,7 @@ export default class MyTripsView extends Vue {
     if (this.refreshTimer) {
       this.refreshTimer.cancel();
     }
-    this.refreshTimer = Vue.lodash.debounce(this.loadTrips, 1000);
+    this.refreshTimer = debounce(this.loadTrips, 1000);
     this.refreshTimer();
   }
 
@@ -151,7 +153,7 @@ export default class MyTripsView extends Vue {
   }
 
   mounted() {
-    this.$root.$on("trips-saved", () => {
+    EventBus.on("trips-saved", () => {
       console.debug(
         "La liste des sorties a été mise à jour, on rafraichit ..."
       );
@@ -159,9 +161,9 @@ export default class MyTripsView extends Vue {
     });
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     // On fait en sortie de ne plus écouter les évènements si le composant n'est plus actif
-    this.$root.$off("trips-saved");
+    EventBus.off("trips-saved");
   }
 
   tripsLoaded(data: TripsAndCount) {
@@ -185,7 +187,7 @@ export default class MyTripsView extends Vue {
   loadError(data: any) {
     console.error("Erreur au chargement des sorties", data);
     if (data && data.status == 401) {
-      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      EventBus.emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
       RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
   }
@@ -194,8 +196,8 @@ export default class MyTripsView extends Vue {
   // qui émet « trips-saved » (et donc le rechargement de la liste) en cas de
   // succès.
   syncNow() {
-    this.$root.$emit("ask-for-sync-check");
-    this.$root.$emit("toaster-success", "Synchronisation lancée");
+    EventBus.emit("ask-for-sync-check");
+    EventBus.emit("toaster-success", "Synchronisation lancée");
   }
 
   reverseSortOrder() {
@@ -227,7 +229,7 @@ export default class MyTripsView extends Vue {
       if (this.selectedTripIds.length > 1) {
         message = "Voulez-vous supprimer ces sorties ?";
       }
-      Helpers.confirm(this.$modal, message).then(this.deleteSelectedTrips);
+      Helpers.confirm(message).then(this.deleteSelectedTrips);
     }
   }
 
@@ -253,7 +255,7 @@ export default class MyTripsView extends Vue {
   tripsDeleted() {
     const plural = this.selectedTripIds.length > 1 ? "s" : "";
     const message = `${this.selectedTripIds.length} sortie${plural} supprimée${plural}`;
-    this.$root.$emit("toaster-success", message);
+    EventBus.emit("toaster-success", message);
     this.loadTrips();
   }
 
@@ -267,7 +269,7 @@ export default class MyTripsView extends Vue {
     const orderedIds = this.trips
       .map((t) => t.id)
       .filter((id) => this.selectedTripIds.includes(id));
-    this.$root.$emit("open-trip-pdf-export", orderedIds);
+    EventBus.emit("open-trip-pdf-export", orderedIds);
   }
 }
 </script>

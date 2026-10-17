@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-catchs page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-catchs-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -56,7 +56,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Fin de pêche" v-on:buttonClicked="finish" shortcuts="back,step-3-4,giveup"
+    <CarnetFooter button-text="Fin de pêche" v-on:buttonClicked="finish" shortcuts="back,step-3-4,giveup"
       back-event="onBackButton" v-on:onBackButton="editSpecies" />
   </div>
 </template>
@@ -71,22 +71,22 @@ import TripDates from "@/services/TripDates";
 
 import BackButton from "@/components/common/BackButton.vue";
 import Running from "@/components/common/Running.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import router from "../../router";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
     Running,
     CatchPreviewList,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripCatchsView extends Vue {
@@ -128,7 +128,7 @@ export default class TripCatchsView extends Vue {
     this.ready = true;
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     clearInterval(this.interval);
   }
 
@@ -167,7 +167,6 @@ export default class TripCatchsView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

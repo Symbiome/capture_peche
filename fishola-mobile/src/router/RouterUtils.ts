@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
@@ -18,17 +18,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import VueRouter from "vue-router";
+import { isNavigationFailure, RouteLocationRaw, Router } from "vue-router";
 
 import Helpers from "@/services/Helpers";
 import TripsService from "@/services/TripsService";
 
 export class RouterUtils {
-  static async pushRouteNoDuplicate(router: VueRouter, route: any) {
+  static async pushRouteNoDuplicate(router: Router, route: RouteLocationRaw) {
     try {
       await router.push(route);
     } catch (err) {
-      if (!VueRouter.isNavigationFailure(err)) {
+      if (!isNavigationFailure(err)) {
         console.error(err);
       }
       return err;
@@ -43,7 +43,7 @@ export class RouterUtils {
    * Démarre une nouvelle sortie : saisie a posteriori sur le web, choix
    * « en direct / a posteriori » sur l'application.
    */
-  static startNewTrip(router: VueRouter) {
+  static startNewTrip(router: Router) {
     Helpers.getDeviceType().then((source) => {
       if (source == "web") {
         TripsService.newAfterwardsTrip().then((id: string) => {

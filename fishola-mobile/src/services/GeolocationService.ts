@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -19,7 +19,7 @@
  * #L%
  */
 import { WaterEntity as Lake } from "@/pojos/BackendPojos";
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import ReferentialService from "@/services/ReferentialService";
 
 import { Device, DeviceInfo } from "@capacitor/device";
@@ -33,7 +33,7 @@ export class CoordsAndLake {
   ) {}
 }
 
-export default class GeolocationService extends AbstractFisholaService {
+export default class GeolocationService extends AbstractCarnetService {
   static watchId?: CallbackID;
   static latestPosition?: Position;
   static latestError?: any;

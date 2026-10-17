@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -32,10 +32,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import { BaseLayer } from '@/components/common/maplibreStyle';
 
-@Component
+@Component({ emits: ["toggle"] })
 export default class BaseLayerToggle extends Vue {
     @Prop({ default: 'plan' }) baseLayer!: BaseLayer;
 }

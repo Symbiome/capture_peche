@@ -2,7 +2,7 @@ package fr.inrae.fishola.exceptions;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Arnaud Thimel (Code Lutin)
  */
-public class NotFoundException extends AbstractFisholaRuntimeException {
+public class NotFoundException extends AbstractCarnetRuntimeException {
 
     private static final Log log = LogFactory.getLog(NotFoundException.class);
 

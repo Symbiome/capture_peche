@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -30,8 +30,8 @@
         name="theme"
         label="Apparence"
         v-bind:options="themeOptions"
-        v-bind:value="themePreference"
-        v-on:input="themeChanged"
+        v-bind:modelValue="themePreference"
+        v-on:update:modelValue="themeChanged"
       />
     </div>
 
@@ -92,7 +92,7 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
+import CarnetHeader from '@/components/layout/CarnetHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormRadio from '@/components/common/FormRadio.vue'
 import ThemeService, { ThemePreference } from '@/services/ThemeService';
@@ -101,7 +101,8 @@ import BottomNav from "@/components/layout/BottomNav.vue";
 import { UserSettings } from '@/pojos/BackendPojos';
 import ProfileService from '@/services/ProfileService';
 
-import { Component, Watch, Vue } from 'vue-property-decorator';
+import { Component, Watch, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import DocumentationService from '../services/DocumentationService';
 import { Capacitor } from '@capacitor/core';
 import { AppUpdate } from '@capawesome/capacitor-app-update';
@@ -110,7 +111,7 @@ import ScaleSampling from '@/services/ScaleSampling';
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     FormToggle,
     FormRadio,
     BottomNav,
@@ -196,7 +197,7 @@ export default class SettingsView extends Vue {
   }
 
   settingsSaved() {
-    this.$root.$emit('toaster-success', 'Paramètre enregistré')
+    EventBus.emit('toaster-success', 'Paramètre enregistré')
   }
 
   async computeAvailableAppVersion() {
@@ -218,14 +219,14 @@ export default class SettingsView extends Vue {
   }
 
   becomeScaleCollector() {
-    this.$root.$emit("open-feedback", "scale");
+    EventBus.emit("open-feedback", "scale");
   }
 
   getSamplesCollectionPoints() {
     if (this.samplesDocumentationUrl) {
       window.open(this.samplesDocumentationUrl);
     } else {
-      this.$root.$emit('toaster-error', "La liste des points de collecte n'est pas disponible")
+      EventBus.emit('toaster-error', "La liste des points de collecte n'est pas disponible")
     }
   }
 

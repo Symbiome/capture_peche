@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -26,6 +26,7 @@
 // (couches de sélection en plus).
 
 import maplibregl, { Map as MlMap, Popup, StyleSpecification } from 'maplibre-gl';
+import { markRaw } from "vue";
 import Constants from '@/services/Constants';
 import TileCacheService from '@/services/TileCacheService';
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
@@ -48,7 +49,7 @@ export const DEFAULT_ZOOM = 10;
 export type BaseLayer = 'plan' | 'satellite';
 
 /** Style MapLibre autoportant (aucune URL externe) : IGN + réseau hydro. */
-export function buildFisholaStyle(baseLayer: BaseLayer = 'plan'): StyleSpecification {
+export function buildCarnetStyle(baseLayer: BaseLayer = 'plan'): StyleSpecification {
     return {
         version: 8,
         sources: {
@@ -96,14 +97,14 @@ export function buildFisholaStyle(baseLayer: BaseLayer = 'plan'): StyleSpecifica
     };
 }
 
-/** Toggle Plan/Satellite sur une carte construite avec {@link buildFisholaStyle}. */
+/** Toggle Plan/Satellite sur une carte construite avec {@link buildCarnetStyle}. */
 export function setBaseLayer(map: MlMap, baseLayer: BaseLayer) {
     map.setLayoutProperty('ign-plan', 'visibility', baseLayer === 'plan' ? 'visible' : 'none');
     map.setLayoutProperty('ign-ortho', 'visibility', baseLayer === 'satellite' ? 'visible' : 'none');
 }
 
-/** Crée une carte MapLibre « Fishola » (style IGN + hydro, contrôle de navigation). */
-export function createFisholaMap(
+/** Crée une carte MapLibre « Carnet de pêche » (style IGN + hydro, contrôle de navigation). */
+export function createCarnetMap(
     container: HTMLElement,
     opts: {
         center?: [number, number];
@@ -119,14 +120,15 @@ export function createFisholaMap(
 ): MlMap {
     const map = new maplibregl.Map({
         container,
-        style: buildFisholaStyle(opts.baseLayer || 'plan'),
+        style: buildCarnetStyle(opts.baseLayer || 'plan'),
         center: opts.center || DEFAULT_CENTER,
         zoom: opts.zoom != null ? opts.zoom : DEFAULT_ZOOM,
         attributionControl: { compact: true },
         preserveDrawingBuffer: opts.preserveDrawingBuffer || false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
-    return map;
+    // Jamais de proxy réactif Vue 3 sur une carte MapLibre (#284).
+    return markRaw(map);
 }
 
 // ─── Marqueur « sortie » (pin poisson / canne à pêche) ───────────────────────

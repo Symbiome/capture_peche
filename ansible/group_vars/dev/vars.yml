@@ -27,8 +27,10 @@ etl_port: 3000
 
 # --- Base de données ---------------------------------------------------------
 postgres_db: fishola
-# Variante arm64 (Apple Silicon / ARM) si besoin : imresamu/postgis:18-3.6-alpine
-# (cf. fishola-backend/start_db.sh, même logique de choix d'image)
+# Image de base de docker/postgres/Dockerfile (#279) : Debian obligatoire
+# (pgBackRest installé par apt, version épinglée pour Debian 13). Variante
+# arm64 si besoin : imresamu/postgis:18-3.6 (Debian, multi-arch) — pas les
+# variantes -alpine.
 postgres_image: postgis/postgis:18-3.6
 
 # # --- Mail (dev : capturé par le Maildev embarqué, aucun vrai SMTP requis) ----

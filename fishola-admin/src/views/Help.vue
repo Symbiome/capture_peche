@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -35,7 +35,7 @@
 
     <div id="help-content">
       <div class="intro">
-        <h1>Aide à l'utilisation du back-office de Fishola</h1>
+        <h1>Aide à l'utilisation du back-office de Carnet de pêche</h1>
         <p>
           Cette page d'aide propose un mémo des fonctionnalités essentielles du back-office.<br />
         </p>
@@ -190,7 +190,7 @@
           </b-navbar-item>
         </b-navbar-dropdown>
 
-        Cet écran présente un tableau contenant toutes les espèces existantes dans Fishola.
+        Cet écran présente un tableau contenant toutes les espèces existantes dans Carnet de pêche.
 
         Un bouton <b>Nouveau</b> est suité en bas à droite de la page pour accéder au formulaire d'ajout d'une espèce.
         <img
@@ -230,7 +230,7 @@ async function exportToPDF() {
   content.classList.add('print');
   await html2pdf(content, {
     margin: 20,
-    filename: "Fishola-aide.pdf",
+    filename: "Carnet-de-peche-aide.pdf",
     image: { type: 'jpeg', quality: 1 },
     pagebreak: { mode: "css", before: "h2" },
     jsPDF: { format: 'a4', orientation: 'landscape' }

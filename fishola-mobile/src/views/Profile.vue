@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -50,7 +50,7 @@
         <input type="checkbox" id="receive-mail" class="pelorous-checkbox" v-model="profile.acceptsMailNotifications" />
         <label for="receive-mail"></label>
         <label for="receive-mail" class="real-label">
-          Je souhaite être informé des communications Fishola par mail
+          Je souhaite être informé des communications Carnet de pêche par mail
         </label>
       </div>
       <br />
@@ -63,7 +63,7 @@
         </div>
       </div>
       <!--  It was decided to hide it until the ambassador program is up and running
-        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur FISHOLA"
+        <BottomInducementView icon="/img/fish-yellow.svg" title="Devenez ambassadeur Carnet de pêche"
         text="Vous pouvez vous inscrire à notre nouveau programme d'ambassadeur." actionText="Je m'inscris"
         @click="becomeAmbassador" /> -->
 
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <FisholaFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
+    <CarnetFooter button-text="Modifier" v-on:buttonClicked="saveProfile" shortcuts="back,settings,profile"
       selected="profile" />
   </div>
 </template>
@@ -86,23 +86,25 @@ import LakeSelection from "@/components/common/LakeSelection.vue";
 import UserProfile from "@/pojos/UserProfile";
 import ProfileService from "@/services/ProfileService";
 
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import Helpers from "../services/Helpers";
 import FishingLicencesView from "./FishingLicences.vue";
 import BottomInducementView from "@/components/common/BottomInducement.vue";
 import { WaterEntity as Lake } from "@/pojos/BackendPojos";
 
 @Component({
+  emits: ["profile-updated"],
   components: {
     FormInput,
     FormSelect,
     FormMultiValues,
     FishingLicencesView,
-    FisholaFooter,
+    CarnetFooter,
     BottomInducementView,
     LakeSelection
   },
@@ -143,7 +145,6 @@ export default class ProfileView extends Vue {
 
   @Watch("profile")
   profileLoaded(profile: UserProfile) {
-    this.profile = profile;
     this.birthYear = "" + (profile.birthYear || 0);
     this.gender = profile.gender || "EMPTY";
   }
@@ -201,11 +202,11 @@ export default class ProfileView extends Vue {
         try {
           await ProfileService.updateFavoriteLakes(this.favoriteLakes);
           this.$emit("profile-updated")
-          this.$root.$emit("profile-updated");
-          this.$root.$emit("toaster-success", "Profil enregistré");
+          EventBus.emit("profile-updated");
+          EventBus.emit("toaster-success", "Profil enregistré");
         } catch (e) {
           console.error(e);
-          this.$root.$emit(
+          EventBus.emit(
             "toaster-error",
             "Erreur technique, merci de réessayer plus tard"
           );
@@ -214,9 +215,9 @@ export default class ProfileView extends Vue {
       (response) => {
         if (response.status == 400) {
           this.validationErrors = response.content;
-          this.$root.$emit("toaster-error", "Veuillez corriger les erreurs");
+          EventBus.emit("toaster-error", "Veuillez corriger les erreurs");
         } else {
-          this.$root.$emit(
+          EventBus.emit(
             "toaster-error",
             "Erreur technique, merci de réessayer plus tard"
           );
@@ -228,18 +229,17 @@ export default class ProfileView extends Vue {
 
   safeDeleteAccount() {
     Helpers.confirm(
-      this.$modal,
       "Confirmez-vous vouloir supprimer définitivement votre compte ? Cette opération est irreversible",
       "Supprimer mon compte définitivement"
     ).then(() => {
       ProfileService.safeDeleteAccount(this.profile).then(() => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-success",
           "Votre compte a été supprimé",
           5000
         );
         RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
-        this.$root.$emit("loggued-out");
+        EventBus.emit("loggued-out");
       });
     });
   }
@@ -252,7 +252,7 @@ export default class ProfileView extends Vue {
   }
 
   becomeAmbassador() {
-    this.$root.$emit("open-feedback", "ambassador");
+    EventBus.emit("open-feedback", "ambassador");
   }
 
   editPassword() {

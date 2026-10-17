@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -85,7 +85,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       shortcuts="back,credits,feedback"
       button-icon="icon-send"
       button-text="Envoyer"
@@ -98,8 +98,8 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import FormInput from "@/components/common/FormInput.vue";
 import FormRadio from "@/components/common/FormRadio.vue";
@@ -113,13 +113,14 @@ import FeedbackService from "@/services/FeedbackService";
 
 import html2canvas from "html2canvas";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { Device } from "@capacitor/device";
 
 @Component({
   components: {
-    FisholaHeader,
-    FisholaFooter,
+    CarnetHeader,
+    CarnetFooter,
     FormInput,
     FormRadio,
     FormTextarea,
@@ -154,13 +155,13 @@ export default class FeedbackModal extends Vue {
   }
 
   mounted() {
-    this.$root.$on("open-feedback", event => this.openFeedback(event));
-    this.$root.$on("close-feedback", this.closeFeedback);
+    EventBus.on("open-feedback", event => this.openFeedback(event));
+    EventBus.on("close-feedback", this.closeFeedback);
   }
 
-  beforeDestroy() {
-    this.$root.$off("open-feedback");
-    this.$root.$off("close-feedback");
+  beforeUnmount() {
+    EventBus.off("open-feedback");
+    EventBus.off("close-feedback");
   }
 
   openFeedback(feedbackType: string) {
@@ -179,7 +180,7 @@ export default class FeedbackModal extends Vue {
         "Bonjour,\nJe souhaiterais devenir collecteur d'écailles salmonidés.\nVoici mon adresse : ...\n";
     } else if (feedbackType == "ambassador") {
       this.model.description =
-        "Bonjour,\nJe souhaiterais devenir ambassadeur Fishola.\n";
+        "Bonjour,\nJe souhaiterais devenir ambassadeur Carnet de pêche.\n";
     }
     this.loadProfile();
   }
@@ -276,7 +277,7 @@ export default class FeedbackModal extends Vue {
     this.model.location = window.location.href;
     this.model.device = this.device;
     FeedbackService.sendFeedback(this.model).then(() => {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         "Votre retour a été enregistré, merci"
       );

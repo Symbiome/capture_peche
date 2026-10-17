@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -186,7 +186,8 @@ import DistributionEntry from "@/pojos/DistributionEntry";
 import OptionItem from "@/pojos/OptionItem";
 import { DashboardAndSpecies } from "@/services/DashboardService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 
 import moment from "moment";
 import MaillageLegend from "./MaillageLegend.vue";
@@ -303,7 +304,7 @@ export default class PersonalDashboard extends Vue {
         whatever: top.catchs,
       });
     });
-    this.topBySizeOptions = Vue.lodash.orderBy(this.topBySizeOptions, "name");
+    this.topBySizeOptions = orderBy(this.topBySizeOptions, "name");
 
     const topByWeight: TopEntry[] = this.parseTop(
       this.dashboardData.dashboard.topByWeight
@@ -316,7 +317,7 @@ export default class PersonalDashboard extends Vue {
         whatever: top.catchs,
       });
     });
-    this.topByWeightOptions = Vue.lodash.orderBy(
+    this.topByWeightOptions = orderBy(
       this.topByWeightOptions,
       "name"
     );
@@ -342,11 +343,11 @@ export default class PersonalDashboard extends Vue {
           this.dashboardData.dashboard.monthlySizesPerMaillage[speciesId],
       })
     });
-    this.monthlySizesOptions = Vue.lodash.orderBy(
+    this.monthlySizesOptions = orderBy(
       this.monthlySizesOptions,
       "name"
     );
-    this.monthlyCountOptions = Vue.lodash.orderBy(
+    this.monthlyCountOptions = orderBy(
       this.monthlySizesOptions,
       "name"
     );

@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Admin
+ * Carnet de pêche :: Admin
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -42,7 +42,7 @@ export const DEFAULT_ZOOM = 10;
 export type BaseLayer = "plan" | "satellite";
 
 /** Style MapLibre autoportant : IGN + réseau hydro. */
-export function buildFisholaStyle(baseLayer: BaseLayer = "plan"): StyleSpecification {
+export function buildCarnetStyle(baseLayer: BaseLayer = "plan"): StyleSpecification {
   return {
     version: 8,
     sources: {

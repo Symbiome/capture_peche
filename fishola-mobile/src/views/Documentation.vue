@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="documentation page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
 
     <div class="page documentation-page">
       <div class="pane pane-only">
@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 
@@ -91,12 +91,13 @@ import DocumentationService from "@/services/DocumentationService";
 import TripsService from "@/services/TripsService";
 import { DocumentationLight, Editorial } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import orderBy from "lodash/orderBy";
 import { RouterUtils } from "@/router/RouterUtils";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     RunningOverlay,
     BottomNav,
   },
@@ -129,7 +130,7 @@ export default class DocumentationView extends Vue {
   }
 
   documentationsLoaded(docs: DocumentationLight[]) {
-    const sortedDocs = Vue.lodash.orderBy(docs, "name");
+    const sortedDocs = orderBy(docs, "name");
     sortedDocs.forEach((doc) => this.elements.push(doc));
   }
 

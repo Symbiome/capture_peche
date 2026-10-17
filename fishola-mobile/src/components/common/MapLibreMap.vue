@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -27,7 +27,7 @@
   l'entité sous-jacente.
 
   MapLibre n'a pas de wrapper Vue 2 maintenu : intégration impérative (init dans
-  initMap(), destruction dans beforeDestroy()). Le conteneur étant masqué par un
+  initMap(), destruction dans beforeUnmount()). Le conteneur étant masqué par un
   v-show tant que la carte n'est pas ouverte, on initialise paresseusement à la
   première ouverture (une carte MapLibre créée dans un conteneur de taille nulle
   ne se rend pas correctement).
@@ -55,7 +55,7 @@
 <script lang="ts">
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { WaterEntity as Lake, WaterEntityAttribution } from '@/pojos/BackendPojos';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import Constants from '@/services/Constants';
 import GeolocationService from '@/services/GeolocationService';
@@ -64,6 +64,7 @@ import OfflineAreasService from '@/services/OfflineAreasService';
 import TileCacheService from '@/services/TileCacheService';
 
 import maplibregl, { Map as MlMap, MapMouseEvent, Marker, LngLatBoundsLike, StyleSpecification } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Ciblage et infobulle des entités hydro : logique mutualisée entre toutes les cartes.
 import { attachHydroHover, queryHydroAt } from './maplibreStyle';
@@ -90,7 +91,7 @@ const DEFAULT_ZOOM = 10;
 
 type BaseLayer = 'plan' | 'satellite';
 
-@Component({ components: { BaseLayerToggle } })
+@Component({ emits: ["close", "map-click", "selectLake"], components: { BaseLayerToggle } })
 export default class MapLibreMap extends Vue {
     @Prop() favoriteLakes: Lake[];
     @Prop() selectedLake: Lake;
@@ -121,7 +122,7 @@ export default class MapLibreMap extends Vue {
         }
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         this.unsubscribeNetwork?.();
         this.unsubscribeNetwork = null;
         this.destroyMarkers();
@@ -159,7 +160,7 @@ export default class MapLibreMap extends Vue {
         this.recenterOnSelectedIfOffscreen();
     }
 
-    @Watch('favoriteLakes')
+    @Watch('favoriteLakes', { deep: true })
     onFavoritesChange() {
         this.refreshFavoriteMarkers();
     }
@@ -194,7 +195,7 @@ export default class MapLibreMap extends Vue {
             zoom: this.selectedHasCoords() ? 12 : DEFAULT_ZOOM,
             attributionControl: { compact: true },
         });
-        this.map = map;
+        this.map = markRaw(map);
 
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
 
@@ -535,7 +536,7 @@ export default class MapLibreMap extends Vue {
         } else {
             // Goutte terra cotta = point de départ CHOISI (distinct de la pastille
             // « Ma position », #18).
-            this.pinMarker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected })
+            this.pinMarker = markRaw(new maplibregl.Marker({ color: CARNET_MAP_COLORS.selected }))
                 .setLngLat([lng, lat])
                 .addTo(this.map);
             this.pinMarker.getElement().setAttribute('title', 'Point de départ');
@@ -556,7 +557,7 @@ export default class MapLibreMap extends Vue {
             const el = document.createElement('div');
             el.className = 'user-position-marker';
             el.title = 'Ma position';
-            this.userMarker = new maplibregl.Marker({ element: el })
+            this.userMarker = markRaw(new maplibregl.Marker({ element: el }))
                 .setLngLat([lng, lat])
                 .addTo(this.map);
         }
@@ -574,7 +575,7 @@ export default class MapLibreMap extends Vue {
             }
             const el = document.createElement('div');
             el.className = 'favorite-marker';
-            const marker = new maplibregl.Marker({ element: el })
+            const marker = markRaw(new maplibregl.Marker({ element: el }))
                 .setLngLat([lake.longitude, lake.latitude])
                 .addTo(this.map!);
             el.title = lake.name;

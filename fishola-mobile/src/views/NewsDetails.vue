@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="news-details page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page news-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
@@ -47,25 +47,25 @@
         </div>
       </div>
     </div>
-    <FisholaFooter shortcuts="back" />
+    <CarnetFooter shortcuts="back" />
   </div>
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import documentationService from "@/services/DocumentationService";
 import { NewsBean } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
 
 @Component({
   components: {
-    FisholaHeader,
-    FisholaFooter,
+    CarnetHeader,
+    CarnetFooter,
   },
 })
 export default class NewsDetailsView extends Vue {
@@ -95,7 +95,7 @@ export default class NewsDetailsView extends Vue {
     if (news.miniatureId) {
       return Constants.apiUrl("/v1/news-picture/" + news.miniatureId);
     } else {
-      return "img/logo-small.svg";
+      return "img/carnet/logo-mark.svg";
     }
   }
 

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -44,7 +44,7 @@ import NetworkStatusService from "@/services/NetworkStatusService";
 import TripsService from "@/services/TripsService";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-facing-decorator";
 
 @Component
 export default class OfflineBanner extends Vue {
@@ -61,7 +61,7 @@ export default class OfflineBanner extends Vue {
     });
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
     }

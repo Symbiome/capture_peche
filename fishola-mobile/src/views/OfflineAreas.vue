@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -27,7 +27,7 @@
 -->
 <template>
   <div class="offline-areas page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="offline-areas-page page">
       <div class="pane">
         <div class="pane-content rounded">
@@ -179,7 +179,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import OfflinePacksMap from "@/components/common/OfflinePacksMap.vue";
 
@@ -190,11 +190,12 @@ import OfflineArea from "@/pojos/OfflineArea";
 import NetworkStatusService from "@/services/NetworkStatusService";
 import Helpers from "@/services/Helpers";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     BottomNav,
     OfflinePacksMap,
   },
@@ -223,7 +224,7 @@ export default class OfflineAreasView extends Vue {
     });
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
     }
@@ -271,12 +272,12 @@ export default class OfflineAreasView extends Vue {
     try {
       const area = await OfflineAreasService.downloadPack(code, name);
       await this.loadPacks();
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         `${name} téléchargé (${area.entityCount} entités)`
       );
     } catch (e) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Échec du téléchargement. Vérifiez votre connexion et réessayez."
       );
@@ -288,7 +289,6 @@ export default class OfflineAreasView extends Vue {
   async remove(pack: OfflineArea) {
     try {
       await Helpers.confirm(
-        this.$modal,
         `Supprimer le pack hors-ligne « ${pack.name} » ? Vous pourrez le retélécharger plus tard.`,
         "Supprimer la zone",
         "Annuler",
@@ -299,7 +299,7 @@ export default class OfflineAreasView extends Vue {
     }
     await OfflineAreasService.deletePack(pack.code);
     await this.loadPacks();
-    this.$root.$emit("toaster-success", `${pack.name} supprimé`);
+    EventBus.emit("toaster-success", `${pack.name} supprimé`);
   }
 
   formatBytes(bytes: number): string {

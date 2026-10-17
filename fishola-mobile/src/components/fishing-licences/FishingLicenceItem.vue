@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -50,11 +50,13 @@
 <script lang="ts">
 import FishingLicenceService from "@/services/FishingLicenceService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
 import Helpers from '@/services/Helpers';
 
 @Component({
+  emits: ["reload", "selected", "unselected"],
   components: {
     FishingLicenceItem
   },
@@ -110,17 +112,16 @@ export default class FishingLicenceItem extends Vue {
   deleteLicence(event: Event) {
     event.stopPropagation();
     Helpers.confirm(
-      this.$modal,
       "Êtes-vous certain de vouloir supprimer cette carte de pêche ?",
       "Supprimer"
     ).then(async () => {
       try {
         await FishingLicenceService.deleteLicence(this.licence.id);
-        this.$root.$emit('toaster-success', 'Carte de pêche supprimée');
+        EventBus.emit('toaster-success', 'Carte de pêche supprimée');
         this.$emit("reload");
       } catch (error) {
         console.error(error);
-        this.$root.$emit('toaster-error', 'Erreur lors de la suppression de la carte de pêche');
+        EventBus.emit('toaster-error', 'Erreur lors de la suppression de la carte de pêche');
       }
     }, () => { });
   }

@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -34,13 +36,17 @@ import java.util.UUID;
 /**
  * « Persévérant » (#146) : au moins {@code threshold} sorties sans capture. Le MO souhaite
  * qu'on rappelle au pêcheur l'intérêt de renseigner ses bredouilles (cf. issue) -- message
- * à porter côté UI mobile, pas dans cette stratégie.
+ * à porter côté UI mobile, pas dans cette stratégie. Preuve (#275) : la bredouille qui a
+ * franchi le seuil.
  */
 @Singleton
 public class BredouilleCountStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -49,10 +55,21 @@ public class BredouilleCountStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
+        int threshold = threshold(badge);
         int count = dao.countBredouilleTrips(userId);
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("bredouilleCount", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("bredouilleCount", count),
+                        proofDao.findNthBredouilleTrip(userId, threshold).orElse(UnlockProof.NONE)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proofDao.findNthBredouilleTrip(userId, threshold(badge));
+    }
+
+    private int threshold(GamificationDao.BadgeRow badge) {
+        return RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
     }
 }

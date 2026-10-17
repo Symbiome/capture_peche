@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
-public class FishingLicencesDao extends AbstractFisholaDao {
+public class FishingLicencesDao extends AbstractCarnetDao {
 
     public List<LicenceResponseBean> getLicencesByUser(UUID userId) {
         List<FisholaUserLicences> licences = withDao(FisholaUserLicencesDao.class, dao -> dao.fetchByUserId(userId));

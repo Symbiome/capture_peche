@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -64,7 +64,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Singleton
-public class TripsDao extends AbstractFisholaDao {
+public class TripsDao extends AbstractCarnetDao {
 
     public static final String CATCHS_OPENADOM_EXPORT_VIEW = "catchs_openadom_export";
     /**

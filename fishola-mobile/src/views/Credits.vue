@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="credits page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page credits-page">
       <div class="pane pane-only">
         <div class="pane-content rounded">
@@ -61,7 +61,7 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue';
+import CarnetHeader from '@/components/layout/CarnetHeader.vue';
 import RunningOverlay from '@/components/layout/RunningOverlay.vue';
 import BottomNav from "@/components/layout/BottomNav.vue";
 
@@ -69,11 +69,11 @@ import { Editorial } from '@/pojos/BackendPojos';
 import DocumentationService from '@/services/DocumentationService';
 import TripsService from '@/services/TripsService';
 
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue } from "vue-facing-decorator";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     RunningOverlay,
     BottomNav
   }

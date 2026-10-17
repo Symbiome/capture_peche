@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.referential;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.referential;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -64,7 +64,7 @@ class WaterEntityNameTest {
     void seed() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, true, false)", adminId, "water-entity-name@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, true, false)", adminId, "water-entity-name@carnet-peche.test", "x");
         annecyId = ctx.fetchOne("SELECT id FROM water_entity WHERE name = 'Annecy'").get("id", UUID.class);
 
         ManagedContext requestContext = Arc.container().requestContext();
@@ -85,7 +85,7 @@ class WaterEntityNameTest {
     @Test
     void returnsTheNameOfOneWaterEntity() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/referential/waterEntities/names/" + annecyId)
                 .then().statusCode(200)
                 .body("id", equalTo(annecyId.toString()))
@@ -95,7 +95,7 @@ class WaterEntityNameTest {
     @Test
     void unknownWaterEntityIsNotFound() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/referential/waterEntities/names/" + UUID.randomUUID())
                 .then().statusCode(404);
     }

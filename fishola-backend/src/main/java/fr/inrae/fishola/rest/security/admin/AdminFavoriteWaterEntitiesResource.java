@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 import fr.inrae.fishola.database.AdminFavoritesDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.referential.WaterEntityName;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
@@ -47,7 +47,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/favorite-water-entities")
 @Produces(MediaType.APPLICATION_JSON)
-public class AdminFavoriteWaterEntitiesResource extends AbstractFisholaResource {
+public class AdminFavoriteWaterEntitiesResource extends AbstractCarnetResource {
 
     @Inject
     protected AdminFavoritesDao adminFavoritesDao;

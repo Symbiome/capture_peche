@@ -19,7 +19,7 @@ périmètres sont repris via `water_entity.department`).
   et la modification (`PUT /admin/{id}`) refusent un périmètre vide. Si un tel
   compte existe malgré tout, `getAllowedAdminDepartments()` lui renvoie un code
   fictif (`NO_DEPARTMENT_PERIMETER`) : il ne voit rien au lieu de tout (#188).
-- Côté back-end : `AbstractFisholaResource.getAllowedAdminDepartments()` renvoie
+- Côté back-end : `AbstractCarnetResource.getAllowedAdminDepartments()` renvoie
   `Set<String>` (vide = national). `AdminDao.getAllowedDepartments(id)` et
   `getAllowedWaterEntityIds(id)` (entités dérivées du périmètre, pour l'import).
 - Claims JWT / beans : `departmentCodes` (au lieu de `waterEntityIds`).

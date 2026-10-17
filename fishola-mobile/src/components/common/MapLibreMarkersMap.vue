@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -31,11 +31,12 @@
 
 <script lang="ts">
 import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, Popup, LngLatBounds } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
+import { attachHydroHover, BaseLayer, createCarnetMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
 export interface MapMarker {
     lat: number;
@@ -61,7 +62,7 @@ export default class MapLibreMarkersMap extends Vue {
         this.$nextTick(() => this.init());
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         this.clearMarkers();
         this.detachHydroHover?.();
         this.detachHydroHover = null;
@@ -74,7 +75,7 @@ export default class MapLibreMarkersMap extends Vue {
         if (!container || this.map) {
             return;
         }
-        this.map = createFisholaMap(container, {
+        this.map = createCarnetMap(container, {
             center: this.center || undefined,
             zoom: this.zoom,
             baseLayer: this.baseLayer,
@@ -99,7 +100,7 @@ export default class MapLibreMarkersMap extends Vue {
         this.clearMarkers();
         const valid = (this.markers || []).filter((m) => m.lat != null && m.lng != null);
         valid.forEach((m) => {
-            const marker = new maplibregl.Marker({ color: CARNET_MAP_COLORS.catchPin }).setLngLat([m.lng, m.lat]);
+            const marker = markRaw(new maplibregl.Marker({ color: CARNET_MAP_COLORS.catchPin })).setLngLat([m.lng, m.lat]);
             if (m.title) {
                 marker.getElement().setAttribute('title', m.title);
             }
@@ -127,7 +128,7 @@ export default class MapLibreMarkersMap extends Vue {
         this.map.fitBounds(bounds, { padding: 40, maxZoom: 11 });
     }
 
-    @Watch('markers')
+    @Watch('markers', { deep: true })
     onMarkersChange() {
         if (this.map && this.map.isStyleLoaded()) {
             this.refreshMarkers();

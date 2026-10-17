@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
   %%
@@ -33,7 +33,7 @@
         </h2>
         <div class="select-wrapper">
           <select v-model="displayMode" @change="switchMode" ref="select">
-            <option v-for="modeLabel, modeId in displayModeChoices" :value="modeId"> {{ modeLabel }}</option>
+            <option v-for="modeLabel, modeId in displayModeChoices" :key="modeId" :value="modeId"> {{ modeLabel }}</option>
           </select>
           <span>Modifier</span>
         </div>
@@ -57,7 +57,7 @@ import { CARNET_CHART_PALETTE } from "@/services/CarnetPalette";
 import { EvolutionMetricsForWaterEntity as EvolutionMetricsForLake, EvolutionMetricForSpecieAndMonth, SpeciesWithAlias } from '@/pojos/BackendPojos';
 import DashboardService from '@/services/DashboardService';
 import ReferentialService from '@/services/ReferentialService';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import chartjsPluginDatalables from 'chartjs-plugin-datalabels'
 import chartjsPluginZoom from 'chartjs-plugin-zoom'
 
@@ -75,6 +75,7 @@ import { Bar } from 'vue-chartjs'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, chartjsPluginDatalables, chartjsPluginZoom)
 
 @Component({
+  emits: ["loaded"],
   components: {
     Bar,
   },

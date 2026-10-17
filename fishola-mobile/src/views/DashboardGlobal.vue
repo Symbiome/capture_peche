@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="dashboard page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page dashboard-page">
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 
@@ -95,7 +95,8 @@ import {
   GlobalDashboardAndSpecies,
 } from "@/services/DashboardService";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { RouterUtils } from "@/router/RouterUtils";
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue";
@@ -103,7 +104,7 @@ import EvolutionMetrics from "@/components/charts/evolution/EvolutionMetrics.vue
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     RunningOverlay,
     BottomNav,
     GlobalDashboardComponent,
@@ -195,7 +196,7 @@ export default class DashboardGlobalView extends Vue {
     if (error && error.timeoutReached) {
       this.offline = true;
     } else if (error && error.status == 401) {
-      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      EventBus.emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
       RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
     this.ready = true;
@@ -221,10 +222,10 @@ export default class DashboardGlobalView extends Vue {
   askForAsyncExport() {
     DashboardService.asyncExport().then(
       () => {
-        this.$root.$emit("toaster-success", "Export envoyé par e-mail");
+        EventBus.emit("toaster-success", "Export envoyé par e-mail");
       },
       () => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur est survenue pendant l'export"
         );

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -42,7 +42,7 @@
 import { TripLight } from "@/pojos/BackendPojos";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 /** Carte « Ma dernière sortie » : photo, date, durée, prises et milieu. */
 @Component

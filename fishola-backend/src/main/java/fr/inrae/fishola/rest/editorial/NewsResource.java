@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.editorial;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -22,13 +22,13 @@ package fr.inrae.fishola.rest.editorial;
  */
 
 import com.google.common.base.Preconditions;
-import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.entities.tables.pojos.News;
 import fr.inrae.fishola.entities.tables.pojos.NewsPicture;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,10 +55,10 @@ import java.util.UUID;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
-public class NewsResource extends AbstractFisholaResource {
+public class NewsResource extends AbstractCarnetResource {
 
     @Inject
-    protected NewsFisholaDao dao;
+    protected NewsCarnetDao dao;
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -84,8 +84,8 @@ public class NewsResource extends AbstractFisholaResource {
     @Path("/news-all")
     public List<NewsBean> getAllNews(@Context HttpServletRequest request) {
         // Return all news
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
-        return dao.getNews(false, Optional.of(fisholaAdmin)).stream().map(this::newsToNewsBean).toList();
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        return dao.getNews(false, Optional.of(currentAdmin)).stream().map(this::newsToNewsBean).toList();
     }
     @GET
     @Path("/news/{newsId}")
@@ -113,9 +113,9 @@ public class NewsResource extends AbstractFisholaResource {
     @Path("/news-all/{newsId}")
     @Audited(value = "news.update", entityType = "news", entityIdParam = "newsId")
     public Response updateNews(@PathParam("newsId") UUID newsId, NewsBean news) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
-        if (isNewsOutsidePerimeter(news, fisholaAdmin)) {
-            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        if (isNewsOutsidePerimeter(news, currentAdmin)) {
+            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         Preconditions.checkArgument(newsId != null, "Identifiant de news obligatoire");
         Preconditions.checkArgument(newsId.equals(news.id), "L'identifiant ne correspond pas");
@@ -134,9 +134,9 @@ public class NewsResource extends AbstractFisholaResource {
     @Path("/news-all")
     @Audited(value = "news.create", entityType = "news")
     public Response createNews(NewsBean news) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
-        if (isNewsOutsidePerimeter(news, fisholaAdmin)) {
-            throw new ForbiddenException("L'administrateur " + fisholaAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        if (isNewsOutsidePerimeter(news, currentAdmin)) {
+            throw new ForbiddenException("L'administrateur " + currentAdmin.getEmail() + " n'a pas accès aux lacs " + news.waterEntityIds);
         }
         try {
             News inserted = dao.insert(this.newsBeanToNews(news), news.waterEntityIds);
@@ -153,8 +153,8 @@ public class NewsResource extends AbstractFisholaResource {
     // Un admin régional ne peut toucher qu'une actu régionale rattachée à des
     // entités hydro de ses départements de périmètre (#159). Un national passe
     // toujours ; une actu nationale est réservée au national.
-    private boolean isNewsOutsidePerimeter(NewsBean news, FisholaAdmin fisholaAdmin) {
-        if (fisholaAdmin.getIsNationalAdmin()) {
+    private boolean isNewsOutsidePerimeter(NewsBean news, FisholaAdmin currentAdmin) {
+        if (currentAdmin.getIsNationalAdmin()) {
             return false;
         }
         if (news.isNational) {

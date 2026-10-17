@@ -348,11 +348,18 @@ export interface BadgeBean {
     tier: number;
     annualReset: boolean;
     unlocked: boolean;
+    unlockId: string;
     unlockedAt: Date;
     context: any;
     competitionId: string;
     competitionName: string;
     competitionDate: Date;
+}
+
+export interface BadgeSouvenirBean {
+    unlockId: string;
+    catches: SouvenirCatchBean[];
+    trips: SouvenirTripBean[];
 }
 
 export interface Serializable {
@@ -396,6 +403,38 @@ export interface SectorContribution {
     totalTripsCount: number;
     myCatchesCount: number;
     totalCatchesCount: number;
+}
+
+export interface SouvenirCatchBean {
+    id: string;
+    tripId: string;
+    speciesName: string;
+    size: number;
+    weight: number;
+    quantity: number;
+    caughtAt: Date;
+    hasPicture: boolean;
+    latitude: number;
+    longitude: number;
+}
+
+export interface SouvenirTripBean {
+    id: string;
+    beginTimestamp: Date;
+    endTimestamp: Date;
+    waterEntityName: string;
+    waterEntityKind: string;
+    waterEntityAltitude: number;
+    waterEntityLatitude: number;
+    waterEntityLongitude: number;
+    commune: string;
+    department: string;
+    departmentName: string;
+    beginLatitude: number;
+    beginLongitude: number;
+    endLatitude: number;
+    endLongitude: number;
+    catchPositions: GeoPoint[];
 }
 
 export type IdentificationCertainty = "CERTAIN" | "PROBABLE" | "UNCERTAIN";

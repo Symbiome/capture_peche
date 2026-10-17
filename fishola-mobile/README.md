@@ -48,7 +48,7 @@ npm run tests:watch
 ```
 
 La configuration vit dans `vitest.config.js`, qui réutilise telle quelle celle de
-`vite.config.js` : alias `@`, plugin Vue 2, préprocesseur Less et substitution
+`vite.config.js` : alias `@`, plugin Vue 3, préprocesseur Less et substitution
 des `import.meta.env` sont donc identiques à ceux de l'application. Les tests
 s'exécutent dans un environnement jsdom.
 

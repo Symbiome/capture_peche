@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,9 +21,11 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -31,12 +33,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Un palier de la famille « Techniques » (#146) : N sorties utilisant une technique donnée. */
+/**
+ * Un palier de la famille « Techniques » (#146) : N sorties utilisant une technique
+ * donnée. Preuve (#275) : la sortie qui a franchi le palier et sa plus belle prise.
+ */
 @Singleton
 public class TechniqueTierStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -45,14 +53,33 @@ public class TechniqueTierStrategy implements BadgeRuleStrategy {
 
     @Override
     public Optional<UnlockCandidate> evaluate(GamificationDao.BadgeRow badge, UUID userId) {
-        String techniqueName = RuleParams.stringParam(badge.ruleParams(), "techniqueName", null);
-        int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
+        String techniqueName = techniqueName(badge);
+        int threshold = threshold(badge);
         if (techniqueName == null) {
             return Optional.empty();
         }
         int count = dao.countDistinctTripsWithTechnique(userId, techniqueName);
         return count >= threshold
-                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessions", count)))
+                ? Optional.of(UnlockCandidate.unlocked(Map.of("sessions", count),
+                        proofDao.findNthTripWithTechnique(userId, techniqueName, threshold).orElse(UnlockProof.NONE)))
                 : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        String techniqueName = techniqueName(badge);
+        if (techniqueName == null) {
+            return Optional.empty();
+        }
+        return proofDao.findNthTripWithTechnique(userId, techniqueName, threshold(badge));
+    }
+
+    private String techniqueName(GamificationDao.BadgeRow badge) {
+        return RuleParams.stringParam(badge.ruleParams(), "techniqueName", null);
+    }
+
+    private int threshold(GamificationDao.BadgeRow badge) {
+        return RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
     }
 }

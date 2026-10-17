@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import BackendService from "@/services/BackendService";
-import { BaseLayer, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/components/maplibreStyle";
+import { BaseLayer, buildCarnetStyle, DEFAULT_CENTER, DEFAULT_ZOOM } from "@/components/maplibreStyle";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
@@ -105,7 +105,7 @@ onMounted(async () => {
   const initial = props.initialPosition ?? null;
   map = new maplibregl.Map({
     container: mapContainer.value,
-    style: buildFisholaStyle(baseLayer.value),
+    style: buildCarnetStyle(baseLayer.value),
     center: initial ? [initial.lng, initial.lat] : DEFAULT_CENTER,
     zoom: initial ? 14 : DEFAULT_ZOOM
   });

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -19,17 +19,16 @@
   #L%
   -->
 <template>
-  <!-- \\ Begin Holder \\ -->
-  <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
   <div class="DesignHolder force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
+    <!-- \\ Begin Holder \\ -->
+    <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
     <!-- \\ Begin Frame \\ -->
     <div class="LayoutFrame" id="top">
       <!-- \\ Begin Header \\ -->
       <header class="smaller" v-if="!wrappedInTab">
         <div class="site-logo site-logo-smartphone">
           <h1>
-            <a href="#/about" v-scroll-to="{ el: '#top', container: '#about-scroll-container' }"><img
-                src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+            <a href="#/about" @click.prevent="scrollToSection('top')"><CarnetLogo class="about-logo" /></a>
           </h1>
         </div>
 
@@ -40,10 +39,7 @@
         <div class="menu" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
-              <a href="#/about" v-scroll-to="{
-                el: '#top',
-                container: '#about-scroll-container',
-              }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+              <a href="#/about" @click.prevent="scrollToSection('top'); closed = true"><CarnetLogo class="about-logo" /></a>
             </h1>
           </div>
 
@@ -53,31 +49,19 @@
                 <div class="plus" v-on:click="closeMenu">+</div>
               </li>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#presentation',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Présentation</a>
+                <a href="#/about" @click.prevent="scrollToSection('presentation'); closed = !closed">Présentation</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#communications',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Communications</a>
+                <a href="#/about" @click.prevent="scrollToSection('communications'); closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#contribute',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Comment participer ?</a>
+                <a href="#/about" @click.prevent="scrollToSection('contribute'); closed = !closed">Comment participer ?</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#contact',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Contact</a>
+                <a href="#/about" @click.prevent="scrollToSection('contact'); closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
               </li>
             </ul>
@@ -90,7 +74,7 @@
       <!-- // End Header // -->
 
       <div class="under-header-zone" v-if="!wrappedInTab">
-        FISHOLA : La science tous ensemble
+        Carnet de pêche : La science tous ensemble
       </div>
 
       <!-- \\ Begin Banner Section \\ -->
@@ -99,7 +83,7 @@
         <div class="title-banner">
           <div class="main-title">La science tous ensemble</div>
           <div class="sub-title">
-            En utilisant FISHOLA vous participez à la compréhension et la
+            En utilisant Carnet de pêche vous participez à la compréhension et la
             préservation des plans d'eau
           </div>
         </div>
@@ -110,7 +94,7 @@
       <div class="Banner_sec" id="presentation">
         <!--  \\ Begin banner Side -->
         <div class="left-panel">
-          <h3><span>FISHOLA</span></h3>
+          <h3><span>Carnet de pêche</span></h3>
           <p>{{ titleText }}</p>
         </div>
         <div class="right-panel">
@@ -133,7 +117,7 @@
         <!-- \\ Begin About Section \\ -->
         <div class="About_sec" id="about">
           <div class="Center">
-            <div class="key-figures" v-observe-visibility="keyFiguresItemsVisibilityChanged">
+            <div class="key-figures" ref="keyFigures">
               <div class="kf-item">
                 <div class="kf-number">
                   <Counter :n="tripsCount"></Counter>
@@ -185,20 +169,6 @@
         </div>
         <!-- // End Contribute Section // -->
 
-        <!-- \\ Begin Pricing Section \\ -->
-        <div class="Pricing_sec" id="pricing">
-          <div class="Center">
-            <!-- // End Pricing Side // -->
-            <h3>Applications</h3>
-            <div class="welcome-apps">
-              <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"
-                rel="noopener"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
-              <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank" rel="noopener"><img
-                  class="app" src="/img/AppStore.png" alt="AppStore" /></a>
-            </div>
-          </div>
-        </div>
-        <!-- // End Pricing Section // -->
         <!-- \\ Begin Contact Section \\ -->
         <div class="Contact_sec" id="contact">
           <div class="Contactside"></div>
@@ -208,7 +178,7 @@
               <h2>Nous contacter</h2>
               <p>
                 La communication et l'échange sont au c&oelig;ur de
-                l'application FISHOLA. Vous pouvez nous suivre sur les
+                l'application Carnet de pêche. Vous pouvez nous suivre sur les
                 différents réseaux sociaux ou nous contacter par l'intermédiaire
                 du formulaire ci-dessous.
               </p>
@@ -252,14 +222,6 @@
                 <p>Retrouvez-nous sur :</p>
                 <ul>
                   <li>
-                    <a rel="noopener, nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img
-                        src="/img/facebook-icn.png" alt="Facebook" /></a>
-                  </li>
-                  <li>
-                    <a rel="noopener, nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img
-                        src="/img/twitter-icn.png" alt="Twitter" /></a>
-                  </li>
-                  <li>
                     <a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img
                         src="/img/youtube-icn.png" alt="Youtube" /></a>
                   </li>
@@ -293,7 +255,7 @@
           </div>
           <div class="Line"></div>
           <div class="producers">
-            <h3>FISHOLA est produit par</h3>
+            <h3>Ils ont contribué au projet</h3>
             <div class="credits-logos">
               <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img
                   src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL" /></a>
@@ -339,16 +301,20 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import MapLibreMarkersMap, { MapMarker } from "@/components/common/MapLibreMarkersMap.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import debounce from "lodash/debounce";
+import EventBus from "@/services/EventBus";
 import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 
 @Component({
   components: {
     MapLibreMarkersMap,
     Counter,
     CommunicationsOnAboutPage,
+    CarnetLogo,
   },
 })
 export default class AboutView extends Vue {
@@ -378,6 +344,8 @@ export default class AboutView extends Vue {
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;
+  keyFiguresObserver?: IntersectionObserver;
+
   constructor() {
     super();
   }
@@ -450,11 +418,11 @@ export default class AboutView extends Vue {
 
   sendContact() {
     if (!this.contactEmail) {
-      this.$root.$emit("toaster-error", "L'email est obligatoire");
+      EventBus.emit("toaster-error", "L'email est obligatoire");
       return;
     }
     if (!this.contactMessage) {
-      this.$root.$emit("toaster-error", "Le message est obligatoire");
+      EventBus.emit("toaster-error", "Le message est obligatoire");
       return;
     }
 
@@ -469,14 +437,14 @@ export default class AboutView extends Vue {
 
     FeedbackService.sendFeedbackNoAsync(feedback).then(
       () => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-success",
           "Votre message a bien été envoyé à l'équipe projet, merci",
           10000
         );
       },
       (_error) => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur est survenue, merci de réessayer ultérieurement"
         );
@@ -497,7 +465,7 @@ export default class AboutView extends Vue {
     if (this.refreshSelectedSectionTimer) {
       this.refreshSelectedSectionTimer.cancel();
     }
-    this.refreshSelectedSectionTimer = Vue.lodash.debounce(
+    this.refreshSelectedSectionTimer = debounce(
       this.refreshSelectedSection,
       100
     );
@@ -517,6 +485,24 @@ export default class AboutView extends Vue {
       });
       this.activeSection = foundSection;
     }
+  }
+
+  mounted() {
+    const keyFigures = this.$refs.keyFigures as HTMLElement | undefined;
+    if (keyFigures) {
+      this.keyFiguresObserver = new IntersectionObserver((entries) =>
+        this.keyFiguresItemsVisibilityChanged(entries.some((entry) => entry.isIntersecting))
+      );
+      this.keyFiguresObserver.observe(keyFigures);
+    }
+  }
+
+  beforeUnmount() {
+    this.keyFiguresObserver?.disconnect();
+  }
+
+  scrollToSection(sectionId: string) {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   }
 
   keyFiguresItemsVisibilityChanged(isVisible: boolean) {
@@ -555,6 +541,10 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
 @import "../less/_responsive";
+
+.about-logo {
+  width: 150px;
+}
 
 #about-scroll-container {
   overflow: auto;
@@ -1077,8 +1067,8 @@ export default class AboutView extends Vue {
 .contribute-editable {
   margin-top: 50px;
 
-  /** /deep/ permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
-  /deep/ .cards {
+  /** :deep() permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
+  :deep(.cards) {
     display: flex;
     flex-direction: row;
     justify-content: center;

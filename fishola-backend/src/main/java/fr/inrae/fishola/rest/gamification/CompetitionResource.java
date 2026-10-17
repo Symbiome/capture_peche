@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -27,7 +27,7 @@ import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.gamification.CompetitionDao;
 import fr.inrae.fishola.gamification.GamificationDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -57,7 +57,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/competitions")
 @Produces(MediaType.APPLICATION_JSON)
-public class CompetitionResource extends AbstractFisholaResource {
+public class CompetitionResource extends AbstractCarnetResource {
 
     private static final String CONCOURS_BADGE_CODE = "CONCOURS";
 

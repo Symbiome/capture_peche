@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.referential;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -37,7 +37,7 @@ import fr.inrae.fishola.entities.tables.pojos.Species;
 import fr.inrae.fishola.entities.tables.pojos.SpeciesByWaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.Technique;
 import fr.inrae.fishola.entities.tables.pojos.Weather;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.department.DepartmentName;
@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
 
 @Path("/api/v1/referential")
 @Produces(MediaType.APPLICATION_JSON)
-public class ReferentialResource extends AbstractFisholaResource {
+public class ReferentialResource extends AbstractCarnetResource {
 
     public static final String NO_MATCHING_ID = "L'identifiant ne correspond pas";
     /** Nombre de candidats proposés au clic sur la carte (proposition + alternatives), comme côté pêcheur. */
@@ -99,8 +99,8 @@ public class ReferentialResource extends AbstractFisholaResource {
             return referentialDao.listWaterEntities();
         }
         // Lecture ouverte au staff (l'opérateur en a besoin pour la saisie) ; scopée au périmètre départemental.
-        FisholaAdmin fisholaAdmin = this.checkIsStaff();
-        if (fisholaAdmin.getIsNationalAdmin()) {
+        FisholaAdmin currentAdmin = this.checkIsStaff();
+        if (currentAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntities();
         } else {
             return referentialDao.fetchWaterEntitiesByDepartments(getAllowedAdminDepartments());
@@ -110,7 +110,7 @@ public class ReferentialResource extends AbstractFisholaResource {
     // Listing léger (sans géométrie) pour les formulaires de saisie (plan d'eau,
     // sortie) : getAllWaterEntities() sérialise la géométrie complète, ~1,2 Go
     // pour le réseau France entière, largement au-delà du timeout du client
-    // mobile (5 s côté AbstractFisholaService.timeout). Même périmètre public
+    // mobile (5 s côté AbstractCarnetService.timeout). Même périmètre public
     // que getAllWaterEntities() côté pêcheur (pas de scoping admin ici, ce
     // listing n'est pas consommé par le back-office).
     @GET
@@ -126,8 +126,8 @@ public class ReferentialResource extends AbstractFisholaResource {
     @GET
     @Path("/waterEntities/names")
     public List<WaterEntityName> getAllWaterEntityNames() {
-        FisholaAdmin fisholaAdmin = this.checkIsStaff();
-        if (fisholaAdmin.getIsNationalAdmin()) {
+        FisholaAdmin currentAdmin = this.checkIsStaff();
+        if (currentAdmin.getIsNationalAdmin()) {
             return referentialDao.listWaterEntityNames();
         } else {
             return referentialDao.listWaterEntityNamesByDepartments(getAllowedAdminDepartments());
@@ -188,9 +188,9 @@ public class ReferentialResource extends AbstractFisholaResource {
                 "Le paramètre q doit contenir au moins 2 caractères.");
         Preconditions.checkArgument(limit > 0 && limit <= 50,
                 "limit doit être dans l'intervalle [1, 50].");
-        FisholaAdmin fisholaAdmin = this.checkIsStaff();
-        Set<String> allowedDepartments = fisholaAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
-        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit, fisholaAdmin.getId());
+        FisholaAdmin currentAdmin = this.checkIsStaff();
+        Set<String> allowedDepartments = currentAdmin.getIsNationalAdmin() ? Set.of() : getAllowedAdminDepartments();
+        return hydroSearchDao.searchWaterEntityNames(q.trim(), allowedDepartments, limit, currentAdmin.getId());
     }
 
     @GET
@@ -545,10 +545,10 @@ public class ReferentialResource extends AbstractFisholaResource {
     @Path("/authorized-samples")
     @Audited(value = "authorizedSamples.save", entityType = "authorized_samples")
     public Response saveAuthorizedSamples(AuthorizedSamplesModificationBean authorizedSamples) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        FisholaAdmin currentAdmin = checkIsAdmin();
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         Set<UUID> waterEntityScope;
-        if (fisholaAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
+        if (currentAdmin.getIsNationalAdmin() || allowedDepartments.isEmpty()) {
             waterEntityScope = new HashSet<>(authorizedSamples.targetWaterEntities);
         } else {
             waterEntityScope = new HashSet<>(

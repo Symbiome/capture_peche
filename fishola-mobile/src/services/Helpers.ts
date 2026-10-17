@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -23,6 +23,7 @@ import { DeviceType } from "@/pojos/BackendPojos";
 
 import { Device } from "@capacitor/device";
 import moment from "moment";
+import DialogService from "@/services/DialogService";
 import 'moment/dist/locale/fr';
 
 export default class Helpers {
@@ -389,7 +390,6 @@ export default class Helpers {
   }
 
   static confirm(
-    modal: any,
     text: string,
     title?: string,
     rejectText?: string,
@@ -403,20 +403,20 @@ export default class Helpers {
           {
             title: rejectText || "Non",
             handler: () => {
-              modal.hide("dialog");
+              DialogService.hide();
               reject();
             },
           },
           {
             title: resolveText || "Oui",
             handler: () => {
-              modal.hide("dialog");
+              DialogService.hide();
               resolve();
             },
           },
         ],
       };
-      modal.show("dialog", params);
+      DialogService.show(params);
     });
   }
 
@@ -427,12 +427,11 @@ export default class Helpers {
    * par défaut), aucune confirmation. Résout `true` pour enregistrer,
    * `false` pour revenir corriger la taille.
    */
-  static confirmSizeAboveMax(modal: any, size: number | undefined, maxSize: number): Promise<boolean> {
+  static confirmSizeAboveMax(size: number | undefined, maxSize: number): Promise<boolean> {
     if (!size || maxSize >= Helpers.DEFAULT_MAX_SIZE || size <= maxSize) {
       return Promise.resolve(true);
     }
     return Helpers.confirm(
-      modal,
       `Taille saisie : ${size} cm, supérieure à la taille maximale de l'espèce sur ce milieu (${maxSize} cm).`,
       "Êtes-vous sûr de la taille de la prise ?",
       "Corriger",
@@ -443,7 +442,7 @@ export default class Helpers {
     );
   }
 
-  static alert(modal: any, text: string, title?: string): Promise<void> {
+  static alert(text: string, title?: string): Promise<void> {
     return new Promise<void>((resolve, _reject) => {
       const params: any = {
         title: title,
@@ -452,13 +451,13 @@ export default class Helpers {
           {
             title: "J'ai compris",
             handler: () => {
-              modal.hide("dialog");
+              DialogService.hide();
               resolve();
             },
           },
         ],
       };
-      modal.show("dialog", params);
+      DialogService.show(params);
     });
   }
 
@@ -467,7 +466,7 @@ export default class Helpers {
    * déclaration obligatoire (#91). Avec un lien, propose de l'ouvrir dans un nouvel
    * onglet ; sans lien, invite à contacter sa fédération.
    */
-  static declareCatchAlert(modal: any, reportLink?: string): Promise<void> {
+  static declareCatchAlert(reportLink?: string): Promise<void> {
     return new Promise<void>((resolve, _reject) => {
       const text = reportLink
         ? "Cette espèce nécessite une déclaration obligatoire."
@@ -476,7 +475,7 @@ export default class Helpers {
         {
           title: reportLink ? "Plus tard" : "J'ai compris",
           handler: () => {
-            modal.hide("dialog");
+            DialogService.hide();
             resolve();
           },
         },
@@ -486,12 +485,12 @@ export default class Helpers {
           title: "Déclarer",
           handler: () => {
             window.open(reportLink, "_blank");
-            modal.hide("dialog");
+            DialogService.hide();
             resolve();
           },
         });
       }
-      modal.show("dialog", { title: "Déclaration obligatoire", text, buttons });
+      DialogService.show({ title: "Déclaration obligatoire", text, buttons });
     });
   }
 
@@ -501,26 +500,26 @@ export default class Helpers {
    * téléchargement du pack hors-ligne de secteur, plutôt que vers la
    * recherche par nom (tout aussi bloquée hors-ligne).
    */
-  static offlineAttributionAlert(modal: any, onDownloadPack: () => void): Promise<void> {
+  static offlineAttributionAlert(onDownloadPack: () => void): Promise<void> {
     return new Promise<void>((resolve, _reject) => {
       const buttons: any[] = [
         {
           title: "J'ai compris",
           handler: () => {
-            modal.hide("dialog");
+            DialogService.hide();
             resolve();
           },
         },
         {
           title: "Télécharger un pack",
           handler: () => {
-            modal.hide("dialog");
+            DialogService.hide();
             onDownloadPack();
             resolve();
           },
         },
       ];
-      modal.show("dialog", {
+      DialogService.show({
         title: "Rattachement indisponible",
         text: "Le rattachement automatique n'est pas disponible (connexion indisponible). "
           + "Téléchargez le pack hors-ligne de votre secteur pour sélectionner un plan d'eau sans connexion.",

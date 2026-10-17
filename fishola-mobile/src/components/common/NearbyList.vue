@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -101,7 +101,7 @@
 
 <script lang="ts">
 import { NearbyWaterEntity } from '@/pojos/BackendPojos';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import ReferentialService from '@/services/ReferentialService';
 import GeolocationService from '@/services/GeolocationService';
 
@@ -113,7 +113,7 @@ const PAGE_SIZE = 20;
 // navigateur (Wi-Fi/IP), qui dépassent souvent quelques secondes (#198).
 const POSITION_TIMEOUT_MS = 20000;
 
-@Component
+@Component({ emits: ["close", "select"] })
 export default class NearbyList extends Vue {
     @Prop() isVisible: boolean;
 

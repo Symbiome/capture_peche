@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -28,7 +28,7 @@
       </label>
       <input v-bind:name="name" v-bind:id="'field-' + name" v-bind:type="inputType"
         v-bind:inputmode="type == 'time' ? 'numeric' : null" v-bind:maxlength="type == 'time' ? 5 : null"
-        v-bind:placeholder="effectivePlaceholder" v-bind:value="value" v-bind:min="min"
+        v-bind:placeholder="effectivePlaceholder" v-bind:value="modelValue" v-bind:min="min"
         v-on:input="onInput($event.target.value)" v-on:blur="onBlur"
         v-bind:class="displayError ? 'field-error' : ''" @keyup.enter="$emit('keyupEnter')" />
       <i v-if="type == 'password'" @click="togglePasswordVisibility()" class="show-password-icon"
@@ -56,13 +56,13 @@ Il faut savoir que :
 `v-model="searchText"`
 
 est équivalent à
-`v-bind:value="searchText" v-on:input="searchText = $event"`
+`v-bind:modelValue="searchText" v-on:update:modelValue="searchText = $event"`
 
-Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut `value` du présent composant.
+Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans la prop `modelValue` du présent composant.
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 import Helpers from '@/services/Helpers';
@@ -70,6 +70,7 @@ import Helpers from '@/services/Helpers';
 const TIME_FORMAT_ERROR = 'Heure invalide (format 24h HH:mm, ex. 13:45)';
 
 @Component({
+  emits: ["keyupEnter", "update:modelValue"],
   components: {
     FormMultiValues
   }
@@ -79,7 +80,7 @@ export default class FormInput extends Vue {
   @Prop({ default: 'text' }) type!: string;
   @Prop() label?: string;
   @Prop() placeholder?: string;
-  @Prop() value!: string;
+  @Prop() modelValue!: string;
   @Prop() error?: string;
   @Prop() readonly!: boolean;
   @Prop() min?: string;
@@ -90,8 +91,8 @@ export default class FormInput extends Vue {
   timeError: string = '';
 
   created() {
-    if (this.value) {
-      this.readonlyValues.push(this.value);
+    if (this.modelValue) {
+      this.readonlyValues.push(this.modelValue);
     }
     this.dynamicType = this.type;
   }
@@ -114,7 +115,7 @@ export default class FormInput extends Vue {
 
   onInput(rawValue: string) {
     if (this.type != 'time') {
-      this.$emit('input', rawValue);
+      this.$emit('update:modelValue', rawValue);
       return;
     }
 
@@ -124,14 +125,14 @@ export default class FormInput extends Vue {
     } else if (masked.length == 5) {
       this.timeError = TIME_FORMAT_ERROR;
     }
-    this.$emit('input', masked);
+    this.$emit('update:modelValue', masked);
   }
 
   onBlur() {
-    if (this.type != 'time' || !this.value) {
+    if (this.type != 'time' || !this.modelValue) {
       return;
     }
-    this.timeError = Helpers.isValidTimeString(this.value) ? '' : TIME_FORMAT_ERROR;
+    this.timeError = Helpers.isValidTimeString(this.modelValue) ? '' : TIME_FORMAT_ERROR;
   }
 
   togglePasswordVisibility() {

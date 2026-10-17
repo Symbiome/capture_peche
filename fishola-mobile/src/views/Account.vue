@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -56,7 +56,8 @@ import { RouterUtils } from "@/router/RouterUtils";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 interface AccountItem {
   label: string;
@@ -122,11 +123,11 @@ export default class AccountView extends Vue {
   }
 
   openFeedback() {
-    this.$root.$emit("open-feedback");
+    EventBus.emit("open-feedback");
   }
 
   logout() {
-    LogoutService.confirmAndLogout(this);
+    LogoutService.confirmAndLogout(this.$router);
   }
 }
 </script>

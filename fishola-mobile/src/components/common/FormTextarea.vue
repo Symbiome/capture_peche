@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -32,8 +32,8 @@
       <textarea v-bind:name="name"
               v-bind:id="'field-' + name"
               v-bind:placeholder="placeholder"
-              v-bind:value="value"
-              v-on:input="$emit('input', $event.target.value)"
+              v-bind:value="modelValue"
+              v-on:input="$emit('update:modelValue', $event.target.value)"
               v-bind:class="error?'field-error':''" />
       <div v-bind:class="error?'field-error':''" >
         <span v-if="error">
@@ -53,17 +53,18 @@ Il faut savoir que :
 `v-model="searchText"`
 
 est équivalent à
-`v-bind:value="searchText" v-on:input="searchText = $event"`
+`v-bind:modelValue="searchText" v-on:update:modelValue="searchText = $event"`
 
-Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut `value` du présent composant.
+Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans la prop `modelValue` du présent composant.
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 import FormMultiValues from '@/components/common/FormMultiValues.vue'
 
 @Component({
+  emits: ["update:modelValue"],
   components: {
     FormMultiValues
   }
@@ -72,15 +73,15 @@ export default class FormTextarea extends Vue {
   @Prop() name!: string;
   @Prop() label?: string;
   @Prop() placeholder?: string;
-  @Prop() value!: string;
+  @Prop() modelValue!: string;
   @Prop() error?: string;
   @Prop() readonly!: boolean;
 
   readonlyValues:string[] = [];
 
   created() {
-    if (this.value) {
-      this.readonlyValues.push(this.value);
+    if (this.modelValue) {
+      this.readonlyValues.push(this.modelValue);
     }
   }
 }

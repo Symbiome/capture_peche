@@ -1,0 +1,212 @@
+/*-
+ * #%L
+ * Carnet de pêche :: Mobile
+ * %%
+ * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+import Dexie, { DBCore, DBCoreMutateRequest, DBCoreTable } from "dexie";
+import { TripBean, Feedback } from "@/pojos/BackendPojos";
+import StoredPicture from "@/pojos/StoredPicture";
+import OfflineEntry from "@/pojos/OfflineEntry";
+import OfflineArea from "@/pojos/OfflineArea";
+import CachedTile from "@/pojos/CachedTile";
+import { toStorable } from "@/services/Storable";
+
+/**
+ * Tables alimentées par des objets venant des écrans, donc potentiellement
+ * réactifs (#284). Les autres reçoivent des données réseau, parfois
+ * volumineuses (packs hydro, tuiles), qu'il est inutile de recopier.
+ */
+const TABLES_FED_BY_SCREENS = new Set([
+  "onCreationTrip",
+  "dirtyTrips",
+  "dirtyPictures",
+  "toDeletePictures",
+  "offlineFeedbacks",
+  "lastMeasurementPic",
+]);
+
+/**
+ * Enveloppe une table Dexie pour retirer les Proxy Vue des valeurs écrites.
+ *
+ * @param downlevelTable table Dexie de niveau inférieur
+ * @returns la table, dont les add/put écrivent des copies sans Proxy
+ */
+function withStorableValues(downlevelTable: DBCoreTable): DBCoreTable {
+  return {
+    ...downlevelTable,
+    mutate: (request: DBCoreMutateRequest) =>
+      downlevelTable.mutate(
+        request.type === "add" || request.type === "put"
+          ? { ...request, values: request.values.map(toStorable) }
+          : request
+      ),
+  };
+}
+
+export default class CarnetDatabase extends Dexie {
+  static instance: CarnetDatabase = new CarnetDatabase();
+
+  // Declare implicit table properties.
+  // (just to inform Typescript. Instanciated by Dexie in stores() method)
+  onCreationTrip: Dexie.Table<any, string>;
+  dirtyTrips: Dexie.Table<TripBean, string>;
+  dirtyPictures: Dexie.Table<StoredPicture, string>;
+  toDeletePictures: Dexie.Table<StoredPicture, string>;
+  offlineStorage: Dexie.Table<OfflineEntry, string>;
+  offlineFeedbacks: Dexie.Table<Feedback, string>;
+  lastMeasurementPic: Dexie.Table<StoredPicture, string>;
+  // Packs hydro départementaux téléchargés (#54), clé = code département.
+  offlineAreas: Dexie.Table<OfflineArea, string>;
+  tileCache: Dexie.Table<CachedTile, string>;
+
+  constructor() {
+    super("Fishola");
+    console.info("Construction de la base locale ...");
+    this.version(1).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+    });
+    this.version(2).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id",
+    });
+    this.version(3).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id",
+      offlineStorage: "key",
+    });
+    this.version(4).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+    });
+
+    // As StoredPicture model has changed (new fields), new version is required even though collections did not change
+    this.version(5).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+    });
+
+    this.version(6).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+    });
+
+    this.version(7).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+      lastMeasurementPic: "id",
+    });
+
+    // v8 (#10, mode offline) : les stores ne changent pas, mais les sorties déjà
+    // en attente de synchronisation (créées avant #10) n'ont pas de statut hydro.
+    // On les marque PENDING pour qu'elles soient re-validées côté serveur au
+    // prochain push (le createTrip backend recalcule l'attribution). Un bump de
+    // version est requis même sans changement de schéma pour exécuter l'upgrade.
+    this.version(8)
+      .stores({
+        onCreationTrip: "id",
+        dirtyTrips: "id",
+        dirtyPictures: "id, order, catch",
+        toDeletePictures: "id, order, catch",
+        offlineStorage: "key",
+        offlineFeedbacks: "id",
+        lastMeasurementPic: "id",
+      })
+      .upgrade((tx) =>
+        tx
+          .table("dirtyTrips")
+          .toCollection()
+          .modify((trip: any) => {
+            if (!trip.hydroValidation) {
+              trip.hydroValidation = "PENDING";
+            }
+          })
+      );
+
+    // v9 (#54, packs hydro offline départementaux) : nouveau store `offlineAreas`
+    // (clé = code département). Aucun autre store n'évolue ; Dexie migre les
+    // stores inchangés automatiquement.
+    this.version(9).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+      lastMeasurementPic: "id",
+      offlineAreas: "code, downloadedAt",
+    });
+
+    // Cache léger des tuiles de fond de carte de la dernière zone consultée (#53).
+    this.version(10).stores({
+      onCreationTrip: "id",
+      dirtyTrips: "id",
+      dirtyPictures: "id, order, catch",
+      toDeletePictures: "id, order, catch",
+      offlineStorage: "key",
+      offlineFeedbacks: "id",
+      lastMeasurementPic: "id",
+      offlineAreas: "code, downloadedAt",
+      tileCache: "url, accessedAt",
+    });
+
+    this.onCreationTrip = this.table("onCreationTrip");
+    this.dirtyTrips = this.table("dirtyTrips");
+    this.dirtyPictures = this.table("dirtyPictures");
+    this.toDeletePictures = this.table("toDeletePictures");
+    this.offlineStorage = this.table("offlineStorage");
+    this.offlineFeedbacks = this.table("offlineFeedbacks");
+    this.lastMeasurementPic = this.table("lastMeasurementPic");
+    this.offlineAreas = this.table("offlineAreas");
+    this.tileCache = this.table("tileCache");
+
+    this.use({
+      stack: "dbcore",
+      name: "storableValues",
+      create: (downlevelDatabase: DBCore) => ({
+        ...downlevelDatabase,
+        table: (tableName: string) => {
+          const downlevelTable = downlevelDatabase.table(tableName);
+          return TABLES_FED_BY_SCREENS.has(tableName) ? withStorableValues(downlevelTable) : downlevelTable;
+        },
+      }),
+    });
+
+    console.info("Base locale prête");
+  }
+
+  static getInstance(): CarnetDatabase {
+    return this.instance;
+  }
+}

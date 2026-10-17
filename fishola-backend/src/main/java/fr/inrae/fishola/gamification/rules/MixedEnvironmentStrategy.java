@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification.rules;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,21 +21,30 @@ package fr.inrae.fishola.gamification.rules;
  * #L%
  */
 
+import fr.inrae.fishola.gamification.BadgeProofDao;
 import fr.inrae.fishola.gamification.BadgeRuleStrategy;
 import fr.inrae.fishola.gamification.GamificationDao;
 import fr.inrae.fishola.gamification.UnlockCandidate;
+import fr.inrae.fishola.gamification.UnlockProof;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** « Tout-terrain » (#146) : au moins {@code threshold} sessions en lac ET en cours d'eau. */
+/**
+ * « Tout-terrain » (#146) : au moins {@code threshold} sessions en lac ET en cours d'eau.
+ * Preuve (#275) : la première sortie sur chacun des milieux pêchés (carte des milieux).
+ */
 @Singleton
 public class MixedEnvironmentStrategy implements BadgeRuleStrategy {
 
     @Inject
     GamificationDao dao;
+
+    @Inject
+    BadgeProofDao proofDao;
 
     @Override
     public String ruleType() {
@@ -47,6 +56,15 @@ public class MixedEnvironmentStrategy implements BadgeRuleStrategy {
         int threshold = RuleParams.intParam(badge.ruleParams(), "threshold", Integer.MAX_VALUE);
         boolean matched = dao.countTripsByWaterEntityKind(userId, "STILL") >= threshold
                 && dao.countTripsByWaterEntityKind(userId, "FLOWING") >= threshold;
-        return matched ? Optional.of(UnlockCandidate.unlocked()) : Optional.empty();
+        return matched
+                ? Optional.of(UnlockCandidate.unlocked(Map.of(),
+                        proofDao.findFirstTripPerStillOrFlowingWaterEntity(userId)))
+                : Optional.empty();
+    }
+
+    @Override
+    public Optional<UnlockProof> findProof(GamificationDao.BadgeRow badge, GamificationDao.UnlockRow unlock,
+                                           UUID userId) {
+        return proofDao.findFirstTripPerStillOrFlowingWaterEntity(userId).nonEmpty();
     }
 }

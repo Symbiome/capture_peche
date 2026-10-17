@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -41,7 +41,7 @@ import Constants from "@/services/Constants";
 
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 import TripMain from "@/pojos/TripMain";
 import TripDates from "@/services/TripDates";
 
@@ -64,7 +64,7 @@ export default class RunningOverlay extends Vue {
     TripsService.getRunningTrip().then(this.tripLoaded);
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     clearInterval(this.interval);
   }
 

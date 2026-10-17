@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -21,7 +21,7 @@
 
 <template>
   <div class="new-licence page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page new-licence-page keyboardSensitive">
       <div class="pane pane-only">
         <h1 class="no-margin-pane">
@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <FisholaFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()"
+    <CarnetFooter shortcuts="back,home,dashboard" v-bind:button-text="getButtonText()"
       v-on:buttonClicked="saveLicence" />
   </div>
 </template>
@@ -58,20 +58,21 @@
 <script lang="ts">
 import { RouterUtils } from "@/router/RouterUtils";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 import BackButton from "@/components/common/BackButton.vue";
 
 import FishingLicenceService from "@/services/FishingLicenceService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
 
 @Component({
   components: {
-    FisholaHeader,
-    FisholaFooter,
+    CarnetHeader,
+    CarnetFooter,
     BackButton,
     NewFishingLicence,
     RouterUtils,
@@ -98,7 +99,7 @@ export default class NewFishingLicence extends Vue {
     try {
       if (this.licenceName.trim() === "") {
         this.nameError = true;
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Vous devez nommer la carte de pêche"
         );
@@ -114,7 +115,7 @@ export default class NewFishingLicence extends Vue {
       };
 
       await FishingLicenceService.putLicence(licenceDto, this.id);
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         "Une nouvelle carte de pêche a été ajoutée."
       );
@@ -123,9 +124,9 @@ export default class NewFishingLicence extends Vue {
     } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
       if (error.content !== undefined && error.content.error !== undefined) {
-        this.$root.$emit("toaster-error", error.content.error);
+        EventBus.emit("toaster-error", error.content.error);
       } else {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur inattendue s'est produite. Veuillez réessayer."
         );

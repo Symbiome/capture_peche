@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -20,7 +20,7 @@
  */
 
 /**
- * Prélèvement d'écailles hérité de Fishola (programme INRAE des lacs alpins),
+ * Prélèvement d'écailles hérité de l'application d'origine (programme INRAE des lacs alpins),
  * masqué pour le projet RM&C (#240, #241) mais conservé pour une éventuelle
  * réactivation via `VITE__SCALE_SAMPLING_ENABLED=true`.
  */

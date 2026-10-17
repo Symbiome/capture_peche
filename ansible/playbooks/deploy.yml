@@ -13,12 +13,13 @@
 #
 # Rejouable sans risque (idempotent) : `mvn clean package` et
 # `docker compose build/up` ne refont que ce qui a changé, sauf
-# --extra-vars "force_rebuild=true".
+# --extra-vars "force_rebuild=true". La stanza pgBackRest n'est créée qu'une
+# fois et les tâches cron de sauvegarde sont identifiées par leur nom (#279).
 #
 # Usage :
 #   cd ansible && ansible-playbook playbooks/deploy.yml
 
-- name: Déployer Fishola (dev)
+- name: Déployer Carnet-peche (dev)
   hosts: dev
   connection: local
   gather_facts: false
@@ -26,8 +27,31 @@
   vars:
     project_dir: "{{ playbook_dir }}/../.."
     maven_image: maven:3.9-eclipse-temurin-25
+    # pgBackRest tourne dans docker_pg (#279) ; -u postgres indispensable :
+    # docker compose exec tourne en root par défaut.
+    pg_exec: docker compose exec -T -u postgres docker_pg
+    pgbackrest_log_file: "{{ lookup('env', 'HOME') }}/fishola-pgbackrest.log"
+    # Commande des sauvegardes planifiées : chemins absolus et DOCKER_HOST
+    # explicite (cron n'hérite ni du PATH ni de l'environnement de la session,
+    # cas du Docker rootless).
+    pgbackrest_cron_command: >-
+      cd "{{ project_dir | realpath }}" &&
+      DOCKER_HOST={{ _docker_host.stdout }}
+      {{ _docker_bin.stdout }} compose exec -T -u postgres docker_pg
+      pgbackrest --stanza=fishola
 
   tasks:
+    - name: Vérifier la phrase de chiffrement des sauvegardes (vault)
+      ansible.builtin.assert:
+        that:
+          - vault_pgbackrest_cipher_pass is defined
+          - vault_pgbackrest_cipher_pass | length > 0
+        fail_msg: >-
+          vault_pgbackrest_cipher_pass manquant dans group_vars/dev/vault.yml
+          (cf. DEPLOYMENT.md, « Sauvegardes ») : sans lui, docker compose
+          refuse de démarrer docker_pg.
+        quiet: true
+
     - name: Générer le fichier .env consommé par docker compose
       ansible.builtin.template:
         src: "{{ playbook_dir }}/../templates/dotenv.j2"
@@ -94,6 +118,67 @@
         chdir: "{{ project_dir }}"
       changed_when: true
 
+    - name: Attendre que docker_pg soit prêt
+      # --wait limité à docker_pg (prérequis des étapes pgBackRest qui
+      # suivent) : sur toute la stack, un conteneur annexe en mauvaise santé
+      # (ex. maildev) ferait échouer le déploiement.
+      ansible.builtin.command:
+        cmd: docker compose up -d --wait docker_pg
+        chdir: "{{ project_dir }}"
+      changed_when: false
+
+    - name: Vérifier si la stanza pgBackRest existe déjà
+      ansible.builtin.command:
+        cmd: "{{ pg_exec }} test -f /var/lib/pgbackrest/backup/fishola/backup.info"
+        chdir: "{{ project_dir }}"
+      register: _stanza_exists
+      failed_when: false
+      changed_when: false
+
+    - name: Créer la stanza pgBackRest (premier déploiement)
+      ansible.builtin.command:
+        cmd: "{{ pg_exec }} pgbackrest --stanza=fishola stanza-create"
+        chdir: "{{ project_dir }}"
+      when: _stanza_exists.rc != 0
+      changed_when: true
+
+    - name: Remettre à zéro les compteurs d'archivage WAL (premier déploiement)
+      # Avant stanza-create, chaque archive-push échoue et incrémente
+      # pg_stat_archiver.failed_count, que health_check.sh exige à 0.
+      ansible.builtin.command:
+        cmd: "{{ pg_exec }} psql -At -c \"SELECT pg_stat_reset_shared('archiver')\""
+        chdir: "{{ project_dir }}"
+      when: _stanza_exists.rc != 0
+      changed_when: true
+
+    - name: Vérifier le dépôt et l'archivage des WAL (pgbackrest check)
+      ansible.builtin.command:
+        cmd: "{{ pg_exec }} pgbackrest --stanza=fishola check"
+        chdir: "{{ project_dir }}"
+      changed_when: false
+
+    - name: Localiser le binaire docker (chemin absolu pour cron)
+      ansible.builtin.command:
+        cmd: /bin/sh -c 'command -v docker'
+      register: _docker_bin
+      changed_when: false
+
+    - name: Planifier la sauvegarde complète (dimanche 3 h)
+      ansible.builtin.cron:
+        name: fishola - sauvegarde pgBackRest complète
+        weekday: "0"
+        hour: "3"
+        minute: "0"
+        job: "{{ pgbackrest_cron_command }} --type=full backup >> \"{{ pgbackrest_log_file }}\" 2>&1"
+
+    - name: Planifier la sauvegarde différentielle (lundi à samedi 3 h)
+      ansible.builtin.cron:
+        name: fishola - sauvegarde pgBackRest différentielle
+        weekday: "1-6"
+        hour: "3"
+        minute: "0"
+        job: "{{ pgbackrest_cron_command }} --type=diff backup >> \"{{ pgbackrest_log_file }}\" 2>&1"
+
     - name: Récapitulatif du déploiement
       ansible.builtin.debug:
         msg:
@@ -101,5 +186,6 @@
           - "Front pêcheur : {{ app_domain }} (port local {{ mobile_port }})"
           - "Front admin   : {{ admin_domain }} (port local {{ admin_port }})"
           - "API backend   : {{ api_domain }}/api/v1/status (port local {{ backend_port }})"
+          - "Sauvegardes   : complète le dimanche, différentielle du lundi au samedi, à 3 h (journal : {{ pgbackrest_log_file }})"
           - "Vérifier que ce mapping domaine -> port correspond bien au reverse proxy Adventiel."
           - "Prochaine étape : ./health_check.sh --local puis ./health_check.sh"

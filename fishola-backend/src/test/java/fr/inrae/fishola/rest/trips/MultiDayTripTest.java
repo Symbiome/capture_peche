@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -29,8 +29,8 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
@@ -61,7 +61,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
  * rétrocompatibilité des applis qui n'envoient qu'une date, refus des captures hors sortie.
  */
 @QuarkusTest
-class MultiDayTripTest extends AbstractFisholaTest {
+class MultiDayTripTest extends AbstractCarnetTest {
 
     private static final LocalDate THREE_DAYS_AGO = LocalDate.now().minusDays(3);
     private static final LocalDate TWO_DAYS_AGO = LocalDate.now().minusDays(2);
@@ -128,7 +128,7 @@ class MultiDayTripTest extends AbstractFisholaTest {
     private ValidatableResponse post(TripBean trip) {
         return given()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .when().post("/api/v1/trips")
                 .then();
@@ -181,7 +181,7 @@ class MultiDayTripTest extends AbstractFisholaTest {
         Assertions.assertEquals(LocalDateTime.of(THREE_DAYS_AGO, LocalTime.of(20, 0)), catchTimestamps.get("legacy-catch"));
 
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get("/api/v1/trips/" + tripId)
                 .then().statusCode(200)
                 .body("endDate", notNullValue())
@@ -189,7 +189,7 @@ class MultiDayTripTest extends AbstractFisholaTest {
 
         // 18:00 J-3 → 10:00 J-1 : 40 h.
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get("/api/v1/trips?pageNumber=0&pageSize=-1&desc=true")
                 .then().statusCode(200)
                 .body("elements.find { it.id == '" + tripId + "' }.durationInSeconds", equalTo(40 * 3600));
@@ -251,7 +251,7 @@ class MultiDayTripTest extends AbstractFisholaTest {
         trip.finishedAt = "10:00";
         given()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(trip)
                 .when().put("/api/v1/trips/" + tripId)
                 .then().statusCode(200);
@@ -262,7 +262,7 @@ class MultiDayTripTest extends AbstractFisholaTest {
     @Test
     void tripSettingsExposeTheMaximumPlausibleDuration() {
         given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get("/api/v1/referential/trip-settings")
                 .then().statusCode(200)
                 .body("maxPlausibleTripDays", equalTo(7));

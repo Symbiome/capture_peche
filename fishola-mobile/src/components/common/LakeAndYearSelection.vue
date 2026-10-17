@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -72,9 +72,10 @@
 import { WaterEntity as Lake } from '@/pojos/BackendPojos';
 import ReferentialService from '@/services/ReferentialService';
 import Helpers from '@/services/Helpers';
-import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 
 @Component({
+  emits: ["lake", "lake-and-year", "year"],
   components: {
   }
 })
@@ -114,7 +115,7 @@ export default class LakeAndYearSelection extends Vue {
     }
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     // Évite qu'un debounce en vol ne déclenche une requête et ne mute l'état
     // d'un composant détruit.
     if (this.searchTimer) {
@@ -367,7 +368,7 @@ export default class LakeAndYearSelection extends Vue {
       font-weight: normal;
 
       &.favorite:before {
-        font-family: "Fishola-Icons";
+        font-family: "Carnet-Icons";
         content: '\f114';
         margin-right: 6px;
         color: @accent-text;

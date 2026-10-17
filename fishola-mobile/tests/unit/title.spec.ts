@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ import { shallowMount } from "@vue/test-utils";
 import Title from "@/components/layout/Title.vue";
 
 // Ce test sert aussi de garde-fou sur la configuration : monter ce composant
-// exerce d'un coup le plugin Vue 2, l'alias « @ », TypeScript et ses
+// exerce d'un coup le plugin Vue 3, l'alias « @ », TypeScript et ses
 // décorateurs, le bloc <style lang="less"> et ses variables, et la
 // substitution des import.meta.env. S'il tombe, c'est l'outillage qui a cassé.
 describe("Title", () => {
@@ -43,7 +43,7 @@ describe("Title", () => {
 
   it("renvoie vers l'accueil au clic", async () => {
     const push = vi.fn().mockResolvedValue(undefined);
-    const wrapper = shallowMount(Title, { mocks: { $router: { push } } });
+    const wrapper = shallowMount(Title, { global: { mocks: { $router: { push } } } });
     await wrapper.find(".header-title").trigger("click");
     expect(push).toHaveBeenCalledWith("/home");
   });

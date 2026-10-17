@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest;
  */
 
 import com.google.common.base.Preconditions;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,7 +61,7 @@ public class ImageHelper {
 
             return jpegBytes;
         } catch (IOException ioe) {
-            throw new FisholaTechnicalException("Impossible de lire l'image", ioe);
+            throw new CarnetTechnicalException("Impossible de lire l'image", ioe);
         }
 
     }
