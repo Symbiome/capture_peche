@@ -1,10 +1,20 @@
 ---
-# Variables non secrètes du déploiement dev. Les secrets vont dans vault.yml
-# (chiffré), jamais ici — ce fichier est en clair dans git.
+# Variables non secrètes du déploiement de recette. Les secrets vont dans
+# vault.yml (chiffré), jamais ici — ce fichier est en clair dans git.
 #
 # Surchargeable en ligne de commande, ex. :
-#   ansible-playbook playbooks/deploy.yml --extra-vars "force_rebuild=true"
+#   ansible-playbook -i inventories/recette --vault-id recette@.vault_pass_recette \
+#     playbooks/deploy.yml --extra-vars "force_rebuild=true"
 force_rebuild: false
+
+# --- Environnement -----------------------------------------------------------
+# Branche attendue sur le serveur : le playbook s'arrête si une autre est
+# extraite (cf. DEPLOYMENT.md, « Mettre à jour le code »).
+git_branch: develop
+# Mention affichée dans le titre et le menu des fronts (VITE__ENV_NAME).
+env_name: recette
+# Profils docker compose actifs (COMPOSE_PROFILES) : « recette » démarre Maildev.
+compose_profiles: recette
 
 # --- Domaines --------------------------------------------------------------
 # Adventiel gère le reverse proxy et le mapping domaine -> port host : ces
@@ -33,6 +43,13 @@ postgres_db: fishola
 # variantes -alpine.
 postgres_image: postgis/postgis:18-3.6
 
-# # --- Mail (dev : capturé par le Maildev embarqué, aucun vrai SMTP requis) ----
-# smtp_host: maildev
-# smtp_port: 1025
+# --- Mail (recette : capturé par le Maildev embarqué, aucun vrai SMTP) -------
+smtp_host: maildev
+smtp_port: 1025
+smtp_start_tls: DISABLED
+smtp_ssl: false
+smtp_username: ""
+smtp_from: ""
+# Destinataire des retours pêcheurs : valeur actuelle de l'application,
+# capturée par Maildev en recette.
+feedback_mail_to: fishola-lutins@list.forge.codelutin.com

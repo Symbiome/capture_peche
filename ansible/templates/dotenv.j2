@@ -1,6 +1,9 @@
-# Généré par ansible/playbooks/deploy.yml depuis group_vars/dev/vars.yml et
-# group_vars/dev/vault.yml — ne pas éditer à la main (écrasé à chaque
-# déploiement). Pour changer une valeur : éditer ces fichiers, pas ce .env.
+# Généré par ansible/playbooks/deploy.yml depuis
+# ansible/inventories/<env>/group_vars/all/{vars,vault}.yml — ne pas éditer à
+# la main (écrasé à chaque déploiement). Pour changer une valeur : éditer ces
+# fichiers, pas ce .env.
+COMPOSE_PROFILES={{ compose_profiles }}
+
 APP_DOMAIN={{ app_domain }}
 API_DOMAIN={{ api_domain }}
 ADMIN_DOMAIN={{ admin_domain }}
@@ -13,8 +16,14 @@ PGBACKREST_REPO1_CIPHER_PASS={{ vault_pgbackrest_cipher_pass }}
 FISHOLA_JWT_SECRET={{ vault_fishola_jwt_secret }}
 FISHOLA_ADMIN_PASSWORD={{ vault_fishola_admin_password }}
 
-SMTP_HOST={{ smtp_host | default('maildev') }}
-SMTP_PORT={{ smtp_port | default(1025) }}
+SMTP_HOST={{ smtp_host }}
+SMTP_PORT={{ smtp_port }}
+SMTP_START_TLS={{ smtp_start_tls }}
+SMTP_SSL={{ smtp_ssl | lower }}
+SMTP_USERNAME={{ smtp_username }}
+SMTP_PASSWORD={{ vault_smtp_password | default('') }}
+SMTP_FROM={{ smtp_from }}
+FEEDBACK_MAIL_TO={{ feedback_mail_to }}
 
 BACKEND_PORT={{ backend_port }}
 MOBILE_PORT={{ mobile_port }}

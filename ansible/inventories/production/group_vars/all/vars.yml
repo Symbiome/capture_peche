@@ -1,0 +1,44 @@
+---
+# Variables non secrètes du déploiement de production. Les secrets vont dans
+# vault.yml (chiffré, mot de passe distinct de celui de la recette), jamais
+# ici — ce fichier est en clair dans git.
+#
+# Les valeurs A_DEFINIR bloquent le déploiement tant qu'elles ne sont pas
+# renseignées (vérification en tête de playbooks/deploy.yml).
+force_rebuild: false
+
+# --- Environnement -----------------------------------------------------------
+git_branch: main
+# Aucune mention d'environnement affichée dans les fronts.
+env_name: ""
+# Aucun profil docker compose : pas de Maildev en production.
+compose_profiles: ""
+
+# --- Domaines --------------------------------------------------------------
+# À confirmer avec l'UFBRMC et Adventiel (CLAUDE.md §5.6), qui gère le
+# reverse proxy et le mapping domaine -> port host.
+app_domain: peche.carnet-peche.fr
+api_domain: api-peche.carnet-peche.fr
+admin_domain: admin-peche.carnet-peche.fr
+dashboard_domain: dashboard-peche.carnet-peche.fr
+
+# --- Ports hôte --------------------------------------------------------------
+# Doivent matcher le mapping port -> domaine côté reverse proxy Adventiel.
+backend_port: 8080
+mobile_port: 80
+admin_port: 8000
+dashboard_port: 8088
+etl_port: 3000
+
+# --- Base de données ---------------------------------------------------------
+postgres_db: fishola
+postgres_image: postgis/postgis:18-3.6
+
+# --- Mail (vrai SMTP ; mot de passe dans vault.yml : vault_smtp_password) ----
+smtp_host: A_DEFINIR
+smtp_port: 587
+smtp_start_tls: REQUIRED
+smtp_ssl: false
+smtp_username: A_DEFINIR
+smtp_from: A_DEFINIR
+feedback_mail_to: A_DEFINIR
