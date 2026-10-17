@@ -8,12 +8,12 @@
 -- Tout est idempotent (WHERE NOT EXISTS) : re-jouable sans doublon.
 -- Mots de passe : bcrypt (at.favre). « whatever » pour l'admin, « sispea » pour le pêcheur.
 
--- 1) Admin national (amorel) — utilisé par loginAsAdmin() / AbstractFisholaTest.
+-- 1) Admin national de test — utilisé par loginAsAdmin() / AbstractCarnetTest.
 INSERT INTO public.fishola_admin (email, password, created_on, can_create_admin, is_national_admin, is_operator)
-SELECT 'amorel@codelutin.com',
+SELECT 'admin.national@carnet-peche.test',
        '$2a$10$8oOr.XUVf3zoMXFDg.gdJuJHf36LD9VZQ9Diwbzc7jd7BxalYHOey',
        now(), true, true, false
-WHERE NOT EXISTS (SELECT 1 FROM public.fishola_admin WHERE email = 'amorel@codelutin.com');
+WHERE NOT EXISTS (SELECT 1 FROM public.fishola_admin WHERE email = 'admin.national@carnet-peche.test');
 
 -- 2) Pêcheur (thimel) — utilisé par login("thimel@codelutin.com", "sispea").
 INSERT INTO public.fishola_user (first_name, last_name, email, password, created_on, pseudo)

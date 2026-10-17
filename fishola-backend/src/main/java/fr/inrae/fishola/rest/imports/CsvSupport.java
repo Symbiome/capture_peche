@@ -21,6 +21,11 @@ package fr.inrae.fishola.rest.imports;
  * #L%
  */
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +47,27 @@ public final class CsvSupport {
 
     /** Résultat de lecture : en-tête (strippé) + enregistrements colonne -> valeur (strippée). */
     public record Parsed(List<String> header, List<Map<String, String>> records) {}
+
+    /**
+     * Décode un fichier CSV : UTF-8 (avec ou sans BOM), sinon Windows-1252
+     * (fichiers Excel français).
+     */
+    public static String decode(byte[] bytes) {
+        // BOM UTF-8 explicite → on le retire et on décode en UTF-8.
+        if (bytes.length >= 3 && (bytes[0] & 0xFF) == 0xEF && (bytes[1] & 0xFF) == 0xBB && (bytes[2] & 0xFF) == 0xBF) {
+            return new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
+        }
+        // UTF-8 strict ; si les octets ne sont pas de l'UTF-8 valide, repli Windows-1252.
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(bytes))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            return new String(bytes, Charset.forName("windows-1252"));
+        }
+    }
 
     public static Parsed readRows(String text) {
         List<List<String>> rows = tokenize(text);

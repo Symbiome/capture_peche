@@ -79,6 +79,9 @@
         <b-navbar-item tag="router-link" :to="{ name: 'operators' }" v-if="loggedAdmin.isNationalAdmin || loggedAdmin.canCreateAdmins">
           Opérateurs
         </b-navbar-item>
+        <b-navbar-item tag="router-link" :to="{ name: 'accounts' }" v-if="loggedAdmin.isNationalAdmin && loggedAdmin.betaTestersMode">
+          Inscriptions et import de comptes
+        </b-navbar-item>
       </b-navbar-dropdown>
       <b-navbar-item tag="router-link" :to="{ name: 'audit-log' }" v-if="loggedAdmin.isNationalAdmin">
         Journal d'audit

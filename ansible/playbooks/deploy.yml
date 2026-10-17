@@ -98,6 +98,18 @@
           {{ _settings | dict2items | selectattr('value', 'equalto', 'A_DEFINIR')
              | map(attribute='key') | list }}
 
+    - name: Vérifier les mots de passe des administrateurs nationaux par défaut (vault)
+      ansible.builtin.assert:
+        that: _sans_mot_de_passe | length == 0
+        fail_msg: >-
+          vault_default_national_admin_passwords sans mot de passe dans
+          {{ inventory_dir }}/group_vars/all/vault.yml pour : {{ _sans_mot_de_passe | join(', ') }}.
+        quiet: true
+      vars:
+        _sans_mot_de_passe: >-
+          {{ default_national_admins | reject('in', vault_default_national_admin_passwords | default({}))
+             | list }}
+
     - name: Vérifier la phrase de chiffrement des sauvegardes (vault)
       ansible.builtin.assert:
         that:

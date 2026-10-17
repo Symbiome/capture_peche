@@ -100,7 +100,7 @@ class GamificationResourceTest extends AbstractCarnetTest {
         techniqueId = ctx.fetchOne("SELECT id FROM technique LIMIT 1").get("id", UUID.class);
         speciesId = ctx.fetchOne("SELECT id FROM species LIMIT 1").get("id", UUID.class);
         brochetId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Brochet'").get("id", UUID.class);
-        UUID nationalAdminId = ctx.fetchOne("SELECT id FROM fishola_admin WHERE email = 'amorel@codelutin.com'")
+        UUID nationalAdminId = ctx.fetchOne("SELECT id FROM fishola_admin WHERE email = 'admin.national@carnet-peche.test'")
                 .get("id", UUID.class);
 
         // JwtHelper est @RequestScoped : on active un contexte de requête le temps de

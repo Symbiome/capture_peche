@@ -16,6 +16,9 @@ PGBACKREST_REPO1_CIPHER_PASS={{ vault_pgbackrest_cipher_pass }}
 FISHOLA_JWT_SECRET={{ vault_fishola_jwt_secret }}
 FISHOLA_ADMIN_PASSWORD={{ vault_fishola_admin_password }}
 
+BETA_TESTERS_MODE={{ beta_testers_mode | lower }}
+DEFAULT_NATIONAL_ADMINS={% for email in default_national_admins %}{{ email }}:{{ vault_default_national_admin_passwords[email] }}{{ '' if loop.last else ',' }}{% endfor %}
+
 SMTP_HOST={{ smtp_host }}
 SMTP_PORT={{ smtp_port }}
 SMTP_START_TLS={{ smtp_start_tls }}

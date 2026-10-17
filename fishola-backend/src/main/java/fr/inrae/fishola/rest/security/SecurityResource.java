@@ -67,6 +67,8 @@ import java.util.regex.Pattern;
 public class SecurityResource extends AbstractSecurityCarnetResource {
 
     public static final String UNKNOWN_USER_ERR_MESSAGE = "Utilisateur inconnu";
+    public static final String REGISTRATION_CLOSED_MESSAGE =
+            "Les inscriptions sont fermées : les comptes sont créés par l'équipe du projet.";
 
     private static final String CLAIM_FIRST_NAME = "firstName";
     private static final String CLAIM_LAST_NAME = "lastName";
@@ -79,11 +81,30 @@ public class SecurityResource extends AbstractSecurityCarnetResource {
     @Inject
     protected TripsDao tripsDao;
 
+    @Inject
+    protected RegistrationPolicy registrationPolicy;
+
+    /**
+     * Indique à l'app pêcheur si l'inscription libre est ouverte (#192).
+     *
+     * @return l'état de l'inscription
+     */
+    @GET
+    @Path("/registration")
+    public RegistrationStatus getRegistrationStatus() {
+        return new RegistrationStatus(registrationPolicy.isRegistrationOpen());
+    }
+
     @PUT
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response register(RegisterBean bean, @Context HttpServletRequest request) {
 
+        if (!registrationPolicy.isRegistrationOpen()) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("registration", REGISTRATION_CLOSED_MESSAGE))
+                    .build();
+        }
         if (bean == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -222,6 +243,12 @@ public class SecurityResource extends AbstractSecurityCarnetResource {
             };
 
             String email = getClaimOrFail.apply(CLAIM_EMAIL);
+
+            // Un lien de validation reçu avant la fermeture ne crée plus de compte (#192).
+            if (!registrationPolicy.isRegistrationOpen()) {
+                log.infof("Registration closed, account not created for %s", email);
+                return false;
+            }
 
             if (log.isInfoEnabled()) {
                 log.infof("Email verified, create account for %s", email);

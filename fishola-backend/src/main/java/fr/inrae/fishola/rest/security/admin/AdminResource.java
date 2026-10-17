@@ -32,7 +32,9 @@ import fr.inrae.fishola.mails.ImmutableCarnetMail;
 import fr.inrae.fishola.rest.security.AbstractSecurityCarnetResource;
 import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.LoginBean;
+import fr.inrae.fishola.rest.security.RegistrationPolicy;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
@@ -67,6 +69,9 @@ public class AdminResource extends AbstractSecurityCarnetResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
     protected static final String CLAIM_IS_OPERATOR = "isOperator";
     protected static final String CLAIM_DEPARTMENT_CODES = "departmentCodes";
+
+    @Inject
+    protected RegistrationPolicy registrationPolicy;
 
     @POST
     @Path("/login")
@@ -278,7 +283,8 @@ public class AdminResource extends AbstractSecurityCarnetResource {
                 currentAdmin.getIsNationalAdmin(),
                 currentAdmin.getCanCreateAdmin(),
                 currentAdmin.getIsOperator(),
-                adminDao.getAllowedDepartments(currentAdmin.getId())
+                adminDao.getAllowedDepartments(currentAdmin.getId()),
+                registrationPolicy.isBetaTestersMode()
         );
         return Response.ok(loggedAdmin).build();
     }
