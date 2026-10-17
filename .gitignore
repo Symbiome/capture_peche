@@ -43,13 +43,14 @@ stats.html
 # Fichier de conf local
 fishola-backend/.env
 
-# Secrets du déploiement docker-compose (dev/recette) — généré par
-# ansible/playbooks/deploy.yml depuis ansible/group_vars/dev/{vars,vault}.yml
+# Secrets du déploiement docker-compose (recette ou production) — généré par
+# ansible/playbooks/deploy.yml depuis ansible/inventories/<env>/group_vars/all/{vars,vault}.yml
 /.env
 
-# Mot de passe du vault Ansible (les secrets chiffrés, eux, sont committés
-# dans ansible/group_vars/dev/vault.yml)
+# Mots de passe des vaults Ansible, un par environnement (les secrets
+# chiffrés, eux, sont committés dans ansible/inventories/<env>/group_vars/all/vault.yml)
 .vault_pass
+.vault_pass_*
 
 # Données d'import locales (GeoPackages BD TOPO, etc.)
 /data/

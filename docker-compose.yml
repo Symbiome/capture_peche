@@ -1,4 +1,6 @@
-# Stack Fishola / capture_peche — serveur dev/recette.
+# Stack Fishola / capture_peche — serveurs de recette et de production : même
+# fichier pour les deux, seules les variables du .env généré par Ansible
+# changent (ansible/inventories/<env>, cf. DEPLOYMENT.md).
 #
 # Reconstruit les 3 images applicatives à partir des Dockerfile.demo déjà
 # utilisés par la CI GitLab (mêmes artefacts, juste construits ici plutôt que
@@ -67,8 +69,13 @@ services:
       FISHOLA_SMTP_PORT: ${SMTP_PORT:-1025}
       QUARKUS_MAILER_HOST: ${SMTP_HOST:-maildev}
       QUARKUS_MAILER_PORT: ${SMTP_PORT:-1025}
-      QUARKUS_MAILER_START_TLS: DISABLED
-      QUARKUS_MAILER_SSL: "false"
+      QUARKUS_MAILER_START_TLS: ${SMTP_START_TLS:-DISABLED}
+      QUARKUS_MAILER_SSL: ${SMTP_SSL:-false}
+      # Vides en recette (Maildev, sans authentification) : Quarkus les ignore.
+      QUARKUS_MAILER_USERNAME: ${SMTP_USERNAME:-}
+      QUARKUS_MAILER_PASSWORD: ${SMTP_PASSWORD:-}
+      QUARKUS_MAILER_FROM: ${SMTP_FROM:-}
+      FISHOLA_FEEDBACK_MAIL_TO: ${FEEDBACK_MAIL_TO:?FEEDBACK_MAIL_TO manquant dans .env}
       # Le profil %demo hérite sinon des origines localhost:808x du profil %dev :
       # sans ça, le navigateur bloque les appels API en CORS depuis les vrais domaines.
       QUARKUS_HTTP_CORS_ORIGINS: https://${APP_DOMAIN},https://${ADMIN_DOMAIN}
@@ -96,8 +103,11 @@ services:
       - "0.0.0.0:${ADMIN_PORT:-8082}:80"
     networks: [fishola]
 
+  # Recette uniquement : COMPOSE_PROFILES=recette dans le .env. Absent en
+  # production, où les mails partent par le vrai SMTP.
   maildev:
     image: maildev/maildev
+    profiles: [recette]
     restart: unless-stopped
     ports:
       - "127.0.0.1:${MAILDEV_PORT:-41080}:1080"

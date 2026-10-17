@@ -43,10 +43,13 @@ import fr.inrae.fishola.entities.tables.pojos.Weather;
 import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.dashboard.Dashboard;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
+import io.agroal.api.AgroalDataSource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,8 +58,13 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 class DashboardResourceTest  extends AbstractCarnetTest {
@@ -74,6 +82,8 @@ class DashboardResourceTest  extends AbstractCarnetTest {
     protected CarnetConfiguration config;
     @Inject
     protected Logger log;
+    @Inject
+    protected AgroalDataSource dataSource;
 
     protected List<WaterEntity> waterEntities;
     protected List<Species> species;
@@ -159,12 +169,13 @@ class DashboardResourceTest  extends AbstractCarnetTest {
         // Goal : make sure that waterEntity selections for personnal dashboard works as expected
         UUID waterEntityId1 = this.waterEntities.get(1).getId();
         UUID waterEntityId2 = this.waterEntities.get(2).getId();
+        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
         Dashboard initialDashboardForWaterEntity1 = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
         Dashboard initialDashboardForWaterEntity2 = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
         Dashboard initialDashboardForAllWaterEntities = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
-        Dashboard initialDashboardForWaterEntity1LastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1);
-        Dashboard initialDashboardForWaterEntity2LastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId2);
-        Dashboard initialDashboardForAllWaterEntitiesLastYear = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
+        Dashboard initialDashboardForWaterEntity1LastYear = this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId1);
+        Dashboard initialDashboardForWaterEntity2LastYear = this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId2);
+        Dashboard initialDashboardForAllWaterEntitiesLastYear = this.getPersonalDashboardForWaterEntityAndYear(oneYearAgo.getYear());
 
         // Add 1 trip to waterEntity 1
         createTripWithCatch(waterEntityId1, LocalDateTime.now());
@@ -176,7 +187,6 @@ class DashboardResourceTest  extends AbstractCarnetTest {
         initialDashboardForAllWaterEntities = this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear());
 
         // Add 1 trips to waterEntity 2 - last year
-        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
         createTripWithCatch(waterEntityId2, oneYearAgo);
         // For current year : should not be impacted
         comparePersonalDashboards(initialDashboardForWaterEntity1, this.getPersonalDashboardForWaterEntityAndYear(LocalDateTime.now().getYear(), waterEntityId1), 0);
@@ -270,6 +280,47 @@ class DashboardResourceTest  extends AbstractCarnetTest {
         compareGlobalDashboards(initialDashboardForWaterEntity2LastYear, this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear(), waterEntityId2), 1);
         compareGlobalDashboards(initialDashboardForAllWaterEntitiesLastYear, this.getGlobalDashboardForWaterEntityAndYear(oneYearAgo.getYear()), 1);
     }
+    @Test
+    @Transactional
+    void testGlobalDashboardEndpointWithYearOnly() {
+        // #277 : la page « Statistiques » ne filtre plus que par année, tous milieux confondus.
+        int year = Year.now().getValue();
+        Map<String, Integer> fromEndpoint = given()
+                .queryParam("year", year)
+                .when().get("/api/v1/global-dashboard")
+                .then().statusCode(200)
+                .extract().jsonPath().getMap("caughtSpeciesCount", String.class, Integer.class);
+
+        Set<String> expectedSpecies = this.getGlobalDashboardForYear(year).caughtSpeciesCount().keySet().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toSet());
+        Assertions.assertEquals(expectedSpecies, fromEndpoint.keySet());
+
+        // Le mobile envoie le paramètre vide quand aucun plan d'eau n'est choisi.
+        given()
+                .queryParam("year", year)
+                .queryParam("waterEntity", "")
+                .when().get("/api/v1/global-dashboard")
+                .then().statusCode(200);
+    }
+
+    @Test
+    @Transactional
+    void testGlobalDashboardWithImportedCatchWithoutBoCorrection() {
+        // #277 : sans filtre de milieu, les captures importées (ni espèce ni taille
+        // corrigées) entrent dans les statistiques au lieu de faire échouer le calcul.
+        int year = Year.now().getValue();
+        UUID speciesId = this.species.get(0).getId();
+        int before = this.getGlobalDashboardForYear(year).caughtSpeciesCount().getOrDefault(speciesId, 0);
+
+        UUID catchId = createTripWithCatch(this.waterEntities.get(0).getId(), LocalDateTime.now());
+        DSL.using(dataSource, SQLDialect.POSTGRES)
+                .execute("UPDATE catch SET edited_species_id = NULL, edited_size = 0 WHERE id = ?", catchId);
+
+        GlobalDashboard dashboard = this.getGlobalDashboardForYear(year);
+        Assertions.assertEquals(before + 1, dashboard.caughtSpeciesCount().get(speciesId));
+    }
+
     /**
      * Compares the two given dashboards. Fails if the second one does not have expectedAdditionalCatches more that the first.
      * @param d1 dashboard to compare
@@ -306,7 +357,7 @@ class DashboardResourceTest  extends AbstractCarnetTest {
         }
     }
 
-    private void createTripWithCatch(UUID waterEntityId, LocalDateTime tripDate) {
+    private UUID createTripWithCatch(UUID waterEntityId, LocalDateTime tripDate) {
         Trip trip = new Trip();
         trip.setCreatedOn(tripDate);
         trip.setBeginTimestamp(tripDate.minusHours(4));
@@ -334,7 +385,7 @@ class DashboardResourceTest  extends AbstractCarnetTest {
         aCatch.setWeight((int)System.currentTimeMillis());
         aCatch.setKept(true);
         aCatch.setMaillee(Maillage.NON_DEFINI);
-        catchsDao.create(aCatch);
+        return catchsDao.create(aCatch);
     }
 
     private Dashboard getPersonalDashboard() {
