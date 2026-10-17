@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import OfflineArea from "@/pojos/OfflineArea";
 import { AttributionResponse, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
@@ -38,7 +38,7 @@ export interface DepartmentSummary {
  * est un FeatureCollection GeoJSON stocké dans Dexie (`offlineAreas`), rendu par
  * la carte comme source locale quand les tuiles vectorielles sont injoignables.
  */
-export default class OfflineAreasService extends AbstractFisholaService {
+export default class OfflineAreasService extends AbstractCarnetService {
   /** Même rayon que l'attribution serveur (HydroSearchDao.ATTRIBUTION_RADIUS_M). */
   static readonly ATTRIBUTION_RADIUS_M = 5000;
   private static readonly ATTRIBUTION_LIMIT = 5;

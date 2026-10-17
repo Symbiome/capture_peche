@@ -2,7 +2,7 @@ package fr.inrae.fishola.mails;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @ImmutableObject
-public interface FisholaMail {
+public interface CarnetMail {
 
     Optional<LocalDateTime> pendingSince();
 
@@ -42,7 +42,7 @@ public interface FisholaMail {
     String getBody();
 
     @Value.Default
-    default ImmutableSet<FisholaMailAttachment> getAttachments() {
+    default ImmutableSet<CarnetMailAttachment> getAttachments() {
         return ImmutableSet.of();
     }
 

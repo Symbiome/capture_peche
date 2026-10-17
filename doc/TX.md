@@ -1,7 +1,7 @@
 # Transactions
 
 Tous les services REST héritent de 
-[AbstractFisholaResource](/fishola-backend/src/main/java/fr/inrae/fishola/rest/AbstractFisholaResource.java) qui a une
+[AbstractCarnetResource](/fishola-backend/src/main/java/fr/inrae/fishola/rest/AbstractCarnetResource.java) qui a une
 annotation `@Transactional(REQUIRED)` ce qui correspond à :
 
     If called outside a transaction context, the interceptor must begin a new
@@ -15,7 +15,7 @@ Donc pour chaque appel entrant à un service REST une transaction est crée. Pou
 est conservée.
 
 Chaque DAO "métier" (par opposition aux DAOs "techniques" générés par JOOQ) hérite de
-[AbstractFisholaDao](/fishola-backend/src/main/java/fr/inrae/fishola/database/AbstractFisholaDao.java) qui a une
+[AbstractCarnetDao](/fishola-backend/src/main/java/fr/inrae/fishola/database/AbstractCarnetDao.java) qui a une
 annotation `@Transactional(MANDATORY)` ce qui correspond à :
 
     If called outside a transaction context, a TransactionalException with a

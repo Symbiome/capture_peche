@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -56,7 +56,7 @@ export default class Top extends Vue {
 
   .top-1::after {
     content: '\f11d'; // Correspond à .icon-star:before dans _icons.less
-    font-family: 'Fishola-Icons';
+    font-family: 'Carnet-Icons';
     color: @accent-text;
     position: absolute;
     left: -6px;

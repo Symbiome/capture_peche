@@ -17,7 +17,7 @@ conformément aux rôles déjà codés dans `fishola-backend`.
 | Administrateur régional | `is_operator = false`, `is_national_admin = false` | `checkIsAdmin()` | `fishola_admin_departments` |
 | Administrateur national | `is_national_admin = true` | `checkIsNationalAdmin()` | aucun (tout) |
 
-Gardes : `AbstractFisholaResource.java` (`checkIsStaff` / `checkIsAdmin` /
+Gardes : `AbstractCarnetResource.java` (`checkIsStaff` / `checkIsAdmin` /
 `checkIsNationalAdmin` / `getAllowedAdminDepartments`). Un administrateur régional
 ne gère les comptes que s'il a `can_create_admin = true`.
 

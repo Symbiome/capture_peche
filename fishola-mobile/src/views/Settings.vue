@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -92,7 +92,7 @@
 
 <script lang="ts">
 
-import FisholaHeader from '@/components/layout/FisholaHeader.vue'
+import CarnetHeader from '@/components/layout/CarnetHeader.vue'
 import FormToggle from '@/components/common/FormToggle.vue'
 import FormRadio from '@/components/common/FormRadio.vue'
 import ThemeService, { ThemePreference } from '@/services/ThemeService';
@@ -111,7 +111,7 @@ import ScaleSampling from '@/services/ScaleSampling';
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     FormToggle,
     FormRadio,
     BottomNav,

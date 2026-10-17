@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-summary page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-summary-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -47,7 +47,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Terminer" button-icon="icon-send" v-on:buttonClicked="startSave"
+    <CarnetFooter button-text="Terminer" button-icon="icon-send" v-on:buttonClicked="startSave"
       back-event="onBackButton" v-on:onBackButton="backToGaleryOrTrips" shortcuts="back,step-4-4,giveup"
       :isWaitingForPositionBeforeGoingToNextPage="isWaitingForPositionBeforeGoingToNextPage
         " />
@@ -64,10 +64,10 @@ import TripsService from "@/services/TripsService";
 import Helpers from "@/services/Helpers";
 
 import BackButton from "@/components/common/BackButton.vue";
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import SomeTripSummary from "@/components/trip/SomeTripSummary.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { Component, Prop, Vue } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
@@ -78,11 +78,11 @@ export type ActionType = "SendTrip" | "EditSpecies" | "EditTechniques";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
     SomeTripSummary,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripSummaryView extends Vue {

@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest.imports.survey;
  */
 
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -48,7 +48,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/manual-entries/survey/sessions")
 @Produces(MediaType.APPLICATION_JSON)
-public class SurveyManualEntryResource extends AbstractFisholaResource {
+public class SurveyManualEntryResource extends AbstractCarnetResource {
 
     @Inject
     protected SurveySessionService sessionService;

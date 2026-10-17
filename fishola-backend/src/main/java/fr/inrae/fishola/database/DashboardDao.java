@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class DashboardDao  extends AbstractFisholaDao {
+public class DashboardDao  extends AbstractCarnetDao {
 
     @Inject
     protected CatchsDao catchsDao;

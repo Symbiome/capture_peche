@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   #%L
-  Fishola :: Backend
+  Carnet de pêche :: Backend
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>fishola-backend</artifactId>
-    <name>Fishola :: Backend</name>
+    <name>Carnet de pêche :: Backend</name>
 
     <properties>
         <sonar.sources>src/main/java</sonar.sources>

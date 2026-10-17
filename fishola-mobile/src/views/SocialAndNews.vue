@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="my-trips page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page social-and-news-page">
       <div class="pane pane-only">
         <div class="pane-content large rounded no-scroll">
@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
 import { Component, Vue, Watch } from "vue-facing-decorator";
@@ -69,7 +69,7 @@ import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
 @Component({
   components: {
     MyTrips,
-    FisholaHeader,
+    CarnetHeader,
     NewsView,
     BottomNav,
     RunningOverlay,

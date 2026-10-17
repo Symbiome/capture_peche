@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.dashboard;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -27,13 +27,13 @@ import fr.inrae.fishola.database.AnglerStatisticsDao.TripFilter;
 import fr.inrae.fishola.database.DashboardDao;
 import fr.inrae.fishola.database.TripsDao;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
-import fr.inrae.fishola.mails.FisholaMail;
-import fr.inrae.fishola.mails.FisholaMailAttachment;
-import fr.inrae.fishola.mails.ImmutableFisholaMail;
-import fr.inrae.fishola.mails.ImmutableFisholaMailAttachment;
+import fr.inrae.fishola.mails.CarnetMail;
+import fr.inrae.fishola.mails.CarnetMailAttachment;
+import fr.inrae.fishola.mails.ImmutableCarnetMail;
+import fr.inrae.fishola.mails.ImmutableCarnetMailAttachment;
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.FisholaCache;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.CarnetCache;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -56,7 +56,7 @@ import java.util.UUID;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
-public class DashboardResource extends AbstractFisholaResource {
+public class DashboardResource extends AbstractCarnetResource {
 
     @Inject
     protected MailService mailService;
@@ -71,7 +71,7 @@ public class DashboardResource extends AbstractFisholaResource {
     protected AnglerStatisticsDao anglerStatisticsDao;
 
     @Inject
-    protected FisholaCache cache;
+    protected CarnetCache cache;
 
     @GET
     @Path("/dashboard")
@@ -165,7 +165,7 @@ public class DashboardResource extends AbstractFisholaResource {
 
         String csv = tripsDao.getPersonalTripsCSV(userId);
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String disposition = String.format("filename=\"Fishola_Export_%s.csv\"", dateFormatted);
+        String disposition = String.format("filename=\"CarnetDePeche_Export_%s.csv\"", dateFormatted);
 
         Response.ResponseBuilder responseBuilder = Response.ok(csv)
                 .header("Content-Disposition", disposition);
@@ -183,17 +183,17 @@ public class DashboardResource extends AbstractFisholaResource {
         String csv = tripsDao.getPersonalTripsCSV(userId);
 
         String dateFormatted = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String fileName = String.format("Fishola_Export_%s.csv", dateFormatted);
+        String fileName = String.format("CarnetDePeche_Export_%s.csv", dateFormatted);
 
-        FisholaMail fisholaMail = toFisholaMail(userId, fileName, csv);
-        mailService.sendMail(fisholaMail);
+        CarnetMail carnetMail = toCarnetMail(userId, fileName, csv);
+        mailService.sendMail(carnetMail);
 
         Response.ResponseBuilder responseBuilder = Response.ok();
         Response response = buildResponse(responseBuilder, userIdAndRenewal);
         return response;
     }
 
-    protected FisholaMail toFisholaMail(UUID userId, String fileName, String csv) {
+    protected CarnetMail toCarnetMail(UUID userId, String fileName, String csv) {
 
         Optional<FisholaUser> user = usersDao.findById(userId);
         Preconditions.checkState(user.isPresent());
@@ -202,21 +202,21 @@ public class DashboardResource extends AbstractFisholaResource {
                 "firstName", user.get().getFirstName()
                                          );
 
-        ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+        ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                 "emails/personal-export.html",
                 args);
         builder.subject("Export de données personnelles");
         builder.addTos(user.get().getEmail());
 
         byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
-        FisholaMailAttachment attachment = ImmutableFisholaMailAttachment.builder()
+        CarnetMailAttachment attachment = ImmutableCarnetMailAttachment.builder()
                 .bytes(bytes)
                 .name(fileName)
                 .type(com.google.common.net.MediaType.CSV_UTF_8)
                 .build();
         builder.addAttachments(attachment);
 
-        FisholaMail result = builder.build();
+        CarnetMail result = builder.build();
         return result;
     }
 

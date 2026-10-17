@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -25,7 +25,7 @@ import {
   SpeciesWithAlias,
   GlobalDashboard,
 } from "@/pojos/BackendPojos";
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import ReferentialService from "./ReferentialService";
 import Helpers from "@/services/Helpers";
 
@@ -43,7 +43,7 @@ export class GlobalDashboardAndSpecies {
   ) {}
 }
 
-export default class DashboardService extends AbstractFisholaService {
+export default class DashboardService extends AbstractCarnetService {
   constructor() {
     super();
   }

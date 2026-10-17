@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,8 +21,8 @@ package fr.inrae.fishola.rest.gamification;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -67,7 +67,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
  */
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class GamificationResourceTest extends AbstractFisholaTest {
+class GamificationResourceTest extends AbstractCarnetTest {
 
     @Inject
     AgroalDataSource dataSource;
@@ -93,7 +93,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
         // Hash bcrypt de « sispea », réutilisé de R__test_fixture.sql (pêcheur thimel) --
         // ce compte-ci est dédié à cette suite, jamais utilisé pour créer des sorties ailleurs.
         ctx.execute("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
-                        + "VALUES (?, 'Gamification', 'Resource', 'gamification-resource-test@fishola.test', "
+                        + "VALUES (?, 'Gamification', 'Resource', 'gamification-resource-test@carnet-peche.test', "
                         + "'$2a$10$j3eTBbEJO9IutgxGIJFMx.uauNH6Z4UR/UeiL62eL5oYMNCSPWYS.', now(), 'gamif-resource-test')",
                 userId);
         waterEntityId = ctx.fetchOne("SELECT id FROM water_entity LIMIT 1").get("id", UUID.class);
@@ -153,13 +153,13 @@ class GamificationResourceTest extends AbstractFisholaTest {
                 Map.entry("catchs", List.of(catchBean)),
                 Map.entry("source", "web"));
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
                 .contentType("application/json")
                 .body(tripBean)
                 .when().post("/api/v1/trips/")
                 .then().statusCode(201);
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
                 .when().get("/api/v1/gamification/me/badges")
                 .then().statusCode(200)
                 .body("find { it.code == 'PRISE_ECLAIR' }.unlocked", org.hamcrest.CoreMatchers.equalTo(true))
@@ -168,20 +168,20 @@ class GamificationResourceTest extends AbstractFisholaTest {
 
     @Test
     void adminCanManuallyAttributeTheManualBadge() {
-        UUID badgeId = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        UUID badgeId = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/admin/gamification/badges")
                 .then().statusCode(200)
                 .body("code", hasItem("TESTEUR_EMERITE"))
                 .extract().jsonPath().getList("findAll { it.code == 'TESTEUR_EMERITE' }.id", String.class)
                 .stream().findFirst().map(UUID::fromString).orElseThrow();
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType("application/json")
                 .body(Map.of("userId", userId.toString()))
                 .when().post("/api/v1/admin/gamification/badges/" + badgeId + "/attribute")
                 .then().statusCode(204);
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
                 .when().get("/api/v1/gamification/me/badges")
                 .then().statusCode(200)
                 .body("find { it.code == 'TESTEUR_EMERITE' }.unlocked", org.hamcrest.CoreMatchers.equalTo(true));
@@ -189,13 +189,13 @@ class GamificationResourceTest extends AbstractFisholaTest {
 
     @Test
     void adminCannotManuallyAttributeAnAutomaticBadge() {
-        UUID badgeId = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        UUID badgeId = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/admin/gamification/badges")
                 .then().statusCode(200)
                 .extract().jsonPath().getList("findAll { it.code == 'RECORD_POIDS' }.id", String.class)
                 .stream().findFirst().map(UUID::fromString).orElseThrow();
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType("application/json")
                 .body(Map.of("userId", userId.toString()))
                 .when().post("/api/v1/admin/gamification/badges/" + badgeId + "/attribute")
@@ -204,13 +204,13 @@ class GamificationResourceTest extends AbstractFisholaTest {
 
     @Test
     void attributingToAnUnknownUserIsRejected() {
-        UUID badgeId = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        UUID badgeId = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .when().get("/api/v1/admin/gamification/badges")
                 .then().statusCode(200)
                 .extract().jsonPath().getList("findAll { it.code == 'TESTEUR_EMERITE' }.id", String.class)
                 .stream().findFirst().map(UUID::fromString).orElseThrow();
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .contentType("application/json")
                 .body(Map.of("userId", UUID.randomUUID().toString()))
                 .when().post("/api/v1/admin/gamification/badges/" + badgeId + "/attribute")
@@ -223,7 +223,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
         postTripWithOneBrochet(angler);
         String unlockId = unlockIdOf(angler, "PRISE_ECLAIR");
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
                 .when().get("/api/v1/gamification/me/badges/unlocks/" + unlockId + "/souvenir")
                 .then().statusCode(200)
                 .body("unlockId", equalTo(unlockId))
@@ -244,7 +244,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
         postTripWithOneBrochet(owner);
         String unlockId = unlockIdOf(owner, "PRISE_ECLAIR");
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, intruder.token())
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, intruder.token())
                 .when().get("/api/v1/gamification/me/badges/unlocks/" + unlockId + "/souvenir")
                 .then().statusCode(404);
     }
@@ -290,7 +290,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
         UUID anglerId = UUID.randomUUID();
         executeInNewTransaction("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
                         + "VALUES (?, 'Souvenir', 'Resource', ?, 'x', now(), ?)",
-                anglerId, "souvenir-" + anglerId + "@fishola.test", "souvenir-" + anglerId);
+                anglerId, "souvenir-" + anglerId + "@carnet-peche.test", "souvenir-" + anglerId);
         anglerIds.add(anglerId);
         return new Angler(anglerId, forgeUserToken(anglerId));
     }
@@ -336,7 +336,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
                 Map.entry("catchs", List.of(catchBean)),
                 Map.entry("source", "web"));
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
                 .contentType("application/json")
                 .body(tripBean)
                 .when().post("/api/v1/trips/")
@@ -344,7 +344,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
     }
 
     private String unlockIdOf(Angler angler, String badgeCode) {
-        return given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
+        return given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
                 .when().get("/api/v1/gamification/me/badges")
                 .then().statusCode(200)
                 .body("find { it.code == '" + badgeCode + "' }.unlocked", equalTo(true))
@@ -352,7 +352,7 @@ class GamificationResourceTest extends AbstractFisholaTest {
     }
 
     private io.restassured.response.ValidatableResponse getSouvenir(Angler angler, String unlockId) {
-        return given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
+        return given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, angler.token())
                 .when().get("/api/v1/gamification/me/badges/unlocks/" + unlockId + "/souvenir")
                 .then().statusCode(200);
     }

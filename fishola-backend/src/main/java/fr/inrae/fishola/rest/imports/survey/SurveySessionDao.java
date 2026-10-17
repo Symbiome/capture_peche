@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.survey;
  * #L%
  */
 
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import fr.inrae.fishola.entities.enums.SurveySessionStatus;
 import jakarta.inject.Singleton;
 import org.jooq.Record;
@@ -40,7 +40,7 @@ import static fr.inrae.fishola.entities.Tables.SURVEY_SESSION;
  * {@link fr.inrae.fishola.rest.imports.ImportDao#saveSurveySortie}.
  */
 @Singleton
-public class SurveySessionDao extends AbstractFisholaDao {
+public class SurveySessionDao extends AbstractCarnetDao {
 
     // Une sortie enquêtée produit une trip par pêcheur, d'external_ref « code sortie/pêcheur ».
     private static final String VIEW_SQL = "SELECT ss.*, we.name AS water_entity_name, "

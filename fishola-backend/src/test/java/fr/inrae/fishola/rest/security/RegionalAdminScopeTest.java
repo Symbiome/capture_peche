@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -76,10 +76,10 @@ class RegionalAdminScopeTest {
     void seedAccounts() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", nationalId, "scope-test-national@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalId, "scope-test-national@carnet-peche.test", "x");
         // Régional : peut gérer des comptes, mais n'est PAS national.
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, false, false)", regionalId, "scope-test-regional@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, false, false)", regionalId, "scope-test-regional@carnet-peche.test", "x");
         // Périmètre non vide : un périmètre vide vaut « national » dans getAllowedAdminDepartments() (#188).
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", regionalId);
 
@@ -101,7 +101,7 @@ class RegionalAdminScopeTest {
     }
 
     private io.restassured.specification.RequestSpecification as(String token) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token);
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token);
     }
 
     @Test

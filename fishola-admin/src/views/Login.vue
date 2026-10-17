@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -24,7 +24,7 @@
       <div class="columns is-centered ">
         <div class="column is-5-tablet is-4-desktop is-3-widescreen login-box">
           <div class="box has-text-centered">
-            <h1 class="title is-4 has-text-primary">Interface d'administration de FISHOLA</h1>
+            <h1 class="title is-4 has-text-primary">Interface d'administration de Carnet de pêche</h1>
 
             <b-field label="Email"
                      :type="errorMessage ? 'is-danger' : ''"

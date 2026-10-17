@@ -52,7 +52,7 @@ connexions. Tant qu'il en reste, **ne pas** passer à l'étape 3.
    `if (isNationalAdmin) { return verifySharedNationalPassword(plain); }`) et la méthode
    `verifySharedNationalPassword` — ne garder que la vérif bcrypt (`verifyBcrypt`).
 2. Supprimer la config `fishola.admin-password` (`%dev.fishola.admin-password`,
-   éventuels `%demo`/prod) et la méthode `FisholaConfiguration.adminPassword()`.
+   éventuels `%demo`/prod) et la méthode `CarnetConfiguration.adminPassword()`.
 
 **Pas de backfill Flyway** : le mot de passe partagé est **spécifique à l'environnement**
 (`%dev` = `azerty`) ; une migration l'injecterait en prod. Le provisioning est un acte

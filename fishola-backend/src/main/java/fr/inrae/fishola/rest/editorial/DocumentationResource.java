@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.editorial;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -25,10 +25,10 @@ import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
 import fr.inrae.fishola.entities.tables.pojos.Editorial;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.FisholaCache;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.CarnetCache;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,13 +54,13 @@ import java.util.UUID;
 
 @Path("/api/v1")
 @Produces(MediaType.APPLICATION_JSON)
-public class DocumentationResource extends AbstractFisholaResource {
+public class DocumentationResource extends AbstractCarnetResource {
 
     @Inject
     protected EditorialAndDocumentationDao dao;
 
     @Inject
-    protected FisholaCache cache;
+    protected CarnetCache cache;
 
     @GET
     @Path("/documentations")
@@ -144,7 +144,7 @@ public class DocumentationResource extends AbstractFisholaResource {
         }
     }
 
-    protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws FisholaTechnicalException {
+    protected Documentation documentationFromBase64Content(Optional<UUID> docId, DocumentationWithBase64ContentBean documentationBase64Content) throws CarnetTechnicalException {
         Documentation documentation = new Documentation();
         docId.ifPresent(documentation::setId);
         documentation.setNaturalId(documentationBase64Content.naturalId());

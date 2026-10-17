@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -163,8 +163,8 @@ export default class Menu extends Vue {
     let acceptsMailNotifications = false;
     try {
       await Helpers.confirm(
-        `Vous pouvez désormais suivre l'actualité FISHOLA par mail. Souhaitez-vous être informé par mail des communications autour de FISHOLA ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
-        "Du nouveau sur FISHOLA",
+        `Vous pouvez désormais suivre l'actualité Carnet de pêche par mail. Souhaitez-vous être informé par mail des communications autour de Carnet de pêche ? Vous pouvez à tout moment activer ou désactiver cette fonctionnalité dans votre Profil. `,
+        "Du nouveau sur Carnet de pêche",
         "Non",
         "Oui"
       );

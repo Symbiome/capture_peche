@@ -2,7 +2,7 @@ package fr.inrae.fishola;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import fr.inrae.fishola.database.EditorialAndDocumentationDao;
 import fr.inrae.fishola.database.StaffPerimeterDao;
 import fr.inrae.fishola.entities.tables.pojos.Documentation;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.runtime.StartupEvent;
 import org.apache.commons.io.IOUtils;
@@ -42,13 +42,13 @@ import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
-public class FisholaApplication {
+public class CarnetApplication {
 
     @Inject
     protected Logger log;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
 
     @Inject
     protected AgroalDataSource dataSource;
@@ -62,7 +62,7 @@ public class FisholaApplication {
     void onStart(@Observes StartupEvent ev) {
 
         if (log.isInfoEnabled()) {
-            log.infof("Starting Fishola version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile());
+            log.infof("Starting Carnet de pêche version='%s' ; profile=%s", config.getFullVersion(), config.getActiveProfile());
         }
 
         Map<String, String> flywayPlaceholders = Map.of(
@@ -111,7 +111,7 @@ public class FisholaApplication {
                     documentationDao.updateDocumentation(documentation);
                 }
             } catch (IOException ioe) {
-                throw new FisholaTechnicalException("Impossible de lire le fichier par défaut", ioe);
+                throw new CarnetTechnicalException("Impossible de lire le fichier par défaut", ioe);
             }
         }
     }

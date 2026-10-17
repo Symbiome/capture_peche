@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -43,7 +43,7 @@
 
     <!-- Administrateurs : accueil classique. -->
     <div v-else class="admin-home">
-      <p>Bienvenue sur l'interface d'administration de FISHOLA.</p>
+      <p>Bienvenue sur l'interface d'administration de Carnet de pêche.</p>
       <p>Vous pouvez utiliser le menu pour accéder aux différentes sections.</p>
     </div>
   </div>

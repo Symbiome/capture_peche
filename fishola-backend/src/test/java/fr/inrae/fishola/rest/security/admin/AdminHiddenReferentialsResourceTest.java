@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.security.admin;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import fr.inrae.fishola.rest.imports.carnet.CarnetVolontaireSchema;
 import io.agroal.api.AgroalDataSource;
@@ -92,8 +92,8 @@ class AdminHiddenReferentialsResourceTest {
         DSLContext ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         var annecy = ctx.fetchOne("SELECT name, department FROM water_entity WHERE name = 'Annecy' LIMIT 1");
         waterEntityName = annecy.get("name", String.class);
-        insertOperator(ctx, operatorId, "hidden-ref-op@fishola.test", annecy.get("department", String.class));
-        insertOperator(ctx, otherOperatorId, "hidden-ref-op-2@fishola.test", annecy.get("department", String.class));
+        insertOperator(ctx, operatorId, "hidden-ref-op@carnet-peche.test", annecy.get("department", String.class));
+        insertOperator(ctx, otherOperatorId, "hidden-ref-op-2@carnet-peche.test", annecy.get("department", String.class));
         insertSpecies(ctx, speciesId, SPECIES_NAME, false);
         insertSpecies(ctx, archivedSpeciesId, "Zzmasquage espèce archivée", true);
         ctx.execute("INSERT INTO technique (id, name, export_as, built_in) VALUES (?, ?, ?, true)",
@@ -145,7 +145,7 @@ class AdminHiddenReferentialsResourceTest {
     }
 
     private ValidatableResponse hide(String token, String type, UUID... itemIds) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType(ContentType.JSON)
                 .body(List.of(itemIds))
                 .when().put(URI + type)
@@ -153,7 +153,7 @@ class AdminHiddenReferentialsResourceTest {
     }
 
     private ValidatableResponse get(String token, String uri) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get(uri)
                 .then().statusCode(200);
     }
@@ -230,7 +230,7 @@ class AdminHiddenReferentialsResourceTest {
                 SPECIES_NAME, "", "", "", "", "25", "210", "1", "oui", "", "", "non", "");
         String csv = String.join(";", CarnetVolontaireSchema.LEGACY_HEADER) + "\n" + row + "\n";
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/octet-stream")
                 .body(csv.getBytes(StandardCharsets.UTF_8))
                 .when().post(CARNET_IMPORT_URI + "?filename=hidden-ref-test.csv&mode=partial")

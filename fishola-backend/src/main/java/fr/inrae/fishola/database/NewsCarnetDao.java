@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2023 INRAE - UMR CARRTEL
  * %%
@@ -46,7 +46,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Singleton
-public class NewsFisholaDao extends AbstractFisholaDao {
+public class NewsCarnetDao extends AbstractCarnetDao {
 
     public static final UUID TEMPORARY_NEWS_ID = UUID.randomUUID();
 

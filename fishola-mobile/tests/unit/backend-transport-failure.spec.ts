@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 
 /**
  * Invariant vérifié ici : **toute** requête doit régler sa promesse, y compris
@@ -74,7 +74,7 @@ class FakeXhr {
   }
 }
 
-describe("AbstractFisholaService — échec de transport", () => {
+describe("AbstractCarnetService — échec de transport", () => {
   let originalXhr: any;
 
   beforeEach(() => {
@@ -89,18 +89,18 @@ describe("AbstractFisholaService — échec de transport", () => {
   // Les méthodes qui écrivent (`POST`/`PUT`/`DELETE`) sont celles qu'emprunte
   // la synchronisation ; `backendGetWithArgs` alimente la liste des sorties.
   const cases: Array<[string, () => Promise<unknown>]> = [
-    ["backendPost", () => AbstractFisholaService.backendPost("/v1/trips", {})],
-    ["backendPut", () => AbstractFisholaService.backendPut("/v1/trips/1", {})],
-    ["backendDelete", () => AbstractFisholaService.backendDelete("/v1/trips/1")],
+    ["backendPost", () => AbstractCarnetService.backendPost("/v1/trips", {})],
+    ["backendPut", () => AbstractCarnetService.backendPut("/v1/trips/1", {})],
+    ["backendDelete", () => AbstractCarnetService.backendDelete("/v1/trips/1")],
     [
       "backendPutPlain",
-      () => AbstractFisholaService.backendPutPlain("/v1/pictures/1", "data"),
+      () => AbstractCarnetService.backendPutPlain("/v1/pictures/1", "data"),
     ],
     [
       "backendGetWithArgs",
-      () => AbstractFisholaService.backendGetWithArgs("/v1/trips", {}),
+      () => AbstractCarnetService.backendGetWithArgs("/v1/trips", {}),
     ],
-    ["backendGet", () => AbstractFisholaService.backendGet("/v1/trips")],
+    ["backendGet", () => AbstractCarnetService.backendGet("/v1/trips")],
   ];
 
   const events: XhrEvent[] = ["onerror", "onabort", "ontimeout"];
@@ -121,7 +121,7 @@ describe("AbstractFisholaService — échec de transport", () => {
     // numérique (401, 5xx) est propagé — le serveur a répondu, le cache local
     // ne doit pas masquer une session expirée — alors qu'un échec de transport
     // déclenche le repli hors ligne.
-    const promise = AbstractFisholaService.backendPost("/v1/trips", {});
+    const promise = AbstractCarnetService.backendPost("/v1/trips", {});
     FakeXhr.last.fire("onerror");
 
     await promise.then(

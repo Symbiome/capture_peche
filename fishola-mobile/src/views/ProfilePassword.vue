@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="profile-pasword page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="profile-pasword-page page">
       <div class="pane">
         <div class="pane-content rounded">
@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       button-text="Enregistrer"
       v-on:buttonClicked="save"
       shortcuts="back,spacer,spacer"
@@ -72,8 +72,8 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import FormInput from "@/components/common/FormInput.vue";
 
@@ -89,9 +89,9 @@ import router from "../router";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     FormInput,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class ProfilePasswordView extends Vue {

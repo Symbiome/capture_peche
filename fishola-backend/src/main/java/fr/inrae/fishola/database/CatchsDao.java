@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -68,7 +68,7 @@ import static org.jooq.impl.DSL.or;
 import static org.jooq.impl.DSL.trueCondition;
 
 @Singleton
-public class CatchsDao extends AbstractFisholaDao {
+public class CatchsDao extends AbstractCarnetDao {
 
     public UUID create(Catch c) {
         if (c.getEditedSpeciesId() == null) {

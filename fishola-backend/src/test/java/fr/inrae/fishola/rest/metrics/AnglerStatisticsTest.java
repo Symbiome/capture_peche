@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.metrics;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -32,8 +32,8 @@ import fr.inrae.fishola.entities.enums.TripMode;
 import fr.inrae.fishola.entities.enums.TripType;
 import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import fr.inrae.fishola.rest.dashboard.AnglerEffortStatistics.MonthlyEffort;
 import fr.inrae.fishola.rest.dashboard.AnglerEffortStatistics.SectorContribution;
 import io.agroal.api.AgroalDataSource;
@@ -65,7 +65,7 @@ import static io.restassured.RestAssured.given;
  */
 @QuarkusTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AnglerStatisticsTest extends AbstractFisholaTest {
+class AnglerStatisticsTest extends AbstractCarnetTest {
 
     private static final int YEAR = 2019;
     private static final String EMAIL_PREFIX = "angler-stats-";
@@ -129,7 +129,7 @@ class AnglerStatisticsTest extends AbstractFisholaTest {
     }
 
     private UUID createAngler(String suffix) {
-        String email = EMAIL_PREFIX + suffix + "@fishola.test";
+        String email = EMAIL_PREFIX + suffix + "@carnet-peche.test";
         usersDao.create("Angler", suffix, EMAIL_PREFIX + suffix, email, usersDao.hashPassword("sispea"),
                 false, "74000", 1990);
         UUID id = usersDao.findByEmail(email).orElseThrow().getId();
@@ -234,9 +234,9 @@ class AnglerStatisticsTest extends AbstractFisholaTest {
 
     @Test
     void endpointUnlocksCpueOnlyAboveTheCatchThreshold() {
-        String token = login(EMAIL_PREFIX + "me@fishola.test", "sispea");
+        String token = login(EMAIL_PREFIX + "me@carnet-peche.test", "sispea");
         var json = given()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .queryParam("year", YEAR)
                 .queryParam("waterEntity", busyLakeId.toString())
                 .when().get("/api/v1/dashboard/effort")

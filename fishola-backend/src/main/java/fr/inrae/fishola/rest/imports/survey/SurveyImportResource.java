@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest.imports.survey;
  */
 
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.imports.ImportResultBean;
 import jakarta.inject.Inject;
@@ -50,7 +50,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/imports/survey")
 @Produces(MediaType.APPLICATION_JSON)
-public class SurveyImportResource extends AbstractFisholaResource {
+public class SurveyImportResource extends AbstractCarnetResource {
 
     private static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String CSV_MEDIA_TYPE = "text/csv; charset=UTF-8";

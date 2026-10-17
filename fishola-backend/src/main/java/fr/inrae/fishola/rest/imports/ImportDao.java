@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports;
  * #L%
  */
 
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import fr.inrae.fishola.database.HydroSearchDao;
 import fr.inrae.fishola.entities.Tables;
 import fr.inrae.fishola.entities.enums.CollectionMethod;
@@ -73,7 +73,7 @@ import static fr.inrae.fishola.entities.Tables.WATER_ENTITY;
  * erreurs, sorties, captures). Écrit dans les tables du socle {@code V1.2.0}.
  */
 @Singleton
-public class ImportDao extends AbstractFisholaDao {
+public class ImportDao extends AbstractCarnetDao {
 
     private static final DateTimeFormatter DAY_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

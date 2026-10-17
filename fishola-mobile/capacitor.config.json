@@ -1,6 +1,6 @@
 {
   "appId": "fr.inrae.fishola",
-  "appName": "FISHOLA",
+  "appName": "Carnet de pêche",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "target/dist",

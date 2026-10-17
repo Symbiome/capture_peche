@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.imports.survey;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.imports.survey;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -108,11 +108,11 @@ class SurveyManualEntryResourceTest {
         seedWaterSurface(ctx, bourgetId, "MULTIPOLYGON(((5.865 45.715,5.875 45.715,5.875 45.725,5.865 45.725,5.865 45.715)))");
 
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "survey-manual-test-op@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, true)", operatorId, "survey-manual-test-op@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, ?)",
                 operatorId, department);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "survey-manual-test-national@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "survey-manual-test-national@carnet-peche.test", "x");
 
         ManagedContext requestContext = Arc.container().requestContext();
         requestContext.activate();
@@ -365,7 +365,7 @@ class SurveyManualEntryResourceTest {
 
     private io.restassured.response.ValidatableResponse submitTo(UUID sessionId, String token, SurveySortieBean sortie) {
         return given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType("application/json")
                 .body(sortie)
                 .when().post(SESSIONS_URI + "/" + sessionId + "/sorties")
@@ -387,7 +387,7 @@ class SurveyManualEntryResourceTest {
 
     private UUID openSession(String token) {
         String id = given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType("application/json")
                 .body(validSession())
                 .when().post(SESSIONS_URI)
@@ -470,17 +470,17 @@ class SurveyManualEntryResourceTest {
     @Test
     void staffAttributionIsLimitedToThePerimeter() {
         String uri = "/api/v1/referential/waterEntities/attribution";
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(uri + "?lat=" + LAT_74 + "&lng=" + LNG_74)
                 .then().statusCode(200)
                 .body("proposal.name", equalTo("Annecy"));
         // Bourget (73) est hors périmètre de l'opérateur : jamais proposé.
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(uri + "?lat=" + LAT_73 + "&lng=" + LNG_73)
                 .then().statusCode(200)
                 .body("proposal.name", org.hamcrest.Matchers.not(equalTo("Bourget")))
                 .body("alternatives.name", org.hamcrest.Matchers.not(hasItem("Bourget")));
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                 .when().get(uri + "?lat=" + LAT_73 + "&lng=" + LNG_73)
                 .then().statusCode(200)
                 .body("proposal.name", equalTo("Bourget"));
@@ -489,14 +489,14 @@ class SurveyManualEntryResourceTest {
     // --- #236 : saisie pyramidale session -> sorties -> pêcheurs -> captures. ---
 
     private io.restassured.response.ValidatableResponse getSession(String token, UUID sessionId) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .when().get(SESSIONS_URI + "/" + sessionId)
                 .then();
     }
 
     private io.restassured.response.ValidatableResponse closeSession(String token, UUID sessionId,
                                                                      SurveySessionCloseBean close) {
-        return given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
+        return given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType("application/json")
                 .body(close)
                 .when().post(SESSIONS_URI + "/" + sessionId + "/close")
@@ -544,7 +544,7 @@ class SurveyManualEntryResourceTest {
     @Test
     void openSessionIsListedUntilClosed() {
         UUID sessionId = openSession(operatorToken);
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(SESSIONS_URI)
                 .then().statusCode(200)
                 .body("id", hasItem(sessionId.toString()));
@@ -555,7 +555,7 @@ class SurveyManualEntryResourceTest {
                 .body("session.unsurveyedShoreAnglers", equalTo(2))
                 .body("session.unsurveyedBoatAnglers", equalTo(1));
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get(SESSIONS_URI)
                 .then().statusCode(200)
                 .body("id", org.hamcrest.Matchers.not(hasItem(sessionId.toString())));
@@ -601,7 +601,7 @@ class SurveyManualEntryResourceTest {
         session.operatorName = " ";
         session.waterEntityId = bourgetId;
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(session)
                 .when().post(SESSIONS_URI)

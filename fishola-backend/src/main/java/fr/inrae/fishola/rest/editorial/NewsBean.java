@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.editorial;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%

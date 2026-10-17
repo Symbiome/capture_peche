@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -85,7 +85,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       shortcuts="back,credits,feedback"
       button-icon="icon-send"
       button-text="Envoyer"
@@ -98,8 +98,8 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import FormInput from "@/components/common/FormInput.vue";
 import FormRadio from "@/components/common/FormRadio.vue";
@@ -119,8 +119,8 @@ import { Device } from "@capacitor/device";
 
 @Component({
   components: {
-    FisholaHeader,
-    FisholaFooter,
+    CarnetHeader,
+    CarnetFooter,
     FormInput,
     FormRadio,
     FormTextarea,
@@ -180,7 +180,7 @@ export default class FeedbackModal extends Vue {
         "Bonjour,\nJe souhaiterais devenir collecteur d'écailles salmonidés.\nVoici mon adresse : ...\n";
     } else if (feedbackType == "ambassador") {
       this.model.description =
-        "Bonjour,\nJe souhaiterais devenir ambassadeur Fishola.\n";
+        "Bonjour,\nJe souhaiterais devenir ambassadeur Carnet de pêche.\n";
     }
     this.loadProfile();
   }

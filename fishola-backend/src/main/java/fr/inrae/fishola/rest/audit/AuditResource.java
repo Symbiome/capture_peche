@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.audit;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.audit;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.AuditLogDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -45,7 +45,7 @@ import java.util.Set;
  */
 @Path("/api/v1/admin/audit-log")
 @Produces(MediaType.APPLICATION_JSON)
-public class AuditResource extends AbstractFisholaResource {
+public class AuditResource extends AbstractCarnetResource {
 
     private static final int MAX_PAGE_SIZE = 200;
     private static final int MAX_PAGE_NUMBER = 100_000;

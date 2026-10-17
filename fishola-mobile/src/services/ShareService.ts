@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
  * %%
@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import { FileSharer } from "@byteowls/capacitor-filesharer";
 
-export default class ShareService extends AbstractFisholaService {
+export default class ShareService extends AbstractCarnetService {
   constructor() {
     super();
   }

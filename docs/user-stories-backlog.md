@@ -1195,7 +1195,7 @@ Composant `fishola-mobile/src/components/my-trips/MyTripsMap.vue`
 `fishola-mobile/src/views/TripsListAndMap.vue` (onglet « Carte »).
 Les sorties sont rendues via une source GeoJSON `catches` avec
 clustering natif (`clusterRadius: 50`, `clusterMaxZoom: 14`),
-au-dessus du fond IGN + réseau hydro (`buildFisholaStyle`).
+au-dessus du fond IGN + réseau hydro (`buildCarnetStyle`).
 À l'ouverture de l'onglet, `fitToMarkers()` cadre la vue sur
 l'emprise de tous les marqueurs (`fitBounds`, `maxZoom: 13`).
 

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -106,7 +106,7 @@ import EventBus from "@/services/EventBus";
     FooterButton,
   },
 })
-export default class FisholaFooter extends Vue {
+export default class CarnetFooter extends Vue {
   @Prop({ default: "logout,dashboard,home" }) shortcuts!: string;
   @Prop() selected?: string;
   @Prop() buttonIcon?: string;

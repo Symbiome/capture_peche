@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -19,7 +19,7 @@
  * #L%
  */
 import Constants from '@/services/Constants';
-import FisholaDatabase from './FisholaDatabase';
+import CarnetDatabase from './CarnetDatabase';
 import OfflineEntry from '@/pojos/OfflineEntry';
 
 class CacheEntry {
@@ -28,9 +28,9 @@ class CacheEntry {
   }
 }
 
-export default abstract class AbstractFisholaService {
-  static getDatabase(): FisholaDatabase {
-    return FisholaDatabase.getInstance();
+export default abstract class AbstractCarnetService {
+  static getDatabase(): CarnetDatabase {
+    return CarnetDatabase.getInstance();
   }
 
   static caches: Map<string, CacheEntry> = new Map();
@@ -110,7 +110,7 @@ export default abstract class AbstractFisholaService {
           reject(this.status);
         }
       };
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.send();
     });
   }
@@ -162,7 +162,7 @@ export default abstract class AbstractFisholaService {
 
       xhr.open("GET", apiUrl, true);
       xhr.withCredentials = true;
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -175,7 +175,7 @@ export default abstract class AbstractFisholaService {
         } else if (this.status == 204) {
           resolve(undefined);
         } else {
-          const result = AbstractFisholaService.wrapResponseReject(this);
+          const result = AbstractCarnetService.wrapResponseReject(this);
           reject(result);
         }
       };
@@ -206,7 +206,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", apiUrl, true);
       xhr.withCredentials = true;
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -223,7 +223,7 @@ export default abstract class AbstractFisholaService {
         } else if (this.status == 204) {
           resolve(undefined);
         } else {
-          const result = AbstractFisholaService.wrapResponseReject(this);
+          const result = AbstractCarnetService.wrapResponseReject(this);
           reject(result);
         }
       };
@@ -242,12 +242,12 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("DELETE", apiUrl, true);
       xhr.withCredentials = true;
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 204) {
           resolve(undefined);
         } else {
-          const result = AbstractFisholaService.wrapResponseReject(this);
+          const result = AbstractCarnetService.wrapResponseReject(this);
           reject(result);
         }
       };
@@ -266,7 +266,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", apiUrl, true);
       xhr.withCredentials = true;
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200 || this.status == 201) {
           const responseText = this["responseText"];
@@ -283,7 +283,7 @@ export default abstract class AbstractFisholaService {
         } else if (this.status == 204) {
           resolve(undefined);
         } else {
-          const result = AbstractFisholaService.wrapResponseReject(this);
+          const result = AbstractCarnetService.wrapResponseReject(this);
           reject(result);
         }
       };
@@ -302,7 +302,7 @@ export default abstract class AbstractFisholaService {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", apiUrl, true);
       xhr.withCredentials = true;
-      AbstractFisholaService.rejectOnTransportFailure(xhr, uri, reject);
+      AbstractCarnetService.rejectOnTransportFailure(xhr, uri, reject);
       xhr.onload = function () {
         if (this.status == 200) {
           const responseText = this["responseText"];
@@ -311,7 +311,7 @@ export default abstract class AbstractFisholaService {
         } else if (this.status == 204 || this.status == 201) {
           resolve(undefined);
         } else {
-          const result = AbstractFisholaService.wrapResponseReject(this);
+          const result = AbstractCarnetService.wrapResponseReject(this);
           reject(result);
         }
       };

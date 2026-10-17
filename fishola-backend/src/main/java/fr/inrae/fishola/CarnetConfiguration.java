@@ -2,7 +2,7 @@ package fr.inrae.fishola;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola;
  * #L%
  */
 
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.SmallRyeConfig;
 import io.smallrye.config.WithDefault;
@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.microprofile.config.ConfigProvider;
 @ConfigMapping(prefix = "fishola")
-public interface FisholaConfiguration {
+public interface CarnetConfiguration {
 
     String version();
 
@@ -111,12 +111,12 @@ public interface FisholaConfiguration {
             int index = requestUrl.indexOf(requestUri);
             if (index != -1) {
                 result = requestUrl.substring(0, index);
-                Log log = LogFactory.getLog(FisholaConfiguration.class);
+                Log log = LogFactory.getLog(CarnetConfiguration.class);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("No 'BackendBaseUrl' in conf, computed is: %s", result));
                 }
             } else {
-                throw new FisholaTechnicalException("Unable to compute backendBaseUrl", null);
+                throw new CarnetTechnicalException("Unable to compute backendBaseUrl", null);
             }
         }
         return result;
@@ -161,7 +161,7 @@ public interface FisholaConfiguration {
 
     default File getPicturesPreviewFolder() {
         File result = new File(picturesPreviewFolderPath());
-        Log log = LogFactory.getLog(FisholaConfiguration.class);
+        Log log = LogFactory.getLog(CarnetConfiguration.class);
         if (result.mkdirs() && log.isInfoEnabled()) {
             log.info("Création du dossier de stockage des previews : " + result.getAbsolutePath());
         }

@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -28,8 +28,7 @@
       <header class="smaller" v-if="!wrappedInTab">
         <div class="site-logo site-logo-smartphone">
           <h1>
-            <a href="#/about" @click.prevent="scrollToSection('top')"><img
-                src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+            <a href="#/about" @click.prevent="scrollToSection('top')"><CarnetLogo class="about-logo" /></a>
           </h1>
         </div>
 
@@ -40,7 +39,7 @@
         <div class="menu" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
-              <a href="#/about" @click.prevent="scrollToSection('top'); closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+              <a href="#/about" @click.prevent="scrollToSection('top'); closed = true"><CarnetLogo class="about-logo" /></a>
             </h1>
           </div>
 
@@ -75,7 +74,7 @@
       <!-- // End Header // -->
 
       <div class="under-header-zone" v-if="!wrappedInTab">
-        FISHOLA : La science tous ensemble
+        Carnet de pêche : La science tous ensemble
       </div>
 
       <!-- \\ Begin Banner Section \\ -->
@@ -84,7 +83,7 @@
         <div class="title-banner">
           <div class="main-title">La science tous ensemble</div>
           <div class="sub-title">
-            En utilisant FISHOLA vous participez à la compréhension et la
+            En utilisant Carnet de pêche vous participez à la compréhension et la
             préservation des plans d'eau
           </div>
         </div>
@@ -95,7 +94,7 @@
       <div class="Banner_sec" id="presentation">
         <!--  \\ Begin banner Side -->
         <div class="left-panel">
-          <h3><span>FISHOLA</span></h3>
+          <h3><span>Carnet de pêche</span></h3>
           <p>{{ titleText }}</p>
         </div>
         <div class="right-panel">
@@ -170,20 +169,6 @@
         </div>
         <!-- // End Contribute Section // -->
 
-        <!-- \\ Begin Pricing Section \\ -->
-        <div class="Pricing_sec" id="pricing">
-          <div class="Center">
-            <!-- // End Pricing Side // -->
-            <h3>Applications</h3>
-            <div class="welcome-apps">
-              <a href="https://play.google.com/store/apps/details?id=fr.inrae.fishola" target="_blank"
-                rel="noopener"><img class="app" src="/img/GooglePlay.png" alt="GooglePlay" /></a>
-              <a href="https://apps.apple.com/fr/app/fishola/id1521226635" target="_blank" rel="noopener"><img
-                  class="app" src="/img/AppStore.png" alt="AppStore" /></a>
-            </div>
-          </div>
-        </div>
-        <!-- // End Pricing Section // -->
         <!-- \\ Begin Contact Section \\ -->
         <div class="Contact_sec" id="contact">
           <div class="Contactside"></div>
@@ -193,7 +178,7 @@
               <h2>Nous contacter</h2>
               <p>
                 La communication et l'échange sont au c&oelig;ur de
-                l'application FISHOLA. Vous pouvez nous suivre sur les
+                l'application Carnet de pêche. Vous pouvez nous suivre sur les
                 différents réseaux sociaux ou nous contacter par l'intermédiaire
                 du formulaire ci-dessous.
               </p>
@@ -237,14 +222,6 @@
                 <p>Retrouvez-nous sur :</p>
                 <ul>
                   <li>
-                    <a rel="noopener, nofollow" href="https://www.facebook.com/FisholaFR" target="_blank"><img
-                        src="/img/facebook-icn.png" alt="Facebook" /></a>
-                  </li>
-                  <li>
-                    <a rel="noopener, nofollow" href="https://twitter.com/FisholaFr" target="_blank"><img
-                        src="/img/twitter-icn.png" alt="Twitter" /></a>
-                  </li>
-                  <li>
                     <a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img
                         src="/img/youtube-icn.png" alt="Youtube" /></a>
                   </li>
@@ -278,7 +255,7 @@
           </div>
           <div class="Line"></div>
           <div class="producers">
-            <h3>FISHOLA est produit par</h3>
+            <h3>Ils ont contribué au projet</h3>
             <div class="credits-logos">
               <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img
                   src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL" /></a>
@@ -330,12 +307,14 @@ import EventBus from "@/services/EventBus";
 import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
+import CarnetLogo from "@/components/layout/CarnetLogo.vue";
 
 @Component({
   components: {
     MapLibreMarkersMap,
     Counter,
     CommunicationsOnAboutPage,
+    CarnetLogo,
   },
 })
 export default class AboutView extends Vue {
@@ -562,6 +541,10 @@ export default class AboutView extends Vue {
 @import "../less/libs/473-november-media";
 @import "../less/_colors";
 @import "../less/_responsive";
+
+.about-logo {
+  width: 150px;
+}
 
 #about-scroll-container {
   overflow: auto;

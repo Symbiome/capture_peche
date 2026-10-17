@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.gamification;
  * #L%
  */
 
-import fr.inrae.fishola.database.AbstractFisholaDao;
+import fr.inrae.fishola.database.AbstractCarnetDao;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import org.jooq.DSLContext;
@@ -42,7 +42,7 @@ import java.util.UUID;
  * cette classe ne gère que le référentiel {@code competition} et la recherche de pêcheurs.
  */
 @Singleton
-public class CompetitionDao extends AbstractFisholaDao {
+public class CompetitionDao extends AbstractCarnetDao {
 
     public record CompetitionRow(UUID id, String name, LocalDate competitionDate, UUID waterEntityId,
                                  String waterEntityName, String department, String federationName,

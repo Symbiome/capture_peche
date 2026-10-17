@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.gamification;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -75,13 +75,13 @@ class CompetitionResourceTest {
     void seed() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, 'x', now(), false, false, true)", operatorId, "competition-test-operator@fishola.test");
+                + "VALUES (?, ?, 'x', now(), false, false, true)", operatorId, "competition-test-operator@carnet-peche.test");
         // Périmètre départemental (#159) : sans cette ligne, un compte non-national mais
         // sans aucun département configuré ne verrait rien (#188).
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", operatorId);
 
         ctx.execute("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
-                        + "VALUES (?, 'Competition', 'Resource', 'competition-resource-test@fishola.test', "
+                        + "VALUES (?, 'Competition', 'Resource', 'competition-resource-test@carnet-peche.test', "
                         + "'$2a$10$j3eTBbEJO9IutgxGIJFMx.uauNH6Z4UR/UeiL62eL5oYMNCSPWYS.', now(), 'competition-resource-test')",
                 userId);
 
@@ -115,18 +115,18 @@ class CompetitionResourceTest {
     void operatorCanCreateAndAttributeACompetitionInOwnPerimeter() {
         UUID competitionId = createCompetition("Concours de la Truite", waterEntityIdInPerimeter, 200);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(Map.of("userId", userId.toString()))
                 .when().post("/api/v1/admin/competitions/" + competitionId + "/attribute")
                 .then().statusCode(204);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/admin/competitions/" + competitionId + "/participants")
                 .then().statusCode(200)
                 .body("userId", hasItem(userId.toString()));
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
                 .when().get("/api/v1/gamification/me/badges")
                 .then().statusCode(200)
                 .body("find { it.code == 'CONCOURS' }.unlocked", equalTo(true))
@@ -135,7 +135,7 @@ class CompetitionResourceTest {
 
     @Test
     void operatorCannotCreateACompetitionOutsideOwnPerimeter() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(Map.of("name", "Concours hors périmètre", "date", "2026-06-01",
                         "waterEntityId", waterEntityIdOutOfPerimeter.toString(), "federationName", "Fédération 73"))
@@ -151,7 +151,7 @@ class CompetitionResourceTest {
         attribute(competition1, userId);
         attribute(competition2, userId);
 
-        given().cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
+        given().cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, userToken)
                 .when().get("/api/v1/gamification/me/badges")
                 .then().statusCode(200)
                 .body("findAll { it.code == 'CONCOURS' }.competitionName", hasItem("Concours du printemps"))
@@ -165,7 +165,7 @@ class CompetitionResourceTest {
         attribute(competitionId, userId);
         attribute(competitionId, userId);
 
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/admin/competitions/" + competitionId + "/participants")
                 .then().statusCode(200)
                 .body("userId", equalTo(java.util.List.of(userId.toString())));
@@ -173,14 +173,14 @@ class CompetitionResourceTest {
 
     @Test
     void searchUsersFindsByPseudo() {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .when().get("/api/v1/admin/competitions/search-users?q=competition-resource-test")
                 .then().statusCode(200)
                 .body("id", hasItem(userId.toString()));
     }
 
     private UUID createCompetition(String name, UUID waterEntityId, int expectedStatus) {
-        String id = given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        String id = given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(Map.of("name", name, "date", "2026-06-01",
                         "waterEntityId", waterEntityId.toString(), "federationName", "Fédération 74"))
@@ -191,7 +191,7 @@ class CompetitionResourceTest {
     }
 
     private void attribute(UUID competitionId, UUID targetUserId) {
-        given().cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
+        given().cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, operatorToken)
                 .contentType("application/json")
                 .body(Map.of("userId", targetUserId.toString()))
                 .when().post("/api/v1/admin/competitions/" + competitionId + "/attribute")

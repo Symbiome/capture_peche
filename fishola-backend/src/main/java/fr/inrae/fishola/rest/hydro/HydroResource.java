@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.hydro;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.hydro;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.HydroSearchDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
@@ -48,7 +48,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/waterEntities")
 @Produces(MediaType.APPLICATION_JSON)
-public class HydroResource extends AbstractFisholaResource {
+public class HydroResource extends AbstractCarnetResource {
 
     // Defaults / bounds mirrored in the parameter validation below.
     private static final double MAX_RADIUS_M = 20000.0;

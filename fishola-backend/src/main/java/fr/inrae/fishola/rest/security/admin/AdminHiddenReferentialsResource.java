@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -24,7 +24,7 @@ package fr.inrae.fishola.rest.security.admin;
 import fr.inrae.fishola.database.AdminHiddenReferentialsDao;
 import fr.inrae.fishola.entities.enums.HideableReferential;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.audit.Audited;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -49,7 +49,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/admin/hidden-referentials/{type}")
 @Produces(MediaType.APPLICATION_JSON)
-public class AdminHiddenReferentialsResource extends AbstractFisholaResource {
+public class AdminHiddenReferentialsResource extends AbstractCarnetResource {
 
     @Inject
     protected AdminHiddenReferentialsDao hiddenReferentialsDao;

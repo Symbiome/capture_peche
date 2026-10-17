@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.department;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.DepartmentDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -48,7 +48,7 @@ import java.util.Locale;
  */
 @Path("/api/v1/departments")
 @Produces(MediaType.APPLICATION_JSON)
-public class DepartmentResource extends AbstractFisholaResource {
+public class DepartmentResource extends AbstractCarnetResource {
 
     @Inject
     protected DepartmentDao departmentDao;

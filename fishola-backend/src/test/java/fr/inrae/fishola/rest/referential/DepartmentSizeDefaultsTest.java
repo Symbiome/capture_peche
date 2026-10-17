@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.referential;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.referential;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -84,9 +84,9 @@ class DepartmentSizeDefaultsTest {
     void seed() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "dept-sizes-national@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), true, true, false)", nationalAdminId, "dept-sizes-national@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin, is_operator) "
-                + "VALUES (?, ?, ?, now(), false, false, false)", regional74Id, "dept-sizes-regional74@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, false, false)", regional74Id, "dept-sizes-regional74@carnet-peche.test", "x");
         ctx.execute("INSERT INTO fishola_admin_departments (fishola_admin_id, department_code) VALUES (?, '74')", regional74Id);
 
         carpeId = ctx.fetchOne("SELECT id FROM species WHERE name = 'Carpe commune'").get("id", UUID.class);
@@ -119,7 +119,7 @@ class DepartmentSizeDefaultsTest {
     @Order(1)
     void nationalAdminSavesDepartmentDefaults() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                 .contentType(ContentType.JSON)
                 .body(List.of(
                         Map.of("speciesId", otherSpeciesId, "maxSize", 70, "meshSize", 5),
@@ -128,7 +128,7 @@ class DepartmentSizeDefaultsTest {
                 .then().statusCode(204);
 
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, nationalToken)
                 .when().get(REFERENTIAL + "/department/74")
                 .then().statusCode(200)
                 .body("size()", equalTo(2));
@@ -180,14 +180,14 @@ class DepartmentSizeDefaultsTest {
     @Order(7)
     void regionalAdminCannotConfigureAnotherDepartment() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType(ContentType.JSON)
                 .body(List.of(Map.of("speciesId", otherSpeciesId, "maxSize", 50)))
                 .when().put(REFERENTIAL + "/department/73")
                 .then().statusCode(403);
 
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .when().get(REFERENTIAL + "/department/73")
                 .then().statusCode(200)
                 .body("", empty());
@@ -197,7 +197,7 @@ class DepartmentSizeDefaultsTest {
     @Order(8)
     void maxSizeIsMandatory() {
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, regional74Token)
                 .contentType(ContentType.JSON)
                 .body(List.of(Map.of("speciesId", otherSpeciesId, "maxSize", 0)))
                 .when().put(REFERENTIAL + "/department/74")

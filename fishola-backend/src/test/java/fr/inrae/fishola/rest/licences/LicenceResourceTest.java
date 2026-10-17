@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.licences;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2024 INRAE - UMR CARRTEL
  * %%
@@ -26,8 +26,8 @@ import fr.inrae.fishola.database.UsersDao;
 import fr.inrae.fishola.entities.enums.LicenceType;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUserLicences;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -55,7 +55,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
-class LicenceResourceTest extends AbstractFisholaTest {
+class LicenceResourceTest extends AbstractCarnetTest {
 
     @Inject
     protected FishingLicencesDao fishingLicencesDao;
@@ -71,14 +71,14 @@ class LicenceResourceTest extends AbstractFisholaTest {
     @BeforeEach
     @Transactional
     public void loginAndInit() throws IOException {
-        Optional<FisholaUser> fisholaUser = this.usersDao.findByEmail("thimel@codelutin.com");
-        Assertions.assertTrue(fisholaUser.isPresent());
-        this.userId = fisholaUser.get().getId();
+        Optional<FisholaUser> user = this.usersDao.findByEmail("thimel@codelutin.com");
+        Assertions.assertTrue(user.isPresent());
+        this.userId = user.get().getId();
         this.token = login("thimel@codelutin.com", "sispea");
 
-        Optional<FisholaUser> badFisholaUser = this.usersDao.findByEmail("chloe.goulon@inrae.fr");
-        Assertions.assertTrue(badFisholaUser.isPresent());
-        this.badUserId = badFisholaUser.get().getId();
+        Optional<FisholaUser> badUser = this.usersDao.findByEmail("chloe.goulon@inrae.fr");
+        Assertions.assertTrue(badUser.isPresent());
+        this.badUserId = badUser.get().getId();
         this.badToken = "0000".concat(token.substring(4));
 
         LocalDate expirationDate = LocalDate.now().plusYears(2);
@@ -133,7 +133,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/file".formatted(licence.getId()))
                 .then()
                 .statusCode(200);
@@ -141,7 +141,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         // Then we check that the content matches
         InputStream responseStream = given()
                 .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/file".formatted(licence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
@@ -154,7 +154,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
                 .get("/api/v1/licences/%s/file".formatted(pdfLicence.getId()))
                 .then()
                 // badToken is not a valid token for userId
@@ -176,7 +176,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/file".formatted(notOwnedLicence.getId()))
                 .then()
                 .log().all()
@@ -191,7 +191,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences")
                 .then()
                 .statusCode(200)
@@ -212,7 +212,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
                 .get("/api/v1/licences")
                 .then()
                 .statusCode(401);
@@ -226,7 +226,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
         given()
                 .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .get("/api/v1/licences/%s/file".formatted(badUserId))
                 .then()
@@ -248,7 +248,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(licenceSentByClient)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .post("api/v1/licences")
                 .then()
                 .statusCode(200);
@@ -278,7 +278,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
                 .post("api/v1/licences")
                 .then()
                 .statusCode(401);
@@ -297,7 +297,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(modifiedPdfLicence)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .put("api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 .statusCode(204);
@@ -305,7 +305,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences")
                 .then()
                 .statusCode(200)
@@ -321,7 +321,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 .statusCode(200)
@@ -329,7 +329,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
         InputStream responseStream = given()
                 .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/licences/%s/file".formatted(pdfLicence.getId()))
                 .asInputStream();
         byte[] responseBytes = IOUtils.toByteArray(responseStream);
@@ -344,14 +344,14 @@ class LicenceResourceTest extends AbstractFisholaTest {
 
         given()
                 .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 .statusCode(204);
 
         given()
                 .when()
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("api/v1/licences/%s".formatted(jpegLicence.getId()))
                 .then()
                 .statusCode(204);
@@ -366,7 +366,7 @@ class LicenceResourceTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, badToken)
                 .delete("/api/v1/licences/%s".formatted(pdfLicence.getId()))
                 .then()
                 // badToken is not a valid token for userId

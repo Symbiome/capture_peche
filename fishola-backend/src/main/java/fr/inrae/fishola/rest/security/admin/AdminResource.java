@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security.admin;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -26,10 +26,10 @@ import com.google.common.base.Preconditions;
 import fr.inrae.fishola.entities.tables.pojos.FisholaAdmin;
 import fr.inrae.fishola.rest.audit.Audited;
 import fr.inrae.fishola.rest.department.Departments;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
-import fr.inrae.fishola.mails.FisholaMail;
-import fr.inrae.fishola.mails.ImmutableFisholaMail;
-import fr.inrae.fishola.rest.security.AbstractSecurityFisholaResource;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
+import fr.inrae.fishola.mails.CarnetMail;
+import fr.inrae.fishola.mails.ImmutableCarnetMail;
+import fr.inrae.fishola.rest.security.AbstractSecurityCarnetResource;
 import fr.inrae.fishola.rest.security.AdminProfileForAdmin;
 import fr.inrae.fishola.rest.security.LoginBean;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,7 +63,7 @@ import java.util.function.UnaryOperator;
 
 @Path("/api/v1/admin")
 @Produces(MediaType.APPLICATION_JSON)
-public class AdminResource extends AbstractSecurityFisholaResource {
+public class AdminResource extends AbstractSecurityCarnetResource {
     protected static final String CLAIM_CAN_CREATE_ADMIN = "canCreateAdmin";
     protected static final String CLAIM_IS_OPERATOR = "isOperator";
     protected static final String CLAIM_DEPARTMENT_CODES = "departmentCodes";
@@ -95,8 +95,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Audited(value = "admin.update", entityType = "fishola_admin", entityIdParam = "adminId")
     public Response updateAdmin(RegisterAdminBean bean, @PathParam("adminId") UUID adminId, @Context HttpServletRequest request) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
-        if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        if (!currentAdmin.getIsNationalAdmin() && !currentAdmin.getCanCreateAdmin()) {
             throw new ForbiddenException("Cannot update admin");
         }
         if (bean == null) {
@@ -104,21 +104,21 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         }
         // #164 : un opérateur édité par un admin régional est rattaché à l'intégralité de son
         // périmètre, sans sélection manuelle possible — le payload client est ignoré sur ce point.
-        if (!fisholaAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
-            bean.departmentCodes = adminDao.getAllowedDepartments(fisholaAdmin.getId());
+        if (!currentAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
+            bean.departmentCodes = adminDao.getAllowedDepartments(currentAdmin.getId());
         }
         // Cloisonnement : un modificateur non national ne peut affecter que des départements de son périmètre.
-        if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
-                && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
+        if (!currentAdmin.getIsNationalAdmin() && bean.departmentCodes != null
+                && !adminDao.getAllowedDepartments(currentAdmin.getId()).containsAll(bean.departmentCodes)) {
             throw new ForbiddenException("Un ou plusieurs départements sont hors de votre périmètre");
         }
         FisholaAdmin target = adminDao.findById(adminId)
                 .orElseThrow(() -> new NotFoundException("Compte inconnu : " + adminId));
         // #188 : un modificateur non national ne gère que des comptes entièrement inclus dans son
         // périmètre — jamais un national, ni un compte d'un autre département (qu'il rattacherait au sien).
-        if (!fisholaAdmin.getIsNationalAdmin()
+        if (!currentAdmin.getIsNationalAdmin()
                 && (Boolean.TRUE.equals(target.getIsNationalAdmin())
-                    || !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(adminDao.getAllowedDepartments(adminId)))) {
+                    || !adminDao.getAllowedDepartments(currentAdmin.getId()).containsAll(adminDao.getAllowedDepartments(adminId)))) {
             throw new ForbiddenException("Ce compte est hors de votre périmètre");
         }
         // #188 : un compte non national sans département verrait tout ; on refuse de vider son périmètre.
@@ -141,8 +141,8 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Audited(value = "admin.create", entityType = "fishola_admin")
     public Response registerAdmin(RegisterAdminBean bean, @Context HttpServletRequest request) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
-        if (!fisholaAdmin.getIsNationalAdmin() && !fisholaAdmin.getCanCreateAdmin()) {
+        FisholaAdmin currentAdmin = checkIsAdmin();
+        if (!currentAdmin.getIsNationalAdmin() && !currentAdmin.getCanCreateAdmin()) {
             throw new ForbiddenException("Cannot create admin");
         }
         if (bean == null) {
@@ -152,12 +152,12 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         // périmètre, sans sélection manuelle possible — le payload client est ignoré sur ce point.
         // Un périmètre vide déclenche naturellement l'erreur de validation « au moins un
         // département » ci-dessous (cas théorique, un admin régional a toujours un périmètre).
-        if (!fisholaAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
-            bean.departmentCodes = adminDao.getAllowedDepartments(fisholaAdmin.getId());
+        if (!currentAdmin.getIsNationalAdmin() && Boolean.TRUE.equals(bean.isOperator)) {
+            bean.departmentCodes = adminDao.getAllowedDepartments(currentAdmin.getId());
         }
         // Cloisonnement : un créateur non national ne peut affecter que des départements de son périmètre.
-        if (!fisholaAdmin.getIsNationalAdmin() && bean.departmentCodes != null
-                && !adminDao.getAllowedDepartments(fisholaAdmin.getId()).containsAll(bean.departmentCodes)) {
+        if (!currentAdmin.getIsNationalAdmin() && bean.departmentCodes != null
+                && !adminDao.getAllowedDepartments(currentAdmin.getId()).containsAll(bean.departmentCodes)) {
             throw new ForbiddenException("Un ou plusieurs départements sont hors de votre périmètre");
         }
         Map<String, String> validationErrors = new HashMap<>();
@@ -214,13 +214,13 @@ public class AdminResource extends AbstractSecurityFisholaResource {
             String apiBaseUrl = config.getApiUrl("/api/v1/admin/verify", request);
             String verifyUrl = String.format("%s?t=%s", apiBaseUrl, token);
 
-            ImmutableFisholaMail.Builder builder = mailService.newMailFromTemplate(
+            ImmutableCarnetMail.Builder builder = mailService.newMailFromTemplate(
                     "emails/admin-email-validation.html",
                     "verifyLink", verifyUrl,
                     CLAIM_EMAIL, bean.email);
-            FisholaMail mail = builder
+            CarnetMail mail = builder
                     .addTos(email)
-                    .subject("FISHOLA - Validation de votre e-mail")
+                    .subject("Carnet de pêche - Validation de votre e-mail")
                     .build();
 
             mailService.sendMail(mail);
@@ -272,13 +272,13 @@ public class AdminResource extends AbstractSecurityFisholaResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response adminCheck() throws ResourceNotFoundException {
         // Profil du staff connecté (admin OU opérateur) — sert au menu du back-office.
-        FisholaAdmin fisholaAdmin = checkIsStaff();
+        FisholaAdmin currentAdmin = checkIsStaff();
         LoggedAdminBean loggedAdmin = new LoggedAdminBean(
-                fisholaAdmin.getEmail(),
-                fisholaAdmin.getIsNationalAdmin(),
-                fisholaAdmin.getCanCreateAdmin(),
-                fisholaAdmin.getIsOperator(),
-                adminDao.getAllowedDepartments(fisholaAdmin.getId())
+                currentAdmin.getEmail(),
+                currentAdmin.getIsNationalAdmin(),
+                currentAdmin.getCanCreateAdmin(),
+                currentAdmin.getIsOperator(),
+                adminDao.getAllowedDepartments(currentAdmin.getId())
         );
         return Response.ok(loggedAdmin).build();
     }
@@ -320,13 +320,13 @@ public class AdminResource extends AbstractSecurityFisholaResource {
      * @param operators true => opérateurs uniquement ; false => administrateurs uniquement.
      */
     private List<AdminProfileForAdmin> listStaff(boolean operators) {
-        FisholaAdmin fisholaAdmin = checkIsAdmin();
+        FisholaAdmin currentAdmin = checkIsAdmin();
         List<FisholaAdmin> staff = adminDao.findAll();
         Set<String> allowedDepartments = getAllowedAdminDepartments();
         return staff.stream()
             .filter(admin -> Boolean.TRUE.equals(admin.getIsOperator()) == operators)
             .filter(admin -> {
-                if (fisholaAdmin.getIsNationalAdmin()) {
+                if (currentAdmin.getIsNationalAdmin()) {
                     return true;
                 }
                 // Un admin régional ne voit que le staff dont le périmètre recoupe le sien.
@@ -400,9 +400,9 @@ public class AdminResource extends AbstractSecurityFisholaResource {
         } catch (DataAccessException dae) {
             // Cannot access DB: Silent catch, reset fail page will be shown
             log.warn("Password reset fail : DataAccesException", dae);
-        }  catch (FisholaTechnicalException fte) {
+        }  catch (CarnetTechnicalException fte) {
             // Token may have expire: silent catch, reset fail page will be shown
-            log.warn("Password reset fail : FisholaTechnicalException", fte);
+            log.warn("Password reset fail : CarnetTechnicalException", fte);
         }  catch (JWTDecodeException jde) {
             // Token may have expire: silent catch, reset fail page will be shown
             log.warn("Password reset fail : JWTDecodeException", jde);

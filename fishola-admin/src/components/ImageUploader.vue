@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2022 INRAE - UMR CARRTEL
   %%

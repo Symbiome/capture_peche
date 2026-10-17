@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -34,7 +34,7 @@ import Helpers from "@/services/Helpers";
 import TripDates, { TripPeriodFields } from "@/services/TripDates";
 import Constants from "@/services/Constants";
 
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import PicturesService from "@/services/PicturesService";
 import ReferentialService from "@/services/ReferentialService";
 import NetworkStatusService from "@/services/NetworkStatusService";
@@ -48,7 +48,7 @@ export class TripsAndCount {
   constructor(public trips: TripLight[], public count: number) {}
 }
 
-export default class TripsService extends AbstractFisholaService {
+export default class TripsService extends AbstractCarnetService {
   static instance?: TripsService;
 
   // Plafond des sorties non synchronisées conservées localement (note Q14, #10).

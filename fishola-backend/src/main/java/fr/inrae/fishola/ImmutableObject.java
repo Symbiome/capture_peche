@@ -29,7 +29,7 @@ import org.immutables.value.Value;
 @Value.Style(
         jakarta = true,
         // Le builder aura une méthode "fromInstance" qui permet de l'initialiser à partir d'une autre instance. La
-        // méthode "from" est masquée par FisholaMail#from donc on choisit d'introduire un nouveau nom par défaut
+        // méthode "from" est masquée par CarnetMail#from donc on choisit d'introduire un nouveau nom par défaut
         from = "fromInstance")
 public @interface ImmutableObject {
 

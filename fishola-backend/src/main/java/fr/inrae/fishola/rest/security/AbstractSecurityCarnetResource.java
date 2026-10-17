@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -22,7 +22,7 @@ package fr.inrae.fishola.rest.security;
  */
 
 import fr.inrae.fishola.mails.MailService;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import jakarta.inject.Inject;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
-public class AbstractSecurityFisholaResource  extends AbstractFisholaResource {
+public class AbstractSecurityCarnetResource  extends AbstractCarnetResource {
     protected static final String CLAIM_EMAIL = "email";
     protected static final String CLAIM_PASSWORD_HASHED = "passwordHashed";
 

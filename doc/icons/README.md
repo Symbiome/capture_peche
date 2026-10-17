@@ -16,7 +16,7 @@ Le script va :
 - les convertir en font ;
 - installer cette font dans le projet.
 
-Le résultat peut être vu dans `output/Fishola-Icons-preview.html`
+Le résultat peut être vu dans `output/Carnet-Icons-preview.html`
 
 Il suffit ensuite d'utiliser les icônes dans le HTML tel que :
 

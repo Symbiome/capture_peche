@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.database;
  * #L%
  */
 
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import io.agroal.api.AgroalDataSource;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -38,13 +38,13 @@ import static jakarta.transaction.Transactional.TxType.MANDATORY;
 
 
 @Transactional(MANDATORY)
-public abstract class AbstractFisholaDao {
+public abstract class AbstractCarnetDao {
 
     @Inject
     protected AgroalDataSource dataSource;
 
     @Inject
-    protected FisholaConfiguration config;
+    protected CarnetConfiguration config;
 
     public interface JooqContext<T> {
         T execute(DSLContext context);

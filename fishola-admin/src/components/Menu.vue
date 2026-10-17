@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Admin
+  Carnet de pêche :: Admin
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -22,7 +22,8 @@
   <b-navbar>
     <template v-slot:brand>
       <b-navbar-item tag="router-link" :to="{ path: '/' }">
-        <img class="logo" src="/img/logo-ligne-positif.svg" alt="FISHOLA"/>
+        <img class="logo logo-light" src="/img/logo-carnet.svg" alt="Carnet de pêche"/>
+        <img class="logo logo-dark" src="/img/logo-carnet-dark.svg" alt="Carnet de pêche"/>
       </b-navbar-item>
     </template>
     <template v-slot:start>
@@ -233,6 +234,20 @@ async function doLogout() {
 
 .logo {
   height: 52px;
+}
+
+.logo-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] {
+  .logo-light {
+    display: none;
+  }
+
+  .logo-dark {
+    display: block;
+  }
 }
 
 .navbar {

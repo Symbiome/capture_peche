@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest;
  * #L%
  */
 
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import fr.inrae.fishola.rest.security.LoginBean;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -31,10 +31,10 @@ import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 
-public abstract class AbstractFisholaTest {
+public abstract class AbstractCarnetTest {
 
     @Inject
-    FisholaConfiguration config;
+    CarnetConfiguration config;
 
     public static class CookieHandler extends CustomMatcher {
 
@@ -67,13 +67,13 @@ public abstract class AbstractFisholaTest {
                 .post("/api/v1/security/login")
             .then()
                 .statusCode(200)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }
 
     protected String loginAsAdmin() {
-        AbstractFisholaTest.CookieHandler cookieHandler = new AbstractFisholaTest.CookieHandler();
+        AbstractCarnetTest.CookieHandler cookieHandler = new AbstractCarnetTest.CookieHandler();
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +83,7 @@ public abstract class AbstractFisholaTest {
                 .post("/api/v1/admin/login")
                 .then()
                 .statusCode(204)
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         String result = cookieHandler.getValue().orElseThrow();
         return result;
     }

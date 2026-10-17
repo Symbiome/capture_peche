@@ -2,7 +2,7 @@ package fr.inrae.fishola.exceptions;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -23,9 +23,9 @@ package fr.inrae.fishola.exceptions;
 
 import jakarta.ws.rs.core.Response;
 
-public class FisholaTechnicalException extends AbstractFisholaRuntimeException {
+public class CarnetTechnicalException extends AbstractCarnetRuntimeException {
 
-    public FisholaTechnicalException(String message, Throwable cause) {
+    public CarnetTechnicalException(String message, Throwable cause) {
         super(message, cause);
     }
 

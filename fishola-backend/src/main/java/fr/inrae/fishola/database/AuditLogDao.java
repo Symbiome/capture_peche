@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -41,7 +41,7 @@ import static jakarta.transaction.Transactional.TxType.REQUIRES_NEW;
  * l'intercepteur {@code @Audited} ; lecture paginée pour la consultation admin.
  */
 @ApplicationScoped
-public class AuditLogDao extends AbstractFisholaDao {
+public class AuditLogDao extends AbstractCarnetDao {
 
     @Inject
     ObjectMapper objectMapper;

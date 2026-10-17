@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -80,7 +80,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter
+    <CarnetFooter
       shortcuts="back"
       button-icon="icon-download"
       button-text="Générer le PDF"
@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 import TripPositionsMap, { TripPositionsCatchPoint } from "@/components/trip/TripPositionsMap.vue";
 
 import { CatchBean, TripBean } from "@/pojos/BackendPojos";
@@ -129,7 +129,7 @@ const MAP_MAX_HEIGHT_MM = CONTENT_WIDTH_MM / MAP_ASPECT_RATIO;
 @Component({
   components: {
     TripPositionsMap,
-    FisholaFooter,
+    CarnetFooter,
   },
 })
 export default class TripPdfExportCard extends Vue {

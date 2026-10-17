@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="edit-trip-meta page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="edit-trip-meta-page page">
       <SomeTripHeader v-bind:trip="trip" class="hide-on-desktop" />
       <div class="pane">
@@ -73,7 +73,7 @@
         </div>
       </div>
     </div>
-    <FisholaFooter button-text="Suivant" v-on:buttonClicked="next" shortcuts="back,step-1-4,giveup" />
+    <CarnetFooter button-text="Suivant" v-on:buttonClicked="next" shortcuts="back,step-1-4,giveup" />
   </div>
 </template>
 
@@ -93,9 +93,9 @@ import FormInput from "@/components/common/FormInput.vue";
 import FormSelect from "@/components/common/FormSelect.vue";
 import LakeSelection from "@/components/common/LakeSelection.vue";
 
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
-import FisholaFooter from "@/components/layout/FisholaFooter.vue";
+import CarnetFooter from "@/components/layout/CarnetFooter.vue";
 
 import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import EventBus from "@/services/EventBus";
@@ -105,12 +105,12 @@ import ProfileService from "@/services/ProfileService";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     SomeTripHeader,
     BackButton,
     FormInput,
     FormSelect,
-    FisholaFooter,
+    CarnetFooter,
     LakeSelection,
   },
 })
@@ -179,7 +179,7 @@ export default class TripMetaView extends Vue {
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
-                "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
+                "Vous devez activer la localisation de l'appareil pour que Carnet de pêche puisse acquérir votre position",
                 "La position n'est pas activée"
               );
             }

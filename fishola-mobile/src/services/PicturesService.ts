@@ -1,7 +1,7 @@
 import { CatchBean, PicturePerTripBean, TripBean } from "@/pojos/BackendPojos";
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -19,14 +19,14 @@ import { CatchBean, PicturePerTripBean, TripBean } from "@/pojos/BackendPojos";
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import AbstractFisholaService from "@/services/AbstractFisholaService";
+import AbstractCarnetService from "@/services/AbstractCarnetService";
 import StoredPicture from "@/pojos/StoredPicture";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 import TripsService from "./TripsService";
 import ShareService from "@/services/ShareService";
 import Constants from "@/services/Constants";
 
-export default class PicturesService extends AbstractFisholaService {
+export default class PicturesService extends AbstractCarnetService {
   constructor() {
     super();
   }

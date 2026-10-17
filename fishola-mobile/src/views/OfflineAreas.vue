@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -27,7 +27,7 @@
 -->
 <template>
   <div class="offline-areas page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="offline-areas-page page">
       <div class="pane">
         <div class="pane-content rounded">
@@ -179,7 +179,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 import OfflinePacksMap from "@/components/common/OfflinePacksMap.vue";
 
@@ -195,7 +195,7 @@ import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     BottomNav,
     OfflinePacksMap,
   },

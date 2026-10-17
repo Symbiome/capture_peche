@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import fr.inrae.fishola.FisholaConfiguration;
+import fr.inrae.fishola.CarnetConfiguration;
 import fr.inrae.fishola.rest.about.KeyFigures;
 import fr.inrae.fishola.rest.dashboard.EvolutionMetricsForWaterEntity;
 import fr.inrae.fishola.rest.dashboard.GlobalDashboard;
@@ -33,7 +33,7 @@ import jakarta.inject.Singleton;
 import java.time.Duration;
 
 @Singleton
-public class FisholaCache {
+public class CarnetCache {
 
     public final Cache<String, GlobalDashboard> globalDashboard;
 
@@ -45,7 +45,7 @@ public class FisholaCache {
     public final Cache<String, KeyFigures> keyFigures;
 
     @Inject
-    public FisholaCache(FisholaConfiguration config) {
+    public CarnetCache(CarnetConfiguration config) {
          this.globalDashboard = Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(config.globalDashboardTimeoutMinutes()))
                 .maximumSize(config.globalDashboardCacheSize())

@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.security;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,8 +21,8 @@ package fr.inrae.fishola.rest.security;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Assertions;
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class SecurityResourceTest extends AbstractFisholaTest {
+class SecurityResourceTest extends AbstractCarnetTest {
 
     @Test
     void testLogin() {
@@ -43,7 +43,7 @@ class SecurityResourceTest extends AbstractFisholaTest {
                 .post("/api/v1/security/login")
             .then()
                 .statusCode(200)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, cookieHandler);
         Assertions.assertTrue(cookieHandler.getValue().isPresent());
     }
 

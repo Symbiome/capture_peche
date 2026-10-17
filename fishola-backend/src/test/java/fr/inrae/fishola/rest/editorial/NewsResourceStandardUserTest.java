@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.editorial;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -21,12 +21,12 @@ package fr.inrae.fishola.rest.editorial;
  * #L%
  */
 
-import fr.inrae.fishola.database.NewsFisholaDao;
+import fr.inrae.fishola.database.NewsCarnetDao;
 import fr.inrae.fishola.database.ReferentialDao;
 import fr.inrae.fishola.entities.tables.pojos.WaterEntity;
 import fr.inrae.fishola.entities.tables.pojos.News;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
-import fr.inrae.fishola.rest.AbstractFisholaTest;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
+import fr.inrae.fishola.rest.AbstractCarnetTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -44,10 +44,10 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 @QuarkusTest
-class NewsResourceStandardUserTest extends AbstractFisholaTest {
+class NewsResourceStandardUserTest extends AbstractCarnetTest {
 
     @Inject
-    protected NewsFisholaDao newsDao;
+    protected NewsCarnetDao newsDao;
 
     @Inject
     protected ReferentialDao referentialDao;
@@ -100,7 +100,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .get("/api/v1/news-all")
                 .then()
                 .statusCode(401);
@@ -115,7 +115,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .put("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(401);
@@ -127,7 +127,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .body(news)
                 .post("/api/v1/news-all")
                 .then()
@@ -142,7 +142,7 @@ class NewsResourceStandardUserTest extends AbstractFisholaTest {
         given()
                 .when()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.USER_AUTHENTICATION_COOKIE_NAME, token)
+                .cookie(AbstractCarnetResource.USER_AUTHENTICATION_COOKIE_NAME, token)
                 .delete("/api/v1/news-all/" + news.getId())
                 .then()
                 .statusCode(401);

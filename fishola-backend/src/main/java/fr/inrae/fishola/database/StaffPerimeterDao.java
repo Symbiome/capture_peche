@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * {@code catch.department}.
  */
 @Singleton
-public class StaffPerimeterDao extends AbstractFisholaDao {
+public class StaffPerimeterDao extends AbstractCarnetDao {
 
     /**
      * Aligne le buffer stocké en base sur la configuration et, s'il a changé,

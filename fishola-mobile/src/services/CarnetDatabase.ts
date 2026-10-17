@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Fishola :: Mobile
+ * Carnet de pêche :: Mobile
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -58,8 +58,8 @@ function withStorableValues(downlevelTable: DBCoreTable): DBCoreTable {
   };
 }
 
-export default class FisholaDatabase extends Dexie {
-  static instance: FisholaDatabase = new FisholaDatabase();
+export default class CarnetDatabase extends Dexie {
+  static instance: CarnetDatabase = new CarnetDatabase();
 
   // Declare implicit table properties.
   // (just to inform Typescript. Instanciated by Dexie in stores() method)
@@ -76,7 +76,7 @@ export default class FisholaDatabase extends Dexie {
 
   constructor() {
     super("Fishola");
-    console.info("Construction de la base Fishola ...");
+    console.info("Construction de la base locale ...");
     this.version(1).stores({
       onCreationTrip: "id",
       dirtyTrips: "id",
@@ -203,10 +203,10 @@ export default class FisholaDatabase extends Dexie {
       }),
     });
 
-    console.info("Base Fishola prête");
+    console.info("Base locale prête");
   }
 
-  static getInstance(): FisholaDatabase {
+  static getInstance(): CarnetDatabase {
     return this.instance;
   }
 }

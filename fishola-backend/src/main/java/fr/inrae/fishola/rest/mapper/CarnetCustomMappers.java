@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.mapper;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -68,13 +68,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
-public class FisholaCustomMappers implements ObjectMapperCustomizer {
+public class CarnetCustomMappers implements ObjectMapperCustomizer {
 
     public static final String UNEXPECTED_TYPE_MESSAGE = "Unexpected type:";
     public static final String EMAIL = "email";
 
     public void customize(ObjectMapper mapper) {
-        mapper.registerModule(new FisholaModule());
+        mapper.registerModule(new CarnetModule());
     }
 
     static boolean readBoolean(TreeNode node, String name) {
@@ -158,7 +158,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
     }
 
     protected static Log getLog() {
-        return LogFactory.getLog(FisholaCustomMappers.class);
+        return LogFactory.getLog(CarnetCustomMappers.class);
     }
 
     protected static Optional<LocalDateTime> readIso8601AtZone(String dateString, ZoneId zoneId) {
@@ -213,7 +213,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
             readText(node, "backendVersion").ifPresent(builder::backendVersion);
             readText(node, "location").ifPresent(builder::location);
             readText(node, "locationTitle").ifPresent(builder::locationTitle);
-            readText(node, "date").flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::date);
+            readText(node, "date").flatMap(str -> CarnetCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::date);
             readText(node, "device").ifPresent(builder::device);
             Feedback result = builder.build();
             return result;
@@ -284,7 +284,7 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
                 builder.lastNewsSeenDate(LocalDateTime.of(2021,06,06,12,0,0));
             } else {
                 Optional<String> lastSeendDateText = readText(node, "lastNewsSeenDate");
-                lastSeendDateText.flatMap(str -> FisholaCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::lastNewsSeenDate);
+                lastSeendDateText.flatMap(str -> CarnetCustomMappers.readIso8601AtZone(str, ZoneId.systemDefault())).ifPresent(builder::lastNewsSeenDate);
             }
 
             // Le champ est nécessaire côté Java mais on attend rien de la part du front
@@ -352,9 +352,9 @@ public class FisholaCustomMappers implements ObjectMapperCustomizer {
         }
     }
 
-    public static class FisholaModule extends SimpleModule {
+    public static class CarnetModule extends SimpleModule {
 
-        public FisholaModule() {
+        public CarnetModule() {
             addSerializer(PaginationResult.class, new JsonSerializer<>() {
                 @Override
                 public void serialize(PaginationResult value, JsonGenerator gen, SerializerProvider serializers) throws IOException {

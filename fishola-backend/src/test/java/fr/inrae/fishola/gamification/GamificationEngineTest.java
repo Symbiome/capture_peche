@@ -2,7 +2,7 @@ package fr.inrae.fishola.gamification;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -96,7 +96,7 @@ class GamificationEngineTest {
     void seed() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
-                        + "VALUES (?, 'Gamification', 'Test', 'gamification-engine-test@fishola.test', 'x', now(), 'gamif-engine-test')",
+                        + "VALUES (?, 'Gamification', 'Test', 'gamification-engine-test@carnet-peche.test', 'x', now(), 'gamif-engine-test')",
                 userId);
         waterEntityId = ctx.fetchOne("SELECT id FROM water_entity WHERE name = 'Annecy'").get("id", UUID.class);
         techniqueCoupId = ctx.fetchOne("SELECT id FROM technique WHERE name = 'Pêche au coup'").get("id", UUID.class);
@@ -133,7 +133,7 @@ class GamificationEngineTest {
         DSL.using(dataSource, SQLDialect.POSTGRES).execute(
                 "INSERT INTO fishola_user (id, first_name, last_name, email, password, created_on, pseudo) "
                         + "VALUES (?, 'Souvenir', 'Test', ?, 'x', now(), ?)",
-                anglerId, "souvenir-" + anglerId + "@fishola.test", "souvenir-" + anglerId);
+                anglerId, "souvenir-" + anglerId + "@carnet-peche.test", "souvenir-" + anglerId);
         anglerIds.add(anglerId);
         return anglerId;
     }

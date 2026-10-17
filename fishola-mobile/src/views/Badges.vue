@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -20,7 +20,7 @@
   -->
 <template>
   <div class="badges page-with-header-and-footer shifted-background">
-    <FisholaHeader />
+    <CarnetHeader />
     <div class="page badges-page">
       <div class="pane pane-only">
         <div id="scrollable" class="pane-content large rounded">
@@ -75,7 +75,7 @@
 </template>
 
 <script lang="ts">
-import FisholaHeader from "@/components/layout/FisholaHeader.vue";
+import CarnetHeader from "@/components/layout/CarnetHeader.vue";
 import BottomNav from "@/components/layout/BottomNav.vue";
 
 import GamificationService from "@/services/GamificationService";
@@ -87,7 +87,7 @@ import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
-    FisholaHeader,
+    CarnetHeader,
     BottomNav,
   },
 })

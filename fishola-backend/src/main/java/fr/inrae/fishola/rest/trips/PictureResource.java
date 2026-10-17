@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.trips;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -30,9 +30,9 @@ import fr.inrae.fishola.entities.tables.pojos.Catch;
 import fr.inrae.fishola.entities.tables.pojos.FisholaUser;
 import fr.inrae.fishola.entities.tables.pojos.Trip;
 import fr.inrae.fishola.exceptions.AccessDeniedException;
-import fr.inrae.fishola.exceptions.FisholaTechnicalException;
+import fr.inrae.fishola.exceptions.CarnetTechnicalException;
 import fr.inrae.fishola.exceptions.NotFoundException;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.ImageHelper;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
@@ -61,7 +61,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/pictures")
-public class PictureResource extends AbstractFisholaResource {
+public class PictureResource extends AbstractCarnetResource {
 
     public static final String MISSING_CAPTURE_ID = "Identifiant de capture manquant";
     @Inject
@@ -408,7 +408,7 @@ public class PictureResource extends AbstractFisholaResource {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ImageHelper.imageToStream(scaledImage, "jpeg", .95f, fileOutputStream);
         } catch (IOException ioe) {
-            throw new FisholaTechnicalException("Impossible de d'écrire l'image vers un fichier", ioe);
+            throw new CarnetTechnicalException("Impossible de d'écrire l'image vers un fichier", ioe);
         }
     }
 

@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2021 INRAE - UMR CARRTEL
  * %%
@@ -39,7 +39,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
-public class EditorialAndDocumentationDao extends AbstractFisholaDao {
+public class EditorialAndDocumentationDao extends AbstractCarnetDao {
 
     public List<Documentation> listDocumentationsWithoutContent() {
         List<Documentation> result = withContext(context -> context.selectFrom(Tables.DOCUMENTATION)

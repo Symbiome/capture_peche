@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.commune;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -23,7 +23,7 @@ package fr.inrae.fishola.rest.commune;
 
 import com.google.common.base.Preconditions;
 import fr.inrae.fishola.database.HydroSearchDao;
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.UserIdAndRenewal;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Path("/api/v1/communes")
 @Produces(MediaType.APPLICATION_JSON)
-public class CommuneResource extends AbstractFisholaResource {
+public class CommuneResource extends AbstractCarnetResource {
 
     private static final int MAX_LIMIT = 50;
 

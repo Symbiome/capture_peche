@@ -2,7 +2,7 @@ package fr.inrae.fishola.rest.audit;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
  * %%
@@ -21,7 +21,7 @@ package fr.inrae.fishola.rest.audit;
  * #L%
  */
 
-import fr.inrae.fishola.rest.AbstractFisholaResource;
+import fr.inrae.fishola.rest.AbstractCarnetResource;
 import fr.inrae.fishola.rest.JwtHelper;
 import io.agroal.api.AgroalDataSource;
 import io.quarkus.arc.Arc;
@@ -68,7 +68,7 @@ class AuditLogTest {
     void seedAdmin() {
         var ctx = DSL.using(dataSource, SQLDialect.POSTGRES);
         ctx.execute("INSERT INTO fishola_admin (id, email, password, created_on, can_create_admin, is_national_admin) "
-                + "VALUES (?, ?, ?, now(), false, true)", adminId, "audit-test@fishola.test", "x");
+                + "VALUES (?, ?, ?, now(), false, true)", adminId, "audit-test@carnet-peche.test", "x");
         // JwtHelper est @RequestScoped : on active un contexte de requête le temps
         // de forger le token (hors flux HTTP réel dans @BeforeAll).
         ManagedContext requestContext = Arc.container().requestContext();
@@ -99,14 +99,14 @@ class AuditLogTest {
         // #11 §4.4 cas 1 : un PUT /admin/{id} réussi journalise une ligne
         // admin.update, actor='admin' (appelant), entity = admin cible.
         Map<String, Object> bean = Map.of(
-                "email", "audit-test@fishola.test",
+                "email", "audit-test@carnet-peche.test",
                 "canCreateAdmin", false,
                 "departmentCodes", new HashSet<>());
 
         int before = auditCount("admin.update");
         given()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .body(bean)
                 .when().put("/api/v1/admin/" + adminId)
                 .then().statusCode(204);
@@ -128,13 +128,13 @@ class AuditLogTest {
         // Génère au moins une ligne, puis la consulte via l'endpoint admin.
         given()
                 .contentType(MediaType.APPLICATION_JSON)
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
-                .body(Map.of("email", "audit-test@fishola.test", "canCreateAdmin", false, "departmentCodes", new HashSet<>()))
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .body(Map.of("email", "audit-test@carnet-peche.test", "canCreateAdmin", false, "departmentCodes", new HashSet<>()))
                 .when().put("/api/v1/admin/" + adminId)
                 .then().statusCode(204);
 
         given()
-                .cookie(AbstractFisholaResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
+                .cookie(AbstractCarnetResource.ADMIN_AUTHENTICATION_COOKIE_NAME, adminToken)
                 .queryParam("action", "admin.update")
                 .when().get("/api/v1/admin/audit-log")
                 .then().statusCode(200)

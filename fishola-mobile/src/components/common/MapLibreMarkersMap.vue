@@ -1,6 +1,6 @@
 <!--
   #%L
-  Fishola :: Mobile
+  Carnet de pêche :: Mobile
   %%
   Copyright (C) 2019 - 2026 INRAE - UMR CARRTEL
   %%
@@ -36,7 +36,7 @@ import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 import maplibregl, { Map as MlMap, Marker, Popup, LngLatBounds } from 'maplibre-gl';
 import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { attachHydroHover, BaseLayer, createFisholaMap, setBaseLayer } from '@/components/common/maplibreStyle';
+import { attachHydroHover, BaseLayer, createCarnetMap, setBaseLayer } from '@/components/common/maplibreStyle';
 
 export interface MapMarker {
     lat: number;
@@ -75,7 +75,7 @@ export default class MapLibreMarkersMap extends Vue {
         if (!container || this.map) {
             return;
         }
-        this.map = createFisholaMap(container, {
+        this.map = createCarnetMap(container, {
             center: this.center || undefined,
             zoom: this.zoom,
             baseLayer: this.baseLayer,

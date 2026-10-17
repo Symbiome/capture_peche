@@ -2,7 +2,7 @@ package fr.inrae.fishola.database;
 
 /*-
  * #%L
- * Fishola :: Backend
+ * Carnet de pêche :: Backend
  * %%
  * Copyright (C) 2019 - 2025 INRAE - UMR CARRTEL
  * %%
@@ -43,7 +43,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Singleton
-public class EvolutionDao  extends AbstractFisholaDao {
+public class EvolutionDao  extends AbstractCarnetDao {
 
     @Inject
     protected CatchsDao catchsDao;
