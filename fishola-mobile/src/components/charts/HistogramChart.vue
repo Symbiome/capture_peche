@@ -114,7 +114,7 @@
 <script lang="ts">
 import Constants from "@/services/Constants";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 
 import { Month, Maillage } from "@/pojos/BackendPojos";
 

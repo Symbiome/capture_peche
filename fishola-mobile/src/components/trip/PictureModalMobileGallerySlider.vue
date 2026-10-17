@@ -90,11 +90,12 @@
 
 <script lang="ts">
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import FooterButton from "@/components/layout/FooterButton.vue";
 import ShareService from "@/services/ShareService";
 
 @Component({
+  emits: ["delete", "seeTrip", "take-picture"],
   components: { FooterButton },
 })
 export default class PictureModalMobileGallerySlider extends Vue {

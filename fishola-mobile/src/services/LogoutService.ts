@@ -18,49 +18,48 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-import Vue from "vue";
+import { Router } from "vue-router";
 
 import Helpers from "@/services/Helpers";
 import ProfileService from "@/services/ProfileService";
 import TripsService from "@/services/TripsService";
 import { RouterUtils } from "@/router/RouterUtils";
+import EventBus from "@/services/EventBus";
 
 /**
  * Déconnexion confirmée par l'utilisateur, avec un second avertissement si
  * une sortie est en cours (elle serait perdue).
  */
 export default class LogoutService {
-  static confirmAndLogout(vm: Vue): Promise<void> {
+  static confirmAndLogout(router: Router): Promise<void> {
     return Helpers.confirm(
-      vm.$modal,
       "Voulez-vous vous déconnecter ?",
       "Déconnexion"
     ).then(
-      () => LogoutService.logoutUnlessRunningTrip(vm),
+      () => LogoutService.logoutUnlessRunningTrip(router),
       () => undefined
     );
   }
 
-  private static logoutUnlessRunningTrip(vm: Vue): Promise<void> {
+  private static logoutUnlessRunningTrip(router: Router): Promise<void> {
     return TripsService.hasRunningTrip().then((hasRunningTrip: boolean) => {
       if (!hasRunningTrip) {
-        return LogoutService.logout(vm);
+        return LogoutService.logout(router);
       }
       return Helpers.confirm(
-        vm.$modal,
-        "Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr·e ?",
+          "Vous avez une sortie en cours, elle sera perdue. Êtes-vous sûr·e ?",
         "Déconnexion"
       ).then(
-        () => LogoutService.logout(vm),
+        () => LogoutService.logout(router),
         () => undefined
       );
     });
   }
 
-  private static logout(vm: Vue): Promise<void> {
+  private static logout(router: Router): Promise<void> {
     return ProfileService.logout().then(() => {
-      RouterUtils.pushRouteNoDuplicate(vm.$router, "/login");
-      vm.$root.$emit("loggued-out");
+      RouterUtils.pushRouteNoDuplicate(router, "/login");
+      EventBus.emit("loggued-out");
     });
   }
 }

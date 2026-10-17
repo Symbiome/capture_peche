@@ -36,7 +36,7 @@
 import Menu from '@/components/layout/Menu.vue'
 import FeedbackModal from '@/components/layout/FeedbackModal.vue'
 
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue } from "vue-facing-decorator";
 
 @Component({
   components: {

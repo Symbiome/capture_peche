@@ -96,7 +96,7 @@ import Title from "@/components/layout/Title.vue";
 import LastTripCard from "@/components/home/LastTripCard.vue";
 import SummaryTile from "@/components/home/SummaryTile.vue";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 
 const UNKNOWN_VALUE = "–";
 const NEXT_BADGES_COUNT = 3;

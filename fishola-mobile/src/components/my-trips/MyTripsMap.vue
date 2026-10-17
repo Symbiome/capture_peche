@@ -81,10 +81,11 @@ import { CARNET_MAP_COLORS } from "@/services/CarnetPalette";
 import { CatchMarker } from '@/pojos/BackendPojos';
 import TripsService from '@/services/TripsService';
 import Helpers from '@/services/Helpers';
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import BaseLayerToggle from '@/components/common/BaseLayerToggle.vue';
 
 import maplibregl, { Map as MlMap, GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
+import { markRaw } from "vue";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { addCatchPinIcon, attachHydroHover, BaseLayer, buildFisholaStyle, DEFAULT_CENTER, DEFAULT_ZOOM, setBaseLayer } from '@/components/common/maplibreStyle';
 
@@ -117,7 +118,7 @@ export default class MyTripsMapView extends Vue {
         this.computeMapIfVisible();
     }
 
-    beforeDestroy() {
+    beforeUnmount() {
         this.detachHydroHover?.();
         this.detachHydroHover = null;
         this.map?.remove();
@@ -185,7 +186,7 @@ export default class MyTripsMapView extends Vue {
             return;
         }
         const style = buildFisholaStyle(this.baseLayer);
-        this.map = new maplibregl.Map({
+        this.map = markRaw(new maplibregl.Map({
             container,
             style,
             center: DEFAULT_CENTER,
@@ -195,7 +196,7 @@ export default class MyTripsMapView extends Vue {
             // les marqueurs hors de la bande visible sur les écrans étroits (#136).
             renderWorldCopies: false,
             attributionControl: { compact: true },
-        });
+        }));
         this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
         // Informations du réseau hydro au survol, comme sur les autres cartes.
         this.detachHydroHover = attachHydroHover(this.map);

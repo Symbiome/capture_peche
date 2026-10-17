@@ -69,7 +69,8 @@ import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import SomeTripSummary from "@/components/trip/SomeTripSummary.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import ReferentialService from "../../services/ReferentialService";
 
@@ -126,7 +127,6 @@ export default class TripSummaryView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }
@@ -140,7 +140,7 @@ export default class TripSummaryView extends Vue {
     // On reçoit le modèle mis à jour, on le sauvegarde
     if (this.actionRequested == "SendTrip") {
       if (!trip.techniqueIds || trip.techniqueIds.length < 1) {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Vous devez définir les techniques de pêche utilisées"
         );
@@ -155,7 +155,6 @@ export default class TripSummaryView extends Vue {
         const confirmText = `Les techniques suivantes ont été détectées. Est-ce correct ?<br/><ul>${liList}</ul>`;
 
         Helpers.confirm(
-          this.$modal,
           confirmText,
           "Techniques de pêche",
           "Corriger",
@@ -169,7 +168,7 @@ export default class TripSummaryView extends Vue {
                 this.isWaitingForPositionBeforeGoingToNextPage = false;
                 // Plafond de sorties non synchronisées atteint (#10) : message clair.
                 if (e && e.offlineLimitReached) {
-                  Helpers.alert(this.$modal, e.message, "Limite atteinte");
+                  Helpers.alert(e.message, "Limite atteinte");
                 } else {
                   console.error(
                     "Unexpected error during sendTripAndCancelCreations",
@@ -203,7 +202,7 @@ export default class TripSummaryView extends Vue {
     this.isWaitingForPositionBeforeGoingToNextPage = false;
     if (this.actionRequested == "SendTrip") {
       RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
-      this.$root.$emit("ask-for-sync-check");
+      EventBus.emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
@@ -221,7 +220,7 @@ export default class TripSummaryView extends Vue {
     if (this.fromGallery) {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
-        params: {
+        query: {
           selectedDefaultPic: "",
           selectedLakeIdProp: this.lakeFilter,
         },

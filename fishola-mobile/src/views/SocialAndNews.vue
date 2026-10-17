@@ -57,7 +57,7 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-facing-decorator";
 import Helpers from "../services/Helpers";
 import DocumentationService from "../services/DocumentationService";
 import ProfileService from "../services/ProfileService";

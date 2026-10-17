@@ -30,7 +30,8 @@ import { RouterUtils } from "@/router/RouterUtils";
 import ProfileService from "@/services/ProfileService";
 import Helpers from "@/services/Helpers";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { StatusBar } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 
@@ -50,9 +51,9 @@ export default class DispatcherView extends Vue {
     ProfileService.getProfile().then(
       (profile) => {
         if (profile.offlineMarker) {
-          this.$root.$emit("toaster-warning", "Pas de connexion internet");
+          EventBus.emit("toaster-warning", "Pas de connexion internet");
         } else {
-          this.$root.$emit(
+          EventBus.emit(
             "toaster-success",
             "Vous êtes toujours connecté\u00B7e"
           );
@@ -63,7 +64,7 @@ export default class DispatcherView extends Vue {
       },
       (_status) => {
         // Only push route if no route has already been pushed (typically when opening from external url)
-        if (this.$router.currentRoute.name == "dispatcher") {
+        if (this.$route.name == "dispatcher") {
           // En fonction de la plateforme on va rediriger vers la page d'accueil ou la page de login
           Helpers.getDeviceType().then((type) => {
             if (type == "web") {

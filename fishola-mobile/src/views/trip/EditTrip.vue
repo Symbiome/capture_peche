@@ -93,7 +93,8 @@ import SomeTripSummary from "@/components/trip/SomeTripSummary.vue";
 import CatchPreviewList from "@/components/trip/CatchPreviewList.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 
@@ -183,7 +184,7 @@ export default class EditTripView extends Vue {
   tripSaved() {
     if (this.actionRequested == "UpdateTrip") {
       RouterUtils.pushRouteNoDuplicate(this.$router, "/my-trips/list");
-      this.$root.$emit("ask-for-sync-check");
+      EventBus.emit("ask-for-sync-check");
     } else if (this.actionRequested == "EditSpecies") {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "trip-species",
@@ -207,7 +208,7 @@ export default class EditTripView extends Vue {
   }
 
   openPdfExport() {
-    this.$root.$emit("open-trip-pdf-export", [this.id]);
+    EventBus.emit("open-trip-pdf-export", [this.id]);
   }
 
   openCatch(catchId: string) {
@@ -218,7 +219,7 @@ export default class EditTripView extends Vue {
   }
 
   deleteTrip() {
-    Helpers.confirm(this.$modal, "Voulez-vous supprimer la sortie ?").then(
+    Helpers.confirm("Voulez-vous supprimer la sortie ?").then(
       () => {
         TripsService.deleteTrip(this.id, this.tripDeleted);
       }
@@ -233,7 +234,7 @@ export default class EditTripView extends Vue {
     if (this.fromGallery) {
       RouterUtils.pushRouteNoDuplicate(this.$router, {
         name: "galery",
-        params: {
+        query: {
           selectedDefaultPic: "",
           selectedLakeIdProp: this.lakeFilter,
         },

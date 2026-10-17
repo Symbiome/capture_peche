@@ -28,12 +28,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import { LicenceResponseBean } from "@/pojos/BackendPojos";
 import FishingLicenceItem from "./FishingLicenceItem.vue";
 
 
 @Component({
+  emits: ["reload"],
   components: {
     FishingLicenceList,
     FishingLicenceItem

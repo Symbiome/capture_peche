@@ -97,7 +97,8 @@ import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import SomeTripHeader from "@/components/trip/SomeTripHeader.vue";
 import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import router from "../../router";
 import { RouterUtils } from "@/router/RouterUtils";
 import ProfileService from "@/services/ProfileService";
@@ -178,7 +179,6 @@ export default class TripMetaView extends Vue {
             if (!GeolocationService.notifiedPositionDisabled) {
               GeolocationService.notifiedPositionDisabled = true;
               Helpers.alert(
-                this.$modal,
                 "Vous devez activer la localisation de l'appareil pour que FISHOLA puisse acquérir votre position",
                 "La position n'est pas activée"
               );
@@ -235,12 +235,12 @@ export default class TripMetaView extends Vue {
     }
 
     if (hasError) {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-error",
         "Vous devez renseigner les champs obligatoires"
       );
     } else if (this.trip!.mode == "Afterwards") {
-      TripsService.confirmPlausibleTripDuration(this.$modal, this.trip!).then((confirmed) => {
+      TripsService.confirmPlausibleTripDuration(this.trip!).then((confirmed) => {
         if (confirmed) {
           TripsService.saveTripMeta(this.trip!, this.tripSaved);
         }
@@ -278,7 +278,6 @@ export default class TripMetaView extends Vue {
 
   giveup() {
     Helpers.confirm(
-      this.$modal,
       "Voulez-vous vraiment abandonner cette sortie ?"
     ).then(this.giveupConfirmed);
   }

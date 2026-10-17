@@ -26,7 +26,7 @@
           {{label}}
         </label>
         <img v-on:click="toggle()" alt="interrupteur"
-             v-bind:src="value ? '/img/toggle_on.svg' : '/img/toggle_off.svg'"/>
+             v-bind:src="modelValue ? '/img/toggle_on.svg' : '/img/toggle_off.svg'"/>
       </div>
       <div v-bind:class="error?'error-row field-error':'error-row'" >
         <span v-if="error">
@@ -46,21 +46,22 @@ Il faut savoir que :
 `v-model="searchText"`
 
 est équivalent à
-`v-bind:value="searchText" v-on:input="searchText = $event"`
+`v-bind:modelValue="searchText" v-on:update:modelValue="searchText = $event"`
 
-Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans l'attribut `value` du présent composant.
+Donc dans le parent on fait `v-model="toto"` et ça se retrouve dans la prop `modelValue` du présent composant.
 Si modification, on émet un message au parent qui l'intercepte et met à jour son propre modèle.
 */
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 @Component({
+  emits: ["update:modelValue"],
   components: {
   }
 })
 export default class FormToggle extends Vue {
   @Prop() label?: string;
-  @Prop() value?: boolean;
+  @Prop() modelValue?: boolean;
   @Prop() error?: string;
   @Prop() readonly!: boolean;
 
@@ -68,7 +69,7 @@ export default class FormToggle extends Vue {
 
   toggle() {
     if (!this.readonly) {
-      this.$emit('input', !this.value);
+      this.$emit('update:modelValue', !this.modelValue);
     }
   }
 

@@ -101,9 +101,11 @@ import MyTripsItem from '@/components/my-trips/MyTripsItem.vue';
 
 import {TripLight} from '@/pojos/BackendPojos';
 
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import throttle from "lodash/throttle";
 
 @Component({
+  emits: ["more-trips", "sync-now", "trip-selected", "trip-unselected"],
   components: {
     MyTripsItem
   }
@@ -119,7 +121,7 @@ export default class MyTripsList extends Vue {
 
   mounted() {
     // On fait en sorte qu'il n'y ait pas plus d'un appel par seconde
-    this.moreTripsTimer = Vue.lodash.throttle(this.askForMoreTrips, 1000);
+    this.moreTripsTimer = throttle(this.askForMoreTrips, 1000);
   }
 
   updated() {

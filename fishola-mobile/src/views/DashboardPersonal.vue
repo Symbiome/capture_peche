@@ -76,7 +76,8 @@ import {
   DashboardAndSpecies
 } from "@/services/DashboardService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { RouterUtils } from "@/router/RouterUtils";
 
 import LakeAndYearSelection from "@/components/common/LakeAndYearSelection.vue";
@@ -179,7 +180,7 @@ export default class DashboardPersonalView extends Vue {
     if (error && error.timeoutReached) {
       this.offline = true;
     } else if (error && error.status == 401) {
-      this.$root.$emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
+      EventBus.emit("toaster-warning", "Vous n'êtes plus connecté\u00B7e");
       RouterUtils.pushRouteNoDuplicate(this.$router, "/login");
     }
     this.ready = true;
@@ -188,10 +189,10 @@ export default class DashboardPersonalView extends Vue {
   askForAsyncExport() {
     DashboardService.asyncExport().then(
       () => {
-        this.$root.$emit("toaster-success", "Export envoyé par e-mail");
+        EventBus.emit("toaster-success", "Export envoyé par e-mail");
       },
       () => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur est survenue pendant l'export"
         );

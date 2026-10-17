@@ -64,7 +64,8 @@ import BackButton from "@/components/common/BackButton.vue";
 
 import FishingLicenceService from "@/services/FishingLicenceService";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 import { LicenceFromClientBean, LicenceType } from "@/pojos/BackendPojos";
 import Helpers from "@/services/Helpers";
 
@@ -98,7 +99,7 @@ export default class NewFishingLicence extends Vue {
     try {
       if (this.licenceName.trim() === "") {
         this.nameError = true;
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Vous devez nommer la carte de pêche"
         );
@@ -114,7 +115,7 @@ export default class NewFishingLicence extends Vue {
       };
 
       await FishingLicenceService.putLicence(licenceDto, this.id);
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         "Une nouvelle carte de pêche a été ajoutée."
       );
@@ -123,9 +124,9 @@ export default class NewFishingLicence extends Vue {
     } catch (error: any) {
       console.error("Erreur lors de la sauvegarde du fichier", error);
       if (error.content !== undefined && error.content.error !== undefined) {
-        this.$root.$emit("toaster-error", error.content.error);
+        EventBus.emit("toaster-error", error.content.error);
       } else {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur inattendue s'est produite. Veuillez réessayer."
         );

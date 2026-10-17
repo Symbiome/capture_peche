@@ -62,7 +62,8 @@ import ForgottenPassword from "@/components/common/ForgottenPassword.vue";
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import { RouterUtils } from "@/router/RouterUtils";
 
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
@@ -114,7 +115,7 @@ export default class LoginView extends Vue {
           localStorage.latestPassword = this.password
         }
 
-        this.$root.$emit("profile-updated");
+        EventBus.emit("profile-updated");
         RouterUtils.pushRouteNoDuplicate(this.$router, RouterUtils.homeRoute());
 
         // Après login, on tente de télécharger les settings
@@ -131,11 +132,11 @@ export default class LoginView extends Vue {
         );
         break;
       case 401:
-        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        EventBus.emit("toaster-error", "E-mail ou mot de passe incorrect");
         this.passwordError = "Mot de passe erroné";
         break;
       case 404:
-        this.$root.$emit("toaster-error", "E-mail ou mot de passe incorrect");
+        EventBus.emit("toaster-error", "E-mail ou mot de passe incorrect");
         this.emailError = "E-mail inconnu";
         break;
       default:

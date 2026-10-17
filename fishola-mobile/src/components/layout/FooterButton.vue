@@ -39,9 +39,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
-@Component
+@Component({ emits: ["clicked"] })
 export default class FooterButton extends Vue {
   @Prop() icon?: string;
   @Prop() text?: string;

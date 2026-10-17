@@ -55,7 +55,7 @@
 import FisholaHeader from "@/components/layout/FisholaHeader.vue";
 import MyTrips from "@/views/MyTrips.vue";
 import NewsView from "@/views/News.vue";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import MyTripsMapView from "@/components/my-trips/MyTripsMap.vue";
 import TripsService from "@/services/TripsService";
 import RunningOverlay from "@/components/layout/RunningOverlay.vue";

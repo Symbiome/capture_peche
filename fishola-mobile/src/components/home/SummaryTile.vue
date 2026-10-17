@@ -30,10 +30,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 
 /** Tuile carrée de l'accueil : pictogramme, valeur et libellé. */
-@Component
+@Component({ emits: ["clicked"] })
 export default class SummaryTile extends Vue {
   @Prop() icon?: string;
   @Prop() emoji?: string;

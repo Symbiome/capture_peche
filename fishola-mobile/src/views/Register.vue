@@ -84,7 +84,8 @@ import { RouterUtils } from "@/router/RouterUtils";
 import DocumentationService from "@/services/DocumentationService";
 import ProfileService from "@/services/ProfileService";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-facing-decorator";
+import EventBus from "@/services/EventBus";
 
 @Component({
   components: {
@@ -124,7 +125,7 @@ export default class RegisterView extends Vue {
         this.technicalError
       );
     } else if (!this.cgu) {
-      this.$root.$emit("toaster-error", "Vous devez accepter les CGU");
+      EventBus.emit("toaster-error", "Vous devez accepter les CGU");
     } else {
       this.validationErrors["passwordConfirm"] =
         "Les mots de passe ne correspondent pas";
@@ -140,11 +141,10 @@ export default class RegisterView extends Vue {
 
   registrationOk() {
     Helpers.alert(
-      this.$modal,
       "Vous devez confirmer votre adresse e-mail avant d'utiliser FISHOLA. Merci de vérifier votre boîte e-mail",
       "Compte enregistré"
     ).then(() => {
-      this.$root.$emit(
+      EventBus.emit(
         "toaster-success",
         "Compte enregistré. Vous devez valider votre e-mail",
         10000
@@ -155,11 +155,11 @@ export default class RegisterView extends Vue {
 
   setValidationErrors(validationErrors: any) {
     this.validationErrors = validationErrors;
-    this.$root.$emit("toaster-error", "Veuillez corriger les erreurs");
+    EventBus.emit("toaster-error", "Veuillez corriger les erreurs");
   }
 
   technicalError(_status: number) {
-    this.$root.$emit(
+    EventBus.emit(
       "toaster-error",
       "Erreur technique, merci de réessayer plus tard"
     );

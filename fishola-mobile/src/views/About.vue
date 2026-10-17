@@ -19,16 +19,16 @@
   #L%
   -->
 <template>
-  <!-- \\ Begin Holder \\ -->
-  <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
   <div class="DesignHolder force-light-theme" v-on:scroll="scrolled" id="about-scroll-container">
+    <!-- \\ Begin Holder \\ -->
+    <!-- Page vitrine : reste en thème clair (#208), ses styles sont figés. -->
     <!-- \\ Begin Frame \\ -->
     <div class="LayoutFrame" id="top">
       <!-- \\ Begin Header \\ -->
       <header class="smaller" v-if="!wrappedInTab">
         <div class="site-logo site-logo-smartphone">
           <h1>
-            <a href="#/about" v-scroll-to="{ el: '#top', container: '#about-scroll-container' }"><img
+            <a href="#/about" @click.prevent="scrollToSection('top')"><img
                 src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
           </h1>
         </div>
@@ -40,10 +40,7 @@
         <div class="menu" :class="{ closed: closed }">
           <div class="site-logo site-logo-desktop">
             <h1>
-              <a href="#/about" v-scroll-to="{
-                el: '#top',
-                container: '#about-scroll-container',
-              }" @click="closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
+              <a href="#/about" @click.prevent="scrollToSection('top'); closed = true"><img src="/img/logo/logo-ligne-positif.svg" alt="FISHOLA" /></a>
             </h1>
           </div>
 
@@ -53,31 +50,19 @@
                 <div class="plus" v-on:click="closeMenu">+</div>
               </li>
               <li v-bind:class="activeSection == 'presentation' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#presentation',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Présentation</a>
+                <a href="#/about" @click.prevent="scrollToSection('presentation'); closed = !closed">Présentation</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'communications' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#communications',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Communications</a>
+                <a href="#/about" @click.prevent="scrollToSection('communications'); closed = !closed">Communications</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contribute' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#contribute',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Comment participer ?</a>
+                <a href="#/about" @click.prevent="scrollToSection('contribute'); closed = !closed">Comment participer ?</a>
                 <span class="menu-item-bg"></span>
               </li>
               <li v-bind:class="activeSection == 'contact' ? 'active' : ''">
-                <a href="#/about" v-scroll-to="{
-                  el: '#contact',
-                  container: '#about-scroll-container',
-                }" @click="closed = !closed">Contact</a>
+                <a href="#/about" @click.prevent="scrollToSection('contact'); closed = !closed">Contact</a>
                 <span class="menu-item-bg"></span>
               </li>
             </ul>
@@ -133,7 +118,7 @@
         <!-- \\ Begin About Section \\ -->
         <div class="About_sec" id="about">
           <div class="Center">
-            <div class="key-figures" v-observe-visibility="keyFiguresItemsVisibilityChanged">
+            <div class="key-figures" ref="keyFigures">
               <div class="kf-item">
                 <div class="kf-number">
                   <Counter :n="tripsCount"></Counter>
@@ -339,7 +324,9 @@ import { RouterUtils } from "@/router/RouterUtils";
 
 import MapLibreMarkersMap, { MapMarker } from "@/components/common/MapLibreMarkersMap.vue";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
+import debounce from "lodash/debounce";
+import EventBus from "@/services/EventBus";
 import { WaterEntity as Lake, Feedback, NewsBean } from "@/pojos/BackendPojos";
 import DocumentationService from "../services/DocumentationService";
 import CommunicationsOnAboutPage from "./CommunicationsOnAboutPage.vue";
@@ -378,6 +365,8 @@ export default class AboutView extends Vue {
   frontendVersion: string = `${this.projectVersion} (${this.gitRevision})`;
 
   closed: boolean = true;
+  keyFiguresObserver?: IntersectionObserver;
+
   constructor() {
     super();
   }
@@ -450,11 +439,11 @@ export default class AboutView extends Vue {
 
   sendContact() {
     if (!this.contactEmail) {
-      this.$root.$emit("toaster-error", "L'email est obligatoire");
+      EventBus.emit("toaster-error", "L'email est obligatoire");
       return;
     }
     if (!this.contactMessage) {
-      this.$root.$emit("toaster-error", "Le message est obligatoire");
+      EventBus.emit("toaster-error", "Le message est obligatoire");
       return;
     }
 
@@ -469,14 +458,14 @@ export default class AboutView extends Vue {
 
     FeedbackService.sendFeedbackNoAsync(feedback).then(
       () => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-success",
           "Votre message a bien été envoyé à l'équipe projet, merci",
           10000
         );
       },
       (_error) => {
-        this.$root.$emit(
+        EventBus.emit(
           "toaster-error",
           "Une erreur est survenue, merci de réessayer ultérieurement"
         );
@@ -497,7 +486,7 @@ export default class AboutView extends Vue {
     if (this.refreshSelectedSectionTimer) {
       this.refreshSelectedSectionTimer.cancel();
     }
-    this.refreshSelectedSectionTimer = Vue.lodash.debounce(
+    this.refreshSelectedSectionTimer = debounce(
       this.refreshSelectedSection,
       100
     );
@@ -517,6 +506,24 @@ export default class AboutView extends Vue {
       });
       this.activeSection = foundSection;
     }
+  }
+
+  mounted() {
+    const keyFigures = this.$refs.keyFigures as HTMLElement | undefined;
+    if (keyFigures) {
+      this.keyFiguresObserver = new IntersectionObserver((entries) =>
+        this.keyFiguresItemsVisibilityChanged(entries.some((entry) => entry.isIntersecting))
+      );
+      this.keyFiguresObserver.observe(keyFigures);
+    }
+  }
+
+  beforeUnmount() {
+    this.keyFiguresObserver?.disconnect();
+  }
+
+  scrollToSection(sectionId: string) {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
   }
 
   keyFiguresItemsVisibilityChanged(isVisible: boolean) {
@@ -1077,8 +1084,8 @@ export default class AboutView extends Vue {
 .contribute-editable {
   margin-top: 50px;
 
-  /** /deep/ permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
-  /deep/ .cards {
+  /** :deep() permet de contourner le scoped qui empêche le code injecté de bénéficier du style */
+  :deep(.cards) {
     display: flex;
     flex-direction: row;
     justify-content: center;

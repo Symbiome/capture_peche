@@ -58,7 +58,7 @@ import FisholaFooter from "@/components/layout/FisholaFooter.vue";
 import documentationService from "@/services/DocumentationService";
 import { NewsBean } from "@/pojos/BackendPojos";
 
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-facing-decorator";
 import Constants from "../services/Constants";
 import Helpers from "../services/Helpers";
 

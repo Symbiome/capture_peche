@@ -158,7 +158,7 @@ import GaleryPreview from "@/components/galery/GaleryPreview.vue";
 import { PicturePerTripBean, WaterEntity as Lake } from "@/pojos/BackendPojos";
 import PictureContentWithOrder from "@/pojos/PictureContentWithOrder";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import PicturesService from "@/services/PicturesService";
 import ShareService from "@/services/ShareService";
 import ReferentialService from "@/services/ReferentialService";
@@ -261,7 +261,7 @@ export default class GaleryFull extends Vue {
     });
   }
 
-  @Watch("picturesPerTrip")
+  @Watch("picturesPerTrip", { deep: true })
   async loadFullGaleryAndSelectCorrectPic(): Promise<void> {
     try {
       this.allPicsPerYear = await PicturesService.getAllPicsPerYearAndLake(
@@ -321,8 +321,8 @@ export default class GaleryFull extends Vue {
   async seeTrip(tripId: string) {
     RouterUtils.pushRouteNoDuplicate(this.$router, {
       name: "trip-summary",
-      params: {
-        id: tripId,
+      params: { id: tripId },
+      query: {
         fromGallery: "true",
         lakeFilter: this.selectedLakeId,
       },

@@ -85,10 +85,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-facing-decorator";
 import { AttributionResponse, WaterEntityAttribution } from '@/pojos/BackendPojos';
 
-@Component
+@Component({ emits: ["cancel", "confirm"] })
 export default class AttributionConfirmSheet extends Vue {
     @Prop({ default: null }) attribution: AttributionResponse | null;
     @Prop({ default: false }) visible: boolean;
@@ -149,7 +149,7 @@ export default class AttributionConfirmSheet extends Vue {
     inset: 0;
     z-index: 2000;
     // Backdrop volontairement translucide (comme les autres modales de l'app,
-    // cf. .v--modal-overlay) : la carte reste visible en transparence, avec le
+    // cf. .app-dialog-overlay) : la carte reste visible en transparence, avec le
     // pin posé au point cliqué, pour confirmer visuellement la saisie (#86).
     background: @black-alpha-50;
     display: flex;
