@@ -73,44 +73,33 @@
       </header>
       <!-- // End Header // -->
 
-      <div class="under-header-zone" v-if="!wrappedInTab">
-        Carnet de pêche : La science tous ensemble
-      </div>
-
       <!-- \\ Begin Banner Section \\ -->
       <div class="Title_sec" id="title" v-if="!wrappedInTab">
         <!--  \\ Begin banner Side -->
         <div class="title-banner">
-          <div class="main-title">La science tous ensemble</div>
+          <div class="main-title">Sentinelles des cours d'eau</div>
           <div class="sub-title">
-            En utilisant Carnet de pêche vous participez à la compréhension et la
-            préservation des plans d'eau
+            Avec Carnet de pêche, chaque sortie aide à préserver les rivières
           </div>
         </div>
       </div>
       <!-- // End Banner Section // -->
 
-      <!-- \\ Begin Banner Section \\ -->
-      <div class="Banner_sec" id="presentation">
-        <!--  \\ Begin banner Side -->
-        <div class="left-panel">
+      <!-- \\ Begin Presentation Section \\ -->
+      <div class="Presentation_sec" id="presentation">
+        <div class="Center">
           <h3><span>Carnet de pêche</span></h3>
-          <p>{{ titleText }}</p>
-        </div>
-        <div class="right-panel">
-          <img src="/img/dashboard.png" alt="Tableau de bord" />
-          <img src="/img/trip.png" alt="Sortie" />
+          <h2>Un projet de science citoyenne</h2>
+          <p>
+            Les données anonymisées de vos prises et de vos parties de pêche servent à prendre des
+            mesures de préservation des cours d'eau, pour une pêche en rivière durable et abondante.
+          </p>
+          <p>
+            Le pêcheur qui utilise l'application est une véritable sentinelle des cours d'eau.
+          </p>
         </div>
       </div>
-      <!-- // End Banner Section // -->
-
-      <!-- \\ Begin Video Section \\ -->
-      <div class="Video_sec">
-        <iframe title="Vidéo youtube" class="youtube" width="640" height="360"
-          src="https://www.youtube-nocookie.com/embed/lXZwwBofql4" frameborder="10" allow="encrypted-media"
-          allowfullscreen></iframe>
-      </div>
-      <!-- // End Video Section // -->
+      <!-- // End Presentation Section // -->
 
       <!-- \\ Begin Container \\ -->
       <div id="Container">
@@ -153,7 +142,6 @@
         </div>
         <!-- // End Contribute Section // -->
 
-        <!-- \\ Begin Pricing Section \\ -->
         <!-- \\ Begin Contribute Section \\ -->
         <div class="Contribute_sec" id="contribute">
           <div class="Center">
@@ -177,10 +165,8 @@
             <div class="Center">
               <h2>Nous contacter</h2>
               <p>
-                La communication et l'échange sont au c&oelig;ur de
-                l'application Carnet de pêche. Vous pouvez nous suivre sur les
-                différents réseaux sociaux ou nous contacter par l'intermédiaire
-                du formulaire ci-dessous.
+                Une suggestion, une question sur l'application ? Écrivez-nous
+                par l'intermédiaire du formulaire ci-dessous.
               </p>
               <div class="Line"></div>
             </div>
@@ -205,29 +191,6 @@
                 </form>
               </div>
               <!-- // End Left Side // -->
-              <!-- \\ Begin Right Side \\ -->
-              <div class="Rightside">
-                <h3>Contactez-nous !</h3>
-                <p>
-                  Une suggestion, une question ou une envie de démarrer un
-                  projet avec nous, n'hésitez pas à nous contacter !
-                </p>
-                <address>
-                  UMR CARRTEL (INRAE - USMB)<br />
-                  75bis Avenue de Corzent<br />
-                  74200 Thonon-les-Bains (France)
-                </address>
-                <address class="Number">+33 (0)4 50 26 78 00</address>
-                <div class="clear"></div>
-                <p>Retrouvez-nous sur :</p>
-                <ul>
-                  <li>
-                    <a rel="noopener, nofollow" href="https://www.youtube.com/UmrCarrtel" target="_blank"><img
-                        src="/img/youtube-icn.png" alt="Youtube" /></a>
-                  </li>
-                </ul>
-              </div>
-              <!-- // End Right Side // -->
             </div>
           </div>
           <!-- // End Get Section // -->
@@ -236,43 +199,22 @@
 
         <!-- \\ Begin Producted_by Section \\ -->
         <div class="Producted_by_sec" id="producted_by">
-          <div class="partners">
-            <h3>Nos partenaires</h3>
+          <div class="producers">
+            <h3>Porteur du projet</h3>
+            <p>Carnet de pêche est produit par l'Union des Bassins Rhône-Méditerranée-Corse (UFBRMC).</p>
             <div class="credits-logos">
-              <a href="https://www.annecylacpeche.com" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/ALP.png" alt="AAPPMA - Annecy Lac Pêche" /></a>
-              <a href="https://www.peche-leman-apallf.com" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/APALLF.png" alt="APALLF" /></a>
-              <a href="https://fipal.ch" target="_blank" rel="noopener"><img src="/img/credits/88b994/FIPAL.jpg"
-                  alt="Fédération Internationale des Pêcheurs Amateurs du Léman" /></a>
-              <a href="http://www.pecheurs-chamberiens.fr" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/AAPPMA-pecheurs-chamberiens.png" alt="AAPPMA - Pêcheurs chambériens" /></a>
-              <a href="https://aappma-aix-les-bains.fr" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/AAPPMA-Bourget.png" alt="AAPPMA - Aix-les-Bains" /></a>
-              <a href="http://www.aappma-aiguebelette.org" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/AAPPMA-Aiguebelette.jpg" alt="AAPPMA - Aiguebelette" /></a>
+              <a href="https://www.peche-auvergne-rhonealpes.fr/actualite/3754/1913-union-des-bassins-rhone-mediterranee-corse.htm"
+                target="_blank" rel="noopener"><img class="logo-ufbrmc" src="/img/logo/ufbrmc.jpg"
+                  alt="Union des Bassins Rhône-Méditerranée-Corse" /></a>
             </div>
           </div>
           <div class="Line"></div>
           <div class="producers">
-            <h3>Ils ont contribué au projet</h3>
+            <h3>Développement</h3>
+            <p>Application développée par Symbiome.</p>
             <div class="credits-logos">
-              <a href="https://www6.lyon-grenoble.inrae.fr/carrtel" target="_blank" rel="noopener"><img
-                  src="/img/credits/88b994/CARRTEL.png" alt="CARRTEL" /></a>
-              <a href="https://www.inrae.fr" target="_blank" rel="noopener"><img src="/img/credits/inrae.svg"
-                  alt="INRAE" /></a>
-              <a href="https://www.univ-smb.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/USMB.png"
-                  alt="USMB" /></a>
-              <a href="https://professionnels.ofb.fr/fr/pole-ecla-ecosystemes-lacustres" target="_blank"
-                rel="noopener"><img src="/img/credits/88b994/ECLA.png" alt="ECLA" /></a>
-              <a href="https://ofb.gouv.fr" target="_blank" rel="noopener"><img src="/img/credits/ofb.png"
-                  alt="OFB" /></a>
-              <a href="https://si-ola.inra.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/OLA.png"
-                  alt="OLA" /></a>
-              <a href="https://www.codelutin.com" target="_blank" rel="noopener"><img src="/img/credits/code-lutin.svg"
-                  alt="Code Lutin" /></a>
-              <a href="https://www.cisalb.fr" target="_blank" rel="noopener"><img src="/img/credits/88b994/CISALB.png"
-                  alt="CISALB" /></a>
+              <a href="https://symbiome.eu" target="_blank" rel="noopener"><img class="logo-symbiome"
+                  src="/img/logo/symbiome.png" alt="Symbiome" /></a>
             </div>
           </div>
         </div>
@@ -281,7 +223,7 @@
         <!-- \\ Begin Footer \\-->
         <footer>
           <div class="Cntr">
-            <p>COPYRIGHT © 2021 UMR CARRTEL (INRAE - USMB) - Pôle ECLA</p>
+            <p>© Union des Bassins Rhône-Méditerranée-Corse · Application développée par Symbiome</p>
           </div>
         </footer>
         <!-- // End Footer // -->
@@ -322,8 +264,6 @@ export default class AboutView extends Vue {
   // Centre par défaut [lng, lat] (recadré sur les marqueurs s'il y en a).
   center: [number, number] = [5.890511, 46.071623];
 
-  titleText: string =
-    "est l'application smartphone pour une gestion durable de la pêche sur les plans d'eau français.";
   contributeText: string =
     "<p>Le plus simple est de télécharger l'application et de l'utiliser pour saisir vos captures.</p>";
   tripsCount: number = 0;
@@ -357,7 +297,6 @@ export default class AboutView extends Vue {
         this.realTripsCount = kf.tripsCount;
         this.realCatchsCount = kf.catchsCount;
         this.realPicturesCount = kf.picturesCount;
-        this.titleText = kf.titleText;
         this.contributeText = kf.contributeText;
         kf.lakes.forEach((l) => this.lakes.push(l));
         this.catchsCountPerLakeId = kf.catchsCountPerLakeId;
@@ -713,13 +652,6 @@ export default class AboutView extends Vue {
   color: @white;
 }
 
-.under-header-zone {
-  height: 73px;
-  text-align: center;
-  color: @gunmetal;
-  font-size: 48px;
-}
-
 .Title_sec {
   width: 100%;
   background: url(img/about-coregones5.jpg) top center no-repeat;
@@ -750,101 +682,6 @@ export default class AboutView extends Vue {
       margin: 20px;
     }
   }
-}
-
-.Banner_sec {
-  height: 620px;
-  background: @white-smoke;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
-  padding: 20px;
-
-  .left-panel {
-    width: 25%;
-
-    h3 {
-      font-size: 42px;
-      color: @white;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin: 0px;
-      line-height: 34px;
-
-      span {
-        color: @accent-text;
-        font-weight: 600;
-        display: block;
-      }
-    }
-
-    p {
-      padding: 16px 0px 26px 0px;
-      font-size: 22px;
-      color: @gunmetal;
-      font-weight: 400;
-      font-style: italic;
-      margin: 0px;
-      word-spacing: 2px;
-      line-height: 22px;
-    }
-  }
-
-  .right-panel {
-    width: 50%;
-
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: center;
-
-    img {
-      border-radius: 20px;
-      max-width: calc(50% - 20px);
-    }
-  }
-
-  @media only screen and (max-width: 899px) {
-    height: unset;
-    flex-direction: column;
-    justify-content: flex-start;
-
-    .left-panel {
-      width: 80%;
-    }
-
-    .right-panel {
-      width: 100%;
-
-      display: flex;
-      flex-direction: row;
-      justify-content: space-evenly;
-      align-items: center;
-
-      img {
-        border-radius: 20px;
-      }
-    }
-  }
-
-  @media only screen and (max-width: 630px) {
-    .right-panel {
-      img {
-        width: calc(50% - 20px);
-        border-radius: 10px;
-      }
-    }
-  }
-}
-
-.Video_sec {
-  width: 100%;
-  background: @pelorous;
-  height: 360px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
 }
 
 .About_sec {
@@ -920,7 +757,6 @@ export default class AboutView extends Vue {
   font-size: 18px;
 }
 
-.Pricing_sec h3,
 .About_sec h3 {
   color: @gunmetal;
 }
@@ -962,42 +798,58 @@ export default class AboutView extends Vue {
   height: 205px;
 }
 
-.Get_sec .Rightside {
-  padding-top: 2px;
+.Get_sec .Leftside {
+  float: none;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
 
-  h3 {
-    padding-bottom: 5px;
+.Presentation_sec {
+  background: @white-smoke;
+  padding: 70px 20px;
+  text-align: center;
+
+  .Center {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  h3 span {
+    color: @accent-text;
+    font-size: 42px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    color: @gunmetal;
+    font-size: 30px;
+    margin: 24px 0 16px;
   }
 
   p {
-    padding: 10px 0px 10px 0px;
-    font-size: 16px;
+    color: @gunmetal;
+    font-size: 20px;
+    line-height: 30px;
+    margin: 0 0 16px;
   }
 
-  ul {
-    padding-top: 0px;
-  }
-}
+  @media only screen and (max-width: 630px) {
+    padding: 40px 16px;
 
-.Pricing_sec {
-  padding-top: 50px;
-}
+    h3 span {
+      font-size: 30px;
+    }
 
-.welcome-apps {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin-top: 50px;
+    h2 {
+      font-size: 24px;
+    }
 
-  img {
-    width: 200px;
-    margin: 20px;
-  }
-
-  @media only screen and (max-width: 499px) {
-    margin-top: 30px;
-    flex-direction: column;
+    p {
+      font-size: 17px;
+      line-height: 26px;
+    }
   }
 }
 
@@ -1010,7 +862,6 @@ export default class AboutView extends Vue {
   padding-top: 30px;
   padding-bottom: 30px;
 
-  .partners,
   .producers {
     h3 {
       text-align: center;
@@ -1032,27 +883,24 @@ export default class AboutView extends Vue {
     }
   }
 
-  .partners {
-    h3 {
-      font-size: 42px;
-    }
-
-    img {
-      max-height: 140px;
-      max-width: 240px;
-    }
-  }
-
   .producers {
     h3 {
       font-size: 24px;
     }
 
-    img {
-      min-height: 50px;
-      min-width: 90px;
-      max-height: 90px;
-      max-width: 150px;
+    p {
+      text-align: center;
+      color: @gunmetal;
+      margin: 0 20px 20px;
+    }
+
+    .logo-ufbrmc {
+      height: 140px;
+    }
+
+    .logo-symbiome {
+      height: 60px;
+      max-width: 80vw;
     }
   }
 
