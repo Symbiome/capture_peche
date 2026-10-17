@@ -83,7 +83,7 @@ export default class BottomNav extends Vue {
   ];
 
   rightItems: BottomNavItem[] = [
-    { name: "catches", label: "Mes prises", icon: "img/carnet/nav-fish.svg", route: "/my-trips/list" },
+    { name: "catches", label: "Mes prises", icon: "img/carnet/nav-fish.svg", route: "/dashboard-personal/dashboard" },
     { name: "account", label: "Compte", icon: "img/carnet/nav-user.svg", route: "/account" },
   ];
 

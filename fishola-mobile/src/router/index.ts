@@ -194,6 +194,11 @@ const routes: RouteRecordRaw[] = [
     component: DashboardPersonalView,
   },
   {
+    // Onglet « Évolution » retiré de « Statistiques » (calculé par plan d'eau, #277).
+    path: "/dashboard-global/evolution",
+    redirect: "/dashboard-global/dashboard",
+  },
+  {
     path: "/dashboard-global/:visualizationMode",
     name: "dashboard-global",
     props: true,
